@@ -1,0 +1,11 @@
+{
+  "root": true,
+  "parserOptions": {
+    "project": [
+      "./packages/*/tsconfig.eslint.json"
+    ]
+  },
+  "extends": [
+    "lxsmnsyc/typescript"
+  ]
+}
