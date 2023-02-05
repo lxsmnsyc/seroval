@@ -1,0 +1,21 @@
+{
+  "exclude": ["node_modules"],
+  "include": ["src", "types", "test"],
+  "compilerOptions": {
+    "module": "ESNext",
+    "lib": ["ESNext"],
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": true,
+    "rootDir": "./",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "jsx": "react",
+    "esModuleInterop": true,
+    "target": "ES2017"
+  }
+}

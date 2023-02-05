@@ -1,0 +1,67 @@
+{
+  "name": "seroval",
+  "type": "module",
+  "version": "0.0.0",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "license": "MIT",
+  "keywords": [
+    "pridepack"
+  ],
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "eslint": "^8.32.0",
+    "eslint-config-lxsmnsyc": "^0.4.8",
+    "pridepack": "2.4.0",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.4",
+    "vitest": "^0.28.1"
+  },
+  "scripts": {
+    "prepublishOnly": "pridepack clean && pridepack build",
+    "build": "pridepack build",
+    "type-check": "pridepack check",
+    "lint": "pridepack lint",
+    "clean": "pridepack clean",
+    "watch": "pridepack watch",
+    "start": "pridepack start",
+    "dev": "pridepack dev",
+    "test": "vitest"
+  },
+  "private": false,
+  "description": "Stringify JS values",
+  "repository": {
+    "url": "https://github.com/lxsmnsyc/seroval.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/lxsmnsyc/seroval/tree/main/packages/seroval",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/seroval/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Alexis Munsayac",
+  "types": "./dist/types/index.d.ts",
+  "main": "./dist/cjs/production/index.cjs",
+  "module": "./dist/esm/production/index.mjs",
+  "exports": {
+    ".": {
+      "development": {
+        "require": "./dist/cjs/development/index.cjs",
+        "import": "./dist/esm/development/index.mjs"
+      },
+      "require": "./dist/cjs/production/index.cjs",
+      "import": "./dist/esm/production/index.mjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {}
+  }
+}
