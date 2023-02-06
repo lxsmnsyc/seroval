@@ -1,3 +1,4 @@
+// Written by https://github.com/DylanPiercey and is distributed under the MIT license.
 const REF_START_CHARS = 'hjkmoquxzABCDEFGHIJKLNPQRTUVWXYZ$_'; // Avoids chars that could evaluate to a reserved word.
 const REF_START_CHARS_LEN = REF_START_CHARS.length;
 const REF_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$_';
