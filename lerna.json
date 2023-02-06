@@ -10,12 +10,10 @@
     },
     "publish": {
       "allowBranch": [
-        "main",
-        "vdom",
-        "no-vdom"
+        "main"
       ],
       "registry": "https://registry.npmjs.org/"
     }
   },
-  "version": "0.6.2"
+  "version": "0.0.0"
 }
