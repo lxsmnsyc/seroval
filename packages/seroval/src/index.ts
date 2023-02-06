@@ -405,7 +405,7 @@ export default function serialize(source: ServerValue) {
       ? `(${join(VARS, ',')})`
       : VARS[0];
     // Source is probably already assigned
-    if (result.startsWith(index)) {
+    if (result.startsWith(`${index}=`)) {
       return `(${params}=>(${result},${patches}${index}))()`;
     }
     return `(${params}=>(${index}=${result},${patches}${index}))()`;
