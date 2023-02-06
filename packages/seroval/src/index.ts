@@ -24,13 +24,10 @@ export type ServerValue =
   | Set<ServerValue>
   | Map<ServerValue, ServerValue>;
 
-type Assignment = [source: string, value: string];
-
-// Array of assignments to be done (used for recursion)
-let ASSIGNMENTS: Assignment[] = [];
-
 // Reference counter
 const REF_COUNT = new Map<ServerValue, number>();
+
+const STACK = new Set();
 
 // Value-to-ref map
 const REFS = new Map<ServerValue, number>();
@@ -41,14 +38,23 @@ const ASSIGNED_REFS = new Set<number>();
 // Variables
 let VARS: string[] = [];
 
-// Call lines
-let CALLS: string[] = [];
+// Array of assignments to be done (used for recursion)
+type Assignment = [source: string, value: string];
+let ASSIGNMENTS: Assignment[] = [];
+
+// Array of Map.prototype.set calls
+type MapSet = [source: string, key: string, value: string];
+let MAP_SETS: MapSet[] = [];
+
+// Array of Set.prototype.add calls
+type SetAdd = [source: string, value: string];
+let SET_ADDS: SetAdd[] = [];
 
 function reset() {
   ASSIGNMENTS = [];
+  MAP_SETS = [];
+  SET_ADDS = [];
   VARS = [];
-  CALLS = [];
-
   REF_COUNT.clear();
   REFS.clear();
   ASSIGNED_REFS.clear();
@@ -70,6 +76,46 @@ function resolveAssignments() {
     return `${join(Object.values(result), ',')},`;
   }
   return '';
+}
+
+function resolveMapSets() {
+  if (MAP_SETS.length) {
+    const result: Record<string, string> = {};
+
+    // Merge all assignments with similar source
+    forEach(MAP_SETS, ([source, key, value]) => {
+      if (source in result) {
+        result[source] = `${result[source]}.set(${key},${value})`;
+      } else {
+        result[source] = `${source}.set(${key},${value})`;
+      }
+    });
+
+    return `${join(Object.values(result), ',')},`;
+  }
+  return '';
+}
+
+function resolveSetAdds() {
+  if (SET_ADDS.length) {
+    const result: Record<string, string> = {};
+
+    // Merge all assignments with similar source
+    forEach(SET_ADDS, ([source, value]) => {
+      if (source in result) {
+        result[source] = `${result[source]}.add(${value})`;
+      } else {
+        result[source] = `${source}.add(${value})`;
+      }
+    });
+
+    return `${join(Object.values(result), ',')},`;
+  }
+  return '';
+}
+
+function resolvePatches() {
+  return `${resolveAssignments()}${resolveMapSets()}${resolveSetAdds()}`;
 }
 
 function insertRef(current: ServerValue) {
@@ -151,16 +197,12 @@ function createAssignment(source: string, value: string) {
   ASSIGNMENTS.push([source, value]);
 }
 
-function createCall(line: string) {
-  CALLS.push(`${line},`);
-}
-
 function createSetAdd(ref: number, value: string) {
-  createCall(`${getRefParam(ref)}.add(${value})`);
+  SET_ADDS.push([getRefParam(ref), value]);
 }
 
 function createMapSet(ref: number, key: string, value: string) {
-  createCall(`${getRefParam(ref)}.set(${key},${value})`);
+  MAP_SETS.push([getRefParam(ref), key, value]);
 }
 
 function createArrayAssign(ref: number, index: number, value: string) {
@@ -225,19 +267,25 @@ function traverse(current: ServerValue): string | { referred: string } {
     if (current.size) {
       const values: string[] = [];
 
+      STACK.add(current);
       for (const value of current.keys()) {
-        const result = traverse(value);
-        if (typeof result === 'string') {
-          values.push(result);
-        } else {
+        if (STACK.has(value)) {
           // This object received a ref, we must generate a setter ref
           if (refResult == null) {
             refResult = createRef(current);
           }
           // Received a ref, this might be a recursive ref, defer an assignment
-          createSetAdd(refResult, result.referred);
+          createSetAdd(refResult, getRefParam(createRef(value)));
+        } else {
+          const result = traverse(value);
+          if (typeof result === 'string') {
+            values.push(result);
+          } else {
+            values.push(result.referred);
+          }
         }
       }
+      STACK.delete(current);
 
       const value = values.length ? `new Set([${join(values, ',')}])` : EMPTY_SET;
       if (refResult != null) {
@@ -251,30 +299,53 @@ function traverse(current: ServerValue): string | { referred: string } {
     if (current.size) {
       const values: string[] = [];
 
+      STACK.add(current);
       for (const [key, value] of current.entries()) {
-        const keyResult = traverse(key);
-        const valueResult = traverse(value);
-        if (typeof keyResult === 'string') {
-          if (typeof valueResult === 'string') {
-            values.push(`[${keyResult},${valueResult}]`);
+        if (STACK.has(key)) {
+          if (refResult == null) {
+            refResult = createRef(current);
+          }
+          const keyRef = getRefParam(createRef(key));
+          if (STACK.has(value)) {
+            createMapSet(refResult, keyRef, getRefParam(createRef(value)));
           } else {
-            if (refResult == null) {
-              refResult = createRef(current);
+            const valueResult = traverse(value);
+            if (typeof valueResult === 'string') {
+              createMapSet(refResult, keyRef, valueResult);
+            } else {
+              createMapSet(refResult, keyRef, valueResult.referred);
             }
-            createMapSet(refResult, keyResult, valueResult.referred);
           }
-        } else if (typeof valueResult === 'string') {
+        } else if (STACK.has(value)) {
           if (refResult == null) {
             refResult = createRef(current);
           }
-          createMapSet(refResult, keyResult.referred, valueResult);
+          const valueRef = getRefParam(createRef(value));
+          const keyResult = traverse(key);
+          if (typeof keyResult === 'string') {
+            createMapSet(refResult, keyResult, valueRef);
+          } else {
+            createMapSet(refResult, keyResult.referred, valueRef);
+          }
         } else {
-          if (refResult == null) {
-            refResult = createRef(current);
+          const keyResult = traverse(key);
+          const valueResult = traverse(value);
+          if (typeof keyResult === 'string') {
+            if (typeof valueResult === 'string') {
+              values.push(`[${keyResult},${valueResult}]`);
+            } else {
+              values.push(`[${keyResult},${valueResult.referred}]`);
+            }
+          } else {
+            if (typeof valueResult === 'string') {
+              values.push(`[${keyResult.referred},${valueResult}]`);
+            } else {
+              values.push(`[${keyResult.referred},${valueResult.referred}]`);
+            }
           }
-          createMapSet(refResult, keyResult.referred, valueResult.referred);
         }
       }
+      STACK.delete(current);
       const value = values.length ? `new Map([${join(values, ',')}])` : EMPTY_MAP;
       if (refResult != null) {
         return assignRef(refResult, value);
@@ -287,25 +358,31 @@ function traverse(current: ServerValue): string | { referred: string } {
     if (current.length) {
       let values = '';
 
+      STACK.add(current);
       forEach(current, (item, i) => {
         if (i in current) {
-          const result = traverse(item);
-          if (typeof result === 'string') {
-            values += result;
-            if (i < current.length - 1) {
-              values += ',';
-            }
-          } else {
+          if (STACK.has(item)) {
             if (refResult == null) {
               refResult = createRef(current);
             }
-            createArrayAssign(refResult, i, result.referred);
+            createArrayAssign(refResult, i, getRefParam(createRef(item)));
             values += ',';
+          } else {
+            const result = traverse(item);
+            if (typeof result === 'string') {
+              values += result;
+            } else {
+              values += result.referred;
+            }
+            if (i < current.length - 1) {
+              values += ',';
+            }
           }
         } else {
           values += ',';
         }
       });
+      STACK.delete(current);
 
       const value = `[${values}]`;
       if (refResult != null) {
@@ -318,32 +395,41 @@ function traverse(current: ServerValue): string | { referred: string } {
   if (current.constructor === Object) {
     const values: string[] = [];
 
+    STACK.add(current);
     forEach(Object.entries(current), ([key, value]) => {
       const check = Number(key);
       // Test if key is a valid number or JS identifier
       // so that we don't have to serialize the key and wrap with brackets
       if (Number.isNaN(check) || /^([$A-Z_][0-9A-Z_$]*)$/i.test(key)) {
-        const result = traverse(value);
-        if (typeof result === 'string') {
-          values.push(`${key}:${result}`);
-        } else {
+        if (STACK.has(value)) {
           if (refResult == null) {
             refResult = createRef(current);
           }
-          createObjectIdentifierAssign(refResult, key, result.referred);
+          createObjectIdentifierAssign(refResult, key, getRefParam(createRef(value)));
+        } else {
+          const result = traverse(value);
+          if (typeof result === 'string') {
+            values.push(`${key}:${result}`);
+          } else {
+            values.push(`${key}:${result.referred}`);
+          }
         }
+      } else if (STACK.has(value)) {
+        if (refResult == null) {
+          refResult = createRef(current);
+        }
+        createObjectStringAssign(refResult, key, getRefParam(createRef(value)));
       } else {
         const result = traverse(value);
         if (typeof result === 'string') {
           values.push(`${quote(key)}:${result}`);
         } else {
-          if (refResult == null) {
-            refResult = createRef(current);
-          }
-          createObjectStringAssign(refResult, key, result.referred);
+          values.push(`${quote(key)}:${result.referred}`);
         }
       }
     });
+    STACK.delete(current);
+
     const value = `{${join(values, ',')}}`;
     if (refResult != null) {
       return assignRef(refResult, value);
@@ -376,16 +462,15 @@ export default function serialize(source: ServerValue) {
   if (VARS.length) {
     // Get (or create) a ref from the source
     const index = getRefParam(createRef(source));
-    const assignments = resolveAssignments();
-    const calls = join(CALLS, ',');
+    const patches = resolvePatches();
     const params = VARS.length > 1
       ? `(${join(VARS, ',')})`
       : VARS[0];
     // Source is probably already assigned
     if (result.startsWith(index)) {
-      return `(${params}=>(${result},${assignments}${calls}${index}))()`;
+      return `(${params}=>(${result},${patches}${index}))()`;
     }
-    return `(${params}=>(${index}=${result},${assignments}${calls}${index}))()`;
+    return `(${params}=>(${index}=${result},${patches}${index}))()`;
   }
   if (source.constructor === Object) {
     return `(${result})`;
