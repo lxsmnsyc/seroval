@@ -247,7 +247,7 @@ function serializePrimitive(value: PrimitiveValue): string {
   return String(value);
 }
 
-function traverse(current: ServerValue): string | { referred: string } {
+function traverse(current: ServerValue): string {
   // Skip primitives
   if (isPrimitive(current)) {
     return serializePrimitive(current);
@@ -257,10 +257,23 @@ function traverse(current: ServerValue): string | { referred: string } {
   if (refResult != null) {
     // Return the reference if already assigned a value
     if (ASSIGNED_REFS.has(refResult)) {
-      return { referred: getRefParam(refResult) };
+      return getRefParam(refResult);
     }
     // Early sign (to prevent recursion)
     ASSIGNED_REFS.add(refResult);
+  }
+  function getCurrentRef() {
+    // This object received a ref, we must generate a setter ref
+    if (refResult == null) {
+      refResult = createRef(current);
+    }
+    return refResult;
+  }
+  function processRef(value: string) {
+    if (refResult != null) {
+      return assignRef(refResult, value);
+    }
+    return value;
   }
   // Transform Set
   if (constructorCheck<Set<ServerValue>>(current, Set)) {
@@ -270,28 +283,15 @@ function traverse(current: ServerValue): string | { referred: string } {
       STACK.add(current);
       for (const value of current.keys()) {
         if (STACK.has(value)) {
-          // This object received a ref, we must generate a setter ref
-          if (refResult == null) {
-            refResult = createRef(current);
-          }
           // Received a ref, this might be a recursive ref, defer an assignment
-          createSetAdd(refResult, getRefParam(createRef(value)));
+          createSetAdd(getCurrentRef(), getRefParam(createRef(value)));
         } else {
-          const result = traverse(value);
-          if (typeof result === 'string') {
-            values.push(result);
-          } else {
-            values.push(result.referred);
-          }
+          values.push(traverse(value));
         }
       }
       STACK.delete(current);
 
-      const value = values.length ? `new Set([${join(values, ',')}])` : EMPTY_SET;
-      if (refResult != null) {
-        return assignRef(refResult, value);
-      }
-      return value;
+      return processRef(values.length ? `new Set([${join(values, ',')}])` : EMPTY_SET);
     }
     return EMPTY_SET;
   }
@@ -302,55 +302,21 @@ function traverse(current: ServerValue): string | { referred: string } {
       STACK.add(current);
       for (const [key, value] of current.entries()) {
         if (STACK.has(key)) {
-          if (refResult == null) {
-            refResult = createRef(current);
-          }
+          const ref = getCurrentRef();
           const keyRef = getRefParam(createRef(key));
           if (STACK.has(value)) {
-            createMapSet(refResult, keyRef, getRefParam(createRef(value)));
+            createMapSet(ref, keyRef, getRefParam(createRef(value)));
           } else {
-            const valueResult = traverse(value);
-            if (typeof valueResult === 'string') {
-              createMapSet(refResult, keyRef, valueResult);
-            } else {
-              createMapSet(refResult, keyRef, valueResult.referred);
-            }
+            createMapSet(ref, keyRef, traverse(value));
           }
         } else if (STACK.has(value)) {
-          if (refResult == null) {
-            refResult = createRef(current);
-          }
-          const valueRef = getRefParam(createRef(value));
-          const keyResult = traverse(key);
-          if (typeof keyResult === 'string') {
-            createMapSet(refResult, keyResult, valueRef);
-          } else {
-            createMapSet(refResult, keyResult.referred, valueRef);
-          }
+          createMapSet(getCurrentRef(), traverse(key), getRefParam(createRef(value)));
         } else {
-          const keyResult = traverse(key);
-          const valueResult = traverse(value);
-          if (typeof keyResult === 'string') {
-            if (typeof valueResult === 'string') {
-              values.push(`[${keyResult},${valueResult}]`);
-            } else {
-              values.push(`[${keyResult},${valueResult.referred}]`);
-            }
-          } else {
-            if (typeof valueResult === 'string') {
-              values.push(`[${keyResult.referred},${valueResult}]`);
-            } else {
-              values.push(`[${keyResult.referred},${valueResult.referred}]`);
-            }
-          }
+          values.push(`[${traverse(key)},${traverse(value)}]`);
         }
       }
       STACK.delete(current);
-      const value = values.length ? `new Map([${join(values, ',')}])` : EMPTY_MAP;
-      if (refResult != null) {
-        return assignRef(refResult, value);
-      }
-      return value;
+      return processRef(values.length ? `new Map([${join(values, ',')}])` : EMPTY_MAP);
     }
     return EMPTY_MAP;
   }
@@ -362,18 +328,10 @@ function traverse(current: ServerValue): string | { referred: string } {
       forEach(current, (item, i) => {
         if (i in current) {
           if (STACK.has(item)) {
-            if (refResult == null) {
-              refResult = createRef(current);
-            }
-            createArrayAssign(refResult, i, getRefParam(createRef(item)));
+            createArrayAssign(getCurrentRef(), i, getRefParam(createRef(item)));
             values += ',';
           } else {
-            const result = traverse(item);
-            if (typeof result === 'string') {
-              values += result;
-            } else {
-              values += result.referred;
-            }
+            values += traverse(item);
             if (i < current.length - 1) {
               values += ',';
             }
@@ -383,12 +341,7 @@ function traverse(current: ServerValue): string | { referred: string } {
         }
       });
       STACK.delete(current);
-
-      const value = `[${values}]`;
-      if (refResult != null) {
-        return assignRef(refResult, value);
-      }
-      return value;
+      return processRef(`[${values}]`);
     }
     return EMPTY_ARRAY;
   }
@@ -407,12 +360,7 @@ function traverse(current: ServerValue): string | { referred: string } {
           }
           createObjectIdentifierAssign(refResult, key, getRefParam(createRef(value)));
         } else {
-          const result = traverse(value);
-          if (typeof result === 'string') {
-            values.push(`${key}:${result}`);
-          } else {
-            values.push(`${key}:${result.referred}`);
-          }
+          values.push(`${key}:${traverse(value)}`);
         }
       } else if (STACK.has(value)) {
         if (refResult == null) {
@@ -420,21 +368,11 @@ function traverse(current: ServerValue): string | { referred: string } {
         }
         createObjectStringAssign(refResult, key, getRefParam(createRef(value)));
       } else {
-        const result = traverse(value);
-        if (typeof result === 'string') {
-          values.push(`${quote(key)}:${result}`);
-        } else {
-          values.push(`${quote(key)}:${result.referred}`);
-        }
+        values.push(`${quote(key)}:${traverse(value)}`);
       }
     });
     STACK.delete(current);
-
-    const value = `{${join(values, ',')}}`;
-    if (refResult != null) {
-      return assignRef(refResult, value);
-    }
-    return value;
+    return processRef(`{${join(values, ',')}}`);
   }
   throw new Error('Unserializable value');
 }
