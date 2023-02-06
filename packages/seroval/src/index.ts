@@ -345,7 +345,8 @@ function traverse(current: ServerValue): string {
     }
     return EMPTY_ARRAY;
   }
-  if (current.constructor === Object) {
+  const empty = current.constructor == null;
+  if (current.constructor === Object || empty) {
     const values: string[] = [];
 
     STACK.add(current);
@@ -372,7 +373,11 @@ function traverse(current: ServerValue): string {
       }
     });
     STACK.delete(current);
-    return processRef(`{${join(values, ',')}}`);
+    const value = `{${join(values, ',')}}`;
+    if (empty) {
+      return processRef(`Object.assign(Object.create(null),${value})`);
+    }
+    return processRef(value);
   }
   throw new Error('Unserializable value');
 }

@@ -43,6 +43,14 @@ describe('seroval', () => {
     expect(back).toBeInstanceOf(Object);
     expect(back.hello).toBe(example.hello);
   });
+  it('supports Object.create(null)', () => {
+    const example = Object.assign(Object.create(null), { hello: 'world' });
+    const result = seroval(example);
+    expect(result).toMatchSnapshot();
+    const back = eval(result) as Record<string, string>;
+    expect(back.constructor).toBeUndefined();
+    expect(back.hello).toBe(example.hello);
+  });
   it('supports Set', () => {
     const example = new Set([1, 2, 3]);
     const result = seroval(example);

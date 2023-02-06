@@ -7,15 +7,12 @@ export function forEach<T>(arr: T[], callback: (value: T, index: number) => (boo
 }
 
 export function join(arr: string[], joiner: string): string {
-  if (arr.length > 1) {
-    let result = '';
-    forEach(arr, (value, index) => {
-      result += value;
-      if (index < arr.length - 1) {
-        result += joiner;
-      }
-    });
-    return result;
-  }
-  return arr[0];
+  let result = '';
+  forEach(arr, (value, index) => {
+    result += value;
+    if (index < arr.length - 1) {
+      result += joiner;
+    }
+  });
+  return result;
 }
