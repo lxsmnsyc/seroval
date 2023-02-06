@@ -1,18 +1,18 @@
 // Vitest Snapshot v1
 
-exports[`seroval > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],,],j[0]=h,k[1]=j,k))()"`;
+exports[`seroval > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],j],j[0]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],,],j[\\"0\\"]=h,k[1]=j,k))()"`;
+exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[\\"0\\"]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={\\"0\\":j={}},,],j[\\"0\\"]=h,k[1]=j,k))()"`;
+exports[`seroval > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={\\"0\\":j={}},j],j[\\"0\\"]=h,k))()"`;
 
 exports[`seroval > self cyclic references > supports Arrays 1`] = `"(h=>(h=[,,],h[1]=h[0]=h,h))()"`;
 
-exports[`seroval > self cyclic references > supports Maps 1`] = `"(h=>(h=new Map(),h.set(h,h),h))()"`;
+exports[`seroval > self cyclic references > supports Maps 1`] = `"(h=>(h=new Map,h.set(h,h),h))()"`;
 
 exports[`seroval > self cyclic references > supports Objects 1`] = `"(h=>(h={},h.b=h.a=h,h))()"`;
 
-exports[`seroval > self cyclic references > supports Sets 1`] = `"(h=>(h=new Set(),h.add(h),h))()"`;
+exports[`seroval > self cyclic references > supports Sets 1`] = `"(h=>(h=new Set,h.add(h),h))()"`;
 
 exports[`seroval > supports Arrays 1`] = `"[1,2,3]"`;
 
