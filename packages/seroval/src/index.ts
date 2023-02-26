@@ -165,7 +165,10 @@ function lookupRefs(current: ServerValue) {
         lookupRefs(value);
       }
     }
-  } else if (current.constructor === Object && insertRef(current)) {
+  } else if (
+    (current.constructor === Object || current.constructor == null)
+    && insertRef(current)
+  ) {
     forEach(Object.values(current), lookupRefs);
   }
 }
