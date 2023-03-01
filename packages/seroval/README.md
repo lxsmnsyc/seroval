@@ -148,6 +148,10 @@ The following values are the only values accepted by `seroval`:
   - `Set`
 - Cyclic references (both self and mutual)
 
+## Sponsors
+
+![Sponsors](https://github.com/lxsmnsyc/sponsors/blob/main/sponsors.svg?raw=true)
+
 ## License
 
 MIT © [lxsmnsyc](https://github.com/lxsmnsyc)
