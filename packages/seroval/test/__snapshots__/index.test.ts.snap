@@ -2,9 +2,9 @@
 
 exports[`seroval > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],j],j[0]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[\\"0\\"]=h,k))()"`;
+exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[0]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={\\"0\\":j={}},j],j[\\"0\\"]=h,k))()"`;
+exports[`seroval > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={0:j={}},j],j[0]=h,k))()"`;
 
 exports[`seroval > self cyclic references > supports Arrays 1`] = `"(h=>(h=[,,],h[1]=h[0]=h,h))()"`;
 
@@ -15,6 +15,8 @@ exports[`seroval > self cyclic references > supports Objects 1`] = `"(h=>(h={},h
 exports[`seroval > self cyclic references > supports Sets 1`] = `"(h=>(h=new Set,h.add(h),h))()"`;
 
 exports[`seroval > supports Arrays 1`] = `"[1,2,3]"`;
+
+exports[`seroval > supports Date 1`] = `"new Date(\\"2023-03-06T08:42:37.767Z\\")"`;
 
 exports[`seroval > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
 

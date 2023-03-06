@@ -21,7 +21,7 @@ pnpm add seroval
 ## Usage
 
 ```js
-import seroval from 'seroval';
+import { serialize } from 'seroval';
 
 const object = {
   number: [Math.random(), -0, NaN, Infinity, -Infinity],
@@ -52,7 +52,7 @@ object.array.push(object.map);
 object.map.set('mutual', object.set);
 object.set.add(object.array);
 
-const result = seroval(object);
+const result = serialize(object);
 ```
 
 Output (as a string):
@@ -82,7 +82,7 @@ Output (as a string):
 ### Mutual cyclic example
 
 ```js
-import seroval from 'seroval';
+import { serialize } from 'seroval';
 
 const a = new Map([['name', 'a']]);
 const b = new Map([['name', 'b']]);
@@ -96,7 +96,7 @@ d.set('right', b);
 a.set('children', [c, d]);
 b.set('children', [c, d]);
 
-const result = seroval({ a, b, c, d });
+const result = serialize({ a, b, c, d });
 ```
 
 Output (as a string):
@@ -124,6 +124,32 @@ Output (as a string):
 }, o[0] = j, j.set("left", h), m.set("left", h).set("right", k), q))()
 ```
 
+## Deserialization
+
+```js
+import { serialize, deserialize } from 'seroval';
+
+const value = undefined;
+console.log(deserialize(serialize(value)) === value);
+```
+
+## Promise serialization
+
+`seroval` allows Promise serialization through `serializeAsync`.
+
+```js
+import { serializeAsync } from 'seroval';
+
+const value = Promise.resolve(100);
+
+const result = await serializeAsync(value); // "Promise.resolve(100)"
+
+console.log(await deserialize(result)); // 100
+```
+
+> **Note**
+> `seroval` can only serialize the resolved value and so the output will always be using `Promise.resolve`. If the Promise fulfills with rejection, the rejected value is thrown before serialization happens.
+
 ## Supports
 
 The following values are the only values accepted by `seroval`:
@@ -146,6 +172,7 @@ The following values are the only values accepted by `seroval`:
   - `Date`
   - `Map`
   - `Set`
+- `Promise` (with `serializeAsync`)
 - Cyclic references (both self and mutual)
 
 ## Sponsors

@@ -1,0 +1,37 @@
+// Vitest Snapshot v1
+
+exports[`serializeAsync > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[Promise.resolve(j=[Promise.resolve().then(()=>h)])],j],k))()"`;
+
+exports[`serializeAsync > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[Promise.resolve(j={0:Promise.resolve().then(()=>h)})],j],k))()"`;
+
+exports[`serializeAsync > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={0:Promise.resolve(j={0:Promise.resolve().then(()=>h)})},j],k))()"`;
+
+exports[`serializeAsync > self cyclic references > supports Arrays 1`] = `"(h=>(h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)],h))()"`;
+
+exports[`serializeAsync > self cyclic references > supports Maps 1`] = `"(h=>(h=new Map([[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]]),h))()"`;
+
+exports[`serializeAsync > self cyclic references > supports Objects 1`] = `"(h=>(h={a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)},h))()"`;
+
+exports[`serializeAsync > self cyclic references > supports Sets 1`] = `"(h=>(h=new Set([Promise.resolve().then(()=>h)]),h))()"`;
+
+exports[`serializeAsync > supports Arrays 1`] = `"Promise.resolve([1,2,3])"`;
+
+exports[`serializeAsync > supports Date 1`] = `"Promise.resolve(new Date(\\"2023-03-06T08:42:47.665Z\\"))"`;
+
+exports[`serializeAsync > supports Map 1`] = `"Promise.resolve(new Map([[1,2],[3,4]]))"`;
+
+exports[`serializeAsync > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
+
+exports[`serializeAsync > supports Objects 1`] = `"Promise.resolve({hello:\\"world\\"})"`;
+
+exports[`serializeAsync > supports RegExp 1`] = `"Promise.resolve(/[a-z0-9]+/i)"`;
+
+exports[`serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,2,3]))"`;
+
+exports[`serializeAsync > supports array holes 1`] = `"Promise.resolve([,,,,,,,,,,])"`;
+
+exports[`serializeAsync > supports bigint 1`] = `"Promise.resolve(BigInt(\\"9007199254740991\\"))"`;
+
+exports[`serializeAsync > supports strings 1`] = `"Promise.resolve(\\"\\\\\\"hello\\\\\\"\\")"`;
+
+exports[`serializeAsync > supports strings 2`] = `"Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
