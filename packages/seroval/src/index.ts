@@ -14,10 +14,11 @@ import { lookupRefs, traverseSync } from './sync';
 import {
   AsyncServerValue,
   NonPrimitiveServerValue,
+  PrimitiveValue,
   ServerValue,
 } from './types';
 
-export { AsyncServerValue, ServerValue };
+export { AsyncServerValue, ServerValue, PrimitiveValue };
 
 function finalize<T extends ServerValue | AsyncServerValue>(
   ctx: SerializationContext,
@@ -86,7 +87,7 @@ export async function serializeAsync(source: AsyncServerValue) {
   return finalize(ctx, source, result);
 }
 
-export function deserialize<T extends ServerValue>(source: string): ServerValue {
+export function deserialize<T extends AsyncServerValue>(source: string): T {
   // eslint-disable-next-line no-eval
   return (0, eval)(source) as T;
 }
