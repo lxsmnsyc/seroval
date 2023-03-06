@@ -1,6 +1,5 @@
 import { forEach, join } from './array';
 import getIdentifier from './get-identifier';
-import quote from './quote';
 import { AsyncServerValue } from './types';
 
 export const EMPTY_SET = 'new Set';
@@ -191,11 +190,11 @@ export function createObjectIdentifierAssign(
   createAssignment(ctx, `${getRefParam(ctx, ref)}.${key}`, value);
 }
 
-export function createObjectStringAssign(
+export function createObjectComputedAssign(
   ctx: SerializationContext,
   ref: number,
   key: string,
   value: string,
 ) {
-  createAssignment(ctx, `${getRefParam(ctx, ref)}[${quote(key)}]`, value);
+  createAssignment(ctx, `${getRefParam(ctx, ref)}[${key}]`, value);
 }

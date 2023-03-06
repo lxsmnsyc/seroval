@@ -2,9 +2,9 @@
 
 exports[`seroval > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],j],j[0]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[\\"0\\"]=h,k))()"`;
+exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[0]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={\\"0\\":j={}},j],j[\\"0\\"]=h,k))()"`;
+exports[`seroval > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={0:j={}},j],j[0]=h,k))()"`;
 
 exports[`seroval > self cyclic references > supports Arrays 1`] = `"(h=>(h=[,,],h[1]=h[0]=h,h))()"`;
 

@@ -2,9 +2,9 @@
 
 exports[`serializeAsync > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[Promise.resolve(j=[Promise.resolve().then(()=>h)])],j],k))()"`;
 
-exports[`serializeAsync > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[Promise.resolve(j={\\"0\\":Promise.resolve().then(()=>h)})],j],k))()"`;
+exports[`serializeAsync > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[Promise.resolve(j={0:Promise.resolve().then(()=>h)})],j],k))()"`;
 
-exports[`serializeAsync > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={\\"0\\":Promise.resolve(j={\\"0\\":Promise.resolve().then(()=>h)})},j],k))()"`;
+exports[`serializeAsync > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={0:Promise.resolve(j={0:Promise.resolve().then(()=>h)})},j],k))()"`;
 
 exports[`serializeAsync > self cyclic references > supports Arrays 1`] = `"(h=>(h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)],h))()"`;
 

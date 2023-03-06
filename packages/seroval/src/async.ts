@@ -14,7 +14,7 @@ import {
   createArrayAssign,
   EMPTY_ARRAY,
   createObjectIdentifierAssign,
-  createObjectStringAssign,
+  createObjectComputedAssign,
 } from './context';
 import isPrimitive from './is-primitive';
 import isPromise from './is-promise';
@@ -194,17 +194,25 @@ export async function traverseAsync(
       const check = Number(key);
       // Test if key is a valid number or JS identifier
       // so that we don't have to serialize the key and wrap with brackets
-      if (Number.isNaN(check) || /^([$A-Z_][0-9A-Z_$]*)$/i.test(key)) {
+      if (
+        check >= 0
+        || (Number.isNaN(check) && /^([$A-Z_][0-9A-Z_$]*)$/i.test(key))
+      ) {
         if (ctx.stack.has(value)) {
+          const ref = getCurrentRef();
           const refParam = getRefParam(ctx, createRef(ctx, value));
-          createObjectIdentifierAssign(ctx, getCurrentRef(), key, refParam);
+          if (Number.isNaN(check)) {
+            createObjectIdentifierAssign(ctx, ref, key, refParam);
+          } else {
+            createObjectComputedAssign(ctx, ref, key, refParam);
+          }
         } else {
           const valueResult = await traverseAsync(ctx, value as AsyncServerValue);
           values.push(`${key}:${valueResult}`);
         }
       } else if (ctx.stack.has(value)) {
         const refParam = getRefParam(ctx, createRef(ctx, value));
-        createObjectStringAssign(ctx, getCurrentRef(), key, refParam);
+        createObjectComputedAssign(ctx, getCurrentRef(), quote(key), refParam);
       } else {
         const valueResult = await traverseAsync(ctx, value as AsyncServerValue);
         values.push(`${quote(key)}:${valueResult}`);
