@@ -1,5 +1,4 @@
 /* eslint-disable no-await-in-loop */
-import { join } from './array';
 import { lookupRefsAsync, traverseAsync } from './async';
 import {
   SerializationContext,
@@ -31,7 +30,7 @@ function finalize<T extends ServerValue | AsyncServerValue>(
     const index = getRefParam(ctx, createRef(ctx, source));
     const patches = resolvePatches(ctx);
     const params = ctx.vars.length > 1
-      ? `(${join(ctx.vars, ',')})`
+      ? `(${ctx.vars.join(',')})`
       : ctx.vars[0];
     // Source is probably already assigned
     if (result.startsWith(`${index}=`)) {

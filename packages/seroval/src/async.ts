@@ -1,5 +1,4 @@
 /* eslint-disable no-await-in-loop */
-import { join } from './array';
 import {
   SerializationContext,
   insertRef,
@@ -123,7 +122,7 @@ export async function traverseAsync(
       }
       ctx.stack.delete(current);
 
-      return processRef(values.length ? `new Set([${join(values, ',')}])` : EMPTY_SET);
+      return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
     }
     return EMPTY_SET;
   }
@@ -154,7 +153,7 @@ export async function traverseAsync(
         }
       }
       ctx.stack.delete(current);
-      return processRef(values.length ? `new Map([${join(values, ',')}])` : EMPTY_MAP);
+      return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
     }
     return EMPTY_MAP;
   }
@@ -219,7 +218,7 @@ export async function traverseAsync(
       }
     }
     ctx.stack.delete(current);
-    const value = `{${join(values, ',')}}`;
+    const value = `{${values.join(',')}}`;
     if (empty) {
       return processRef(`Object.assign(Object.create(null),${value})`);
     }

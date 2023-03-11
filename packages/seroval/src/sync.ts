@@ -1,4 +1,3 @@
-import { forEach, join } from './array';
 import {
   SerializationContext,
   insertRef,
@@ -26,9 +25,9 @@ export function lookupRefs(ctx: SerializationContext, current: ServerValue) {
   }
   if (Array.isArray(current)) {
     if (insertRef(ctx, current)) {
-      forEach(current, (value) => {
+      for (const value of current) {
         lookupRefs(ctx, value);
-      });
+      }
     }
   } else if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
     if (insertRef(ctx, current)) {
@@ -47,9 +46,9 @@ export function lookupRefs(ctx: SerializationContext, current: ServerValue) {
     (current.constructor === Object || current.constructor == null)
     && insertRef(ctx, current)
   ) {
-    forEach(Object.values(current), (value) => {
+    for (const value of Object.values(current)) {
       lookupRefs(ctx, value);
-    });
+    }
   }
 }
 
@@ -100,7 +99,7 @@ export function traverseSync(
       }
       ctx.stack.delete(current);
 
-      return processRef(values.length ? `new Set([${join(values, ',')}])` : EMPTY_SET);
+      return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
     }
     return EMPTY_SET;
   }
@@ -127,7 +126,7 @@ export function traverseSync(
         }
       }
       ctx.stack.delete(current);
-      return processRef(values.length ? `new Map([${join(values, ',')}])` : EMPTY_MAP);
+      return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
     }
     return EMPTY_MAP;
   }
@@ -136,7 +135,8 @@ export function traverseSync(
       let values = '';
 
       ctx.stack.add(current);
-      forEach(current, (item, i) => {
+      for (let i = 0, len = current.length; i < len; i++) {
+        const item = current[i];
         if (i in current) {
           if (ctx.stack.has(item)) {
             const refParam = getRefParam(ctx, createRef(ctx, item));
@@ -151,7 +151,7 @@ export function traverseSync(
         } else {
           values += ',';
         }
-      });
+      }
       ctx.stack.delete(current);
       return processRef(`[${values}]`);
     }
@@ -162,7 +162,7 @@ export function traverseSync(
     const values: string[] = [];
 
     ctx.stack.add(current);
-    forEach(Object.entries(current), ([key, value]) => {
+    for (const [key, value] of Object.entries(current)) {
       const check = Number(key);
       // Test if key is a valid number or JS identifier
       // so that we don't have to serialize the key and wrap with brackets
@@ -187,9 +187,9 @@ export function traverseSync(
       } else {
         values.push(`${quote(key)}:${traverseSync(ctx, value)}`);
       }
-    });
+    }
     ctx.stack.delete(current);
-    const value = `{${join(values, ',')}}`;
+    const value = `{${values.join(',')}}`;
     if (empty) {
       return processRef(`Object.assign(Object.create(null),${value})`);
     }

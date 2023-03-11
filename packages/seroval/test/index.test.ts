@@ -72,7 +72,7 @@ describe('seroval', () => {
   it('supports Date', () => {
     const example = new Date();
     const result = seroval(example);
-    expect(result).toMatchSnapshot();
+    // expect(result).toMatchSnapshot();
     const back = deserialize<Date>(result);
     expect(back).toBeInstanceOf(Date);
     expect(back.toISOString()).toBe(example.toISOString());

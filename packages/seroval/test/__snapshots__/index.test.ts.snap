@@ -16,8 +16,6 @@ exports[`seroval > self cyclic references > supports Sets 1`] = `"(h=>(h=new Set
 
 exports[`seroval > supports Arrays 1`] = `"[1,2,3]"`;
 
-exports[`seroval > supports Date 1`] = `"new Date(\\"2023-03-06T08:42:37.767Z\\")"`;
-
 exports[`seroval > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
 
 exports[`seroval > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
@@ -25,8 +23,6 @@ exports[`seroval > supports Object.create(null) 1`] = `"Object.assign(Object.cre
 exports[`seroval > supports Objects 1`] = `"({hello:\\"world\\"})"`;
 
 exports[`seroval > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
-
-exports[`seroval > supports Set 1`] = `"new Set([1,2,3])"`;
 
 exports[`seroval > supports array holes 1`] = `"[,,,,,,,,,,]"`;
 

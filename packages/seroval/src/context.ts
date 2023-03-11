@@ -1,4 +1,3 @@
-import { forEach, join } from './array';
 import getIdentifier from './get-identifier';
 import { AsyncServerValue } from './types';
 
@@ -51,15 +50,14 @@ export function resolveAssignments(ctx: SerializationContext) {
     const result: Record<string, string> = {};
 
     // Merge all assignments with similar source
-    forEach(ctx.assignments, ([source, value]) => {
-      if (value in result) {
-        result[value] = `${source}=${result[value]}`;
-      } else {
-        result[value] = `${source}=${value}`;
-      }
-    });
+    for (const [source, value] of ctx.assignments) {
+      const suffix = value in result
+        ? result[value]
+        : value;
+      result[value] = `${source}=${suffix}`;
+    }
 
-    return `${join(Object.values(result), ',')},`;
+    return `${Object.values(result).join(',')},`;
   }
   return '';
 }
@@ -69,15 +67,14 @@ export function resolveMapSets(ctx: SerializationContext) {
     const result: Record<string, string> = {};
 
     // Merge all assignments with similar source
-    forEach(ctx.mapSets, ([source, key, value]) => {
-      if (source in result) {
-        result[source] = `${result[source]}.set(${key},${value})`;
-      } else {
-        result[source] = `${source}.set(${key},${value})`;
-      }
-    });
+    for (const [source, key, value] of ctx.mapSets) {
+      const prefix = source in result
+        ? result[source]
+        : source;
+      result[source] = `${prefix}.set(${key},${value})`;
+    }
 
-    return `${join(Object.values(result), ',')},`;
+    return `${Object.values(result).join(',')},`;
   }
   return '';
 }
@@ -87,15 +84,14 @@ export function resolveSetAdds(ctx: SerializationContext) {
     const result: Record<string, string> = {};
 
     // Merge all assignments with similar source
-    forEach(ctx.setAdds, ([source, value]) => {
-      if (source in result) {
-        result[source] = `${result[source]}.add(${value})`;
-      } else {
-        result[source] = `${source}.add(${value})`;
-      }
-    });
+    for (const [source, value] of ctx.setAdds) {
+      const prefix = source in result
+        ? result[source]
+        : source;
+      result[source] = `${prefix}.add(${value})`;
+    }
 
-    return `${join(Object.values(result), ',')},`;
+    return `${Object.values(result).join(',')},`;
   }
   return '';
 }
