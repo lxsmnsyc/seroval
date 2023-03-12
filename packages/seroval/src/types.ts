@@ -12,14 +12,18 @@ export type PrimitiveValue =
 export type ServerValue =
   | PrimitiveValue
   | Array<ServerValue>
+  | readonly ServerValue[]
   | { [key: string | number]: ServerValue }
+  | { readonly [key: string | number]: ServerValue }
   | Set<ServerValue>
   | Map<ServerValue, ServerValue>;
 
 export type AsyncServerValue =
   | PrimitiveValue
   | Array<AsyncServerValue>
+  | readonly AsyncServerValue[]
   | { [key: string | number]: AsyncServerValue }
+  | { readonly [key: string | number]: AsyncServerValue }
   | Set<AsyncServerValue>
   | Map<AsyncServerValue, AsyncServerValue>
   | PromiseLike<AsyncServerValue>;
