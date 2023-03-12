@@ -5,9 +5,7 @@ export default function isPrimitive(current: unknown): current is PrimitiveValue
     return true;
   }
   const type = typeof current;
-  const classConst = current.constructor;
   return type === 'number'
     || type === 'string'
-    || type === 'bigint'
-    || classConst === Date;
+    || type === 'bigint';
 }

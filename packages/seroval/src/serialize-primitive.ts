@@ -25,8 +25,5 @@ export default function serializePrimitive(value: PrimitiveValue): string {
   if (typeof value === 'string') {
     return quote(value);
   }
-  if (value.constructor === Date) {
-    return `new Date("${value.toISOString()}")`;
-  }
   return String(value);
 }

@@ -27,7 +27,9 @@ export async function lookupRefsAsync(
   if (isPrimitive(current)) {
     return;
   }
-  if (constructorCheck<RegExp>(current, RegExp)) {
+  if (constructorCheck<Date>(current, Date)) {
+    insertRef(ctx, current);
+  } else if (constructorCheck<RegExp>(current, RegExp)) {
     insertRef(ctx, current);
   } else if (isPromise(current)) {
     if (insertRef(ctx, current)) {
@@ -106,6 +108,9 @@ export async function traverseAsync(
       ctx.stack.pop();
       return processRef(result);
     });
+  }
+  if (constructorCheck<Date>(current, Date)) {
+    return processRef(`new Date("${current.toISOString()}")`);
   }
   if (constructorCheck<RegExp>(current, RegExp)) {
     return processRef(String(current));

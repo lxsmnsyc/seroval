@@ -22,7 +22,9 @@ export function lookupRefs(ctx: SerializationContext, current: ServerValue) {
   if (isPrimitive(current)) {
     return;
   }
-  if (constructorCheck<RegExp>(current, RegExp)) {
+  if (constructorCheck<Date>(current, Date)) {
+    insertRef(ctx, current);
+  } else if (constructorCheck<RegExp>(current, RegExp)) {
     insertRef(ctx, current);
   } else if (Array.isArray(current)) {
     if (insertRef(ctx, current)) {
@@ -83,6 +85,9 @@ export function traverseSync(
       return assignRef(ctx, refResult, value);
     }
     return value;
+  }
+  if (constructorCheck<Date>(current, Date)) {
+    return processRef(`new Date("${current.toISOString()}")`);
   }
   if (constructorCheck<RegExp>(current, RegExp)) {
     return processRef(String(current));
