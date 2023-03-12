@@ -15,15 +15,15 @@ export default function serializePrimitive(value: PrimitiveValue): string {
   if (value === null) {
     return 'null';
   }
-  // negative 0 isn't the same as 0
-  if (Object.is(value, -0)) {
-    return '-0';
-  }
   if (typeof value === 'bigint') {
     return `BigInt("${value}")`;
   }
   if (typeof value === 'string') {
     return quote(value);
+  }
+  // negative 0 isn't the same as 0
+  if (Object.is(value, -0)) {
+    return '-0';
   }
   return String(value);
 }

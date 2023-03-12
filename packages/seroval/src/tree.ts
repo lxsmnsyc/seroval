@@ -4,6 +4,7 @@ import isPromise from './is-promise';
 import quote from './quote';
 import { AsyncServerValue, PrimitiveValue, ServerValue } from './types';
 import getIdentifier from './get-identifier';
+import serializePrimitive from './serialize-primitive';
 
 export const EMPTY_SET = 'new Set';
 export const EMPTY_MAP = 'new Map';
@@ -252,12 +253,7 @@ function createObjectComputedAssign(
 }
 
 type SerovalNode =
-  | [type: 'null']
-  | [type: 'undefined']
-  | [type: 'boolean', value: boolean]
-  | [type: 'bigint', value: bigint]
-  | [type: 'string', value: string]
-  | [type: 'number', value: number]
+  | [type: 'primitive', value: PrimitiveValue]
   | [type: 'reference', value: number]
   | [type: 'Date', value: Date, id: number]
   | [type: 'RegExp', value: RegExp, id: number]
@@ -268,31 +264,12 @@ type SerovalNode =
   | [type: 'NullConstructor', value: Record<string, SerovalNode>, id: number]
   | [type: 'Promise', value: SerovalNode, id: number];
 
-export function generatePrimitiveNode(current: PrimitiveValue): SerovalNode {
-  if (current === null) {
-    return ['null'];
-  }
-  if (current === undefined) {
-    return ['undefined'];
-  }
-  if (typeof current === 'boolean') {
-    return ['boolean', current];
-  }
-  if (typeof current === 'number') {
-    return ['number', current];
-  }
-  if (typeof current === 'string') {
-    return ['string', current];
-  }
-  return ['bigint', current];
-}
-
 export function generateTreeSync(
   ctx: SerializationContext,
   current: ServerValue,
 ): SerovalNode {
   if (isPrimitive(current)) {
-    return generatePrimitiveNode(current);
+    return ['primitive', current];
   }
   const ref = ctx.refs.has(current);
   if (ref) {
@@ -349,7 +326,7 @@ export async function generateTreeAsync(
   current: AsyncServerValue,
 ): Promise<SerovalNode> {
   if (isPrimitive(current)) {
-    return generatePrimitiveNode(current);
+    return ['primitive', current];
   }
   const ref = ctx.refs.has(current);
   if (ref) {
@@ -408,26 +385,8 @@ export function serializeTree(
   ctx: SerializationContext,
   [type, value, id]: SerovalNode,
 ): string {
-  if (type === 'undefined') {
-    return 'void 0';
-  }
-  if (type === 'null') {
-    return 'null';
-  }
-  if (type === 'boolean') {
-    return value ? '!0' : '!1';
-  }
-  if (type === 'string') {
-    return quote(value);
-  }
-  if (type === 'bigint') {
-    return `BigInt("${value}")`;
-  }
-  if (type === 'number') {
-    if (Object.is(value, -0)) {
-      return '-0';
-    }
-    return String(value);
+  if (type === 'primitive') {
+    return serializePrimitive(value);
   }
   if (type === 'reference') {
     return getRefParam(ctx, value);
