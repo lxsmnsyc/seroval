@@ -27,6 +27,7 @@ export type ServerValue =
   | CommonServerValue
   | Array<ServerValue>
   | readonly ServerValue[]
+  | Iterable<ServerValue>
   | { [key: string | number]: ServerValue }
   | { readonly [key: string | number]: ServerValue }
   | Set<ServerValue>
@@ -36,6 +37,7 @@ export type AsyncServerValue =
   | CommonServerValue
   | Array<AsyncServerValue>
   | readonly AsyncServerValue[]
+  | Iterable<AsyncServerValue>
   | { [key: string | number]: AsyncServerValue }
   | { readonly [key: string | number]: AsyncServerValue }
   | Set<AsyncServerValue>

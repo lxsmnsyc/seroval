@@ -94,6 +94,25 @@ describe('serialize', () => {
     expect(back[0]).toBe(undefined);
     expect(back.length).toBe(example.length);
   });
+  it('supports Iterables', () => {
+    const example = {
+      title: 'Hello World',
+      * [Symbol.iterator]() {
+        yield 1;
+        yield 2;
+        yield 3;
+      },
+    };
+    const result = serialize(example);
+    expect(result).toMatchSnapshot();
+    const back = deserialize<Iterable<number> & { title: string }>(result);
+    expect(back.title).toBe(example.title);
+    expect(Symbol.iterator in back).toBeTruthy();
+    const iterator = back[Symbol.iterator]();
+    expect(iterator.next().value).toBe(1);
+    expect(iterator.next().value).toBe(2);
+    expect(iterator.next().value).toBe(3);
+  });
   describe('Error', () => {
     it('supports Error.prototype.name', () => {
       const a = new Error('A');

@@ -22,6 +22,8 @@ exports[`serialize > self cyclic references > supports Sets 1`] = `"(h=>(h=new S
 
 exports[`serialize > supports Arrays 1`] = `"[1,2,3]"`;
 
+exports[`serialize > supports Iterables 1`] = `"(Object.assign({[Symbol.iterator]:()=>[1,2,3].values()},{title:\\"Hello World\\"}))"`;
+
 exports[`serialize > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
 
 exports[`serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
