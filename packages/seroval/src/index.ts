@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import isPrimitive from './is-primitive';
+import { isPrimitive } from './checks';
 import serializePrimitive from './serialize-primitive';
 import {
   createRef,
