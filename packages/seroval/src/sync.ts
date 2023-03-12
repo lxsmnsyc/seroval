@@ -10,14 +10,13 @@ import {
   createMapSet,
   EMPTY_MAP,
   createArrayAssign,
-  EMPTY_ARRAY,
   createObjectIdentifierAssign,
   createObjectComputedAssign,
 } from './context';
 import isPrimitive from './is-primitive';
 import quote from './quote';
 import serializePrimitive from './serialize-primitive';
-import { AsyncServerValue, ServerValue } from './types';
+import { ServerValue } from './types';
 
 export function lookupRefs(ctx: SerializationContext, current: ServerValue) {
   if (isPrimitive(current)) {
@@ -29,13 +28,13 @@ export function lookupRefs(ctx: SerializationContext, current: ServerValue) {
         lookupRefs(ctx, value);
       }
     }
-  } else if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
+  } else if (constructorCheck<Set<ServerValue>>(current, Set)) {
     if (insertRef(ctx, current)) {
       for (const item of current.keys()) {
         lookupRefs(ctx, item);
       }
     }
-  } else if (constructorCheck<Map<AsyncServerValue, AsyncServerValue>>(current, Map)) {
+  } else if (constructorCheck<Map<ServerValue, ServerValue>>(current, Map)) {
     if (insertRef(ctx, current)) {
       for (const [key, value] of current.entries()) {
         lookupRefs(ctx, key);
@@ -47,7 +46,7 @@ export function lookupRefs(ctx: SerializationContext, current: ServerValue) {
     && insertRef(ctx, current)
   ) {
     for (const value of Object.values(current)) {
-      lookupRefs(ctx, value);
+      lookupRefs(ctx, value as ServerValue);
     }
   }
 }
@@ -85,77 +84,68 @@ export function traverseSync(
   }
   // Transform Set
   if (constructorCheck<Set<ServerValue>>(current, Set)) {
-    if (current.size) {
-      const values: string[] = [];
+    const values: string[] = [];
 
-      ctx.stack.add(current);
-      for (const value of current.keys()) {
-        if (ctx.stack.has(value)) {
-          // Received a ref, this might be a recursive ref, defer an assignment
-          createSetAdd(ctx, getCurrentRef(), getRefParam(ctx, createRef(ctx, value)));
-        } else {
-          values.push(traverseSync(ctx, value));
-        }
+    ctx.stack.add(current);
+    for (const value of current.keys()) {
+      if (ctx.stack.has(value)) {
+        // Received a ref, this might be a recursive ref, defer an assignment
+        createSetAdd(ctx, getCurrentRef(), getRefParam(ctx, createRef(ctx, value)));
+      } else {
+        values.push(traverseSync(ctx, value));
       }
-      ctx.stack.delete(current);
-
-      return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
     }
-    return EMPTY_SET;
+    ctx.stack.delete(current);
+
+    return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
   }
   if (constructorCheck<Map<ServerValue, ServerValue>>(current, Map)) {
-    if (current.size) {
-      const values: string[] = [];
+    const values: string[] = [];
 
-      ctx.stack.add(current);
-      for (const [key, value] of current.entries()) {
-        if (ctx.stack.has(key)) {
-          const ref = getCurrentRef();
-          const keyRef = getRefParam(ctx, createRef(ctx, key));
-          if (ctx.stack.has(value)) {
-            const valueRef = getRefParam(ctx, createRef(ctx, value));
-            createMapSet(ctx, ref, keyRef, valueRef);
-          } else {
-            createMapSet(ctx, ref, keyRef, traverseSync(ctx, value));
-          }
-        } else if (ctx.stack.has(value)) {
+    ctx.stack.add(current);
+    for (const [key, value] of current.entries()) {
+      if (ctx.stack.has(key)) {
+        const ref = getCurrentRef();
+        const keyRef = getRefParam(ctx, createRef(ctx, key));
+        if (ctx.stack.has(value)) {
           const valueRef = getRefParam(ctx, createRef(ctx, value));
-          createMapSet(ctx, getCurrentRef(), traverseSync(ctx, key), valueRef);
+          createMapSet(ctx, ref, keyRef, valueRef);
         } else {
-          values.push(`[${traverseSync(ctx, key)},${traverseSync(ctx, value)}]`);
+          createMapSet(ctx, ref, keyRef, traverseSync(ctx, value));
         }
+      } else if (ctx.stack.has(value)) {
+        const valueRef = getRefParam(ctx, createRef(ctx, value));
+        createMapSet(ctx, getCurrentRef(), traverseSync(ctx, key), valueRef);
+      } else {
+        values.push(`[${traverseSync(ctx, key)},${traverseSync(ctx, value)}]`);
       }
-      ctx.stack.delete(current);
-      return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
     }
-    return EMPTY_MAP;
+    ctx.stack.delete(current);
+    return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
   }
   if (Array.isArray(current)) {
-    if (current.length) {
-      let values = '';
+    let values = '';
 
-      ctx.stack.add(current);
-      for (let i = 0, len = current.length; i < len; i++) {
-        const item = current[i];
-        if (i in current) {
-          if (ctx.stack.has(item)) {
-            const refParam = getRefParam(ctx, createRef(ctx, item));
-            createArrayAssign(ctx, getCurrentRef(), i, refParam);
-            values += ',';
-          } else {
-            values += traverseSync(ctx, item);
-            if (i < current.length - 1) {
-              values += ',';
-            }
-          }
-        } else {
+    ctx.stack.add(current);
+    for (let i = 0, len = current.length; i < len; i++) {
+      const item = current[i];
+      if (i in current) {
+        if (ctx.stack.has(item)) {
+          const refParam = getRefParam(ctx, createRef(ctx, item));
+          createArrayAssign(ctx, getCurrentRef(), i, refParam);
           values += ',';
+        } else {
+          values += traverseSync(ctx, item);
+          if (i < current.length - 1) {
+            values += ',';
+          }
         }
+      } else {
+        values += ',';
       }
-      ctx.stack.delete(current);
-      return processRef(`[${values}]`);
     }
-    return EMPTY_ARRAY;
+    ctx.stack.delete(current);
+    return processRef(`[${values}]`);
   }
   const empty = current.constructor == null;
   if (current.constructor === Object || empty) {
@@ -179,13 +169,13 @@ export function traverseSync(
             createObjectIdentifierAssign(ctx, ref, key, refParam);
           }
         } else {
-          values.push(`${key}:${traverseSync(ctx, value)}`);
+          values.push(`${key}:${traverseSync(ctx, value as ServerValue)}`);
         }
       } else if (ctx.stack.has(value)) {
         const refParam = getRefParam(ctx, createRef(ctx, value));
         createObjectComputedAssign(ctx, getCurrentRef(), quote(key), refParam);
       } else {
-        values.push(`${quote(key)}:${traverseSync(ctx, value)}`);
+        values.push(`${quote(key)}:${traverseSync(ctx, value as ServerValue)}`);
       }
     }
     ctx.stack.delete(current);

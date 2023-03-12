@@ -11,7 +11,6 @@ import {
   createMapSet,
   EMPTY_MAP,
   createArrayAssign,
-  EMPTY_ARRAY,
   createObjectIdentifierAssign,
   createObjectComputedAssign,
 } from './context';
@@ -19,7 +18,7 @@ import isPrimitive from './is-primitive';
 import isPromise from './is-promise';
 import quote from './quote';
 import serializePrimitive from './serialize-primitive';
-import { ServerValue, AsyncServerValue } from './types';
+import { AsyncServerValue } from './types';
 
 export async function lookupRefsAsync(
   ctx: SerializationContext,
@@ -56,7 +55,7 @@ export async function lookupRefsAsync(
     && insertRef(ctx, current)
   ) {
     for (const value of Object.values(current)) {
-      await lookupRefsAsync(ctx, value);
+      await lookupRefsAsync(ctx, value as AsyncServerValue);
     }
   }
 }
@@ -108,81 +107,72 @@ export async function traverseAsync(
   }
   // Transform Set
   if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
-    if (current.size) {
-      const values: string[] = [];
+    const values: string[] = [];
 
-      ctx.stack.add(current);
-      for (const value of current.keys()) {
-        if (ctx.stack.has(value)) {
-          // Received a ref, this might be a recursive ref, defer an assignment
-          createSetAdd(ctx, getCurrentRef(), getRefParam(ctx, createRef(ctx, value)));
-        } else {
-          values.push(await traverseAsync(ctx, value));
-        }
+    ctx.stack.add(current);
+    for (const value of current.keys()) {
+      if (ctx.stack.has(value)) {
+        // Received a ref, this might be a recursive ref, defer an assignment
+        createSetAdd(ctx, getCurrentRef(), getRefParam(ctx, createRef(ctx, value)));
+      } else {
+        values.push(await traverseAsync(ctx, value));
       }
-      ctx.stack.delete(current);
-
-      return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
     }
-    return EMPTY_SET;
+    ctx.stack.delete(current);
+
+    return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
   }
-  if (constructorCheck<Map<ServerValue, ServerValue>>(current, Map)) {
-    if (current.size) {
-      const values: string[] = [];
+  if (constructorCheck<Map<AsyncServerValue, AsyncServerValue>>(current, Map)) {
+    const values: string[] = [];
 
-      ctx.stack.add(current);
-      for (const [key, value] of current.entries()) {
-        if (ctx.stack.has(key)) {
-          const ref = getCurrentRef();
-          const keyRef = getRefParam(ctx, createRef(ctx, key));
-          if (ctx.stack.has(value)) {
-            const valueRef = getRefParam(ctx, createRef(ctx, value));
-            createMapSet(ctx, ref, keyRef, valueRef);
-          } else {
-            const valueResult = await traverseAsync(ctx, value);
-            createMapSet(ctx, ref, keyRef, valueResult);
-          }
-        } else if (ctx.stack.has(value)) {
+    ctx.stack.add(current);
+    for (const [key, value] of current.entries()) {
+      if (ctx.stack.has(key)) {
+        const ref = getCurrentRef();
+        const keyRef = getRefParam(ctx, createRef(ctx, key));
+        if (ctx.stack.has(value)) {
           const valueRef = getRefParam(ctx, createRef(ctx, value));
-          const keyResult = await traverseAsync(ctx, key);
-          createMapSet(ctx, getCurrentRef(), keyResult, valueRef);
+          createMapSet(ctx, ref, keyRef, valueRef);
         } else {
-          const keyResult = await traverseAsync(ctx, key);
           const valueResult = await traverseAsync(ctx, value);
-          values.push(`[${keyResult},${valueResult}]`);
+          createMapSet(ctx, ref, keyRef, valueResult);
         }
+      } else if (ctx.stack.has(value)) {
+        const valueRef = getRefParam(ctx, createRef(ctx, value));
+        const keyResult = await traverseAsync(ctx, key);
+        createMapSet(ctx, getCurrentRef(), keyResult, valueRef);
+      } else {
+        const keyResult = await traverseAsync(ctx, key);
+        const valueResult = await traverseAsync(ctx, value);
+        values.push(`[${keyResult},${valueResult}]`);
       }
-      ctx.stack.delete(current);
-      return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
     }
-    return EMPTY_MAP;
+    ctx.stack.delete(current);
+    return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
   }
   if (Array.isArray(current)) {
-    if (current.length) {
-      let values = '';
+    let values = '';
 
-      ctx.stack.add(current);
-      for (let i = 0, len = current.length; i < len; i += 1) {
-        if (i in current) {
-          const item = current[i];
-          if (ctx.stack.has(item)) {
-            const refParam = getRefParam(ctx, createRef(ctx, item));
-            createArrayAssign(ctx, getCurrentRef(), i, refParam);
-            values += ',';
-          } else {
-            values += await traverseAsync(ctx, item);
-            if (i < current.length - 1) {
-              values += ',';
-            }
-          }
-        } else {
+    ctx.stack.add(current);
+    for (let i = 0, len = current.length; i < len; i += 1) {
+      if (i in current) {
+        const item = current[i];
+        if (ctx.stack.has(item)) {
+          const refParam = getRefParam(ctx, createRef(ctx, item));
+          createArrayAssign(ctx, getCurrentRef(), i, refParam);
           values += ',';
+        } else {
+          values += await traverseAsync(ctx, item);
+          if (i < current.length - 1) {
+            values += ',';
+          }
         }
+      } else {
+        values += ',';
       }
-      ctx.stack.delete(current);
-      return processRef(`[${values}]`);
     }
-    return EMPTY_ARRAY;
+    ctx.stack.delete(current);
+    return processRef(`[${values}]`);
   }
   const empty = current.constructor == null;
   if (current.constructor === Object || empty) {
