@@ -93,15 +93,15 @@ export async function traverseAsync(
   }
   if (isPromise(current)) {
     return current.then(async (value) => {
-      ctx.stack.add(current);
+      ctx.stack.push(current);
       let result: string;
-      if (ctx.stack.has(value)) {
+      if (ctx.stack.includes(value)) {
         const refParam = getRefParam(ctx, createRef(ctx, value));
         result = `Promise.resolve().then(()=>${refParam})`;
       } else {
         result = `Promise.resolve(${await traverseAsync(ctx, value)})`;
       }
-      ctx.stack.delete(current);
+      ctx.stack.pop();
       return processRef(result);
     });
   }
@@ -109,35 +109,35 @@ export async function traverseAsync(
   if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
     const values: string[] = [];
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (const value of current.keys()) {
-      if (ctx.stack.has(value)) {
+      if (ctx.stack.includes(value)) {
         // Received a ref, this might be a recursive ref, defer an assignment
         createSetAdd(ctx, getCurrentRef(), getRefParam(ctx, createRef(ctx, value)));
       } else {
         values.push(await traverseAsync(ctx, value));
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
 
     return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
   }
   if (constructorCheck<Map<AsyncServerValue, AsyncServerValue>>(current, Map)) {
     const values: string[] = [];
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (const [key, value] of current.entries()) {
-      if (ctx.stack.has(key)) {
+      if (ctx.stack.includes(key)) {
         const ref = getCurrentRef();
         const keyRef = getRefParam(ctx, createRef(ctx, key));
-        if (ctx.stack.has(value)) {
+        if (ctx.stack.includes(value)) {
           const valueRef = getRefParam(ctx, createRef(ctx, value));
           createMapSet(ctx, ref, keyRef, valueRef);
         } else {
           const valueResult = await traverseAsync(ctx, value);
           createMapSet(ctx, ref, keyRef, valueResult);
         }
-      } else if (ctx.stack.has(value)) {
+      } else if (ctx.stack.includes(value)) {
         const valueRef = getRefParam(ctx, createRef(ctx, value));
         const keyResult = await traverseAsync(ctx, key);
         createMapSet(ctx, getCurrentRef(), keyResult, valueRef);
@@ -147,17 +147,17 @@ export async function traverseAsync(
         values.push(`[${keyResult},${valueResult}]`);
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
     return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
   }
   if (Array.isArray(current)) {
     let values = '';
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (let i = 0, len = current.length; i < len; i += 1) {
       if (i in current) {
         const item = current[i];
-        if (ctx.stack.has(item)) {
+        if (ctx.stack.includes(item)) {
           const refParam = getRefParam(ctx, createRef(ctx, item));
           createArrayAssign(ctx, getCurrentRef(), i, refParam);
           values += ',';
@@ -171,14 +171,14 @@ export async function traverseAsync(
         values += ',';
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
     return processRef(`[${values}]`);
   }
   const empty = current.constructor == null;
   if (current.constructor === Object || empty) {
     const values: string[] = [];
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (const [key, value] of Object.entries(current)) {
       const check = Number(key);
       // Test if key is a valid number or JS identifier
@@ -187,7 +187,7 @@ export async function traverseAsync(
         check >= 0
         || (Number.isNaN(check) && /^([$A-Z_][0-9A-Z_$]*)$/i.test(key))
       ) {
-        if (ctx.stack.has(value)) {
+        if (ctx.stack.includes(value)) {
           const ref = getCurrentRef();
           const refParam = getRefParam(ctx, createRef(ctx, value));
           if (Number.isNaN(check)) {
@@ -199,7 +199,7 @@ export async function traverseAsync(
           const valueResult = await traverseAsync(ctx, value as AsyncServerValue);
           values.push(`${key}:${valueResult}`);
         }
-      } else if (ctx.stack.has(value)) {
+      } else if (ctx.stack.includes(value)) {
         const refParam = getRefParam(ctx, createRef(ctx, value));
         createObjectComputedAssign(ctx, getCurrentRef(), quote(key), refParam);
       } else {
@@ -207,7 +207,7 @@ export async function traverseAsync(
         values.push(`${quote(key)}:${valueResult}`);
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
     const value = `{${values.join(',')}}`;
     if (empty) {
       return processRef(`Object.assign(Object.create(null),${value})`);

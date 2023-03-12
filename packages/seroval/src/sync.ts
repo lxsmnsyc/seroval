@@ -86,51 +86,57 @@ export function traverseSync(
   if (constructorCheck<Set<ServerValue>>(current, Set)) {
     const values: string[] = [];
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (const value of current.keys()) {
-      if (ctx.stack.has(value)) {
+      if (ctx.stack.includes(value)) {
         // Received a ref, this might be a recursive ref, defer an assignment
         createSetAdd(ctx, getCurrentRef(), getRefParam(ctx, createRef(ctx, value)));
       } else {
         values.push(traverseSync(ctx, value));
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
 
     return processRef(values.length ? `new Set([${values.join(',')}])` : EMPTY_SET);
   }
   if (constructorCheck<Map<ServerValue, ServerValue>>(current, Map)) {
     const values: string[] = [];
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (const [key, value] of current.entries()) {
-      if (ctx.stack.has(key)) {
+      if (ctx.stack.includes(key)) {
         const ref = getCurrentRef();
         const keyRef = getRefParam(ctx, createRef(ctx, key));
-        if (ctx.stack.has(value)) {
+        if (ctx.stack.includes(value)) {
           const valueRef = getRefParam(ctx, createRef(ctx, value));
           createMapSet(ctx, ref, keyRef, valueRef);
         } else {
+          const parent = ctx.stack;
+          ctx.stack = [];
           createMapSet(ctx, ref, keyRef, traverseSync(ctx, value));
+          ctx.stack = parent;
         }
-      } else if (ctx.stack.has(value)) {
+      } else if (ctx.stack.includes(value)) {
         const valueRef = getRefParam(ctx, createRef(ctx, value));
+        const parent = ctx.stack;
+        ctx.stack = [];
         createMapSet(ctx, getCurrentRef(), traverseSync(ctx, key), valueRef);
+        ctx.stack = parent;
       } else {
         values.push(`[${traverseSync(ctx, key)},${traverseSync(ctx, value)}]`);
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
     return processRef(values.length ? `new Map([${values.join(',')}])` : EMPTY_MAP);
   }
   if (Array.isArray(current)) {
     let values = '';
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (let i = 0, len = current.length; i < len; i++) {
       const item = current[i];
       if (i in current) {
-        if (ctx.stack.has(item)) {
+        if (ctx.stack.includes(item)) {
           const refParam = getRefParam(ctx, createRef(ctx, item));
           createArrayAssign(ctx, getCurrentRef(), i, refParam);
           values += ',';
@@ -144,14 +150,14 @@ export function traverseSync(
         values += ',';
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
     return processRef(`[${values}]`);
   }
   const empty = current.constructor == null;
   if (current.constructor === Object || empty) {
     const values: string[] = [];
 
-    ctx.stack.add(current);
+    ctx.stack.push(current);
     for (const [key, value] of Object.entries(current)) {
       const check = Number(key);
       // Test if key is a valid number or JS identifier
@@ -160,7 +166,7 @@ export function traverseSync(
         check >= 0
         || (Number.isNaN(check) && /^([$A-Z_][0-9A-Z_$]*)$/i.test(key))
       ) {
-        if (ctx.stack.has(value)) {
+        if (ctx.stack.includes(value)) {
           const ref = getCurrentRef();
           const refParam = getRefParam(ctx, createRef(ctx, value));
           if (!Number.isNaN(check)) {
@@ -171,14 +177,14 @@ export function traverseSync(
         } else {
           values.push(`${key}:${traverseSync(ctx, value as ServerValue)}`);
         }
-      } else if (ctx.stack.has(value)) {
+      } else if (ctx.stack.includes(value)) {
         const refParam = getRefParam(ctx, createRef(ctx, value));
         createObjectComputedAssign(ctx, getCurrentRef(), quote(key), refParam);
       } else {
         values.push(`${quote(key)}:${traverseSync(ctx, value as ServerValue)}`);
       }
     }
-    ctx.stack.delete(current);
+    ctx.stack.pop();
     const value = `{${values.join(',')}}`;
     if (empty) {
       return processRef(`Object.assign(Object.create(null),${value})`);
