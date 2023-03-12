@@ -172,7 +172,16 @@ The following values are the only values accepted by `seroval`:
   - `Date`
   - `Map`
   - `Set`
+- `Error`
+  - `AggregateError`
+  - `EvalError`
+  - `RangeError`
+  - `ReferenceError`
+  - `SyntaxError`
+  - `TypeError`
+  - `URIError`
 - `Promise` (with `serializeAsync`)
+- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - Cyclic references (both self and mutual)
 
 ## Sponsors
