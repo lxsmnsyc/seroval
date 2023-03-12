@@ -3,29 +3,40 @@ import { AsyncServerValue } from './types';
 
 export const EMPTY_SET = 'new Set';
 export const EMPTY_MAP = 'new Map';
-export const EMPTY_ARRAY = '[]';
+
+interface IndexAssignment {
+  type: 'index';
+  source: string;
+  value: string;
+}
+
+interface MapAssignment {
+  type: 'map';
+  source: string;
+  key: string;
+  value: string;
+}
+
+interface SetAssignment {
+  type: 'set';
+  source: string;
+  value: string;
+}
 
 // Array of assignments to be done (used for recursion)
-export type Assignment = [source: string, value: string];
-
-// Array of Map.prototype.set calls
-export type MapSet = [source: string, key: string, value: string];
-
-// Array of Set.prototype.add calls
-export type SetAdd = [source: string, value: string];
+export type Assignment =
+  | IndexAssignment
+  | MapAssignment
+  | SetAssignment;
 
 export interface SerializationContext {
-  stack: Set<unknown>;
+  stack: unknown[];
   // Set to check if ref id already has an assigned value
   assignedRefs: Set<number>;
   // Variables
   vars: string[];
   // Array of assignments to be done (used for recursion)
   assignments: Assignment[];
-  // Array of Map.prototype.set calls
-  mapSets: MapSet[];
-  // Array of Set.prototype.add calls
-  setAdds: SetAdd[];
   // Reference counter
   refCount: Map<unknown, number>;
   // Value-to-ref map
@@ -35,69 +46,80 @@ export interface SerializationContext {
 export function createSerializationContext(): SerializationContext {
   return {
     refCount: new Map(),
-    stack: new Set(),
+    stack: [],
     refs: new Map(),
     assignedRefs: new Set(),
     vars: [],
     assignments: [],
-    mapSets: [],
-    setAdds: [],
   };
 }
 
-export function resolveAssignments(ctx: SerializationContext) {
-  if (ctx.assignments.length) {
-    const result: Record<string, string> = {};
-
-    // Merge all assignments with similar source
-    for (const [source, value] of ctx.assignments) {
-      const suffix = value in result
-        ? result[value]
-        : value;
-      result[value] = `${source}=${suffix}`;
-    }
-
-    return `${Object.values(result).join(',')},`;
+function getAssignmentExpression(assignment: Assignment): string {
+  switch (assignment.type) {
+    case 'index':
+      return `${assignment.source}=${assignment.value}`;
+    case 'map':
+      return `${assignment.source}.set(${assignment.key},${assignment.value})`;
+    case 'set':
+      return `${assignment.source}.add(${assignment.value})`;
+    default:
+      return '';
   }
-  return '';
 }
 
-export function resolveMapSets(ctx: SerializationContext) {
-  if (ctx.mapSets.length) {
-    const result: Record<string, string> = {};
-
-    // Merge all assignments with similar source
-    for (const [source, key, value] of ctx.mapSets) {
-      const prefix = source in result
-        ? result[source]
-        : source;
-      result[source] = `${prefix}.set(${key},${value})`;
+function mergeAssignments(ctx: SerializationContext) {
+  const newAssignments = [];
+  let current = ctx.assignments[0];
+  let prev = current;
+  for (let i = 1, len = ctx.assignments.length; i < len; i += 1) {
+    const item = ctx.assignments[i];
+    if (item.type === prev.type) {
+      if (item.type === 'index' && item.value === prev.value) {
+        current = {
+          type: 'index',
+          source: item.source,
+          value: getAssignmentExpression(current),
+        };
+      } else if (item.type === 'map' && item.source === prev.source) {
+        current = {
+          type: 'map',
+          source: getAssignmentExpression(current),
+          key: item.key,
+          value: item.value,
+        };
+      } else if (item.type === 'set' && item.source === prev.source) {
+        current = {
+          type: 'set',
+          source: getAssignmentExpression(current),
+          value: item.value,
+        };
+      } else {
+        newAssignments.push(current);
+        current = item;
+      }
+    } else {
+      newAssignments.push(current);
+      current = item;
     }
-
-    return `${Object.values(result).join(',')},`;
+    prev = item;
   }
-  return '';
-}
 
-export function resolveSetAdds(ctx: SerializationContext) {
-  if (ctx.setAdds.length) {
-    const result: Record<string, string> = {};
+  newAssignments.push(current);
 
-    // Merge all assignments with similar source
-    for (const [source, value] of ctx.setAdds) {
-      const prefix = source in result
-        ? result[source]
-        : source;
-      result[source] = `${prefix}.add(${value})`;
-    }
-
-    return `${Object.values(result).join(',')},`;
-  }
-  return '';
+  return newAssignments;
 }
 
 export function resolvePatches(ctx: SerializationContext) {
-  return `${resolveAssignments(ctx)}${resolveMapSets(ctx)}${resolveSetAdds(ctx)}`;
+  if (ctx.assignments.length) {
+    let result = '';
+
+    for (const assignment of mergeAssignments(ctx)) {
+      result += `${getAssignmentExpression(assignment)},`;
+    }
+
+    return result;
+  }
+  return '';
 }
 
 export function insertRef(ctx: SerializationContext, current: unknown) {
@@ -148,7 +170,11 @@ export function createAssignment(
   source: string,
   value: string,
 ) {
-  ctx.assignments.push([source, value]);
+  ctx.assignments.push({
+    type: 'index',
+    source,
+    value,
+  });
 }
 
 export function createSetAdd(
@@ -156,7 +182,11 @@ export function createSetAdd(
   ref: number,
   value: string,
 ) {
-  ctx.setAdds.push([getRefParam(ctx, ref), value]);
+  ctx.assignments.push({
+    type: 'set',
+    source: getRefParam(ctx, ref),
+    value,
+  });
 }
 
 export function createMapSet(
@@ -165,7 +195,12 @@ export function createMapSet(
   key: string,
   value: string,
 ) {
-  ctx.mapSets.push([getRefParam(ctx, ref), key, value]);
+  ctx.assignments.push({
+    type: 'map',
+    source: getRefParam(ctx, ref),
+    key,
+    value,
+  });
 }
 
 export function createArrayAssign(
