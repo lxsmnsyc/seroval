@@ -279,6 +279,30 @@ function getErrorConstructor(error: ErrorValue) {
   return 'Error';
 }
 
+const EXCLUDED_ERROR_KEYS = {
+  name: true,
+  cause: true,
+  stack: true,
+  message: true,
+};
+
+function getErrorOptions(error: Error) {
+  let options: Record<string, any> | undefined;
+  const constructor = getErrorConstructor(error);
+  if (error.name !== constructor) {
+    options = { name: error.name };
+  } else if (error.constructor.name !== constructor) {
+    options = { name: error.constructor.name };
+  }
+  for (const name of Object.getOwnPropertyNames(error)) {
+    if (!(name in EXCLUDED_ERROR_KEYS)) {
+      options = options || {};
+      options[name] = error[name as keyof Error];
+    }
+  }
+  return options;
+}
+
 type SerovalNode =
   | [type: 'primitive', value: PrimitiveValue]
   | [type: 'reference', value: number]
@@ -358,12 +382,12 @@ export function generateTreeSync(
     return ['Array', nodes, id];
   }
   if (current instanceof AggregateError) {
+    const options = getErrorOptions(current);
     return ['AggregateError', {
       message: current.message,
-      options:
-        current.name !== 'AggregateError'
-          ? generateTreeSync(ctx, { name: current.name })
-          : undefined,
+      options: options
+        ? generateTreeSync(ctx, options)
+        : undefined,
       cause: 'cause' in current
         ? generateTreeSync(ctx, { cause: current.cause as ServerValue })
         : undefined,
@@ -371,13 +395,7 @@ export function generateTreeSync(
     }, id];
   }
   if (current instanceof Error) {
-    let options: Record<string, any> | undefined;
-    for (const name of Object.getOwnPropertyNames(current)) {
-      if (!(name === 'message' || name === 'cause' || name === 'stack')) {
-        options = options || {};
-        options[name] = current[name as keyof Error];
-      }
-    }
+    const options = getErrorOptions(current);
     return ['Error', {
       constructor: getErrorConstructor(current),
       message: current.message,
@@ -448,10 +466,11 @@ export async function generateTreeAsync(
     return ['Array', nodes, id];
   }
   if (current instanceof AggregateError) {
+    const options = getErrorOptions(current);
     return ['AggregateError', {
       message: current.message,
-      options: current.name !== 'AggregateError'
-        ? generateTreeSync(ctx, { name: current.name })
+      options: options
+        ? generateTreeSync(ctx, options)
         : undefined,
       cause: 'cause' in current
         ? await generateTreeAsync(ctx, { cause: current.cause as ServerValue })
@@ -460,13 +479,7 @@ export async function generateTreeAsync(
     }, id];
   }
   if (current instanceof Error) {
-    let options: Record<string, any> | undefined;
-    for (const name of Object.getOwnPropertyNames(current)) {
-      if (!(name === 'message' || name === 'cause' || name === 'stack')) {
-        options = options || {};
-        options[name] = current[name as keyof Error];
-      }
-    }
+    const options = getErrorOptions(current);
     return ['Error', {
       constructor: getErrorConstructor(current),
       message: current.message,
