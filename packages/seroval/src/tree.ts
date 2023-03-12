@@ -329,9 +329,11 @@ const enum SerovalNodeType {
   Iterable,
 }
 
+type SerovalReferenceNode = [type: SerovalNodeType.Reference, value: number];
+
 type SerovalNode =
   | [type: SerovalNodeType.Primitive, value: PrimitiveValue]
-  | [type: SerovalNodeType.Reference, value: number]
+  | SerovalReferenceNode
   | [type: SerovalNodeType.Date, value: Date, id: number]
   | [type: SerovalNodeType.RegExp, value: RegExp, id: number]
   | [type: SerovalNodeType.Set, value: SerovalNode[], id: number]
@@ -368,6 +370,13 @@ type SerovalNode =
     },
     id: number,
   ];
+
+function isReferenceInStack(
+  ctx: SerializationContext,
+  node: SerovalNode,
+): node is SerovalReferenceNode {
+  return node[0] === SerovalNodeType.Reference && ctx.stack.includes(node[1]);
+}
 
 export function generateTreeSync(
   ctx: SerializationContext,
@@ -647,7 +656,7 @@ export function serializeTree(
       return getRefParam(ctx, value);
     case SerovalNodeType.Promise: {
       let serialized: string;
-      if (value[0] === SerovalNodeType.Reference && ctx.stack.includes(value[1])) {
+      if (isReferenceInStack(ctx, value)) {
         serialized = `Promise.resolve().then(()=>${getRefParam(ctx, value[1])})`;
       } else {
         ctx.stack.push(id);
@@ -680,7 +689,7 @@ export function serializeTree(
         const values: string[] = [];
         ctx.stack.push(id);
         for (const item of value) {
-          if (item[0] === SerovalNodeType.Reference && ctx.stack.includes(item[1])) {
+          if (isReferenceInStack(ctx, item)) {
             // Received a ref, this might be a recursive ref, defer an assignment
             insertRef(ctx, id);
             createSetAdd(ctx, id, getRefParam(ctx, item[1]));
@@ -704,10 +713,10 @@ export function serializeTree(
         const values: string[] = [];
         ctx.stack.push(id);
         for (const [key, val] of value) {
-          if (key[0] === SerovalNodeType.Reference && ctx.stack.includes(key[1])) {
+          if (isReferenceInStack(ctx, key)) {
             insertRef(ctx, id);
             const keyRef = getRefParam(ctx, key[1]);
-            if (val[0] === SerovalNodeType.Reference && ctx.stack.includes(val[1])) {
+            if (isReferenceInStack(ctx, val)) {
               const valueRef = getRefParam(ctx, val[1]);
               createMapSet(ctx, id, keyRef, valueRef);
             } else {
@@ -716,7 +725,7 @@ export function serializeTree(
               createMapSet(ctx, id, keyRef, serializeTree(ctx, val));
               ctx.stack = parent;
             }
-          } else if (val[0] === SerovalNodeType.Reference && ctx.stack.includes(val[1])) {
+          } else if (isReferenceInStack(ctx, val)) {
             insertRef(ctx, id);
             const valueRef = getRefParam(ctx, val[1]);
             const parent = ctx.stack;
@@ -744,7 +753,7 @@ export function serializeTree(
       for (let i = 0, len = value.length; i < len; i++) {
         const item = value[i];
         if (i in value) {
-          if (item[0] === SerovalNodeType.Reference && ctx.stack.includes(item[1])) {
+          if (isReferenceInStack(ctx, item)) {
             insertRef(ctx, id);
             createArrayAssign(ctx, id, i, getRefParam(ctx, item[1]));
             values += ',';
@@ -828,7 +837,7 @@ export function serializeTree(
           check >= 0
           || (Number.isNaN(check) && /^([$A-Z_][0-9A-Z_$]*)$/i.test(key))
         ) {
-          if (val[0] === SerovalNodeType.Reference && ctx.stack.includes(val[1])) {
+          if (isReferenceInStack(ctx, val)) {
             insertRef(ctx, id);
             const refParam = getRefParam(ctx, val[1]);
             if (!Number.isNaN(check)) {
@@ -839,7 +848,7 @@ export function serializeTree(
           } else {
             values.push(`${key}:${serializeTree(ctx, val)}`);
           }
-        } else if (val[0] === SerovalNodeType.Reference && ctx.stack.includes(val[1])) {
+        } else if (isReferenceInStack(ctx, val)) {
           insertRef(ctx, id);
           const refParam = getRefParam(ctx, val[1]);
           createObjectComputedAssign(ctx, id, quote(key), refParam);
