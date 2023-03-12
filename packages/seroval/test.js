@@ -2,15 +2,18 @@ import { serialize } from 'seroval';
 
 const test = {};
 
-const example = {
-  example: test,
+const a = {
   *[Symbol.iterator]() {
     yield test;
-    yield test;
+  },
+};
+const b = {
+  *[Symbol.iterator]() {
+    yield a;
     yield test;
   },
-}
-const result = serialize(example);
+};
+const result = serialize(b);
 // Output:
 ((h,j)=>(j = Object.assign({
   [Symbol.iterator]: ()=>[h, h, h].values()

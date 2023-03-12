@@ -58,25 +58,25 @@ const result = serialize(object);
 Output (as a string):
 
 ```js
-((h,j,k,m)=>(h={number:[0.5906513825027921,-0,NaN,Infinity,-Infinity],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:BigInt("9007199254740991"),array:j=[,,,,k=new Map([["hello","world"],["mutual",m=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-02-06T06:16:00.384Z"),map:k,set:m},j[3]=j,h.self=h,k.set("self",k),m.add(m).add(j),h))()
+((h,j,k,m)=>(m={number:[0.1995527823969423,-0,NaN,Infinity,-Infinity],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:BigInt("9007199254740991"),array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-12T23:34:59.656Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
-((h, j, k, m) => (h = {
-  number: [0.5906513825027921, -0, NaN, Infinity, -Infinity],
+((h, j, k, m) => (m = {
+  number: [0.1995527823969423, -0, NaN, Infinity, -Infinity],
   string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
   boolean: [!0, !1],
   null: null,
   undefined: void 0,
   bigint: BigInt("9007199254740991"),
-  array: j = [, , , , k = new Map([
+  array: h = [, , , , j = new Map([
     ["hello", "world"],
-    ["mutual", m = new Set(["hello", "world"])]
+    ["mutual", k = new Set(["hello", "world"])]
   ])],
   regexp: /[a-z0-9]+/i,
-  date: new Date("2023-02-06T06:16:00.384Z"),
-  map: k,
-  set: m
-}, j[3] = j, h.self = h, k.set("self", k), m.add(m).add(j), h))()
+  date: new Date("2023-03-12T23:34:59.656Z"),
+  map: j,
+  set: k
+}, h[3] = h, j.set("self", j), k.add(k).add(h), m.self = m, m))()
 ```
 
 ### Mutual cyclic example
@@ -102,7 +102,7 @@ const result = serialize({ a, b, c, d });
 Output (as a string):
 
 ```js
-((h,j,k,m,o,q)=>(q={a:h=new Map([["name","a"],["children",[j=new Map([["name","c"],["right",k=new Map([["name","b"],["children",o=[,m=new Map([["name","d"]])]]])]]),m]]]),b:k,c:j,d:m},o[0]=j,j.set("left",h),m.set("left",h).set("right",k),q))()
+((h,j,k,m,o,q)=>(q={a:h=new Map([["name","a"],["children",[j=new Map([["name","c"],["right",o=new Map([["name","b"],["children",k=[,m=new Map([["name","d"]])]]])]]),m]]]),b:o,c:j,d:m},j.set("left",h),k[0]=j,m.set("left",h).set("right",o),q))()
 
 // Formatted
 ((h, j, k, m, o, q) => (q = {
@@ -110,18 +110,18 @@ Output (as a string):
     ["name", "a"],
     ["children", [j = new Map([
       ["name", "c"],
-      ["right", k = new Map([
+      ["right", o = new Map([
         ["name", "b"],
-        ["children", o = [, m = new Map([
+        ["children", k = [, m = new Map([
           ["name", "d"]
         ])]]
       ])]
     ]), m]]
   ]),
-  b: k,
+  b: o,
   c: j,
   d: m
-}, o[0] = j, j.set("left", h), m.set("left", h).set("right", k), q))()
+}, j.set("left", h), k[0] = j, m.set("left", h).set("right", o), q))()
 ```
 
 ## Deserialization
