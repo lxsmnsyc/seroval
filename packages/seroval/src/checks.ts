@@ -18,10 +18,10 @@ export function isPromise<T>(obj: unknown): obj is PromiseLike<T> {
 }
 
 export function constructorCheck<T extends NonNullable<AsyncServerValue>>(
-  value: NonNullable<AsyncServerValue>,
+  value: unknown,
   constructor: unknown,
 ): value is T {
-  return value.constructor === constructor;
+  return (value as { constructor: unknown }).constructor === constructor;
 }
 
 function isIterableBuiltin(obj: unknown) {
