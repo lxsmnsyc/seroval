@@ -1,39 +1,39 @@
 // Vitest Snapshot v1
 
-exports[`seroval > Error > supports Error.prototype.cause 1`] = `"new Error(\\"B\\",{cause:new Error(\\"A\\")})"`;
+exports[`serialize > Error > supports Error.prototype.cause 1`] = `"new Error(\\"B\\",{cause:new Error(\\"A\\")})"`;
 
-exports[`seroval > Error > supports Error.prototype.name 1`] = `"Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\"})"`;
+exports[`serialize > Error > supports Error.prototype.name 1`] = `"Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\"})"`;
 
-exports[`seroval > Error > supports other Error classes 1`] = `"new ReferenceError(\\"A\\")"`;
+exports[`serialize > Error > supports other Error classes 1`] = `"new ReferenceError(\\"A\\")"`;
 
-exports[`seroval > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],j],j[0]=h,k))()"`;
+exports[`serialize > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],j],j[0]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[0]=h,k))()"`;
+exports[`serialize > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[0]=h,k))()"`;
 
-exports[`seroval > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={0:j={}},j],j[0]=h,k))()"`;
+exports[`serialize > mutual cyclic references > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={0:j={}},j],j[0]=h,k))()"`;
 
-exports[`seroval > self cyclic references > supports Arrays 1`] = `"(h=>(h=[,,],h[1]=h[0]=h,h))()"`;
+exports[`serialize > self cyclic references > supports Arrays 1`] = `"(h=>(h=[,,],h[1]=h[0]=h,h))()"`;
 
-exports[`seroval > self cyclic references > supports Maps 1`] = `"(h=>(h=new Map,h.set(h,h),h))()"`;
+exports[`serialize > self cyclic references > supports Maps 1`] = `"(h=>(h=new Map,h.set(h,h),h))()"`;
 
-exports[`seroval > self cyclic references > supports Objects 1`] = `"(h=>(h={},h.b=h.a=h,h))()"`;
+exports[`serialize > self cyclic references > supports Objects 1`] = `"(h=>(h={},h.b=h.a=h,h))()"`;
 
-exports[`seroval > self cyclic references > supports Sets 1`] = `"(h=>(h=new Set,h.add(h),h))()"`;
+exports[`serialize > self cyclic references > supports Sets 1`] = `"(h=>(h=new Set,h.add(h),h))()"`;
 
-exports[`seroval > supports Arrays 1`] = `"[1,2,3]"`;
+exports[`serialize > supports Arrays 1`] = `"[1,2,3]"`;
 
-exports[`seroval > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
+exports[`serialize > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
 
-exports[`seroval > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
+exports[`serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
-exports[`seroval > supports Objects 1`] = `"({hello:\\"world\\"})"`;
+exports[`serialize > supports Objects 1`] = `"({hello:\\"world\\"})"`;
 
-exports[`seroval > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
+exports[`serialize > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
 
-exports[`seroval > supports array holes 1`] = `"[,,,,,,,,,,]"`;
+exports[`serialize > supports array holes 1`] = `"[,,,,,,,,,,]"`;
 
-exports[`seroval > supports bigint 1`] = `"BigInt(\\"9007199254740991\\")"`;
+exports[`serialize > supports bigint 1`] = `"BigInt(\\"9007199254740991\\")"`;
 
-exports[`seroval > supports strings 1`] = `"\\"\\\\\\"hello\\\\\\"\\""`;
+exports[`serialize > supports strings 1`] = `"\\"\\\\\\"hello\\\\\\"\\""`;
 
-exports[`seroval > supports strings 2`] = `"\\"\\\\x3Cscript>\\\\x3C/script>\\""`;
+exports[`serialize > supports strings 2`] = `"\\"\\\\x3Cscript>\\\\x3C/script>\\""`;
