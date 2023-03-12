@@ -5,12 +5,26 @@ export type PrimitiveValue =
   | number
   | undefined
   | null
-  | bigint
-  | Date
-  | RegExp;
+  | bigint;
+
+export type ErrorValue =
+  | Error
+  | AggregateError
+  | EvalError
+  | RangeError
+  | ReferenceError
+  | TypeError
+  | SyntaxError
+  | URIError;
+
+export type CommonServerValue =
+  | PrimitiveValue
+  | ErrorValue
+  | RegExp
+  | Date;
 
 export type ServerValue =
-  | PrimitiveValue
+  | CommonServerValue
   | Array<ServerValue>
   | readonly ServerValue[]
   | { [key: string | number]: ServerValue }
@@ -19,7 +33,7 @@ export type ServerValue =
   | Map<ServerValue, ServerValue>;
 
 export type AsyncServerValue =
-  | PrimitiveValue
+  | CommonServerValue
   | Array<AsyncServerValue>
   | readonly AsyncServerValue[]
   | { [key: string | number]: AsyncServerValue }

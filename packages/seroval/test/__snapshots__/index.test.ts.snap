@@ -1,5 +1,11 @@
 // Vitest Snapshot v1
 
+exports[`seroval > Error > supports Error.prototype.cause 1`] = `"new Error(\\"B\\",{cause:new Error(\\"A\\")})"`;
+
+exports[`seroval > Error > supports Error.prototype.name 1`] = `"Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\"})"`;
+
+exports[`seroval > Error > supports other Error classes 1`] = `"new ReferenceError(\\"A\\")"`;
+
 exports[`seroval > mutual cyclic references > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],j],j[0]=h,k))()"`;
 
 exports[`seroval > mutual cyclic references > supports Arrays and Objects 1`] = `"((h,j,k)=>(k=[h=[j={}],j],j[0]=h,k))()"`;

@@ -94,6 +94,23 @@ describe('seroval', () => {
     expect(back[0]).toBe(undefined);
     expect(back.length).toBe(example.length);
   });
+  describe('Error', () => {
+    it('supports Error.prototype.name', () => {
+      const a = new Error('A');
+      a.name = 'ExampleError';
+      expect(seroval(a)).toMatchSnapshot();
+    });
+    it('supports Error.prototype.cause', () => {
+      const a = new Error('A');
+      const b = new Error('B');
+      b.cause = a;
+      expect(seroval(b)).toMatchSnapshot();
+    });
+    it('supports other Error classes', () => {
+      const a = new ReferenceError('A');
+      expect(seroval(a)).toMatchSnapshot();
+    });
+  });
   describe('self cyclic references', () => {
     it('supports Arrays', () => {
       const example: ServerValue[] = [];

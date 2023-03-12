@@ -92,6 +92,23 @@ describe('serializeAsync', () => {
     expect(back[0]).toBe(undefined);
     expect(back.length).toBe(example.length);
   });
+  describe('Error', () => {
+    it('supports Error.prototype.name', async () => {
+      const a = new Error('A');
+      a.name = 'ExampleError';
+      expect(await serializeAsync(Promise.resolve(a))).toMatchSnapshot();
+    });
+    it('supports Error.prototype.cause', async () => {
+      const a = new Error('A');
+      const b = new Error('B');
+      b.cause = Promise.resolve(a);
+      expect(await serializeAsync(b)).toMatchSnapshot();
+    });
+    it('supports other Error classes', async () => {
+      const a = new ReferenceError('A');
+      expect(await serializeAsync(Promise.resolve(a))).toMatchSnapshot();
+    });
+  });
   describe('self cyclic references', () => {
     it('supports Arrays', async () => {
       const example: AsyncServerValue[] = [];

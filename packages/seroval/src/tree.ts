@@ -2,7 +2,12 @@
 import isPrimitive from './is-primitive';
 import isPromise from './is-promise';
 import quote from './quote';
-import { AsyncServerValue, PrimitiveValue, ServerValue } from './types';
+import {
+  AsyncServerValue,
+  ErrorValue,
+  PrimitiveValue,
+  ServerValue,
+} from './types';
 import getIdentifier from './get-identifier';
 import serializePrimitive from './serialize-primitive';
 
@@ -252,6 +257,28 @@ function createObjectComputedAssign(
   createAssignment(ctx, `${getRefParam(ctx, ref)}[${key}]`, value);
 }
 
+function getErrorConstructor(error: ErrorValue) {
+  if (error instanceof EvalError) {
+    return 'EvalError';
+  }
+  if (error instanceof RangeError) {
+    return 'RangeError';
+  }
+  if (error instanceof ReferenceError) {
+    return 'ReferenceError';
+  }
+  if (error instanceof SyntaxError) {
+    return 'SyntaxError';
+  }
+  if (error instanceof TypeError) {
+    return 'TypeError';
+  }
+  if (error instanceof URIError) {
+    return 'URIError';
+  }
+  return 'Error';
+}
+
 type SerovalNode =
   | [type: 'primitive', value: PrimitiveValue]
   | [type: 'reference', value: number]
@@ -262,7 +289,27 @@ type SerovalNode =
   | [type: 'Array', value: SerovalNode[], id: number]
   | [type: 'Object', value: Record<string, SerovalNode>, id: number]
   | [type: 'NullConstructor', value: Record<string, SerovalNode>, id: number]
-  | [type: 'Promise', value: SerovalNode, id: number];
+  | [type: 'Promise', value: SerovalNode, id: number]
+  | [
+    type: 'Error',
+    value: {
+      constructor: string;
+      message: string;
+      options?: SerovalNode;
+      cause?: SerovalNode;
+    },
+    id: number
+  ]
+  | [
+    type: 'AggregateError',
+    value: {
+      message: string;
+      options?: SerovalNode;
+      cause?: SerovalNode;
+      errors: SerovalNode;
+    },
+    id: number
+  ];
 
 export function generateTreeSync(
   ctx: SerializationContext,
@@ -310,11 +357,41 @@ export function generateTreeSync(
     }
     return ['Array', nodes, id];
   }
+  if (current instanceof AggregateError) {
+    return ['AggregateError', {
+      message: current.message,
+      options:
+        current.name !== 'AggregateError'
+          ? generateTreeSync(ctx, { name: current.name })
+          : undefined,
+      cause: 'cause' in current
+        ? generateTreeSync(ctx, { cause: current.cause as ServerValue })
+        : undefined,
+      errors: generateTreeSync(ctx, current.errors as ServerValue),
+    }, id];
+  }
+  if (current instanceof Error) {
+    let options: Record<string, any> | undefined;
+    for (const name of Object.getOwnPropertyNames(current)) {
+      if (!(name === 'message' || name === 'cause' || name === 'stack')) {
+        options = options || {};
+        options[name] = current[name as keyof Error];
+      }
+    }
+    return ['Error', {
+      constructor: getErrorConstructor(current),
+      message: current.message,
+      options: options ? generateTreeSync(ctx, options) : undefined,
+      cause: 'cause' in current
+        ? generateTreeSync(ctx, { cause: current.cause as ServerValue })
+        : undefined,
+    }, id];
+  }
   const empty = current.constructor == null;
   if (current.constructor === Object || empty) {
     const nodes: Record<string, SerovalNode> = {};
     for (const [key, item] of Object.entries(current)) {
-      nodes[key] = generateTreeSync(ctx, item as ServerValue);
+      nodes[key] = generateTreeSync(ctx, item);
     }
     return [empty ? 'NullConstructor' : 'Object', nodes, id];
   }
@@ -369,6 +446,35 @@ export async function generateTreeAsync(
       }
     }
     return ['Array', nodes, id];
+  }
+  if (current instanceof AggregateError) {
+    return ['AggregateError', {
+      message: current.message,
+      options: current.name !== 'AggregateError'
+        ? generateTreeSync(ctx, { name: current.name })
+        : undefined,
+      cause: 'cause' in current
+        ? await generateTreeAsync(ctx, { cause: current.cause as ServerValue })
+        : undefined,
+      errors: await generateTreeAsync(ctx, current.errors as ServerValue),
+    }, id];
+  }
+  if (current instanceof Error) {
+    let options: Record<string, any> | undefined;
+    for (const name of Object.getOwnPropertyNames(current)) {
+      if (!(name === 'message' || name === 'cause' || name === 'stack')) {
+        options = options || {};
+        options[name] = current[name as keyof Error];
+      }
+    }
+    return ['Error', {
+      constructor: getErrorConstructor(current),
+      message: current.message,
+      options: options ? await generateTreeAsync(ctx, options) : undefined,
+      cause: 'cause' in current
+        ? await generateTreeAsync(ctx, { cause: current.cause as ServerValue })
+        : undefined,
+    }, id];
   }
   const empty = current.constructor == null;
   if (current.constructor === Object || empty) {
@@ -506,6 +612,39 @@ export function serializeTree(
     }
     ctx.stack.pop();
     const serialized = `[${values}]`;
+    if (hasRefs(ctx, id)) {
+      return assignRef(ctx, id, serialized);
+    }
+    return serialized;
+  }
+  if (type === 'AggregateError') {
+    const args = [serializeTree(ctx, value.errors), quote(value.message)];
+
+    if (value.cause) {
+      args.push(serializeTree(ctx, value.cause));
+    }
+    let serialized = `new AggregateError(${args.join(',')})`;
+    if (value.options) {
+      const options = serializeTree(ctx, value.options);
+      serialized = `Object.assign(${serialized},${options})`;
+    }
+
+    if (hasRefs(ctx, id)) {
+      return assignRef(ctx, id, serialized);
+    }
+    return serialized;
+  }
+  if (type === 'Error') {
+    const args = [quote(value.message)];
+    if (value.cause) {
+      args.push(serializeTree(ctx, value.cause));
+    }
+    let serialized = `new ${value.constructor}(${args.join(',')})`;
+    if (value.options) {
+      const options = serializeTree(ctx, value.options);
+      serialized = `Object.assign(${serialized},${options})`;
+    }
+
     if (hasRefs(ctx, id)) {
       return assignRef(ctx, id, serialized);
     }
