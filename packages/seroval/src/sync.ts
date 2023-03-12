@@ -22,7 +22,9 @@ export function lookupRefs(ctx: SerializationContext, current: ServerValue) {
   if (isPrimitive(current)) {
     return;
   }
-  if (Array.isArray(current)) {
+  if (constructorCheck<RegExp>(current, RegExp)) {
+    insertRef(ctx, current);
+  } else if (Array.isArray(current)) {
     if (insertRef(ctx, current)) {
       for (const value of current) {
         lookupRefs(ctx, value);
@@ -81,6 +83,9 @@ export function traverseSync(
       return assignRef(ctx, refResult, value);
     }
     return value;
+  }
+  if (constructorCheck<RegExp>(current, RegExp)) {
+    return processRef(String(current));
   }
   // Transform Set
   if (constructorCheck<Set<ServerValue>>(current, Set)) {

@@ -9,6 +9,5 @@ export default function isPrimitive(current: unknown): current is PrimitiveValue
   return type === 'number'
     || type === 'string'
     || type === 'bigint'
-    || classConst === Date
-    || classConst === RegExp;
+    || classConst === Date;
 }

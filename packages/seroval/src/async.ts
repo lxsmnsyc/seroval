@@ -27,7 +27,9 @@ export async function lookupRefsAsync(
   if (isPrimitive(current)) {
     return;
   }
-  if (isPromise(current)) {
+  if (constructorCheck<RegExp>(current, RegExp)) {
+    insertRef(ctx, current);
+  } else if (isPromise(current)) {
     if (insertRef(ctx, current)) {
       await current.then((value) => lookupRefsAsync(ctx, value));
     }
@@ -104,6 +106,9 @@ export async function traverseAsync(
       ctx.stack.pop();
       return processRef(result);
     });
+  }
+  if (constructorCheck<RegExp>(current, RegExp)) {
+    return processRef(String(current));
   }
   // Transform Set
   if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
