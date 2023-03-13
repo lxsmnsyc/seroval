@@ -51,7 +51,7 @@ export interface SerializationContext {
   validRefs: Map<number, number>;
   // Refs that are...referenced
   markedRefs: boolean[];
-  // Variables  
+  // Variables
   vars: string[];
   // Array of assignments to be done (used for recursion)
   assignments: Assignment[];
