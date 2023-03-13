@@ -10,8 +10,8 @@ describe('serialize', () => {
     const value = Math.random();
     expect(serialize(value)).toBe(`${value}`);
     expect(serialize(NaN)).toBe('NaN');
-    expect(serialize(Infinity)).toBe('Infinity');
-    expect(serialize(-Infinity)).toBe('-Infinity');
+    expect(serialize(Infinity)).toBe('1/0');
+    expect(serialize(-Infinity)).toBe('-1/0');
     expect(serialize(-0)).toBe('-0');
   });
   it('supports strings', () => {

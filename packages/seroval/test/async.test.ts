@@ -11,8 +11,8 @@ describe('serializeAsync', () => {
     const value = Math.random();
     expect(await serializeAsync(Promise.resolve(value))).toBe(`Promise.resolve(${value})`);
     expect(await serializeAsync(Promise.resolve(NaN))).toBe('Promise.resolve(NaN)');
-    expect(await serializeAsync(Promise.resolve(Infinity))).toBe('Promise.resolve(Infinity)');
-    expect(await serializeAsync(Promise.resolve(-Infinity))).toBe('Promise.resolve(-Infinity)');
+    expect(await serializeAsync(Promise.resolve(Infinity))).toBe('Promise.resolve(1/0)');
+    expect(await serializeAsync(Promise.resolve(-Infinity))).toBe('Promise.resolve(-1/0)');
     expect(await serializeAsync(Promise.resolve(-0))).toBe('Promise.resolve(-0)');
   });
   it('supports strings', async () => {
