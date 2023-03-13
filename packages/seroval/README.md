@@ -58,22 +58,22 @@ const result = serialize(object);
 Output (as a string):
 
 ```js
-((h,j,k,m)=>(m={number:[0.1995527823969423,-0,NaN,Infinity,-Infinity],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:BigInt("9007199254740991"),array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-12T23:34:59.656Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
+((h,j,k,m)=>(m={number:[0.4178420745429774,-0,NaN,Infinity,-Infinity],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-13T00:52:11.335Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
 ((h, j, k, m) => (m = {
-  number: [0.1995527823969423, -0, NaN, Infinity, -Infinity],
+  number: [0.4178420745429774, -0, NaN, Infinity, -Infinity],
   string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
   boolean: [!0, !1],
   null: null,
   undefined: void 0,
-  bigint: BigInt("9007199254740991"),
+  bigint: 9007199254740991n,
   array: h = [, , , , j = new Map([
     ["hello", "world"],
     ["mutual", k = new Set(["hello", "world"])]
   ])],
   regexp: /[a-z0-9]+/i,
-  date: new Date("2023-03-12T23:34:59.656Z"),
+  date: new Date("2023-03-13T00:52:11.335Z"),
   map: j,
   set: k
 }, h[3] = h, j.set("self", j), k.add(k).add(h), m.self = m, m))()
@@ -172,6 +172,18 @@ The following values are the only values accepted by `seroval`:
   - `Date`
   - `Map`
   - `Set`
+- `TypedArray`
+  - `Int8Array`
+  - `Int16Array`
+  - `Int32Array`
+  - `Uint8Array`
+  - `Uint16Array`
+  - `Uint32Array`
+  - `Uint8ClampedArray`
+  - `Float32Array`
+  - `Float64Array`
+  - `BigInt64Array`
+  - `BigUint64Array`
 - `Error`
   - `AggregateError`
   - `EvalError`
