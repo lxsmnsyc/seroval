@@ -18,9 +18,6 @@ import {
 import getIdentifier from './get-identifier';
 import serializePrimitive from './serialize-primitive';
 
-const EMPTY_SET = 'new Set';
-const EMPTY_MAP = 'new Map';
-
 interface IndexAssignment {
   type: 'index';
   source: string;
@@ -52,9 +49,9 @@ export interface SerializationContext {
   refs: Map<unknown, number>;
   // Map tree refs to actual refs
   validRefs: Map<number, number>;
-  // Reference counter
-  refCount: number[];
-  // Variables
+  // Refs that are...referenced
+  markedRefs: boolean[];
+  // Variables  
   vars: string[];
   // Array of assignments to be done (used for recursion)
   assignments: Assignment[];
@@ -62,7 +59,7 @@ export interface SerializationContext {
 
 export function createSerializationContext(): SerializationContext {
   return {
-    refCount: [],
+    markedRefs: [],
     stack: [],
     refs: new Map(),
     vars: [],
@@ -145,16 +142,8 @@ export function resolvePatches(ctx: SerializationContext) {
 /**
  * Increments the number of references the referenced value has
  */
-function insertRef(ctx: SerializationContext, current: number) {
-  const count = ctx.refCount[current] || 0;
-  ctx.refCount[current] = count + 1;
-}
-
-/**
- * Checks if the value is referenced
- */
-function hasRefs(ctx: SerializationContext, current: number) {
-  return (ctx.refCount[current] || 0) >= 1;
+function markRef(ctx: SerializationContext, current: number) {
+  ctx.markedRefs[current] = true;
 }
 
 /**
@@ -216,7 +205,7 @@ function assignRef(
   index: number,
   value: string,
 ) {
-  if (hasRefs(ctx, index)) {
+  if (ctx.markedRefs[index]) {
     return `${getRefParam(ctx, index)}=${value}`;
   }
   return value;
@@ -239,6 +228,7 @@ function createSetAdd(
   ref: number,
   value: string,
 ) {
+  markRef(ctx, ref);
   ctx.assignments.push({
     type: 'set',
     source: getRefParam(ctx, ref),
@@ -252,6 +242,7 @@ function createMapSet(
   key: string,
   value: string,
 ) {
+  markRef(ctx, ref);
   ctx.assignments.push({
     type: 'map',
     source: getRefParam(ctx, ref),
@@ -266,6 +257,7 @@ function createArrayAssign(
   index: number,
   value: string,
 ) {
+  markRef(ctx, ref);
   createAssignment(ctx, `${getRefParam(ctx, ref)}[${index}]`, value);
 }
 
@@ -275,6 +267,7 @@ function createObjectIdentifierAssign(
   key: string,
   value: string,
 ) {
+  markRef(ctx, ref);
   createAssignment(ctx, `${getRefParam(ctx, ref)}.${key}`, value);
 }
 
@@ -284,6 +277,7 @@ function createObjectComputedAssign(
   key: string,
   value: string,
 ) {
+  markRef(ctx, ref);
   createAssignment(ctx, `${getRefParam(ctx, ref)}[${key}]`, value);
 }
 
@@ -433,8 +427,8 @@ function generateRef(
     // Exists, means this value is currently
     // being referenced
     const refID = ctx.refs.get(current) || 0;
-    // Increment reference counter
-    insertRef(ctx, refID);
+    // Mark reference
+    markRef(ctx, refID);
     return [SerovalNodeType.Reference, refID];
   }
   // Create a new reference ID
@@ -785,15 +779,12 @@ export function serializeTree(
       return assignRef(ctx, id, `new ${value.constructor}(${args})`);
     }
     case SerovalNodeType.Set: {
-      let serialized = EMPTY_SET;
+      let serialized = 'new Set';
       if (value.length) {
         const values: string[] = [];
         ctx.stack.push(id);
         for (const item of value) {
           if (isReferenceInStack(ctx, item)) {
-            // Since this is an assignment
-            // Set instance must have a reference too
-            insertRef(ctx, id);
             createSetAdd(ctx, id, getRefParam(ctx, item[1]));
           } else {
             // Push directly
@@ -802,13 +793,13 @@ export function serializeTree(
         }
         ctx.stack.pop();
         if (values.length) {
-          serialized = `new Set([${values.join(',')}])`;
+          serialized += `([${values.join(',')}])`;
         }
       }
       return assignRef(ctx, id, serialized);
     }
     case SerovalNodeType.Map: {
-      let serialized = EMPTY_MAP;
+      let serialized = 'new Map';
       if (value.length) {
         const values: string[] = [];
         ctx.stack.push(id);
@@ -816,7 +807,6 @@ export function serializeTree(
           // Check if key is a parent
           if (isReferenceInStack(ctx, key)) {
             // Create reference for the map instance
-            insertRef(ctx, id);
             const keyRef = getRefParam(ctx, key[1]);
             // Check if value is a parent
             if (isReferenceInStack(ctx, val)) {
@@ -838,7 +828,6 @@ export function serializeTree(
             }
           } else if (isReferenceInStack(ctx, val)) {
             // Create ref for the Map instance
-            insertRef(ctx, id);
             const valueRef = getRefParam(ctx, val[1]);
             // Reset stack for the key serialization
             const parent = ctx.stack;
@@ -854,7 +843,7 @@ export function serializeTree(
         // so that the empty Map constructor
         // can be used instead
         if (values.length) {
-          serialized = `new Map([${values.join(',')}])`;
+          serialized += `([${values.join(',')}])`;
         }
       }
       return assignRef(ctx, id, serialized);
@@ -872,10 +861,6 @@ export function serializeTree(
         if (i in value) {
           // Check if item is a parent
           if (isReferenceInStack(ctx, item)) {
-            // Create reference to this array for
-            // deferred assignment
-            insertRef(ctx, id);
-            // Push an assignment
             createArrayAssign(ctx, id, i, getRefParam(ctx, item[1]));
             values += ',';
           } else {
@@ -949,7 +934,6 @@ export function serializeTree(
           || (Number.isNaN(check) && /^([$A-Z_][0-9A-Z_$]*)$/i.test(key))
         ) {
           if (isReferenceInStack(ctx, val)) {
-            insertRef(ctx, id);
             const refParam = getRefParam(ctx, val[1]);
             if (!Number.isNaN(check)) {
               createObjectComputedAssign(ctx, id, key, refParam);
@@ -960,7 +944,6 @@ export function serializeTree(
             values.push(`${key}:${serializeTree(ctx, val)}`);
           }
         } else if (isReferenceInStack(ctx, val)) {
-          insertRef(ctx, id);
           const refParam = getRefParam(ctx, val[1]);
           createObjectComputedAssign(ctx, id, quote(key), refParam);
         } else {
