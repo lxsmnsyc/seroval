@@ -58,11 +58,11 @@ const result = serialize(object);
 Output (as a string):
 
 ```js
-((h,j,k,m)=>(m={number:[0.4178420745429774,-0,NaN,Infinity,-Infinity],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-13T00:52:11.335Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
+((h,j,k,m)=>(m={number:[0.4178420745429774,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-13T00:52:11.335Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
 ((h, j, k, m) => (m = {
-  number: [0.4178420745429774, -0, NaN, Infinity, -Infinity],
+  number: [0.4178420745429774, -0, NaN, 1/0, -1/0],
   string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
   boolean: [!0, !1],
   null: null,
