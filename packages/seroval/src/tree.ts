@@ -11,6 +11,7 @@ import {
   ErrorValue,
   PrimitiveValue,
   ServerValue,
+  TypedArrayValue,
 } from './types';
 import getIdentifier from './get-identifier';
 import serializePrimitive from './serialize-primitive';
@@ -327,15 +328,24 @@ const enum SerovalNodeType {
   Error,
   AggregateError,
   Iterable,
+  TypedArray,
 }
 
+type SerovalPrimitiveNode = [type: SerovalNodeType.Primitive, value: PrimitiveValue];
 type SerovalReferenceNode = [type: SerovalNodeType.Reference, value: number];
-
-type SerovalNode =
-  | [type: SerovalNodeType.Primitive, value: PrimitiveValue]
-  | SerovalReferenceNode
+type SerovalSemiPrimitiveNode =
   | [type: SerovalNodeType.Date, value: Date, id: number]
   | [type: SerovalNodeType.RegExp, value: RegExp, id: number]
+  | [
+    type: SerovalNodeType.TypedArray,
+    value: { constructor: string, array: TypedArrayValue },
+    id: number
+  ];
+
+type SerovalNode =
+  | SerovalPrimitiveNode
+  | SerovalReferenceNode
+  | SerovalSemiPrimitiveNode
   | [type: SerovalNodeType.Set, value: SerovalNode[], id: number]
   | [type: SerovalNodeType.Map, value: [key: SerovalNode, value: SerovalNode][], id: number]
   | [type: SerovalNodeType.Array, value: SerovalNode[], id: number]
@@ -378,13 +388,10 @@ function isReferenceInStack(
   return node[0] === SerovalNodeType.Reference && ctx.stack.includes(node[1]);
 }
 
-export function generateTreeSync(
+function generateRef(
   ctx: SerializationContext,
-  current: ServerValue,
-): SerovalNode {
-  if (isPrimitive(current)) {
-    return [SerovalNodeType.Primitive, current];
-  }
+  current: unknown,
+): number | SerovalReferenceNode {
   const ref = ctx.refs.has(current);
   if (ref) {
     const refID = ctx.refs.get(current) || 0;
@@ -393,11 +400,69 @@ export function generateTreeSync(
   }
   const id = ctx.refs.size;
   ctx.refs.set(current, id);
+  return id;
+}
+
+function generateSemiPrimitiveValue(
+  current: unknown,
+  id: number,
+): SerovalNode | undefined {
   if (constructorCheck<Date>(current, Date)) {
     return [SerovalNodeType.Date, current, id];
   }
   if (constructorCheck<RegExp>(current, RegExp)) {
     return [SerovalNodeType.RegExp, current, id];
+  }
+  if (constructorCheck<Int8Array>(current, Int8Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Int8Array', array: current }, id];
+  }
+  if (constructorCheck<Int16Array>(current, Int16Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Int16Array', array: current }, id];
+  }
+  if (constructorCheck<Int32Array>(current, Int32Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Int32Array', array: current }, id];
+  }
+  if (constructorCheck<Uint8Array>(current, Uint8Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Uint8Array', array: current }, id];
+  }
+  if (constructorCheck<Uint16Array>(current, Uint16Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Uint16Array', array: current }, id];
+  }
+  if (constructorCheck<Uint32Array>(current, Uint32Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Uint32Array', array: current }, id];
+  }
+  if (constructorCheck<Uint8ClampedArray>(current, Uint8ClampedArray)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Uint8ClampedArray', array: current }, id];
+  }
+  if (constructorCheck<Float32Array>(current, Float32Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Float32Array', array: current }, id];
+  }
+  if (constructorCheck<Float64Array>(current, Float64Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'Float64Array', array: current }, id];
+  }
+  if (constructorCheck<BigInt64Array>(current, BigInt64Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'BigInt64Array', array: current }, id];
+  }
+  if (constructorCheck<BigUint64Array>(current, BigUint64Array)) {
+    return [SerovalNodeType.TypedArray, { constructor: 'BigUint64Array', array: current }, id];
+  }
+  return undefined;
+}
+
+export function generateTreeSync(
+  ctx: SerializationContext,
+  current: ServerValue,
+): SerovalNode {
+  if (isPrimitive(current)) {
+    return [SerovalNodeType.Primitive, current];
+  }
+  const id = generateRef(ctx, current);
+  if (Array.isArray(id)) {
+    return id;
+  }
+  const semiPrimitive = generateSemiPrimitiveValue(current, id);
+  if (semiPrimitive) {
+    return semiPrimitive;
   }
   if (constructorCheck<Set<ServerValue>>(current, Set)) {
     const nodes: SerovalNode[] = [];
@@ -491,9 +556,9 @@ export function generateTreeSync(
     const deferred: Record<string, ServerValue> = {};
     for (const [key, item] of Object.entries(current)) {
       if (isIterable(item)) {
-        deferred[key] = item;
+        deferred[key] = item as ServerValue;
       } else {
-        nodes[key] = generateTreeSync(ctx, item);
+        nodes[key] = generateTreeSync(ctx, item as ServerValue);
       }
     }
     for (const [key, item] of Object.entries(deferred)) {
@@ -515,26 +580,20 @@ export async function generateTreeAsync(
   if (isPrimitive(current)) {
     return [SerovalNodeType.Primitive, current];
   }
-  const ref = ctx.refs.has(current);
-  if (ref) {
-    const refID = ctx.refs.get(current) || 0;
-    insertRef(ctx, refID);
-    return [SerovalNodeType.Reference, refID];
+  const id = generateRef(ctx, current);
+  if (Array.isArray(id)) {
+    return id;
   }
-  const id = ctx.refs.size;
-  ctx.refs.set(current, id);
+  const semiPrimitive = generateSemiPrimitiveValue(current, id);
+  if (semiPrimitive) {
+    return semiPrimitive;
+  }
   if (isPromise(current)) {
     return current.then(async (value) => [
       SerovalNodeType.Promise,
       await generateTreeAsync(ctx, value),
       id,
     ]);
-  }
-  if (constructorCheck<Date>(current, Date)) {
-    return [SerovalNodeType.Date, current, id];
-  }
-  if (constructorCheck<RegExp>(current, RegExp)) {
-    return [SerovalNodeType.RegExp, current, id];
   }
   if (constructorCheck<Set<ServerValue>>(current, Set)) {
     const nodes: SerovalNode[] = [];
@@ -628,9 +687,9 @@ export async function generateTreeAsync(
     const deferred: Record<string, AsyncServerValue> = {};
     for (const [key, item] of Object.entries(current)) {
       if (isIterable(item)) {
-        deferred[key] = item;
+        deferred[key] = item as ServerValue;
       } else {
-        nodes[key] = await generateTreeAsync(ctx, item);
+        nodes[key] = await generateTreeAsync(ctx, item as ServerValue);
       }
     }
     for (const [key, item] of Object.entries(deferred)) {
@@ -678,6 +737,18 @@ export function serializeTree(
     }
     case SerovalNodeType.RegExp: {
       const serialized = String(value);
+      if (hasRefs(ctx, id)) {
+        return assignRef(ctx, id, serialized);
+      }
+      return serialized;
+    }
+    case SerovalNodeType.TypedArray: {
+      const values = [...value.array].map(serializePrimitive).join(',');
+      let args = `[${values}]`;
+      if (value.array.byteOffset !== 0) {
+        args += `,${value.array.byteOffset}`;
+      }
+      const serialized = `new ${value.constructor}(${args})`;
       if (hasRefs(ctx, id)) {
         return assignRef(ctx, id, serialized);
       }

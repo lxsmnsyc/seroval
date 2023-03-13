@@ -17,11 +17,28 @@ export type ErrorValue =
   | SyntaxError
   | URIError;
 
+export type TypedArrayValue =
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array
+  | BigInt64Array
+  | BigUint64Array;
+
+export type SemiPrimitiveValue =
+  | RegExp
+  | Date
+  | TypedArrayValue;
+
 export type CommonServerValue =
   | PrimitiveValue
-  | ErrorValue
-  | RegExp
-  | Date;
+  | SemiPrimitiveValue
+  | ErrorValue;
 
 export type ServerValue =
   | CommonServerValue

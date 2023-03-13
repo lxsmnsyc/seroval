@@ -17,6 +17,7 @@ import {
   PrimitiveValue,
   ServerValue,
   CommonServerValue,
+  SemiPrimitiveValue,
   ErrorValue,
 } from './types';
 
@@ -25,6 +26,7 @@ export {
   ServerValue,
   PrimitiveValue,
   CommonServerValue,
+  SemiPrimitiveValue,
   ErrorValue,
 };
 
