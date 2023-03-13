@@ -34,7 +34,7 @@ exports[`serialize > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
 
 exports[`serialize > supports array holes 1`] = `"[,,,,,,,,,,]"`;
 
-exports[`serialize > supports bigint 1`] = `"BigInt(\\"9007199254740991\\")"`;
+exports[`serialize > supports bigint 1`] = `"9007199254740991n"`;
 
 exports[`serialize > supports strings 1`] = `"\\"\\\\\\"hello\\\\\\"\\""`;
 

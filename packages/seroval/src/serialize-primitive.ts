@@ -16,7 +16,7 @@ export default function serializePrimitive(value: PrimitiveValue): string {
     return 'null';
   }
   if (typeof value === 'bigint') {
-    return `BigInt("${value}")`;
+    return `${value}n`;
   }
   if (typeof value === 'string') {
     return quote(value);

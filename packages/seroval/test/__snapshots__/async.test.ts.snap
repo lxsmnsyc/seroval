@@ -34,7 +34,7 @@ exports[`serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,2,3]))
 
 exports[`serializeAsync > supports array holes 1`] = `"Promise.resolve([,,,,,,,,,,])"`;
 
-exports[`serializeAsync > supports bigint 1`] = `"Promise.resolve(BigInt(\\"9007199254740991\\"))"`;
+exports[`serializeAsync > supports bigint 1`] = `"Promise.resolve(9007199254740991n)"`;
 
 exports[`serializeAsync > supports strings 1`] = `"Promise.resolve(\\"\\\\\\"hello\\\\\\"\\")"`;
 
