@@ -1,24 +1,34 @@
 /* eslint-disable no-await-in-loop */
-import { join } from './array';
-import { lookupRefsAsync, traverseAsync } from './async';
-import {
-  SerializationContext,
-  getRefParam,
-  createRef,
-  resolvePatches,
-  createSerializationContext,
-} from './context';
-import isPrimitive from './is-primitive';
+import { isPrimitive } from './checks';
 import serializePrimitive from './serialize-primitive';
-import { lookupRefs, traverseSync } from './sync';
+import {
+  createRef,
+  createSerializationContext,
+  generateTreeAsync,
+  generateTreeSync,
+  getRefParam,
+  resolvePatches,
+  SerializationContext,
+  serializeTree,
+} from './tree';
 import {
   AsyncServerValue,
   NonPrimitiveServerValue,
   PrimitiveValue,
   ServerValue,
+  CommonServerValue,
+  SemiPrimitiveValue,
+  ErrorValue,
 } from './types';
 
-export { AsyncServerValue, ServerValue, PrimitiveValue };
+export {
+  AsyncServerValue,
+  ServerValue,
+  PrimitiveValue,
+  CommonServerValue,
+  SemiPrimitiveValue,
+  ErrorValue,
+};
 
 function finalize<T extends ServerValue | AsyncServerValue>(
   ctx: SerializationContext,
@@ -31,7 +41,7 @@ function finalize<T extends ServerValue | AsyncServerValue>(
     const index = getRefParam(ctx, createRef(ctx, source));
     const patches = resolvePatches(ctx);
     const params = ctx.vars.length > 1
-      ? `(${join(ctx.vars, ',')})`
+      ? `(${ctx.vars.join(',')})`
       : ctx.vars[0];
     // Source is probably already assigned
     if (result.startsWith(`${index}=`)) {
@@ -50,19 +60,8 @@ export function serialize(source: ServerValue) {
     return serializePrimitive(source);
   }
   const ctx = createSerializationContext();
-  // Lookup possible shared references
-  lookupRefs(ctx, source);
-  // Add shared references to refs
-  for (const [key, value] of ctx.refCount.entries()) {
-    if (value > 1) {
-      createRef(ctx, key);
-    }
-  }
-  // Get top-level serialization
-  const result = traverseSync(ctx, source);
-  if (typeof result !== 'string') {
-    throw new Error('Unreachable error');
-  }
+  const tree = generateTreeSync(ctx, source);
+  const result = serializeTree(ctx, tree);
   return finalize(ctx, source, result);
 }
 
@@ -71,19 +70,8 @@ export async function serializeAsync(source: AsyncServerValue) {
     return serializePrimitive(source);
   }
   const ctx = createSerializationContext();
-  // Lookup possible shared references
-  await lookupRefsAsync(ctx, source);
-  // Add shared references to refs
-  for (const [key, value] of ctx.refCount.entries()) {
-    if (value > 1) {
-      createRef(ctx, key);
-    }
-  }
-  // Get top-level serialization
-  const result = await traverseAsync(ctx, source);
-  if (typeof result !== 'string') {
-    throw new Error('Unreachable error');
-  }
+  const tree = await generateTreeAsync(ctx, source);
+  const result = serializeTree(ctx, tree);
   return finalize(ctx, source, result);
 }
 

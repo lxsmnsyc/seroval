@@ -15,18 +15,21 @@ export default function serializePrimitive(value: PrimitiveValue): string {
   if (value === null) {
     return 'null';
   }
-  // negative 0 isn't the same as 0
-  if (Object.is(value, -0)) {
-    return '-0';
-  }
   if (typeof value === 'bigint') {
-    return `BigInt("${value}")`;
+    return `${value}n`;
   }
   if (typeof value === 'string') {
     return quote(value);
   }
-  if (value.constructor === Date) {
-    return `new Date("${value.toISOString()}")`;
+  // negative 0 isn't the same as 0
+  if (Object.is(value, -0)) {
+    return '-0';
+  }
+  if (Object.is(value, Infinity)) {
+    return '1/0';
+  }
+  if (Object.is(value, -Infinity)) {
+    return '-1/0';
   }
   return String(value);
 }

@@ -1,5 +1,4 @@
-import seroval from 'seroval';
-
+import { serialize } from 'seroval';
 
 const a = new Map([['name', 'a']]);
 const b = new Map([['name', 'b']]);
@@ -13,6 +12,5 @@ d.set('right', b);
 a.set('children', [c, d]);
 b.set('children', [c, d]);
 
-const result = seroval({ a, b, c, d });
+const result = serialize({ a, b, c, d });
 console.log(result);
-

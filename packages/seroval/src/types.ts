@@ -5,23 +5,56 @@ export type PrimitiveValue =
   | number
   | undefined
   | null
-  | bigint
+  | bigint;
+
+export type ErrorValue =
+  | Error
+  | AggregateError
+  | EvalError
+  | RangeError
+  | ReferenceError
+  | TypeError
+  | SyntaxError
+  | URIError;
+
+export type TypedArrayValue =
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array
+  | BigInt64Array
+  | BigUint64Array;
+
+export type SemiPrimitiveValue =
+  | RegExp
   | Date
-  | RegExp;
+  | TypedArrayValue;
+
+export type CommonServerValue =
+  | PrimitiveValue
+  | SemiPrimitiveValue
+  | ErrorValue;
 
 export type ServerValue =
-  | PrimitiveValue
+  | CommonServerValue
   | Array<ServerValue>
   | readonly ServerValue[]
+  | Iterable<ServerValue>
   | { [key: string | number]: ServerValue }
   | { readonly [key: string | number]: ServerValue }
   | Set<ServerValue>
   | Map<ServerValue, ServerValue>;
 
 export type AsyncServerValue =
-  | PrimitiveValue
+  | CommonServerValue
   | Array<AsyncServerValue>
   | readonly AsyncServerValue[]
+  | Iterable<AsyncServerValue>
   | { [key: string | number]: AsyncServerValue }
   | { readonly [key: string | number]: AsyncServerValue }
   | Set<AsyncServerValue>

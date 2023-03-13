@@ -11,8 +11,8 @@ describe('serializeAsync', () => {
     const value = Math.random();
     expect(await serializeAsync(Promise.resolve(value))).toBe(`Promise.resolve(${value})`);
     expect(await serializeAsync(Promise.resolve(NaN))).toBe('Promise.resolve(NaN)');
-    expect(await serializeAsync(Promise.resolve(Infinity))).toBe('Promise.resolve(Infinity)');
-    expect(await serializeAsync(Promise.resolve(-Infinity))).toBe('Promise.resolve(-Infinity)');
+    expect(await serializeAsync(Promise.resolve(Infinity))).toBe('Promise.resolve(1/0)');
+    expect(await serializeAsync(Promise.resolve(-Infinity))).toBe('Promise.resolve(-1/0)');
     expect(await serializeAsync(Promise.resolve(-0))).toBe('Promise.resolve(-0)');
   });
   it('supports strings', async () => {
@@ -91,6 +91,23 @@ describe('serializeAsync', () => {
     expect(0 in back).toBeFalsy();
     expect(back[0]).toBe(undefined);
     expect(back.length).toBe(example.length);
+  });
+  describe('Error', () => {
+    it('supports Error.prototype.name', async () => {
+      const a = new Error('A');
+      a.name = 'ExampleError';
+      expect(await serializeAsync(Promise.resolve(a))).toMatchSnapshot();
+    });
+    it('supports Error.prototype.cause', async () => {
+      const a = new Error('A');
+      const b = new Error('B');
+      b.cause = Promise.resolve(a);
+      expect(await serializeAsync(b)).toMatchSnapshot();
+    });
+    it('supports other Error classes', async () => {
+      const a = new ReferenceError('A');
+      expect(await serializeAsync(Promise.resolve(a))).toMatchSnapshot();
+    });
   });
   describe('self cyclic references', () => {
     it('supports Arrays', async () => {

@@ -58,25 +58,25 @@ const result = serialize(object);
 Output (as a string):
 
 ```js
-((h,j,k,m)=>(h={number:[0.5906513825027921,-0,NaN,Infinity,-Infinity],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:BigInt("9007199254740991"),array:j=[,,,,k=new Map([["hello","world"],["mutual",m=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-02-06T06:16:00.384Z"),map:k,set:m},j[3]=j,h.self=h,k.set("self",k),m.add(m).add(j),h))()
+((h,j,k,m)=>(m={number:[0.4178420745429774,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-13T00:52:11.335Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
-((h, j, k, m) => (h = {
-  number: [0.5906513825027921, -0, NaN, Infinity, -Infinity],
+((h, j, k, m) => (m = {
+  number: [0.4178420745429774, -0, NaN, 1/0, -1/0],
   string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
   boolean: [!0, !1],
   null: null,
   undefined: void 0,
-  bigint: BigInt("9007199254740991"),
-  array: j = [, , , , k = new Map([
+  bigint: 9007199254740991n,
+  array: h = [, , , , j = new Map([
     ["hello", "world"],
-    ["mutual", m = new Set(["hello", "world"])]
+    ["mutual", k = new Set(["hello", "world"])]
   ])],
   regexp: /[a-z0-9]+/i,
-  date: new Date("2023-02-06T06:16:00.384Z"),
-  map: k,
-  set: m
-}, j[3] = j, h.self = h, k.set("self", k), m.add(m).add(j), h))()
+  date: new Date("2023-03-13T00:52:11.335Z"),
+  map: j,
+  set: k
+}, h[3] = h, j.set("self", j), k.add(k).add(h), m.self = m, m))()
 ```
 
 ### Mutual cyclic example
@@ -102,7 +102,7 @@ const result = serialize({ a, b, c, d });
 Output (as a string):
 
 ```js
-((h,j,k,m,o,q)=>(q={a:h=new Map([["name","a"],["children",[j=new Map([["name","c"],["right",k=new Map([["name","b"],["children",o=[,m=new Map([["name","d"]])]]])]]),m]]]),b:k,c:j,d:m},o[0]=j,j.set("left",h),m.set("left",h).set("right",k),q))()
+((h,j,k,m,o,q)=>(q={a:h=new Map([["name","a"],["children",[j=new Map([["name","c"],["right",o=new Map([["name","b"],["children",k=[,m=new Map([["name","d"]])]]])]]),m]]]),b:o,c:j,d:m},j.set("left",h),k[0]=j,m.set("left",h).set("right",o),q))()
 
 // Formatted
 ((h, j, k, m, o, q) => (q = {
@@ -110,18 +110,18 @@ Output (as a string):
     ["name", "a"],
     ["children", [j = new Map([
       ["name", "c"],
-      ["right", k = new Map([
+      ["right", o = new Map([
         ["name", "b"],
-        ["children", o = [, m = new Map([
+        ["children", k = [, m = new Map([
           ["name", "d"]
         ])]]
       ])]
     ]), m]]
   ]),
-  b: k,
+  b: o,
   c: j,
   d: m
-}, o[0] = j, j.set("left", h), m.set("left", h).set("right", k), q))()
+}, j.set("left", h), k[0] = j, m.set("left", h).set("right", o), q))()
 ```
 
 ## Deserialization
@@ -172,7 +172,28 @@ The following values are the only values accepted by `seroval`:
   - `Date`
   - `Map`
   - `Set`
+- `TypedArray`
+  - `Int8Array`
+  - `Int16Array`
+  - `Int32Array`
+  - `Uint8Array`
+  - `Uint16Array`
+  - `Uint32Array`
+  - `Uint8ClampedArray`
+  - `Float32Array`
+  - `Float64Array`
+  - `BigInt64Array`
+  - `BigUint64Array`
+- `Error`
+  - `AggregateError`
+  - `EvalError`
+  - `RangeError`
+  - `ReferenceError`
+  - `SyntaxError`
+  - `TypeError`
+  - `URIError`
 - `Promise` (with `serializeAsync`)
+- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - Cyclic references (both self and mutual)
 
 ## Sponsors
