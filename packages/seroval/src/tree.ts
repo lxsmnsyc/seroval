@@ -1,3 +1,5 @@
+/* eslint-disable guard-for-in */
+/* eslint-disable @typescript-eslint/no-for-in-array */
 /* eslint-disable no-await-in-loop */
 import {
   isIterable,
@@ -90,12 +92,15 @@ function mergeAssignments(ctx: SerializationContext) {
     const item = ctx.assignments[i];
     if (item.type === prev.type) {
       if (item.type === 'index' && item.value === prev.value) {
+        // Merge if the right-hand value is the same
+        // saves at least 2 chars
         current = {
           type: 'index',
           source: item.source,
           value: getAssignmentExpression(current),
         };
       } else if (item.type === 'map' && item.source === prev.source) {
+        // Maps has chaining methods, merge if source is the same
         current = {
           type: 'map',
           source: getAssignmentExpression(current),
@@ -103,12 +108,14 @@ function mergeAssignments(ctx: SerializationContext) {
           value: item.value,
         };
       } else if (item.type === 'set' && item.source === prev.source) {
+        // Sets has chaining methods too
         current = {
           type: 'set',
           source: getAssignmentExpression(current),
           value: item.value,
         };
       } else {
+        // Different assignment, push current
         newAssignments.push(current);
         current = item;
       }
@@ -127,25 +134,32 @@ function mergeAssignments(ctx: SerializationContext) {
 export function resolvePatches(ctx: SerializationContext) {
   if (ctx.assignments.length) {
     let result = '';
-
     for (const assignment of mergeAssignments(ctx)) {
       result += `${getAssignmentExpression(assignment)},`;
     }
-
     return result;
   }
   return '';
 }
 
+/**
+ * Increments the number of references the referenced value has
+ */
 function insertRef(ctx: SerializationContext, current: number) {
   const count = ctx.refCount[current] || 0;
   ctx.refCount[current] = count + 1;
 }
 
+/**
+ * Checks if the value is referenced
+ */
 function hasRefs(ctx: SerializationContext, current: number) {
   return (ctx.refCount[current] || 0) >= 1;
 }
 
+/**
+ * Creates a reference ID from the given values
+ */
 export function createRef(
   ctx: SerializationContext,
   index: unknown,
@@ -159,6 +173,12 @@ export function createRef(
   return id;
 }
 
+/**
+ * Creates a new reference ID from a given reference ID
+ * This new reference ID means that the reference itself
+ * has been referenced at least once, and is used to generate
+ * the variables
+ */
 function createValidRef(
   ctx: SerializationContext,
   index: number,
@@ -172,6 +192,10 @@ function createValidRef(
   return id;
 }
 
+/**
+ * Creates the reference param (identifier) from the given reference ID
+ * Calling this function means the value has been referenced somewhere
+ */
 export function getRefParam(ctx: SerializationContext, index: number) {
   const actualIndex = createValidRef(ctx, index);
   if (ctx.vars[actualIndex]) {
@@ -182,12 +206,20 @@ export function getRefParam(ctx: SerializationContext, index: number) {
   return result;
 }
 
+/**
+ * Generates the inlined assignment for the reference
+ * This is different from the assignments array as this one
+ * signifies creation rather than mutation
+ */
 function assignRef(
   ctx: SerializationContext,
   index: number,
   value: string,
 ) {
-  return `${getRefParam(ctx, index)}=${value}`;
+  if (hasRefs(ctx, index)) {
+    return `${getRefParam(ctx, index)}=${value}`;
+  }
+  return value;
 }
 
 function createAssignment(
@@ -287,9 +319,12 @@ const EXCLUDED_ERROR_KEYS = {
 function getErrorOptions(error: Error) {
   let options: Record<string, any> | undefined;
   const constructor = getErrorConstructor(error);
+  // Name has been modified
   if (error.name !== constructor) {
     options = { name: error.name };
   } else if (error.constructor.name !== constructor) {
+    // Otherwise, name is overriden because
+    // the Error class is extended
     options = { name: error.constructor.name };
   }
   const names = Object.getOwnPropertyNames(error);
@@ -392,12 +427,17 @@ function generateRef(
   ctx: SerializationContext,
   current: unknown,
 ): number | SerovalReferenceNode {
+  // Check if reference number already exists
   const ref = ctx.refs.has(current);
   if (ref) {
+    // Exists, means this value is currently
+    // being referenced
     const refID = ctx.refs.get(current) || 0;
+    // Increment reference counter
     insertRef(ctx, refID);
     return [SerovalNodeType.Reference, refID];
   }
+  // Create a new reference ID
   const id = ctx.refs.size;
   ctx.refs.set(current, id);
   return id;
@@ -456,6 +496,8 @@ export function generateTreeSync(
   if (isPrimitive(current)) {
     return [SerovalNodeType.Primitive, current];
   }
+  // Non-primitive values needs a reference ID
+  // mostly because the values themselves are stateful
   const id = generateRef(ctx, current);
   if (Array.isArray(id)) {
     return id;
@@ -468,12 +510,14 @@ export function generateTreeSync(
     const nodes: SerovalNode[] = [];
     const deferred: ServerValue[] = [];
     for (const item of current.keys()) {
+      // Iterables are lazy, so the evaluation must be deferred
       if (isIterable(item)) {
         deferred.push(item);
       } else {
         nodes.push(generateTreeSync(ctx, item));
       }
     }
+    // Parse deferred items
     for (const item of deferred) {
       nodes.push(generateTreeSync(ctx, item));
     }
@@ -483,6 +527,7 @@ export function generateTreeSync(
     const nodes: [key: SerovalNode, value: SerovalNode][] = [];
     const deferred: [ServerValue, ServerValue][] = [];
     for (const [key, value] of current.entries()) {
+      // Either key or value might be an iterable
       if (isIterable(key) || isIterable(value)) {
         deferred.push([key, value]);
       } else {
@@ -501,19 +546,16 @@ export function generateTreeSync(
   if (Array.isArray(current)) {
     const nodes = new Array<SerovalNode>(current.length);
     const deferred = new Array<ServerValue>(current.length);
-    for (const [key, item] of current.entries()) {
-      if (key in current) {
-        if (isIterable(item)) {
-          deferred[key] = item;
-        } else {
-          nodes[key] = generateTreeSync(ctx, item);
-        }
-      }
-    }
-    for (const [key, item] of deferred.entries()) {
-      if (key in deferred) {
+    for (const key in current) {
+      const item = current[key];
+      if (isIterable(item)) {
+        deferred[key] = item;
+      } else {
         nodes[key] = generateTreeSync(ctx, item);
       }
+    }
+    for (const key in deferred) {
+      nodes[key] = generateTreeSync(ctx, deferred[key]);
     }
     return [SerovalNodeType.Array, nodes, id];
   }
@@ -544,6 +586,7 @@ export function generateTreeSync(
   if (isIterable(current)) {
     const options = getIterableOptions(current);
     return [SerovalNodeType.Iterable, {
+      // Parse options first before the items
       options: options
         ? generateTreeSync(ctx, options as ServerValue)
         : undefined,
@@ -632,19 +675,16 @@ export async function generateTreeAsync(
   if (Array.isArray(current)) {
     const nodes = new Array<SerovalNode>(current.length);
     const deferred = new Array<AsyncServerValue>(current.length);
-    for (const [key, item] of current.entries()) {
-      if (key in current) {
-        if (isIterable(item)) {
-          deferred[key] = item;
-        } else {
-          nodes[key] = await generateTreeAsync(ctx, item);
-        }
-      }
-    }
-    for (const [key, item] of deferred.entries()) {
-      if (key in deferred) {
+    for (const key in current) {
+      const item = current[key];
+      if (isIterable(item)) {
+        deferred[key] = item;
+      } else {
         nodes[key] = await generateTreeAsync(ctx, item);
       }
+    }
+    for (const key in deferred) {
+      nodes[key] = await generateTreeAsync(ctx, deferred[key]);
     }
     return [SerovalNodeType.Array, nodes, id];
   }
@@ -715,44 +755,34 @@ export function serializeTree(
       return getRefParam(ctx, value);
     case SerovalNodeType.Promise: {
       let serialized: string;
+      // Check if resolved value is a parent expression
       if (isReferenceInStack(ctx, value)) {
+        // A Promise trick, reference the value
+        // inside the `then` expression so that
+        // the Promise evaluates after the parent
+        // has initialized
         serialized = `Promise.resolve().then(()=>${getRefParam(ctx, value[1])})`;
       } else {
         ctx.stack.push(id);
         const result = serializeTree(ctx, value);
         ctx.stack.pop();
+        // just inline the value/reference here
         serialized = `Promise.resolve(${result})`;
       }
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, serialized);
     }
-    case SerovalNodeType.Date: {
-      const serialized = `new Date("${value.toISOString()}")`;
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
-    }
-    case SerovalNodeType.RegExp: {
-      const serialized = String(value);
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
-    }
+    case SerovalNodeType.Date:
+      return assignRef(ctx, id, `new Date("${value.toISOString()}")`);
+    case SerovalNodeType.RegExp:
+      return assignRef(ctx, id, String(value));
     case SerovalNodeType.TypedArray: {
+      // BigInt typed arrays are broken for toString()
       const values = [...value.array].map(serializePrimitive).join(',');
       let args = `[${values}]`;
       if (value.array.byteOffset !== 0) {
         args += `,${value.array.byteOffset}`;
       }
-      const serialized = `new ${value.constructor}(${args})`;
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, `new ${value.constructor}(${args})`);
     }
     case SerovalNodeType.Set: {
       let serialized = EMPTY_SET;
@@ -761,10 +791,12 @@ export function serializeTree(
         ctx.stack.push(id);
         for (const item of value) {
           if (isReferenceInStack(ctx, item)) {
-            // Received a ref, this might be a recursive ref, defer an assignment
+            // Since this is an assignment
+            // Set instance must have a reference too
             insertRef(ctx, id);
             createSetAdd(ctx, id, getRefParam(ctx, item[1]));
           } else {
+            // Push directly
             values.push(serializeTree(ctx, item));
           }
         }
@@ -773,10 +805,7 @@ export function serializeTree(
           serialized = `new Set([${values.join(',')}])`;
         }
       }
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, serialized);
     }
     case SerovalNodeType.Map: {
       let serialized = EMPTY_MAP;
@@ -784,21 +813,34 @@ export function serializeTree(
         const values: string[] = [];
         ctx.stack.push(id);
         for (const [key, val] of value) {
+          // Check if key is a parent
           if (isReferenceInStack(ctx, key)) {
+            // Create reference for the map instance
             insertRef(ctx, id);
             const keyRef = getRefParam(ctx, key[1]);
+            // Check if value is a parent
             if (isReferenceInStack(ctx, val)) {
               const valueRef = getRefParam(ctx, val[1]);
+              // Register an assignment since
+              // both key and value are a parent of this
+              // Map instance
               createMapSet(ctx, id, keyRef, valueRef);
             } else {
+              // Reset the stack
+              // This is required because the serialized
+              // value is no longer part of the expression
+              // tree and has been moved to the deferred
+              // assignment
               const parent = ctx.stack;
               ctx.stack = [];
               createMapSet(ctx, id, keyRef, serializeTree(ctx, val));
               ctx.stack = parent;
             }
           } else if (isReferenceInStack(ctx, val)) {
+            // Create ref for the Map instance
             insertRef(ctx, id);
             const valueRef = getRefParam(ctx, val[1]);
+            // Reset stack for the key serialization
             const parent = ctx.stack;
             ctx.stack = [];
             createMapSet(ctx, id, serializeTree(ctx, key), valueRef);
@@ -808,24 +850,32 @@ export function serializeTree(
           }
         }
         ctx.stack.pop();
+        // Check if there are any values
+        // so that the empty Map constructor
+        // can be used instead
         if (values.length) {
           serialized = `new Map([${values.join(',')}])`;
         }
       }
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, serialized);
     }
     case SerovalNodeType.Array: {
+      // This is different than Map and Set
+      // because we also need to serialize
+      // the holes of the Array
       let values = '';
 
       ctx.stack.push(id);
       for (let i = 0, len = value.length; i < len; i++) {
         const item = value[i];
+        // Check if index is a hole
         if (i in value) {
+          // Check if item is a parent
           if (isReferenceInStack(ctx, item)) {
+            // Create reference to this array for
+            // deferred assignment
             insertRef(ctx, id);
+            // Push an assignment
             createArrayAssign(ctx, id, i, getRefParam(ctx, item[1]));
             values += ',';
           } else {
@@ -835,32 +885,29 @@ export function serializeTree(
             }
           }
         } else {
+          // Add an empty item
           values += ',';
         }
       }
       ctx.stack.pop();
-      const serialized = `[${values}]`;
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, `[${values}]`);
     }
     case SerovalNodeType.AggregateError: {
+      // Serialize the required arguments
       const args = [serializeTree(ctx, value.errors), quote(value.message)];
-
+      // cause is an optional argument
       if (value.cause) {
         args.push(serializeTree(ctx, value.cause));
       }
       let serialized = `new AggregateError(${args.join(',')})`;
+      // `AggregateError` might've been extended
+      // either through class or custom properties
+      // Make sure to assign extra properties
       if (value.options) {
         const options = serializeTree(ctx, value.options);
         serialized = `Object.assign(${serialized},${options})`;
       }
-
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, serialized);
     }
     case SerovalNodeType.Error: {
       const args = [quote(value.message)];
@@ -872,11 +919,7 @@ export function serializeTree(
         const options = serializeTree(ctx, value.options);
         serialized = `Object.assign(${serialized},${options})`;
       }
-
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, serialized);
     }
     case SerovalNodeType.Iterable: {
       const parent = ctx.stack;
@@ -890,10 +933,7 @@ export function serializeTree(
         ctx.stack.pop();
         serialized = `Object.assign(${serialized},${options})`;
       }
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, serialized);
     }
     case SerovalNodeType.NullConstructor:
     case SerovalNodeType.Object: {
@@ -932,10 +972,7 @@ export function serializeTree(
       if (type === SerovalNodeType.NullConstructor) {
         serialized = `Object.assign(Object.create(null),${serialized})`;
       }
-      if (hasRefs(ctx, id)) {
-        return assignRef(ctx, id, serialized);
-      }
-      return serialized;
+      return assignRef(ctx, id, serialized);
     }
     default:
       throw new Error('Unsupported type');
