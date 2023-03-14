@@ -481,53 +481,53 @@ function generateSemiPrimitiveValue(
     return [SerovalNodeType.RegExp, current, id];
   }
   if (constructorCheck<Int8Array>(current, Int8Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Int8Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Int8Array"');
     return [SerovalNodeType.TypedArray, ['Int8Array', current], id];
   }
   if (constructorCheck<Int16Array>(current, Int16Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Int16Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Int16Array"');
     return [SerovalNodeType.TypedArray, ['Int16Array', current], id];
   }
   if (constructorCheck<Int32Array>(current, Int32Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Int32Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Int32Array"');
     return [SerovalNodeType.TypedArray, ['Int32Array', current], id];
   }
   if (constructorCheck<Uint8Array>(current, Uint8Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Uint8Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Uint8Array"');
     return [SerovalNodeType.TypedArray, ['Uint8Array', current], id];
   }
   if (constructorCheck<Uint16Array>(current, Uint16Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Uint16Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Uint16Array"');
     return [SerovalNodeType.TypedArray, ['Uint16Array', current], id];
   }
   if (constructorCheck<Uint32Array>(current, Uint32Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Uint32Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Uint32Array"');
     return [SerovalNodeType.TypedArray, ['Uint32Array', current], id];
   }
   if (constructorCheck<Uint8ClampedArray>(current, Uint8ClampedArray)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Uint8ClampedArray"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Uint8ClampedArray"');
     return [SerovalNodeType.TypedArray, ['Uint8ClampedArray', current], id];
   }
   if (constructorCheck<Float32Array>(current, Float32Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Float32Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Float32Array"');
     return [SerovalNodeType.TypedArray, ['Float32Array', current], id];
   }
   if (constructorCheck<Float64Array>(current, Float64Array)) {
-    assert(ctx.features.has('typed-arrays'), 'Unsupported value type "Float64Array"');
+    assert(ctx.features.has(Feature.TypedArray), 'Unsupported value type "Float64Array"');
     return [SerovalNodeType.TypedArray, ['Float64Array', current], id];
   }
   if (constructorCheck<BigInt64Array>(current, BigInt64Array)) {
     assert(
-      ctx.features.has('typed-arrays')
-      && ctx.features.has('bigint'),
+      ctx.features.has(Feature.TypedArray)
+      && ctx.features.has(Feature.BigInt),
       'Unsupported value type "BigInt64Array"',
     );
     return [SerovalNodeType.TypedArray, ['BigInt64Array', current], id];
   }
   if (constructorCheck<BigUint64Array>(current, BigUint64Array)) {
     assert(
-      ctx.features.has('typed-arrays')
-      && ctx.features.has('bigint'),
+      ctx.features.has(Feature.TypedArray)
+      && ctx.features.has(Feature.BigInt),
       'Unsupported value type "BigUint64Array"',
     );
     return [SerovalNodeType.TypedArray, ['BigUint64Array', current], id];
@@ -578,7 +578,7 @@ export function generateTreeSync(
     return semiPrimitive;
   }
   if (constructorCheck<Set<ServerValue>>(current, Set)) {
-    assert(ctx.features.has('set'), 'Unsupported type "Set"');
+    assert(ctx.features.has(Feature.Set), 'Unsupported type "Set"');
     const nodes: SerovalNode[] = [];
     const deferred: ServerValue[] = [];
     for (const item of current.keys()) {
@@ -596,7 +596,7 @@ export function generateTreeSync(
     return [SerovalNodeType.Set, nodes, id];
   }
   if (constructorCheck<Map<ServerValue, ServerValue>>(current, Map)) {
-    assert(ctx.features.has('map'), 'Unsupported type "Map"');
+    assert(ctx.features.has(Feature.Map), 'Unsupported type "Map"');
     const keyNodes: SerovalNode[] = [];
     const valueNodes: SerovalNode[] = [];
     const deferredKey: ServerValue[] = [];
@@ -639,7 +639,7 @@ export function generateTreeSync(
     }
     return [SerovalNodeType.Array, nodes, id];
   }
-  if (current instanceof AggregateError && ctx.features.has('aggregate-error')) {
+  if (current instanceof AggregateError && ctx.features.has(Feature.AggregateError)) {
     const options = getErrorOptions(current);
     const optionsNode = options
       ? serializeProperties(options)
@@ -659,7 +659,7 @@ export function generateTreeSync(
     ];
   }
   if (isIterable(current)) {
-    assert(ctx.features.has('symbol-iterator'), 'Unsupported type "Iterable"');
+    assert(ctx.features.has(Feature.SymbolIterator), 'Unsupported type "Iterable"');
     const options = getIterableOptions(current);
     return [SerovalNodeType.Iterable, [
       // Parse options first before the items
@@ -719,7 +719,7 @@ export async function generateTreeAsync(
     return semiPrimitive;
   }
   if (isPromise(current)) {
-    assert(ctx.features.has('promise'), 'Unsupported type "Promise"');
+    assert(ctx.features.has(Feature.Promise), 'Unsupported type "Promise"');
     return current.then(async (value) => [
       SerovalNodeType.Promise,
       await generateTreeAsync(ctx, value),
@@ -727,7 +727,7 @@ export async function generateTreeAsync(
     ]);
   }
   if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
-    assert(ctx.features.has('set'), 'Unsupported type "Set"');
+    assert(ctx.features.has(Feature.Set), 'Unsupported type "Set"');
     const nodes: SerovalNode[] = [];
     const deferred: AsyncServerValue[] = [];
     for (const item of current.keys()) {
@@ -743,7 +743,7 @@ export async function generateTreeAsync(
     return [SerovalNodeType.Set, nodes, id];
   }
   if (constructorCheck<Map<AsyncServerValue, AsyncServerValue>>(current, Map)) {
-    assert(ctx.features.has('map'), 'Unsupported type "Map"');
+    assert(ctx.features.has(Feature.Map), 'Unsupported type "Map"');
     const keyNodes: SerovalNode[] = [];
     const valueNodes: SerovalNode[] = [];
     const deferredKey: AsyncServerValue[] = [];
@@ -806,7 +806,7 @@ export async function generateTreeAsync(
     ];
   }
   if (isIterable(current)) {
-    assert(ctx.features.has('symbol-iterator'), 'Unsupported type "Iterable"');
+    assert(ctx.features.has(Feature.SymbolIterator), 'Unsupported type "Iterable"');
     const options = getIterableOptions(current);
     return [SerovalNodeType.Iterable, [
       options
@@ -844,7 +844,7 @@ export function serializePrimitive(
     return 'null';
   }
   if (typeof value === 'bigint') {
-    assert(ctx.features.has('bigint'), 'Unsupported type "BigInt"');
+    assert(ctx.features.has(Feature.BigInt), 'Unsupported type "BigInt"');
     return `${value}n`;
   }
   if (typeof value === 'string') {
@@ -1089,7 +1089,7 @@ export function serializeTree(
       // either through class or custom properties
       // Make sure to assign extra properties
       if (value[1]) {
-        if (ctx.features.has('object-assign')) {
+        if (ctx.features.has(Feature.ObjectAssign)) {
           const options = serializeObject(id, value[1]);
           serialized = `Object.assign(${serialized},${options})`;
         } else {
@@ -1106,7 +1106,7 @@ export function serializeTree(
     case SerovalNodeType.Error: {
       let serialized = `new ${value[0]}(${quote(value[1])})`;
       if (value[2]) {
-        if (ctx.features.has('object-assign')) {
+        if (ctx.features.has(Feature.ObjectAssign)) {
           const options = serializeObject(id, value[2]);
           serialized = `Object.assign(${serialized},${options})`;
         } else {
@@ -1126,20 +1126,20 @@ export function serializeTree(
       const values = serializeTree(ctx, value[1]);
       ctx.stack = parent;
       let serialized: string;
-      if (ctx.features.has('array-values')) {
+      if (ctx.features.has(Feature.ArrayPrototypeValues)) {
         serialized = `${values}.values()`;
       } else {
         serialized = `${values}[Symbol.iterator]()`;
       }
-      if (ctx.features.has('arrow-function')) {
+      if (ctx.features.has(Feature.ArrowFunction)) {
         serialized = `{[Symbol.iterator]:()=>${serialized}}`;
-      } else if (ctx.features.has('method-shorthand')) {
+      } else if (ctx.features.has(Feature.MethodShorthand)) {
         serialized = `{[Symbol.iterator](){return ${serialized}}}`;
       } else {
         serialized = `{[Symbol.iterator]:function(){return ${serialized}}}`;
       }
       if (value[0]) {
-        if (ctx.features.has('object-assign')) {
+        if (ctx.features.has(Feature.ObjectAssign)) {
           const options = serializeObject(id, value[0]);
           serialized = `Object.assign(${serialized},${options})`;
         } else {
@@ -1155,7 +1155,7 @@ export function serializeTree(
     }
     case SerovalNodeType.NullConstructor: {
       let serialized = 'Object.create(null)';
-      if (ctx.features.has('object-assign')) {
+      if (ctx.features.has(Feature.ObjectAssign)) {
         const fields = serializeObject(id, value);
         if (fields !== '{}') {
           serialized = `Object.assign(${serialized},${fields})`;

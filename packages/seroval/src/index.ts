@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { isPrimitive } from './checks';
+import { Feature } from './compat';
 import {
   createRef,
   createSerializationContext,
@@ -53,7 +54,7 @@ function finalize<T extends NonPrimitiveServerValue<ServerValue | AsyncServerVal
       ? ctx.vars.join(',')
       : ctx.vars[0];
     // Source is probably already assigned
-    if (ctx.features.has('arrow-function')) {
+    if (ctx.features.has(Feature.ArrowFunction)) {
       params = ctx.vars.length > 1 || ctx.vars.length === 0
         ? `(${params})`
         : params;

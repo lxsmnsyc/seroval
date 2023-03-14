@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 /**
  * References
  * - https://kangax.github.io/compat-table/es6/
@@ -38,25 +39,27 @@ export interface PlatformVersion {
 
 export type Platform = keyof PlatformVersion;
 
-interface VersionTable {
-  'aggregate-error': PlatformVersion;
-  'array-values': PlatformVersion;
-  'arrow-function': PlatformVersion;
-  'bigint': PlatformVersion;
-  'map': PlatformVersion;
-  'method-shorthand': PlatformVersion;
-  'object-assign': PlatformVersion;
-  'promise': PlatformVersion;
-  'set': PlatformVersion;
-  'symbol-iterator': PlatformVersion;
-  'typed-arrays': PlatformVersion;
+export const enum Feature {
+  AggregateError,
+  ArrayPrototypeValues,
+  ArrowFunction,
+  BigInt,
+  Map,
+  MethodShorthand,
+  ObjectAssign,
+  Promise,
+  Set,
+  SymbolIterator,
+  TypedArray,
 }
 
-export type Feature = keyof VersionTable;
+type VersionTable = {
+  [key in Feature]: PlatformVersion;
+}
 
 const VERSION_TABLE: VersionTable = {
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError#browser_compatibility
-  'aggregate-error': {
+  [Feature.AggregateError]: {
     es: [2021, 0, 0],
     chrome: [85, 0, 0],
     edge: [85, 0, 0],
@@ -69,7 +72,7 @@ const VERSION_TABLE: VersionTable = {
     node: [15, 0, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values#browser_compatibility
-  'array-values': {
+  [Feature.ArrayPrototypeValues]: {
     es: [6, 0, 0],
     chrome: [66, 0, 0],
     edge: [14, 0, 0],
@@ -82,7 +85,7 @@ const VERSION_TABLE: VersionTable = {
     node: [10, 9, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions#browser_compatibility
-  'arrow-function': {
+  [Feature.ArrowFunction]: {
     es: [6, 0, 0],
     chrome: [45, 0, 0],
     edge: [12, 0, 0],
@@ -95,7 +98,7 @@ const VERSION_TABLE: VersionTable = {
     node: [4, 0, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt#browser_compatibility
-  bigint: {
+  [Feature.BigInt]: {
     es: [2020, 0, 0],
     chrome: [67, 0, 0],
     edge: [79, 0, 0],
@@ -108,7 +111,7 @@ const VERSION_TABLE: VersionTable = {
     node: [10, 4, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#browser_compatibility
-  map: {
+  [Feature.Map]: {
     es: [6, 0, 0],
     chrome: [38, 0, 0],
     edge: [12, 0, 0],
@@ -121,7 +124,7 @@ const VERSION_TABLE: VersionTable = {
     node: [0, 12, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions#browser_compatibility
-  'method-shorthand': {
+  [Feature.MethodShorthand]: {
     es: [6, 0, 0],
     chrome: [39, 0, 0],
     edge: [12, 0, 0],
@@ -134,7 +137,7 @@ const VERSION_TABLE: VersionTable = {
     node: [4, 0, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#browser_compatibility
-  'object-assign': {
+  [Feature.ObjectAssign]: {
     es: [6, 0, 0],
     chrome: [45, 0, 0],
     edge: [12, 0, 0],
@@ -147,7 +150,7 @@ const VERSION_TABLE: VersionTable = {
     node: [4, 0, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#browser_compatibility
-  promise: {
+  [Feature.Promise]: {
     es: [6, 0, 0],
     chrome: [32, 0, 0],
     edge: [12, 0, 0],
@@ -160,7 +163,7 @@ const VERSION_TABLE: VersionTable = {
     node: [0, 12, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set#browser_compatibility
-  set: {
+  [Feature.Set]: {
     es: [6, 0, 0],
     chrome: [38, 0, 0],
     edge: [12, 0, 0],
@@ -173,7 +176,7 @@ const VERSION_TABLE: VersionTable = {
     node: [0, 12, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/iterator#browser_compatibility
-  'symbol-iterator': {
+  [Feature.SymbolIterator]: {
     es: [6, 0, 0],
     chrome: [43, 0, 0],
     edge: [12, 0, 0],
@@ -186,7 +189,7 @@ const VERSION_TABLE: VersionTable = {
     node: [0, 12, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#browser_compatibility
-  'typed-arrays': {
+  [Feature.TypedArray]: {
     es: [6, 0, 0],
     chrome: [7, 0, 0],
     edge: [12, 0, 0],
@@ -223,23 +226,19 @@ function getTargetVersions(targets: string | string[]): Target[] {
   return [parseTarget(targets)];
 }
 
-function isFeatureSupported(key: Feature, targets: Target[]) {
-  const base = VERSION_TABLE[key];
-  let flag = true;
-  for (const [platform, version] of targets) {
-    const baseVersion = base[platform];
-    flag = flag && !!baseVersion && (compareVersion(baseVersion, version) <= 0);
-  }
-  return flag;
-}
-
 export function parseTargets(targets: string | string[]): Set<Feature> {
   const parsed = getTargetVersions(targets);
   const flags = new Set<Feature>();
 
   for (const key in VERSION_TABLE) {
-    if (isFeatureSupported(key as Feature, parsed)) {
-      flags.add(key as Feature);
+    const base = VERSION_TABLE[key as unknown as Feature];
+    let flag = true;
+    for (const [platform, version] of parsed) {
+      const baseVersion = base[platform];
+      flag = flag && !!baseVersion && (compareVersion(baseVersion, version) <= 0);
+    }
+    if (flag) {
+      flags.add(Number(key) as unknown as Feature);
     }
   }
 
