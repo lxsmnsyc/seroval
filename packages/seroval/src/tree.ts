@@ -884,14 +884,11 @@ function serializeAssignments(
     ctx.stack = parentStack;
     const key = keys[i];
     const check = Number(key);
-    // Test if key is a valid number or JS identifier
-    // so that we don't have to serialize the key and wrap with brackets
     const parentAssignment = ctx.assignments;
     ctx.assignments = mainAssignments;
-    if (
-      check >= 0
-      || (Number.isNaN(check) && IDENTIFIER_CHECK.test(key))
-    ) {
+    // Test if key is a valid number or JS identifier
+    // so that we don't have to serialize the key and wrap with brackets
+    if (IDENTIFIER_CHECK.test(key) || check >= 0) {
       if (!Number.isNaN(check)) {
         createObjectComputedAssign(ctx, targetRef, key, refParam);
       } else {
@@ -919,23 +916,20 @@ function serializeObject(
     const check = Number(key);
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
-    if (
-      check >= 0
-      || (Number.isNaN(check) && IDENTIFIER_CHECK.test(key))
-    ) {
-      if (isReferenceInStack(ctx, val)) {
-        const refParam = getRefParam(ctx, val[1]);
+    const isIdentifier = IDENTIFIER_CHECK.test(key) || check >= 0;
+    if (isReferenceInStack(ctx, val)) {
+      const refParam = getRefParam(ctx, val[1]);
+      if (isIdentifier) {
         if (!Number.isNaN(check)) {
           createObjectComputedAssign(ctx, sourceID, key, refParam);
         } else {
           createObjectIdentifierAssign(ctx, sourceID, key, refParam);
         }
       } else {
-        result += `${key}:${serializeTree(ctx, val)},`;
+        createObjectComputedAssign(ctx, sourceID, quote(key), refParam);
       }
-    } else if (isReferenceInStack(ctx, val)) {
-      const refParam = getRefParam(ctx, val[1]);
-      createObjectComputedAssign(ctx, sourceID, quote(key), refParam);
+    } else if (isIdentifier) {
+      result += `${key}:${serializeTree(ctx, val)},`;
     } else {
       result += `${quote(key)}:${serializeTree(ctx, val)},`;
     }
