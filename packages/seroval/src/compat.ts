@@ -225,7 +225,7 @@ function parseTarget(target: string): Target {
   return [platform as Platform, [Number(major), Number(minor), Number(patch)]];
 }
 
-export function parseTargets(targets: string | string[]): Target[] {
+function getTargetVersions(targets: string | string[]): Target[] {
   if (Array.isArray(targets)) {
     const versions: Target[] = [];
     for (const target of targets) {
@@ -236,7 +236,7 @@ export function parseTargets(targets: string | string[]): Target[] {
   return [parseTarget(targets)];
 }
 
-export function isFeatureSupported(key: Feature, targets: Target[]) {
+function isFeatureSupported(key: Feature, targets: Target[]) {
   const base = VERSION_TABLE[key];
   let flag = true;
   for (const [platform, version] of targets) {
@@ -244,4 +244,17 @@ export function isFeatureSupported(key: Feature, targets: Target[]) {
     flag = flag && !!baseVersion && (compareVersion(baseVersion, version) <= 0);
   }
   return flag;
+}
+
+export function parseTargets(targets: string | string[]): Set<Feature> {
+  const parsed = getTargetVersions(targets);
+  const flags = new Set<Feature>();
+
+  for (const key in VERSION_TABLE) {
+    if (isFeatureSupported(key as Feature, parsed)) {
+      flags.add(key as Feature);
+    }
+  }
+
+  return flags;
 }
