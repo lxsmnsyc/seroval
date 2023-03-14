@@ -43,7 +43,6 @@ interface VersionTable {
   'array-values': PlatformVersion;
   'arrow-function': PlatformVersion;
   'bigint': PlatformVersion;
-  'error-cause': PlatformVersion;
   'map': PlatformVersion;
   'method-shorthand': PlatformVersion;
   'object-assign': PlatformVersion;
@@ -107,18 +106,6 @@ const VERSION_TABLE: VersionTable = {
     samsung: [9, 0, 0],
     deno: [1, 0, 0],
     node: [10, 4, 0],
-  },
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause#browser_compatibility
-  'error-cause': {
-    es: [2022, 0, 0],
-    chrome: [93, 0, 0],
-    edge: [93, 0, 0],
-    firefox: [91, 0, 0],
-    safari: [15, 0, 0],
-    ios: [15, 0, 0],
-    samsung: [17, 0, 0],
-    deno: [1, 13, 0],
-    node: [16, 9, 0],
   },
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#browser_compatibility
   map: {
