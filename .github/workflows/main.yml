@@ -1,0 +1,33 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 7
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Clean
+        run: pnpm recursive clean
+        env:
+          CI: true
+
+      - name: Build
+        run: pnpm recursive build
+        env:
+          CI: true
+
+      - name: Begin Tests
+        run: pnpm recursive test
+        env:
+          CI: true
