@@ -10,7 +10,8 @@
     },
     "publish": {
       "allowBranch": [
-        "main"
+        "main",
+        "next"
       ],
       "registry": "https://registry.npmjs.org/"
     }
