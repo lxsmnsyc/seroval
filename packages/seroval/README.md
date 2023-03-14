@@ -58,11 +58,11 @@ const result = serialize(object);
 Output (as a string):
 
 ```js
-((h,j,k,m)=>(m={number:[0.4178420745429774,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-13T00:52:11.335Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
+((h,j,k,m)=>(m={number:[0.5623457676854244,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-14T11:16:24.879Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
 ((h, j, k, m) => (m = {
-  number: [0.4178420745429774, -0, NaN, 1/0, -1/0],
+  number: [0.5623457676854244, -0, NaN, 1 / 0, -1 / 0],
   string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
   boolean: [!0, !1],
   null: null,
@@ -73,7 +73,7 @@ Output (as a string):
     ["mutual", k = new Set(["hello", "world"])]
   ])],
   regexp: /[a-z0-9]+/i,
-  date: new Date("2023-03-13T00:52:11.335Z"),
+  date: new Date("2023-03-14T11:16:24.879Z"),
   map: j,
   set: k
 }, h[3] = h, j.set("self", j), k.add(k).add(h), m.self = m, m))()
@@ -195,6 +195,90 @@ The following values are the only values accepted by `seroval`:
 - `Promise` (with `serializeAsync`)
 - [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - Cyclic references (both self and mutual)
+
+## Compat
+
+`serialize` and `serializeAsync` can accept a `{ target: string | string[] }` options. The `target` property decides what the serialization output would look like. The default target is `es2023`.
+
+```js
+import { serialize } from 'seroval';
+
+const y = Object.create(null);
+y.self = y;
+
+function serializeWithTarget(value, target) {
+  console.log('Target is', target)
+  const result = serialize(value, {
+    target,
+  });
+  console.log(result);
+}
+
+serializeWithTarget(y, 'es5');
+serializeWithTarget(y, 'es2023');
+```
+
+Output
+
+```
+Target is es5
+(function(h){return (h=Object.create(null),h.self=h,h)})()
+Target is es2023
+(h=>(h=Object.create(null),h.self=h,h))()
+```
+
+You can also combine targets:
+
+```js
+serialize(value, {
+  targets: ['chrome85', 'edge85'],
+});
+```
+
+Supported runtimes:
+
+- `es`
+  - Valid values are `es5`, `es6` and above (e.g. `es2020`).
+- Desktop
+  - `chrome`
+  - `edge`
+  - `safari`
+  - `firefox`
+  - `opera`
+- Mobile
+  - `ios`
+  - `samsung`
+- Runtimes
+  - `deno`
+  - `node`
+
+> **Note**
+> Version for runtimes excluding `es` can use semver format (`major.minor.patch`) e.g. `chrome110`, `node0.12`
+
+Feature flags and compat attempt:
+
+- `AggregateError`
+  - Compiles down to `Error` instead.
+- `Array.prototype.values`
+  - Used for iterables, uses `Symbol.iterator` instead.
+- Arrow functions
+  - Uses function expressions for top-level, and either method shorthands or function expressions for iterables.
+- `BigInt`
+  - Throws when attempted to use, includes `BigInt64Array` and `BigUint64Array`
+- `Map`
+  - Throws when attempted to use.
+- Method shorthands
+  - Uses function expressions instead.
+- `Object.assign`
+  - Uses manual object assignments instead.
+- `Promise`
+  - Throws when attempted to use, specially in `serializeAsync`.
+- `Set`
+  - Throws when attempted to use.
+- `Symbol.iterator`
+  - Throws when attempted to use.
+- `TypedArray`
+  - Throws when attempted to use.
 
 ## Sponsors
 
