@@ -1,8 +1,12 @@
 import { serialize } from 'seroval';
 
-const y = Object.create(null);
-y.self = y;
-y.example = 'Hello World';
+const a = Object.create(null);
+const b = Object.create(null);
+
+a.alt = b;
+b.alt = a;
+
+const y = { x: { a, b } };
 
 function serializeWithTarget(value, target) {
   console.log('Target is', target)
