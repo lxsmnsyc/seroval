@@ -1,0 +1,11 @@
+// Vitest Snapshot v1
+
+exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Set\\""`;
+
+exports[`Map > serialize > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
+
+exports[`Map > serialize > supports self-recursion 1`] = `"(h=>(h=new Map,h.set(h,h),h))()"`;
+
+exports[`Map > serializeAsync > supports Map 1`] = `"Promise.resolve(new Map([[1,2],[3,4]]))"`;
+
+exports[`Map > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Map([[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]])))()"`;

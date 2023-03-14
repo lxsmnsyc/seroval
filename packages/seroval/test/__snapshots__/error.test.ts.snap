@@ -1,0 +1,13 @@
+// Vitest Snapshot v1
+
+exports[`Error > serialize > supports Error.prototype.cause 1`] = `"Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:Object.assign(new Error(\\"A\\"),{stack:\\"\\"})})"`;
+
+exports[`Error > serialize > supports Error.prototype.name 1`] = `"Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"})"`;
+
+exports[`Error > serialize > supports other Error classes 1`] = `"Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"})"`;
+
+exports[`Error > serializeAsync > Error > supports Error.prototype.cause 1`] = `"Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:Promise.resolve(Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))})"`;
+
+exports[`Error > serializeAsync > Error > supports Error.prototype.name 1`] = `"Promise.resolve(Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"}))"`;
+
+exports[`Error > serializeAsync > Error > supports other Error classes 1`] = `"Promise.resolve(Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;

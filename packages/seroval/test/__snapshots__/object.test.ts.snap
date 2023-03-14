@@ -1,0 +1,9 @@
+// Vitest Snapshot v1
+
+exports[`objects > serialize > supports Objects 1`] = `"({hello:\\"world\\"})"`;
+
+exports[`objects > serialize > supports self-recursion 1`] = `"(h=>(h={},h.b=h.a=h,h))()"`;
+
+exports[`objects > serializeAsync > supports Objects 1`] = `"Promise.resolve({hello:\\"world\\"})"`;
+
+exports[`objects > serializeAsync > supports self-recursion 1`] = `"(h=>(h={a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)}))()"`;

@@ -1,0 +1,9 @@
+// Vitest Snapshot v1
+
+exports[`string > serialize > supports strings 1`] = `"\\"\\\\\\"hello\\\\\\"\\""`;
+
+exports[`string > serialize > supports strings 2`] = `"\\"\\\\x3Cscript>\\\\x3C/script>\\""`;
+
+exports[`string > serializeAsync > supports strings 1`] = `"Promise.resolve(\\"\\\\\\"hello\\\\\\"\\")"`;
+
+exports[`string > serializeAsync > supports strings 2`] = `"Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;

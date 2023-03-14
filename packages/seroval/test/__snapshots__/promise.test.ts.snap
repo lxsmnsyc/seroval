@@ -1,0 +1,3 @@
+// Vitest Snapshot v1
+
+exports[`Promise > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Promise\\""`;
