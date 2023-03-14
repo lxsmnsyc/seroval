@@ -540,27 +540,30 @@ function serializePropertiesSync(
   ctx: SerializationContext,
   properties: Record<string, unknown>,
 ): SerovalDictionaryNode {
-  const keyNodes: string[] = [];
-  const valueNodes: SerovalNode[] = [];
-  const deferredKeys: string[] = [];
-  const deferredValues: ServerValue[] = [];
   const keys = Object.keys(properties);
+  const size = keys.length;
+  const keyNodes = new Array<string>(size);
+  const valueNodes = new Array<SerovalNode>(size);
+  const deferredKeys = new Array<string>(size);
+  const deferredValues = new Array<ServerValue>(size);
   let deferredSize = 0;
+  let nodesSize = 0;
   for (const key of keys) {
     if (isIterable(properties[key])) {
-      deferredKeys.push(key);
-      deferredValues.push(properties[key] as ServerValue);
+      deferredKeys[deferredSize] = key;
+      deferredValues[deferredSize] = properties[key] as ServerValue;
       deferredSize++;
     } else {
-      keyNodes.push(key);
-      valueNodes.push(generateTreeSync(ctx, properties[key] as ServerValue));
+      keyNodes[nodesSize] = key;
+      valueNodes[nodesSize] = generateTreeSync(ctx, properties[key] as ServerValue);
+      nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
-    keyNodes.push(deferredKeys[i]);
-    valueNodes.push(generateTreeSync(ctx, deferredValues[i]));
+    keyNodes[nodesSize + i] = deferredKeys[i];
+    valueNodes[nodesSize + i] = generateTreeSync(ctx, deferredValues[i]);
   }
-  return [keyNodes, valueNodes, keys.length];
+  return [keyNodes, valueNodes, size];
 }
 
 export function generateTreeSync(
@@ -582,45 +585,51 @@ export function generateTreeSync(
   }
   if (constructorCheck<Set<ServerValue>>(current, Set)) {
     assert(ctx.features.has(Feature.Set), 'Unsupported type "Set"');
-    const nodes: SerovalNode[] = [];
-    const deferred: ServerValue[] = [];
+    const len = current.size;
+    const nodes = new Array<SerovalNode>(len);
+    const deferred = new Array<ServerValue>(len);
+    let deferredSize = 0;
+    let nodeSize = 0;
     for (const item of current.keys()) {
       // Iterables are lazy, so the evaluation must be deferred
       if (isIterable(item)) {
-        deferred.push(item);
+        deferred[deferredSize++] = item;
       } else {
-        nodes.push(generateTreeSync(ctx, item));
+        nodes[nodeSize++] = generateTreeSync(ctx, item);
       }
     }
     // Parse deferred items
-    for (let i = 0, len = deferred.length; i < len; i++) {
-      nodes.push(generateTreeSync(ctx, deferred[i]));
+    for (let i = 0; i < deferredSize; i++) {
+      nodes[nodeSize + i] = generateTreeSync(ctx, deferred[i]);
     }
     return [SerovalNodeType.Set, nodes, id];
   }
   if (constructorCheck<Map<ServerValue, ServerValue>>(current, Map)) {
     assert(ctx.features.has(Feature.Map), 'Unsupported type "Map"');
-    const keyNodes: SerovalNode[] = [];
-    const valueNodes: SerovalNode[] = [];
-    const deferredKey: ServerValue[] = [];
-    const deferredValue: ServerValue[] = [];
+    const len = current.size;
+    const keyNodes = new Array<SerovalNode>(len);
+    const valueNodes = new Array<SerovalNode>(len);
+    const deferredKey = new Array<ServerValue>(len);
+    const deferredValue = new Array<ServerValue>(len);
     let deferredSize = 0;
+    let nodeSize = 0;
     for (const [key, value] of current.entries()) {
       // Either key or value might be an iterable
       if (isIterable(key) || isIterable(value)) {
-        deferredKey.push(key);
-        deferredValue.push(value);
+        deferredKey[deferredSize] = key;
+        deferredValue[deferredSize] = value;
         deferredSize++;
       } else {
-        keyNodes.push(generateTreeSync(ctx, key));
-        valueNodes.push(generateTreeSync(ctx, value));
+        keyNodes[nodeSize] = generateTreeSync(ctx, key);
+        valueNodes[nodeSize] = generateTreeSync(ctx, value);
+        nodeSize++;
       }
     }
     for (let i = 0; i < deferredSize; i++) {
-      keyNodes.push(generateTreeSync(ctx, deferredKey[i]));
-      valueNodes.push(generateTreeSync(ctx, deferredValue[i]));
+      keyNodes[nodeSize + i] = generateTreeSync(ctx, deferredKey[i]);
+      valueNodes[nodeSize + i] = generateTreeSync(ctx, deferredValue[i]);
     }
-    return [SerovalNodeType.Map, [keyNodes, valueNodes, current.size], id];
+    return [SerovalNodeType.Map, [keyNodes, valueNodes, len], id];
   }
   if (Array.isArray(current)) {
     const size = current.length;
@@ -685,27 +694,30 @@ async function serializePropertiesAsync(
   ctx: SerializationContext,
   properties: Record<string, unknown>,
 ): Promise<SerovalDictionaryNode> {
-  const keyNodes: string[] = [];
-  const valueNodes: SerovalNode[] = [];
-  const deferredKeys: string[] = [];
-  const deferredValues: ServerValue[] = [];
   const keys = Object.keys(properties);
+  const size = keys.length;
+  const keyNodes = new Array<string>(size);
+  const valueNodes = new Array<SerovalNode>(size);
+  const deferredKeys = new Array<string>(size);
+  const deferredValues = new Array<ServerValue>(size);
   let deferredSize = 0;
+  let nodesSize = 0;
   for (const key of keys) {
     if (isIterable(properties[key])) {
-      deferredKeys.push(key);
-      deferredValues.push(properties[key] as ServerValue);
+      deferredKeys[deferredSize] = key;
+      deferredValues[deferredSize] = properties[key] as ServerValue;
       deferredSize++;
     } else {
-      keyNodes.push(key);
-      valueNodes.push(await generateTreeAsync(ctx, properties[key] as ServerValue));
+      keyNodes[nodesSize] = key;
+      valueNodes[nodesSize] = await generateTreeAsync(ctx, properties[key] as ServerValue);
+      nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
-    keyNodes.push(deferredKeys[i]);
-    valueNodes.push(await generateTreeAsync(ctx, deferredValues[i]));
+    keyNodes[nodesSize + i] = deferredKeys[i];
+    valueNodes[nodesSize + i] = await generateTreeAsync(ctx, deferredValues[i]);
   }
-  return [keyNodes, valueNodes, keys.length];
+  return [keyNodes, valueNodes, size];
 }
 
 export async function generateTreeAsync(
@@ -733,42 +745,51 @@ export async function generateTreeAsync(
   }
   if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
     assert(ctx.features.has(Feature.Set), 'Unsupported type "Set"');
-    const nodes: SerovalNode[] = [];
-    const deferred: AsyncServerValue[] = [];
+    const len = current.size;
+    const nodes = new Array<SerovalNode>(len);
+    const deferred = new Array<AsyncServerValue>(len);
+    let deferredSize = 0;
+    let nodeSize = 0;
     for (const item of current.keys()) {
+      // Iterables are lazy, so the evaluation must be deferred
       if (isIterable(item)) {
-        deferred.push(item);
+        deferred[deferredSize++] = item;
       } else {
-        nodes.push(await generateTreeAsync(ctx, item));
+        nodes[nodeSize++] = await generateTreeAsync(ctx, item);
       }
     }
-    for (let i = 0, len = deferred.length; i < len; i++) {
-      nodes.push(await generateTreeAsync(ctx, deferred[i]));
+    // Parse deferred items
+    for (let i = 0; i < deferredSize; i++) {
+      nodes[nodeSize + i] = await generateTreeAsync(ctx, deferred[i]);
     }
     return [SerovalNodeType.Set, nodes, id];
   }
   if (constructorCheck<Map<AsyncServerValue, AsyncServerValue>>(current, Map)) {
     assert(ctx.features.has(Feature.Map), 'Unsupported type "Map"');
-    const keyNodes: SerovalNode[] = [];
-    const valueNodes: SerovalNode[] = [];
-    const deferredKey: AsyncServerValue[] = [];
-    const deferredValue: AsyncServerValue[] = [];
+    const len = current.size;
+    const keyNodes = new Array<SerovalNode>(len);
+    const valueNodes = new Array<SerovalNode>(len);
+    const deferredKey = new Array<AsyncServerValue>(len);
+    const deferredValue = new Array<AsyncServerValue>(len);
     let deferredSize = 0;
+    let nodeSize = 0;
     for (const [key, value] of current.entries()) {
+      // Either key or value might be an iterable
       if (isIterable(key) || isIterable(value)) {
-        deferredKey.push(key);
-        deferredValue.push(value);
+        deferredKey[deferredSize] = key;
+        deferredValue[deferredSize] = value;
         deferredSize++;
       } else {
-        keyNodes.push(await generateTreeAsync(ctx, key));
-        valueNodes.push(await generateTreeAsync(ctx, value));
+        keyNodes[nodeSize] = await generateTreeAsync(ctx, key);
+        valueNodes[nodeSize] = await generateTreeAsync(ctx, value);
+        nodeSize++;
       }
     }
     for (let i = 0; i < deferredSize; i++) {
-      keyNodes.push(await generateTreeAsync(ctx, deferredKey[i]));
-      valueNodes.push(await generateTreeAsync(ctx, deferredValue[i]));
+      keyNodes[nodeSize + i] = await generateTreeAsync(ctx, deferredKey[i]);
+      valueNodes[nodeSize + i] = await generateTreeAsync(ctx, deferredValue[i]);
     }
-    return [SerovalNodeType.Map, [keyNodes, valueNodes, current.size], id];
+    return [SerovalNodeType.Map, [keyNodes, valueNodes, len], id];
   }
   if (Array.isArray(current)) {
     const size = current.length;
