@@ -241,7 +241,6 @@ export function isFeatureSupported(key: Feature, targets: Target[]) {
   let flag = true;
   for (const [platform, version] of targets) {
     const baseVersion = base[platform];
-    console.log(key, platform, baseVersion, version);
     flag = flag && !!baseVersion && (compareVersion(baseVersion, version) <= 0);
   }
   return flag;
