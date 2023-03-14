@@ -1,6 +1,5 @@
 /* eslint-disable no-await-in-loop */
 import { isPrimitive } from './checks';
-import { isFeatureSupported } from './compat';
 import {
   createRef,
   createSerializationContext,
@@ -32,30 +31,35 @@ export {
   ErrorValue,
 };
 
-function finalize<T extends ServerValue | AsyncServerValue>(
+function finalize<T extends NonPrimitiveServerValue<ServerValue | AsyncServerValue>>(
   ctx: SerializationContext,
-  source: NonPrimitiveServerValue<T>,
+  source: T,
   result: string,
 ) {
   // Shared references detected
   if (ctx.vars.length) {
-    // Get (or create) a ref from the source
-    const index = getRefParam(ctx, createRef(ctx, source));
     const patches = resolvePatches(ctx);
-    const params = ctx.vars.length > 1
-      ? `(${ctx.vars.join(',')})`
+    let body = result;
+    if (patches) {
+      // Get (or create) a ref from the source
+      const index = getRefParam(ctx, createRef(ctx, source));
+      if (result.startsWith(`${index}=`)) {
+        body = `${result},${patches}${index}`;
+      } else {
+        body = `${index}=${result},${patches}${index}`;
+      }
+    }
+    let params = ctx.vars.length > 1
+      ? ctx.vars.join(',')
       : ctx.vars[0];
     // Source is probably already assigned
-    if (isFeatureSupported('arrow-function', ctx.targets)) {
-      if (result.startsWith(`${index}=`)) {
-        return `(${params}=>(${result},${patches}${index}))()`;
-      }
-      return `(${params}=>(${index}=${result},${patches}${index}))()`;
+    if (ctx.features.has('arrow-function')) {
+      params = ctx.vars.length > 1 || ctx.vars.length === 0
+        ? `(${params})`
+        : params;
+      return `(${params}=>(${body}))()`;
     }
-    if (result.startsWith(`${index}=`)) {
-      return `(function(${params}){return ${result},${patches}${index}})()`;
-    }
-    return `(function(${params}){return ${index}=${result},${patches}${index}}))()`;
+    return `(function(${params}){return ${body}})()`;
   }
   if (source.constructor === Object) {
     return `(${result})`;
@@ -63,7 +67,10 @@ function finalize<T extends ServerValue | AsyncServerValue>(
   return result;
 }
 
-export function serialize(source: ServerValue, options?: Partial<Options>) {
+export function serialize<T extends ServerValue>(
+  source: T,
+  options?: Partial<Options>,
+) {
   const ctx = createSerializationContext(options);
   if (isPrimitive(source)) {
     return serializePrimitive(ctx, source);
@@ -73,7 +80,10 @@ export function serialize(source: ServerValue, options?: Partial<Options>) {
   return finalize(ctx, source, result);
 }
 
-export async function serializeAsync(source: AsyncServerValue, options?: Partial<Options>) {
+export async function serializeAsync<T extends AsyncServerValue>(
+  source: T,
+  options?: Partial<Options>,
+) {
   const ctx = createSerializationContext(options);
   if (isPrimitive(source)) {
     return serializePrimitive(ctx, source);
