@@ -1,14 +1,16 @@
 /* eslint-disable no-await-in-loop */
 import { isPrimitive } from './checks';
-import serializePrimitive from './serialize-primitive';
+import { isFeatureSupported } from './compat';
 import {
   createRef,
   createSerializationContext,
   generateTreeAsync,
   generateTreeSync,
   getRefParam,
+  Options,
   resolvePatches,
   SerializationContext,
+  serializePrimitive,
   serializeTree,
 } from './tree';
 import {
@@ -44,10 +46,16 @@ function finalize<T extends ServerValue | AsyncServerValue>(
       ? `(${ctx.vars.join(',')})`
       : ctx.vars[0];
     // Source is probably already assigned
-    if (result.startsWith(`${index}=`)) {
-      return `(${params}=>(${result},${patches}${index}))()`;
+    if (isFeatureSupported('arrow-function', ctx.targets)) {
+      if (result.startsWith(`${index}=`)) {
+        return `(${params}=>(${result},${patches}${index}))()`;
+      }
+      return `(${params}=>(${index}=${result},${patches}${index}))()`;
     }
-    return `(${params}=>(${index}=${result},${patches}${index}))()`;
+    if (result.startsWith(`${index}=`)) {
+      return `(function(${params}){return ${result},${patches}${index}})()`;
+    }
+    return `(function(${params}){return ${index}=${result},${patches}${index}}))()`;
   }
   if (source.constructor === Object) {
     return `(${result})`;
@@ -55,21 +63,21 @@ function finalize<T extends ServerValue | AsyncServerValue>(
   return result;
 }
 
-export function serialize(source: ServerValue) {
+export function serialize(source: ServerValue, options?: Partial<Options>) {
+  const ctx = createSerializationContext(options);
   if (isPrimitive(source)) {
-    return serializePrimitive(source);
+    return serializePrimitive(ctx, source);
   }
-  const ctx = createSerializationContext();
   const tree = generateTreeSync(ctx, source);
   const result = serializeTree(ctx, tree);
   return finalize(ctx, source, result);
 }
 
-export async function serializeAsync(source: AsyncServerValue) {
+export async function serializeAsync(source: AsyncServerValue, options?: Partial<Options>) {
+  const ctx = createSerializationContext(options);
   if (isPrimitive(source)) {
-    return serializePrimitive(source);
+    return serializePrimitive(ctx, source);
   }
-  const ctx = createSerializationContext();
   const tree = await generateTreeAsync(ctx, source);
   const result = serializeTree(ctx, tree);
   return finalize(ctx, source, result);
