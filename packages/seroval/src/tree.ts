@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable guard-for-in */
 /* eslint-disable @typescript-eslint/no-for-in-array */
 /* eslint-disable no-await-in-loop */
@@ -535,35 +536,37 @@ function generateSemiPrimitiveValue(
   return undefined;
 }
 
+function serializePropertiesSync(
+  ctx: SerializationContext,
+  properties: Record<string, unknown>,
+): SerovalDictionaryNode {
+  const keyNodes: string[] = [];
+  const valueNodes: SerovalNode[] = [];
+  const deferredKeys: string[] = [];
+  const deferredValues: ServerValue[] = [];
+  const keys = Object.keys(properties);
+  let deferredSize = 0;
+  for (const key of keys) {
+    if (isIterable(properties[key])) {
+      deferredKeys.push(key);
+      deferredValues.push(properties[key] as ServerValue);
+      deferredSize++;
+    } else {
+      keyNodes.push(key);
+      valueNodes.push(generateTreeSync(ctx, properties[key] as ServerValue));
+    }
+  }
+  for (let i = 0; i < deferredSize; i++) {
+    keyNodes.push(deferredKeys[i]);
+    valueNodes.push(generateTreeSync(ctx, deferredValues[i]));
+  }
+  return [keyNodes, valueNodes, keys.length];
+}
+
 export function generateTreeSync(
   ctx: SerializationContext,
   current: ServerValue,
 ): SerovalNode {
-  function serializeProperties(
-    properties: Record<string, unknown>,
-  ): SerovalDictionaryNode {
-    const keyNodes: string[] = [];
-    const valueNodes: SerovalNode[] = [];
-    const deferredKeys: string[] = [];
-    const deferredValues: ServerValue[] = [];
-    const keys = Object.keys(properties);
-    let deferredSize = 0;
-    for (const key of keys) {
-      if (isIterable(properties[key])) {
-        deferredKeys.push(key);
-        deferredValues.push(properties[key] as ServerValue);
-        deferredSize++;
-      } else {
-        keyNodes.push(key);
-        valueNodes.push(generateTreeSync(ctx, properties[key] as ServerValue));
-      }
-    }
-    for (let i = 0; i < deferredSize; i++) {
-      keyNodes.push(deferredKeys[i]);
-      valueNodes.push(generateTreeSync(ctx, deferredValues[i]));
-    }
-    return [keyNodes, valueNodes, keys.length];
-  }
   if (isPrimitive(current)) {
     return [SerovalNodeType.Primitive, current];
   }
@@ -642,7 +645,7 @@ export function generateTreeSync(
   if (current instanceof AggregateError && ctx.features.has(Feature.AggregateError)) {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? serializeProperties(options)
+      ? serializePropertiesSync(ctx, options)
       : undefined;
     const errorsNode = generateTreeSync(ctx, current.errors as ServerValue);
     return [SerovalNodeType.AggregateError, [current.message, optionsNode, errorsNode], id];
@@ -650,7 +653,7 @@ export function generateTreeSync(
   if (current instanceof Error) {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? serializeProperties(options)
+      ? serializePropertiesSync(ctx, options)
       : undefined;
     return [
       SerovalNodeType.Error,
@@ -663,7 +666,7 @@ export function generateTreeSync(
     const options = getIterableOptions(current);
     return [SerovalNodeType.Iterable, [
       // Parse options first before the items
-      options ? serializeProperties(options) : undefined,
+      options ? serializePropertiesSync(ctx, options) : undefined,
       generateTreeSync(ctx, Array.from(current)),
     ], id];
   }
@@ -671,42 +674,44 @@ export function generateTreeSync(
   if (current.constructor === Object || empty) {
     return [
       empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      serializeProperties(current as Record<string, unknown>),
+      serializePropertiesSync(ctx, current as Record<string, unknown>),
       id,
     ];
   }
   throw new Error('Unsupported value');
 }
 
+async function serializePropertiesAsync(
+  ctx: SerializationContext,
+  properties: Record<string, unknown>,
+): Promise<SerovalDictionaryNode> {
+  const keyNodes: string[] = [];
+  const valueNodes: SerovalNode[] = [];
+  const deferredKeys: string[] = [];
+  const deferredValues: ServerValue[] = [];
+  const keys = Object.keys(properties);
+  let deferredSize = 0;
+  for (const key of keys) {
+    if (isIterable(properties[key])) {
+      deferredKeys.push(key);
+      deferredValues.push(properties[key] as ServerValue);
+      deferredSize++;
+    } else {
+      keyNodes.push(key);
+      valueNodes.push(await generateTreeAsync(ctx, properties[key] as ServerValue));
+    }
+  }
+  for (let i = 0; i < deferredSize; i++) {
+    keyNodes.push(deferredKeys[i]);
+    valueNodes.push(await generateTreeAsync(ctx, deferredValues[i]));
+  }
+  return [keyNodes, valueNodes, keys.length];
+}
+
 export async function generateTreeAsync(
   ctx: SerializationContext,
   current: AsyncServerValue,
 ): Promise<SerovalNode> {
-  async function serializeProperties(
-    properties: Record<string, unknown>,
-  ): Promise<SerovalDictionaryNode> {
-    const keyNodes: string[] = [];
-    const valueNodes: SerovalNode[] = [];
-    const deferredKeys: string[] = [];
-    const deferredValues: ServerValue[] = [];
-    const keys = Object.keys(properties);
-    let deferredSize = 0;
-    for (const key of keys) {
-      if (isIterable(properties[key])) {
-        deferredKeys.push(key);
-        deferredValues.push(properties[key] as ServerValue);
-        deferredSize++;
-      } else {
-        keyNodes.push(key);
-        valueNodes.push(await generateTreeAsync(ctx, properties[key] as ServerValue));
-      }
-    }
-    for (let i = 0; i < deferredSize; i++) {
-      keyNodes.push(deferredKeys[i]);
-      valueNodes.push(await generateTreeAsync(ctx, deferredValues[i]));
-    }
-    return [keyNodes, valueNodes, keys.length];
-  }
   if (isPrimitive(current)) {
     return [SerovalNodeType.Primitive, current];
   }
@@ -789,7 +794,7 @@ export async function generateTreeAsync(
   if (current instanceof AggregateError) {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? await serializeProperties(options)
+      ? await serializePropertiesAsync(ctx, options)
       : undefined;
     const errorsNode = await generateTreeAsync(ctx, current.errors as ServerValue);
     return [SerovalNodeType.AggregateError, [current.message, optionsNode, errorsNode], id];
@@ -797,7 +802,7 @@ export async function generateTreeAsync(
   if (current instanceof Error) {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? await serializeProperties(options)
+      ? await serializePropertiesAsync(ctx, options)
       : undefined;
     return [
       SerovalNodeType.Error,
@@ -810,7 +815,7 @@ export async function generateTreeAsync(
     const options = getIterableOptions(current);
     return [SerovalNodeType.Iterable, [
       options
-        ? await serializeProperties(options)
+        ? await serializePropertiesAsync(ctx, options)
         : undefined,
       await generateTreeAsync(ctx, Array.from(current)),
     ], id];
@@ -819,7 +824,7 @@ export async function generateTreeAsync(
   if (current.constructor === Object || empty) {
     return [
       empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      await serializeProperties(current as Record<string, unknown>),
+      await serializePropertiesAsync(ctx, current as Record<string, unknown>),
       id,
     ];
   }
@@ -863,80 +868,86 @@ export function serializePrimitive(
   return String(value);
 }
 
+const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
+
+function serializeAssignments(
+  ctx: SerializationContext,
+  targetRef: number,
+  [keys, values, size]: SerovalDictionaryNode,
+) {
+  ctx.stack.push(targetRef);
+  const mainAssignments: Assignment[] = [];
+  for (let i = 0; i < size; i++) {
+    const parentStack = ctx.stack;
+    ctx.stack = [];
+    const refParam = serializeTree(ctx, values[i]);
+    ctx.stack = parentStack;
+    const key = keys[i];
+    const check = Number(key);
+    // Test if key is a valid number or JS identifier
+    // so that we don't have to serialize the key and wrap with brackets
+    const parentAssignment = ctx.assignments;
+    ctx.assignments = mainAssignments;
+    if (
+      check >= 0
+      || (Number.isNaN(check) && IDENTIFIER_CHECK.test(key))
+    ) {
+      if (!Number.isNaN(check)) {
+        createObjectComputedAssign(ctx, targetRef, key, refParam);
+      } else {
+        createObjectIdentifierAssign(ctx, targetRef, key, refParam);
+      }
+    } else {
+      createObjectComputedAssign(ctx, targetRef, quote(key), refParam);
+    }
+    ctx.assignments = parentAssignment;
+  }
+  ctx.stack.pop();
+  return resolveAssignments(mainAssignments);
+}
+
+function serializeObject(
+  ctx: SerializationContext,
+  sourceID: number,
+  [keys, values, size]: SerovalDictionaryNode,
+) {
+  let result = '';
+  ctx.stack.push(sourceID);
+  for (let i = 0; i < size; i++) {
+    const key = keys[i];
+    const val = values[i];
+    const check = Number(key);
+    // Test if key is a valid number or JS identifier
+    // so that we don't have to serialize the key and wrap with brackets
+    if (
+      check >= 0
+      || (Number.isNaN(check) && IDENTIFIER_CHECK.test(key))
+    ) {
+      if (isReferenceInStack(ctx, val)) {
+        const refParam = getRefParam(ctx, val[1]);
+        if (!Number.isNaN(check)) {
+          createObjectComputedAssign(ctx, sourceID, key, refParam);
+        } else {
+          createObjectIdentifierAssign(ctx, sourceID, key, refParam);
+        }
+      } else {
+        result += `${key}:${serializeTree(ctx, val)},`;
+      }
+    } else if (isReferenceInStack(ctx, val)) {
+      const refParam = getRefParam(ctx, val[1]);
+      createObjectComputedAssign(ctx, sourceID, quote(key), refParam);
+    } else {
+      result += `${quote(key)}:${serializeTree(ctx, val)},`;
+    }
+  }
+  ctx.stack.pop();
+  return `{${result.substring(0, result.length - 1)}}`;
+}
+
 export function serializeTree(
   ctx: SerializationContext,
   [type, value, id]: SerovalNode,
 ): string {
-  function serializeAssignments(
-    targetRef: number,
-    [keys, values, size]: SerovalDictionaryNode,
-  ) {
-    ctx.stack.push(targetRef);
-    const mainAssignments: Assignment[] = [];
-    for (let i = 0; i < size; i++) {
-      const parentStack = ctx.stack;
-      ctx.stack = [];
-      const refParam = serializeTree(ctx, values[i]);
-      ctx.stack = parentStack;
-      const key = keys[i];
-      const check = Number(key);
-      // Test if key is a valid number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      const parentAssignment = ctx.assignments;
-      ctx.assignments = mainAssignments;
-      if (
-        check >= 0
-        || (Number.isNaN(check) && /^([$A-Z_][0-9A-Z_$]*)$/i.test(key))
-      ) {
-        if (!Number.isNaN(check)) {
-          createObjectComputedAssign(ctx, targetRef, key, refParam);
-        } else {
-          createObjectIdentifierAssign(ctx, targetRef, key, refParam);
-        }
-      } else {
-        createObjectComputedAssign(ctx, targetRef, quote(key), refParam);
-      }
-      ctx.assignments = parentAssignment;
-    }
-    ctx.stack.pop();
-    return resolveAssignments(mainAssignments);
-  }
-  function serializeObject(
-    sourceID: number,
-    [keys, values, size]: SerovalDictionaryNode,
-  ) {
-    let result = '';
-    ctx.stack.push(sourceID);
-    for (let i = 0; i < size; i++) {
-      const key = keys[i];
-      const val = values[i];
-      const check = Number(key);
-      // Test if key is a valid number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      if (
-        check >= 0
-        || (Number.isNaN(check) && /^([$A-Z_][0-9A-Z_$]*)$/i.test(key))
-      ) {
-        if (isReferenceInStack(ctx, val)) {
-          const refParam = getRefParam(ctx, val[1]);
-          if (!Number.isNaN(check)) {
-            createObjectComputedAssign(ctx, sourceID, key, refParam);
-          } else {
-            createObjectIdentifierAssign(ctx, sourceID, key, refParam);
-          }
-        } else {
-          result += `${key}:${serializeTree(ctx, val)},`;
-        }
-      } else if (isReferenceInStack(ctx, val)) {
-        const refParam = getRefParam(ctx, val[1]);
-        createObjectComputedAssign(ctx, sourceID, quote(key), refParam);
-      } else {
-        result += `${quote(key)}:${serializeTree(ctx, val)},`;
-      }
-    }
-    ctx.stack.pop();
-    return `{${result.substring(0, result.length - 1)}}`;
-  }
   switch (type) {
     case SerovalNodeType.Primitive:
       return serializePrimitive(ctx, value);
@@ -1090,11 +1101,11 @@ export function serializeTree(
       // Make sure to assign extra properties
       if (value[1]) {
         if (ctx.features.has(Feature.ObjectAssign)) {
-          const options = serializeObject(id, value[1]);
+          const options = serializeObject(ctx, id, value[1]);
           serialized = `Object.assign(${serialized},${options})`;
         } else {
           markRef(ctx, id);
-          const assignments = serializeAssignments(id, value[1]);
+          const assignments = serializeAssignments(ctx, id, value[1]);
           if (assignments) {
             const ref = getRefParam(ctx, id);
             return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
@@ -1107,11 +1118,11 @@ export function serializeTree(
       let serialized = `new ${value[0]}(${quote(value[1])})`;
       if (value[2]) {
         if (ctx.features.has(Feature.ObjectAssign)) {
-          const options = serializeObject(id, value[2]);
+          const options = serializeObject(ctx, id, value[2]);
           serialized = `Object.assign(${serialized},${options})`;
         } else {
           markRef(ctx, id);
-          const assignments = serializeAssignments(id, value[2]);
+          const assignments = serializeAssignments(ctx, id, value[2]);
           if (assignments) {
             const ref = getRefParam(ctx, id);
             return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
@@ -1140,11 +1151,11 @@ export function serializeTree(
       }
       if (value[0]) {
         if (ctx.features.has(Feature.ObjectAssign)) {
-          const options = serializeObject(id, value[0]);
+          const options = serializeObject(ctx, id, value[0]);
           serialized = `Object.assign(${serialized},${options})`;
         } else {
           markRef(ctx, id);
-          const assignments = serializeAssignments(id, value[0]);
+          const assignments = serializeAssignments(ctx, id, value[0]);
           if (assignments) {
             const ref = getRefParam(ctx, id);
             return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
@@ -1156,13 +1167,13 @@ export function serializeTree(
     case SerovalNodeType.NullConstructor: {
       let serialized = 'Object.create(null)';
       if (ctx.features.has(Feature.ObjectAssign)) {
-        const fields = serializeObject(id, value);
+        const fields = serializeObject(ctx, id, value);
         if (fields !== '{}') {
           serialized = `Object.assign(${serialized},${fields})`;
         }
       } else {
         markRef(ctx, id);
-        const assignments = serializeAssignments(id, value);
+        const assignments = serializeAssignments(ctx, id, value);
         if (assignments) {
           const ref = getRefParam(ctx, id);
           return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
@@ -1171,7 +1182,7 @@ export function serializeTree(
       return assignRef(ctx, id, serialized);
     }
     case SerovalNodeType.Object:
-      return assignRef(ctx, id, serializeObject(id, value));
+      return assignRef(ctx, id, serializeObject(ctx, id, value));
     default:
       throw new Error('Unsupported type');
   }
