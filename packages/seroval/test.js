@@ -1,25 +1,19 @@
 import { serialize } from 'seroval';
 
-const test = {};
 
-const a = {
+const example = {
   *[Symbol.iterator]() {
-    yield test;
+    yield 'Hello Iterator';
   },
-};
-const b = {
-  *[Symbol.iterator]() {
-    yield a;
-    yield test;
-  },
-};
-const result = serialize(b);
-// Output:
-((h,j)=>(j = Object.assign({
-  [Symbol.iterator]: ()=>[h, h, h].values()
-}, {
-  example: h = {}
-}),
-j))()
+  message: 'Hello World',
+}
+
+example.self = example;
+
+const target = 'es2015';
+console.log('Target is', target)
+const result = serialize(example, {
+  target,
+});
 // const result = serialize(((h,j)=>(j=Object.assign({[Symbol.iterator]:()=>[h,h,h].values()},{example:h={}}),j))());
 console.log(result);
