@@ -21,16 +21,16 @@ jobs:
           cache: 'pnpm'
       
       - name: Clean
-        run: pnpm recursive clean
+        run: pnpm recursive run clean
         env:
           CI: true
 
       - name: Build
-        run: pnpm recursive build
+        run: pnpm recursive run build
         env:
           CI: true
 
       - name: Begin Tests
-        run: pnpm recursive test
+        run: pnpm recursive run test
         env:
           CI: true
