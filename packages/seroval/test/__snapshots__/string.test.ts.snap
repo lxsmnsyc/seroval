@@ -7,3 +7,11 @@ exports[`string > serialize > supports strings 2`] = `"\\"\\\\x3Cscript>\\\\x3C/
 exports[`string > serializeAsync > supports strings 1`] = `"Promise.resolve(\\"\\\\\\"hello\\\\\\"\\")"`;
 
 exports[`string > serializeAsync > supports strings 2`] = `"Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
+
+exports[`string > toJSON > supports strings 1`] = `"[[0,\\"\\\\\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\\\\\"\\"],0,false,4095,[]]"`;
+
+exports[`string > toJSON > supports strings 2`] = `"[[0,\\"\\\\\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\\\\\"\\"],0,false,4095,[]]"`;
+
+exports[`string > toJSONAsync > supports strings 1`] = `"[[10,[0,\\"\\\\\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\\\\\"\\"],0],0,false,4095,[]]"`;
+
+exports[`string > toJSONAsync > supports strings 2`] = `"[[10,[0,\\"\\\\\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\\\\\"\\"],0],0,false,4095,[]]"`;

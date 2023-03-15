@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { deserialize, serialize, serializeAsync } from '../src';
+import {
+  compileJSON,
+  deserialize,
+  fromJSON,
+  serialize,
+  serializeAsync,
+  toJSON,
+  toJSONAsync,
+} from '../src';
 
 describe('null-constructor', () => {
   describe('serialize', () => {
@@ -22,12 +30,43 @@ describe('null-constructor', () => {
       expect(back.hello).toBe(example.hello);
     });
   });
+  describe('toJSON', () => {
+    it('supports Object.create(null)', () => {
+      const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
+      const result = toJSON(example);
+      expect(result).toMatchSnapshot();
+      const back = fromJSON<Record<string, string>>(result);
+      expect(back.constructor).toBeUndefined();
+      expect(back.hello).toBe(example.hello);
+    });
+  });
+  describe('toJSONAsync', () => {
+    it('supports Object.create(null)', async () => {
+      const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
+      const result = await toJSONAsync(example);
+      expect(result).toMatchSnapshot();
+      const back = await fromJSON<Promise<Record<string, string>>>(result);
+      expect(back.constructor).toBeUndefined();
+      expect(back.hello).toBe(example.hello);
+    });
+  });
   describe('compat', () => {
     it('should use manual assignment instead of Object.assign', () => {
       const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
       const result = serialize(example, { target: 'es5' });
       expect(result).toMatchSnapshot();
       const back = deserialize<Record<string, string>>(result);
+      expect(back.constructor).toBeUndefined();
+      expect(back.hello).toBe(example.hello);
+    });
+  });
+  describe('compat#toJSON', () => {
+    it('should use manual assignment instead of Object.assign', () => {
+      const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
+      const result = toJSON(example, { target: 'es5' });
+      expect(result).toMatchSnapshot();
+      expect(compileJSON(result)).toMatchSnapshot();
+      const back = fromJSON<Record<string, string>>(result);
       expect(back.constructor).toBeUndefined();
       expect(back.hello).toBe(example.hello);
     });

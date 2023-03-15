@@ -2,8 +2,20 @@
 
 exports[`Set > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Set\\""`;
 
+exports[`Set > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"Set\\""`;
+
+exports[`Set > serialize > supports Set 1`] = `"new Set([1,2,3])"`;
+
 exports[`Set > serialize > supports self-recursion 1`] = `"(h=>(h=new Set,h.add(h),h))()"`;
 
 exports[`Set > serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,2,3]))"`;
 
 exports[`Set > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Set([Promise.resolve().then(()=>h)])))()"`;
+
+exports[`Set > toJSON > supports Set 1`] = `"[[5,[[0,1],[0,2],[0,3]],0],0,false,4095,[]]"`;
+
+exports[`Set > toJSON > supports self-recursion 1`] = `"[[5,[[2,0]],0],0,false,4095,[0]]"`;
+
+exports[`Set > toJSONAsync > supports Set 1`] = `"[[10,[5,[[0,1],[0,2],[0,3]],1],0],0,false,4095,[]]"`;
+
+exports[`Set > toJSONAsync > supports self-recursion 1`] = `"[[5,[[10,[2,0],1]],0],0,false,4095,[0]]"`;

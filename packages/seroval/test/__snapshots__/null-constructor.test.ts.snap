@@ -2,6 +2,14 @@
 
 exports[`null-constructor > compat > should use manual assignment instead of Object.assign 1`] = `"(function(h){return (h=Object.create(null),h.hello=\\"world\\",h)})()"`;
 
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"[[9,[[\\"hello\\"],[[0,\\"\\\\\\"world\\\\\\"\\"]],1],0],0,false,0,[]]"`;
+
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"(function(h){return (h=Object.create(null),h.hello=\\"world\\",h)})()"`;
+
 exports[`null-constructor > serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
 exports[`null-constructor > serializeAsync > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
+
+exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"[[9,[[\\"hello\\"],[[0,\\"\\\\\\"world\\\\\\"\\"]],1],0],0,false,4095,[]]"`;
+
+exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"[[9,[[\\"hello\\"],[[0,\\"\\\\\\"world\\\\\\"\\"]],1],0],0,false,4095,[]]"`;

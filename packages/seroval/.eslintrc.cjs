@@ -16,6 +16,7 @@ module.exports = {
     "no-plusplus": "off",
     "no-continue": "off",
     "no-param-reassign": "off",
-    "no-restricted-syntax": "off"
+    "no-restricted-syntax": "off",
+    "no-bitwise": "off"
   }
 };

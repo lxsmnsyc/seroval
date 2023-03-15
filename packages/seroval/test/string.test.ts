@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { deserialize, serialize, serializeAsync } from '../src';
+import {
+  deserialize,
+  fromJSON,
+  serialize,
+  serializeAsync,
+  toJSON,
+  toJSONAsync,
+} from '../src';
 
 describe('string', () => {
   describe('serialize', () => {
@@ -14,6 +21,20 @@ describe('string', () => {
     it('supports strings', async () => {
       expect(await serializeAsync(Promise.resolve('"hello"'))).toMatchSnapshot();
       expect(await serializeAsync(Promise.resolve('<script></script>'))).toMatchSnapshot();
+    });
+  });
+  describe('toJSON', () => {
+    it('supports strings', () => {
+      expect(toJSON('"hello"')).toMatchSnapshot();
+      expect(toJSON('<script></script>')).toMatchSnapshot();
+      expect(fromJSON(toJSON('"hello"'))).toBe('"hello"');
+      expect(fromJSON(toJSON('<script></script>'))).toBe('<script></script>');
+    });
+  });
+  describe('toJSONAsync', () => {
+    it('supports strings', async () => {
+      expect(await toJSONAsync(Promise.resolve('"hello"'))).toMatchSnapshot();
+      expect(await toJSONAsync(Promise.resolve('<script></script>'))).toMatchSnapshot();
     });
   });
 });

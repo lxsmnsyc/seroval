@@ -2,6 +2,12 @@
 
 exports[`bigint > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"BigInt\\""`;
 
+exports[`bigint > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"BigInt\\""`;
+
 exports[`bigint > serialize > supports bigint 1`] = `"9007199254740991n"`;
 
 exports[`bigint > serializeAsync > supports bigint 1`] = `"Promise.resolve(9007199254740991n)"`;
+
+exports[`bigint > toJSON > supports bigint 1`] = `"[[1,\\"9007199254740991n\\"],0,false,4095,[]]"`;
+
+exports[`bigint > toJSONAsync > supports bigint 1`] = `"[[10,[1,\\"9007199254740991n\\"],0],0,false,4095,[]]"`;
