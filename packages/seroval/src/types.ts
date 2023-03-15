@@ -25,7 +25,9 @@ export type TypedArrayValue =
   | Uint32Array
   | Uint8ClampedArray
   | Float32Array
-  | Float64Array
+  | Float64Array;
+
+export type BigIntTypedArrayValue =
   | BigInt64Array
   | BigUint64Array;
 
@@ -33,6 +35,7 @@ export type SemiPrimitiveValue =
   | RegExp
   | Date
   | TypedArrayValue
+  | BigIntTypedArrayValue
   | bigint;
 
 export type CommonServerValue =

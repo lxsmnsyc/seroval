@@ -1,20 +1,33 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
-import {
-  isIterable,
-  isPrimitive,
-  isPromise,
-} from '../checks';
 import { Feature } from '../compat';
 import { createRef, ParserContext } from '../context';
-import { AsyncServerValue } from '../types';
+import quote from '../quote';
 import {
-  generateSemiPrimitiveValue,
+  AsyncServerValue,
+  BigIntTypedArrayValue,
+  TypedArrayValue,
+} from '../types';
+import {
+  createBigIntNode,
+  createBigIntTypedArrayNode,
+  createDateNode,
+  createPrimitiveNode,
+  createReferenceNode,
+  createRegExpNode,
+  createTypedArrayNode,
+  FALSE_NODE,
+  NEG_ZERO_NODE,
+  NULL_NODE,
+  TRUE_NODE,
+  UNDEFINED_NODE,
+} from './primitives';
+import {
   getErrorConstructor,
   getErrorOptions,
   getIterableOptions,
-  serializePrimitive,
+  isIterable,
 } from './shared';
 import {
   SerovalAggregateErrorNode,
@@ -24,7 +37,10 @@ import {
   SerovalMapNode,
   SerovalNode,
   SerovalNodeType,
+  SerovalNullConstructorNode,
+  SerovalObjectNode,
   SerovalObjectRecordNode,
+  SerovalPromiseNode,
   SerovalSetNode,
 } from './types';
 
@@ -40,14 +56,16 @@ async function serializePropertiesAsync(
   const deferredValues = new Array<AsyncServerValue>(size);
   let deferredSize = 0;
   let nodesSize = 0;
+  let item: AsyncServerValue;
   for (const key of keys) {
-    if (isIterable(properties[key])) {
+    item = properties[key];
+    if (isIterable(item)) {
       deferredKeys[deferredSize] = key;
-      deferredValues[deferredSize] = properties[key];
+      deferredValues[deferredSize] = item;
       deferredSize++;
     } else {
       keyNodes[nodesSize] = key;
-      valueNodes[nodesSize] = await generateTreeAsync(ctx, properties[key]);
+      valueNodes[nodesSize] = await generateTreeAsync(ctx, item);
       nodesSize++;
     }
   }
@@ -147,12 +165,14 @@ async function generateNodeList(
   const size = current.length;
   const nodes = new Array<SerovalNode>(size);
   const deferred = new Array<AsyncServerValue>(size);
+  let item: AsyncServerValue;
   for (let i = 0; i < size; i++) {
     if (i in current) {
-      if (isIterable(current[i])) {
-        deferred[i] = current[i];
+      item = current[i];
+      if (isIterable(item)) {
+        deferred[i] = item;
       } else {
-        nodes[i] = await generateTreeAsync(ctx, current[i]);
+        nodes[i] = await generateTreeAsync(ctx, item);
       }
     }
   }
@@ -249,111 +269,165 @@ async function generateIterableNode(
   };
 }
 
+type ObjectLikeNode =
+  | SerovalObjectNode
+  | SerovalNullConstructorNode
+  | SerovalIterableNode
+  | SerovalPromiseNode;
+
+type ObjectLikeValue =
+  | Record<string, AsyncServerValue>
+  | Iterable<AsyncServerValue>
+  | PromiseLike<AsyncServerValue>;
+
+async function generateObjectNode(
+  ctx: ParserContext,
+  current: ObjectLikeValue,
+  id: number,
+  empty: boolean,
+): Promise<ObjectLikeNode> {
+  if (Symbol.iterator in current) {
+    return generateIterableNode(ctx, current, id);
+  }
+  if ('then' in current && typeof current.then === 'function') {
+    return generatePromiseNode(ctx, current as PromiseLike<AsyncServerValue>, id);
+  }
+  return {
+    t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+    i: id,
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: await serializePropertiesAsync(ctx, current as Record<string, AsyncServerValue>),
+    a: undefined,
+    n: undefined,
+  };
+}
+
+async function generatePromiseNode(
+  ctx: ParserContext,
+  current: PromiseLike<AsyncServerValue>,
+  id: number,
+): Promise<SerovalPromiseNode> {
+  assert(ctx.features & Feature.Promise, 'Unsupported type "Promise"');
+  return current.then(async (value) => ({
+    t: SerovalNodeType.Promise,
+    i: id,
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    // Parse options first before the items
+    d: undefined,
+    a: undefined,
+    n: await generateTreeAsync(ctx, value),
+  }));
+}
+
 async function generateTreeAsync(
   ctx: ParserContext,
   current: AsyncServerValue,
 ): Promise<SerovalNode> {
-  if (isPrimitive(current)) {
-    return {
-      t: SerovalNodeType.Primitive,
-      i: undefined,
-      s: serializePrimitive(current),
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      // Parse options first before the items
-      d: undefined,
-      a: undefined,
-      n: undefined,
-    };
-  }
-  if (typeof current === 'bigint') {
-    assert(ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
-    return {
-      t: SerovalNodeType.BigInt,
-      i: undefined,
-      a: undefined,
-      s: `${current}n`,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  // Non-primitive values needs a reference ID
-  // mostly because the values themselves are stateful
-  const id = createRef(ctx, current, true);
-  if (ctx.markedRefs[id]) {
-    return {
-      t: SerovalNodeType.Reference,
-      i: id,
-      a: undefined,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  if (Array.isArray(current)) {
-    return generateArrayNode(ctx, current, id);
-  }
-  const cs = current.constructor;
-  const empty = cs == null;
-  if (cs === Object || empty) {
-    if (Symbol.iterator in current) {
-      return generateIterableNode(ctx, current, id);
+  switch (typeof current) {
+    case 'boolean':
+      return current ? TRUE_NODE : FALSE_NODE;
+    case 'undefined':
+      return UNDEFINED_NODE;
+    case 'string':
+      return createPrimitiveNode(quote(current));
+    case 'number':
+      if (Object.is(current, -0)) {
+        return NEG_ZERO_NODE;
+      }
+      if (Object.is(current, Infinity)) {
+        return createPrimitiveNode('1/0');
+      }
+      if (Object.is(current, -Infinity)) {
+        return createPrimitiveNode('-1/0');
+      }
+      return createPrimitiveNode(current);
+    case 'bigint':
+      return createBigIntNode(ctx, current);
+    case 'object': {
+      if (!current) {
+        return NULL_NODE;
+      }
+      // Non-primitive values needs a reference ID
+      // mostly because the values themselves are stateful
+      const id = createRef(ctx, current, true);
+      if (ctx.markedRefs[id]) {
+        return createReferenceNode(id);
+      }
+      if (Array.isArray(current)) {
+        return generateArrayNode(ctx, current, id);
+      }
+      switch (current.constructor) {
+        case Date:
+          return createDateNode(id, current as Date);
+        case RegExp:
+          return createRegExpNode(id, current as RegExp);
+        case Promise:
+          return generatePromiseNode(ctx, current as Promise<AsyncServerValue>, id);
+        case Map:
+          return generateMapNode(ctx, current as Map<AsyncServerValue, AsyncServerValue>, id);
+        case Set:
+          return generateSetNode(ctx, current as Set<AsyncServerValue>, id);
+        case Object:
+          return generateObjectNode(ctx, current as Record<string, AsyncServerValue>, id, false);
+        case undefined:
+          return generateObjectNode(ctx, current as Record<string, AsyncServerValue>, id, true);
+        case Int8Array:
+        case Int16Array:
+        case Int32Array:
+        case Uint8Array:
+        case Uint16Array:
+        case Uint32Array:
+        case Uint8ClampedArray:
+        case Float32Array:
+        case Float64Array:
+          return createTypedArrayNode(ctx, id, current as TypedArrayValue);
+        case BigInt64Array:
+        case BigUint64Array:
+          return createBigIntTypedArrayNode(ctx, id, current as BigIntTypedArrayValue);
+        case AggregateError:
+          if (ctx.features & Feature.AggregateError) {
+            return generateAggregateErrorNode(ctx, current as AggregateError, id);
+          }
+          return generateErrorNode(ctx, current as AggregateError, id);
+        case Error:
+        case EvalError:
+        case RangeError:
+        case ReferenceError:
+        case SyntaxError:
+        case TypeError:
+        case URIError:
+          return generateErrorNode(ctx, current as Error, id);
+        default:
+          break;
+      }
+      if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
+        return generateAggregateErrorNode(ctx, current, id);
+      }
+      if (current instanceof Error) {
+        return generateErrorNode(ctx, current, id);
+      }
+      if (current instanceof Promise) {
+        return generatePromiseNode(ctx, current as PromiseLike<AsyncServerValue>, id);
+      }
+      // Generator functions don't have a global constructor
+      if (Symbol.iterator in current) {
+        return generateIterableNode(ctx, current, id);
+      }
+      // For Promise-like objects
+      if ('then' in current && typeof current.then === 'function') {
+        return generatePromiseNode(ctx, current as PromiseLike<AsyncServerValue>, id);
+      }
+      throw new Error('Unsupported type');
     }
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      // Parse options first before the items
-      d: await serializePropertiesAsync(ctx, current as Record<string, AsyncServerValue>),
-      a: undefined,
-      n: undefined,
-    };
+    default:
+      throw new Error('Unsupported type');
   }
-  if (cs === Set) {
-    return generateSetNode(ctx, current as unknown as Set<AsyncServerValue>, id);
-  }
-  if (cs === Map) {
-    return generateMapNode(ctx, current as unknown as Map<AsyncServerValue, AsyncServerValue>, id);
-  }
-  const semiPrimitive = generateSemiPrimitiveValue(ctx, current, id);
-  if (semiPrimitive) {
-    return semiPrimitive;
-  }
-  if (Symbol.iterator in current) {
-    return generateIterableNode(ctx, current, id);
-  }
-  if (isPromise(current)) {
-    assert(ctx.features & Feature.Promise, 'Unsupported type "Promise"');
-    return current.then(async (value) => ({
-      t: SerovalNodeType.Promise,
-      i: id,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      // Parse options first before the items
-      d: undefined,
-      a: undefined,
-      n: await generateTreeAsync(ctx, value),
-    }));
-  }
-  if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
-    return generateAggregateErrorNode(ctx, current, id);
-  }
-  if (current instanceof Error) {
-    return generateErrorNode(ctx, current, id);
-  }
-  throw new Error('Unsupported value');
 }
 
 export default async function parseAsync(
@@ -361,5 +435,7 @@ export default async function parseAsync(
   current: AsyncServerValue,
 ) {
   const result = await generateTreeAsync(ctx, current);
-  return [result, createRef(ctx, current, false), result.t === SerovalNodeType.Object] as const;
+  const isObject = result.t === SerovalNodeType.Object
+    || result.t === SerovalNodeType.Iterable;
+  return [result, createRef(ctx, current, false), isObject] as const;
 }

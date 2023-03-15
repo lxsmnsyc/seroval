@@ -1,15 +1,28 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
-import { isIterable, isPrimitive } from '../checks';
 import { Feature } from '../compat';
 import { createRef, ParserContext } from '../context';
-import { ServerValue } from '../types';
+import quote from '../quote';
+import { BigIntTypedArrayValue, ServerValue, TypedArrayValue } from '../types';
 import {
-  generateSemiPrimitiveValue,
+  createBigIntNode,
+  createBigIntTypedArrayNode,
+  createDateNode,
+  createPrimitiveNode,
+  createReferenceNode,
+  createRegExpNode,
+  createTypedArrayNode,
+  FALSE_NODE,
+  NEG_ZERO_NODE,
+  NULL_NODE,
+  TRUE_NODE,
+  UNDEFINED_NODE,
+} from './primitives';
+import {
   getErrorConstructor,
   getErrorOptions,
   getIterableOptions,
-  serializePrimitive,
+  isIterable,
 } from './shared';
 import {
   SerovalAggregateErrorNode,
@@ -19,6 +32,8 @@ import {
   SerovalMapNode,
   SerovalNode,
   SerovalNodeType,
+  SerovalNullConstructorNode,
+  SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalSetNode,
 } from './types';
@@ -35,14 +50,16 @@ function serializePropertiesSync(
   const deferredValues = new Array<ServerValue>(size);
   let deferredSize = 0;
   let nodesSize = 0;
+  let item: ServerValue;
   for (const key of keys) {
-    if (isIterable(properties[key])) {
+    item = properties[key];
+    if (isIterable(item)) {
       deferredKeys[deferredSize] = key;
-      deferredValues[deferredSize] = properties[key];
+      deferredValues[deferredSize] = item;
       deferredSize++;
     } else {
       keyNodes[nodesSize] = key;
-      valueNodes[nodesSize] = generateTreeSync(ctx, properties[key]);
+      valueNodes[nodesSize] = generateTreeSync(ctx, item);
       nodesSize++;
     }
   }
@@ -142,12 +159,14 @@ function generateNodeList(
   const size = current.length;
   const nodes = new Array<SerovalNode>(size);
   const deferred = new Array<ServerValue>(size);
+  let item: ServerValue;
   for (let i = 0; i < size; i++) {
     if (i in current) {
-      if (isIterable(current[i])) {
-        deferred[i] = current[i];
+      item = current[i];
+      if (isIterable(item)) {
+        deferred[i] = item;
       } else {
-        nodes[i] = generateTreeSync(ctx, current[i]);
+        nodes[i] = generateTreeSync(ctx, item);
       }
     }
   }
@@ -244,96 +263,124 @@ function generateIterableNode(
   };
 }
 
+type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode | SerovalIterableNode;
+
+function generateObjectNode(
+  ctx: ParserContext,
+  current: Record<string, ServerValue> | Iterable<ServerValue>,
+  id: number,
+  empty: boolean,
+): ObjectLikeNode {
+  if (Symbol.iterator in current) {
+    return generateIterableNode(ctx, current, id);
+  }
+  return {
+    t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+    i: id,
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: serializePropertiesSync(ctx, current),
+    a: undefined,
+    n: undefined,
+  };
+}
+
 function generateTreeSync(
   ctx: ParserContext,
   current: ServerValue,
 ): SerovalNode {
-  if (isPrimitive(current)) {
-    return {
-      t: SerovalNodeType.Primitive,
-      i: undefined,
-      s: serializePrimitive(current),
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      // Parse options first before the items
-      d: undefined,
-      a: undefined,
-      n: undefined,
-    };
-  }
-  if (typeof current === 'bigint') {
-    assert(ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
-    return {
-      t: SerovalNodeType.BigInt,
-      i: undefined,
-      a: undefined,
-      s: `${current}n`,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  // Non-primitive values needs a reference ID
-  // mostly because the values themselves are stateful
-  const id = createRef(ctx, current, true);
-  if (ctx.markedRefs[id]) {
-    return {
-      t: SerovalNodeType.Reference,
-      i: id,
-      a: undefined,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  if (Array.isArray(current)) {
-    return generateArrayNode(ctx, current, id);
-  }
-  const cs = current.constructor;
-  const empty = cs == null;
-  if (cs === Object || empty) {
-    if (Symbol.iterator in current) {
-      return generateIterableNode(ctx, current, id);
+  switch (typeof current) {
+    case 'boolean':
+      return current ? TRUE_NODE : FALSE_NODE;
+    case 'undefined':
+      return UNDEFINED_NODE;
+    case 'string':
+      return createPrimitiveNode(quote(current));
+    case 'number':
+      if (Object.is(current, -0)) {
+        return NEG_ZERO_NODE;
+      }
+      if (Object.is(current, Infinity)) {
+        return createPrimitiveNode('1/0');
+      }
+      if (Object.is(current, -Infinity)) {
+        return createPrimitiveNode('-1/0');
+      }
+      return createPrimitiveNode(current);
+    case 'bigint':
+      return createBigIntNode(ctx, current);
+    case 'object': {
+      if (!current) {
+        return NULL_NODE;
+      }
+      // Non-primitive values needs a reference ID
+      // mostly because the values themselves are stateful
+      const id = createRef(ctx, current, true);
+      if (ctx.markedRefs[id]) {
+        return createReferenceNode(id);
+      }
+      if (Array.isArray(current)) {
+        return generateArrayNode(ctx, current, id);
+      }
+      switch (current.constructor) {
+        case Date:
+          return createDateNode(id, current as Date);
+        case RegExp:
+          return createRegExpNode(id, current as RegExp);
+        case Map:
+          return generateMapNode(ctx, current as Map<ServerValue, ServerValue>, id);
+        case Set:
+          return generateSetNode(ctx, current as Set<ServerValue>, id);
+        case Object:
+          return generateObjectNode(ctx, current as Record<string, ServerValue>, id, false);
+        case undefined:
+          return generateObjectNode(ctx, current as Record<string, ServerValue>, id, true);
+        case Int8Array:
+        case Int16Array:
+        case Int32Array:
+        case Uint8Array:
+        case Uint16Array:
+        case Uint32Array:
+        case Uint8ClampedArray:
+        case Float32Array:
+        case Float64Array:
+          return createTypedArrayNode(ctx, id, current as TypedArrayValue);
+        case BigInt64Array:
+        case BigUint64Array:
+          return createBigIntTypedArrayNode(ctx, id, current as BigIntTypedArrayValue);
+        case AggregateError:
+          if (ctx.features & Feature.AggregateError) {
+            return generateAggregateErrorNode(ctx, current as AggregateError, id);
+          }
+          return generateErrorNode(ctx, current as AggregateError, id);
+        case Error:
+        case EvalError:
+        case RangeError:
+        case ReferenceError:
+        case SyntaxError:
+        case TypeError:
+        case URIError:
+          return generateErrorNode(ctx, current as Error, id);
+        default:
+          break;
+      }
+      if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
+        return generateAggregateErrorNode(ctx, current, id);
+      }
+      if (current instanceof Error) {
+        return generateErrorNode(ctx, current, id);
+      }
+      // Generator functions don't have a global constructor
+      if (Symbol.iterator in current) {
+        return generateIterableNode(ctx, current, id);
+      }
+      throw new Error('Unsupported type');
     }
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      // Parse options first before the items
-      d: serializePropertiesSync(ctx, current as Record<string, ServerValue>),
-      a: undefined,
-      n: undefined,
-    };
+    default:
+      throw new Error('Unsupported type');
   }
-  if (cs === Set) {
-    return generateSetNode(ctx, current as Set<ServerValue>, id);
-  }
-  if (cs === Map) {
-    return generateMapNode(ctx, current as Map<ServerValue, ServerValue>, id);
-  }
-  const semiPrimitive = generateSemiPrimitiveValue(ctx, current, id);
-  if (semiPrimitive) {
-    return semiPrimitive;
-  }
-  if (Symbol.iterator in current) {
-    return generateIterableNode(ctx, current, id);
-  }
-  if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
-    return generateAggregateErrorNode(ctx, current, id);
-  }
-  if (current instanceof Error) {
-    return generateErrorNode(ctx, current, id);
-  }
-  throw new Error('Unsupported value');
 }
 
 export default function parseSync(
@@ -341,5 +388,7 @@ export default function parseSync(
   current: ServerValue,
 ) {
   const result = generateTreeSync(ctx, current);
-  return [result, createRef(ctx, current, false), result.t === SerovalNodeType.Object] as const;
+  const isObject = result.t === SerovalNodeType.Object
+    || result.t === SerovalNodeType.Iterable;
+  return [result, createRef(ctx, current, false), isObject] as const;
 }
