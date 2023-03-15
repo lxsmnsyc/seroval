@@ -11,7 +11,6 @@ import { Feature } from '../compat';
 import { createRef, ParserContext } from '../context';
 import { AsyncServerValue } from '../types';
 import {
-  generateRef,
   generateSemiPrimitiveValue,
   getErrorConstructor,
   getErrorOptions,
@@ -267,11 +266,35 @@ async function generateTreeAsync(
       n: undefined,
     };
   }
+  if (typeof current === 'bigint') {
+    assert(ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
+    return {
+      t: SerovalNodeType.BigInt,
+      i: undefined,
+      a: undefined,
+      s: `${current}n`,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
+  }
   // Non-primitive values needs a reference ID
   // mostly because the values themselves are stateful
-  const id = generateRef(ctx, current);
-  if (typeof id !== 'number') {
-    return id;
+  const id = createRef(ctx, current, true);
+  if (ctx.markedRefs[id]) {
+    return {
+      t: SerovalNodeType.Reference,
+      i: id,
+      a: undefined,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
   }
   const semiPrimitive = generateSemiPrimitiveValue(ctx, current, id);
   if (semiPrimitive) {
@@ -333,5 +356,5 @@ export default async function parseAsync(
   current: AsyncServerValue,
 ) {
   const result = await generateTreeAsync(ctx, current);
-  return [result, createRef(ctx, current), result.t === SerovalNodeType.Object] as const;
+  return [result, createRef(ctx, current, false), result.t === SerovalNodeType.Object] as const;
 }

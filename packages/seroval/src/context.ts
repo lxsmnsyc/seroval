@@ -127,13 +127,22 @@ export function getRefParam(ctx: SerializationContext, index: number) {
  */
 export function createRef(
   ctx: ParserContext,
-  index: unknown,
-) {
-  const current = ctx.refs.get(index);
-  if (current != null) {
-    return current;
+  current: unknown,
+  mark: boolean,
+): number {
+  // Check if reference number already exists
+  const ref = ctx.refs.get(current);
+  if (ref != null) {
+    // Exists, means this value is currently
+    // being referenced
+    // Mark reference
+    if (mark) {
+      markRef(ctx, ref);
+    }
+    return ref;
   }
+  // Create a new reference ID
   const id = ctx.refs.size;
-  ctx.refs.set(index, id);
+  ctx.refs.set(current, id);
   return id;
 }

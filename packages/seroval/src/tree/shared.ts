@@ -70,55 +70,11 @@ export function isReferenceInStack(
   return node.t === SerovalNodeType.Reference && ctx.stack.includes(node.i);
 }
 
-export function generateRef(
-  ctx: ParserContext,
-  current: unknown,
-): number | SerovalReferenceNode {
-  // Check if reference number already exists
-  const ref = ctx.refs.has(current);
-  if (ref) {
-    // Exists, means this value is currently
-    // being referenced
-    const refID = ctx.refs.get(current) || 0;
-    // Mark reference
-    markRef(ctx, refID);
-    return {
-      t: SerovalNodeType.Reference,
-      i: refID,
-      a: undefined,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  // Create a new reference ID
-  const id = ctx.refs.size;
-  ctx.refs.set(current, id);
-  return id;
-}
-
 export function generateSemiPrimitiveValue(
   ctx: ParserContext,
   current: unknown,
   id: number,
 ): SerovalNode | undefined {
-  if (typeof current === 'bigint') {
-    assert(ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
-    return {
-      t: SerovalNodeType.BigInt,
-      i: undefined,
-      a: undefined,
-      s: `${current}n`,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
   if (constructorCheck<Date>(current, Date)) {
     return {
       t: SerovalNodeType.Date,
