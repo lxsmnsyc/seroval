@@ -2,18 +2,17 @@
 import { isPrimitive } from './checks';
 import { Feature } from './compat';
 import {
-  createParserContext,
-  createSerializationContext,
+  SerializationContext,
   getRefParam,
   Options,
-  parseAsync,
-  parseSync,
-  resolvePatches,
-  SerializationContext,
-  serializePrimitive,
-  serializeTree,
-  SerovalNode,
-} from './tree';
+  createParserContext,
+  createSerializationContext,
+} from './context';
+import parseAsync from './tree/async';
+import serializeTree, { resolvePatches } from './tree/serialize';
+import { serializePrimitive } from './tree/shared';
+import parseSync from './tree/sync';
+import { SerovalNode } from './tree/types';
 import {
   AsyncServerValue,
   PrimitiveValue,
