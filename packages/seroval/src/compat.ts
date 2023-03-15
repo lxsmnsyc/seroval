@@ -40,17 +40,18 @@ export interface PlatformVersion {
 export type Platform = keyof PlatformVersion;
 
 export const enum Feature {
-  AggregateError,
-  ArrayPrototypeValues,
-  ArrowFunction,
-  BigInt,
-  Map,
-  MethodShorthand,
-  ObjectAssign,
-  Promise,
-  Set,
-  SymbolIterator,
-  TypedArray,
+  AggregateError = 0x01,
+  ArrayPrototypeValues = 0x02,
+  ArrowFunction = 0x04,
+  BigInt = 0x08,
+  Map = 0x10,
+  MethodShorthand = 0x20,
+  ObjectAssign = 0x40,
+  Promise = 0x80,
+  Set = 0x100,
+  SymbolIterator = 0x200,
+  TypedArray = 0x400,
+  BigIntTypedArray = 0x800,
 }
 
 type VersionTable = {
@@ -201,6 +202,19 @@ const VERSION_TABLE: VersionTable = {
     deno: [1, 0, 0],
     node: [0, 10, 0],
   },
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array#browser_compatibility
+  [Feature.BigIntTypedArray]: {
+    es: [2020, 0, 0],
+    chrome: [67, 0, 0],
+    edge: [79, 0, 0],
+    firefox: [68, 0, 0],
+    opera: [54, 6, 0],
+    safari: [15, 1, 0],
+    ios: [15, 2, 0],
+    samsung: [9, 0, 0],
+    deno: [1, 0, 0],
+    node: [10, 4, 0],
+  },
 };
 
 const TARGET_REGEX = /^(es|chrome|edge|safari|firefox|opera|ios|samsung|deno|node)([0-9]+(\.[0-9]+(\.[0-9]+)?)?)$/i;
@@ -226,9 +240,9 @@ function getTargetVersions(targets: string | string[]): Target[] {
   return [parseTarget(targets)];
 }
 
-export function parseTargets(targets: string | string[]): Set<Feature> {
+export function parseTargets(targets: string | string[]): number {
   const parsed = getTargetVersions(targets);
-  const flags = new Set<Feature>();
+  let flags = 0;
 
   for (const key in VERSION_TABLE) {
     const base = VERSION_TABLE[key as unknown as Feature];
@@ -238,7 +252,7 @@ export function parseTargets(targets: string | string[]): Set<Feature> {
       flag = flag && !!baseVersion && (compareVersion(baseVersion, version) <= 0);
     }
     if (flag) {
-      flags.add(Number(key) as unknown as Feature);
+      flags |= Number(key);
     }
   }
 
