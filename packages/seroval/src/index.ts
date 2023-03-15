@@ -4,8 +4,7 @@ import {
   SerializationContext,
   getRefParam,
   Options,
-  createParserContext,
-  createSerializationContext,
+  ParserContext,
 } from './context';
 import parseAsync from './tree/async';
 import serializeTree, { resolvePatches } from './tree/serialize';
@@ -70,9 +69,9 @@ export function serialize<T extends ServerValue>(
   source: T,
   options?: Partial<Options>,
 ) {
-  const ctx = createParserContext(options);
+  const ctx = new ParserContext(options);
   const [tree, rootID, isObject] = parseSync(ctx, source);
-  const serial = createSerializationContext(ctx);
+  const serial = new SerializationContext(ctx);
   const result = serializeTree(serial, tree);
   return finalize(serial, rootID, isObject, result);
 }
@@ -81,9 +80,9 @@ export async function serializeAsync<T extends AsyncServerValue>(
   source: T,
   options?: Partial<Options>,
 ) {
-  const ctx = createParserContext(options);
+  const ctx = new ParserContext(options);
   const [tree, rootID, isObject] = await parseAsync(ctx, source);
-  const serial = createSerializationContext(ctx);
+  const serial = new SerializationContext(ctx);
   const result = serializeTree(serial, tree);
   return finalize(serial, rootID, isObject, result);
 }
@@ -105,7 +104,7 @@ export function toJSON<T extends ServerValue>(
   source: T,
   options?: Partial<Options>,
 ) {
-  const ctx = createParserContext(options);
+  const ctx = new ParserContext(options);
   const [tree, root, isObject] = parseSync(ctx, source);
   return JSON.stringify([
     tree,
@@ -120,7 +119,7 @@ export async function toJSONAsync<T extends AsyncServerValue>(
   source: T,
   options?: Partial<Options>,
 ) {
-  const ctx = createParserContext(options);
+  const ctx = new ParserContext(options);
   const [tree, root, isObject] = await parseAsync(ctx, source);
   return JSON.stringify([
     tree,
@@ -133,7 +132,7 @@ export async function toJSONAsync<T extends AsyncServerValue>(
 
 export function compileJSON(source: string): string {
   const parsed = JSON.parse(source) as SerovalJSON;
-  const serial = createSerializationContext({
+  const serial = new SerializationContext({
     features: parsed[3],
     markedRefs: parsed[4],
   });

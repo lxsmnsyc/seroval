@@ -1,3 +1,5 @@
+/* eslint-disable prefer-object-spread */
+/* eslint-disable max-classes-per-file */
 import { parseTargets } from './compat';
 import getIdentifier from './get-identifier';
 
@@ -26,27 +28,6 @@ export type Assignment =
   | MapAssignment
   | SetAssignment;
 
-export interface ParserContext {
-  refs: Map<unknown, number>;
-  markedRefs: Record<number, number>;
-  features: number;
-}
-
-export interface SerializationContext {
-  stack: number[];
-  // Map tree refs to actual refs
-  validRefs: number[];
-  refSize: number;
-  // Refs that are...referenced
-  markedRefs: Record<number, number>;
-  // Variables
-  vars: string[];
-  // Array of assignments to be done (used for recursion)
-  assignments: Assignment[];
-  // Supported features
-  features: number;
-}
-
 export interface Options {
   target: string | string[];
 }
@@ -55,14 +36,17 @@ const DEFAULT_OPTIONS: Options = {
   target: 'es2023',
 };
 
-export function createParserContext(options: Partial<Options> = {}): ParserContext {
-  // eslint-disable-next-line prefer-object-spread
-  const result = Object.assign({}, DEFAULT_OPTIONS, options || {});
-  return {
-    markedRefs: {},
-    refs: new Map(),
-    features: parseTargets(result.target),
-  };
+export class ParserContext {
+  refs = new Map<unknown, number>();
+
+  markedRefs: Record<number, number> = {};
+
+  features: number;
+
+  constructor(options: Partial<Options> = {}) {
+    const result = Object.assign({}, DEFAULT_OPTIONS, options || {});
+    this.features = parseTargets(result.target);
+  }
 }
 
 export interface SerializationOptions {
@@ -70,16 +54,30 @@ export interface SerializationOptions {
   features: number;
 }
 
-export function createSerializationContext(options: SerializationOptions): SerializationContext {
-  return {
-    stack: [],
-    vars: [],
-    assignments: [],
-    validRefs: [],
-    refSize: 0,
-    features: options.features,
-    markedRefs: options.markedRefs,
-  };
+export class SerializationContext {
+  stack: number[] = [];
+
+  // Map tree refs to actual refs
+  validRefs: number[] = [];
+
+  refSize = 0;
+
+  // Variables
+  vars: string[] = [];
+
+  // Array of assignments to be done (used for recursion)
+  assignments: Assignment[] = [];
+
+  // Supported features
+  features: number;
+
+  // Refs that are...referenced
+  markedRefs: Record<number, number>;
+
+  constructor(options: SerializationOptions) {
+    this.features = options.features;
+    this.markedRefs = options.markedRefs;
+  }
 }
 
 /**

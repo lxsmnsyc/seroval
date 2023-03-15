@@ -1,4 +1,5 @@
-import { PrimitiveValue } from '../types';
+/* eslint-disable max-classes-per-file */
+import { BigIntTypedArrayValue, PrimitiveValue, TypedArrayValue } from '../types';
 
 export const enum SerovalNodeType {
   Primitive,
@@ -21,81 +22,156 @@ export const enum SerovalNodeType {
 
 export interface SerovalBaseNode {
   // Type of the node
-  t: SerovalNodeType;
+  t?: SerovalNodeType;
   // Serialized value
-  s: PrimitiveValue | undefined;
+  s?: PrimitiveValue;
   // Reference ID
-  i: number | undefined;
+  i?: number;
   // Size/Byte offset
-  l: number | undefined;
+  l?: number;
   // Constructor name
-  c: string | undefined;
+  c?: string;
   // dictionary
-  d: SerovalDictionaryNode | undefined;
+  d?: SerovalDictionaryNode;
   // message
-  m: string | undefined;
+  m?: string;
   // next node
-  n: SerovalNode | undefined;
+  n?: SerovalNode;
   // array of nodes
-  a: SerovalNode[] | undefined;
+  a?: SerovalNode[];
 }
 
-export interface SerovalObjectRecordNode {
+export class SerovalObjectRecordNode {
   k: string[];
+
   v: SerovalNode[];
+
   s: number;
+
+  constructor(k: string[], v: SerovalNode[], s: number) {
+    this.k = k;
+    this.v = v;
+    this.s = s;
+  }
 }
 
-export interface SerovalMapRecordNode {
+export class SerovalMapRecordNode {
   k: SerovalNode[];
+
   v: SerovalNode[];
+
   s: number;
+
+  constructor(k: SerovalNode[], v: SerovalNode[], s: number) {
+    this.k = k;
+    this.v = v;
+    this.s = s;
+  }
 }
 
 export type SerovalDictionaryNode =
   | SerovalObjectRecordNode
   | SerovalMapRecordNode;
 
-export interface SerovalPrimitiveNode extends SerovalBaseNode {
-  t: SerovalNodeType.Primitive;
+export class SerovalPrimitiveNode implements SerovalBaseNode {
+  t: SerovalNodeType.Primitive = SerovalNodeType.Primitive;
+
+  s: string | number | null;
+
+  constructor(current: string | number | null) {
+    this.s = current;
+  }
 }
 
-export interface SerovalReferenceNode extends SerovalBaseNode {
-  t: SerovalNodeType.Reference;
+export class SerovalReferenceNode implements SerovalBaseNode {
+  t: SerovalNodeType.Reference = SerovalNodeType.Reference;
+
   i: number;
+
+  constructor(id: number) {
+    this.i = id;
+  }
 }
 
-export interface SerovalBigIntNode extends SerovalBaseNode {
-  t: SerovalNodeType.BigInt;
+export class SerovalBigIntNode implements SerovalBaseNode {
+  t: SerovalNodeType.BigInt = SerovalNodeType.BigInt;
+
   s: string;
+
+  constructor(current: bigint) {
+    this.s = `${current}n`;
+  }
 }
 
-export interface SerovalDateNode extends SerovalBaseNode {
-  t: SerovalNodeType.Date;
+export class SerovalDateNode implements SerovalBaseNode {
+  t: SerovalNodeType.Date = SerovalNodeType.Date;
+
   i: number;
+
   s: string;
+
+  constructor(id: number, current: Date) {
+    this.i = id;
+    this.s = current.toISOString();
+  }
 }
 
-export interface SerovalRegExpNode extends SerovalBaseNode {
-  t: SerovalNodeType.RegExp;
+export class SerovalRegExpNode implements SerovalBaseNode {
+  t: SerovalNodeType.RegExp = SerovalNodeType.RegExp;
+
   i: number;
+
   s: string;
+
+  constructor(id: number, current: RegExp) {
+    this.i = id;
+    this.s = String(current);
+  }
 }
 
-export interface SerovalTypedArrayNode extends SerovalBaseNode {
-  t: SerovalNodeType.TypedArray;
+export class SerovalTypedArrayNode implements SerovalBaseNode {
+  t: SerovalNodeType.TypedArray = SerovalNodeType.TypedArray;
+
   i: number;
+
   s: string;
+
   l: number;
+
   c: string;
+
+  constructor(id: number, current: TypedArrayValue) {
+    this.i = id;
+    this.s = current.toString();
+    this.l = current.byteOffset;
+    this.c = current.constructor.name;
+  }
 }
 
-export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
-  t: SerovalNodeType.BigIntTypedArray;
+export class SerovalBigIntTypedArrayNode implements SerovalBaseNode {
+  t: SerovalNodeType.BigIntTypedArray = SerovalNodeType.BigIntTypedArray;
+
   i: number;
+
   s: string;
+
   l: number;
+
   c: string;
+
+  constructor(id: number, current: BigIntTypedArrayValue) {
+    let result = '';
+    const cap = current.length - 1;
+    for (let i = 0; i < cap; i++) {
+      result += `${current[i]}n,`;
+    }
+    result += `"${current[cap]}"`;
+
+    this.i = id;
+    this.s = result;
+    this.l = current.byteOffset;
+    this.c = current.constructor.name;
+  }
 }
 
 export type SerovalSemiPrimitiveNode =
@@ -105,63 +181,136 @@ export type SerovalSemiPrimitiveNode =
   | SerovalTypedArrayNode
   | SerovalBigIntTypedArrayNode;
 
-export interface SerovalSetNode extends SerovalBaseNode {
-  t: SerovalNodeType.Set;
-  a: SerovalNode[];
+export class SerovalSetNode implements SerovalBaseNode {
+  t: SerovalNodeType.Set = SerovalNodeType.Set;
+
   i: number;
+
+  a: SerovalNode[];
+
+  constructor(id: number, a: SerovalNode[]) {
+    this.i = id;
+    this.a = a;
+  }
 }
 
-export interface SerovalMapNode extends SerovalBaseNode {
-  t: SerovalNodeType.Map;
+export class SerovalMapNode implements SerovalBaseNode {
+  t: SerovalNodeType.Map = SerovalNodeType.Map;
+
+  i: number;
+
   d: SerovalMapRecordNode;
-  i: number;
+
+  constructor(id: number, d: SerovalMapRecordNode) {
+    this.i = id;
+    this.d = d;
+  }
 }
 
-export interface SerovalArrayNode extends SerovalBaseNode {
-  t: SerovalNodeType.Array;
+export class SerovalArrayNode implements SerovalBaseNode {
+  t: SerovalNodeType.Array = SerovalNodeType.Array;
+
+  i: number;
+
   a: SerovalNode[];
-  i: number;
+
+  constructor(id: number, a: SerovalNode[]) {
+    this.i = id;
+    this.a = a;
+  }
 }
 
-export interface SerovalObjectNode extends SerovalBaseNode {
-  t: SerovalNodeType.Object;
+export class SerovalObjectNode implements SerovalBaseNode {
+  t: SerovalNodeType.Object = SerovalNodeType.Object;
+
+  i: number;
+
   d: SerovalObjectRecordNode;
-  i: number;
+
+  constructor(id: number, d: SerovalObjectRecordNode) {
+    this.i = id;
+    this.d = d;
+  }
 }
 
-export interface SerovalNullConstructorNode extends SerovalBaseNode {
-  t: SerovalNodeType.NullConstructor;
+export class SerovalNullConstructorNode implements SerovalBaseNode {
+  t: SerovalNodeType.NullConstructor = SerovalNodeType.NullConstructor;
+
+  i: number;
+
   d: SerovalObjectRecordNode;
-  i: number;
+
+  constructor(id: number, d: SerovalObjectRecordNode) {
+    this.i = id;
+    this.d = d;
+  }
 }
 
-export interface SerovalPromiseNode extends SerovalBaseNode {
-  t: SerovalNodeType.Promise;
+export class SerovalPromiseNode implements SerovalBaseNode {
+  t: SerovalNodeType.Promise = SerovalNodeType.Promise;
+
+  i: number;
+
   n: SerovalNode;
-  i: number;
+
+  constructor(id: number, n: SerovalNode) {
+    this.i = id;
+    this.n = n;
+  }
 }
 
-export interface SerovalErrorNode extends SerovalBaseNode {
-  t: SerovalNodeType.Error;
+export class SerovalErrorNode implements SerovalBaseNode {
+  t: SerovalNodeType.Error = SerovalNodeType.Error;
+
+  i: number;
+
   c: string;
+
   m: string;
+
   d: SerovalObjectRecordNode | undefined;
-  i: number;
+
+  constructor(id: number, c: string, m: string, d: SerovalObjectRecordNode | undefined) {
+    this.i = id;
+    this.c = c;
+    this.m = m;
+    this.d = d;
+  }
 }
 
-export interface SerovalAggregateErrorNode extends SerovalBaseNode {
-  t: SerovalNodeType.AggregateError;
+export class SerovalAggregateErrorNode implements SerovalBaseNode {
+  t: SerovalNodeType.AggregateError = SerovalNodeType.AggregateError;
+
+  i: number;
+
   m: string;
+
   d: SerovalObjectRecordNode | undefined;
+
   n: SerovalNode;
-  i: number;
+
+  constructor(id: number, m: string, d: SerovalObjectRecordNode | undefined, n: SerovalNode) {
+    this.i = id;
+    this.m = m;
+    this.d = d;
+    this.n = n;
+  }
 }
 
-export interface SerovalIterableNode extends SerovalBaseNode {
-  t: SerovalNodeType.Iterable;
-  d: SerovalObjectRecordNode | undefined;
-  a: SerovalNode[];
+export class SerovalIterableNode implements SerovalBaseNode {
+  t: SerovalNodeType.Iterable = SerovalNodeType.Iterable;
+
   i: number;
+
+  d: SerovalObjectRecordNode | undefined;
+
+  a: SerovalNode[];
+
+  constructor(id: number, d: SerovalObjectRecordNode | undefined, a: SerovalNode[]) {
+    this.i = id;
+    this.d = d;
+    this.a = a;
+  }
 }
 
 export type SerovalNode =

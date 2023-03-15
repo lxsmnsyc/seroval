@@ -10,14 +10,9 @@ import {
   TypedArrayValue,
 } from '../types';
 import {
-  createBigIntNode,
-  createBigIntTypedArrayNode,
-  createDateNode,
-  createPrimitiveNode,
-  createReferenceNode,
-  createRegExpNode,
-  createTypedArrayNode,
   FALSE_NODE,
+  INFINITY_NODE,
+  NEG_INFINITY_NODE,
   NEG_ZERO_NODE,
   NULL_NODE,
   TRUE_NODE,
@@ -32,16 +27,24 @@ import {
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
+  SerovalBigIntNode,
+  SerovalBigIntTypedArrayNode,
+  SerovalDateNode,
   SerovalErrorNode,
   SerovalIterableNode,
   SerovalMapNode,
+  SerovalMapRecordNode,
   SerovalNode,
   SerovalNodeType,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordNode,
+  SerovalPrimitiveNode,
   SerovalPromiseNode,
+  SerovalReferenceNode,
+  SerovalRegExpNode,
   SerovalSetNode,
+  SerovalTypedArrayNode,
 } from './types';
 
 type ObjectLikeNode =
@@ -91,17 +94,7 @@ class AsyncParser {
     id: number,
     current: AsyncServerValue[],
   ): Promise<SerovalArrayNode> {
-    return {
-      t: SerovalNodeType.Array,
-      i: id,
-      a: await this.generateNodeList(current),
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
+    return new SerovalArrayNode(id, await this.generateNodeList(current));
   }
 
   async generateMapNode(
@@ -132,17 +125,7 @@ class AsyncParser {
       keyNodes[nodeSize + i] = await this.parse(deferredKey[i]);
       valueNodes[nodeSize + i] = await this.parse(deferredValue[i]);
     }
-    return {
-      t: SerovalNodeType.Map,
-      i: id,
-      a: undefined,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: { k: keyNodes, v: valueNodes, s: len },
-      n: undefined,
-    };
+    return new SerovalMapNode(id, new SerovalMapRecordNode(keyNodes, valueNodes, len));
   }
 
   async generateSetNode(
@@ -167,17 +150,7 @@ class AsyncParser {
     for (let i = 0; i < deferredSize; i++) {
       nodes[nodeSize + i] = await this.parse(deferred[i]);
     }
-    return {
-      t: SerovalNodeType.Set,
-      i: id,
-      a: nodes,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
+    return new SerovalSetNode(id, nodes);
   }
 
   async generateProperties(
@@ -208,11 +181,7 @@ class AsyncParser {
       keyNodes[nodesSize + i] = deferredKeys[i];
       valueNodes[nodesSize + i] = await this.parse(deferredValues[i]);
     }
-    return {
-      k: keyNodes,
-      v: valueNodes,
-      s: size,
-    };
+    return new SerovalObjectRecordNode(keyNodes, valueNodes, size);
   }
 
   async generateIterableNode(
@@ -221,20 +190,14 @@ class AsyncParser {
   ): Promise<SerovalIterableNode> {
     assert(this.ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
     const options = getIterableOptions(current);
-    return {
-      t: SerovalNodeType.Iterable,
-      i: id,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
+    return new SerovalIterableNode(
+      id,
       // Parse options first before the items
-      d: options
+      options
         ? await this.generateProperties(options as Record<string, AsyncServerValue>)
         : undefined,
-      a: await this.generateNodeList(Array.from(current)),
-      n: undefined,
-    };
+      await this.generateNodeList(Array.from(current)),
+    );
   }
 
   async generatePromiseNode(
@@ -242,18 +205,7 @@ class AsyncParser {
     current: PromiseLike<AsyncServerValue>,
   ): Promise<SerovalPromiseNode> {
     assert(this.ctx.features & Feature.Promise, 'Unsupported type "Promise"');
-    return current.then(async (value) => ({
-      t: SerovalNodeType.Promise,
-      i: id,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      // Parse options first before the items
-      d: undefined,
-      a: undefined,
-      n: await this.parse(value),
-    }));
+    return current.then(async (value) => new SerovalPromiseNode(id, await this.parse(value)));
   }
 
   async generateObjectNode(
@@ -267,17 +219,11 @@ class AsyncParser {
     if ('then' in current && typeof current.then === 'function') {
       return this.generatePromiseNode(id, current as PromiseLike<AsyncServerValue>);
     }
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: await this.generateProperties(current as Record<string, AsyncServerValue>),
-      a: undefined,
-      n: undefined,
-    };
+    const properties = await this.generateProperties(current as Record<string, AsyncServerValue>);
+    if (empty) {
+      return new SerovalNullConstructorNode(id, properties);
+    }
+    return new SerovalObjectNode(id, properties);
   }
 
   async generateAggregateErrorNode(
@@ -288,17 +234,12 @@ class AsyncParser {
     const optionsNode = options
       ? await this.generateProperties(options)
       : undefined;
-    return {
-      t: SerovalNodeType.AggregateError,
-      i: id,
-      a: undefined,
-      s: undefined,
-      l: undefined,
-      m: current.message,
-      c: undefined,
-      d: optionsNode,
-      n: await this.parse(current.errors),
-    };
+    return new SerovalAggregateErrorNode(
+      id,
+      current.message,
+      optionsNode,
+      await this.parse(current.errors),
+    );
   }
 
   async generateErrorNode(
@@ -309,17 +250,7 @@ class AsyncParser {
     const optionsNode = options
       ? await this.generateProperties(options)
       : undefined;
-    return {
-      t: SerovalNodeType.Error,
-      i: id,
-      a: undefined,
-      s: undefined,
-      l: undefined,
-      m: current.message,
-      c: getErrorConstructor(current),
-      d: optionsNode,
-      n: undefined,
-    };
+    return new SerovalErrorNode(id, getErrorConstructor(current), current.message, optionsNode);
   }
 
   async parse(current: AsyncServerValue): Promise<SerovalNode> {
@@ -329,20 +260,21 @@ class AsyncParser {
       case 'undefined':
         return UNDEFINED_NODE;
       case 'string':
-        return createPrimitiveNode(quote(current));
+        return new SerovalPrimitiveNode(quote(current));
       case 'number':
         if (Object.is(current, -0)) {
           return NEG_ZERO_NODE;
         }
         if (Object.is(current, Infinity)) {
-          return createPrimitiveNode('1/0');
+          return INFINITY_NODE;
         }
         if (Object.is(current, -Infinity)) {
-          return createPrimitiveNode('-1/0');
+          return NEG_INFINITY_NODE;
         }
-        return createPrimitiveNode(current);
+        return new SerovalPrimitiveNode(current);
       case 'bigint':
-        return createBigIntNode(this.ctx, current);
+        assert(this.ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
+        return new SerovalBigIntNode(current);
       case 'object': {
         if (!current) {
           return NULL_NODE;
@@ -351,16 +283,16 @@ class AsyncParser {
         // mostly because the values themselves are stateful
         const id = createRef(this.ctx, current, true);
         if (this.ctx.markedRefs[id]) {
-          return createReferenceNode(id);
+          return new SerovalReferenceNode(id);
         }
         if (Array.isArray(current)) {
           return this.generateArrayNode(id, current);
         }
         switch (current.constructor) {
           case Date:
-            return createDateNode(id, current as Date);
+            return new SerovalDateNode(id, current as Date);
           case RegExp:
-            return createRegExpNode(id, current as RegExp);
+            return new SerovalRegExpNode(id, current as RegExp);
           case Promise:
             return this.generatePromiseNode(id, current as Promise<AsyncServerValue>);
           case Int8Array:
@@ -372,10 +304,15 @@ class AsyncParser {
           case Uint8ClampedArray:
           case Float32Array:
           case Float64Array:
-            return createTypedArrayNode(this.ctx, id, current as TypedArrayValue);
+            assert(this.ctx.features & Feature.TypedArray, `Unsupported value type "${current.constructor.name}"`);
+            return new SerovalTypedArrayNode(id, current as TypedArrayValue);
           case BigInt64Array:
           case BigUint64Array:
-            return createBigIntTypedArrayNode(this.ctx, id, current as BigIntTypedArrayValue);
+            assert(
+              this.ctx.features & (Feature.BigIntTypedArray),
+              `Unsupported value type "${current.constructor.name}"`,
+            );
+            return new SerovalBigIntTypedArrayNode(id, current as BigIntTypedArrayValue);
           case Map:
             return this.generateMapNode(id, current as Map<AsyncServerValue, AsyncServerValue>);
           case Set:
