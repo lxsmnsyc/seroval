@@ -1,7 +1,7 @@
 import assert from '../assert';
 import { constructorCheck } from '../checks';
 import { Feature } from '../compat';
-import { SerializationContext, ParserContext, markRef } from '../context';
+import { SerializationContext, ParserContext } from '../context';
 import quote from '../quote';
 import { ErrorValue, PrimitiveValue } from '../types';
 import { SerovalNode, SerovalReferenceNode, SerovalNodeType } from './types';

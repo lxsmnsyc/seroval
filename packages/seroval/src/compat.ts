@@ -5,9 +5,6 @@
  * - MDN
  * - ESBuild
  */
-
-import assert from './assert';
-
 export type Version = [major: number, minor: number, patch: number];
 
 function compareVersion(left: Version, right: Version) {
@@ -217,23 +214,43 @@ const VERSION_TABLE: VersionTable = {
   },
 };
 
-const TARGET_REGEX = /^(es|chrome|edge|safari|firefox|opera|ios|samsung|deno|node)([0-9]+(\.[0-9]+(\.[0-9]+)?)?)$/i;
+const platforms: Platform[] = [
+  'chrome',
+  'deno',
+  'edge',
+  'es',
+  'firefox',
+  'ios',
+  'node',
+  'opera',
+  'safari',
+  'samsung',
+];
 
 export type Target = [platform: Platform, version: Version];
 
+function getPlatform(target: string): Platform {
+  for (let i = 0, len = platforms.length; i < len; i++) {
+    const platform = target.substring(0, platforms[i].length);
+    if (platform === platforms[i]) {
+      return platform;
+    }
+  }
+  throw new Error(`Invalid target "${target}"`);
+}
+
 function parseTarget(target: string): Target {
-  const result = TARGET_REGEX.exec(target);
-  assert(result, `Invalid target "${target}"`);
-  const [, platform, version] = result;
+  const platform = getPlatform(target);
+  const version = target.substring(platform.length);
   const [major, minor = '0', patch = '0'] = version.split('.');
-  return [platform as Platform, [Number(major), Number(minor), Number(patch)]];
+  return [platform, [Number(major), Number(minor), Number(patch)]];
 }
 
 function getTargetVersions(targets: string | string[]): Target[] {
   if (Array.isArray(targets)) {
     const versions: Target[] = [];
-    for (const target of targets) {
-      versions.push(parseTarget(target));
+    for (let i = 0, len = targets.length; i < len; i++) {
+      versions.push(parseTarget(targets[i]));
     }
     return versions;
   }
@@ -244,7 +261,7 @@ export function parseTargets(targets: string | string[]): number {
   const parsed = getTargetVersions(targets);
   let flags = 0;
 
-  for (const key in VERSION_TABLE) {
+  for (const key of Object.keys(VERSION_TABLE)) {
     const base = VERSION_TABLE[key as unknown as Feature];
     let flag = true;
     for (const [platform, version] of parsed) {
