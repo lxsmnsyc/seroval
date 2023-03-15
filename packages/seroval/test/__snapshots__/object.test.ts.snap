@@ -8,10 +8,10 @@ exports[`objects > serializeAsync > supports Objects 1`] = `"Promise.resolve({he
 
 exports[`objects > serializeAsync > supports self-recursion 1`] = `"(h=>(h={a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)}))()"`;
 
-exports[`objects > toJSON > supports Objects 1`] = `"[[8,[[\\"hello\\"],[[0,\\"\\\\\\"world\\\\\\"\\"]],1],0],0,true,4095,{}]"`;
+exports[`objects > toJSON > supports Objects 1`] = `"[{\\"t\\":8,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}},0,true,4095,{}]"`;
 
-exports[`objects > toJSON > supports self-recursion 1`] = `"[[8,[[\\"a\\",\\"b\\"],[[2,0],[2,0]],2],0],0,true,4095,{\\"0\\":1}]"`;
+exports[`objects > toJSON > supports self-recursion 1`] = `"[{\\"t\\":8,\\"i\\":0,\\"d\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":2,\\"i\\":0},{\\"t\\":2,\\"i\\":0}],\\"s\\":2}},0,true,4095,{\\"0\\":1}]"`;
 
-exports[`objects > toJSONAsync > supports Objects 1`] = `"[[10,[8,[[\\"hello\\"],[[0,\\"\\\\\\"world\\\\\\"\\"]],1],1],0],0,false,4095,{}]"`;
+exports[`objects > toJSONAsync > supports Objects 1`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":8,\\"i\\":1,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}}},0,false,4095,{}]"`;
 
-exports[`objects > toJSONAsync > supports self-recursion 1`] = `"[[8,[[\\"a\\",\\"b\\"],[[10,[2,0],1],[10,[2,0],2]],2],0],0,true,4095,{\\"0\\":1}]"`;
+exports[`objects > toJSONAsync > supports self-recursion 1`] = `"[{\\"t\\":8,\\"i\\":0,\\"d\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":10,\\"i\\":1,\\"n\\":{\\"t\\":2,\\"i\\":0}},{\\"t\\":10,\\"i\\":2,\\"n\\":{\\"t\\":2,\\"i\\":0}}],\\"s\\":2}},0,true,4095,{\\"0\\":1}]"`;

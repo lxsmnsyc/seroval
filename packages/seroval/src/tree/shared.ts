@@ -67,7 +67,7 @@ export function isReferenceInStack(
   ctx: SerializationContext,
   node: SerovalNode,
 ): node is SerovalReferenceNode {
-  return node[0] === SerovalNodeType.Reference && ctx.stack.includes(node[1]);
+  return node.t === SerovalNodeType.Reference && ctx.stack.includes(node.i);
 }
 
 export function generateRef(
@@ -82,7 +82,17 @@ export function generateRef(
     const refID = ctx.refs.get(current) || 0;
     // Mark reference
     markRef(ctx, refID);
-    return [SerovalNodeType.Reference, refID];
+    return {
+      t: SerovalNodeType.Reference,
+      i: refID,
+      a: undefined,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
   }
   // Create a new reference ID
   const id = ctx.refs.size;
@@ -97,13 +107,43 @@ export function generateSemiPrimitiveValue(
 ): SerovalNode | undefined {
   if (typeof current === 'bigint') {
     assert(ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
-    return [SerovalNodeType.BigInt, `${current}n`];
+    return {
+      t: SerovalNodeType.BigInt,
+      i: undefined,
+      a: undefined,
+      s: `${current}n`,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
   }
   if (constructorCheck<Date>(current, Date)) {
-    return [SerovalNodeType.Date, current.toISOString(), id];
+    return {
+      t: SerovalNodeType.Date,
+      i: id,
+      a: undefined,
+      s: current.toISOString(),
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
   }
   if (constructorCheck<RegExp>(current, RegExp)) {
-    return [SerovalNodeType.RegExp, String(current), id];
+    return {
+      t: SerovalNodeType.RegExp,
+      i: id,
+      a: undefined,
+      s: String(current),
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
   }
   if (
     constructorCheck<Int8Array>(current, Int8Array)
@@ -118,7 +158,17 @@ export function generateSemiPrimitiveValue(
   ) {
     const constructor = current.constructor.name;
     assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
-    return [SerovalNodeType.TypedArray, [constructor, current.toString(), current.byteOffset], id];
+    return {
+      t: SerovalNodeType.TypedArray,
+      i: id,
+      a: undefined,
+      s: current.toString(),
+      l: current.byteOffset,
+      m: undefined,
+      c: constructor,
+      d: undefined,
+      n: undefined,
+    };
   }
   if (
     constructorCheck<BigInt64Array>(current, BigInt64Array)
@@ -135,11 +185,17 @@ export function generateSemiPrimitiveValue(
       result += `${current[i]}n,`;
     }
     result += `"${current[cap]}"`;
-    return [
-      SerovalNodeType.BigIntTypedArray,
-      [constructor, result, current.byteOffset],
-      id,
-    ];
+    return {
+      t: SerovalNodeType.TypedArray,
+      i: id,
+      a: undefined,
+      s: result,
+      l: current.byteOffset,
+      m: undefined,
+      c: constructor,
+      d: undefined,
+      n: undefined,
+    };
   }
   return undefined;
 }

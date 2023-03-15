@@ -19,72 +19,150 @@ export const enum SerovalNodeType {
   BigIntTypedArray,
 }
 
-export type SerovalPrimitiveNode = [
-  type: SerovalNodeType.Primitive,
-  value: PrimitiveValue,
-];
-export type SerovalReferenceNode = [type: SerovalNodeType.Reference, value: number];
+export interface SerovalBaseNode {
+  // Type of the node
+  t: SerovalNodeType;
+  // Serialized value
+  s: PrimitiveValue | undefined;
+  // Reference ID
+  i: number | undefined;
+  // Size/Byte offset
+  l: number | undefined;
+  // Constructor name
+  c: string | undefined;
+  // dictionary
+  d: SerovalDictionaryNode | undefined;
+  // message
+  m: string | undefined;
+  // next node
+  n: SerovalNode | undefined;
+  // array of nodes
+  a: SerovalNode[] | undefined;
+}
+
+export interface SerovalObjectRecordNode {
+  k: string[];
+  v: SerovalNode[];
+  s: number;
+}
+
+export interface SerovalMapRecordNode {
+  k: SerovalNode[];
+  v: SerovalNode[];
+  s: number;
+}
+
+export type SerovalDictionaryNode =
+  | SerovalObjectRecordNode
+  | SerovalMapRecordNode;
+
+export interface SerovalPrimitiveNode extends SerovalBaseNode {
+  t: SerovalNodeType.Primitive;
+}
+
+export interface SerovalReferenceNode extends SerovalBaseNode {
+  t: SerovalNodeType.Reference;
+  i: number;
+}
+
+export interface SerovalBigIntNode extends SerovalBaseNode {
+  t: SerovalNodeType.BigInt;
+  s: string;
+}
+
+export interface SerovalDateNode extends SerovalBaseNode {
+  t: SerovalNodeType.Date;
+  i: number;
+  s: string;
+}
+
+export interface SerovalRegExpNode extends SerovalBaseNode {
+  t: SerovalNodeType.RegExp;
+  i: number;
+  s: string;
+}
+
+export interface SerovalTypedArrayNode extends SerovalBaseNode {
+  t: SerovalNodeType.TypedArray;
+  i: number;
+  s: string;
+  l: number;
+  c: string;
+}
+
+export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
+  t: SerovalNodeType.BigIntTypedArray;
+  i: number;
+  s: string;
+  l: number;
+  c: string;
+}
+
 export type SerovalSemiPrimitiveNode =
-  | [type: SerovalNodeType.BigInt, value: string]
-  | [type: SerovalNodeType.Date, value: string, id: number]
-  | [type: SerovalNodeType.RegExp, value: string, id: number]
-  | [
-    type: SerovalNodeType.TypedArray,
-    value: [constructor: string, array: string, byteOffset: number],
-    id: number
-  ]
-  | [
-    type: SerovalNodeType.BigIntTypedArray,
-    value: [constructor: string, array: string, byteOffset: number],
-    id: number
-  ];
+  | SerovalBigIntNode
+  | SerovalDateNode
+  | SerovalRegExpNode
+  | SerovalTypedArrayNode
+  | SerovalBigIntTypedArrayNode;
 
-export type SerovalDictionaryNode = [key: string[], value: SerovalNode[], size: number];
-export type SerovalSetNode = [type: SerovalNodeType.Set, value: SerovalNode[], id: number];
-export type SerovalMapNode = [
-  type: SerovalNodeType.Map,
-  value: [key: SerovalNode[], value: SerovalNode[], size: number],
-  id: number
-];
-export type SerovalArrayNode = [type: SerovalNodeType.Array, value: SerovalNode[], id: number];
-export type SerovalObjectNode = [
-  type: SerovalNodeType.Object,
-  value: SerovalDictionaryNode,
-  id: number
-];
-export type SerovalNullConstructorNode = [
-  type: SerovalNodeType.NullConstructor,
-  value: SerovalDictionaryNode,
-  id: number,
-];
-export type SerovalPromiseNode = [type: SerovalNodeType.Promise, value: SerovalNode, id: number];
-export type SerovalErrorNode = [
-  type: SerovalNodeType.Error,
-  value: [
-    constructor: string,
-    message: string,
-    options?: SerovalDictionaryNode,
-  ],
-  id: number
-];
-export type SerovalAggregateErrorNode = [
-  type: SerovalNodeType.AggregateError,
-  value: [
-    message: string,
-    options: SerovalDictionaryNode | undefined,
-    errors: SerovalNode,
-  ],
-  id: number
-];
+export interface SerovalSetNode extends SerovalBaseNode {
+  t: SerovalNodeType.Set;
+  a: SerovalNode[];
+  i: number;
+}
 
-export type SerovalIterableNode = [
-  type: SerovalNodeType.Iterable,
-  value: [
-    options: SerovalDictionaryNode | undefined,
-    items: SerovalNode[],
-  ],
-  id: number,
-];
+export interface SerovalMapNode extends SerovalBaseNode {
+  t: SerovalNodeType.Map;
+  d: SerovalMapRecordNode;
+  i: number;
+}
+
+export interface SerovalArrayNode extends SerovalBaseNode {
+  t: SerovalNodeType.Array;
+  a: SerovalNode[];
+  i: number;
+}
+
+export interface SerovalObjectNode extends SerovalBaseNode {
+  t: SerovalNodeType.Object;
+  d: SerovalObjectRecordNode;
+  i: number;
+}
+
+export interface SerovalNullConstructorNode extends SerovalBaseNode {
+  t: SerovalNodeType.NullConstructor;
+  d: SerovalObjectRecordNode;
+  i: number;
+}
+
+export interface SerovalPromiseNode extends SerovalBaseNode {
+  t: SerovalNodeType.Promise;
+  n: SerovalNode;
+  i: number;
+}
+
+export interface SerovalErrorNode extends SerovalBaseNode {
+  t: SerovalNodeType.Error;
+  c: string;
+  m: string;
+  d: SerovalObjectRecordNode | undefined;
+  i: number;
+}
+
+export interface SerovalAggregateErrorNode extends SerovalBaseNode {
+  t: SerovalNodeType.AggregateError;
+  m: string;
+  d: SerovalObjectRecordNode | undefined;
+  n: SerovalNode;
+  i: number;
+}
+
+export interface SerovalIterableNode extends SerovalBaseNode {
+  t: SerovalNodeType.Iterable;
+  d: SerovalObjectRecordNode | undefined;
+  a: SerovalNode[];
+  i: number;
+}
 
 export type SerovalNode =
   | SerovalPrimitiveNode

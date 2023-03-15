@@ -1,21 +1,21 @@
 // Vitest Snapshot v1
 
-exports[`number > toJSON > supports numbers 1`] = `"[[0,3735928559],0,false,4095,{}]"`;
+exports[`number > toJSON > supports numbers 1`] = `"[{\\"t\\":0,\\"s\\":3735928559},0,false,4095,{}]"`;
 
-exports[`number > toJSON > supports numbers 2`] = `"[[0,null],0,false,4095,{}]"`;
+exports[`number > toJSON > supports numbers 2`] = `"[{\\"t\\":0,\\"s\\":null},0,false,4095,{}]"`;
 
-exports[`number > toJSON > supports numbers 3`] = `"[[0,\\"1/0\\"],0,false,4095,{}]"`;
+exports[`number > toJSON > supports numbers 3`] = `"[{\\"t\\":0,\\"s\\":\\"1/0\\"},0,false,4095,{}]"`;
 
-exports[`number > toJSON > supports numbers 4`] = `"[[0,\\"-1/0\\"],0,false,4095,{}]"`;
+exports[`number > toJSON > supports numbers 4`] = `"[{\\"t\\":0,\\"s\\":\\"-1/0\\"},0,false,4095,{}]"`;
 
-exports[`number > toJSON > supports numbers 5`] = `"[[0,\\"-0\\"],0,false,4095,{}]"`;
+exports[`number > toJSON > supports numbers 5`] = `"[{\\"t\\":0,\\"s\\":\\"-0\\"},0,false,4095,{}]"`;
 
-exports[`number > toJSONAsync > supports numbers 1`] = `"[[10,[0,3735928559],0],0,false,4095,{}]"`;
+exports[`number > toJSONAsync > supports numbers 1`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":3735928559}},0,false,4095,{}]"`;
 
-exports[`number > toJSONAsync > supports numbers 2`] = `"[[10,[0,null],0],0,false,4095,{}]"`;
+exports[`number > toJSONAsync > supports numbers 2`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":null}},0,false,4095,{}]"`;
 
-exports[`number > toJSONAsync > supports numbers 3`] = `"[[10,[0,\\"1/0\\"],0],0,false,4095,{}]"`;
+exports[`number > toJSONAsync > supports numbers 3`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":\\"1/0\\"}},0,false,4095,{}]"`;
 
-exports[`number > toJSONAsync > supports numbers 4`] = `"[[10,[0,\\"-1/0\\"],0],0,false,4095,{}]"`;
+exports[`number > toJSONAsync > supports numbers 4`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":\\"-1/0\\"}},0,false,4095,{}]"`;
 
-exports[`number > toJSONAsync > supports numbers 5`] = `"[[10,[0,\\"-0\\"],0],0,false,4095,{}]"`;
+exports[`number > toJSONAsync > supports numbers 5`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":\\"-0\\"}},0,false,4095,{}]"`;

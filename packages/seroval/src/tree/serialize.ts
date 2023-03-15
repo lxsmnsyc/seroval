@@ -8,7 +8,21 @@ import {
 } from '../context';
 import quote from '../quote';
 import { isReferenceInStack } from './shared';
-import { SerovalDictionaryNode, SerovalNode, SerovalNodeType } from './types';
+import {
+  SerovalAggregateErrorNode,
+  SerovalArrayNode,
+  SerovalBigIntTypedArrayNode,
+  SerovalErrorNode,
+  SerovalIterableNode,
+  SerovalMapNode,
+  SerovalNode,
+  SerovalNodeType,
+  SerovalNullConstructorNode,
+  SerovalObjectRecordNode,
+  SerovalPromiseNode,
+  SerovalSetNode,
+  SerovalTypedArrayNode,
+} from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
   switch (assignment.type) {
@@ -167,16 +181,16 @@ const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
 function serializeAssignments(
   ctx: SerializationContext,
   targetRef: number,
-  [keys, values, size]: SerovalDictionaryNode,
+  node: SerovalObjectRecordNode,
 ) {
   ctx.stack.push(targetRef);
   const mainAssignments: Assignment[] = [];
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < node.s; i++) {
     const parentStack = ctx.stack;
     ctx.stack = [];
-    const refParam = serializeTree(ctx, values[i]);
+    const refParam = serializeTree(ctx, node.v[i]);
     ctx.stack = parentStack;
-    const key = keys[i];
+    const key = node.k[i];
     const check = Number(key);
     const parentAssignment = ctx.assignments;
     ctx.assignments = mainAssignments;
@@ -197,22 +211,22 @@ function serializeAssignments(
 function serializeObject(
   ctx: SerializationContext,
   sourceID: number,
-  [keys, values, size]: SerovalDictionaryNode,
+  node: SerovalObjectRecordNode,
 ) {
-  if (size === 0) {
+  if (node.s === 0) {
     return '{}';
   }
   let result = '';
   ctx.stack.push(sourceID);
-  for (let i = 0; i < size; i++) {
-    const key = keys[i];
-    const val = values[i];
+  for (let i = 0; i < node.s; i++) {
+    const key = node.k[i];
+    const val = node.v[i];
     const check = Number(key);
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
     const isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
     if (isReferenceInStack(ctx, val)) {
-      const refParam = getRefParam(ctx, val[1]);
+      const refParam = getRefParam(ctx, val.i);
       if (isIdentifier && Number.isNaN(check)) {
         createObjectAssign(ctx, sourceID, key, refParam);
       } else {
@@ -228,55 +242,50 @@ function serializeObject(
 
 function serializePromise(
   ctx: SerializationContext,
-  value: SerovalNode,
-  id: number,
+  node: SerovalPromiseNode,
 ) {
   let serialized: string;
   // Check if resolved value is a parent expression
-  if (isReferenceInStack(ctx, value)) {
+  if (isReferenceInStack(ctx, node.n)) {
     // A Promise trick, reference the value
     // inside the `then` expression so that
     // the Promise evaluates after the parent
     // has initialized
-    serialized = `Promise.resolve().then(()=>${getRefParam(ctx, value[1])})`;
+    serialized = `Promise.resolve().then(()=>${getRefParam(ctx, node.n.i)})`;
   } else {
-    ctx.stack.push(id);
-    const result = serializeTree(ctx, value);
+    ctx.stack.push(node.i);
+    const result = serializeTree(ctx, node.n);
     ctx.stack.pop();
     // just inline the value/reference here
     serialized = `Promise.resolve(${result})`;
   }
-  return assignRef(ctx, id, serialized);
+  return assignRef(ctx, node.i, serialized);
 }
 
 function serializeTypedArray(
   ctx: SerializationContext,
-  constructor: string,
-  init: string,
-  byteOffset: number,
-  id: number,
+  node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
-  let args = `[${init}]`;
-  if (byteOffset !== 0) {
-    args += `,${byteOffset}`;
+  let args = `[${node.s}]`;
+  if (node.l !== 0) {
+    args += `,${node.l}`;
   }
-  return assignRef(ctx, id, `new ${constructor}(${args})`);
+  return assignRef(ctx, node.i, `new ${node.c}(${args})`);
 }
 
 function serializeSet(
   ctx: SerializationContext,
-  value: SerovalNode[],
-  id: number,
+  node: SerovalSetNode,
 ) {
   let serialized = 'new Set';
-  const size = value.length;
+  const size = node.a.length;
   if (size) {
     let result = '';
-    ctx.stack.push(id);
+    ctx.stack.push(node.i);
     for (let i = 0; i < size; i++) {
-      const item = value[i];
+      const item = node.a[i];
       if (isReferenceInStack(ctx, item)) {
-        createSetAdd(ctx, id, getRefParam(ctx, item[1]));
+        createSetAdd(ctx, node.i, getRefParam(ctx, item.i));
       } else {
         // Push directly
         result += `${serializeTree(ctx, item)},`;
@@ -287,34 +296,31 @@ function serializeSet(
       serialized += `([${result.substring(0, result.length - 1)}])`;
     }
   }
-  return assignRef(ctx, id, serialized);
+  return assignRef(ctx, node.i, serialized);
 }
 
 function serializeMap(
   ctx: SerializationContext,
-  keys: SerovalNode[],
-  values: SerovalNode[],
-  size: number,
-  id: number,
+  node: SerovalMapNode,
 ) {
   let serialized = 'new Map';
-  if (size) {
+  if (node.d.s) {
     let result = '';
-    ctx.stack.push(id);
-    for (let i = 0; i < size; i++) {
+    ctx.stack.push(node.i);
+    for (let i = 0; i < node.d.s; i++) {
       // Check if key is a parent
-      const key = keys[i];
-      const val = values[i];
+      const key = node.d.k[i];
+      const val = node.d.v[i];
       if (isReferenceInStack(ctx, key)) {
         // Create reference for the map instance
-        const keyRef = getRefParam(ctx, key[1]);
+        const keyRef = getRefParam(ctx, key.i);
         // Check if value is a parent
         if (isReferenceInStack(ctx, val)) {
-          const valueRef = getRefParam(ctx, val[1]);
+          const valueRef = getRefParam(ctx, val.i);
           // Register an assignment since
           // both key and value are a parent of this
           // Map instance
-          createMapSet(ctx, id, keyRef, valueRef);
+          createMapSet(ctx, node.i, keyRef, valueRef);
         } else {
           // Reset the stack
           // This is required because the serialized
@@ -323,16 +329,16 @@ function serializeMap(
           // assignment
           const parent = ctx.stack;
           ctx.stack = [];
-          createMapSet(ctx, id, keyRef, serializeTree(ctx, val));
+          createMapSet(ctx, node.i, keyRef, serializeTree(ctx, val));
           ctx.stack = parent;
         }
       } else if (isReferenceInStack(ctx, val)) {
         // Create ref for the Map instance
-        const valueRef = getRefParam(ctx, val[1]);
+        const valueRef = getRefParam(ctx, val.i);
         // Reset stack for the key serialization
         const parent = ctx.stack;
         ctx.stack = [];
-        createMapSet(ctx, id, serializeTree(ctx, key), valueRef);
+        createMapSet(ctx, node.i, serializeTree(ctx, key), valueRef);
         ctx.stack = parent;
       } else {
         result += `[${serializeTree(ctx, key)},${serializeTree(ctx, val)}],`;
@@ -346,26 +352,25 @@ function serializeMap(
       serialized += `([${result.substring(0, result.length - 1)}])`;
     }
   }
-  return assignRef(ctx, id, serialized);
+  return assignRef(ctx, node.i, serialized);
 }
 
 function serializeNodeList(
   ctx: SerializationContext,
-  value: SerovalNode[],
-  id: number,
+  node: SerovalArrayNode | SerovalIterableNode,
 ) {
   // This is different than Map and Set
   // because we also need to serialize
   // the holes of the Array
-  const size = value.length;
+  const size = node.a.length;
   let values = '';
   for (let i = 0; i < size; i++) {
-    const item = value[i];
+    const item = node.a[i];
     // Check if index is a hole
     if (item) {
       // Check if item is a parent
       if (isReferenceInStack(ctx, item)) {
-        createArrayAssign(ctx, id, i, getRefParam(ctx, item[1]));
+        createArrayAssign(ctx, node.i, i, getRefParam(ctx, item.i));
         values += ',';
       } else {
         values += serializeTree(ctx, item);
@@ -383,18 +388,17 @@ function serializeNodeList(
 
 function serializeArray(
   ctx: SerializationContext,
-  value: SerovalNode[],
-  id: number,
+  node: SerovalArrayNode,
 ) {
-  ctx.stack.push(id);
-  const result = serializeNodeList(ctx, value, id);
+  ctx.stack.push(node.i);
+  const result = serializeNodeList(ctx, node);
   ctx.stack.pop();
-  return assignRef(ctx, id, result);
+  return assignRef(ctx, node.i, result);
 }
 
 function serializeWithObjectAssign(
   ctx: SerializationContext,
-  value: SerovalDictionaryNode,
+  value: SerovalObjectRecordNode,
   id: number,
   serialized: string,
 ) {
@@ -407,65 +411,57 @@ function serializeWithObjectAssign(
 
 function serializeAggregateError(
   ctx: SerializationContext,
-  message: string,
-  options: SerovalDictionaryNode | undefined,
-  errors: SerovalNode,
-  id: number,
+  node: SerovalAggregateErrorNode,
 ) {
   // Serialize the required arguments
-  ctx.stack.push(id);
-  let serialized = `new AggregateError(${serializeTree(ctx, errors)},${quote(message)})`;
+  ctx.stack.push(node.i);
+  let serialized = `new AggregateError(${serializeTree(ctx, node.n)},${quote(node.m)})`;
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties
   // Make sure to assign extra properties
-  if (options) {
+  if (node.d) {
     if (ctx.features & Feature.ObjectAssign) {
-      serialized = serializeWithObjectAssign(ctx, options, id, serialized);
+      serialized = serializeWithObjectAssign(ctx, node.d, node.i, serialized);
     } else {
-      markRef(ctx, id);
-      const assignments = serializeAssignments(ctx, id, options);
+      markRef(ctx, node.i);
+      const assignments = serializeAssignments(ctx, node.i, node.d);
       if (assignments) {
-        const ref = getRefParam(ctx, id);
-        return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
+        const ref = getRefParam(ctx, node.i);
+        return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
       }
     }
   }
-  return assignRef(ctx, id, serialized);
+  return assignRef(ctx, node.i, serialized);
 }
 
 function serializeError(
   ctx: SerializationContext,
-  constructor: string,
-  message: string,
-  options: SerovalDictionaryNode | undefined,
-  id: number,
+  node: SerovalErrorNode,
 ) {
-  let serialized = `new ${constructor}(${quote(message)})`;
-  if (options) {
+  let serialized = `new ${node.c}(${quote(node.m)})`;
+  if (node.d) {
     if (ctx.features & Feature.ObjectAssign) {
-      serialized = serializeWithObjectAssign(ctx, options, id, serialized);
+      serialized = serializeWithObjectAssign(ctx, node.d, node.i, serialized);
     } else {
-      markRef(ctx, id);
-      const assignments = serializeAssignments(ctx, id, options);
+      markRef(ctx, node.i);
+      const assignments = serializeAssignments(ctx, node.i, node.d);
       if (assignments) {
-        const ref = getRefParam(ctx, id);
-        return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
+        const ref = getRefParam(ctx, node.i);
+        return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
       }
     }
   }
-  return assignRef(ctx, id, serialized);
+  return assignRef(ctx, node.i, serialized);
 }
 
 function serializeIterable(
   ctx: SerializationContext,
-  options: SerovalDictionaryNode | undefined,
-  items: SerovalNode[],
-  id: number,
+  node: SerovalIterableNode,
 ) {
   const parent = ctx.stack;
   ctx.stack = [];
-  const values = serializeNodeList(ctx, items, id);
+  const values = serializeNodeList(ctx, node);
   ctx.stack = parent;
   let serialized: string;
   if (ctx.features & Feature.ArrayPrototypeValues) {
@@ -480,76 +476,75 @@ function serializeIterable(
   } else {
     serialized = `{[Symbol.iterator]:function(){return ${serialized}}}`;
   }
-  if (options) {
+  if (node.d) {
     if (ctx.features & Feature.ObjectAssign) {
-      serialized = serializeWithObjectAssign(ctx, options, id, serialized);
+      serialized = serializeWithObjectAssign(ctx, node.d, node.i, serialized);
     } else {
-      markRef(ctx, id);
-      const assignments = serializeAssignments(ctx, id, options);
+      markRef(ctx, node.i);
+      const assignments = serializeAssignments(ctx, node.i, node.d);
       if (assignments) {
-        const ref = getRefParam(ctx, id);
-        return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
+        const ref = getRefParam(ctx, node.i);
+        return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
       }
     }
   }
-  return assignRef(ctx, id, serialized);
+  return assignRef(ctx, node.i, serialized);
 }
 
 function serializeNullConstructor(
   ctx: SerializationContext,
-  value: SerovalDictionaryNode,
-  id: number,
+  node: SerovalNullConstructorNode,
 ) {
   let serialized = 'Object.create(null)';
   if (ctx.features & Feature.ObjectAssign) {
-    serialized = serializeWithObjectAssign(ctx, value, id, serialized);
+    serialized = serializeWithObjectAssign(ctx, node.d, node.i, serialized);
   } else {
-    markRef(ctx, id);
-    const assignments = serializeAssignments(ctx, id, value);
+    markRef(ctx, node.i);
+    const assignments = serializeAssignments(ctx, node.i, node.d);
     if (assignments) {
-      const ref = getRefParam(ctx, id);
-      return `(${assignRef(ctx, id, serialized)},${assignments}${ref})`;
+      const ref = getRefParam(ctx, node.i);
+      return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
     }
   }
-  return assignRef(ctx, id, serialized);
+  return assignRef(ctx, node.i, serialized);
 }
 
 export default function serializeTree(
   ctx: SerializationContext,
-  [type, value, id]: SerovalNode,
+  node: SerovalNode,
 ): string {
-  switch (type) {
+  switch (node.t) {
     case SerovalNodeType.Primitive:
-      return String(value);
+      return String(node.s);
     case SerovalNodeType.Reference:
-      return getRefParam(ctx, value);
+      return getRefParam(ctx, node.i);
     case SerovalNodeType.Promise:
-      return serializePromise(ctx, value, id);
+      return serializePromise(ctx, node);
     case SerovalNodeType.BigInt:
-      return value;
+      return node.s;
     case SerovalNodeType.Date:
-      return assignRef(ctx, id, `new Date("${value}")`);
+      return assignRef(ctx, node.i, `new Date("${node.s}")`);
     case SerovalNodeType.RegExp:
-      return assignRef(ctx, id, value);
+      return assignRef(ctx, node.i, node.s);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
-      return serializeTypedArray(ctx, value[0], value[1], value[2], id);
+      return serializeTypedArray(ctx, node);
     case SerovalNodeType.Set:
-      return serializeSet(ctx, value, id);
+      return serializeSet(ctx, node);
     case SerovalNodeType.Map:
-      return serializeMap(ctx, value[0], value[1], value[2], id);
+      return serializeMap(ctx, node);
     case SerovalNodeType.Array:
-      return serializeArray(ctx, value, id);
+      return serializeArray(ctx, node);
     case SerovalNodeType.AggregateError:
-      return serializeAggregateError(ctx, value[0], value[1], value[2], id);
+      return serializeAggregateError(ctx, node);
     case SerovalNodeType.Error:
-      return serializeError(ctx, value[0], value[1], value[2], id);
+      return serializeError(ctx, node);
     case SerovalNodeType.Iterable:
-      return serializeIterable(ctx, value[0], value[1], id);
+      return serializeIterable(ctx, node);
     case SerovalNodeType.NullConstructor:
-      return serializeNullConstructor(ctx, value, id);
+      return serializeNullConstructor(ctx, node);
     case SerovalNodeType.Object:
-      return assignRef(ctx, id, serializeObject(ctx, id, value));
+      return assignRef(ctx, node.i, serializeObject(ctx, node.i, node.d));
     default:
       throw new Error('Unsupported type');
   }

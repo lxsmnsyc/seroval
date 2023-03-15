@@ -12,14 +12,14 @@ exports[`Error > serializeAsync > supports Error.prototype.name 1`] = `"Promise.
 
 exports[`Error > serializeAsync > supports other Error classes 1`] = `"Promise.resolve(Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
 
-exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"[[11,[\\"Error\\",\\"B\\",[[\\"stack\\",\\"cause\\"],[[0,\\"\\\\\\"\\\\\\"\\"],[11,[\\"Error\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],1]],2]],0],0,false,4095,{}]"`;
+exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"[{\\"t\\":11,\\"i\\":0,\\"m\\":\\"B\\",\\"c\\":\\"Error\\",\\"d\\":{\\"k\\":[\\"stack\\",\\"cause\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"},{\\"t\\":11,\\"i\\":1,\\"m\\":\\"A\\",\\"c\\":\\"Error\\",\\"d\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"}],\\"s\\":1}}],\\"s\\":2}},0,false,4095,{}]"`;
 
-exports[`Error > toJSON > supports Error.prototype.name 1`] = `"[[11,[\\"Error\\",\\"A\\",[[\\"name\\",\\"stack\\"],[[0,\\"\\\\\\"ExampleError\\\\\\"\\"],[0,\\"\\\\\\"\\\\\\"\\"]],2]],0],0,false,4095,{}]"`;
+exports[`Error > toJSON > supports Error.prototype.name 1`] = `"[{\\"t\\":11,\\"i\\":0,\\"m\\":\\"A\\",\\"c\\":\\"Error\\",\\"d\\":{\\"k\\":[\\"name\\",\\"stack\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"ExampleError\\\\\\"\\"},{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"}],\\"s\\":2}},0,false,4095,{}]"`;
 
-exports[`Error > toJSON > supports other Error classes 1`] = `"[[11,[\\"ReferenceError\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],0],0,false,4095,{}]"`;
+exports[`Error > toJSON > supports other Error classes 1`] = `"[{\\"t\\":11,\\"i\\":0,\\"m\\":\\"A\\",\\"c\\":\\"ReferenceError\\",\\"d\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"}],\\"s\\":1}},0,false,4095,{}]"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"[[11,[\\"Error\\",\\"B\\",[[\\"stack\\",\\"cause\\"],[[0,\\"\\\\\\"\\\\\\"\\"],[10,[11,[\\"Error\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],2],1]],2]],0],0,false,4095,{}]"`;
+exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"[{\\"t\\":11,\\"i\\":0,\\"m\\":\\"B\\",\\"c\\":\\"Error\\",\\"d\\":{\\"k\\":[\\"stack\\",\\"cause\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"},{\\"t\\":10,\\"i\\":1,\\"n\\":{\\"t\\":11,\\"i\\":2,\\"m\\":\\"A\\",\\"c\\":\\"Error\\",\\"d\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"}],\\"s\\":1}}}],\\"s\\":2}},0,false,4095,{}]"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"[[10,[11,[\\"Error\\",\\"A\\",[[\\"name\\",\\"stack\\"],[[0,\\"\\\\\\"ExampleError\\\\\\"\\"],[0,\\"\\\\\\"\\\\\\"\\"]],2]],1],0],0,false,4095,{}]"`;
+exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":11,\\"i\\":1,\\"m\\":\\"A\\",\\"c\\":\\"Error\\",\\"d\\":{\\"k\\":[\\"name\\",\\"stack\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"ExampleError\\\\\\"\\"},{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"}],\\"s\\":2}}},0,false,4095,{}]"`;
 
-exports[`Error > toJSONAsync > supports other Error classes 1`] = `"[[10,[11,[\\"ReferenceError\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],1],0],0,false,4095,{}]"`;
+exports[`Error > toJSONAsync > supports other Error classes 1`] = `"[{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":11,\\"i\\":1,\\"m\\":\\"A\\",\\"c\\":\\"ReferenceError\\",\\"d\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\"\\"}],\\"s\\":1}}},0,false,4095,{}]"`;

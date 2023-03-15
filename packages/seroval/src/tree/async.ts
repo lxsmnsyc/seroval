@@ -21,19 +21,19 @@ import {
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
-  SerovalDictionaryNode,
   SerovalErrorNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
   SerovalNodeType,
+  SerovalObjectRecordNode,
   SerovalSetNode,
 } from './types';
 
 async function serializePropertiesAsync(
   ctx: ParserContext,
   properties: Record<string, unknown>,
-): Promise<SerovalDictionaryNode> {
+): Promise<SerovalObjectRecordNode> {
   const keys = Object.keys(properties);
   const size = keys.length;
   const keyNodes = new Array<string>(size);
@@ -57,7 +57,11 @@ async function serializePropertiesAsync(
     keyNodes[nodesSize + i] = deferredKeys[i];
     valueNodes[nodesSize + i] = await generateTreeAsync(ctx, deferredValues[i]);
   }
-  return [keyNodes, valueNodes, size];
+  return {
+    k: keyNodes,
+    v: valueNodes,
+    s: size,
+  };
 }
 
 async function generateSetNode(
@@ -83,7 +87,17 @@ async function generateSetNode(
   for (let i = 0; i < deferredSize; i++) {
     nodes[nodeSize + i] = await generateTreeAsync(ctx, deferred[i]);
   }
-  return [SerovalNodeType.Set, nodes, id];
+  return {
+    t: SerovalNodeType.Set,
+    i: id,
+    a: nodes,
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: undefined,
+    n: undefined,
+  };
 }
 
 async function generateMapNode(
@@ -115,7 +129,17 @@ async function generateMapNode(
     keyNodes[nodeSize + i] = await generateTreeAsync(ctx, deferredKey[i]);
     valueNodes[nodeSize + i] = await generateTreeAsync(ctx, deferredValue[i]);
   }
-  return [SerovalNodeType.Map, [keyNodes, valueNodes, len], id];
+  return {
+    t: SerovalNodeType.Map,
+    i: id,
+    a: undefined,
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: { k: keyNodes, v: valueNodes, s: len },
+    n: undefined,
+  };
 }
 
 async function generateNodeList(
@@ -147,7 +171,17 @@ async function generateArrayNode(
   current: AsyncServerValue[],
   id: number,
 ): Promise<SerovalArrayNode> {
-  return [SerovalNodeType.Array, await generateNodeList(ctx, current), id];
+  return {
+    t: SerovalNodeType.Array,
+    i: id,
+    a: await generateNodeList(ctx, current),
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: undefined,
+    n: undefined,
+  };
 }
 
 async function generateAggregateErrorNode(
@@ -159,12 +193,17 @@ async function generateAggregateErrorNode(
   const optionsNode = options
     ? await serializePropertiesAsync(ctx, options)
     : undefined;
-  const errorsNode = await generateTreeAsync(ctx, current.errors as AsyncServerValue);
-  return [
-    SerovalNodeType.AggregateError,
-    [current.message, optionsNode, errorsNode],
-    id,
-  ];
+  return {
+    t: SerovalNodeType.AggregateError,
+    i: id,
+    a: undefined,
+    s: undefined,
+    l: undefined,
+    m: current.message,
+    c: undefined,
+    d: optionsNode,
+    n: await generateTreeAsync(ctx, current.errors as AsyncServerValue),
+  };
 }
 
 async function generateErrorNode(
@@ -176,11 +215,17 @@ async function generateErrorNode(
   const optionsNode = options
     ? await serializePropertiesAsync(ctx, options)
     : undefined;
-  return [
-    SerovalNodeType.Error,
-    [getErrorConstructor(current), current.message, optionsNode],
-    id,
-  ];
+  return {
+    t: SerovalNodeType.Error,
+    i: id,
+    a: undefined,
+    s: undefined,
+    l: undefined,
+    m: current.message,
+    c: getErrorConstructor(current),
+    d: optionsNode,
+    n: undefined,
+  };
 }
 
 async function generateIterableNode(
@@ -190,11 +235,18 @@ async function generateIterableNode(
 ): Promise<SerovalIterableNode> {
   assert(ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
   const options = getIterableOptions(current);
-  return [SerovalNodeType.Iterable, [
+  return {
+    t: SerovalNodeType.Iterable,
+    i: id,
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
     // Parse options first before the items
-    options ? await serializePropertiesAsync(ctx, options) : undefined,
-    await generateNodeList(ctx, Array.from(current)),
-  ], id];
+    d: options ? await serializePropertiesAsync(ctx, options) : undefined,
+    a: await generateNodeList(ctx, Array.from(current)),
+    n: undefined,
+  };
 }
 
 async function generateTreeAsync(
@@ -202,12 +254,23 @@ async function generateTreeAsync(
   current: AsyncServerValue,
 ): Promise<SerovalNode> {
   if (isPrimitive(current)) {
-    return [SerovalNodeType.Primitive, serializePrimitive(current)];
+    return {
+      t: SerovalNodeType.Primitive,
+      i: undefined,
+      s: serializePrimitive(current),
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      // Parse options first before the items
+      d: undefined,
+      a: undefined,
+      n: undefined,
+    };
   }
   // Non-primitive values needs a reference ID
   // mostly because the values themselves are stateful
   const id = generateRef(ctx, current);
-  if (Array.isArray(id)) {
+  if (typeof id !== 'number') {
     return id;
   }
   const semiPrimitive = generateSemiPrimitiveValue(ctx, current, id);
@@ -216,11 +279,18 @@ async function generateTreeAsync(
   }
   if (isPromise(current)) {
     assert(ctx.features & Feature.Promise, 'Unsupported type "Promise"');
-    return current.then(async (value) => [
-      SerovalNodeType.Promise,
-      await generateTreeAsync(ctx, value),
-      id,
-    ]);
+    return current.then(async (value) => ({
+      t: SerovalNodeType.Promise,
+      i: id,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      // Parse options first before the items
+      d: undefined,
+      a: undefined,
+      n: await generateTreeAsync(ctx, value),
+    }));
   }
   if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
     return generateSetNode(ctx, current, id);
@@ -242,11 +312,18 @@ async function generateTreeAsync(
   }
   const empty = current.constructor == null;
   if (current.constructor === Object || empty) {
-    return [
-      empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      await serializePropertiesAsync(ctx, current as Record<string, unknown>),
-      id,
-    ];
+    return {
+      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+      i: id,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      // Parse options first before the items
+      d: await serializePropertiesAsync(ctx, current as Record<string, unknown>),
+      a: undefined,
+      n: undefined,
+    };
   }
   throw new Error('Unsupported value');
 }
@@ -256,5 +333,5 @@ export default async function parseAsync(
   current: AsyncServerValue,
 ) {
   const result = await generateTreeAsync(ctx, current);
-  return [result, createRef(ctx, current), result[0] === SerovalNodeType.Object] as const;
+  return [result, createRef(ctx, current), result.t === SerovalNodeType.Object] as const;
 }
