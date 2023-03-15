@@ -350,7 +350,7 @@ class AsyncParser {
         // Non-primitive values needs a reference ID
         // mostly because the values themselves are stateful
         const id = createRef(this.ctx, current, true);
-        if (this.ctx.markedRefs[id]) {
+        if (this.ctx.markedRefs.has(id)) {
           return createReferenceNode(id);
         }
         if (Array.isArray(current)) {

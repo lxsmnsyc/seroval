@@ -28,7 +28,7 @@ export type Assignment =
 
 export interface ParserContext {
   refs: Map<unknown, number>;
-  markedRefs: Record<number, number>;
+  markedRefs: Set<number>;
   features: number;
 }
 
@@ -38,7 +38,7 @@ export interface SerializationContext {
   validRefs: number[];
   refSize: number;
   // Refs that are...referenced
-  markedRefs: Record<number, number>;
+  markedRefs: Set<number>;
   // Variables
   vars: string[];
   // Array of assignments to be done (used for recursion)
@@ -59,14 +59,14 @@ export function createParserContext(options: Partial<Options> = {}): ParserConte
   // eslint-disable-next-line prefer-object-spread
   const result = Object.assign({}, DEFAULT_OPTIONS, options || {});
   return {
-    markedRefs: {},
+    markedRefs: new Set(),
     refs: new Map(),
     features: parseTargets(result.target),
   };
 }
 
 export interface SerializationOptions {
-  markedRefs: Record<number, number>;
+  markedRefs: number[] | Set<number>;
   features: number;
 }
 
@@ -78,7 +78,7 @@ export function createSerializationContext(options: SerializationOptions): Seria
     validRefs: [],
     refSize: 0,
     features: options.features,
-    markedRefs: options.markedRefs,
+    markedRefs: new Set(options.markedRefs),
   };
 }
 
@@ -86,7 +86,7 @@ export function createSerializationContext(options: SerializationOptions): Seria
  * Increments the number of references the referenced value has
  */
 export function markRef(ctx: ParserContext | SerializationContext, current: number) {
-  ctx.markedRefs[current] = 1;
+  ctx.markedRefs.add(current);
 }
 
 /**

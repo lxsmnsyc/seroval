@@ -2,7 +2,7 @@
 
 exports[`null-constructor > compat > should use manual assignment instead of Object.assign 1`] = `"(function(h){return (h=Object.create(null),h.hello=\\"world\\",h)})()"`;
 
-exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"[{\\"t\\":9,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}},0,false,0,{}]"`;
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":0,\\"m\\":[]}"`;
 
 exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"(function(h){return (h=Object.create(null),h.hello=\\"world\\",h)})()"`;
 
@@ -10,6 +10,6 @@ exports[`null-constructor > serialize > supports Object.create(null) 1`] = `"Obj
 
 exports[`null-constructor > serializeAsync > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
-exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"[{\\"t\\":9,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}},0,false,4095,{}]"`;
+exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"[{\\"t\\":9,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}},0,false,4095,{}]"`;
+exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"world\\\\\\"\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
