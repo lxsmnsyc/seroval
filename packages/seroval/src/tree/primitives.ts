@@ -21,8 +21,8 @@ export function createPrimitiveNode(
     i: undefined,
     s: value,
     l: undefined,
-    m: undefined,
     c: undefined,
+    m: undefined,
     d: undefined,
     a: undefined,
     n: undefined,
@@ -45,12 +45,12 @@ export function createBigIntNode(
   return {
     t: SerovalNodeType.BigInt,
     i: undefined,
-    a: undefined,
     s: `${current}n`,
     l: undefined,
-    m: undefined,
     c: undefined,
+    m: undefined,
     d: undefined,
+    a: undefined,
     n: undefined,
   };
 }
@@ -59,12 +59,12 @@ export function createReferenceNode(id: number): SerovalReferenceNode {
   return {
     t: SerovalNodeType.Reference,
     i: id,
-    a: undefined,
     s: undefined,
     l: undefined,
-    m: undefined,
     c: undefined,
+    m: undefined,
     d: undefined,
+    a: undefined,
     n: undefined,
   };
 }
@@ -73,13 +73,13 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   return {
     t: SerovalNodeType.Date,
     i: id,
-    a: undefined,
     s: current.toISOString(),
     l: undefined,
-    m: undefined,
     c: undefined,
+    m: undefined,
     d: undefined,
     n: undefined,
+    a: undefined,
   };
 }
 
@@ -87,12 +87,12 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
   return {
     t: SerovalNodeType.RegExp,
     i: id,
-    a: undefined,
     s: String(current),
     l: undefined,
-    m: undefined,
     c: undefined,
+    m: undefined,
     d: undefined,
+    a: undefined,
     n: undefined,
   };
 }
@@ -107,12 +107,12 @@ export function createTypedArrayNode(
   return {
     t: SerovalNodeType.TypedArray,
     i: id,
-    a: undefined,
     s: current.toString(),
     l: current.byteOffset,
-    m: undefined,
     c: constructor,
+    m: undefined,
     d: undefined,
+    a: undefined,
     n: undefined,
   };
 }
@@ -136,12 +136,12 @@ export function createBigIntTypedArrayNode(
   return {
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
-    a: undefined,
     s: result,
     l: (current as BigInt64Array).byteOffset,
-    m: undefined,
     c: constructor,
+    m: undefined,
     d: undefined,
+    a: undefined,
     n: undefined,
   };
 }

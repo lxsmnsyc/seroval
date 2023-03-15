@@ -94,12 +94,12 @@ class AsyncParser {
     return {
       t: SerovalNodeType.Array,
       i: id,
-      a: await this.generateNodeList(current),
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: undefined,
+      a: await this.generateNodeList(current),
       n: undefined,
     };
   }
@@ -135,12 +135,12 @@ class AsyncParser {
     return {
       t: SerovalNodeType.Map,
       i: id,
-      a: undefined,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: { k: keyNodes, v: valueNodes, s: len },
+      a: undefined,
       n: undefined,
     };
   }
@@ -170,12 +170,12 @@ class AsyncParser {
     return {
       t: SerovalNodeType.Set,
       i: id,
-      a: nodes,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: undefined,
+      a: nodes,
       n: undefined,
     };
   }
@@ -226,8 +226,8 @@ class AsyncParser {
       i: id,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       // Parse options first before the items
       d: options
         ? await this.generateProperties(options as Record<string, AsyncServerValue>)
@@ -247,8 +247,8 @@ class AsyncParser {
       i: id,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       // Parse options first before the items
       d: undefined,
       a: undefined,
@@ -272,8 +272,8 @@ class AsyncParser {
       i: id,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: await this.generateProperties(current as Record<string, AsyncServerValue>),
       a: undefined,
       n: undefined,
@@ -291,12 +291,12 @@ class AsyncParser {
     return {
       t: SerovalNodeType.AggregateError,
       i: id,
-      a: undefined,
       s: undefined,
       l: undefined,
-      m: current.message,
       c: undefined,
+      m: current.message,
       d: optionsNode,
+      a: undefined,
       n: await this.parse(current.errors),
     };
   }
@@ -312,12 +312,12 @@ class AsyncParser {
     return {
       t: SerovalNodeType.Error,
       i: id,
-      a: undefined,
       s: undefined,
       l: undefined,
-      m: current.message,
       c: getErrorConstructor(current),
+      m: current.message,
       d: optionsNode,
+      a: undefined,
       n: undefined,
     };
   }

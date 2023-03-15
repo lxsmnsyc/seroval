@@ -74,12 +74,12 @@ class SyncParser {
     return {
       t: SerovalNodeType.Array,
       i: id,
-      a: this.generateNodeList(current),
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: undefined,
+      a: this.generateNodeList(current),
       n: undefined,
     };
   }
@@ -115,12 +115,12 @@ class SyncParser {
     return {
       t: SerovalNodeType.Map,
       i: id,
-      a: undefined,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: { k: keyNodes, v: valueNodes, s: len },
+      a: undefined,
       n: undefined,
     };
   }
@@ -150,12 +150,12 @@ class SyncParser {
     return {
       t: SerovalNodeType.Set,
       i: id,
-      a: nodes,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: undefined,
+      a: nodes,
       n: undefined,
     };
   }
@@ -204,8 +204,8 @@ class SyncParser {
       i: id,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       // Parse options first before the items
       d: options
         ? this.generateProperties(options as Record<string, ServerValue>)
@@ -228,8 +228,8 @@ class SyncParser {
       i: id,
       s: undefined,
       l: undefined,
-      m: undefined,
       c: undefined,
+      m: undefined,
       d: this.generateProperties(current),
       a: undefined,
       n: undefined,
@@ -247,12 +247,12 @@ class SyncParser {
     return {
       t: SerovalNodeType.AggregateError,
       i: id,
-      a: undefined,
       s: undefined,
       l: undefined,
-      m: current.message,
       c: undefined,
+      m: current.message,
       d: optionsNode,
+      a: undefined,
       n: this.parse(current.errors),
     };
   }
@@ -268,12 +268,12 @@ class SyncParser {
     return {
       t: SerovalNodeType.Error,
       i: id,
-      a: undefined,
       s: undefined,
       l: undefined,
-      m: current.message,
       c: getErrorConstructor(current),
+      m: current.message,
       d: optionsNode,
+      a: undefined,
       n: undefined,
     };
   }
