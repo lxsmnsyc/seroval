@@ -1,9 +1,13 @@
 import assert from '../assert';
-import { constructorCheck } from '../checks';
 import { Feature } from '../compat';
 import { SerializationContext, ParserContext } from '../context';
 import quote from '../quote';
-import { ErrorValue, PrimitiveValue } from '../types';
+import {
+  AsyncServerValue,
+  ErrorValue,
+  NonPrimitiveServerValue,
+  PrimitiveValue,
+} from '../types';
 import { SerovalNode, SerovalReferenceNode, SerovalNodeType } from './types';
 
 export function getErrorConstructor(error: ErrorValue) {
@@ -72,88 +76,86 @@ export function isReferenceInStack(
 
 export function generateSemiPrimitiveValue(
   ctx: ParserContext,
-  current: unknown,
+  current: NonPrimitiveServerValue<AsyncServerValue>,
   id: number,
 ): SerovalNode | undefined {
-  if (constructorCheck<Date>(current, Date)) {
-    return {
-      t: SerovalNodeType.Date,
-      i: id,
-      a: undefined,
-      s: current.toISOString(),
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  if (constructorCheck<RegExp>(current, RegExp)) {
-    return {
-      t: SerovalNodeType.RegExp,
-      i: id,
-      a: undefined,
-      s: String(current),
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  if (
-    constructorCheck<Int8Array>(current, Int8Array)
-    || constructorCheck<Int16Array>(current, Int16Array)
-    || constructorCheck<Int32Array>(current, Int32Array)
-    || constructorCheck<Uint8Array>(current, Uint8Array)
-    || constructorCheck<Uint16Array>(current, Uint16Array)
-    || constructorCheck<Uint32Array>(current, Uint32Array)
-    || constructorCheck<Uint8ClampedArray>(current, Uint8ClampedArray)
-    || constructorCheck<Float32Array>(current, Float32Array)
-    || constructorCheck<Float64Array>(current, Float64Array)
-  ) {
-    const constructor = current.constructor.name;
-    assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
-    return {
-      t: SerovalNodeType.TypedArray,
-      i: id,
-      a: undefined,
-      s: current.toString(),
-      l: current.byteOffset,
-      m: undefined,
-      c: constructor,
-      d: undefined,
-      n: undefined,
-    };
-  }
-  if (
-    constructorCheck<BigInt64Array>(current, BigInt64Array)
-    || constructorCheck<BigUint64Array>(current, BigUint64Array)
-  ) {
-    const constructor = current.constructor.name;
-    assert(
-      ctx.features & (Feature.BigIntTypedArray),
-      `Unsupported value type "${constructor}"`,
-    );
-    let result = '';
-    const cap = current.length - 1;
-    for (let i = 0; i < cap; i++) {
-      result += `${current[i]}n,`;
+  const cs = current.constructor;
+  switch (cs) {
+    case Date:
+      return {
+        t: SerovalNodeType.Date,
+        i: id,
+        a: undefined,
+        s: (current as Date).toISOString(),
+        l: undefined,
+        m: undefined,
+        c: undefined,
+        d: undefined,
+        n: undefined,
+      };
+    case RegExp:
+      return {
+        t: SerovalNodeType.RegExp,
+        i: id,
+        a: undefined,
+        s: String(current),
+        l: undefined,
+        m: undefined,
+        c: undefined,
+        d: undefined,
+        n: undefined,
+      };
+    case Int8Array:
+    case Int16Array:
+    case Int32Array:
+    case Uint8Array:
+    case Uint16Array:
+    case Uint32Array:
+    case Uint8ClampedArray:
+    case Float32Array:
+    case Float64Array: {
+      const constructor = cs.name;
+      assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
+      return {
+        t: SerovalNodeType.TypedArray,
+        i: id,
+        a: undefined,
+        s: current.toString(),
+        l: (current as Int8Array).byteOffset,
+        m: undefined,
+        c: constructor,
+        d: undefined,
+        n: undefined,
+      };
     }
-    result += `"${current[cap]}"`;
-    return {
-      t: SerovalNodeType.TypedArray,
-      i: id,
-      a: undefined,
-      s: result,
-      l: current.byteOffset,
-      m: undefined,
-      c: constructor,
-      d: undefined,
-      n: undefined,
-    };
+    case BigInt64Array:
+    case BigUint64Array: {
+      const constructor = cs.name;
+      assert(
+        ctx.features & (Feature.BigIntTypedArray),
+        `Unsupported value type "${constructor}"`,
+      );
+      let result = '';
+      const cap = (current as BigInt64Array).length - 1;
+      for (let i = 0; i < cap; i++) {
+        result += `${(current as BigInt64Array)[i]}n,`;
+      }
+      result += `"${(current as BigInt64Array)[cap]}"`;
+      return {
+        t: SerovalNodeType.TypedArray,
+        i: id,
+        a: undefined,
+        s: result,
+        l: (current as BigInt64Array).byteOffset,
+        m: undefined,
+        c: constructor,
+        d: undefined,
+        n: undefined,
+      };
+    }
+    default:
+      return undefined;
   }
-  return undefined;
 }
 
 export function serializePrimitive(

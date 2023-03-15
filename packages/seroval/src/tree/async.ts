@@ -4,7 +4,6 @@ import assert from '../assert';
 import {
   isIterable,
   isPrimitive,
-  constructorCheck,
   isPromise,
 } from '../checks';
 import { Feature } from '../compat';
@@ -31,7 +30,7 @@ import {
 
 async function serializePropertiesAsync(
   ctx: ParserContext,
-  properties: Record<string, unknown>,
+  properties: Record<string, AsyncServerValue>,
 ): Promise<SerovalObjectRecordNode> {
   const keys = Object.keys(properties);
   const size = keys.length;
@@ -44,11 +43,11 @@ async function serializePropertiesAsync(
   for (const key of keys) {
     if (isIterable(properties[key])) {
       deferredKeys[deferredSize] = key;
-      deferredValues[deferredSize] = properties[key] as AsyncServerValue;
+      deferredValues[deferredSize] = properties[key];
       deferredSize++;
     } else {
       keyNodes[nodesSize] = key;
-      valueNodes[nodesSize] = await generateTreeAsync(ctx, properties[key] as AsyncServerValue);
+      valueNodes[nodesSize] = await generateTreeAsync(ctx, properties[key]);
       nodesSize++;
     }
   }
@@ -242,7 +241,9 @@ async function generateIterableNode(
     m: undefined,
     c: undefined,
     // Parse options first before the items
-    d: options ? await serializePropertiesAsync(ctx, options) : undefined,
+    d: options
+      ? await serializePropertiesAsync(ctx, options as Record<string, AsyncServerValue>)
+      : undefined,
     a: await generateNodeList(ctx, Array.from(current)),
     n: undefined,
   };
@@ -296,9 +297,40 @@ async function generateTreeAsync(
       n: undefined,
     };
   }
+  if (Array.isArray(current)) {
+    return generateArrayNode(ctx, current, id);
+  }
+  const cs = current.constructor;
+  const empty = cs == null;
+  if (cs === Object || empty) {
+    if (Symbol.iterator in current) {
+      return generateIterableNode(ctx, current, id);
+    }
+    return {
+      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+      i: id,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      // Parse options first before the items
+      d: await serializePropertiesAsync(ctx, current as Record<string, AsyncServerValue>),
+      a: undefined,
+      n: undefined,
+    };
+  }
+  if (cs === Set) {
+    return generateSetNode(ctx, current as unknown as Set<AsyncServerValue>, id);
+  }
+  if (cs === Map) {
+    return generateMapNode(ctx, current as unknown as Map<AsyncServerValue, AsyncServerValue>, id);
+  }
   const semiPrimitive = generateSemiPrimitiveValue(ctx, current, id);
   if (semiPrimitive) {
     return semiPrimitive;
+  }
+  if (Symbol.iterator in current) {
+    return generateIterableNode(ctx, current, id);
   }
   if (isPromise(current)) {
     assert(ctx.features & Feature.Promise, 'Unsupported type "Promise"');
@@ -315,38 +347,11 @@ async function generateTreeAsync(
       n: await generateTreeAsync(ctx, value),
     }));
   }
-  if (constructorCheck<Set<AsyncServerValue>>(current, Set)) {
-    return generateSetNode(ctx, current, id);
-  }
-  if (constructorCheck<Map<AsyncServerValue, AsyncServerValue>>(current, Map)) {
-    return generateMapNode(ctx, current, id);
-  }
-  if (Array.isArray(current)) {
-    return generateArrayNode(ctx, current, id);
-  }
   if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
     return generateAggregateErrorNode(ctx, current, id);
   }
   if (current instanceof Error) {
     return generateErrorNode(ctx, current, id);
-  }
-  if (isIterable(current)) {
-    return generateIterableNode(ctx, current, id);
-  }
-  const empty = current.constructor == null;
-  if (current.constructor === Object || empty) {
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      m: undefined,
-      c: undefined,
-      // Parse options first before the items
-      d: await serializePropertiesAsync(ctx, current as Record<string, unknown>),
-      a: undefined,
-      n: undefined,
-    };
   }
   throw new Error('Unsupported value');
 }

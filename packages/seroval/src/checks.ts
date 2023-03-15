@@ -16,22 +16,19 @@ export function isPromise<T>(obj: unknown): obj is PromiseLike<T> {
     && typeof obj.then === 'function';
 }
 
-export function constructorCheck<T extends NonNullable<AsyncServerValue>>(
-  value: unknown,
-  constructor: unknown,
-): value is T {
-  return (value as { constructor: unknown }).constructor === constructor;
+function isIterableBuiltin(obj: AsyncServerValue) {
+  if (!!obj && typeof obj === 'object') {
+    const cons = obj.constructor;
+    return (
+      Array.isArray(obj)
+      || cons === Set
+      || cons === Map
+    );
+  }
+  return false;
 }
 
-function isIterableBuiltin(obj: unknown) {
-  return (
-    Array.isArray(obj)
-    || constructorCheck<Set<any>>(obj, Set)
-    || constructorCheck<Map<any, any>>(obj, Map)
-  );
-}
-
-export function isIterable<T>(obj: unknown): obj is Iterable<T> {
+export function isIterable(obj: AsyncServerValue): obj is Iterable<AsyncServerValue> {
   return !!obj
     && typeof obj === 'object'
     && !isIterableBuiltin(obj)
