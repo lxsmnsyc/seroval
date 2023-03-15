@@ -1,5 +1,4 @@
 /* eslint-disable no-await-in-loop */
-import { isPrimitive } from './checks';
 import { Feature } from './compat';
 import {
   SerializationContext,
@@ -10,7 +9,6 @@ import {
 } from './context';
 import parseAsync from './tree/async';
 import serializeTree, { resolvePatches } from './tree/serialize';
-import { serializePrimitive } from './tree/shared';
 import parseSync from './tree/sync';
 import { SerovalNode } from './tree/types';
 import {
@@ -73,9 +71,6 @@ export function serialize<T extends ServerValue>(
   options?: Partial<Options>,
 ) {
   const ctx = createParserContext(options);
-  if (isPrimitive(source)) {
-    return String(serializePrimitive(source));
-  }
   const [tree, rootID, isObject] = parseSync(ctx, source);
   const serial = createSerializationContext(ctx);
   const result = serializeTree(serial, tree);
@@ -87,9 +82,6 @@ export async function serializeAsync<T extends AsyncServerValue>(
   options?: Partial<Options>,
 ) {
   const ctx = createParserContext(options);
-  if (isPrimitive(source)) {
-    return String(serializePrimitive(source));
-  }
   const [tree, rootID, isObject] = await parseAsync(ctx, source);
   const serial = createSerializationContext(ctx);
   const result = serializeTree(serial, tree);
