@@ -6,8 +6,7 @@ export function isPrimitive(current: unknown): current is PrimitiveValue {
   }
   const type = typeof current;
   return type === 'number'
-    || type === 'string'
-    || type === 'bigint';
+    || type === 'string';
 }
 
 export function isPromise<T>(obj: unknown): obj is PromiseLike<T> {
