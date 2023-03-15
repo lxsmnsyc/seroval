@@ -39,7 +39,7 @@ export type SerovalSemiPrimitiveNode =
     id: number
   ];
 
-export type SerovalDictionaryNode = Record<string, SerovalNode>;
+export type SerovalDictionaryNode = [key: string[], value: SerovalNode[], size: number];
 export type SerovalSetNode = [type: SerovalNodeType.Set, value: SerovalNode[], id: number];
 export type SerovalMapNode = [
   type: SerovalNodeType.Map,
