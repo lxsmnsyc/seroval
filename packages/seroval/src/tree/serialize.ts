@@ -145,7 +145,7 @@ function createMapSet(
 function createArrayAssign(
   ctx: SerializationContext,
   ref: number,
-  index: number,
+  index: number | string,
   value: string,
 ) {
   markRef(ctx, ref);
@@ -157,11 +157,9 @@ function createObjectAssign(
   ref: number,
   key: string,
   value: string,
-  computed: boolean,
 ) {
   markRef(ctx, ref);
-  const member = computed ? `[${key}]` : `.${key}`;
-  createAssignment(ctx, `${getRefParam(ctx, ref)}${member}`, value);
+  createAssignment(ctx, `${getRefParam(ctx, ref)}.${key}`, value);
 }
 
 const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
@@ -185,13 +183,11 @@ function serializeAssignments(
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
     const isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
-    createObjectAssign(
-      ctx,
-      targetRef,
-      isIdentifier ? key : quote(key),
-      refParam,
-      !(isIdentifier && Number.isNaN(check)),
-    );
+    if (isIdentifier && Number.isNaN(check)) {
+      createObjectAssign(ctx, targetRef, key, refParam);
+    } else {
+      createArrayAssign(ctx, targetRef, isIdentifier ? key : quote(key), refParam);
+    }
     ctx.assignments = parentAssignment;
   }
   ctx.stack.pop();
@@ -215,18 +211,15 @@ function serializeObject(
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
     const isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
-    const validKey = isIdentifier ? key : quote(key);
     if (isReferenceInStack(ctx, val)) {
       const refParam = getRefParam(ctx, val[1]);
-      createObjectAssign(
-        ctx,
-        sourceID,
-        validKey,
-        refParam,
-        !(isIdentifier && Number.isNaN(check)),
-      );
+      if (isIdentifier && Number.isNaN(check)) {
+        createObjectAssign(ctx, sourceID, key, refParam);
+      } else {
+        createArrayAssign(ctx, sourceID, isIdentifier ? key : quote(key), refParam);
+      }
     } else {
-      result += `${validKey}:${serializeTree(ctx, val)},`;
+      result += `${isIdentifier ? key : quote(key)}:${serializeTree(ctx, val)},`;
     }
   }
   ctx.stack.pop();
