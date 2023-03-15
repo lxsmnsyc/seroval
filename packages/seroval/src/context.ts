@@ -28,16 +28,17 @@ export type Assignment =
 
 export interface ParserContext {
   refs: Map<unknown, number>;
-  markedRefs: Set<number>;
+  markedRefs: Record<number, number>;
   features: number;
 }
 
 export interface SerializationContext {
   stack: number[];
   // Map tree refs to actual refs
-  validRefs: Map<number, number>;
+  validRefs: number[];
+  refSize: number;
   // Refs that are...referenced
-  markedRefs: Set<number>;
+  markedRefs: Record<number, number>;
   // Variables
   vars: string[];
   // Array of assignments to be done (used for recursion)
@@ -58,14 +59,14 @@ export function createParserContext(options: Partial<Options> = {}): ParserConte
   // eslint-disable-next-line prefer-object-spread
   const result = Object.assign({}, DEFAULT_OPTIONS, options || {});
   return {
-    markedRefs: new Set(),
+    markedRefs: {},
     refs: new Map(),
     features: parseTargets(result.target),
   };
 }
 
 export interface SerializationOptions {
-  markedRefs: number[] | Set<number>;
+  markedRefs: Record<number, number>;
   features: number;
 }
 
@@ -74,9 +75,10 @@ export function createSerializationContext(options: SerializationOptions): Seria
     stack: [],
     vars: [],
     assignments: [],
-    validRefs: new Map(),
+    validRefs: [],
+    refSize: 0,
     features: options.features,
-    markedRefs: new Set(options.markedRefs),
+    markedRefs: options.markedRefs,
   };
 }
 
@@ -84,7 +86,7 @@ export function createSerializationContext(options: SerializationOptions): Seria
  * Increments the number of references the referenced value has
  */
 export function markRef(ctx: ParserContext | SerializationContext, current: number) {
-  ctx.markedRefs.add(current);
+  ctx.markedRefs[current] = 1;
 }
 
 /**
@@ -97,13 +99,13 @@ function createValidRef(
   ctx: SerializationContext,
   index: number,
 ) {
-  const current = ctx.validRefs.get(index);
-  if (current != null) {
-    return current;
+  const current = ctx.validRefs[index];
+  if (current == null) {
+    const value = ctx.refSize++;
+    ctx.validRefs[index] = value;
+    return value;
   }
-  const id = ctx.validRefs.size;
-  ctx.validRefs.set(index, id);
-  return id;
+  return current;
 }
 
 /**

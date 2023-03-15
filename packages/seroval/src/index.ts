@@ -106,7 +106,7 @@ type SerovalJSON = [
   root: number,
   isObject: boolean,
   feature: number,
-  markedRefs: number[],
+  markedRefs: Record<number, number>,
 ];
 
 export function toJSON<T extends ServerValue>(
@@ -120,7 +120,7 @@ export function toJSON<T extends ServerValue>(
     root,
     isObject,
     ctx.features,
-    [...ctx.markedRefs],
+    ctx.markedRefs,
   ]);
 }
 
@@ -135,7 +135,7 @@ export async function toJSONAsync<T extends AsyncServerValue>(
     root,
     isObject,
     ctx.features,
-    [...ctx.markedRefs],
+    ctx.markedRefs,
   ]);
 }
 

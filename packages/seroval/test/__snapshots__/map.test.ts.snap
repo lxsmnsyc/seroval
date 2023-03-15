@@ -12,10 +12,10 @@ exports[`Map > serializeAsync > supports Map 1`] = `"Promise.resolve(new Map([[1
 
 exports[`Map > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Map([[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]])))()"`;
 
-exports[`Map > toJSON > supports Map 1`] = `"[[6,[[[0,1],[0,3]],[[0,2],[0,4]],2],0],0,false,4095,[]]"`;
+exports[`Map > toJSON > supports Map 1`] = `"[[6,[[[0,1],[0,3]],[[0,2],[0,4]],2],0],0,false,4095,{}]"`;
 
-exports[`Map > toJSON > supports self-recursion 1`] = `"[[6,[[[2,0]],[[2,0]],1],0],0,false,4095,[0]]"`;
+exports[`Map > toJSON > supports self-recursion 1`] = `"[[6,[[[2,0]],[[2,0]],1],0],0,false,4095,{\\"0\\":1}]"`;
 
-exports[`Map > toJSONAsync > supports Map 1`] = `"[[10,[6,[[[0,1],[0,3]],[[0,2],[0,4]],2],1],0],0,false,4095,[]]"`;
+exports[`Map > toJSONAsync > supports Map 1`] = `"[[10,[6,[[[0,1],[0,3]],[[0,2],[0,4]],2],1],0],0,false,4095,{}]"`;
 
-exports[`Map > toJSONAsync > supports self-recursion 1`] = `"[[6,[[[10,[2,0],1]],[[10,[2,0],2]],1],0],0,false,4095,[0]]"`;
+exports[`Map > toJSONAsync > supports self-recursion 1`] = `"[[6,[[[10,[2,0],1]],[[10,[2,0],2]],1],0],0,false,4095,{\\"0\\":1}]"`;

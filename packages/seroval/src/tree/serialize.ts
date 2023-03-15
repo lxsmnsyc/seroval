@@ -96,7 +96,7 @@ function assignRef(
   index: number,
   value: string,
 ) {
-  if (ctx.markedRefs.has(index)) {
+  if (ctx.markedRefs[index]) {
     return `${getRefParam(ctx, index)}=${value}`;
   }
   return value;

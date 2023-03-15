@@ -4,9 +4,9 @@ exports[`array holes > serialize > supports array holes 1`] = `"[,,,,,,,,,,]"`;
 
 exports[`array holes > serializeAsync > supports array holes 1`] = `"Promise.resolve([,,,,,,,,,,])"`;
 
-exports[`array holes > toJSON > supports array holes 1`] = `"[[7,[null,null,null,null,null,null,null,null,null,null],0],0,false,4095,[]]"`;
+exports[`array holes > toJSON > supports array holes 1`] = `"[[7,[null,null,null,null,null,null,null,null,null,null],0],0,false,4095,{}]"`;
 
-exports[`array holes > toJSONAsync > supports array holes 1`] = `"[[10,[7,[null,null,null,null,null,null,null,null,null,null],1],0],0,false,4095,[]]"`;
+exports[`array holes > toJSONAsync > supports array holes 1`] = `"[[10,[7,[null,null,null,null,null,null,null,null,null,null],1],0],0,false,4095,{}]"`;
 
 exports[`arrays > serialize > supports Arrays 1`] = `"[1,2,3]"`;
 
@@ -16,10 +16,10 @@ exports[`arrays > serializeAsync > supports Arrays 1`] = `"Promise.resolve([1,2,
 
 exports[`arrays > serializeAsync > supports self recursion 1`] = `"(h=>(h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]))()"`;
 
-exports[`arrays > toJSON > supports Arrays 1`] = `"[[7,[[0,1],[0,2],[0,3]],0],0,false,4095,[]]"`;
+exports[`arrays > toJSON > supports Arrays 1`] = `"[[7,[[0,1],[0,2],[0,3]],0],0,false,4095,{}]"`;
 
-exports[`arrays > toJSON > supports self recursion 1`] = `"[[7,[[2,0],[2,0]],0],0,false,4095,[0]]"`;
+exports[`arrays > toJSON > supports self recursion 1`] = `"[[7,[[2,0],[2,0]],0],0,false,4095,{\\"0\\":1}]"`;
 
-exports[`arrays > toJSONAsync > supports Arrays 1`] = `"[[10,[7,[[0,1],[0,2],[0,3]],1],0],0,false,4095,[]]"`;
+exports[`arrays > toJSONAsync > supports Arrays 1`] = `"[[10,[7,[[0,1],[0,2],[0,3]],1],0],0,false,4095,{}]"`;
 
-exports[`arrays > toJSONAsync > supports self recursion 1`] = `"[[7,[[10,[2,0],1],[10,[2,0],2]],0],0,false,4095,[0]]"`;
+exports[`arrays > toJSONAsync > supports self recursion 1`] = `"[[7,[[10,[2,0],1],[10,[2,0],2]],0],0,false,4095,{\\"0\\":1}]"`;

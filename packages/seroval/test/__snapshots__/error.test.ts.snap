@@ -12,14 +12,14 @@ exports[`Error > serializeAsync > supports Error.prototype.name 1`] = `"Promise.
 
 exports[`Error > serializeAsync > supports other Error classes 1`] = `"Promise.resolve(Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
 
-exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"[[11,[\\"Error\\",\\"B\\",[[\\"stack\\",\\"cause\\"],[[0,\\"\\\\\\"\\\\\\"\\"],[11,[\\"Error\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],1]],2]],0],0,false,4095,[]]"`;
+exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"[[11,[\\"Error\\",\\"B\\",[[\\"stack\\",\\"cause\\"],[[0,\\"\\\\\\"\\\\\\"\\"],[11,[\\"Error\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],1]],2]],0],0,false,4095,{}]"`;
 
-exports[`Error > toJSON > supports Error.prototype.name 1`] = `"[[11,[\\"Error\\",\\"A\\",[[\\"name\\",\\"stack\\"],[[0,\\"\\\\\\"ExampleError\\\\\\"\\"],[0,\\"\\\\\\"\\\\\\"\\"]],2]],0],0,false,4095,[]]"`;
+exports[`Error > toJSON > supports Error.prototype.name 1`] = `"[[11,[\\"Error\\",\\"A\\",[[\\"name\\",\\"stack\\"],[[0,\\"\\\\\\"ExampleError\\\\\\"\\"],[0,\\"\\\\\\"\\\\\\"\\"]],2]],0],0,false,4095,{}]"`;
 
-exports[`Error > toJSON > supports other Error classes 1`] = `"[[11,[\\"ReferenceError\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],0],0,false,4095,[]]"`;
+exports[`Error > toJSON > supports other Error classes 1`] = `"[[11,[\\"ReferenceError\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],0],0,false,4095,{}]"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"[[11,[\\"Error\\",\\"B\\",[[\\"stack\\",\\"cause\\"],[[0,\\"\\\\\\"\\\\\\"\\"],[10,[11,[\\"Error\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],2],1]],2]],0],0,false,4095,[]]"`;
+exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"[[11,[\\"Error\\",\\"B\\",[[\\"stack\\",\\"cause\\"],[[0,\\"\\\\\\"\\\\\\"\\"],[10,[11,[\\"Error\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],2],1]],2]],0],0,false,4095,{}]"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"[[10,[11,[\\"Error\\",\\"A\\",[[\\"name\\",\\"stack\\"],[[0,\\"\\\\\\"ExampleError\\\\\\"\\"],[0,\\"\\\\\\"\\\\\\"\\"]],2]],1],0],0,false,4095,[]]"`;
+exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"[[10,[11,[\\"Error\\",\\"A\\",[[\\"name\\",\\"stack\\"],[[0,\\"\\\\\\"ExampleError\\\\\\"\\"],[0,\\"\\\\\\"\\\\\\"\\"]],2]],1],0],0,false,4095,{}]"`;
 
-exports[`Error > toJSONAsync > supports other Error classes 1`] = `"[[10,[11,[\\"ReferenceError\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],1],0],0,false,4095,[]]"`;
+exports[`Error > toJSONAsync > supports other Error classes 1`] = `"[[10,[11,[\\"ReferenceError\\",\\"A\\",[[\\"stack\\"],[[0,\\"\\\\\\"\\\\\\"\\"]],1]],1],0],0,false,4095,{}]"`;
