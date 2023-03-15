@@ -8,7 +8,7 @@ import {
   createSerializationContext,
 } from './context';
 import parseAsync from './tree/async';
-import serializeTree, { resolvePatches } from './tree/serialize';
+import SerovalSerializer, { resolvePatches } from './tree/serialize';
 import parseSync from './tree/sync';
 import { SerovalNode } from './tree/types';
 import {
@@ -73,7 +73,7 @@ export function serialize<T extends ServerValue>(
   const ctx = createParserContext(options);
   const [tree, rootID, isObject] = parseSync(ctx, source);
   const serial = createSerializationContext(ctx);
-  const result = serializeTree(serial, tree);
+  const result = new SerovalSerializer(serial).serialize(tree);
   return finalize(serial, rootID, isObject, result);
 }
 
@@ -84,7 +84,7 @@ export async function serializeAsync<T extends AsyncServerValue>(
   const ctx = createParserContext(options);
   const [tree, rootID, isObject] = await parseAsync(ctx, source);
   const serial = createSerializationContext(ctx);
-  const result = serializeTree(serial, tree);
+  const result = new SerovalSerializer(serial).serialize(tree);
   return finalize(serial, rootID, isObject, result);
 }
 
@@ -137,7 +137,7 @@ export function compileJSON(source: string): string {
     features: parsed.f,
     markedRefs: parsed.m,
   });
-  const result = serializeTree(serial, parsed.t);
+  const result = new SerovalSerializer(serial).serialize(parsed.t);
   return finalize(serial, parsed.r, parsed.i, result);
 }
 

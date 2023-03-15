@@ -1,13 +1,7 @@
-import { SerializationContext } from '../context';
 import {
   AsyncServerValue,
   ErrorValue,
 } from '../types';
-import {
-  SerovalNode,
-  SerovalReferenceNode,
-  SerovalNodeType,
-} from './types';
 
 export function getErrorConstructor(error: ErrorValue) {
   if (error instanceof EvalError) {
@@ -64,13 +58,6 @@ export function getIterableOptions(obj: Iterable<any>) {
     return options;
   }
   return undefined;
-}
-
-export function isReferenceInStack(
-  ctx: SerializationContext,
-  node: SerovalNode,
-): node is SerovalReferenceNode {
-  return node.t === SerovalNodeType.Reference && ctx.stack.includes(node.i);
 }
 
 export function isIterable(
