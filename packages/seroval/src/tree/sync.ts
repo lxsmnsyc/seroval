@@ -24,34 +24,24 @@ import {
   SerovalSetNode,
 } from './types';
 
-function serializePropertiesSync(
+function generateDictionary(
   ctx: ParserContext,
-  properties: Record<string, unknown>,
+  properties: Record<string, ServerValue>,
 ): SerovalDictionaryNode {
   const keys = Object.keys(properties);
-  const size = keys.length;
-  const keyNodes = new Array<string>(size);
-  const valueNodes = new Array<SerovalNode>(size);
-  const deferredKeys = new Array<string>(size);
-  const deferredValues = new Array<ServerValue>(size);
-  let deferredSize = 0;
-  let nodesSize = 0;
+  const nodes: SerovalDictionaryNode = {};
+  const deferred: Record<string, ServerValue> = {};
   for (const key of keys) {
     if (isIterable(properties[key])) {
-      deferredKeys[deferredSize] = key;
-      deferredValues[deferredSize] = properties[key] as ServerValue;
-      deferredSize++;
+      deferred[key] = properties[key];
     } else {
-      keyNodes[nodesSize] = key;
-      valueNodes[nodesSize] = generateTreeSync(ctx, properties[key] as ServerValue);
-      nodesSize++;
+      nodes[key] = generateTreeSync(ctx, properties[key]);
     }
   }
-  for (let i = 0; i < deferredSize; i++) {
-    keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = generateTreeSync(ctx, deferredValues[i]);
+  for (const key of Object.keys(deferred)) {
+    nodes[key] = generateTreeSync(ctx, deferred[key]);
   }
-  return [keyNodes, valueNodes, size];
+  return nodes;
 }
 
 function generateSetNode(
@@ -151,7 +141,7 @@ function generateAggregateErrorNode(
 ): SerovalAggregateErrorNode {
   const options = getErrorOptions(current);
   const optionsNode = options
-    ? serializePropertiesSync(ctx, options)
+    ? generateDictionary(ctx, options)
     : undefined;
   const errorsNode = generateTreeSync(ctx, current.errors as ServerValue);
   return [SerovalNodeType.AggregateError, [current.message, optionsNode, errorsNode], id];
@@ -164,7 +154,7 @@ function generateErrorNode(
 ): SerovalErrorNode {
   const options = getErrorOptions(current);
   const optionsNode = options
-    ? serializePropertiesSync(ctx, options)
+    ? generateDictionary(ctx, options)
     : undefined;
   return [
     SerovalNodeType.Error,
@@ -182,7 +172,9 @@ function generateIterableNode(
   const options = getIterableOptions(current);
   return [SerovalNodeType.Iterable, [
     // Parse options first before the items
-    options ? serializePropertiesSync(ctx, options) : undefined,
+    options
+      ? generateDictionary(ctx, options as Record<string, ServerValue>)
+      : undefined,
     generateNodeList(ctx, Array.from(current)),
   ], id];
 }
@@ -226,7 +218,7 @@ function generateTreeSync(
   if (current.constructor === Object || empty) {
     return [
       empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      serializePropertiesSync(ctx, current as Record<string, unknown>),
+      generateDictionary(ctx, current as Record<string, ServerValue>),
       id,
     ];
   }

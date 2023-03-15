@@ -169,16 +169,15 @@ const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
 function serializeAssignments(
   ctx: SerializationContext,
   targetRef: number,
-  [keys, values, size]: SerovalDictionaryNode,
+  record: SerovalDictionaryNode,
 ) {
   ctx.stack.push(targetRef);
   const mainAssignments: Assignment[] = [];
-  for (let i = 0; i < size; i++) {
+  for (const key of Object.keys(record)) {
     const parentStack = ctx.stack;
     ctx.stack = [];
-    const refParam = serializeTree(ctx, values[i]);
+    const refParam = serializeTree(ctx, record[key]);
     ctx.stack = parentStack;
-    const key = keys[i];
     const check = Number(key);
     const parentAssignment = ctx.assignments;
     ctx.assignments = mainAssignments;
@@ -198,19 +197,15 @@ function serializeAssignments(
   return resolveAssignments(mainAssignments);
 }
 
-function serializeObject(
+function serializeDictionary(
   ctx: SerializationContext,
   sourceID: number,
-  [keys, values, size]: SerovalDictionaryNode,
+  record: SerovalDictionaryNode,
 ) {
-  if (size === 0) {
-    return '{}';
-  }
   let result = '';
   ctx.stack.push(sourceID);
-  for (let i = 0; i < size; i++) {
-    const key = keys[i];
-    const val = values[i];
+  for (const key of Object.keys(record)) {
+    const val = record[key];
     const check = Number(key);
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
@@ -405,7 +400,7 @@ function serializeWithObjectAssign(
   id: number,
   serialized: string,
 ) {
-  const fields = serializeObject(ctx, id, value);
+  const fields = serializeDictionary(ctx, id, value);
   if (fields !== '{}') {
     return `Object.assign(${serialized},${fields})`;
   }
@@ -556,7 +551,7 @@ export default function serializeTree(
     case SerovalNodeType.NullConstructor:
       return serializeNullConstructor(ctx, value, id);
     case SerovalNodeType.Object:
-      return assignRef(ctx, id, serializeObject(ctx, id, value));
+      return assignRef(ctx, id, serializeDictionary(ctx, id, value));
     default:
       throw new Error('Unsupported type');
   }

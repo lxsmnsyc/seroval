@@ -30,34 +30,24 @@ import {
   SerovalSetNode,
 } from './types';
 
-async function serializePropertiesAsync(
+async function generateDictionary(
   ctx: ParserContext,
-  properties: Record<string, unknown>,
+  properties: Record<string, AsyncServerValue>,
 ): Promise<SerovalDictionaryNode> {
   const keys = Object.keys(properties);
-  const size = keys.length;
-  const keyNodes = new Array<string>(size);
-  const valueNodes = new Array<SerovalNode>(size);
-  const deferredKeys = new Array<string>(size);
-  const deferredValues = new Array<AsyncServerValue>(size);
-  let deferredSize = 0;
-  let nodesSize = 0;
+  const nodes: SerovalDictionaryNode = {};
+  const deferred: Record<string, AsyncServerValue> = {};
   for (const key of keys) {
     if (isIterable(properties[key])) {
-      deferredKeys[deferredSize] = key;
-      deferredValues[deferredSize] = properties[key] as AsyncServerValue;
-      deferredSize++;
+      deferred[key] = properties[key];
     } else {
-      keyNodes[nodesSize] = key;
-      valueNodes[nodesSize] = await generateTreeAsync(ctx, properties[key] as AsyncServerValue);
-      nodesSize++;
+      nodes[key] = await generateTreeAsync(ctx, properties[key]);
     }
   }
-  for (let i = 0; i < deferredSize; i++) {
-    keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = await generateTreeAsync(ctx, deferredValues[i]);
+  for (const key of Object.keys(deferred)) {
+    nodes[key] = await generateTreeAsync(ctx, deferred[key]);
   }
-  return [keyNodes, valueNodes, size];
+  return nodes;
 }
 
 async function generateSetNode(
@@ -157,7 +147,7 @@ async function generateAggregateErrorNode(
 ): Promise<SerovalAggregateErrorNode> {
   const options = getErrorOptions(current);
   const optionsNode = options
-    ? await serializePropertiesAsync(ctx, options)
+    ? await generateDictionary(ctx, options)
     : undefined;
   const errorsNode = await generateTreeAsync(ctx, current.errors as AsyncServerValue);
   return [
@@ -174,7 +164,7 @@ async function generateErrorNode(
 ): Promise<SerovalErrorNode> {
   const options = getErrorOptions(current);
   const optionsNode = options
-    ? await serializePropertiesAsync(ctx, options)
+    ? await generateDictionary(ctx, options)
     : undefined;
   return [
     SerovalNodeType.Error,
@@ -192,7 +182,9 @@ async function generateIterableNode(
   const options = getIterableOptions(current);
   return [SerovalNodeType.Iterable, [
     // Parse options first before the items
-    options ? await serializePropertiesAsync(ctx, options) : undefined,
+    options
+      ? await generateDictionary(ctx, options as Record<string, AsyncServerValue>)
+      : undefined,
     await generateNodeList(ctx, Array.from(current)),
   ], id];
 }
@@ -244,7 +236,7 @@ async function generateTreeAsync(
   if (current.constructor === Object || empty) {
     return [
       empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      await serializePropertiesAsync(ctx, current as Record<string, unknown>),
+      await generateDictionary(ctx, current as Record<string, AsyncServerValue>),
       id,
     ];
   }
