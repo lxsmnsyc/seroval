@@ -2,22 +2,24 @@ import { parseTargets } from './compat';
 import getIdentifier from './get-identifier';
 
 interface IndexAssignment {
-  type: 'index';
-  source: string;
-  value: string;
+  t: 'index';
+  s: string;
+  k: undefined;
+  v: string;
 }
 
 interface MapAssignment {
-  type: 'map';
-  source: string;
-  key: string;
-  value: string;
+  t: 'map';
+  s: string;
+  k: string;
+  v: string;
 }
 
 interface SetAssignment {
-  type: 'set';
-  source: string;
-  value: string;
+  t: 'set';
+  s: string;
+  k: undefined;
+  v: string;
 }
 
 // Array of assignments to be done (used for recursion)

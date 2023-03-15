@@ -25,13 +25,13 @@ import {
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
-  switch (assignment.type) {
+  switch (assignment.t) {
     case 'index':
-      return `${assignment.source}=${assignment.value}`;
+      return `${assignment.s}=${assignment.v}`;
     case 'map':
-      return `${assignment.source}.set(${assignment.key},${assignment.value})`;
+      return `${assignment.s}.set(${assignment.k},${assignment.v})`;
     case 'set':
-      return `${assignment.source}.add(${assignment.value})`;
+      return `${assignment.s}.add(${assignment.v})`;
     default:
       return '';
   }
@@ -43,29 +43,31 @@ function mergeAssignments(assignments: Assignment[]) {
   let prev = current;
   for (let i = 1, len = assignments.length; i < len; i++) {
     const item = assignments[i];
-    if (item.type === prev.type) {
-      if (item.type === 'index' && item.value === prev.value) {
+    if (item.t === prev.t) {
+      if (item.t === 'index' && item.v === prev.v) {
         // Merge if the right-hand value is the same
         // saves at least 2 chars
         current = {
-          type: 'index',
-          source: item.source,
-          value: getAssignmentExpression(current),
+          t: 'index',
+          s: item.s,
+          k: undefined,
+          v: getAssignmentExpression(current),
         };
-      } else if (item.type === 'map' && item.source === prev.source) {
+      } else if (item.t === 'map' && item.s === prev.s) {
         // Maps has chaining methods, merge if source is the same
         current = {
-          type: 'map',
-          source: getAssignmentExpression(current),
-          key: item.key,
-          value: item.value,
+          t: 'map',
+          s: getAssignmentExpression(current),
+          k: item.k,
+          v: item.v,
         };
-      } else if (item.type === 'set' && item.source === prev.source) {
+      } else if (item.t === 'set' && item.s === prev.s) {
         // Sets has chaining methods too
         current = {
-          type: 'set',
-          source: getAssignmentExpression(current),
-          value: item.value,
+          t: 'set',
+          s: getAssignmentExpression(current),
+          k: undefined,
+          v: item.v,
         };
       } else {
         // Different assignment, push current
@@ -122,9 +124,10 @@ function createAssignment(
   value: string,
 ) {
   ctx.assignments.push({
-    type: 'index',
-    source,
-    value,
+    t: 'index',
+    s: source,
+    k: undefined,
+    v: value,
   });
 }
 
@@ -135,9 +138,10 @@ function createSetAdd(
 ) {
   markRef(ctx, ref);
   ctx.assignments.push({
-    type: 'set',
-    source: getRefParam(ctx, ref),
-    value,
+    t: 'set',
+    s: getRefParam(ctx, ref),
+    k: undefined,
+    v: value,
   });
 }
 
@@ -149,10 +153,10 @@ function createMapSet(
 ) {
   markRef(ctx, ref);
   ctx.assignments.push({
-    type: 'map',
-    source: getRefParam(ctx, ref),
-    key,
-    value,
+    t: 'map',
+    s: getRefParam(ctx, ref),
+    k: key,
+    v: value,
   });
 }
 
