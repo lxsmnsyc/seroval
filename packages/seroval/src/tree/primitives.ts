@@ -1,11 +1,147 @@
+import assert from '../assert';
+import { Feature } from '../compat';
+import { ParserContext } from '../context';
+import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import {
+  SerovalBigIntNode,
+  SerovalBigIntTypedArrayNode,
+  SerovalDateNode,
+  SerovalNodeType,
   SerovalPrimitiveNode,
+  SerovalReferenceNode,
+  SerovalRegExpNode,
+  SerovalTypedArrayNode,
 } from './types';
 
-export const TRUE_NODE = new SerovalPrimitiveNode('!0');
-export const FALSE_NODE = new SerovalPrimitiveNode('!1');
-export const UNDEFINED_NODE = new SerovalPrimitiveNode('void 0');
-export const NULL_NODE = new SerovalPrimitiveNode(null);
-export const NEG_ZERO_NODE = new SerovalPrimitiveNode('-0');
-export const INFINITY_NODE = new SerovalPrimitiveNode('1/0');
-export const NEG_INFINITY_NODE = new SerovalPrimitiveNode('-1/0');
+export function createPrimitiveNode(
+  value: string | number | null,
+): SerovalPrimitiveNode {
+  return {
+    t: SerovalNodeType.Primitive,
+    i: undefined,
+    s: value,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: undefined,
+    a: undefined,
+    n: undefined,
+  };
+}
+
+export const TRUE_NODE = createPrimitiveNode('!0');
+export const FALSE_NODE = createPrimitiveNode('!1');
+export const UNDEFINED_NODE = createPrimitiveNode('void 0');
+export const NULL_NODE = createPrimitiveNode(null);
+export const NEG_ZERO_NODE = createPrimitiveNode('-0');
+export const INFINITY_NODE = createPrimitiveNode('1/0');
+export const NEG_INFINITY_NODE = createPrimitiveNode('-1/0');
+
+export function createBigIntNode(
+  ctx: ParserContext,
+  current: bigint,
+): SerovalBigIntNode {
+  assert(ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
+  return {
+    t: SerovalNodeType.BigInt,
+    i: undefined,
+    a: undefined,
+    s: `${current}n`,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: undefined,
+    n: undefined,
+  };
+}
+
+export function createReferenceNode(id: number): SerovalReferenceNode {
+  return {
+    t: SerovalNodeType.Reference,
+    i: id,
+    a: undefined,
+    s: undefined,
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: undefined,
+    n: undefined,
+  };
+}
+
+export function createDateNode(id: number, current: Date): SerovalDateNode {
+  return {
+    t: SerovalNodeType.Date,
+    i: id,
+    a: undefined,
+    s: current.toISOString(),
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: undefined,
+    n: undefined,
+  };
+}
+
+export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode {
+  return {
+    t: SerovalNodeType.RegExp,
+    i: id,
+    a: undefined,
+    s: String(current),
+    l: undefined,
+    m: undefined,
+    c: undefined,
+    d: undefined,
+    n: undefined,
+  };
+}
+
+export function createTypedArrayNode(
+  ctx: ParserContext,
+  id: number,
+  current: TypedArrayValue,
+): SerovalTypedArrayNode {
+  const constructor = current.constructor.name;
+  assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
+  return {
+    t: SerovalNodeType.TypedArray,
+    i: id,
+    a: undefined,
+    s: current.toString(),
+    l: current.byteOffset,
+    m: undefined,
+    c: constructor,
+    d: undefined,
+    n: undefined,
+  };
+}
+
+export function createBigIntTypedArrayNode(
+  ctx: ParserContext,
+  id: number,
+  current: BigIntTypedArrayValue,
+): SerovalBigIntTypedArrayNode {
+  const constructor = current.constructor.name;
+  assert(
+    ctx.features & (Feature.BigIntTypedArray),
+    `Unsupported value type "${constructor}"`,
+  );
+  let result = '';
+  const cap = current.length - 1;
+  for (let i = 0; i < cap; i++) {
+    result += `${current[i]}n,`;
+  }
+  result += `"${current[cap]}"`;
+  return {
+    t: SerovalNodeType.BigIntTypedArray,
+    i: id,
+    a: undefined,
+    s: result,
+    l: (current as BigInt64Array).byteOffset,
+    m: undefined,
+    c: constructor,
+    d: undefined,
+    n: undefined,
+  };
+}

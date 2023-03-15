@@ -5,9 +5,14 @@ import { createRef, ParserContext } from '../context';
 import quote from '../quote';
 import { BigIntTypedArrayValue, ServerValue, TypedArrayValue } from '../types';
 import {
+  createBigIntNode,
+  createBigIntTypedArrayNode,
+  createDateNode,
+  createPrimitiveNode,
+  createReferenceNode,
+  createRegExpNode,
+  createTypedArrayNode,
   FALSE_NODE,
-  INFINITY_NODE,
-  NEG_INFINITY_NODE,
   NEG_ZERO_NODE,
   NULL_NODE,
   TRUE_NODE,
@@ -22,23 +27,15 @@ import {
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
-  SerovalBigIntNode,
-  SerovalBigIntTypedArrayNode,
-  SerovalDateNode,
   SerovalErrorNode,
   SerovalIterableNode,
   SerovalMapNode,
-  SerovalMapRecordNode,
   SerovalNode,
   SerovalNodeType,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordNode,
-  SerovalPrimitiveNode,
-  SerovalReferenceNode,
-  SerovalRegExpNode,
   SerovalSetNode,
-  SerovalTypedArrayNode,
 } from './types';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode | SerovalIterableNode;
@@ -74,7 +71,17 @@ class SyncParser {
   }
 
   generateArrayNode(id: number, current: ServerValue[]): SerovalArrayNode {
-    return new SerovalArrayNode(id, this.generateNodeList(current));
+    return {
+      t: SerovalNodeType.Array,
+      i: id,
+      a: this.generateNodeList(current),
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
   }
 
   generateMapNode(
@@ -105,7 +112,17 @@ class SyncParser {
       keyNodes[nodeSize + i] = this.parse(deferredKey[i]);
       valueNodes[nodeSize + i] = this.parse(deferredValue[i]);
     }
-    return new SerovalMapNode(id, new SerovalMapRecordNode(keyNodes, valueNodes, len));
+    return {
+      t: SerovalNodeType.Map,
+      i: id,
+      a: undefined,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: { k: keyNodes, v: valueNodes, s: len },
+      n: undefined,
+    };
   }
 
   generateSetNode(
@@ -130,7 +147,17 @@ class SyncParser {
     for (let i = 0; i < deferredSize; i++) {
       nodes[nodeSize + i] = this.parse(deferred[i]);
     }
-    return new SerovalSetNode(id, nodes);
+    return {
+      t: SerovalNodeType.Set,
+      i: id,
+      a: nodes,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: undefined,
+      n: undefined,
+    };
   }
 
   generateProperties(properties: Record<string, ServerValue>): SerovalObjectRecordNode {
@@ -172,14 +199,20 @@ class SyncParser {
   ): SerovalIterableNode {
     assert(this.ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
     const options = getIterableOptions(current);
-    return new SerovalIterableNode(
-      id,
+    return {
+      t: SerovalNodeType.Iterable,
+      i: id,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
       // Parse options first before the items
-      options
+      d: options
         ? this.generateProperties(options as Record<string, ServerValue>)
         : undefined,
-      this.generateNodeList(Array.from(current)),
-    );
+      a: this.generateNodeList(Array.from(current)),
+      n: undefined,
+    };
   }
 
   generateObjectNode(
@@ -190,10 +223,17 @@ class SyncParser {
     if (Symbol.iterator in current) {
       return this.generateIterableNode(id, current);
     }
-    if (empty) {
-      return new SerovalNullConstructorNode(id, this.generateProperties(current));
-    }
-    return new SerovalObjectNode(id, this.generateProperties(current));
+    return {
+      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+      i: id,
+      s: undefined,
+      l: undefined,
+      m: undefined,
+      c: undefined,
+      d: this.generateProperties(current),
+      a: undefined,
+      n: undefined,
+    };
   }
 
   generateAggregateErrorNode(
@@ -204,12 +244,17 @@ class SyncParser {
     const optionsNode = options
       ? this.generateProperties(options)
       : undefined;
-    return new SerovalAggregateErrorNode(
-      id,
-      current.message,
-      optionsNode,
-      this.parse(current.errors),
-    );
+    return {
+      t: SerovalNodeType.AggregateError,
+      i: id,
+      a: undefined,
+      s: undefined,
+      l: undefined,
+      m: current.message,
+      c: undefined,
+      d: optionsNode,
+      n: this.parse(current.errors),
+    };
   }
 
   generateErrorNode(
@@ -220,7 +265,17 @@ class SyncParser {
     const optionsNode = options
       ? this.generateProperties(options)
       : undefined;
-    return new SerovalErrorNode(id, getErrorConstructor(current), current.message, optionsNode);
+    return {
+      t: SerovalNodeType.Error,
+      i: id,
+      a: undefined,
+      s: undefined,
+      l: undefined,
+      m: current.message,
+      c: getErrorConstructor(current),
+      d: optionsNode,
+      n: undefined,
+    };
   }
 
   parse(current: ServerValue): SerovalNode {
@@ -230,21 +285,20 @@ class SyncParser {
       case 'undefined':
         return UNDEFINED_NODE;
       case 'string':
-        return new SerovalPrimitiveNode(quote(current));
+        return createPrimitiveNode(quote(current));
       case 'number':
         if (Object.is(current, -0)) {
           return NEG_ZERO_NODE;
         }
         if (Object.is(current, Infinity)) {
-          return INFINITY_NODE;
+          return createPrimitiveNode('1/0');
         }
         if (Object.is(current, -Infinity)) {
-          return NEG_INFINITY_NODE;
+          return createPrimitiveNode('-1/0');
         }
-        return new SerovalPrimitiveNode(current);
+        return createPrimitiveNode(current);
       case 'bigint':
-        assert(this.ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
-        return new SerovalBigIntNode(current);
+        return createBigIntNode(this.ctx, current);
       case 'object': {
         if (!current) {
           return NULL_NODE;
@@ -253,16 +307,16 @@ class SyncParser {
         // mostly because the values themselves are stateful
         const id = createRef(this.ctx, current, true);
         if (this.ctx.markedRefs[id]) {
-          return new SerovalReferenceNode(id);
+          return createReferenceNode(id);
         }
         if (Array.isArray(current)) {
           return this.generateArrayNode(id, current);
         }
         switch (current.constructor) {
           case Date:
-            return new SerovalDateNode(id, current as Date);
+            return createDateNode(id, current as Date);
           case RegExp:
-            return new SerovalRegExpNode(id, current as RegExp);
+            return createRegExpNode(id, current as RegExp);
           case Int8Array:
           case Int16Array:
           case Int32Array:
@@ -272,15 +326,10 @@ class SyncParser {
           case Uint8ClampedArray:
           case Float32Array:
           case Float64Array:
-            assert(this.ctx.features & Feature.TypedArray, `Unsupported value type "${current.constructor.name}"`);
-            return new SerovalTypedArrayNode(id, current as TypedArrayValue);
+            return createTypedArrayNode(this.ctx, id, current as TypedArrayValue);
           case BigInt64Array:
           case BigUint64Array:
-            assert(
-              this.ctx.features & (Feature.BigIntTypedArray),
-              `Unsupported value type "${current.constructor.name}"`,
-            );
-            return new SerovalBigIntTypedArrayNode(id, current as BigIntTypedArrayValue);
+            return createBigIntTypedArrayNode(this.ctx, id, current as BigIntTypedArrayValue);
           case Map:
             return this.generateMapNode(id, current as Map<ServerValue, ServerValue>);
           case Set:
