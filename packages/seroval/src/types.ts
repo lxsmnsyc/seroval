@@ -4,8 +4,7 @@ export type PrimitiveValue =
   | string
   | number
   | undefined
-  | null
-  | bigint;
+  | null;
 
 export type ErrorValue =
   | Error
@@ -33,7 +32,8 @@ export type TypedArrayValue =
 export type SemiPrimitiveValue =
   | RegExp
   | Date
-  | TypedArrayValue;
+  | TypedArrayValue
+  | bigint;
 
 export type CommonServerValue =
   | PrimitiveValue
