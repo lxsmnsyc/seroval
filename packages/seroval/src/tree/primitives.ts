@@ -45,7 +45,7 @@ export function createBigIntNode(
   return {
     t: SerovalNodeType.BigInt,
     i: undefined,
-    s: `${current}n`,
+    s: current.toString() + 'n',
     l: undefined,
     c: undefined,
     m: undefined,

@@ -533,19 +533,7 @@ export default class SerovalSerializer {
     } else {
       serialized = '{[Symbol.iterator]:function(){return ' + serialized + '}}';
     }
-    if (node.d) {
-      if (ctx.features & Feature.ObjectAssign) {
-        serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
-      } else {
-        markRef(ctx, node.i);
-        const assignments = this.serializeAssignments(ctx, node.i, node.d);
-        if (assignments) {
-          const ref = getRefParam(ctx, node.i);
-          return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
-        }
-      }
-    }
-    return assignRef(ctx, node.i, serialized);
+    return this.serializeDictionary(ctx, node.i, node.d, serialized);
   }
 
   static serialize(
@@ -566,7 +554,7 @@ export default class SerovalSerializer {
       case SerovalNodeType.NullConstructor:
         return this.serializeNullConstructor(ctx, node);
       case SerovalNodeType.Date:
-        return assignRef(ctx, node.i, `new Date("${node.s}")`);
+        return assignRef(ctx, node.i, 'new Date("' + node.s + '")');
       case SerovalNodeType.RegExp:
         return assignRef(ctx, node.i, node.s);
       case SerovalNodeType.Set:
