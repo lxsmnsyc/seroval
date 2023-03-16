@@ -42,10 +42,9 @@ function finalize(
     if (patches) {
       // Get (or create) a ref from the source
       const index = getRefParam(ctx, rootID);
-      if (result.startsWith(`${index}=`)) {
-        body = `${result},${patches}${index}`;
-      } else {
-        body = `${index}=${result},${patches}${index}`;
+      body = result + ',' + patches + index;
+      if (!result.startsWith(index + '=')) {
+        body = index + '=' + body;
       }
     }
     let params = ctx.vars.length > 1
@@ -54,14 +53,14 @@ function finalize(
     // Source is probably already assigned
     if (ctx.features & Feature.ArrowFunction) {
       params = ctx.vars.length > 1 || ctx.vars.length === 0
-        ? `(${params})`
+        ? '(' + params + ')'
         : params;
-      return `(${params}=>(${body}))()`;
+      return '(' + params + '=>(' + body + '))()';
     }
-    return `(function(${params}){return ${body}})()`;
+    return '(function(' + params + '){return ' + body + '})()';
   }
   if (isObject) {
-    return `(${result})`;
+    return '(' + result + ')';
   }
   return result;
 }

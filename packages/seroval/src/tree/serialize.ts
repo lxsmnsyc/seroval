@@ -27,11 +27,11 @@ import {
 function getAssignmentExpression(assignment: Assignment): string {
   switch (assignment.t) {
     case 'index':
-      return `${assignment.s}=${assignment.v}`;
+      return assignment.s + '=' + assignment.v;
     case 'map':
-      return `${assignment.s}.set(${assignment.k},${assignment.v})`;
+      return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
     case 'set':
-      return `${assignment.s}.add(${assignment.v})`;
+      return assignment.s + '.add(' + assignment.v + ')';
     default:
       return '';
   }
@@ -92,7 +92,7 @@ function resolveAssignments(assignments: Assignment[]) {
     let result = '';
     const merged = mergeAssignments(assignments);
     for (let i = 0, len = merged.length; i < len; i++) {
-      result += `${getAssignmentExpression(merged[i])},`;
+      result += getAssignmentExpression(merged[i]) + ',';
     }
     return result;
   }
@@ -158,7 +158,7 @@ function createArrayAssign(
   value: string,
 ) {
   markRef(ctx, ref);
-  createAssignment(ctx, `${getRefParam(ctx, ref)}[${index}]`, value);
+  createAssignment(ctx, getRefParam(ctx, ref) + '[' + index.toString() + ']', value);
 }
 
 function createObjectAssign(
@@ -168,7 +168,7 @@ function createObjectAssign(
   value: string,
 ) {
   markRef(ctx, ref);
-  createAssignment(ctx, `${getRefParam(ctx, ref)}.${key}`, value);
+  createAssignment(ctx, getRefParam(ctx, ref) + '.' + key, value);
 }
 
 function assignRef(
@@ -177,7 +177,7 @@ function assignRef(
   value: string,
 ) {
   if (ctx.markedRefs.has(index)) {
-    return `${getRefParam(ctx, index)}=${value}`;
+    return getRefParam(ctx, index) + '=' + value;
   }
   return value;
 }
@@ -226,7 +226,7 @@ export default class SerovalSerializer {
     if (isHoley) {
       values += ',';
     }
-    return `[${values}]`;
+    return '[' + values + ']';
   }
 
   static serializeArray(
@@ -273,12 +273,13 @@ export default class SerovalSerializer {
         if (hasPrev) {
           result += ',';
         }
-        result += `${isIdentifier ? key : quote(key)}:${this.serialize(ctx, val)}`;
+        result += isIdentifier ? key : quote(key);
+        result += ':' + this.serialize(ctx, val);
         hasPrev = true;
       }
     }
     ctx.stack.pop();
-    return `{${result}}`;
+    return '{' + result + '}';
   }
 
   static serializeWithObjectAssign(
@@ -289,7 +290,7 @@ export default class SerovalSerializer {
   ) {
     const fields = this.serializeObject(ctx, id, value);
     if (fields !== '{}') {
-      return `Object.assign(${serialized},${fields})`;
+      return 'Object.assign(' + serialized + ',' + fields + ')';
     }
     return serialized;
   }
@@ -330,22 +331,32 @@ export default class SerovalSerializer {
     return resolveAssignments(mainAssignments);
   }
 
+  static serializeDictionary(
+    ctx: SerializationContext,
+    i: number,
+    d: SerovalObjectRecordNode | undefined,
+    init: string,
+  ) {
+    if (d) {
+      if (ctx.features & Feature.ObjectAssign) {
+        init = this.serializeWithObjectAssign(ctx, d, i, init);
+      } else {
+        markRef(ctx, i);
+        const assignments = this.serializeAssignments(ctx, i, d);
+        if (assignments) {
+          const ref = getRefParam(ctx, i);
+          return '(' + assignRef(ctx, i, init) + ',' + assignments + ref + ')';
+        }
+      }
+    }
+    return assignRef(ctx, i, init);
+  }
+
   static serializeNullConstructor(
     ctx: SerializationContext,
     node: SerovalNullConstructorNode,
   ) {
-    let serialized = 'Object.create(null)';
-    if (ctx.features & Feature.ObjectAssign) {
-      serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
-    } else {
-      markRef(ctx, node.i);
-      const assignments = this.serializeAssignments(ctx, node.i, node.d);
-      if (assignments) {
-        const ref = getRefParam(ctx, node.i);
-        return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
-      }
-    }
-    return assignRef(ctx, node.i, serialized);
+    return this.serializeDictionary(ctx, node.i, node.d, 'Object.create(null)');
   }
 
   static serializeSet(
@@ -374,7 +385,7 @@ export default class SerovalSerializer {
       }
       ctx.stack.pop();
       if (result) {
-        serialized += `([${result}])`;
+        serialized += '([' + result + '])';
       }
     }
     return assignRef(ctx, node.i, serialized);
@@ -431,7 +442,7 @@ export default class SerovalSerializer {
           if (hasPrev) {
             result += ',';
           }
-          result += `[${this.serialize(ctx, key)},${this.serialize(ctx, val)}]`;
+          result += '[' + this.serialize(ctx, key) + ',' + this.serialize(ctx, val) + ']';
           hasPrev = true;
         }
       }
@@ -440,7 +451,7 @@ export default class SerovalSerializer {
       // so that the empty Map constructor
       // can be used instead
       if (result) {
-        serialized += `([${result}])`;
+        serialized += '([' + result + '])';
       }
     }
     return assignRef(ctx, node.i, serialized);
@@ -452,44 +463,20 @@ export default class SerovalSerializer {
   ) {
     // Serialize the required arguments
     ctx.stack.push(node.i);
-    let serialized = `new AggregateError(${this.serialize(ctx, node.n)},${quote(node.m)})`;
+    const serialized = 'new AggregateError(' + this.serialize(ctx, node.n) + ',' + quote(node.m) + ')';
     ctx.stack.pop();
     // `AggregateError` might've been extended
     // either through class or custom properties
     // Make sure to assign extra properties
-    if (node.d) {
-      if (ctx.features & Feature.ObjectAssign) {
-        serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
-      } else {
-        markRef(ctx, node.i);
-        const assignments = this.serializeAssignments(ctx, node.i, node.d);
-        if (assignments) {
-          const ref = getRefParam(ctx, node.i);
-          return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
-        }
-      }
-    }
-    return assignRef(ctx, node.i, serialized);
+    return this.serializeDictionary(ctx, node.i, node.d, serialized);
   }
 
   static serializeError(
     ctx: SerializationContext,
     node: SerovalErrorNode,
   ) {
-    let serialized = `new ${node.c}(${quote(node.m)})`;
-    if (node.d) {
-      if (ctx.features & Feature.ObjectAssign) {
-        serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
-      } else {
-        markRef(ctx, node.i);
-        const assignments = this.serializeAssignments(ctx, node.i, node.d);
-        if (assignments) {
-          const ref = getRefParam(ctx, node.i);
-          return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
-        }
-      }
-    }
-    return assignRef(ctx, node.i, serialized);
+    const serialized = 'new ' + node.c + '(' + quote(node.m) + ')';
+    return this.serializeDictionary(ctx, node.i, node.d, serialized);
   }
 
   static serializePromise(
@@ -503,13 +490,13 @@ export default class SerovalSerializer {
       // inside the `then` expression so that
       // the Promise evaluates after the parent
       // has initialized
-      serialized = `Promise.resolve().then(()=>${getRefParam(ctx, node.n.i)})`;
+      serialized = 'Promise.resolve().then(()=>' + getRefParam(ctx, node.n.i) + ')';
     } else {
       ctx.stack.push(node.i);
       const result = this.serialize(ctx, node.n);
       ctx.stack.pop();
       // just inline the value/reference here
-      serialized = `Promise.resolve(${result})`;
+      serialized = 'Promise.resolve(' + result + ')';
     }
     return assignRef(ctx, node.i, serialized);
   }
@@ -518,11 +505,11 @@ export default class SerovalSerializer {
     ctx: SerializationContext,
     node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
   ) {
-    let args = `[${node.s}]`;
+    let args = '[' + node.s + ']';
     if (node.l !== 0) {
-      args += `,${node.l}`;
+      args += ',' + node.l.toString();
     }
-    return assignRef(ctx, node.i, `new ${node.c}(${args})`);
+    return assignRef(ctx, node.i, 'new ' + node.c + '(' + args + ')');
   }
 
   static serializeIterable(
@@ -533,18 +520,18 @@ export default class SerovalSerializer {
     ctx.stack = [];
     const values = this.serializeNodeList(ctx, node);
     ctx.stack = parent;
-    let serialized: string;
+    let serialized = values;
     if (ctx.features & Feature.ArrayPrototypeValues) {
-      serialized = `${values}.values()`;
+      serialized += '.values()';
     } else {
-      serialized = `${values}[Symbol.iterator]()`;
+      serialized += '[Symbol.iterator]()';
     }
     if (ctx.features & Feature.ArrowFunction) {
-      serialized = `{[Symbol.iterator]:()=>${serialized}}`;
+      serialized = '{[Symbol.iterator]:()=>' + serialized + '}';
     } else if (ctx.features & Feature.MethodShorthand) {
-      serialized = `{[Symbol.iterator](){return ${serialized}}}`;
+      serialized = '{[Symbol.iterator](){return ' + serialized + '}}';
     } else {
-      serialized = `{[Symbol.iterator]:function(){return ${serialized}}}`;
+      serialized = '{[Symbol.iterator]:function(){return ' + serialized + '}}';
     }
     if (node.d) {
       if (ctx.features & Feature.ObjectAssign) {

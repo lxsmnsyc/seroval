@@ -128,11 +128,12 @@ export function createBigIntTypedArrayNode(
     `Unsupported value type "${constructor}"`,
   );
   let result = '';
-  const cap = current.length - 1;
-  for (let i = 0; i < cap; i++) {
-    result += `${current[i]}n,`;
+  for (let i = 0, len = current.length; i < len; i++) {
+    if (i !== 0) {
+      result += ',';
+    }
+    result += current[i].toString() + 'n';
   }
-  result += `"${current[cap]}"`;
   return {
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
