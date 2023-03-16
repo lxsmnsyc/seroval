@@ -41,5 +41,5 @@ export default function quote(str: string) {
   } else {
     result += str.slice(lastPos);
   }
-  return '"' + result + '+';
+  return '"' + result + '"';
 }
