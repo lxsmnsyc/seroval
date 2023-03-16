@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
+  AsyncServerValue,
   Feature,
-  serializeAsync, toJSONAsync,
+  serializeAsync,
+  toJSONAsync,
 } from '../src';
 
 describe('Promise', () => {
@@ -12,6 +14,14 @@ describe('Promise', () => {
       }))
         .rejects
         .toThrowErrorMatchingSnapshot();
+    });
+    it('should use function expression instead of arrow functions', async () => {
+      const example: Record<string, AsyncServerValue> = {};
+      example.self = Promise.resolve(example);
+      expect(await serializeAsync(example, {
+        disabledFeatures: Feature.ArrowFunction,
+      }))
+        .toMatchSnapshot();
     });
   });
   describe('compat#toJSON', () => {

@@ -490,7 +490,12 @@ export default class SerovalSerializer {
       // inside the `then` expression so that
       // the Promise evaluates after the parent
       // has initialized
-      serialized = 'Promise.resolve().then(()=>' + getRefParam(ctx, node.n.i) + ')';
+      const ref = getRefParam(ctx, node.n.i);
+      if (ctx.features & Feature.ArrowFunction) {
+        serialized = 'Promise.resolve().then(()=>' + ref + ')';
+      } else {
+        serialized = 'Promise.resolve().then(function(){return ' + ref + '})';
+      }
     } else {
       ctx.stack.push(node.i);
       const result = this.serialize(ctx, node.n);
