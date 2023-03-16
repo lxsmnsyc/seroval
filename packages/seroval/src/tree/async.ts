@@ -287,7 +287,7 @@ class AsyncParser {
     id: number,
     current: AggregateError,
   ): Promise<SerovalAggregateErrorNode> {
-    const options = getErrorOptions(current);
+    const options = getErrorOptions(ctx, current);
     const optionsNode = options
       ? await this.generateProperties(ctx, options)
       : undefined;
@@ -309,7 +309,7 @@ class AsyncParser {
     id: number,
     current: Error,
   ): Promise<SerovalErrorNode> {
-    const options = getErrorOptions(current);
+    const options = getErrorOptions(ctx, current);
     const optionsNode = options
       ? await this.generateProperties(ctx, options)
       : undefined;

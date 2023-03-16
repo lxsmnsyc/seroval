@@ -1,3 +1,5 @@
+import { Feature } from '../compat';
+import { ParserContext } from '../context';
 import {
   AsyncServerValue,
   ErrorValue,
@@ -26,6 +28,7 @@ export function getErrorConstructor(error: ErrorValue) {
 }
 
 export function getErrorOptions(
+  ctx: ParserContext,
   error: Error,
 ) {
   let options: Record<string, any> | undefined;
@@ -41,8 +44,15 @@ export function getErrorOptions(
   const names = Object.getOwnPropertyNames(error);
   for (const name of names) {
     if (name !== 'name' && name !== 'message') {
-      options = options || {};
-      options[name] = error[name as keyof Error];
+      if (name === 'stack') {
+        if (ctx.features & Feature.ErrorPrototypeStack) {
+          options = options || {};
+          options[name] = error[name as keyof Error];
+        }
+      } else {
+        options = options || {};
+        options[name] = error[name as keyof Error];
+      }
     }
   }
   return options;

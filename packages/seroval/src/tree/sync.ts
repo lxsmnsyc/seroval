@@ -246,7 +246,7 @@ class SyncParser {
     id: number,
     current: AggregateError,
   ): SerovalAggregateErrorNode {
-    const options = getErrorOptions(current);
+    const options = getErrorOptions(ctx, current);
     const optionsNode = options
       ? this.generateProperties(ctx, options)
       : undefined;
@@ -268,7 +268,7 @@ class SyncParser {
     id: number,
     current: Error,
   ): SerovalErrorNode {
-    const options = getErrorOptions(current);
+    const options = getErrorOptions(ctx, current);
     const optionsNode = options
       ? this.generateProperties(ctx, options)
       : undefined;
