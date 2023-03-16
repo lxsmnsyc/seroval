@@ -1,7 +1,15 @@
 import { PrimitiveValue } from '../types';
 
 export const enum SerovalNodeType {
-  Primitive,
+  Number,
+  String,
+  Boolean,
+  Null,
+  Undefined,
+  NegativeZero,
+  Infinity,
+  NegativeInfinity,
+  NaN,
   BigInt,
   Reference,
   Date,
@@ -56,9 +64,55 @@ export type SerovalDictionaryNode =
   | SerovalObjectRecordNode
   | SerovalMapRecordNode;
 
-export interface SerovalPrimitiveNode extends SerovalBaseNode {
-  t: SerovalNodeType.Primitive;
+export interface SerovalNumberNode extends SerovalBaseNode {
+  t: SerovalNodeType.Number;
+  s: number;
 }
+
+export interface SerovalStringNode extends SerovalBaseNode {
+  t: SerovalNodeType.String;
+  s: string;
+}
+
+export interface SerovalBooleanNode extends SerovalBaseNode {
+  t: SerovalNodeType.Boolean;
+  s: boolean;
+}
+
+export interface SerovalNullNode extends SerovalBaseNode {
+  t: SerovalNodeType.Null;
+}
+
+export interface SerovalUndefinedNode extends SerovalBaseNode {
+  t: SerovalNodeType.Undefined;
+}
+
+export interface SerovalNegativeZeroNode extends SerovalBaseNode {
+  t: SerovalNodeType.NegativeZero;
+}
+
+export interface SerovalInfinityNode extends SerovalBaseNode {
+  t: SerovalNodeType.Infinity;
+}
+
+export interface SerovalNegativeInfinityNode extends SerovalBaseNode {
+  t: SerovalNodeType.NegativeInfinity;
+}
+
+export interface SerovalNaNNode extends SerovalBaseNode {
+  t: SerovalNodeType.NaN;
+}
+
+export type SerovalPrimitiveNode =
+  | SerovalNumberNode
+  | SerovalStringNode
+  | SerovalBooleanNode
+  | SerovalNullNode
+  | SerovalUndefinedNode
+  | SerovalNegativeZeroNode
+  | SerovalNegativeInfinityNode
+  | SerovalInfinityNode
+  | SerovalNaNNode;
 
 export interface SerovalReferenceNode extends SerovalBaseNode {
   t: SerovalNodeType.Reference;

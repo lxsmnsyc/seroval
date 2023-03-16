@@ -2,17 +2,20 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { createRef, ParserContext } from '../context';
-import quote from '../quote';
 import { BigIntTypedArrayValue, ServerValue, TypedArrayValue } from '../types';
 import {
   createBigIntNode,
   createBigIntTypedArrayNode,
   createDateNode,
-  createPrimitiveNode,
+  createNumberNode,
   createReferenceNode,
   createRegExpNode,
+  createStringNode,
   createTypedArrayNode,
   FALSE_NODE,
+  INFINITY_NODE,
+  NAN_NODE,
+  NEG_INFINITY_NODE,
   NEG_ZERO_NODE,
   NULL_NODE,
   TRUE_NODE,
@@ -294,18 +297,22 @@ function parse(
     case 'undefined':
       return UNDEFINED_NODE;
     case 'string':
-      return createPrimitiveNode(quote(current));
+      return createStringNode(current);
     case 'number':
+      // eslint-disable-next-line no-self-compare
+      if (current !== current) {
+        return NAN_NODE;
+      }
       if (Object.is(current, -0)) {
         return NEG_ZERO_NODE;
       }
       if (Object.is(current, Infinity)) {
-        return createPrimitiveNode('1/0');
+        return INFINITY_NODE;
       }
       if (Object.is(current, -Infinity)) {
-        return createPrimitiveNode('-1/0');
+        return NEG_INFINITY_NODE;
       }
-      return createPrimitiveNode(current);
+      return createNumberNode(current);
     case 'bigint':
       return createBigIntNode(ctx, current);
     case 'object': {

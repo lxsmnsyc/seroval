@@ -52,19 +52,19 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(toJSON(a)).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(a))).toMatchSnapshot();
     });
     it('supports Error.prototype.cause', () => {
       const a = new Error('A');
       const b = new Error('B', { cause: a });
       a.stack = '';
       b.stack = '';
-      expect(toJSON(b)).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(b))).toMatchSnapshot();
     });
     it('supports other Error classes', () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(toJSON(a)).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(a))).toMatchSnapshot();
     });
   });
   describe('toJSONAsync', () => {
@@ -72,19 +72,25 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(await toJSONAsync(Promise.resolve(a))).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(a))),
+      ).toMatchSnapshot();
     });
     it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
       const b = new Error('B', { cause: Promise.resolve(a) });
       a.stack = '';
       b.stack = '';
-      expect(await toJSONAsync(b)).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(b)),
+      ).toMatchSnapshot();
     });
     it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(await toJSONAsync(Promise.resolve(a))).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(a))),
+      ).toMatchSnapshot();
     });
   });
 });

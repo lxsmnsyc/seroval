@@ -1,23 +1,119 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { ParserContext } from '../context';
+import quote from '../quote';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import {
   SerovalBigIntNode,
   SerovalBigIntTypedArrayNode,
+  SerovalBooleanNode,
   SerovalDateNode,
+  SerovalInfinityNode,
+  SerovalNaNNode,
+  SerovalNegativeInfinityNode,
+  SerovalNegativeZeroNode,
   SerovalNodeType,
-  SerovalPrimitiveNode,
+  SerovalNullNode,
+  SerovalNumberNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
+  SerovalStringNode,
   SerovalTypedArrayNode,
+  SerovalUndefinedNode,
 } from './types';
 
-export function createPrimitiveNode(
-  value: string | number | null,
-): SerovalPrimitiveNode {
+export const TRUE_NODE: SerovalBooleanNode = {
+  t: SerovalNodeType.Boolean,
+  i: undefined,
+  s: true,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+export const FALSE_NODE: SerovalBooleanNode = {
+  t: SerovalNodeType.Boolean,
+  i: undefined,
+  s: false,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+export const UNDEFINED_NODE: SerovalUndefinedNode = {
+  t: SerovalNodeType.Undefined,
+  i: undefined,
+  s: undefined,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+export const NULL_NODE: SerovalNullNode = {
+  t: SerovalNodeType.Null,
+  i: undefined,
+  s: undefined,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+export const NEG_ZERO_NODE: SerovalNegativeZeroNode = {
+  t: SerovalNodeType.NegativeZero,
+  i: undefined,
+  s: undefined,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+export const INFINITY_NODE: SerovalInfinityNode = {
+  t: SerovalNodeType.Infinity,
+  i: undefined,
+  s: undefined,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+export const NEG_INFINITY_NODE: SerovalNegativeInfinityNode = {
+  t: SerovalNodeType.NegativeInfinity,
+  i: undefined,
+  s: undefined,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+export const NAN_NODE: SerovalNaNNode = {
+  t: SerovalNodeType.NaN,
+  i: undefined,
+  s: undefined,
+  l: undefined,
+  c: undefined,
+  m: undefined,
+  d: undefined,
+  a: undefined,
+  n: undefined,
+};
+
+export function createNumberNode(value: number): SerovalNumberNode {
   return {
-    t: SerovalNodeType.Primitive,
+    t: SerovalNodeType.Number,
     i: undefined,
     s: value,
     l: undefined,
@@ -29,13 +125,19 @@ export function createPrimitiveNode(
   };
 }
 
-export const TRUE_NODE = createPrimitiveNode('!0');
-export const FALSE_NODE = createPrimitiveNode('!1');
-export const UNDEFINED_NODE = createPrimitiveNode('void 0');
-export const NULL_NODE = createPrimitiveNode(null);
-export const NEG_ZERO_NODE = createPrimitiveNode('-0');
-export const INFINITY_NODE = createPrimitiveNode('1/0');
-export const NEG_INFINITY_NODE = createPrimitiveNode('-1/0');
+export function createStringNode(value: string): SerovalStringNode {
+  return {
+    t: SerovalNodeType.String,
+    i: undefined,
+    s: quote(value),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    n: undefined,
+  };
+}
 
 export function createBigIntNode(
   ctx: ParserContext,
@@ -45,7 +147,7 @@ export function createBigIntNode(
   return {
     t: SerovalNodeType.BigInt,
     i: undefined,
-    s: current.toString() + 'n',
+    s: current.toString(),
     l: undefined,
     c: undefined,
     m: undefined,

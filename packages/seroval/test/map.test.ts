@@ -59,7 +59,7 @@ describe('Map', () => {
     it('supports Map', () => {
       const example = new Map([[1, 2], [3, 4]]);
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Map<number, number>>(result);
       expect(back).toBeInstanceOf(Map);
       expect(back.get(1)).toBe(example.get(1));
@@ -69,7 +69,7 @@ describe('Map', () => {
       const example: Map<ServerValue, ServerValue> = new Map();
       example.set(example, example);
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Map<ServerValue, ServerValue>>(result);
       expect(back.has(back)).toBe(true);
       expect(back.get(back)).toBe(back);
@@ -79,7 +79,7 @@ describe('Map', () => {
     it('supports Map', async () => {
       const example = new Map([[1, 2], [3, 4]]);
       const result = await toJSONAsync(Promise.resolve(example));
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<Map<number, number>>>(result);
       expect(back).toBeInstanceOf(Map);
       expect(back.get(1)).toBe(example.get(1));
@@ -89,7 +89,7 @@ describe('Map', () => {
       const example: Map<AsyncServerValue, AsyncServerValue> = new Map();
       example.set(Promise.resolve(example), Promise.resolve(example));
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Map<Promise<any>, Promise<any>>>(result);
       for (const [key, value] of back) {
         expect(await key).toBe(back);

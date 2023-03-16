@@ -35,7 +35,7 @@ describe('null-constructor', () => {
     it('supports Object.create(null)', () => {
       const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, string>>(result);
       expect(back.constructor).toBeUndefined();
       expect(back.hello).toBe(example.hello);
@@ -45,7 +45,7 @@ describe('null-constructor', () => {
     it('supports Object.create(null)', async () => {
       const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<Record<string, string>>>(result);
       expect(back.constructor).toBeUndefined();
       expect(back.hello).toBe(example.hello);
@@ -69,7 +69,7 @@ describe('null-constructor', () => {
       const result = toJSON(example, {
         disabledFeatures: Feature.ObjectAssign,
       });
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, string>>(result);
       expect(back.constructor).toBeUndefined();

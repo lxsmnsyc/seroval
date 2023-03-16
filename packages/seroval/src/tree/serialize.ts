@@ -266,13 +266,13 @@ function serializeObject(
       if (isIdentifier && Number.isNaN(check)) {
         createObjectAssign(ctx, sourceID, key, refParam);
       } else {
-        createArrayAssign(ctx, sourceID, isIdentifier ? key : quote(key), refParam);
+        createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + quote(key) + '"'), refParam);
       }
     } else {
       if (hasPrev) {
         result += ',';
       }
-      result += isIdentifier ? key : quote(key);
+      result += isIdentifier ? key : ('"' + quote(key) + '"');
       result += ':' + serializeTree(ctx, val);
       hasPrev = true;
     }
@@ -322,7 +322,7 @@ function serializeAssignments(
     if (isIdentifier && Number.isNaN(check)) {
       createObjectAssign(ctx, sourceID, key, refParam);
     } else {
-      createArrayAssign(ctx, sourceID, isIdentifier ? key : quote(key), refParam);
+      createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + quote(key) + '"'), refParam);
     }
     ctx.assignments = parentAssignment;
   }
@@ -462,7 +462,7 @@ function serializeAggregateError(
 ) {
   // Serialize the required arguments
   ctx.stack.push(node.i);
-  const serialized = 'new AggregateError(' + serializeTree(ctx, node.n) + ',' + quote(node.m) + ')';
+  const serialized = 'new AggregateError(' + serializeTree(ctx, node.n) + ',"' + quote(node.m) + '")';
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties
@@ -474,7 +474,7 @@ function serializeError(
   ctx: SerializationContext,
   node: SerovalErrorNode,
 ) {
-  const serialized = 'new ' + node.c + '(' + quote(node.m) + ')';
+  const serialized = 'new ' + node.c + '("' + quote(node.m) + '")';
   return serializeDictionary(ctx, node.i, node.d, serialized);
 }
 
@@ -545,10 +545,26 @@ export default function serializeTree(
   node: SerovalNode,
 ): string {
   switch (node.t) {
-    case SerovalNodeType.Primitive:
+    case SerovalNodeType.Number:
       return String(node.s);
+    case SerovalNodeType.String:
+      return '"' + node.s + '"';
+    case SerovalNodeType.Boolean:
+      return node.s ? '!0' : '!1';
+    case SerovalNodeType.Undefined:
+      return 'undefined';
+    case SerovalNodeType.Null:
+      return 'null';
+    case SerovalNodeType.NegativeZero:
+      return '-0';
+    case SerovalNodeType.Infinity:
+      return '1/0';
+    case SerovalNodeType.NegativeInfinity:
+      return '-1/0';
+    case SerovalNodeType.NaN:
+      return 'NaN';
     case SerovalNodeType.BigInt:
-      return node.s;
+      return node.s + 'n';
     case SerovalNodeType.Reference:
       return getRefParam(ctx, node.i);
     case SerovalNodeType.Array:

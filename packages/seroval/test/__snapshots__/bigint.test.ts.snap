@@ -8,6 +8,6 @@ exports[`bigint > serialize > supports bigint 1`] = `"9007199254740991n"`;
 
 exports[`bigint > serializeAsync > supports bigint 1`] = `"Promise.resolve(9007199254740991n)"`;
 
-exports[`bigint > toJSON > supports bigint 1`] = `"{\\"t\\":{\\"t\\":1,\\"s\\":\\"9007199254740991n\\"},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`bigint > toJSON > supports bigint 1`] = `"{\\"t\\":{\\"t\\":9,\\"s\\":\\"9007199254740991\\"},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`bigint > toJSONAsync > supports bigint 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":1,\\"s\\":\\"9007199254740991n\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`bigint > toJSONAsync > supports bigint 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"n\\":{\\"t\\":9,\\"s\\":\\"9007199254740991\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;

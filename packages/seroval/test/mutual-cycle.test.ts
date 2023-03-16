@@ -95,7 +95,7 @@ describe('mutual cyclic references', () => {
       b[0] = a;
       const example = [a, b];
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<ServerValue[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
@@ -107,7 +107,7 @@ describe('mutual cyclic references', () => {
       b[0] = a;
       const example = [a, b];
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<ServerValue[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
@@ -119,7 +119,7 @@ describe('mutual cyclic references', () => {
       b[0] = a;
       const example = [a, b];
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<ServerValue[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
@@ -133,7 +133,7 @@ describe('mutual cyclic references', () => {
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Promise<any>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
@@ -145,7 +145,7 @@ describe('mutual cyclic references', () => {
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Promise<any>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
@@ -157,7 +157,7 @@ describe('mutual cyclic references', () => {
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Promise<any>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
