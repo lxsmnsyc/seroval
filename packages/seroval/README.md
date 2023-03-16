@@ -145,7 +145,7 @@ First example above outputs the following JSON
 import { toJSON } from 'seroval';
 // ...
 const result = toJSON(object);
-console.log(result);
+console.log(JSON.stringify(result));
 ```
 
 ```json

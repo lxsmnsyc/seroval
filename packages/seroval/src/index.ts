@@ -93,7 +93,7 @@ export function deserialize<T extends AsyncServerValue>(source: string): T {
   return (0, eval)(source) as T;
 }
 
-interface SerovalJSON {
+export interface SerovalJSON {
   t: SerovalNode,
   r: number,
   i: boolean,
@@ -104,44 +104,43 @@ interface SerovalJSON {
 export function toJSON<T extends ServerValue>(
   source: T,
   options?: Partial<Options>,
-) {
+): SerovalJSON {
   const ctx = createParserContext(options);
   const [tree, root, isObject] = parseSync(ctx, source);
-  return JSON.stringify({
+  return {
     t: tree,
     r: root,
     i: isObject,
     f: ctx.features,
     m: Array.from(ctx.markedRefs),
-  });
+  };
 }
 
 export async function toJSONAsync<T extends AsyncServerValue>(
   source: T,
   options?: Partial<Options>,
-) {
+): Promise<SerovalJSON> {
   const ctx = createParserContext(options);
   const [tree, root, isObject] = await parseAsync(ctx, source);
-  return JSON.stringify({
+  return {
     t: tree,
     r: root,
     i: isObject,
     f: ctx.features,
     m: Array.from(ctx.markedRefs),
-  });
+  };
 }
 
-export function compileJSON(source: string): string {
-  const parsed = JSON.parse(source) as SerovalJSON;
+export function compileJSON(source: SerovalJSON): string {
   const serial = createSerializationContext({
-    features: parsed.f,
-    markedRefs: parsed.m,
+    features: source.f,
+    markedRefs: source.m,
   });
-  const result = serializeTree(serial, parsed.t);
-  return finalize(serial, parsed.r, parsed.i, result);
+  const result = serializeTree(serial, source.t);
+  return finalize(serial, source.r, source.i, result);
 }
 
-export function fromJSON<T extends AsyncServerValue>(source: string): T {
+export function fromJSON<T extends AsyncServerValue>(source: SerovalJSON): T {
   return deserialize<T>(compileJSON(source));
 }
 
