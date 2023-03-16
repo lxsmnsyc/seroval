@@ -1,0 +1,46 @@
+{
+  "name": "seroval-benchmarks",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node build-src",
+    "start": "node build-src && node build/index.cjs"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.3",
+    "esbuild": "^0.17.11",
+    "eslint": "^8.36.0",
+    "eslint-config-lxsmnsyc": "^0.5.1",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "benny": "^3.7.1",
+    "devalue": "^4.3.0",
+    "flatted": "^3.2.7",
+    "next-json": "^0.2.2",
+    "o-son": "^1.0.1",
+    "serialize-javascript": "^6.0.1",
+    "seroval": "workspace:^0.4.1",
+    "superjson": "^1.12.2",
+    "tosource": "2.0.0-alpha.3",
+    "warp10": "^2.1.0"
+  },
+  "types": "./dist/types/index.d.ts",
+  "main": "./dist/cjs/production/index.cjs",
+  "module": "./dist/esm/production/index.mjs",
+  "exports": {
+    ".": {
+      "development": {
+        "require": "./dist/cjs/development/index.cjs",
+        "import": "./dist/esm/development/index.mjs"
+      },
+      "require": "./dist/cjs/production/index.cjs",
+      "import": "./dist/esm/production/index.mjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {}
+  }
+}

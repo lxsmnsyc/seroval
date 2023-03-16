@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+    <title>large-invalid-keys-collection to string</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #ddd;
+      }
+
+      .container {
+        box-sizing: border-box;
+        height: 96vh;
+        width: 96vw;
+        margin: 2vh 2vw;
+        resize: both;
+        overflow: hidden;
+        padding: 20px;
+        background: white;
+        box-shadow: 0 0 15px #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <canvas id="chart1678980542322" width="16" height="9"></canvas>
+    </div>
+    <script>
+      const format = (num) => {
+        const [whole, fraction] = String(num).split('.')
+        const chunked = []
+        whole
+          .split('')
+          .reverse()
+          .forEach((char, index) => {
+            if (index % 3 === 0) {
+              chunked.unshift([char])
+            } else {
+              chunked[0].unshift(char)
+            }
+          })
+
+        const fractionStr = fraction !== undefined ? '.' + fraction : ''
+
+        return (
+          chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
+        )
+      }
+      const ctx1678980542322 = document
+        .getElementById('chart1678980542322')
+        .getContext('2d')
+      const chart1678980542322 = new Chart(ctx1678980542322, {
+        type: 'bar',
+        data: {
+          labels: ["devalue","flatted","JSON","next-json","o-son","serialize-javascript","seroval","superjson","tosource","warp10"],
+          datasets: [
+            {
+              data: [117,196,971,225,416,445,421,149,264,705],
+              backgroundColor: ["hsl(14.459999999999996, 85%, 55%)","hsl(24.227999999999994, 85%, 55%)","hsl(120, 85%, 55%)","hsl(27.804000000000002, 85%, 55%)","hsl(51.40800000000001, 85%, 55%)","hsl(54.995999999999995, 85%, 55%)","hsl(52.032, 85%, 55%)","hsl(18.419999999999995, 85%, 55%)","hsl(32.628, 85%, 55%)","hsl(87.13199999999999, 85%, 55%)"],
+              borderColor: ["hsl(14.459999999999996, 85%, 55%)","hsl(24.227999999999994, 85%, 55%)","hsl(120, 85%, 55%)","hsl(27.804000000000002, 85%, 55%)","hsl(51.40800000000001, 85%, 55%)","hsl(54.995999999999995, 85%, 55%)","hsl(52.032, 85%, 55%)","hsl(18.419999999999995, 85%, 55%)","hsl(32.628, 85%, 55%)","hsl(87.13199999999999, 85%, 55%)"],
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'large-invalid-keys-collection to string',
+              font: { size: 20 },
+              padding: 20,
+            },
+            legend: {
+              display: false,
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  return format(context.parsed.y) + ' ops/s'
+                },
+              },
+              displayColors: false,
+              backgroundColor: '#222222',
+              padding: 10,
+              cornerRadius: 5,
+              intersect: false,
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                color: '#888888',
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Operations per second',
+                padding: 10,
+              },
+              grid: {
+                color: '#888888',
+              },
+            },
+          },
+        },
+      })
+    </script>
+  </body>
+</html>
