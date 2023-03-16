@@ -1,0 +1,7 @@
+// Vitest Snapshot v1
+
+exports[`Promise > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Promise\\""`;
+
+exports[`Promise > compat > should use function expression instead of arrow functions 1`] = `"(function(h){return h={self:Promise.resolve().then(function(){return h})}})()"`;
+
+exports[`Promise > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"Promise\\""`;

@@ -1,19 +1,18 @@
 /* eslint-disable no-await-in-loop */
-import { isPrimitive } from './checks';
-import serializePrimitive from './serialize-primitive';
+import { Feature } from './compat';
 import {
-  createRef,
-  createSerializationContext,
-  generateTreeAsync,
-  generateTreeSync,
-  getRefParam,
-  resolvePatches,
   SerializationContext,
-  serializeTree,
-} from './tree';
+  getRefParam,
+  Options,
+  createParserContext,
+  createSerializationContext,
+} from './context';
+import parseAsync from './tree/async';
+import serializeTree, { resolvePatches } from './tree/serialize';
+import parseSync from './tree/sync';
+import { SerovalNode } from './tree/types';
 import {
   AsyncServerValue,
-  NonPrimitiveServerValue,
   PrimitiveValue,
   ServerValue,
   CommonServerValue,
@@ -28,56 +27,122 @@ export {
   CommonServerValue,
   SemiPrimitiveValue,
   ErrorValue,
+  Feature,
 };
 
-function finalize<T extends ServerValue | AsyncServerValue>(
+function finalize(
   ctx: SerializationContext,
-  source: NonPrimitiveServerValue<T>,
+  rootID: number,
+  isObject: boolean,
   result: string,
 ) {
   // Shared references detected
   if (ctx.vars.length) {
-    // Get (or create) a ref from the source
-    const index = getRefParam(ctx, createRef(ctx, source));
     const patches = resolvePatches(ctx);
-    const params = ctx.vars.length > 1
-      ? `(${ctx.vars.join(',')})`
+    let body = result;
+    if (patches) {
+      // Get (or create) a ref from the source
+      const index = getRefParam(ctx, rootID);
+      body = result + ',' + patches + index;
+      if (!result.startsWith(index + '=')) {
+        body = index + '=' + body;
+      }
+    }
+    let params = ctx.vars.length > 1
+      ? ctx.vars.join(',')
       : ctx.vars[0];
     // Source is probably already assigned
-    if (result.startsWith(`${index}=`)) {
-      return `(${params}=>(${result},${patches}${index}))()`;
+    if (ctx.features & Feature.ArrowFunction) {
+      params = ctx.vars.length > 1 || ctx.vars.length === 0
+        ? '(' + params + ')'
+        : params;
+      return '(' + params + '=>(' + body + '))()';
     }
-    return `(${params}=>(${index}=${result},${patches}${index}))()`;
+    return '(function(' + params + '){return ' + body + '})()';
   }
-  if (source.constructor === Object) {
-    return `(${result})`;
+  if (isObject) {
+    return '(' + result + ')';
   }
   return result;
 }
 
-export function serialize(source: ServerValue) {
-  if (isPrimitive(source)) {
-    return serializePrimitive(source);
-  }
-  const ctx = createSerializationContext();
-  const tree = generateTreeSync(ctx, source);
-  const result = serializeTree(ctx, tree);
-  return finalize(ctx, source, result);
+export function serialize<T extends ServerValue>(
+  source: T,
+  options?: Partial<Options>,
+) {
+  const ctx = createParserContext(options);
+  const [tree, rootID, isObject] = parseSync(ctx, source);
+  const serial = createSerializationContext(ctx);
+  const result = serializeTree(serial, tree);
+  return finalize(serial, rootID, isObject, result);
 }
 
-export async function serializeAsync(source: AsyncServerValue) {
-  if (isPrimitive(source)) {
-    return serializePrimitive(source);
-  }
-  const ctx = createSerializationContext();
-  const tree = await generateTreeAsync(ctx, source);
-  const result = serializeTree(ctx, tree);
-  return finalize(ctx, source, result);
+export async function serializeAsync<T extends AsyncServerValue>(
+  source: T,
+  options?: Partial<Options>,
+) {
+  const ctx = createParserContext(options);
+  const [tree, rootID, isObject] = await parseAsync(ctx, source);
+  const serial = createSerializationContext(ctx);
+  const result = serializeTree(serial, tree);
+  return finalize(serial, rootID, isObject, result);
 }
 
 export function deserialize<T extends AsyncServerValue>(source: string): T {
   // eslint-disable-next-line no-eval
   return (0, eval)(source) as T;
+}
+
+interface SerovalJSON {
+  t: SerovalNode,
+  r: number,
+  i: boolean,
+  f: number,
+  m: number[],
+}
+
+export function toJSON<T extends ServerValue>(
+  source: T,
+  options?: Partial<Options>,
+) {
+  const ctx = createParserContext(options);
+  const [tree, root, isObject] = parseSync(ctx, source);
+  return JSON.stringify({
+    t: tree,
+    r: root,
+    i: isObject,
+    f: ctx.features,
+    m: Array.from(ctx.markedRefs),
+  });
+}
+
+export async function toJSONAsync<T extends AsyncServerValue>(
+  source: T,
+  options?: Partial<Options>,
+) {
+  const ctx = createParserContext(options);
+  const [tree, root, isObject] = await parseAsync(ctx, source);
+  return JSON.stringify({
+    t: tree,
+    r: root,
+    i: isObject,
+    f: ctx.features,
+    m: Array.from(ctx.markedRefs),
+  });
+}
+
+export function compileJSON(source: string): string {
+  const parsed = JSON.parse(source) as SerovalJSON;
+  const serial = createSerializationContext({
+    features: parsed.f,
+    markedRefs: parsed.m,
+  });
+  const result = serializeTree(serial, parsed.t);
+  return finalize(serial, parsed.r, parsed.i, result);
+}
+
+export function fromJSON<T extends AsyncServerValue>(source: string): T {
+  return deserialize<T>(compileJSON(source));
 }
 
 export default serialize;

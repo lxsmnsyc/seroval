@@ -1,0 +1,35 @@
+name: CI
+on:
+  - push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 7
+          run_install: |
+            - recursive: true
+              args: [--frozen-lockfile]
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'pnpm'
+      
+      - name: Clean
+        run: pnpm recursive run clean
+        env:
+          CI: true
+
+      - name: Build
+        run: pnpm recursive run build
+        env:
+          CI: true
+
+      - name: Begin Tests
+        run: pnpm recursive run test
+        env:
+          CI: true

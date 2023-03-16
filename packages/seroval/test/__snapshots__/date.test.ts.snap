@@ -1,0 +1,9 @@
+// Vitest Snapshot v1
+
+exports[`Date > serialize > supports Date 1`] = `"new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
+
+exports[`Date > serializeAsync > supports Date 1`] = `"Promise.resolve(new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+
+exports[`Date > toJSON > supports Date 1`] = `"{\\"t\\":{\\"t\\":3,\\"i\\":0,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+
+exports[`Date > toJSONAsync > supports Date 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":3,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
