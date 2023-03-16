@@ -41,13 +41,7 @@ import {
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode | SerovalIterableNode;
 
 class SyncParser {
-  ctx: ParserContext;
-
-  constructor(ctx: ParserContext) {
-    this.ctx = ctx;
-  }
-
-  generateNodeList(current: ServerValue[]) {
+  static generateNodeList(ctx: ParserContext, current: ServerValue[]) {
     const size = current.length;
     const nodes = new Array<SerovalNode>(size);
     const deferred = new Array<ServerValue>(size);
@@ -58,19 +52,23 @@ class SyncParser {
         if (isIterable(item)) {
           deferred[i] = item;
         } else {
-          nodes[i] = this.parse(item);
+          nodes[i] = this.parse(ctx, item);
         }
       }
     }
     for (let i = 0; i < size; i++) {
       if (i in deferred) {
-        nodes[i] = this.parse(deferred[i]);
+        nodes[i] = this.parse(ctx, deferred[i]);
       }
     }
     return nodes;
   }
 
-  generateArrayNode(id: number, current: ServerValue[]): SerovalArrayNode {
+  static generateArrayNode(
+    ctx: ParserContext,
+    id: number,
+    current: ServerValue[],
+  ): SerovalArrayNode {
     return {
       t: SerovalNodeType.Array,
       i: id,
@@ -79,16 +77,17 @@ class SyncParser {
       c: undefined,
       m: undefined,
       d: undefined,
-      a: this.generateNodeList(current),
+      a: this.generateNodeList(ctx, current),
       n: undefined,
     };
   }
 
-  generateMapNode(
+  static generateMapNode(
+    ctx: ParserContext,
     id: number,
     current: Map<ServerValue, ServerValue>,
   ): SerovalMapNode {
-    assert(this.ctx.features & Feature.Map, 'Unsupported type "Map"');
+    assert(ctx.features & Feature.Map, 'Unsupported type "Map"');
     const len = current.size;
     const keyNodes = new Array<SerovalNode>(len);
     const valueNodes = new Array<SerovalNode>(len);
@@ -103,14 +102,14 @@ class SyncParser {
         deferredValue[deferredSize] = value;
         deferredSize++;
       } else {
-        keyNodes[nodeSize] = this.parse(key);
-        valueNodes[nodeSize] = this.parse(value);
+        keyNodes[nodeSize] = this.parse(ctx, key);
+        valueNodes[nodeSize] = this.parse(ctx, value);
         nodeSize++;
       }
     }
     for (let i = 0; i < deferredSize; i++) {
-      keyNodes[nodeSize + i] = this.parse(deferredKey[i]);
-      valueNodes[nodeSize + i] = this.parse(deferredValue[i]);
+      keyNodes[nodeSize + i] = this.parse(ctx, deferredKey[i]);
+      valueNodes[nodeSize + i] = this.parse(ctx, deferredValue[i]);
     }
     return {
       t: SerovalNodeType.Map,
@@ -125,11 +124,12 @@ class SyncParser {
     };
   }
 
-  generateSetNode(
+  static generateSetNode(
+    ctx: ParserContext,
     id: number,
     current: Set<ServerValue>,
   ): SerovalSetNode {
-    assert(this.ctx.features & Feature.Set, 'Unsupported type "Set"');
+    assert(ctx.features & Feature.Set, 'Unsupported type "Set"');
     const len = current.size;
     const nodes = new Array<SerovalNode>(len);
     const deferred = new Array<ServerValue>(len);
@@ -140,12 +140,12 @@ class SyncParser {
       if (isIterable(item)) {
         deferred[deferredSize++] = item;
       } else {
-        nodes[nodeSize++] = this.parse(item);
+        nodes[nodeSize++] = this.parse(ctx, item);
       }
     }
     // Parse deferred items
     for (let i = 0; i < deferredSize; i++) {
-      nodes[nodeSize + i] = this.parse(deferred[i]);
+      nodes[nodeSize + i] = this.parse(ctx, deferred[i]);
     }
     return {
       t: SerovalNodeType.Set,
@@ -160,7 +160,10 @@ class SyncParser {
     };
   }
 
-  generateProperties(properties: Record<string, ServerValue>): SerovalObjectRecordNode {
+  static generateProperties(
+    ctx: ParserContext,
+    properties: Record<string, ServerValue>,
+  ): SerovalObjectRecordNode {
     const keys = Object.keys(properties);
     const size = keys.length;
     const keyNodes = new Array<string>(size);
@@ -178,13 +181,13 @@ class SyncParser {
         deferredSize++;
       } else {
         keyNodes[nodesSize] = key;
-        valueNodes[nodesSize] = this.parse(item);
+        valueNodes[nodesSize] = this.parse(ctx, item);
         nodesSize++;
       }
     }
     for (let i = 0; i < deferredSize; i++) {
       keyNodes[nodesSize + i] = deferredKeys[i];
-      valueNodes[nodesSize + i] = this.parse(deferredValues[i]);
+      valueNodes[nodesSize + i] = this.parse(ctx, deferredValues[i]);
     }
     return {
       k: keyNodes,
@@ -193,11 +196,12 @@ class SyncParser {
     };
   }
 
-  generateIterableNode(
+  static generateIterableNode(
+    ctx: ParserContext,
     id: number,
     current: Iterable<ServerValue>,
   ): SerovalIterableNode {
-    assert(this.ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
+    assert(ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
     const options = getIterableOptions(current);
     return {
       t: SerovalNodeType.Iterable,
@@ -208,20 +212,21 @@ class SyncParser {
       m: undefined,
       // Parse options first before the items
       d: options
-        ? this.generateProperties(options as Record<string, ServerValue>)
+        ? this.generateProperties(ctx, options as Record<string, ServerValue>)
         : undefined,
-      a: this.generateNodeList(Array.from(current)),
+      a: this.generateNodeList(ctx, Array.from(current)),
       n: undefined,
     };
   }
 
-  generateObjectNode(
+  static generateObjectNode(
+    ctx: ParserContext,
     id: number,
     current: Record<string, ServerValue> | Iterable<ServerValue>,
     empty: boolean,
   ): ObjectLikeNode {
     if (Symbol.iterator in current) {
-      return this.generateIterableNode(id, current);
+      return this.generateIterableNode(ctx, id, current);
     }
     return {
       t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
@@ -230,19 +235,20 @@ class SyncParser {
       l: undefined,
       c: undefined,
       m: undefined,
-      d: this.generateProperties(current),
+      d: this.generateProperties(ctx, current),
       a: undefined,
       n: undefined,
     };
   }
 
-  generateAggregateErrorNode(
+  static generateAggregateErrorNode(
+    ctx: ParserContext,
     id: number,
     current: AggregateError,
   ): SerovalAggregateErrorNode {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? this.generateProperties(options)
+      ? this.generateProperties(ctx, options)
       : undefined;
     return {
       t: SerovalNodeType.AggregateError,
@@ -253,17 +259,18 @@ class SyncParser {
       m: current.message,
       d: optionsNode,
       a: undefined,
-      n: this.parse(current.errors),
+      n: this.parse(ctx, current.errors),
     };
   }
 
-  generateErrorNode(
+  static generateErrorNode(
+    ctx: ParserContext,
     id: number,
     current: Error,
   ): SerovalErrorNode {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? this.generateProperties(options)
+      ? this.generateProperties(ctx, options)
       : undefined;
     return {
       t: SerovalNodeType.Error,
@@ -278,7 +285,10 @@ class SyncParser {
     };
   }
 
-  parse(current: ServerValue): SerovalNode {
+  static parse(
+    ctx: ParserContext,
+    current: ServerValue,
+  ): SerovalNode {
     switch (typeof current) {
       case 'boolean':
         return current ? TRUE_NODE : FALSE_NODE;
@@ -298,19 +308,19 @@ class SyncParser {
         }
         return createPrimitiveNode(current);
       case 'bigint':
-        return createBigIntNode(this.ctx, current);
+        return createBigIntNode(ctx, current);
       case 'object': {
         if (!current) {
           return NULL_NODE;
         }
         // Non-primitive values needs a reference ID
         // mostly because the values themselves are stateful
-        const id = createRef(this.ctx, current, true);
-        if (this.ctx.markedRefs.has(id)) {
+        const id = createRef(ctx, current, true);
+        if (ctx.markedRefs.has(id)) {
           return createReferenceNode(id);
         }
         if (Array.isArray(current)) {
-          return this.generateArrayNode(id, current);
+          return this.generateArrayNode(ctx, id, current);
         }
         switch (current.constructor) {
           case Date:
@@ -326,23 +336,23 @@ class SyncParser {
           case Uint8ClampedArray:
           case Float32Array:
           case Float64Array:
-            return createTypedArrayNode(this.ctx, id, current as TypedArrayValue);
+            return createTypedArrayNode(ctx, id, current as TypedArrayValue);
           case BigInt64Array:
           case BigUint64Array:
-            return createBigIntTypedArrayNode(this.ctx, id, current as BigIntTypedArrayValue);
+            return createBigIntTypedArrayNode(ctx, id, current as BigIntTypedArrayValue);
           case Map:
-            return this.generateMapNode(id, current as Map<ServerValue, ServerValue>);
+            return this.generateMapNode(ctx, id, current as Map<ServerValue, ServerValue>);
           case Set:
-            return this.generateSetNode(id, current as Set<ServerValue>);
+            return this.generateSetNode(ctx, id, current as Set<ServerValue>);
           case Object:
-            return this.generateObjectNode(id, current as Record<string, ServerValue>, false);
+            return this.generateObjectNode(ctx, id, current as Record<string, ServerValue>, false);
           case undefined:
-            return this.generateObjectNode(id, current as Record<string, ServerValue>, true);
+            return this.generateObjectNode(ctx, id, current as Record<string, ServerValue>, true);
           case AggregateError:
-            if (this.ctx.features & Feature.AggregateError) {
-              return this.generateAggregateErrorNode(id, current as AggregateError);
+            if (ctx.features & Feature.AggregateError) {
+              return this.generateAggregateErrorNode(ctx, id, current as AggregateError);
             }
-            return this.generateErrorNode(id, current as AggregateError);
+            return this.generateErrorNode(ctx, id, current as AggregateError);
           case Error:
           case EvalError:
           case RangeError:
@@ -350,19 +360,19 @@ class SyncParser {
           case SyntaxError:
           case TypeError:
           case URIError:
-            return this.generateErrorNode(id, current as Error);
+            return this.generateErrorNode(ctx, id, current as Error);
           default:
             break;
         }
-        if (current instanceof AggregateError && this.ctx.features & Feature.AggregateError) {
-          return this.generateAggregateErrorNode(id, current);
+        if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
+          return this.generateAggregateErrorNode(ctx, id, current);
         }
         if (current instanceof Error) {
-          return this.generateErrorNode(id, current);
+          return this.generateErrorNode(ctx, id, current);
         }
         // Generator functions don't have a global constructor
         if (Symbol.iterator in current) {
-          return this.generateIterableNode(id, current);
+          return this.generateIterableNode(ctx, id, current);
         }
         throw new Error('Unsupported type');
       }
@@ -376,7 +386,7 @@ export default function parseSync(
   ctx: ParserContext,
   current: ServerValue,
 ) {
-  const result = new SyncParser(ctx).parse(current);
+  const result = SyncParser.parse(ctx, current);
   const isObject = result.t === SerovalNodeType.Object
     || result.t === SerovalNodeType.Iterable;
   return [result, createRef(ctx, current, false), isObject] as const;

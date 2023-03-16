@@ -230,8 +230,9 @@ const platforms: Platform[] = [
 export type Target = [platform: Platform, version: Version];
 
 function getPlatform(target: string): Platform {
+  let platform: string;
   for (let i = 0, len = platforms.length; i < len; i++) {
-    const platform = target.substring(0, platforms[i].length);
+    platform = target.substring(0, platforms[i].length);
     if (platform === platforms[i]) {
       return platform;
     }
@@ -260,12 +261,15 @@ function getTargetVersions(targets: string | string[]): Target[] {
 export function parseTargets(targets: string | string[]): number {
   const parsed = getTargetVersions(targets);
   let flags = 0;
+  let base: PlatformVersion;
+  let flag: boolean;
+  let baseVersion: Version | undefined;
 
   for (const key of Object.keys(VERSION_TABLE)) {
-    const base = VERSION_TABLE[key as unknown as Feature];
-    let flag = true;
+    base = VERSION_TABLE[key as unknown as Feature];
+    flag = true;
     for (const [platform, version] of parsed) {
-      const baseVersion = base[platform];
+      baseVersion = base[platform];
       flag = flag && !!baseVersion && (compareVersion(baseVersion, version) <= 0);
     }
     if (flag) {

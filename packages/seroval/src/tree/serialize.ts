@@ -41,8 +41,9 @@ function mergeAssignments(assignments: Assignment[]) {
   const newAssignments = [];
   let current = assignments[0];
   let prev = current;
+  let item: Assignment;
   for (let i = 1, len = assignments.length; i < len; i++) {
-    const item = assignments[i];
+    item = assignments[i];
     if (item.t === prev.t) {
       if (item.t === 'index' && item.v === prev.v) {
         // Merge if the right-hand value is the same
@@ -170,29 +171,29 @@ function createObjectAssign(
   createAssignment(ctx, `${getRefParam(ctx, ref)}.${key}`, value);
 }
 
+function assignRef(
+  ctx: SerializationContext,
+  index: number,
+  value: string,
+) {
+  if (ctx.markedRefs.has(index)) {
+    return `${getRefParam(ctx, index)}=${value}`;
+  }
+  return value;
+}
+
+function isReferenceInStack(
+  ctx: SerializationContext,
+  node: SerovalNode,
+): node is SerovalReferenceNode {
+  return node.t === SerovalNodeType.Reference && ctx.stack.includes(node.i);
+}
+
 const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
 
 export default class SerovalSerializer {
-  ctx: SerializationContext;
-
-  constructor(ctx: SerializationContext) {
-    this.ctx = ctx;
-  }
-
-  assignRef(index: number, value: string) {
-    if (this.ctx.markedRefs.has(index)) {
-      return `${getRefParam(this.ctx, index)}=${value}`;
-    }
-    return value;
-  }
-
-  isReferenceInStack(
-    node: SerovalNode,
-  ): node is SerovalReferenceNode {
-    return node.t === SerovalNodeType.Reference && this.ctx.stack.includes(node.i);
-  }
-
-  serializeNodeList(
+  static serializeNodeList(
+    ctx: SerializationContext,
     node: SerovalArrayNode | SerovalIterableNode,
   ) {
     // This is different than Map and Set
@@ -200,38 +201,46 @@ export default class SerovalSerializer {
     // the holes of the Array
     const size = node.a.length;
     let values = '';
+    let item: SerovalNode;
+    let isHoley = false;
     for (let i = 0; i < size; i++) {
-      const item = node.a[i];
-      // Check if index is a hole
-      if (item) {
-        // Check if item is a parent
-        if (this.isReferenceInStack(item)) {
-          createArrayAssign(this.ctx, node.i, i, getRefParam(this.ctx, item.i));
-          values += ',';
-        } else {
-          values += this.serialize(item);
-          if (i < size - 1) {
-            values += ',';
-          }
-        }
-      } else {
+      if (i !== 0) {
         // Add an empty item
         values += ',';
       }
+      item = node.a[i];
+      // Check if index is a hole
+      if (item) {
+        // Check if item is a parent
+        if (isReferenceInStack(ctx, item)) {
+          createArrayAssign(ctx, node.i, i, getRefParam(ctx, item.i));
+          isHoley = true;
+        } else {
+          values += this.serialize(ctx, item);
+          isHoley = false;
+        }
+      } else {
+        isHoley = true;
+      }
+    }
+    if (isHoley) {
+      values += ',';
     }
     return `[${values}]`;
   }
 
-  serializeArray(
+  static serializeArray(
+    ctx: SerializationContext,
     node: SerovalArrayNode,
   ) {
-    this.ctx.stack.push(node.i);
-    const result = this.serializeNodeList(node);
-    this.ctx.stack.pop();
-    return this.assignRef(node.i, result);
+    ctx.stack.push(node.i);
+    const result = this.serializeNodeList(ctx, node);
+    ctx.stack.pop();
+    return assignRef(ctx, node.i, result);
   }
 
-  serializeObject(
+  static serializeObject(
+    ctx: SerializationContext,
     sourceID: number,
     node: SerovalObjectRecordNode,
   ) {
@@ -239,310 +248,355 @@ export default class SerovalSerializer {
       return '{}';
     }
     let result = '';
-    this.ctx.stack.push(sourceID);
+    ctx.stack.push(sourceID);
+    let key: string;
+    let val: SerovalNode;
+    let check: number;
+    let isIdentifier: boolean;
+    let refParam: string;
+    let hasPrev = false;
     for (let i = 0; i < node.s; i++) {
-      const key = node.k[i];
-      const val = node.v[i];
-      const check = Number(key);
+      key = node.k[i];
+      val = node.v[i];
+      check = Number(key);
       // Test if key is a valid number or JS identifier
       // so that we don't have to serialize the key and wrap with brackets
-      const isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
-      if (this.isReferenceInStack(val)) {
-        const refParam = getRefParam(this.ctx, val.i);
+      isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
+      if (isReferenceInStack(ctx, val)) {
+        refParam = getRefParam(ctx, val.i);
         if (isIdentifier && Number.isNaN(check)) {
-          createObjectAssign(this.ctx, sourceID, key, refParam);
+          createObjectAssign(ctx, sourceID, key, refParam);
         } else {
-          createArrayAssign(this.ctx, sourceID, isIdentifier ? key : quote(key), refParam);
+          createArrayAssign(ctx, sourceID, isIdentifier ? key : quote(key), refParam);
         }
       } else {
-        result += `${isIdentifier ? key : quote(key)}:${this.serialize(val)},`;
+        if (hasPrev) {
+          result += ',';
+        }
+        result += `${isIdentifier ? key : quote(key)}:${this.serialize(ctx, val)}`;
+        hasPrev = true;
       }
     }
-    this.ctx.stack.pop();
-    return `{${result.substring(0, result.length - 1)}}`;
+    ctx.stack.pop();
+    return `{${result}}`;
   }
 
-  serializeWithObjectAssign(
+  static serializeWithObjectAssign(
+    ctx: SerializationContext,
     value: SerovalObjectRecordNode,
     id: number,
     serialized: string,
   ) {
-    const fields = this.serializeObject(id, value);
+    const fields = this.serializeObject(ctx, id, value);
     if (fields !== '{}') {
       return `Object.assign(${serialized},${fields})`;
     }
     return serialized;
   }
 
-  serializeAssignments(
+  static serializeAssignments(
+    ctx: SerializationContext,
     sourceID: number,
     node: SerovalObjectRecordNode,
   ) {
-    this.ctx.stack.push(sourceID);
+    ctx.stack.push(sourceID);
     const mainAssignments: Assignment[] = [];
+    let parentStack: number[];
+    let refParam: string;
+    let key: string;
+    let check: number;
+    let parentAssignment: Assignment[];
+    let isIdentifier: boolean;
     for (let i = 0; i < node.s; i++) {
-      const parentStack = this.ctx.stack;
-      this.ctx.stack = [];
-      const refParam = this.serialize(node.v[i]);
-      this.ctx.stack = parentStack;
-      const key = node.k[i];
-      const check = Number(key);
-      const parentAssignment = this.ctx.assignments;
-      this.ctx.assignments = mainAssignments;
+      parentStack = ctx.stack;
+      ctx.stack = [];
+      refParam = this.serialize(ctx, node.v[i]);
+      ctx.stack = parentStack;
+      key = node.k[i];
+      check = Number(key);
+      parentAssignment = ctx.assignments;
+      ctx.assignments = mainAssignments;
       // Test if key is a valid number or JS identifier
       // so that we don't have to serialize the key and wrap with brackets
-      const isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
+      isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
       if (isIdentifier && Number.isNaN(check)) {
-        createObjectAssign(this.ctx, sourceID, key, refParam);
+        createObjectAssign(ctx, sourceID, key, refParam);
       } else {
-        createArrayAssign(this.ctx, sourceID, isIdentifier ? key : quote(key), refParam);
+        createArrayAssign(ctx, sourceID, isIdentifier ? key : quote(key), refParam);
       }
-      this.ctx.assignments = parentAssignment;
+      ctx.assignments = parentAssignment;
     }
-    this.ctx.stack.pop();
+    ctx.stack.pop();
     return resolveAssignments(mainAssignments);
   }
 
-  serializeNullConstructor(
+  static serializeNullConstructor(
+    ctx: SerializationContext,
     node: SerovalNullConstructorNode,
   ) {
     let serialized = 'Object.create(null)';
-    if (this.ctx.features & Feature.ObjectAssign) {
-      serialized = this.serializeWithObjectAssign(node.d, node.i, serialized);
+    if (ctx.features & Feature.ObjectAssign) {
+      serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
     } else {
-      markRef(this.ctx, node.i);
-      const assignments = this.serializeAssignments(node.i, node.d);
+      markRef(ctx, node.i);
+      const assignments = this.serializeAssignments(ctx, node.i, node.d);
       if (assignments) {
-        const ref = getRefParam(this.ctx, node.i);
-        return `(${this.assignRef(node.i, serialized)},${assignments}${ref})`;
+        const ref = getRefParam(ctx, node.i);
+        return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
       }
     }
-    return this.assignRef(node.i, serialized);
+    return assignRef(ctx, node.i, serialized);
   }
 
-  serializeSet(
+  static serializeSet(
+    ctx: SerializationContext,
     node: SerovalSetNode,
   ) {
     let serialized = 'new Set';
     const size = node.a.length;
     if (size) {
       let result = '';
-      this.ctx.stack.push(node.i);
+      ctx.stack.push(node.i);
+      let item: SerovalNode;
+      let hasPrev = false;
       for (let i = 0; i < size; i++) {
-        const item = node.a[i];
-        if (this.isReferenceInStack(item)) {
-          createSetAdd(this.ctx, node.i, getRefParam(this.ctx, item.i));
+        item = node.a[i];
+        if (isReferenceInStack(ctx, item)) {
+          createSetAdd(ctx, node.i, getRefParam(ctx, item.i));
         } else {
           // Push directly
-          result += `${this.serialize(item)},`;
+          if (hasPrev) {
+            result += ',';
+          }
+          result += this.serialize(ctx, item);
+          hasPrev = true;
         }
       }
-      this.ctx.stack.pop();
+      ctx.stack.pop();
       if (result) {
-        serialized += `([${result.substring(0, result.length - 1)}])`;
+        serialized += `([${result}])`;
       }
     }
-    return this.assignRef(node.i, serialized);
+    return assignRef(ctx, node.i, serialized);
   }
 
-  serializeMap(
+  static serializeMap(
+    ctx: SerializationContext,
     node: SerovalMapNode,
   ) {
     let serialized = 'new Map';
     if (node.d.s) {
       let result = '';
-      this.ctx.stack.push(node.i);
+      ctx.stack.push(node.i);
+      let key: SerovalNode;
+      let val: SerovalNode;
+      let keyRef: string;
+      let valueRef: string;
+      let parent: number[];
+      let hasPrev = false;
       for (let i = 0; i < node.d.s; i++) {
         // Check if key is a parent
-        const key = node.d.k[i];
-        const val = node.d.v[i];
-        if (this.isReferenceInStack(key)) {
+        key = node.d.k[i];
+        val = node.d.v[i];
+        if (isReferenceInStack(ctx, key)) {
           // Create reference for the map instance
-          const keyRef = getRefParam(this.ctx, key.i);
+          keyRef = getRefParam(ctx, key.i);
           // Check if value is a parent
-          if (this.isReferenceInStack(val)) {
-            const valueRef = getRefParam(this.ctx, val.i);
+          if (isReferenceInStack(ctx, val)) {
+            valueRef = getRefParam(ctx, val.i);
             // Register an assignment since
             // both key and value are a parent of this
             // Map instance
-            createMapSet(this.ctx, node.i, keyRef, valueRef);
+            createMapSet(ctx, node.i, keyRef, valueRef);
           } else {
             // Reset the stack
             // This is required because the serialized
             // value is no longer part of the expression
             // tree and has been moved to the deferred
             // assignment
-            const parent = this.ctx.stack;
-            this.ctx.stack = [];
-            createMapSet(this.ctx, node.i, keyRef, this.serialize(val));
-            this.ctx.stack = parent;
+            parent = ctx.stack;
+            ctx.stack = [];
+            createMapSet(ctx, node.i, keyRef, this.serialize(ctx, val));
+            ctx.stack = parent;
           }
-        } else if (this.isReferenceInStack(val)) {
+        } else if (isReferenceInStack(ctx, val)) {
           // Create ref for the Map instance
-          const valueRef = getRefParam(this.ctx, val.i);
+          valueRef = getRefParam(ctx, val.i);
           // Reset stack for the key serialization
-          const parent = this.ctx.stack;
-          this.ctx.stack = [];
-          createMapSet(this.ctx, node.i, this.serialize(key), valueRef);
-          this.ctx.stack = parent;
+          parent = ctx.stack;
+          ctx.stack = [];
+          createMapSet(ctx, node.i, this.serialize(ctx, key), valueRef);
+          ctx.stack = parent;
         } else {
-          result += `[${this.serialize(key)},${this.serialize(val)}],`;
+          if (hasPrev) {
+            result += ',';
+          }
+          result += `[${this.serialize(ctx, key)},${this.serialize(ctx, val)}]`;
+          hasPrev = true;
         }
       }
-      this.ctx.stack.pop();
+      ctx.stack.pop();
       // Check if there are any values
       // so that the empty Map constructor
       // can be used instead
       if (result) {
-        serialized += `([${result.substring(0, result.length - 1)}])`;
+        serialized += `([${result}])`;
       }
     }
-    return this.assignRef(node.i, serialized);
+    return assignRef(ctx, node.i, serialized);
   }
 
-  serializeAggregateError(
+  static serializeAggregateError(
+    ctx: SerializationContext,
     node: SerovalAggregateErrorNode,
   ) {
     // Serialize the required arguments
-    this.ctx.stack.push(node.i);
-    let serialized = `new AggregateError(${this.serialize(node.n)},${quote(node.m)})`;
-    this.ctx.stack.pop();
+    ctx.stack.push(node.i);
+    let serialized = `new AggregateError(${this.serialize(ctx, node.n)},${quote(node.m)})`;
+    ctx.stack.pop();
     // `AggregateError` might've been extended
     // either through class or custom properties
     // Make sure to assign extra properties
     if (node.d) {
-      if (this.ctx.features & Feature.ObjectAssign) {
-        serialized = this.serializeWithObjectAssign(node.d, node.i, serialized);
+      if (ctx.features & Feature.ObjectAssign) {
+        serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
       } else {
-        markRef(this.ctx, node.i);
-        const assignments = this.serializeAssignments(node.i, node.d);
+        markRef(ctx, node.i);
+        const assignments = this.serializeAssignments(ctx, node.i, node.d);
         if (assignments) {
-          const ref = getRefParam(this.ctx, node.i);
-          return `(${this.assignRef(node.i, serialized)},${assignments}${ref})`;
+          const ref = getRefParam(ctx, node.i);
+          return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
         }
       }
     }
-    return this.assignRef(node.i, serialized);
+    return assignRef(ctx, node.i, serialized);
   }
 
-  serializeError(
+  static serializeError(
+    ctx: SerializationContext,
     node: SerovalErrorNode,
   ) {
     let serialized = `new ${node.c}(${quote(node.m)})`;
     if (node.d) {
-      if (this.ctx.features & Feature.ObjectAssign) {
-        serialized = this.serializeWithObjectAssign(node.d, node.i, serialized);
+      if (ctx.features & Feature.ObjectAssign) {
+        serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
       } else {
-        markRef(this.ctx, node.i);
-        const assignments = this.serializeAssignments(node.i, node.d);
+        markRef(ctx, node.i);
+        const assignments = this.serializeAssignments(ctx, node.i, node.d);
         if (assignments) {
-          const ref = getRefParam(this.ctx, node.i);
-          return `(${this.assignRef(node.i, serialized)},${assignments}${ref})`;
+          const ref = getRefParam(ctx, node.i);
+          return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
         }
       }
     }
-    return this.assignRef(node.i, serialized);
+    return assignRef(ctx, node.i, serialized);
   }
 
-  serializePromise(
+  static serializePromise(
+    ctx: SerializationContext,
     node: SerovalPromiseNode,
   ) {
     let serialized: string;
     // Check if resolved value is a parent expression
-    if (this.isReferenceInStack(node.n)) {
+    if (isReferenceInStack(ctx, node.n)) {
       // A Promise trick, reference the value
       // inside the `then` expression so that
       // the Promise evaluates after the parent
       // has initialized
-      serialized = `Promise.resolve().then(()=>${getRefParam(this.ctx, node.n.i)})`;
+      serialized = `Promise.resolve().then(()=>${getRefParam(ctx, node.n.i)})`;
     } else {
-      this.ctx.stack.push(node.i);
-      const result = this.serialize(node.n);
-      this.ctx.stack.pop();
+      ctx.stack.push(node.i);
+      const result = this.serialize(ctx, node.n);
+      ctx.stack.pop();
       // just inline the value/reference here
       serialized = `Promise.resolve(${result})`;
     }
-    return this.assignRef(node.i, serialized);
+    return assignRef(ctx, node.i, serialized);
   }
 
-  serializeTypedArray(
+  static serializeTypedArray(
+    ctx: SerializationContext,
     node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
   ) {
     let args = `[${node.s}]`;
     if (node.l !== 0) {
       args += `,${node.l}`;
     }
-    return this.assignRef(node.i, `new ${node.c}(${args})`);
+    return assignRef(ctx, node.i, `new ${node.c}(${args})`);
   }
 
-  serializeIterable(
+  static serializeIterable(
+    ctx: SerializationContext,
     node: SerovalIterableNode,
   ) {
-    const parent = this.ctx.stack;
-    this.ctx.stack = [];
-    const values = this.serializeNodeList(node);
-    this.ctx.stack = parent;
+    const parent = ctx.stack;
+    ctx.stack = [];
+    const values = this.serializeNodeList(ctx, node);
+    ctx.stack = parent;
     let serialized: string;
-    if (this.ctx.features & Feature.ArrayPrototypeValues) {
+    if (ctx.features & Feature.ArrayPrototypeValues) {
       serialized = `${values}.values()`;
     } else {
       serialized = `${values}[Symbol.iterator]()`;
     }
-    if (this.ctx.features & Feature.ArrowFunction) {
+    if (ctx.features & Feature.ArrowFunction) {
       serialized = `{[Symbol.iterator]:()=>${serialized}}`;
-    } else if (this.ctx.features & Feature.MethodShorthand) {
+    } else if (ctx.features & Feature.MethodShorthand) {
       serialized = `{[Symbol.iterator](){return ${serialized}}}`;
     } else {
       serialized = `{[Symbol.iterator]:function(){return ${serialized}}}`;
     }
     if (node.d) {
-      if (this.ctx.features & Feature.ObjectAssign) {
-        serialized = this.serializeWithObjectAssign(node.d, node.i, serialized);
+      if (ctx.features & Feature.ObjectAssign) {
+        serialized = this.serializeWithObjectAssign(ctx, node.d, node.i, serialized);
       } else {
-        markRef(this.ctx, node.i);
-        const assignments = this.serializeAssignments(node.i, node.d);
+        markRef(ctx, node.i);
+        const assignments = this.serializeAssignments(ctx, node.i, node.d);
         if (assignments) {
-          const ref = getRefParam(this.ctx, node.i);
-          return `(${this.assignRef(node.i, serialized)},${assignments}${ref})`;
+          const ref = getRefParam(ctx, node.i);
+          return `(${assignRef(ctx, node.i, serialized)},${assignments}${ref})`;
         }
       }
     }
-    return this.assignRef(node.i, serialized);
+    return assignRef(ctx, node.i, serialized);
   }
 
-  serialize(node: SerovalNode): string {
+  static serialize(
+    ctx: SerializationContext,
+    node: SerovalNode,
+  ): string {
     switch (node.t) {
       case SerovalNodeType.Primitive:
         return String(node.s);
       case SerovalNodeType.BigInt:
         return node.s;
       case SerovalNodeType.Reference:
-        return getRefParam(this.ctx, node.i);
+        return getRefParam(ctx, node.i);
       case SerovalNodeType.Array:
-        return this.serializeArray(node);
+        return this.serializeArray(ctx, node);
       case SerovalNodeType.Object:
-        return this.assignRef(node.i, this.serializeObject(node.i, node.d));
+        return assignRef(ctx, node.i, this.serializeObject(ctx, node.i, node.d));
       case SerovalNodeType.NullConstructor:
-        return this.serializeNullConstructor(node);
+        return this.serializeNullConstructor(ctx, node);
       case SerovalNodeType.Date:
-        return this.assignRef(node.i, `new Date("${node.s}")`);
+        return assignRef(ctx, node.i, `new Date("${node.s}")`);
       case SerovalNodeType.RegExp:
-        return this.assignRef(node.i, node.s);
+        return assignRef(ctx, node.i, node.s);
       case SerovalNodeType.Set:
-        return this.serializeSet(node);
+        return this.serializeSet(ctx, node);
       case SerovalNodeType.Map:
-        return this.serializeMap(node);
+        return this.serializeMap(ctx, node);
       case SerovalNodeType.BigIntTypedArray:
       case SerovalNodeType.TypedArray:
-        return this.serializeTypedArray(node);
+        return this.serializeTypedArray(ctx, node);
       case SerovalNodeType.AggregateError:
-        return this.serializeAggregateError(node);
+        return this.serializeAggregateError(ctx, node);
       case SerovalNodeType.Error:
-        return this.serializeError(node);
+        return this.serializeError(ctx, node);
       case SerovalNodeType.Iterable:
-        return this.serializeIterable(node);
+        return this.serializeIterable(ctx, node);
       case SerovalNodeType.Promise:
-        return this.serializePromise(node);
+        return this.serializePromise(ctx, node);
       default:
         throw new Error('Unsupported type');
     }

@@ -56,13 +56,8 @@ type ObjectLikeValue =
   | PromiseLike<AsyncServerValue>;
 
 class AsyncParser {
-  ctx: ParserContext;
-
-  constructor(ctx: ParserContext) {
-    this.ctx = ctx;
-  }
-
-  async generateNodeList(
+  static async generateNodeList(
+    ctx: ParserContext,
     current: AsyncServerValue[],
   ) {
     const size = current.length;
@@ -75,19 +70,20 @@ class AsyncParser {
         if (isIterable(item)) {
           deferred[i] = item;
         } else {
-          nodes[i] = await this.parse(item);
+          nodes[i] = await this.parse(ctx, item);
         }
       }
     }
     for (let i = 0; i < size; i++) {
       if (i in deferred) {
-        nodes[i] = await this.parse(deferred[i]);
+        nodes[i] = await this.parse(ctx, deferred[i]);
       }
     }
     return nodes;
   }
 
-  async generateArrayNode(
+  static async generateArrayNode(
+    ctx: ParserContext,
     id: number,
     current: AsyncServerValue[],
   ): Promise<SerovalArrayNode> {
@@ -99,16 +95,17 @@ class AsyncParser {
       c: undefined,
       m: undefined,
       d: undefined,
-      a: await this.generateNodeList(current),
+      a: await this.generateNodeList(ctx, current),
       n: undefined,
     };
   }
 
-  async generateMapNode(
+  static async generateMapNode(
+    ctx: ParserContext,
     id: number,
     current: Map<AsyncServerValue, AsyncServerValue>,
   ): Promise<SerovalMapNode> {
-    assert(this.ctx.features & Feature.Map, 'Unsupported type "Map"');
+    assert(ctx.features & Feature.Map, 'Unsupported type "Map"');
     const len = current.size;
     const keyNodes = new Array<SerovalNode>(len);
     const valueNodes = new Array<SerovalNode>(len);
@@ -123,14 +120,14 @@ class AsyncParser {
         deferredValue[deferredSize] = value;
         deferredSize++;
       } else {
-        keyNodes[nodeSize] = await this.parse(key);
-        valueNodes[nodeSize] = await this.parse(value);
+        keyNodes[nodeSize] = await this.parse(ctx, key);
+        valueNodes[nodeSize] = await this.parse(ctx, value);
         nodeSize++;
       }
     }
     for (let i = 0; i < deferredSize; i++) {
-      keyNodes[nodeSize + i] = await this.parse(deferredKey[i]);
-      valueNodes[nodeSize + i] = await this.parse(deferredValue[i]);
+      keyNodes[nodeSize + i] = await this.parse(ctx, deferredKey[i]);
+      valueNodes[nodeSize + i] = await this.parse(ctx, deferredValue[i]);
     }
     return {
       t: SerovalNodeType.Map,
@@ -145,11 +142,12 @@ class AsyncParser {
     };
   }
 
-  async generateSetNode(
+  static async generateSetNode(
+    ctx: ParserContext,
     id: number,
     current: Set<AsyncServerValue>,
   ): Promise<SerovalSetNode> {
-    assert(this.ctx.features & Feature.Set, 'Unsupported type "Set"');
+    assert(ctx.features & Feature.Set, 'Unsupported type "Set"');
     const len = current.size;
     const nodes = new Array<SerovalNode>(len);
     const deferred = new Array<AsyncServerValue>(len);
@@ -160,12 +158,12 @@ class AsyncParser {
       if (isIterable(item)) {
         deferred[deferredSize++] = item;
       } else {
-        nodes[nodeSize++] = await this.parse(item);
+        nodes[nodeSize++] = await this.parse(ctx, item);
       }
     }
     // Parse deferred items
     for (let i = 0; i < deferredSize; i++) {
-      nodes[nodeSize + i] = await this.parse(deferred[i]);
+      nodes[nodeSize + i] = await this.parse(ctx, deferred[i]);
     }
     return {
       t: SerovalNodeType.Set,
@@ -180,7 +178,8 @@ class AsyncParser {
     };
   }
 
-  async generateProperties(
+  static async generateProperties(
+    ctx: ParserContext,
     properties: Record<string, AsyncServerValue>,
   ): Promise<SerovalObjectRecordNode> {
     const keys = Object.keys(properties);
@@ -200,13 +199,13 @@ class AsyncParser {
         deferredSize++;
       } else {
         keyNodes[nodesSize] = key;
-        valueNodes[nodesSize] = await this.parse(item);
+        valueNodes[nodesSize] = await this.parse(ctx, item);
         nodesSize++;
       }
     }
     for (let i = 0; i < deferredSize; i++) {
       keyNodes[nodesSize + i] = deferredKeys[i];
-      valueNodes[nodesSize + i] = await this.parse(deferredValues[i]);
+      valueNodes[nodesSize + i] = await this.parse(ctx, deferredValues[i]);
     }
     return {
       k: keyNodes,
@@ -215,11 +214,12 @@ class AsyncParser {
     };
   }
 
-  async generateIterableNode(
+  static async generateIterableNode(
+    ctx: ParserContext,
     id: number,
     current: Iterable<AsyncServerValue>,
   ): Promise<SerovalIterableNode> {
-    assert(this.ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
+    assert(ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
     const options = getIterableOptions(current);
     return {
       t: SerovalNodeType.Iterable,
@@ -230,18 +230,19 @@ class AsyncParser {
       m: undefined,
       // Parse options first before the items
       d: options
-        ? await this.generateProperties(options as Record<string, AsyncServerValue>)
+        ? await this.generateProperties(ctx, options as Record<string, AsyncServerValue>)
         : undefined,
-      a: await this.generateNodeList(Array.from(current)),
+      a: await this.generateNodeList(ctx, Array.from(current)),
       n: undefined,
     };
   }
 
-  async generatePromiseNode(
+  static async generatePromiseNode(
+    ctx: ParserContext,
     id: number,
     current: PromiseLike<AsyncServerValue>,
   ): Promise<SerovalPromiseNode> {
-    assert(this.ctx.features & Feature.Promise, 'Unsupported type "Promise"');
+    assert(ctx.features & Feature.Promise, 'Unsupported type "Promise"');
     return current.then(async (value) => ({
       t: SerovalNodeType.Promise,
       i: id,
@@ -252,20 +253,21 @@ class AsyncParser {
       // Parse options first before the items
       d: undefined,
       a: undefined,
-      n: await this.parse(value),
+      n: await this.parse(ctx, value),
     }));
   }
 
-  async generateObjectNode(
+  static async generateObjectNode(
+    ctx: ParserContext,
     id: number,
     current: ObjectLikeValue,
     empty: boolean,
   ): Promise<ObjectLikeNode> {
     if (Symbol.iterator in current) {
-      return this.generateIterableNode(id, current);
+      return this.generateIterableNode(ctx, id, current);
     }
     if ('then' in current && typeof current.then === 'function') {
-      return this.generatePromiseNode(id, current as PromiseLike<AsyncServerValue>);
+      return this.generatePromiseNode(ctx, id, current as PromiseLike<AsyncServerValue>);
     }
     return {
       t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
@@ -274,19 +276,20 @@ class AsyncParser {
       l: undefined,
       c: undefined,
       m: undefined,
-      d: await this.generateProperties(current as Record<string, AsyncServerValue>),
+      d: await this.generateProperties(ctx, current as Record<string, AsyncServerValue>),
       a: undefined,
       n: undefined,
     };
   }
 
-  async generateAggregateErrorNode(
+  static async generateAggregateErrorNode(
+    ctx: ParserContext,
     id: number,
     current: AggregateError,
   ): Promise<SerovalAggregateErrorNode> {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? await this.generateProperties(options)
+      ? await this.generateProperties(ctx, options)
       : undefined;
     return {
       t: SerovalNodeType.AggregateError,
@@ -297,17 +300,18 @@ class AsyncParser {
       m: current.message,
       d: optionsNode,
       a: undefined,
-      n: await this.parse(current.errors),
+      n: await this.parse(ctx, current.errors),
     };
   }
 
-  async generateErrorNode(
+  static async generateErrorNode(
+    ctx: ParserContext,
     id: number,
     current: Error,
   ): Promise<SerovalErrorNode> {
     const options = getErrorOptions(current);
     const optionsNode = options
-      ? await this.generateProperties(options)
+      ? await this.generateProperties(ctx, options)
       : undefined;
     return {
       t: SerovalNodeType.Error,
@@ -322,7 +326,10 @@ class AsyncParser {
     };
   }
 
-  async parse(current: AsyncServerValue): Promise<SerovalNode> {
+  static async parse(
+    ctx: ParserContext,
+    current: AsyncServerValue,
+  ): Promise<SerovalNode> {
     switch (typeof current) {
       case 'boolean':
         return current ? TRUE_NODE : FALSE_NODE;
@@ -342,19 +349,19 @@ class AsyncParser {
         }
         return createPrimitiveNode(current);
       case 'bigint':
-        return createBigIntNode(this.ctx, current);
+        return createBigIntNode(ctx, current);
       case 'object': {
         if (!current) {
           return NULL_NODE;
         }
         // Non-primitive values needs a reference ID
         // mostly because the values themselves are stateful
-        const id = createRef(this.ctx, current, true);
-        if (this.ctx.markedRefs.has(id)) {
+        const id = createRef(ctx, current, true);
+        if (ctx.markedRefs.has(id)) {
           return createReferenceNode(id);
         }
         if (Array.isArray(current)) {
-          return this.generateArrayNode(id, current);
+          return this.generateArrayNode(ctx, id, current);
         }
         switch (current.constructor) {
           case Date:
@@ -362,7 +369,7 @@ class AsyncParser {
           case RegExp:
             return createRegExpNode(id, current as RegExp);
           case Promise:
-            return this.generatePromiseNode(id, current as Promise<AsyncServerValue>);
+            return this.generatePromiseNode(ctx, id, current as Promise<AsyncServerValue>);
           case Int8Array:
           case Int16Array:
           case Int32Array:
@@ -372,23 +379,41 @@ class AsyncParser {
           case Uint8ClampedArray:
           case Float32Array:
           case Float64Array:
-            return createTypedArrayNode(this.ctx, id, current as TypedArrayValue);
+            return createTypedArrayNode(ctx, id, current as TypedArrayValue);
           case BigInt64Array:
           case BigUint64Array:
-            return createBigIntTypedArrayNode(this.ctx, id, current as BigIntTypedArrayValue);
+            return createBigIntTypedArrayNode(ctx, id, current as BigIntTypedArrayValue);
           case Map:
-            return this.generateMapNode(id, current as Map<AsyncServerValue, AsyncServerValue>);
+            return this.generateMapNode(
+              ctx,
+              id,
+              current as Map<AsyncServerValue, AsyncServerValue>,
+            );
           case Set:
-            return this.generateSetNode(id, current as Set<AsyncServerValue>);
+            return this.generateSetNode(
+              ctx,
+              id,
+              current as Set<AsyncServerValue>,
+            );
           case Object:
-            return this.generateObjectNode(id, current as Record<string, AsyncServerValue>, false);
+            return this.generateObjectNode(
+              ctx,
+              id,
+              current as Record<string, AsyncServerValue>,
+              false,
+            );
           case undefined:
-            return this.generateObjectNode(id, current as Record<string, AsyncServerValue>, true);
+            return this.generateObjectNode(
+              ctx,
+              id,
+              current as Record<string, AsyncServerValue>,
+              true,
+            );
           case AggregateError:
-            if (this.ctx.features & Feature.AggregateError) {
-              return this.generateAggregateErrorNode(id, current as AggregateError);
+            if (ctx.features & Feature.AggregateError) {
+              return this.generateAggregateErrorNode(ctx, id, current as AggregateError);
             }
-            return this.generateErrorNode(id, current as AggregateError);
+            return this.generateErrorNode(ctx, id, current as AggregateError);
           case Error:
           case EvalError:
           case RangeError:
@@ -396,26 +421,26 @@ class AsyncParser {
           case SyntaxError:
           case TypeError:
           case URIError:
-            return this.generateErrorNode(id, current as Error);
+            return this.generateErrorNode(ctx, id, current as Error);
           default:
             break;
         }
-        if (current instanceof AggregateError && this.ctx.features & Feature.AggregateError) {
-          return this.generateAggregateErrorNode(id, current);
+        if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
+          return this.generateAggregateErrorNode(ctx, id, current);
         }
         if (current instanceof Error) {
-          return this.generateErrorNode(id, current);
+          return this.generateErrorNode(ctx, id, current);
         }
         if (current instanceof Promise) {
-          return this.generatePromiseNode(id, current);
+          return this.generatePromiseNode(ctx, id, current);
         }
         // Generator functions don't have a global constructor
         if (Symbol.iterator in current) {
-          return this.generateIterableNode(id, current);
+          return this.generateIterableNode(ctx, id, current);
         }
         // For Promise-like objects
         if ('then' in current && typeof current.then === 'function') {
-          return this.generatePromiseNode(id, current as PromiseLike<AsyncServerValue>);
+          return this.generatePromiseNode(ctx, id, current as PromiseLike<AsyncServerValue>);
         }
         throw new Error('Unsupported type');
       }
@@ -429,7 +454,7 @@ export default async function parseAsync(
   ctx: ParserContext,
   current: AsyncServerValue,
 ) {
-  const result = await new AsyncParser(ctx).parse(current);
+  const result = await AsyncParser.parse(ctx, current);
   const isObject = result.t === SerovalNodeType.Object
     || result.t === SerovalNodeType.Iterable;
   return [result, createRef(ctx, current, false), isObject] as const;
