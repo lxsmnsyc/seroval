@@ -4,6 +4,6 @@ exports[`RegExp > serialize > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
 
 exports[`RegExp > serializeAsync > supports RegExp 1`] = `"Promise.resolve(/[a-z0-9]+/i)"`;
 
-exports[`RegExp > toJSON > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":4,\\"i\\":0,\\"s\\":\\"/[a-z0-9]+/i\\"},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`RegExp > toJSON > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":4,\\"i\\":0,\\"s\\":\\"/[a-z0-9]+/i\\"},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":4,\\"i\\":1,\\"s\\":\\"/[a-z0-9]+/i\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":4,\\"i\\":1,\\"s\\":\\"/[a-z0-9]+/i\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;

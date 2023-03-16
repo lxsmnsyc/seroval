@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   AsyncServerValue,
   deserialize,
+  Feature,
   fromJSON,
   serialize,
   serializeAsync,
@@ -98,12 +99,16 @@ describe('Set', () => {
   });
   describe('compat', () => {
     it('should throw an error for unsupported target', () => {
-      expect(() => serialize(new Set([1, 2, 3]), { target: 'es5' })).toThrowErrorMatchingSnapshot();
+      expect(() => serialize(new Set([1, 2, 3]), {
+        disabledFeatures: Feature.Set,
+      })).toThrowErrorMatchingSnapshot();
     });
   });
   describe('compat#toJSON', () => {
     it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(new Set([1, 2, 3]), { target: 'es5' })).toThrowErrorMatchingSnapshot();
+      expect(() => toJSON(new Set([1, 2, 3]), {
+        disabledFeatures: Feature.Set,
+      })).toThrowErrorMatchingSnapshot();
     });
   });
 });

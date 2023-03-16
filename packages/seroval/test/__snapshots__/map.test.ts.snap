@@ -1,8 +1,8 @@
 // Vitest Snapshot v1
 
-exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Set\\""`;
+exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Map\\""`;
 
-exports[`Map > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"Set\\""`;
+exports[`Map > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"Map\\""`;
 
 exports[`Map > serialize > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
 
@@ -12,10 +12,10 @@ exports[`Map > serializeAsync > supports Map 1`] = `"Promise.resolve(new Map([[1
 
 exports[`Map > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Map([[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]])))()"`;
 
-exports[`Map > toJSON > supports Map 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"d\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`Map > toJSON > supports Map 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"d\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`Map > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"d\\":{\\"k\\":[{\\"t\\":2,\\"i\\":0}],\\"v\\":[{\\"t\\":2,\\"i\\":0}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[0]}"`;
+exports[`Map > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"d\\":{\\"k\\":[{\\"t\\":2,\\"i\\":0}],\\"v\\":[{\\"t\\":2,\\"i\\":0}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[0]}"`;
 
-exports[`Map > toJSONAsync > supports Map 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":6,\\"i\\":1,\\"d\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2}}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`Map > toJSONAsync > supports Map 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":6,\\"i\\":1,\\"d\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2}}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`Map > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"d\\":{\\"k\\":[{\\"t\\":10,\\"i\\":1,\\"n\\":{\\"t\\":2,\\"i\\":0}}],\\"v\\":[{\\"t\\":10,\\"i\\":2,\\"n\\":{\\"t\\":2,\\"i\\":0}}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[0]}"`;
+exports[`Map > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"d\\":{\\"k\\":[{\\"t\\":10,\\"i\\":1,\\"n\\":{\\"t\\":2,\\"i\\":0}}],\\"v\\":[{\\"t\\":10,\\"i\\":2,\\"n\\":{\\"t\\":2,\\"i\\":0}}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[0]}"`;

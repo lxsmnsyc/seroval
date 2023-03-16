@@ -2,30 +2,30 @@
 
 exports[`Iterable > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Iterable\\""`;
 
-exports[`Iterable > compat > should use Symbol.iterator instead of Array.values. 1`] = `"(function(h){return h={[Symbol.iterator](){return [h][Symbol.iterator]()}}})()"`;
+exports[`Iterable > compat > should use Symbol.iterator instead of Array.values. 1`] = `"(h=>(h={[Symbol.iterator]:()=>[h][Symbol.iterator]()}))()"`;
 
-exports[`Iterable > compat > should use functions instead of method shorthand. 1`] = `"(function(h){return h={[Symbol.iterator]:function(){return [h][Symbol.iterator]()}}})()"`;
+exports[`Iterable > compat > should use functions instead of method shorthand. 1`] = `"(function(h){return h={[Symbol.iterator]:function(){return [h].values()}}})()"`;
 
-exports[`Iterable > compat > should use method shorthand instead of arrow functions. 1`] = `"(function(h){return h={[Symbol.iterator](){return [h][Symbol.iterator]()}}})()"`;
+exports[`Iterable > compat > should use method shorthand instead of arrow functions. 1`] = `"(function(h){return h={[Symbol.iterator](){return [h].values()}}})()"`;
 
 exports[`Iterable > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"Iterable\\""`;
 
-exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":true,\\"f\\":1968,\\"m\\":[0]}"`;
+exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":true,\\"f\\":8189,\\"m\\":[0]}"`;
 
-exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 2`] = `"(function(h){return h={[Symbol.iterator](){return [h][Symbol.iterator]()}}})()"`;
+exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 2`] = `"(h=>(h={[Symbol.iterator]:()=>[h][Symbol.iterator]()}))()"`;
 
-exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":true,\\"f\\":1936,\\"m\\":[0]}"`;
+exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":true,\\"f\\":8123,\\"m\\":[0]}"`;
 
-exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 2`] = `"(function(h){return h={[Symbol.iterator]:function(){return [h][Symbol.iterator]()}}})()"`;
+exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 2`] = `"(function(h){return h={[Symbol.iterator]:function(){return [h].values()}}})()"`;
 
-exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":true,\\"f\\":1968,\\"m\\":[0]}"`;
+exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":true,\\"f\\":8187,\\"m\\":[0]}"`;
 
-exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 2`] = `"(function(h){return h={[Symbol.iterator](){return [h][Symbol.iterator]()}}})()"`;
+exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 2`] = `"(function(h){return h={[Symbol.iterator](){return [h].values()}}})()"`;
 
 exports[`Iterable > serialize > supports Iterables 1`] = `"(Object.assign({[Symbol.iterator]:()=>[1,2,3].values()},{title:\\"Hello World\\"}))"`;
 
 exports[`Iterable > serializeAsync > supports Iterables 1`] = `"Promise.resolve(Object.assign({[Symbol.iterator]:()=>[1,2,3].values()},{title:\\"Hello World\\"}))"`;
 
-exports[`Iterable > toJSON > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"d\\":{\\"k\\":[\\"title\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"Hello World\\\\\\"\\"}],\\"s\\":1},\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]},\\"r\\":0,\\"i\\":true,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`Iterable > toJSON > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"d\\":{\\"k\\":[\\"title\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"Hello World\\\\\\"\\"}],\\"s\\":1},\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]},\\"r\\":0,\\"i\\":true,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":13,\\"i\\":1,\\"d\\":{\\"k\\":[\\"title\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"Hello World\\\\\\"\\"}],\\"s\\":1},\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":13,\\"i\\":1,\\"d\\":{\\"k\\":[\\"title\\"],\\"v\\":[{\\"t\\":0,\\"s\\":\\"\\\\\\"Hello World\\\\\\"\\"}],\\"s\\":1},\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;

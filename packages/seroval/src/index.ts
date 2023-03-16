@@ -27,6 +27,7 @@ export {
   CommonServerValue,
   SemiPrimitiveValue,
   ErrorValue,
+  Feature,
 };
 
 function finalize(

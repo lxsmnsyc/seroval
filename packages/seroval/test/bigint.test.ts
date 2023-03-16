@@ -6,6 +6,7 @@ import {
   serializeAsync,
   toJSONAsync,
   toJSON,
+  Feature,
 } from '../src';
 
 describe('bigint', () => {
@@ -33,12 +34,16 @@ describe('bigint', () => {
   });
   describe('compat', () => {
     it('should throw an error for unsupported target', () => {
-      expect(() => serialize(9007199254740991n, { target: 'es6' })).toThrowErrorMatchingSnapshot();
+      expect(() => serialize(9007199254740991n, {
+        disabledFeatures: Feature.BigInt,
+      })).toThrowErrorMatchingSnapshot();
     });
   });
   describe('compat#toJSON', () => {
     it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(9007199254740991n, { target: 'es6' })).toThrowErrorMatchingSnapshot();
+      expect(() => toJSON(9007199254740991n, {
+        disabledFeatures: Feature.BigInt,
+      })).toThrowErrorMatchingSnapshot();
     });
   });
 });

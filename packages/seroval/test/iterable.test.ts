@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   compileJSON,
   deserialize,
+  Feature,
   fromJSON,
   serialize,
   serializeAsync,
@@ -101,7 +102,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      expect(() => serialize(example, { target: 'es5' })).toThrowErrorMatchingSnapshot();
+      expect(() => serialize(example, {
+        disabledFeatures: Feature.SymbolIterator,
+      })).toThrowErrorMatchingSnapshot();
     });
     it('should use Symbol.iterator instead of Array.values.', () => {
       const example = {
@@ -109,7 +112,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      expect(serialize(example, { target: 'chrome43' })).toMatchSnapshot();
+      expect(serialize(example, {
+        disabledFeatures: Feature.ArrayPrototypeValues,
+      })).toMatchSnapshot();
     });
     it('should use method shorthand instead of arrow functions.', () => {
       const example = {
@@ -117,7 +122,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      expect(serialize(example, { target: 'chrome44' })).toMatchSnapshot();
+      expect(serialize(example, {
+        disabledFeatures: Feature.ArrowFunction,
+      })).toMatchSnapshot();
     });
     it('should use functions instead of method shorthand.', () => {
       const example = {
@@ -125,7 +132,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      expect(serialize(example, { target: 'node0.12' })).toMatchSnapshot();
+      expect(serialize(example, {
+        disabledFeatures: Feature.MethodShorthand | Feature.ArrowFunction,
+      })).toMatchSnapshot();
     });
   });
   describe('compat#toJSON', () => {
@@ -135,7 +144,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      expect(() => toJSON(example, { target: 'es5' })).toThrowErrorMatchingSnapshot();
+      expect(() => toJSON(example, {
+        disabledFeatures: Feature.SymbolIterator,
+      })).toThrowErrorMatchingSnapshot();
     });
     it('should use Symbol.iterator instead of Array.values.', () => {
       const example = {
@@ -143,7 +154,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      const result = toJSON(example, { target: 'chrome43' });
+      const result = toJSON(example, {
+        disabledFeatures: Feature.ArrayPrototypeValues,
+      });
       expect(result).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
     });
@@ -153,7 +166,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      const result = toJSON(example, { target: 'chrome44' });
+      const result = toJSON(example, {
+        disabledFeatures: Feature.ArrowFunction,
+      });
       expect(result).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
     });
@@ -163,7 +178,9 @@ describe('Iterable', () => {
           yield example;
         },
       };
-      const result = toJSON(example, { target: 'node0.12' });
+      const result = toJSON(example, {
+        disabledFeatures: Feature.MethodShorthand | Feature.ArrowFunction,
+      });
       expect(result).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
     });

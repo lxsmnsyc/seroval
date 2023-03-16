@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   compileJSON,
   deserialize,
+  Feature,
   fromJSON,
   serialize,
   serializeAsync,
@@ -53,7 +54,9 @@ describe('null-constructor', () => {
   describe('compat', () => {
     it('should use manual assignment instead of Object.assign', () => {
       const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
-      const result = serialize(example, { target: 'es5' });
+      const result = serialize(example, {
+        disabledFeatures: Feature.ObjectAssign,
+      });
       expect(result).toMatchSnapshot();
       const back = deserialize<Record<string, string>>(result);
       expect(back.constructor).toBeUndefined();
@@ -63,7 +66,9 @@ describe('null-constructor', () => {
   describe('compat#toJSON', () => {
     it('should use manual assignment instead of Object.assign', () => {
       const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
-      const result = toJSON(example, { target: 'es5' });
+      const result = toJSON(example, {
+        disabledFeatures: Feature.ObjectAssign,
+      });
       expect(result).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, string>>(result);

@@ -1,4 +1,4 @@
-import { parseTargets } from './compat';
+import { ALL_ENABLED } from './compat';
 import getIdentifier from './get-identifier';
 
 interface IndexAssignment {
@@ -50,11 +50,11 @@ export interface SerializationContext {
 }
 
 export interface Options {
-  target: string | string[];
+  disabledFeatures: number;
 }
 
 const DEFAULT_OPTIONS: Options = {
-  target: 'es2023',
+  disabledFeatures: 0,
 };
 
 export function createParserContext(options: Partial<Options> = {}): ParserContext {
@@ -63,7 +63,7 @@ export function createParserContext(options: Partial<Options> = {}): ParserConte
   return {
     markedRefs: new Set(),
     refs: new Map(),
-    features: parseTargets(result.target),
+    features: ALL_ENABLED ^ result.disabledFeatures,
   };
 }
 

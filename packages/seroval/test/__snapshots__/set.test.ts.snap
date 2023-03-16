@@ -12,10 +12,10 @@ exports[`Set > serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,
 
 exports[`Set > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Set([Promise.resolve().then(()=>h)])))()"`;
 
-exports[`Set > toJSON > supports Set 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`Set > toJSON > supports Set 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`Set > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[0]}"`;
+exports[`Set > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"a\\":[{\\"t\\":2,\\"i\\":0}]},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[0]}"`;
 
-exports[`Set > toJSONAsync > supports Set 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":5,\\"i\\":1,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`Set > toJSONAsync > supports Set 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":5,\\"i\\":1,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`Set > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"a\\":[{\\"t\\":10,\\"i\\":1,\\"n\\":{\\"t\\":2,\\"i\\":0}}]},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[0]}"`;
+exports[`Set > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"a\\":[{\\"t\\":10,\\"i\\":1,\\"n\\":{\\"t\\":2,\\"i\\":0}}]},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[0]}"`;

@@ -8,10 +8,10 @@ exports[`string > serializeAsync > supports strings 1`] = `"Promise.resolve(\\"\
 
 exports[`string > serializeAsync > supports strings 2`] = `"Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
 
-exports[`string > toJSON > supports strings 1`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\\\\\"\\"},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`string > toJSON > supports strings 1`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\\\\\"\\"},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`string > toJSON > supports strings 2`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\\\\\"\\"},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`string > toJSON > supports strings 2`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\\\\\"\\"},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\\\\\"\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`string > toJSONAsync > supports strings 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\\\\\"\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 2`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\\\\\"\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":4095,\\"m\\":[]}"`;
+exports[`string > toJSONAsync > supports strings 2`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"n\\":{\\"t\\":0,\\"s\\":\\"\\\\\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\\\\\"\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
