@@ -139,7 +139,7 @@ console.log(deserialize(serialize(value)) === value);
 
 `serialize` and `deserialize` is great for server-to-client communication, but what about the other way? `serialize` may cause an [RCE if used as a payload for requests](https://huntr.dev/bounties/63f1ff91-48f3-4886-a179-103f1ddd8ff8). `seroval` includes `toJSON` and `fromJSON` as an alternative form of serialization.
 
-First example above outputs the following json
+First example above outputs the following JSON
 
 ```js
 import { toJSON } from 'seroval';
