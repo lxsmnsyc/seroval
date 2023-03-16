@@ -17,6 +17,7 @@ import {
   createRegExpNode,
   createStringNode,
   createTypedArrayNode,
+  createWKSymbolNode,
   FALSE_NODE,
   INFINITY_NODE,
   NAN_NODE,
@@ -32,6 +33,7 @@ import {
   getIterableOptions,
   isIterable,
 } from './shared';
+import { INV_SYMBOL_REF } from './symbols';
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -221,7 +223,7 @@ async function generateIterableNode(
   id: number,
   current: Iterable<AsyncServerValue>,
 ): Promise<SerovalIterableNode> {
-  assert(ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
+  assert(ctx.features & Feature.Symbol, 'Unsupported type "Iterable"');
   const options = getIterableOptions(current);
   return {
     t: SerovalNodeType.Iterable,
@@ -450,6 +452,10 @@ async function parse(
       }
       throw new Error('Unsupported type');
     }
+    case 'symbol':
+      assert(ctx.features & Feature.Symbol, 'Unsupported type "symbol"');
+      assert(current in INV_SYMBOL_REF, 'seroval only supports well-known symbols');
+      return createWKSymbolNode(current);
     default:
       throw new Error('Unsupported type');
   }

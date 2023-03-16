@@ -16,7 +16,7 @@ export const enum Feature {
   ObjectAssign = 0x80,
   Promise = 0x100,
   Set = 0x200,
-  SymbolIterator = 0x400,
+  Symbol = 0x400,
   TypedArray = 0x800,
   BigIntTypedArray = 0x1000,
 }

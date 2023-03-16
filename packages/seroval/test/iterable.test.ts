@@ -103,7 +103,7 @@ describe('Iterable', () => {
         },
       };
       expect(() => serialize(example, {
-        disabledFeatures: Feature.SymbolIterator,
+        disabledFeatures: Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
     it('should use Symbol.iterator instead of Array.values.', () => {
@@ -145,7 +145,7 @@ describe('Iterable', () => {
         },
       };
       expect(() => toJSON(example, {
-        disabledFeatures: Feature.SymbolIterator,
+        disabledFeatures: Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
     it('should use Symbol.iterator instead of Array.values.', () => {

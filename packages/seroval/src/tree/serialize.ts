@@ -7,6 +7,7 @@ import {
   markRef,
 } from '../context';
 import quote from '../quote';
+import { SYMBOL_STRING } from './symbols';
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -592,6 +593,8 @@ export default function serializeTree(
       return serializeIterable(ctx, node);
     case SerovalNodeType.Promise:
       return serializePromise(ctx, node);
+    case SerovalNodeType.WKSymbol:
+      return SYMBOL_STRING[node.s];
     default:
       throw new Error('Unsupported type');
   }

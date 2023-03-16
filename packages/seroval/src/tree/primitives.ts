@@ -3,6 +3,7 @@ import { Feature } from '../compat';
 import { ParserContext } from '../context';
 import quote from '../quote';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
 import {
   SerovalBigIntNode,
   SerovalBigIntTypedArrayNode,
@@ -20,6 +21,7 @@ import {
   SerovalStringNode,
   SerovalTypedArrayNode,
   SerovalUndefinedNode,
+  SerovalWKSymbolNode,
 } from './types';
 
 export const TRUE_NODE: SerovalBooleanNode = {
@@ -244,6 +246,22 @@ export function createBigIntTypedArrayNode(
     s: result,
     l: (current as BigInt64Array).byteOffset,
     c: constructor,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    n: undefined,
+  };
+}
+
+export function createWKSymbolNode(
+  current: WellKnownSymbols,
+): SerovalWKSymbolNode {
+  return {
+    t: SerovalNodeType.WKSymbol,
+    i: undefined,
+    s: INV_SYMBOL_REF[current],
+    l: undefined,
+    c: undefined,
     m: undefined,
     d: undefined,
     a: undefined,

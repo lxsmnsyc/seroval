@@ -1,4 +1,4 @@
-import { PrimitiveValue } from '../types';
+import { Symbols } from './symbols';
 
 export const enum SerovalNodeType {
   Number,
@@ -25,13 +25,14 @@ export const enum SerovalNodeType {
   Iterable,
   TypedArray,
   BigIntTypedArray,
+  WKSymbol,
 }
 
 export interface SerovalBaseNode {
   // Type of the node
   t: SerovalNodeType;
   // Serialized value
-  s: PrimitiveValue | undefined;
+  s: any;
   // Reference ID
   i: number | undefined;
   // Size/Byte offset
@@ -218,6 +219,11 @@ export interface SerovalIterableNode extends SerovalBaseNode {
   i: number;
 }
 
+export interface SerovalWKSymbolNode extends SerovalBaseNode {
+  t: SerovalNodeType.WKSymbol;
+  s: Symbols;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalReferenceNode
@@ -230,4 +236,5 @@ export type SerovalNode =
   | SerovalPromiseNode
   | SerovalErrorNode
   | SerovalAggregateErrorNode
-  | SerovalIterableNode;
+  | SerovalIterableNode
+  | SerovalWKSymbolNode;
