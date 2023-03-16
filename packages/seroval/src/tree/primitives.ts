@@ -117,6 +117,8 @@ export function createTypedArrayNode(
   };
 }
 
+const BIGINT_FLAG = Feature.BigIntTypedArray | Feature.BigInt;
+
 export function createBigIntTypedArrayNode(
   ctx: ParserContext,
   id: number,
@@ -124,7 +126,7 @@ export function createBigIntTypedArrayNode(
 ): SerovalBigIntTypedArrayNode {
   const constructor = current.constructor.name;
   assert(
-    ctx.features & (Feature.BigIntTypedArray),
+    (ctx.features & BIGINT_FLAG) === BIGINT_FLAG,
     `Unsupported value type "${constructor}"`,
   );
   let result = '';

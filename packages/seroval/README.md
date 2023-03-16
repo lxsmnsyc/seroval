@@ -53,16 +53,17 @@ object.map.set('mutual', object.set);
 object.set.add(object.array);
 
 const result = serialize(object);
+console.log(result);
 ```
 
 Output (as a string):
 
 ```js
-((h,j,k,m)=>(m={number:[0.5623457676854244,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-14T11:16:24.879Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
+((h,j,k,m)=>(m={number:[0.9039984824241858,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-16T11:57:24.849Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
 ((h, j, k, m) => (m = {
-  number: [0.5623457676854244, -0, NaN, 1 / 0, -1 / 0],
+  number: [0.9039984824241858, -0, NaN, 1 / 0, -1 / 0],
   string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
   boolean: [!0, !1],
   null: null,
@@ -73,7 +74,7 @@ Output (as a string):
     ["mutual", k = new Set(["hello", "world"])]
   ])],
   regexp: /[a-z0-9]+/i,
-  date: new Date("2023-03-14T11:16:24.879Z"),
+  date: new Date("2023-03-16T11:57:24.849Z"),
   map: j,
   set: k
 }, h[3] = h, j.set("self", j), k.add(k).add(h), m.self = m, m))()
@@ -97,6 +98,7 @@ a.set('children', [c, d]);
 b.set('children', [c, d]);
 
 const result = serialize({ a, b, c, d });
+console.log(result);
 ```
 
 Output (as a string):
@@ -133,9 +135,43 @@ const value = undefined;
 console.log(deserialize(serialize(value)) === value);
 ```
 
+## JSON
+
+`serialize` and `deserialize` is great for server-to-client communication, but what about the other way? `serialize` may cause an [RCE if used as a payload for requests](https://huntr.dev/bounties/63f1ff91-48f3-4886-a179-103f1ddd8ff8). `seroval` includes `toJSON` and `fromJSON` as an alternative form of serialization.
+
+First example above outputs the following json
+
+```js
+import { toJSON } from 'seroval';
+// ...
+const result = toJSON(object);
+console.log(result);
+```
+
+```json
+{"t":{"t":8,"i":0,"d":{"k":["number","string","boolean","null","undefined","bigint","array","regexp","date","map","set","self"],"v":[{"t":7,"i":1,"a":[{"t":0,"s":0.7047255726239685},{"t":0,"s":"-0"},{"t":0,"s":null},{"t":0,"s":"1/0"},{"t":0,"s":"-1/0"}]},{"t":7,"i":2,"a":[{"t":0,"s":"\"hello world\""},{"t":0,"s":"\"\\x3Cscript>Hello World\\x3C/script>\""}]},{"t":7,"i":3,"a":[{"t":0,"s":"!0"},{"t":0,"s":"!1"}]},{"t":0,"s":null},{"t":0,"s":"void 0"},{"t":1,"s":"9007199254740991n"},{"t":7,"i":4,"a":[null,null,null,{"t":2,"i":4},{"t":6,"i":5,"d":{"k":[{"t":0,"s":"\"hello\""},{"t":0,"s":"\"self\""},{"t":0,"s":"\"mutual\""}],"v":[{"t":0,"s":"\"world\""},{"t":2,"i":5},{"t":5,"i":6,"a":[{"t":0,"s":"\"hello\""},{"t":0,"s":"\"world\""},{"t":2,"i":6},{"t":2,"i":4}]}],"s":3}}]},{"t":4,"i":7,"s":"/[a-z0-9]+/i"},{"t":3,"i":8,"s":"2023-03-16T12:01:29.836Z"},{"t":2,"i":5},{"t":2,"i":6},{"t":2,"i":0}],"s":12}},"r":0,"i":true,"f":8191,"m":[4,5,6,0]}
+```
+
+Then you can feed it to `fromJSON`:
+
+```js
+import { fromJSON } from 'seroval';
+
+const revived = fromJSON(result);
+```
+
+Alternatively, if you want to compile the JSON output to JS (like `deserialize`), you can use `compileJSON`
+
+```js
+import { compileJSON, deserialize } from 'seroval';
+
+const code = compileJSON(result);
+const revived = deserialize(code);
+```
+
 ## Promise serialization
 
-`seroval` allows Promise serialization through `serializeAsync`.
+`seroval` allows Promise serialization through `serializeAsync` and `toJSONAsync`.
 
 ```js
 import { serializeAsync } from 'seroval';
@@ -198,88 +234,78 @@ The following values are the only values accepted by `seroval`:
 
 ## Compat
 
-`serialize` and `serializeAsync` can accept a `{ target: string | string[] }` options. The `target` property decides what the serialization output would look like. The default target is `es2023`.
+`serialize`, `serializeAsync`, `toJSON` and `toJSONAsync` can accept a `{ disabledFeatures: number }` option. The `disabledFeatures` defines how various code output of `serialize`, `serializeAsync` and `compileJSON`.
 
 ```js
-import { serialize } from 'seroval';
+import { serialize, Feature } from 'seroval';
 
 const y = Object.create(null);
 y.self = y;
 y.example = 'Hello World';
 
-function serializeWithTarget(value, target) {
-  console.log('Target is', target)
+function serializeWithTarget(value, disabledFeatures) {
   const result = serialize(value, {
-    target,
+    disabledFeatures,
   });
   console.log(result);
 }
 
-serializeWithTarget(y, 'es5');
-serializeWithTarget(y, 'es2023');
+serializeWithTarget(y, Feature.ArrowFunction | Feature.ObjectAssign);
+serializeWithTarget(y, 0);
 ```
 
-Output
-
-```
-Target is es5
+```js
 (function(h){return (h=Object.create(null),h.self=h,h.example="Hello World",h)})()
-Target is es2023
 (h=>(h=Object.assign(Object.create(null),{example:"Hello World"}),h.self=h,h))()
 ```
 
-You can also combine targets:
+`disabledFeatures` uses bit flags for faster checking, so if you need to disable multiple features, you can use the logical OR symbol (`|`).
+
+Here's an `ES2017` flag:
 
 ```js
-serialize(value, {
-  targets: ['chrome85', 'edge85'],
-});
+import { serialize, Feature } from 'seroval';
+
+const ES2017FLAG = 
+  Feature.AggregateError // ES2021
+  | Feature.BigInt // ES2020
+  | Feature.BigIntTypedArray // ES2020;
+
+serialize(myValue, {
+  disabledFeatures: ES2017FLAG,
+})
 ```
 
-Supported runtimes:
+By default, all feature flags are enabled. The following are the feature flags and their behavior when disabled:
 
-- `es`
-  - Valid values are `es5`, `es6` and above (e.g. `es2020`).
-- Desktop
-  - `chrome`
-  - `edge`
-  - `safari`
-  - `firefox`
-  - `opera`
-- Mobile
-  - `ios`
-  - `samsung`
-- Runtimes
-  - `deno`
-  - `node`
-
-> **Note**
-> Version for runtimes excluding `es` can use semver format (`major.minor.patch`) e.g. `chrome110`, `node0.12`
-
-Feature flags and compat attempt:
-
-- `AggregateError`
+- [`AggregateError`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError)
   - Compiles down to `Error` instead.
-- `Array.prototype.values`
-  - Used for iterables, uses `Symbol.iterator` instead.
-- Arrow functions
-  - Uses function expressions for top-level, and either method shorthands or function expressions for iterables.
-- `BigInt`
-  - Throws when attempted to use, includes `BigInt64Array` and `BigUint64Array`
-- `Map`
+- [`ArrayPrototypeValues`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values)
+  - Used for iterables, uses `Symbol.iterator` instead (if `SymbolIterator` is not set).
+- [`ArrowFunction`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
+  - Uses function expressions for top-level and for deferred Promise values
+  - method shorthands (if `MethodShortand` is not set) or function expressions for iterables.
+- [`BigInt`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+  - Throws when attempted to use, includes `BigIntTypedArray`
+- [`ErrorPrototypeStack`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack)
+  - Skipped when detected.
+- [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
   - Throws when attempted to use.
-- Method shorthands
+- [`MethodShorthand`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions)
   - Uses function expressions instead.
-- `Object.assign`
+- [`ObjectAssign`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
   - Uses manual object assignments instead.
-- `Promise`
-  - Throws when attempted to use, specially in `serializeAsync`.
-- `Set`
+- [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+  - Throws when attempted to use in `serializeAsync` and `toJSONAsync`.
+- [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
   - Throws when attempted to use.
-- `Symbol.iterator`
+- [`SymbolIterator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/iterator)
   - Throws when attempted to use.
-- `TypedArray`
+- [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
   - Throws when attempted to use.
+- [`BigIntTypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array)
+  - Throws when attempted to use
+  - Also throws if `BigInt` is disabled.
 
 ## Sponsors
 

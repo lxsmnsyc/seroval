@@ -1,24 +1,16 @@
-import { serialize } from 'seroval';
 
-const a = Object.create(null);
-const b = Object.create(null);
+import { serialize, Feature } from 'seroval';
 
-a.alt = b;
-b.alt = a;
+const y = Object.create(null);
+y.self = y;
+y.example = 'Hello World';
 
-const y = { x: { a, b } };
-
-function serializeWithTarget(value, target) {
-  console.log('Target is', target)
+function serializeWithTarget(value, disabledFeatures) {
   const result = serialize(value, {
-    target,
+    disabledFeatures,
   });
   console.log(result);
 }
 
-serializeWithTarget(y, 'es5');
-serializeWithTarget(y, 'es2023');
-// Target is es5
-// (function(h){return (h=Object.create(null),h.self=h,h.example="Hello World",h)})()
-// Target is es2023
-// (h=>(h=Object.assign(Object.create(null),{example:"Hello World"}),h.self=h,h))()
+serializeWithTarget(y, Feature.ArrowFunction | Feature.ObjectAssign);
+serializeWithTarget(y, 0);
