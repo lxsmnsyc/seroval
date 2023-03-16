@@ -191,10 +191,10 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
   return {
     t: SerovalNodeType.RegExp,
     i: id,
-    s: String(current),
+    s: undefined,
     l: undefined,
-    c: undefined,
-    m: undefined,
+    c: current.source,
+    m: current.flags,
     d: undefined,
     a: undefined,
     n: undefined,

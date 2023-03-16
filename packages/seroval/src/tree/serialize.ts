@@ -577,7 +577,7 @@ export default function serializeTree(
     case SerovalNodeType.Date:
       return assignRef(ctx, node.i, 'new Date("' + node.s + '")');
     case SerovalNodeType.RegExp:
-      return assignRef(ctx, node.i, node.s);
+      return assignRef(ctx, node.i, '/' + node.c + '/' + node.m);
     case SerovalNodeType.Set:
       return serializeSet(ctx, node);
     case SerovalNodeType.Map:

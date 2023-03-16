@@ -134,7 +134,10 @@ export interface SerovalDateNode extends SerovalBaseNode {
 export interface SerovalRegExpNode extends SerovalBaseNode {
   t: SerovalNodeType.RegExp;
   i: number;
-  s: string;
+  // source
+  c: string;
+  // flags
+  m: string;
 }
 
 export interface SerovalTypedArrayNode extends SerovalBaseNode {
