@@ -7,6 +7,7 @@ import {
   markRef,
 } from '../context';
 import quote from '../quote';
+import { isValidIdentifier } from './shared';
 import { SYMBOL_STRING } from './symbols';
 import {
   SerovalAggregateErrorNode,
@@ -191,8 +192,6 @@ function isReferenceInStack(
   return node.t === SerovalNodeType.Reference && ctx.stack.includes(node.i);
 }
 
-const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
-
 function serializeNodeList(
   ctx: SerializationContext,
   node: SerovalArrayNode | SerovalIterableNode | SerovalAggregateErrorNode,
@@ -262,7 +261,7 @@ function serializeProperties(
     check = Number(key);
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
-    isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
+    isIdentifier = check >= 0 || isValidIdentifier(key);
     if (isReferenceInStack(ctx, val)) {
       refParam = getRefParam(ctx, val.i);
       if (isIdentifier && Number.isNaN(check)) {
@@ -320,7 +319,7 @@ function serializeAssignments(
     ctx.assignments = mainAssignments;
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
-    isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
+    isIdentifier = check >= 0 || isValidIdentifier(key);
     if (isIdentifier && Number.isNaN(check)) {
       createObjectAssign(ctx, sourceID, key, refParam);
     } else {
