@@ -224,9 +224,7 @@ function deserializeIterable(
   const values: AsyncServerValue[] = [];
   deserializeNodeList(ctx, node, values);
   const result = assignRef(ctx, node.i, {
-    [Symbol.iterator]() {
-      return values.values();
-    },
+    [Symbol.iterator]: () => values.values(),
   });
   return deserializeDictionary(ctx, node, result);
 }
