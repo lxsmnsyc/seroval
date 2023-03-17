@@ -18,6 +18,7 @@ module.exports = {
     "no-param-reassign": "off",
     "no-restricted-syntax": "off",
     "no-bitwise": "off",
-    "prefer-template": "off"
+    "prefer-template": "off",
+    "@typescript-eslint/restrict-plus-operands": "off"
   }
 };

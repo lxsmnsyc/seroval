@@ -161,7 +161,7 @@ function createArrayAssign(
   value: string,
 ) {
   markRef(ctx, ref);
-  createAssignment(ctx, getRefParam(ctx, ref) + '[' + index.toString() + ']', value);
+  createAssignment(ctx, getRefParam(ctx, ref) + '[' + index + ']', value);
 }
 
 function createObjectAssign(
@@ -529,7 +529,7 @@ function serializeTypedArray(
   }
   let args = '[' + result + ']';
   if (node.l !== 0) {
-    args += ',' + node.l.toString();
+    args += ',' + node.l;
   }
   return assignRef(ctx, node.i, 'new ' + node.c + '(' + args + ')');
 }
@@ -564,7 +564,7 @@ export default function serializeTree(
 ): string {
   switch (node.t) {
     case SerovalNodeType.Number:
-      return String(node.s);
+      return '' + node.s;
     case SerovalNodeType.String:
       return '"' + node.s + '"';
     case SerovalNodeType.Boolean:

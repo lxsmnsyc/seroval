@@ -149,7 +149,7 @@ export function createBigIntNode(
   return {
     t: SerovalNodeType.BigInt,
     i: undefined,
-    s: current.toString(),
+    s: '' + current,
     l: undefined,
     c: undefined,
     m: undefined,
@@ -211,7 +211,7 @@ export function createTypedArrayNode(
   const len = current.length;
   const values = new Array<string>(len);
   for (let i = 0; i < len; i++) {
-    values[i] = current[i].toString();
+    values[i] = '' + current[i];
   }
   return {
     t: SerovalNodeType.TypedArray,
@@ -241,7 +241,7 @@ export function createBigIntTypedArrayNode(
   const len = current.length;
   const values = new Array<string>(len);
   for (let i = 0; i < len; i++) {
-    values[i] = current[i].toString();
+    values[i] = '' + current[i];
   }
   return {
     t: SerovalNodeType.BigIntTypedArray,
