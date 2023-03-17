@@ -64,7 +64,7 @@ describe('Iterable', () => {
         },
       };
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Iterable<number> & { title: string }>(result);
       expect(back.title).toBe(example.title);
       expect(Symbol.iterator in back).toBeTruthy();
@@ -85,7 +85,7 @@ describe('Iterable', () => {
         },
       });
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<typeof example>(result);
       expect(back.title).toBe((await example).title);
       expect(Symbol.iterator in back).toBeTruthy();
@@ -103,7 +103,7 @@ describe('Iterable', () => {
         },
       };
       expect(() => serialize(example, {
-        disabledFeatures: Feature.SymbolIterator,
+        disabledFeatures: Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
     it('should use Symbol.iterator instead of Array.values.', () => {
@@ -145,7 +145,7 @@ describe('Iterable', () => {
         },
       };
       expect(() => toJSON(example, {
-        disabledFeatures: Feature.SymbolIterator,
+        disabledFeatures: Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
     it('should use Symbol.iterator instead of Array.values.', () => {
@@ -157,7 +157,7 @@ describe('Iterable', () => {
       const result = toJSON(example, {
         disabledFeatures: Feature.ArrayPrototypeValues,
       });
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
     });
     it('should use method shorthand instead of arrow functions.', () => {
@@ -169,7 +169,7 @@ describe('Iterable', () => {
       const result = toJSON(example, {
         disabledFeatures: Feature.ArrowFunction,
       });
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
     });
     it('should use functions instead of method shorthand.', () => {
@@ -181,7 +181,7 @@ describe('Iterable', () => {
       const result = toJSON(example, {
         disabledFeatures: Feature.MethodShorthand | Feature.ArrowFunction,
       });
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();
     });
   });

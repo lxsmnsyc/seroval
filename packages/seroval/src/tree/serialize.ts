@@ -7,6 +7,8 @@ import {
   markRef,
 } from '../context';
 import quote from '../quote';
+import { isValidIdentifier } from './shared';
+import { SYMBOL_STRING } from './symbols';
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -17,6 +19,7 @@ import {
   SerovalNode,
   SerovalNodeType,
   SerovalNullConstructorNode,
+  SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalPromiseNode,
   SerovalReferenceNode,
@@ -189,16 +192,14 @@ function isReferenceInStack(
   return node.t === SerovalNodeType.Reference && ctx.stack.includes(node.i);
 }
 
-const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
-
 function serializeNodeList(
   ctx: SerializationContext,
-  node: SerovalArrayNode | SerovalIterableNode,
+  node: SerovalArrayNode | SerovalIterableNode | SerovalAggregateErrorNode,
 ) {
   // This is different than Map and Set
   // because we also need to serialize
   // the holes of the Array
-  const size = node.a.length;
+  const size = node.l;
   let values = '';
   let item: SerovalNode;
   let isHoley = false;
@@ -238,7 +239,7 @@ function serializeArray(
   return assignRef(ctx, node.i, result);
 }
 
-function serializeObject(
+function serializeProperties(
   ctx: SerializationContext,
   sourceID: number,
   node: SerovalObjectRecordNode,
@@ -260,19 +261,19 @@ function serializeObject(
     check = Number(key);
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
-    isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
+    isIdentifier = check >= 0 || isValidIdentifier(key);
     if (isReferenceInStack(ctx, val)) {
       refParam = getRefParam(ctx, val.i);
       if (isIdentifier && Number.isNaN(check)) {
         createObjectAssign(ctx, sourceID, key, refParam);
       } else {
-        createArrayAssign(ctx, sourceID, isIdentifier ? key : quote(key), refParam);
+        createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + quote(key) + '"'), refParam);
       }
     } else {
       if (hasPrev) {
         result += ',';
       }
-      result += isIdentifier ? key : quote(key);
+      result += isIdentifier ? key : ('"' + quote(key) + '"');
       result += ':' + serializeTree(ctx, val);
       hasPrev = true;
     }
@@ -287,7 +288,7 @@ function serializeWithObjectAssign(
   id: number,
   serialized: string,
 ) {
-  const fields = serializeObject(ctx, id, value);
+  const fields = serializeProperties(ctx, id, value);
   if (fields !== '{}') {
     return 'Object.assign(' + serialized + ',' + fields + ')';
   }
@@ -318,11 +319,11 @@ function serializeAssignments(
     ctx.assignments = mainAssignments;
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
-    isIdentifier = check >= 0 || IDENTIFIER_CHECK.test(key);
+    isIdentifier = check >= 0 || isValidIdentifier(key);
     if (isIdentifier && Number.isNaN(check)) {
       createObjectAssign(ctx, sourceID, key, refParam);
     } else {
-      createArrayAssign(ctx, sourceID, isIdentifier ? key : quote(key), refParam);
+      createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + quote(key) + '"'), refParam);
     }
     ctx.assignments = parentAssignment;
   }
@@ -358,12 +359,19 @@ function serializeNullConstructor(
   return serializeDictionary(ctx, node.i, node.d, 'Object.create(null)');
 }
 
+function serializeObject(
+  ctx: SerializationContext,
+  node: SerovalObjectNode,
+) {
+  return assignRef(ctx, node.i, serializeProperties(ctx, node.i, node.d));
+}
+
 function serializeSet(
   ctx: SerializationContext,
   node: SerovalSetNode,
 ) {
   let serialized = 'new Set';
-  const size = node.a.length;
+  const size = node.l;
   if (size) {
     let result = '';
     ctx.stack.push(node.i);
@@ -462,7 +470,7 @@ function serializeAggregateError(
 ) {
   // Serialize the required arguments
   ctx.stack.push(node.i);
-  const serialized = 'new AggregateError(' + serializeTree(ctx, node.n) + ',' + quote(node.m) + ')';
+  const serialized = 'new AggregateError(' + serializeNodeList(ctx, node) + ',"' + quote(node.m) + '")';
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties
@@ -474,7 +482,7 @@ function serializeError(
   ctx: SerializationContext,
   node: SerovalErrorNode,
 ) {
-  const serialized = 'new ' + node.c + '(' + quote(node.m) + ')';
+  const serialized = 'new ' + node.c + '("' + quote(node.m) + '")';
   return serializeDictionary(ctx, node.i, node.d, serialized);
 }
 
@@ -509,7 +517,17 @@ function serializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
-  let args = '[' + node.s + ']';
+  let result = '';
+  for (let i = 0, len = node.s.length; i < len; i++) {
+    if (i !== 0) {
+      result += ',';
+    }
+    result += node.s[i];
+    if (node.t === SerovalNodeType.BigIntTypedArray) {
+      result += 'n';
+    }
+  }
+  let args = '[' + result + ']';
   if (node.l !== 0) {
     args += ',' + node.l.toString();
   }
@@ -545,22 +563,38 @@ export default function serializeTree(
   node: SerovalNode,
 ): string {
   switch (node.t) {
-    case SerovalNodeType.Primitive:
+    case SerovalNodeType.Number:
       return String(node.s);
+    case SerovalNodeType.String:
+      return '"' + node.s + '"';
+    case SerovalNodeType.Boolean:
+      return node.s ? '!0' : '!1';
+    case SerovalNodeType.Undefined:
+      return 'undefined';
+    case SerovalNodeType.Null:
+      return 'null';
+    case SerovalNodeType.NegativeZero:
+      return '-0';
+    case SerovalNodeType.Infinity:
+      return '1/0';
+    case SerovalNodeType.NegativeInfinity:
+      return '-1/0';
+    case SerovalNodeType.NaN:
+      return 'NaN';
     case SerovalNodeType.BigInt:
-      return node.s;
+      return node.s + 'n';
     case SerovalNodeType.Reference:
       return getRefParam(ctx, node.i);
     case SerovalNodeType.Array:
       return serializeArray(ctx, node);
     case SerovalNodeType.Object:
-      return assignRef(ctx, node.i, serializeObject(ctx, node.i, node.d));
+      return serializeObject(ctx, node);
     case SerovalNodeType.NullConstructor:
       return serializeNullConstructor(ctx, node);
     case SerovalNodeType.Date:
       return assignRef(ctx, node.i, 'new Date("' + node.s + '")');
     case SerovalNodeType.RegExp:
-      return assignRef(ctx, node.i, node.s);
+      return assignRef(ctx, node.i, '/' + node.c + '/' + node.m);
     case SerovalNodeType.Set:
       return serializeSet(ctx, node);
     case SerovalNodeType.Map:
@@ -576,6 +610,8 @@ export default function serializeTree(
       return serializeIterable(ctx, node);
     case SerovalNodeType.Promise:
       return serializePromise(ctx, node);
+    case SerovalNodeType.WKSymbol:
+      return SYMBOL_STRING[node.s];
     default:
       throw new Error('Unsupported type');
   }

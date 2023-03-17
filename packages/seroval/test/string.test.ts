@@ -25,16 +25,20 @@ describe('string', () => {
   });
   describe('toJSON', () => {
     it('supports strings', () => {
-      expect(toJSON('"hello"')).toMatchSnapshot();
-      expect(toJSON('<script></script>')).toMatchSnapshot();
+      expect(JSON.stringify(toJSON('"hello"'))).toMatchSnapshot();
+      expect(JSON.stringify(toJSON('<script></script>'))).toMatchSnapshot();
       expect(fromJSON(toJSON('"hello"'))).toBe('"hello"');
       expect(fromJSON(toJSON('<script></script>'))).toBe('<script></script>');
     });
   });
   describe('toJSONAsync', () => {
     it('supports strings', async () => {
-      expect(await toJSONAsync(Promise.resolve('"hello"'))).toMatchSnapshot();
-      expect(await toJSONAsync(Promise.resolve('<script></script>'))).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve('"hello"'))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve('<script></script>'))),
+      ).toMatchSnapshot();
     });
   });
 });

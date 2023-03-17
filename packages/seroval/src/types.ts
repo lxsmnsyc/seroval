@@ -1,10 +1,13 @@
+import { WellKnownSymbols } from './tree/symbols';
+
 // Values that are non-recursive
 export type PrimitiveValue =
   | boolean
   | string
   | number
   | undefined
-  | null;
+  | null
+  | WellKnownSymbols;
 
 export type ErrorValue =
   | Error

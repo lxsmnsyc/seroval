@@ -59,7 +59,7 @@ describe('arrays', () => {
     it('supports Arrays', () => {
       const example = [1, 2, 3];
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<number[]>(result);
       expect(back).toBeInstanceOf(Array);
       expect(back[0]).toBe(example[0]);
@@ -71,7 +71,7 @@ describe('arrays', () => {
       example[0] = example;
       example[1] = example;
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<ServerValue[]>(result);
       expect(back[0]).toBe(back);
       expect(back[1]).toBe(back);
@@ -81,7 +81,7 @@ describe('arrays', () => {
     it('supports Arrays', async () => {
       const example = [1, 2, 3];
       const result = await toJSONAsync(Promise.resolve(example));
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<number[]>>(result);
       expect(back).toBeInstanceOf(Array);
       expect(back[0]).toBe(example[0]);
@@ -93,7 +93,7 @@ describe('arrays', () => {
       example[0] = Promise.resolve(example);
       example[1] = Promise.resolve(example);
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof example>(result);
       expect(await back[0]).toBe(back);
       expect(await back[1]).toBe(back);
@@ -127,7 +127,7 @@ describe('array holes', () => {
     it('supports array holes', () => {
       const example = new Array(10);
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<undefined[]>(result);
       expect(0 in back).toBeFalsy();
       expect(back[0]).toBe(undefined);
@@ -138,7 +138,7 @@ describe('array holes', () => {
     it('supports array holes', async () => {
       const example = new Array(10);
       const result = await toJSONAsync(Promise.resolve(example));
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<undefined[]>>(result);
       expect(0 in back).toBeFalsy();
       expect(back[0]).toBe(undefined);

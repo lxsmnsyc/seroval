@@ -8,6 +8,7 @@ import {
   createSerializationContext,
 } from './context';
 import parseAsync from './tree/async';
+import deserializeTree from './tree/deserialize';
 import serializeTree, { resolvePatches } from './tree/serialize';
 import parseSync from './tree/sync';
 import { SerovalNode } from './tree/types';
@@ -141,7 +142,11 @@ export function compileJSON(source: SerovalJSON): string {
 }
 
 export function fromJSON<T extends AsyncServerValue>(source: SerovalJSON): T {
-  return deserialize<T>(compileJSON(source));
+  const serial = createSerializationContext({
+    features: source.f,
+    markedRefs: source.m,
+  });
+  return deserializeTree(serial, source.t) as T;
 }
 
 export default serialize;

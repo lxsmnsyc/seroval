@@ -33,7 +33,7 @@ describe('Date', () => {
     it('supports Date', () => {
       const example = new Date('2023-03-14T11:16:24.879Z');
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Date>(result);
       expect(back).toBeInstanceOf(Date);
       expect(back.toISOString()).toBe(example.toISOString());
@@ -43,7 +43,7 @@ describe('Date', () => {
     it('supports Date', async () => {
       const example = new Date('2023-03-14T11:16:24.879Z');
       const result = await toJSONAsync(Promise.resolve(example));
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<Date>>(result);
       expect(back).toBeInstanceOf(Date);
       expect(back.toISOString()).toBe(example.toISOString());

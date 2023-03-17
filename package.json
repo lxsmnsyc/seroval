@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "benchmark"
   ],
   "devDependencies": {
     "eslint": "^8.33.0",

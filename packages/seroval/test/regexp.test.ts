@@ -33,7 +33,7 @@ describe('RegExp', () => {
     it('supports RegExp', () => {
       const example = /[a-z0-9]+/i;
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<RegExp>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(String(back)).toBe(String(example));
@@ -43,7 +43,7 @@ describe('RegExp', () => {
     it('supports RegExp', async () => {
       const example = /[a-z0-9]+/i;
       const result = await toJSONAsync(Promise.resolve(example));
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<RegExp>>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(String(back)).toBe(String(example));

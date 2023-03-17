@@ -30,21 +30,31 @@ describe('number', () => {
   describe('toJSON', () => {
     it('supports numbers', () => {
       const value = 0xDEADBEEF;
-      expect(toJSON(value)).toMatchSnapshot();
-      expect(toJSON(NaN)).toMatchSnapshot();
-      expect(toJSON(Infinity)).toMatchSnapshot();
-      expect(toJSON(-Infinity)).toMatchSnapshot();
-      expect(toJSON(-0)).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(value))).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(NaN))).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(Infinity))).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(-Infinity))).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(-0))).toMatchSnapshot();
     });
   });
   describe('toJSONAsync', () => {
     it('supports numbers', async () => {
       const value = 0xDEADBEEF;
-      expect(await toJSONAsync(Promise.resolve(value))).toMatchSnapshot();
-      expect(await toJSONAsync(Promise.resolve(NaN))).toMatchSnapshot();
-      expect(await toJSONAsync(Promise.resolve(Infinity))).toMatchSnapshot();
-      expect(await toJSONAsync(Promise.resolve(-Infinity))).toMatchSnapshot();
-      expect(await toJSONAsync(Promise.resolve(-0))).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(value))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(NaN))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(Infinity))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(-Infinity))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(-0))),
+      ).toMatchSnapshot();
     });
   });
 });

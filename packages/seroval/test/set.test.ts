@@ -59,7 +59,7 @@ describe('Set', () => {
     it('supports Set', () => {
       const example = new Set([1, 2, 3]);
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Set<number>>(result);
       expect(back).toBeInstanceOf(Set);
       expect(back.has(1)).toBe(example.has(1));
@@ -70,7 +70,7 @@ describe('Set', () => {
       const example: Set<ServerValue> = new Set();
       example.add(example);
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Set<ServerValue>>(result);
       expect(back.has(back)).toBe(true);
     });
@@ -79,7 +79,7 @@ describe('Set', () => {
     it('supports Set', async () => {
       const example = new Set([1, 2, 3]);
       const result = await toJSONAsync(Promise.resolve(example));
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<Set<number>>>(result);
       expect(back).toBeInstanceOf(Set);
       expect(back.has(1)).toBe(example.has(1));
@@ -90,7 +90,7 @@ describe('Set', () => {
       const example: Set<AsyncServerValue> = new Set();
       example.add(Promise.resolve(example));
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Set<Promise<any>>>(result);
       for (const key of back) {
         expect(await key).toBe(back);

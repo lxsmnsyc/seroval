@@ -23,13 +23,15 @@ describe('bigint', () => {
   });
   describe('toJSON', () => {
     it('supports bigint', () => {
-      expect(toJSON(9007199254740991n)).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(9007199254740991n))).toMatchSnapshot();
       expect(fromJSON(toJSON(9007199254740991n))).toBe(9007199254740991n);
     });
   });
   describe('toJSONAsync', () => {
     it('supports bigint', async () => {
-      expect(await toJSONAsync(Promise.resolve(9007199254740991n))).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(9007199254740991n))),
+      ).toMatchSnapshot();
     });
   });
   describe('compat', () => {

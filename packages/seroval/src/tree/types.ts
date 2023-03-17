@@ -1,7 +1,15 @@
-import { PrimitiveValue } from '../types';
+import { Symbols } from './symbols';
 
 export const enum SerovalNodeType {
-  Primitive,
+  Number,
+  String,
+  Boolean,
+  Null,
+  Undefined,
+  NegativeZero,
+  Infinity,
+  NegativeInfinity,
+  NaN,
   BigInt,
   Reference,
   Date,
@@ -17,27 +25,28 @@ export const enum SerovalNodeType {
   Iterable,
   TypedArray,
   BigIntTypedArray,
+  WKSymbol,
 }
 
 export interface SerovalBaseNode {
   // Type of the node
   t: SerovalNodeType;
-  // Serialized value
-  s: PrimitiveValue | undefined;
   // Reference ID
   i: number | undefined;
+  // Serialized value
+  s: any;
   // Size/Byte offset
   l: number | undefined;
-  // Constructor name
+  // Constructor name / RegExp source
   c: string | undefined;
+  // message /flags
+  m: string | undefined;
   // dictionary
   d: SerovalDictionaryNode | undefined;
-  // message
-  m: string | undefined;
-  // next node
-  n: SerovalNode | undefined;
   // array of nodes
   a: SerovalNode[] | undefined;
+  // next node
+  n: SerovalNode | undefined;
 }
 
 export interface SerovalObjectRecordNode {
@@ -56,9 +65,55 @@ export type SerovalDictionaryNode =
   | SerovalObjectRecordNode
   | SerovalMapRecordNode;
 
-export interface SerovalPrimitiveNode extends SerovalBaseNode {
-  t: SerovalNodeType.Primitive;
+export interface SerovalNumberNode extends SerovalBaseNode {
+  t: SerovalNodeType.Number;
+  s: number;
 }
+
+export interface SerovalStringNode extends SerovalBaseNode {
+  t: SerovalNodeType.String;
+  s: string;
+}
+
+export interface SerovalBooleanNode extends SerovalBaseNode {
+  t: SerovalNodeType.Boolean;
+  s: boolean;
+}
+
+export interface SerovalNullNode extends SerovalBaseNode {
+  t: SerovalNodeType.Null;
+}
+
+export interface SerovalUndefinedNode extends SerovalBaseNode {
+  t: SerovalNodeType.Undefined;
+}
+
+export interface SerovalNegativeZeroNode extends SerovalBaseNode {
+  t: SerovalNodeType.NegativeZero;
+}
+
+export interface SerovalInfinityNode extends SerovalBaseNode {
+  t: SerovalNodeType.Infinity;
+}
+
+export interface SerovalNegativeInfinityNode extends SerovalBaseNode {
+  t: SerovalNodeType.NegativeInfinity;
+}
+
+export interface SerovalNaNNode extends SerovalBaseNode {
+  t: SerovalNodeType.NaN;
+}
+
+export type SerovalPrimitiveNode =
+  | SerovalNumberNode
+  | SerovalStringNode
+  | SerovalBooleanNode
+  | SerovalNullNode
+  | SerovalUndefinedNode
+  | SerovalNegativeZeroNode
+  | SerovalNegativeInfinityNode
+  | SerovalInfinityNode
+  | SerovalNaNNode;
 
 export interface SerovalReferenceNode extends SerovalBaseNode {
   t: SerovalNodeType.Reference;
@@ -79,13 +134,16 @@ export interface SerovalDateNode extends SerovalBaseNode {
 export interface SerovalRegExpNode extends SerovalBaseNode {
   t: SerovalNodeType.RegExp;
   i: number;
-  s: string;
+  // source
+  c: string;
+  // flags
+  m: string;
 }
 
 export interface SerovalTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.TypedArray;
   i: number;
-  s: string;
+  s: string[];
   l: number;
   c: string;
 }
@@ -93,7 +151,7 @@ export interface SerovalTypedArrayNode extends SerovalBaseNode {
 export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.BigIntTypedArray;
   i: number;
-  s: string;
+  s: string[];
   l: number;
   c: string;
 }
@@ -107,6 +165,7 @@ export type SerovalSemiPrimitiveNode =
 
 export interface SerovalSetNode extends SerovalBaseNode {
   t: SerovalNodeType.Set;
+  l: number;
   a: SerovalNode[];
   i: number;
 }
@@ -119,6 +178,7 @@ export interface SerovalMapNode extends SerovalBaseNode {
 
 export interface SerovalArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.Array;
+  l: number;
   a: SerovalNode[];
   i: number;
 }
@@ -153,15 +213,22 @@ export interface SerovalAggregateErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.AggregateError;
   m: string;
   d: SerovalObjectRecordNode | undefined;
-  n: SerovalNode;
+  l: number;
+  a: SerovalNode[];
   i: number;
 }
 
 export interface SerovalIterableNode extends SerovalBaseNode {
   t: SerovalNodeType.Iterable;
   d: SerovalObjectRecordNode | undefined;
+  l: number;
   a: SerovalNode[];
   i: number;
+}
+
+export interface SerovalWKSymbolNode extends SerovalBaseNode {
+  t: SerovalNodeType.WKSymbol;
+  s: Symbols;
 }
 
 export type SerovalNode =
@@ -176,4 +243,5 @@ export type SerovalNode =
   | SerovalPromiseNode
   | SerovalErrorNode
   | SerovalAggregateErrorNode
-  | SerovalIterableNode;
+  | SerovalIterableNode
+  | SerovalWKSymbolNode;

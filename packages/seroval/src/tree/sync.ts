@@ -2,28 +2,33 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { createRef, ParserContext } from '../context';
-import quote from '../quote';
 import { BigIntTypedArrayValue, ServerValue, TypedArrayValue } from '../types';
 import {
   createBigIntNode,
   createBigIntTypedArrayNode,
   createDateNode,
-  createPrimitiveNode,
+  createNumberNode,
   createReferenceNode,
   createRegExpNode,
+  createStringNode,
   createTypedArrayNode,
+  createWKSymbolNode,
   FALSE_NODE,
+  INFINITY_NODE,
+  NAN_NODE,
+  NEG_INFINITY_NODE,
   NEG_ZERO_NODE,
   NULL_NODE,
   TRUE_NODE,
   UNDEFINED_NODE,
 } from './primitives';
 import {
-  getErrorConstructor,
+  getErrorConstructorName,
   getErrorOptions,
   getIterableOptions,
   isIterable,
 } from './shared';
+import { INV_SYMBOL_REF } from './symbols';
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -72,7 +77,7 @@ function generateArrayNode(
     t: SerovalNodeType.Array,
     i: id,
     s: undefined,
-    l: undefined,
+    l: current.length,
     c: undefined,
     m: undefined,
     d: undefined,
@@ -150,7 +155,7 @@ function generateSetNode(
     t: SerovalNodeType.Set,
     i: id,
     s: undefined,
-    l: undefined,
+    l: len,
     c: undefined,
     m: undefined,
     d: undefined,
@@ -200,20 +205,21 @@ function generateIterableNode(
   id: number,
   current: Iterable<ServerValue>,
 ): SerovalIterableNode {
-  assert(ctx.features & Feature.SymbolIterator, 'Unsupported type "Iterable"');
+  assert(ctx.features & Feature.Symbol, 'Unsupported type "Iterable"');
   const options = getIterableOptions(current);
+  const array = Array.from(current);
   return {
     t: SerovalNodeType.Iterable,
     i: id,
     s: undefined,
-    l: undefined,
+    l: array.length,
     c: undefined,
     m: undefined,
     // Parse options first before the items
     d: options
       ? generateProperties(ctx, options as Record<string, ServerValue>)
       : undefined,
-    a: generateNodeList(ctx, Array.from(current)),
+    a: generateNodeList(ctx, array),
     n: undefined,
   };
 }
@@ -253,12 +259,12 @@ function generateAggregateErrorNode(
     t: SerovalNodeType.AggregateError,
     i: id,
     s: undefined,
-    l: undefined,
+    l: current.errors.length,
     c: undefined,
     m: current.message,
     d: optionsNode,
-    a: undefined,
-    n: parse(ctx, current.errors),
+    a: generateNodeList(ctx, current.errors as ServerValue[]),
+    n: undefined,
   };
 }
 
@@ -276,7 +282,7 @@ function generateErrorNode(
     i: id,
     s: undefined,
     l: undefined,
-    c: getErrorConstructor(current),
+    c: getErrorConstructorName(current),
     m: current.message,
     d: optionsNode,
     a: undefined,
@@ -294,18 +300,22 @@ function parse(
     case 'undefined':
       return UNDEFINED_NODE;
     case 'string':
-      return createPrimitiveNode(quote(current));
+      return createStringNode(current);
     case 'number':
+      // eslint-disable-next-line no-self-compare
+      if (current !== current) {
+        return NAN_NODE;
+      }
       if (Object.is(current, -0)) {
         return NEG_ZERO_NODE;
       }
       if (Object.is(current, Infinity)) {
-        return createPrimitiveNode('1/0');
+        return INFINITY_NODE;
       }
       if (Object.is(current, -Infinity)) {
-        return createPrimitiveNode('-1/0');
+        return NEG_INFINITY_NODE;
       }
-      return createPrimitiveNode(current);
+      return createNumberNode(current);
     case 'bigint':
       return createBigIntNode(ctx, current);
     case 'object': {
@@ -375,6 +385,10 @@ function parse(
       }
       throw new Error('Unsupported type');
     }
+    case 'symbol':
+      assert(ctx.features & Feature.Symbol, 'Unsupported type "symbol"');
+      assert(current in INV_SYMBOL_REF, 'seroval only supports well-known symbols');
+      return createWKSymbolNode(current);
     default:
       throw new Error('Unsupported type');
   }

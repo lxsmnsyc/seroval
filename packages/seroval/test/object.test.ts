@@ -55,7 +55,7 @@ describe('objects', () => {
     it('supports Objects', () => {
       const example = { hello: 'world' };
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, string>>(result);
       expect(back).toBeInstanceOf(Object);
       expect(back.hello).toBe(example.hello);
@@ -65,7 +65,7 @@ describe('objects', () => {
       example.a = example;
       example.b = example;
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, ServerValue>>(result);
       expect(back.a).toBe(back);
       expect(back.b).toBe(back);
@@ -75,7 +75,7 @@ describe('objects', () => {
     it('supports Objects', async () => {
       const example = { hello: 'world' };
       const result = await toJSONAsync(Promise.resolve(example));
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<Record<string, string>>>(result);
       expect(back).toBeInstanceOf(Object);
       expect(back.hello).toBe(example.hello);
@@ -85,7 +85,7 @@ describe('objects', () => {
       example.a = Promise.resolve(example);
       example.b = Promise.resolve(example);
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, Promise<any>>>(result);
       expect(await back.a).toBe(back);
       expect(await back.b).toBe(back);
