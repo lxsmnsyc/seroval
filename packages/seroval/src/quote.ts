@@ -43,3 +43,14 @@ export default function quote(str: string) {
   }
   return result;
 }
+
+export function invQuote(str: string): string {
+  return str
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\')
+    .replace(/\\x3C/g, '<')
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\r')
+    .replace(/\\u2028/g, '\u2028')
+    .replace(/\\u2029/g, '\u2029');
+}

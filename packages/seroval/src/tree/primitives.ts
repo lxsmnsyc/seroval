@@ -208,10 +208,15 @@ export function createTypedArrayNode(
 ): SerovalTypedArrayNode {
   const constructor = current.constructor.name;
   assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
+  const len = current.length;
+  const values = new Array<string>(len);
+  for (let i = 0; i < len; i++) {
+    values[i] = current[i].toString();
+  }
   return {
     t: SerovalNodeType.TypedArray,
     i: id,
-    s: current.toString(),
+    s: values,
     l: current.byteOffset,
     c: constructor,
     m: undefined,
@@ -233,17 +238,15 @@ export function createBigIntTypedArrayNode(
     (ctx.features & BIGINT_FLAG) === BIGINT_FLAG,
     `Unsupported value type "${constructor}"`,
   );
-  let result = '';
-  for (let i = 0, len = current.length; i < len; i++) {
-    if (i !== 0) {
-      result += ',';
-    }
-    result += current[i].toString() + 'n';
+  const len = current.length;
+  const values = new Array<string>(len);
+  for (let i = 0; i < len; i++) {
+    values[i] = current[i].toString();
   }
   return {
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
-    s: result,
+    s: values,
     l: (current as BigInt64Array).byteOffset,
     c: constructor,
     m: undefined,

@@ -30,22 +30,6 @@ export const SYMBOL_STRING: Record<Symbols, string> = {
   [Symbols.Unscopables]: 'Symbol.unscopables',
 };
 
-export const SYMBOL_REF = {
-  [Symbols.AsyncIterator]: Symbol.asyncIterator,
-  [Symbols.HasInstance]: Symbol.hasInstance,
-  [Symbols.IsConcatSpreadable]: Symbol.isConcatSpreadable,
-  [Symbols.Iterator]: Symbol.iterator,
-  [Symbols.Match]: Symbol.match,
-  [Symbols.MatchAll]: Symbol.matchAll,
-  [Symbols.Replace]: Symbol.replace,
-  [Symbols.Search]: Symbol.search,
-  [Symbols.Species]: Symbol.species,
-  [Symbols.Split]: Symbol.split,
-  [Symbols.ToPrimitive]: Symbol.toPrimitive,
-  [Symbols.ToStringTag]: Symbol.toStringTag,
-  [Symbols.Unscopables]: Symbol.unscopables,
-};
-
 export const INV_SYMBOL_REF = {
   [Symbol.asyncIterator]: Symbols.AsyncIterator,
   [Symbol.hasInstance]: Symbols.HasInstance,
@@ -63,3 +47,19 @@ export const INV_SYMBOL_REF = {
 };
 
 export type WellKnownSymbols = keyof typeof INV_SYMBOL_REF;
+
+export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
+  [Symbols.AsyncIterator]: Symbol.asyncIterator,
+  [Symbols.HasInstance]: Symbol.hasInstance,
+  [Symbols.IsConcatSpreadable]: Symbol.isConcatSpreadable,
+  [Symbols.Iterator]: Symbol.iterator,
+  [Symbols.Match]: Symbol.match,
+  [Symbols.MatchAll]: Symbol.matchAll,
+  [Symbols.Replace]: Symbol.replace,
+  [Symbols.Search]: Symbol.search,
+  [Symbols.Species]: Symbol.species,
+  [Symbols.Split]: Symbol.split,
+  [Symbols.ToPrimitive]: Symbol.toPrimitive,
+  [Symbols.ToStringTag]: Symbol.toStringTag,
+  [Symbols.Unscopables]: Symbol.unscopables,
+};

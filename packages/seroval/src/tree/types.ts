@@ -31,22 +31,22 @@ export const enum SerovalNodeType {
 export interface SerovalBaseNode {
   // Type of the node
   t: SerovalNodeType;
-  // Serialized value
-  s: any;
   // Reference ID
   i: number | undefined;
+  // Serialized value
+  s: any;
   // Size/Byte offset
   l: number | undefined;
-  // Constructor name
+  // Constructor name / RegExp source
   c: string | undefined;
+  // message /flags
+  m: string | undefined;
   // dictionary
   d: SerovalDictionaryNode | undefined;
-  // message
-  m: string | undefined;
-  // next node
-  n: SerovalNode | undefined;
   // array of nodes
   a: SerovalNode[] | undefined;
+  // next node
+  n: SerovalNode | undefined;
 }
 
 export interface SerovalObjectRecordNode {
@@ -143,7 +143,7 @@ export interface SerovalRegExpNode extends SerovalBaseNode {
 export interface SerovalTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.TypedArray;
   i: number;
-  s: string;
+  s: string[];
   l: number;
   c: string;
 }
@@ -151,7 +151,7 @@ export interface SerovalTypedArrayNode extends SerovalBaseNode {
 export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.BigIntTypedArray;
   i: number;
-  s: string;
+  s: string[];
   l: number;
   c: string;
 }
@@ -165,6 +165,7 @@ export type SerovalSemiPrimitiveNode =
 
 export interface SerovalSetNode extends SerovalBaseNode {
   t: SerovalNodeType.Set;
+  l: number;
   a: SerovalNode[];
   i: number;
 }
@@ -177,6 +178,7 @@ export interface SerovalMapNode extends SerovalBaseNode {
 
 export interface SerovalArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.Array;
+  l: number;
   a: SerovalNode[];
   i: number;
 }
@@ -211,6 +213,7 @@ export interface SerovalAggregateErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.AggregateError;
   m: string;
   d: SerovalObjectRecordNode | undefined;
+  l: number;
   a: SerovalNode[];
   i: number;
 }
@@ -218,6 +221,7 @@ export interface SerovalAggregateErrorNode extends SerovalBaseNode {
 export interface SerovalIterableNode extends SerovalBaseNode {
   t: SerovalNodeType.Iterable;
   d: SerovalObjectRecordNode | undefined;
+  l: number;
   a: SerovalNode[];
   i: number;
 }

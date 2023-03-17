@@ -1,5 +1,6 @@
 import { ALL_ENABLED } from './compat';
 import getIdentifier from './get-identifier';
+import { AsyncServerValue } from './types';
 
 interface IndexAssignment {
   t: 'index';
@@ -47,6 +48,8 @@ export interface SerializationContext {
   assignments: Assignment[];
   // Supported features
   features: number;
+
+  valueMap: Map<number, AsyncServerValue>;
 }
 
 export interface Options {
@@ -81,6 +84,7 @@ export function createSerializationContext(options: SerializationOptions): Seria
     refSize: 0,
     features: options.features,
     markedRefs: new Set(options.markedRefs),
+    valueMap: new Map(),
   };
 }
 

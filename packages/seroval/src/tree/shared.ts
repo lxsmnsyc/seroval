@@ -5,7 +5,7 @@ import {
   ErrorValue,
 } from '../types';
 
-export function getErrorConstructor(error: ErrorValue) {
+export function getErrorConstructorName(error: ErrorValue) {
   if (error instanceof EvalError) {
     return 'EvalError';
   }
@@ -27,12 +27,26 @@ export function getErrorConstructor(error: ErrorValue) {
   return 'Error';
 }
 
+export function getErrorConstructor(errorName: string) {
+  switch (errorName) {
+    case 'Error': return Error;
+    case 'EvalError': return EvalError;
+    case 'RangeError': return RangeError;
+    case 'ReferenceError': return ReferenceError;
+    case 'SyntaxError': return SyntaxError;
+    case 'TypeError': return TypeError;
+    case 'URIError': return URIError;
+    default:
+      throw new Error(`Unknown Error constructor "${errorName}"`);
+  }
+}
+
 export function getErrorOptions(
   ctx: ParserContext,
   error: Error,
 ) {
   let options: Record<string, any> | undefined;
-  const constructor = getErrorConstructor(error);
+  const constructor = getErrorConstructorName(error);
   // Name has been modified
   if (error.name !== constructor) {
     options = { name: error.name };
@@ -98,4 +112,22 @@ export function isIterable(
       break;
   }
   return Symbol.iterator in value;
+}
+
+export function getTypedArrayConstructor(name: string) {
+  switch (name) {
+    case 'Int8Array': return Int8Array;
+    case 'Int16Array': return Int16Array;
+    case 'Int32Array': return Int32Array;
+    case 'Uint8Array': return Uint8Array;
+    case 'Uint16Array': return Uint16Array;
+    case 'Uint32Array': return Uint32Array;
+    case 'Uint8ClampedArray': return Uint8ClampedArray;
+    case 'Float32Array': return Float32Array;
+    case 'Float64Array': return Float64Array;
+    case 'BigInt64Array': return BigInt64Array;
+    case 'BigUint64Array': return BigUint64Array;
+    default:
+      throw new Error(`Unknown TypedArray "${name}"`);
+  }
 }

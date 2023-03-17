@@ -28,7 +28,7 @@ import {
   UNDEFINED_NODE,
 } from './primitives';
 import {
-  getErrorConstructor,
+  getErrorConstructorName,
   getErrorOptions,
   getIterableOptions,
   isIterable,
@@ -95,7 +95,7 @@ async function generateArrayNode(
     t: SerovalNodeType.Array,
     i: id,
     s: undefined,
-    l: undefined,
+    l: current.length,
     c: undefined,
     m: undefined,
     d: undefined,
@@ -173,7 +173,7 @@ async function generateSetNode(
     t: SerovalNodeType.Set,
     i: id,
     s: undefined,
-    l: undefined,
+    l: len,
     c: undefined,
     m: undefined,
     d: undefined,
@@ -225,18 +225,19 @@ async function generateIterableNode(
 ): Promise<SerovalIterableNode> {
   assert(ctx.features & Feature.Symbol, 'Unsupported type "Iterable"');
   const options = getIterableOptions(current);
+  const array = Array.from(current);
   return {
     t: SerovalNodeType.Iterable,
     i: id,
     s: undefined,
-    l: undefined,
+    l: array.length,
     c: undefined,
     m: undefined,
     // Parse options first before the items
     d: options
       ? await generateProperties(ctx, options as Record<string, AsyncServerValue>)
       : undefined,
-    a: await generateNodeList(ctx, Array.from(current)),
+    a: await generateNodeList(ctx, array),
     n: undefined,
   };
 }
@@ -299,7 +300,7 @@ async function generateAggregateErrorNode(
     t: SerovalNodeType.AggregateError,
     i: id,
     s: undefined,
-    l: undefined,
+    l: current.errors.length,
     c: undefined,
     m: current.message,
     d: optionsNode,
@@ -322,7 +323,7 @@ async function generateErrorNode(
     i: id,
     s: undefined,
     l: undefined,
-    c: getErrorConstructor(current),
+    c: getErrorConstructorName(current),
     m: current.message,
     d: optionsNode,
     a: undefined,

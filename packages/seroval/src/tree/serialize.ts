@@ -18,6 +18,7 @@ import {
   SerovalNode,
   SerovalNodeType,
   SerovalNullConstructorNode,
+  SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalPromiseNode,
   SerovalReferenceNode,
@@ -199,7 +200,7 @@ function serializeNodeList(
   // This is different than Map and Set
   // because we also need to serialize
   // the holes of the Array
-  const size = node.a.length;
+  const size = node.l;
   let values = '';
   let item: SerovalNode;
   let isHoley = false;
@@ -239,7 +240,7 @@ function serializeArray(
   return assignRef(ctx, node.i, result);
 }
 
-function serializeObject(
+function serializeProperties(
   ctx: SerializationContext,
   sourceID: number,
   node: SerovalObjectRecordNode,
@@ -288,7 +289,7 @@ function serializeWithObjectAssign(
   id: number,
   serialized: string,
 ) {
-  const fields = serializeObject(ctx, id, value);
+  const fields = serializeProperties(ctx, id, value);
   if (fields !== '{}') {
     return 'Object.assign(' + serialized + ',' + fields + ')';
   }
@@ -359,12 +360,19 @@ function serializeNullConstructor(
   return serializeDictionary(ctx, node.i, node.d, 'Object.create(null)');
 }
 
+function serializeObject(
+  ctx: SerializationContext,
+  node: SerovalObjectNode,
+) {
+  return assignRef(ctx, node.i, serializeProperties(ctx, node.i, node.d));
+}
+
 function serializeSet(
   ctx: SerializationContext,
   node: SerovalSetNode,
 ) {
   let serialized = 'new Set';
-  const size = node.a.length;
+  const size = node.l;
   if (size) {
     let result = '';
     ctx.stack.push(node.i);
@@ -510,7 +518,17 @@ function serializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
-  let args = '[' + node.s + ']';
+  let result = '';
+  for (let i = 0, len = node.s.length; i < len; i++) {
+    if (i !== 0) {
+      result += ',';
+    }
+    result += node.s[i];
+    if (node.t === SerovalNodeType.BigIntTypedArray) {
+      result += 'n';
+    }
+  }
+  let args = '[' + result + ']';
   if (node.l !== 0) {
     args += ',' + node.l.toString();
   }
@@ -571,7 +589,7 @@ export default function serializeTree(
     case SerovalNodeType.Array:
       return serializeArray(ctx, node);
     case SerovalNodeType.Object:
-      return assignRef(ctx, node.i, serializeObject(ctx, node.i, node.d));
+      return serializeObject(ctx, node);
     case SerovalNodeType.NullConstructor:
       return serializeNullConstructor(ctx, node);
     case SerovalNodeType.Date:
