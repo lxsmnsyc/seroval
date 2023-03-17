@@ -84,25 +84,21 @@ Object.entries(fixtures).forEach(([key, value]) => {
     save({
       file: `${suiteName} to string`,
       folder: 'results/json',
-      details: true,
     }),
     save({
       file: `${suiteName} to string`,
       folder: 'results/charts',
       format: 'chart.html',
-      details: true,
     }),
     save({
       file: `${suiteName} to string`,
       folder: 'results/tables',
       format: 'table.html',
-      details: true,
     }),
     save({
       file: `${suiteName} to string`,
       folder: 'results/csv',
       format: 'csv',
-      details: true,
     }),
   );
 
@@ -124,25 +120,21 @@ Object.entries(fixtures).forEach(([key, value]) => {
     save({
       file: `${suiteName} from string`,
       folder: 'results/json',
-      details: true,
     }),
     save({
       file: `${suiteName} from string`,
       folder: 'results/charts',
       format: 'chart.html',
-      details: true,
     }),
     save({
       file: `${suiteName} from string`,
       folder: 'results/tables',
       format: 'table.html',
-      details: true,
     }),
     save({
       file: `${suiteName} from string`,
       folder: 'results/csv',
       format: 'csv',
-      details: true,
     }),
   );
 });
