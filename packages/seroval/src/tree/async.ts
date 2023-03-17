@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import { markRef, ParserContext } from '../context';
+import { createRef, getRootID, ParserContext } from '../context';
 import {
   AsyncServerValue,
   BigIntTypedArrayValue,
@@ -364,13 +364,10 @@ async function parse(
       }
       // Non-primitive values needs a reference ID
       // mostly because the values themselves are stateful
-      const ref = ctx.refs.get(current);
-      if (ref != null) {
-        markRef(ctx, ref);
-        return createReferenceNode(ref);
+      const id = createRef(ctx, current);
+      if (ctx.markedRefs.has(id)) {
+        return createReferenceNode(id);
       }
-      const id = ctx.refs.size;
-      ctx.refs.set(current, id);
       if (Array.isArray(current)) {
         return generateArrayNode(ctx, id, current);
       }
@@ -471,9 +468,5 @@ export default async function parseAsync(
   const result = await parse(ctx, current);
   const isObject = result.t === SerovalNodeType.Object
     || result.t === SerovalNodeType.Iterable;
-  let ref = ctx.refs.get(current);
-  if (ref == null) {
-    ref = ctx.refs.size;
-  }
-  return [result, ref, isObject] as const;
+  return [result, getRootID(ctx, current), isObject] as const;
 }

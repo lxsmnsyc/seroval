@@ -127,3 +127,28 @@ export function getRefParam(ctx: SerializationContext, index: number) {
   ctx.vars[actualIndex] = result;
   return result;
 }
+
+export function getRootID(
+  ctx: ParserContext,
+  current: AsyncServerValue,
+) {
+  const ref = ctx.refs.get(current);
+  if (ref == null) {
+    return ctx.refs.size;
+  }
+  return ref;
+}
+
+export function createRef(
+  ctx: ParserContext,
+  current: AsyncServerValue,
+) {
+  const ref = ctx.refs.get(current);
+  if (ref == null) {
+    const id = ctx.refs.size;
+    ctx.refs.set(current, id);
+    return id;
+  }
+  markRef(ctx, ref);
+  return ref;
+}
