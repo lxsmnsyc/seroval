@@ -262,8 +262,8 @@ function generateAggregateErrorNode(
     c: undefined,
     m: current.message,
     d: optionsNode,
-    a: undefined,
-    n: parse(ctx, current.errors),
+    a: generateNodeList(ctx, current.errors as ServerValue[]),
+    n: undefined,
   };
 }
 

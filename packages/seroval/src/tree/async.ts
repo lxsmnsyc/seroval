@@ -303,8 +303,8 @@ async function generateAggregateErrorNode(
     c: undefined,
     m: current.message,
     d: optionsNode,
-    a: undefined,
-    n: await parse(ctx, current.errors),
+    a: await generateNodeList(ctx, current.errors as AsyncServerValue[]),
+    n: undefined,
   };
 }
 

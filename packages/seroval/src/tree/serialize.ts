@@ -194,7 +194,7 @@ const IDENTIFIER_CHECK = /^([$A-Z_][0-9A-Z_$]*)$/i;
 
 function serializeNodeList(
   ctx: SerializationContext,
-  node: SerovalArrayNode | SerovalIterableNode,
+  node: SerovalArrayNode | SerovalIterableNode | SerovalAggregateErrorNode,
 ) {
   // This is different than Map and Set
   // because we also need to serialize
@@ -463,7 +463,7 @@ function serializeAggregateError(
 ) {
   // Serialize the required arguments
   ctx.stack.push(node.i);
-  const serialized = 'new AggregateError(' + serializeTree(ctx, node.n) + ',"' + quote(node.m) + '")';
+  const serialized = 'new AggregateError(' + serializeNodeList(ctx, node) + ',"' + quote(node.m) + '")';
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties

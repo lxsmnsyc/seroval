@@ -211,7 +211,7 @@ export interface SerovalAggregateErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.AggregateError;
   m: string;
   d: SerovalObjectRecordNode | undefined;
-  n: SerovalNode;
+  a: SerovalNode[];
   i: number;
 }
 
