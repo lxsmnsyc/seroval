@@ -302,18 +302,17 @@ function parse(
     case 'string':
       return createStringNode(current);
     case 'number':
+      switch (current) {
+        case Infinity: return INFINITY_NODE;
+        case -Infinity: return NEG_INFINITY_NODE;
+        default: break;
+      }
       // eslint-disable-next-line no-self-compare
       if (current !== current) {
         return NAN_NODE;
       }
       if (Object.is(current, -0)) {
         return NEG_ZERO_NODE;
-      }
-      if (Object.is(current, Infinity)) {
-        return INFINITY_NODE;
-      }
-      if (Object.is(current, -Infinity)) {
-        return NEG_INFINITY_NODE;
       }
       return createNumberNode(current);
     case 'bigint':
