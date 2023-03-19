@@ -492,12 +492,12 @@ function serializePromise(
 ) {
   let serialized: string;
   // Check if resolved value is a parent expression
-  if (isReferenceInStack(ctx, node.n)) {
+  if (isReferenceInStack(ctx, node.f)) {
     // A Promise trick, reference the value
     // inside the `then` expression so that
     // the Promise evaluates after the parent
     // has initialized
-    const ref = getRefParam(ctx, node.n.i);
+    const ref = getRefParam(ctx, node.f.i);
     if (ctx.features & Feature.ArrowFunction) {
       serialized = 'Promise.resolve().then(()=>' + ref + ')';
     } else {
@@ -505,7 +505,7 @@ function serializePromise(
     }
   } else {
     ctx.stack.push(node.i);
-    const result = serializeTree(ctx, node.n);
+    const result = serializeTree(ctx, node.f);
     ctx.stack.pop();
     // just inline the value/reference here
     serialized = 'Promise.resolve(' + result + ')';

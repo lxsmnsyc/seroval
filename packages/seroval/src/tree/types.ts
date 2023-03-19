@@ -45,8 +45,8 @@ export interface SerovalBaseNode {
   d: SerovalDictionaryNode | undefined;
   // array of nodes
   a: SerovalNode[] | undefined;
-  // next node
-  n: SerovalNode | undefined;
+  // fulfilled node
+  f: SerovalNode | undefined;
 }
 
 export interface SerovalObjectRecordNode {
@@ -197,7 +197,7 @@ export interface SerovalNullConstructorNode extends SerovalBaseNode {
 
 export interface SerovalPromiseNode extends SerovalBaseNode {
   t: SerovalNodeType.Promise;
-  n: SerovalNode;
+  f: SerovalNode;
   i: number;
 }
 

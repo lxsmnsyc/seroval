@@ -82,7 +82,7 @@ function generateArrayNode(
     m: undefined,
     d: undefined,
     a: generateNodeList(ctx, current),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -124,7 +124,7 @@ function generateMapNode(
     m: undefined,
     d: { k: keyNodes, v: valueNodes, s: len },
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -160,7 +160,7 @@ function generateSetNode(
     m: undefined,
     d: undefined,
     a: nodes,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -220,7 +220,7 @@ function generateIterableNode(
       ? generateProperties(ctx, options as Record<string, ServerValue>)
       : undefined,
     a: generateNodeList(ctx, array),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -242,7 +242,7 @@ function generateObjectNode(
     m: undefined,
     d: generateProperties(ctx, current),
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -264,7 +264,7 @@ function generateAggregateErrorNode(
     m: current.message,
     d: optionsNode,
     a: generateNodeList(ctx, current.errors as ServerValue[]),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -286,7 +286,7 @@ function generateErrorNode(
     m: current.message,
     d: optionsNode,
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
