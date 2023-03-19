@@ -94,38 +94,28 @@ export function createSerializationContext(options: SerializationOptions): Seria
 export function markRef(ctx: ParserContext | SerializationContext, current: number) {
   ctx.markedRefs.add(current);
 }
-
-/**
- * Creates a new reference ID from a given reference ID
- * This new reference ID means that the reference itself
- * has been referenced at least once, and is used to generate
- * the variables
- */
-function createValidRef(
-  ctx: SerializationContext,
-  index: number,
-) {
-  const current = ctx.validRefs[index];
-  if (current == null) {
-    const value = ctx.refSize++;
-    ctx.validRefs[index] = value;
-    return value;
-  }
-  return current;
-}
-
 /**
  * Creates the reference param (identifier) from the given reference ID
  * Calling this function means the value has been referenced somewhere
  */
 export function getRefParam(ctx: SerializationContext, index: number) {
-  const actualIndex = createValidRef(ctx, index);
-  if (ctx.vars[actualIndex]) {
-    return ctx.vars[actualIndex];
+  /**
+   * Creates a new reference ID from a given reference ID
+   * This new reference ID means that the reference itself
+   * has been referenced at least once, and is used to generate
+   * the variables
+   */
+  let actualIndex = ctx.validRefs[index];
+  if (actualIndex == null) {
+    actualIndex = ctx.refSize++;
+    ctx.validRefs[index] = actualIndex;
   }
-  const result = getIdentifier(actualIndex);
-  ctx.vars[actualIndex] = result;
-  return result;
+  let identifier = ctx.vars[actualIndex];
+  if (identifier == null) {
+    identifier = getIdentifier(actualIndex);
+    ctx.vars[actualIndex] = identifier;
+  }
+  return identifier;
 }
 
 export function getRootID(
