@@ -13,29 +13,29 @@ interface Child {
 
 export default () => {
   const mother: Parent = {
-    name: "Jane",
+    name: 'Jane',
     age: 30,
-    children: []
+    children: [],
   };
 
   const father: Parent = {
-    name: "Frank",
+    name: 'Frank',
     age: 32,
-    children: []
+    children: [],
   };
 
   const child1: Child = {
-    name: "Sue",
+    name: 'Sue',
     age: 5,
     mother, // circular
-    father // circular
+    father, // circular
   };
 
   const child2: Child = {
-    name: "Henry",
+    name: 'Henry',
     age: 10,
     mother, // circular
-    father // circular
+    father, // circular
   };
 
   mother.children.push(child1, child2);
@@ -43,6 +43,6 @@ export default () => {
 
   return {
     mother,
-    father
+    father,
   };
 };

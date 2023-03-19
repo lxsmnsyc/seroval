@@ -1,3 +1,3 @@
 export default () => ({
-  simple: true
+  simple: true,
 });

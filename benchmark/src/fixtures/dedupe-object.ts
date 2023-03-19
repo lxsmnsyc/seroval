@@ -1,20 +1,20 @@
 export default () => {
   const child = {
-    name: "Henry"
+    name: 'Henry',
   };
 
   const mother = {
-    name: "Jane",
-    child
+    name: 'Jane',
+    child,
   };
 
   const father = {
-    name: "Frank",
-    child
+    name: 'Frank',
+    child,
   };
 
   return {
     mother,
-    father
+    father,
   };
 };
