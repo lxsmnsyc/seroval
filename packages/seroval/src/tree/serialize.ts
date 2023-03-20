@@ -518,19 +518,11 @@ function serializeTypedArray(
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
   let result = '';
+  const isBigInt = node.t === SerovalNodeType.BigIntTypedArray;
   for (let i = 0, len = node.s.length; i < len; i++) {
-    if (i !== 0) {
-      result += ',';
-    }
-    result += node.s[i];
-    if (node.t === SerovalNodeType.BigIntTypedArray) {
-      result += 'n';
-    }
+    result += (i !== 0 ? ',' : '') + node.s[i] + (isBigInt ? 'n' : '');
   }
-  let args = '[' + result + ']';
-  if (node.l !== 0) {
-    args += ',' + node.l;
-  }
+  const args = '[' + result + ']' + (node.l !== 0 ? (',' + node.l) : '');
   return assignRef(ctx, node.i, 'new ' + node.c + '(' + args + ')');
 }
 
@@ -570,7 +562,7 @@ export default function serializeTree(
     case SerovalNodeType.Boolean:
       return node.s ? '!0' : '!1';
     case SerovalNodeType.Undefined:
-      return 'undefined';
+      return 'void 0';
     case SerovalNodeType.Null:
       return 'null';
     case SerovalNodeType.NegativeZero:
