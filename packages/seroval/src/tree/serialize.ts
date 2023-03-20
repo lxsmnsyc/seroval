@@ -48,35 +48,55 @@ function mergeAssignments(assignments: Assignment[]) {
   for (let i = 1, len = assignments.length; i < len; i++) {
     item = assignments[i];
     if (item.t === prev.t) {
-      if (item.t === 'index' && item.v === prev.v) {
-        // Merge if the right-hand value is the same
-        // saves at least 2 chars
-        current = {
-          t: 'index',
-          s: item.s,
-          k: undefined,
-          v: getAssignmentExpression(current),
-        };
-      } else if (item.t === 'map' && item.s === prev.s) {
-        // Maps has chaining methods, merge if source is the same
-        current = {
-          t: 'map',
-          s: getAssignmentExpression(current),
-          k: item.k,
-          v: item.v,
-        };
-      } else if (item.t === 'set' && item.s === prev.s) {
-        // Sets has chaining methods too
-        current = {
-          t: 'set',
-          s: getAssignmentExpression(current),
-          k: undefined,
-          v: item.v,
-        };
-      } else {
-        // Different assignment, push current
-        newAssignments.push(current);
-        current = item;
+      switch (item.t) {
+        case 'index':
+          if (item.v === prev.v) {
+            // Merge if the right-hand value is the same
+            // saves at least 2 chars
+            current = {
+              t: 'index',
+              s: item.s,
+              k: undefined,
+              v: getAssignmentExpression(current),
+            };
+          } else {
+            // Different assignment, push current
+            newAssignments.push(current);
+            current = item;
+          }
+          break;
+        case 'map':
+          if (item.s === prev.s) {
+            // Maps has chaining methods, merge if source is the same
+            current = {
+              t: 'map',
+              s: getAssignmentExpression(current),
+              k: item.k,
+              v: item.v,
+            };
+          } else {
+            // Different assignment, push current
+            newAssignments.push(current);
+            current = item;
+          }
+          break;
+        case 'set':
+          if (item.s === prev.s) {
+            // Sets has chaining methods too
+            current = {
+              t: 'set',
+              s: getAssignmentExpression(current),
+              k: undefined,
+              v: item.v,
+            };
+          } else {
+            // Different assignment, push current
+            newAssignments.push(current);
+            current = item;
+          }
+          break;
+        default:
+          break;
       }
     } else {
       newAssignments.push(current);
@@ -223,10 +243,7 @@ function serializeNodeList(
       isHoley = true;
     }
   }
-  if (isHoley) {
-    values += ',';
-  }
-  return '[' + values + ']';
+  return '[' + values + (isHoley ? ',]' : ']');
 }
 
 function serializeArray(
@@ -270,11 +287,9 @@ function serializeProperties(
         createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + quote(key) + '"'), refParam);
       }
     } else {
-      if (hasPrev) {
-        result += ',';
-      }
-      result += isIdentifier ? key : ('"' + quote(key) + '"');
-      result += ':' + serializeTree(ctx, val);
+      result += (hasPrev ? ',' : '')
+        + (isIdentifier ? key : ('"' + quote(key) + '"'))
+        + ':' + serializeTree(ctx, val);
       hasPrev = true;
     }
   }
@@ -344,8 +359,7 @@ function serializeDictionary(
       markRef(ctx, i);
       const assignments = serializeAssignments(ctx, i, d);
       if (assignments) {
-        const ref = getRefParam(ctx, i);
-        return '(' + assignRef(ctx, i, init) + ',' + assignments + ref + ')';
+        return '(' + assignRef(ctx, i, init) + ',' + assignments + getRefParam(ctx, i) + ')';
       }
     }
   }
@@ -383,10 +397,7 @@ function serializeSet(
         createSetAdd(ctx, node.i, getRefParam(ctx, item.i));
       } else {
         // Push directly
-        if (hasPrev) {
-          result += ',';
-        }
-        result += serializeTree(ctx, item);
+        result += (hasPrev ? ',' : '') + serializeTree(ctx, item);
         hasPrev = true;
       }
     }
@@ -446,10 +457,7 @@ function serializeMap(
         createMapSet(ctx, node.i, serializeTree(ctx, key), valueRef);
         ctx.stack = parent;
       } else {
-        if (hasPrev) {
-          result += ',';
-        }
-        result += '[' + serializeTree(ctx, key) + ',' + serializeTree(ctx, val) + ']';
+        result += (hasPrev ? ',[' : '[') + serializeTree(ctx, key) + ',' + serializeTree(ctx, val) + ']';
         hasPrev = true;
       }
     }
