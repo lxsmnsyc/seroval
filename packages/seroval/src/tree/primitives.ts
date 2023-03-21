@@ -247,7 +247,7 @@ export function createBigIntTypedArrayNode(
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
     s: values,
-    l: (current as BigInt64Array).byteOffset,
+    l: current.byteOffset,
     c: constructor,
     m: undefined,
     d: undefined,
