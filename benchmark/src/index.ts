@@ -92,11 +92,6 @@ Object.entries(fixtures).forEach(([key, value]) => {
     }),
     save({
       file: `${suiteName} to string`,
-      folder: 'results/tables',
-      format: 'table.html',
-    }),
-    save({
-      file: `${suiteName} to string`,
       folder: 'results/csv',
       format: 'csv',
     }),
@@ -125,11 +120,6 @@ Object.entries(fixtures).forEach(([key, value]) => {
       file: `${suiteName} from string`,
       folder: 'results/charts',
       format: 'chart.html',
-    }),
-    save({
-      file: `${suiteName} from string`,
-      folder: 'results/tables',
-      format: 'table.html',
     }),
     save({
       file: `${suiteName} from string`,

@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="container">
-      <canvas id="chart1679056470825" width="16" height="9"></canvas>
+      <canvas id="chart1679377958895" width="16" height="9"></canvas>
     </div>
     <script>
       const format = (num) => {
@@ -51,18 +51,18 @@
           chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
         )
       }
-      const ctx1679056470825 = document
-        .getElementById('chart1679056470825')
+      const ctx1679377958895 = document
+        .getElementById('chart1679377958895')
         .getContext('2d')
-      const chart1679056470825 = new Chart(ctx1679056470825, {
+      const chart1679377958895 = new Chart(ctx1679377958895, {
         type: 'bar',
         data: {
           labels: ["devalue","flatted","next-json","o-son","seroval","superjson","warp10"],
           datasets: [
             {
-              data: [66112,53619,60048,100726,118054,7629,122671],
-              backgroundColor: ["hsl(64.668, 85%, 55%)","hsl(52.452, 85%, 55%)","hsl(58.74000000000001, 85%, 55%)","hsl(98.532, 85%, 55%)","hsl(115.48799999999999, 85%, 55%)","hsl(7.463999999999999, 85%, 55%)","hsl(120, 85%, 55%)"],
-              borderColor: ["hsl(64.668, 85%, 55%)","hsl(52.452, 85%, 55%)","hsl(58.74000000000001, 85%, 55%)","hsl(98.532, 85%, 55%)","hsl(115.48799999999999, 85%, 55%)","hsl(7.463999999999999, 85%, 55%)","hsl(120, 85%, 55%)"],
+              data: [65966,53082,52395,102951,119456,8216,122159],
+              backgroundColor: ["hsl(64.80000000000001, 85%, 55%)","hsl(52.14000000000001, 85%, 55%)","hsl(51.468, 85%, 55%)","hsl(101.136, 85%, 55%)","hsl(117.34800000000001, 85%, 55%)","hsl(8.076000000000004, 85%, 55%)","hsl(120, 85%, 55%)"],
+              borderColor: ["hsl(64.80000000000001, 85%, 55%)","hsl(52.14000000000001, 85%, 55%)","hsl(51.468, 85%, 55%)","hsl(101.136, 85%, 55%)","hsl(117.34800000000001, 85%, 55%)","hsl(8.076000000000004, 85%, 55%)","hsl(120, 85%, 55%)"],
               borderWidth: 2,
             },
           ],

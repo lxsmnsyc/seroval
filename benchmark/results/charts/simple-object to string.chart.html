@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="container">
-      <canvas id="chart1679056840996" width="16" height="9"></canvas>
+      <canvas id="chart1679378328875" width="16" height="9"></canvas>
     </div>
     <script>
       const format = (num) => {
@@ -51,18 +51,18 @@
           chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
         )
       }
-      const ctx1679056840996 = document
-        .getElementById('chart1679056840996')
+      const ctx1679378328875 = document
+        .getElementById('chart1679378328875')
         .getContext('2d')
-      const chart1679056840996 = new Chart(ctx1679056840996, {
+      const chart1679378328875 = new Chart(ctx1679378328875, {
         type: 'bar',
         data: {
           labels: ["devalue","flatted","next-json","o-son","seroval","superjson","warp10"],
           datasets: [
             {
-              data: [451908,602557,625363,636444,1203650,307588,889484],
-              backgroundColor: ["hsl(45.048, 85%, 55%)","hsl(60.072, 85%, 55%)","hsl(62.352000000000004, 85%, 55%)","hsl(63.456, 85%, 55%)","hsl(120, 85%, 55%)","hsl(30.659999999999993, 85%, 55%)","hsl(88.68, 85%, 55%)"],
-              borderColor: ["hsl(45.048, 85%, 55%)","hsl(60.072, 85%, 55%)","hsl(62.352000000000004, 85%, 55%)","hsl(63.456, 85%, 55%)","hsl(120, 85%, 55%)","hsl(30.659999999999993, 85%, 55%)","hsl(88.68, 85%, 55%)"],
+              data: [459875,619293,586570,623964,1182614,339784,879128],
+              backgroundColor: ["hsl(46.668000000000006, 85%, 55%)","hsl(62.843999999999994, 85%, 55%)","hsl(59.519999999999996, 85%, 55%)","hsl(63.312, 85%, 55%)","hsl(120, 85%, 55%)","hsl(34.476000000000006, 85%, 55%)","hsl(89.20800000000001, 85%, 55%)"],
+              borderColor: ["hsl(46.668000000000006, 85%, 55%)","hsl(62.843999999999994, 85%, 55%)","hsl(59.519999999999996, 85%, 55%)","hsl(63.312, 85%, 55%)","hsl(120, 85%, 55%)","hsl(34.476000000000006, 85%, 55%)","hsl(89.20800000000001, 85%, 55%)"],
               borderWidth: 2,
             },
           ],
