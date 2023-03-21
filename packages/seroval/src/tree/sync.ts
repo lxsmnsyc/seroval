@@ -372,8 +372,11 @@ function parse(
         default:
           break;
       }
-      if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
-        return generateAggregateErrorNode(ctx, id, current);
+      if (current instanceof AggregateError) {
+        if (ctx.features & Feature.AggregateError) {
+          return generateAggregateErrorNode(ctx, id, current);
+        }
+        return generateErrorNode(ctx, id, current);
       }
       if (current instanceof Error) {
         return generateErrorNode(ctx, id, current);
