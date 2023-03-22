@@ -59,11 +59,11 @@ console.log(result);
 Output (as a string):
 
 ```js
-((h,j,k,m)=>(m={number:[0.9039984824241858,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-16T11:57:24.849Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
+((h,j,k,m)=>(m={number:[0.28952097444015235,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-22T02:53:41.129Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
 ((h, j, k, m) => (m = {
-  number: [0.9039984824241858, -0, NaN, 1 / 0, -1 / 0],
+  number: [0.28952097444015235, -0, NaN, 1 / 0, -1 / 0],
   string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
   boolean: [!0, !1],
   null: null,
@@ -74,7 +74,7 @@ Output (as a string):
     ["mutual", k = new Set(["hello", "world"])]
   ])],
   regexp: /[a-z0-9]+/i,
-  date: new Date("2023-03-16T11:57:24.849Z"),
+  date: new Date("2023-03-22T02:53:41.129Z"),
   map: j,
   set: k
 }, h[3] = h, j.set("self", j), k.add(k).add(h), m.self = m, m))()
@@ -149,7 +149,7 @@ console.log(JSON.stringify(result));
 ```
 
 ```json
-{"t":{"t":8,"i":0,"d":{"k":["number","string","boolean","null","undefined","bigint","array","regexp","date","map","set","self"],"v":[{"t":7,"i":1,"a":[{"t":0,"s":0.7047255726239685},{"t":0,"s":"-0"},{"t":0,"s":null},{"t":0,"s":"1/0"},{"t":0,"s":"-1/0"}]},{"t":7,"i":2,"a":[{"t":0,"s":"\"hello world\""},{"t":0,"s":"\"\\x3Cscript>Hello World\\x3C/script>\""}]},{"t":7,"i":3,"a":[{"t":0,"s":"!0"},{"t":0,"s":"!1"}]},{"t":0,"s":null},{"t":0,"s":"void 0"},{"t":1,"s":"9007199254740991n"},{"t":7,"i":4,"a":[null,null,null,{"t":2,"i":4},{"t":6,"i":5,"d":{"k":[{"t":0,"s":"\"hello\""},{"t":0,"s":"\"self\""},{"t":0,"s":"\"mutual\""}],"v":[{"t":0,"s":"\"world\""},{"t":2,"i":5},{"t":5,"i":6,"a":[{"t":0,"s":"\"hello\""},{"t":0,"s":"\"world\""},{"t":2,"i":6},{"t":2,"i":4}]}],"s":3}}]},{"t":4,"i":7,"s":"/[a-z0-9]+/i"},{"t":3,"i":8,"s":"2023-03-16T12:01:29.836Z"},{"t":2,"i":5},{"t":2,"i":6},{"t":2,"i":0}],"s":12}},"r":0,"i":true,"f":8191,"m":[4,5,6,0]}
+{"t":{"t":16,"i":0,"d":{"k":["number","string","boolean","null","undefined","bigint","array","regexp","date","map","set","self"],"v":[{"t":15,"i":1,"l":5,"a":[{"t":0,"s":0.4350045546286634},{"t":5},{"t":8},{"t":6},{"t":7}]},{"t":15,"i":2,"l":2,"a":[{"t":1,"s":"hello world"},{"t":1,"s":"\\x3Cscript>Hello World\\x3C/script>"}]},{"t":15,"i":3,"l":2,"a":[{"t":2,"s":true},{"t":2,"s":false}]},{"t":3},{"t":4},{"t":9,"s":"9007199254740991"},{"t":15,"i":4,"l":5,"a":[null,null,null,{"t":10,"i":4},{"t":14,"i":5,"d":{"k":[{"t":1,"s":"hello"},{"t":1,"s":"self"},{"t":1,"s":"mutual"}],"v":[{"t":1,"s":"world"},{"t":10,"i":5},{"t":13,"i":6,"l":4,"a":[{"t":1,"s":"hello"},{"t":1,"s":"world"},{"t":10,"i":6},{"t":10,"i":4}]}],"s":3}}]},{"t":12,"i":7,"c":"[a-z0-9]+","m":"i"},{"t":11,"i":8,"s":"2023-03-22T02:55:33.504Z"},{"t":10,"i":5},{"t":10,"i":6},{"t":10,"i":0}],"s":12}},"r":0,"i":true,"f":8191,"m":[4,5,6,0]}
 ```
 
 Then you can feed it to `fromJSON`:
@@ -208,6 +208,7 @@ The following values are the only values accepted by `seroval`:
   - `Date`
   - `Map`
   - `Set`
+  - `Object.create(null)`
 - `TypedArray`
   - `Int8Array`
   - `Int16Array`
@@ -230,11 +231,12 @@ The following values are the only values accepted by `seroval`:
   - `URIError`
 - `Promise` (with `serializeAsync`)
 - [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
+- [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties)
 - Cyclic references (both self and mutual)
 
 ## Compat
 
-`serialize`, `serializeAsync`, `toJSON` and `toJSONAsync` can accept a `{ disabledFeatures: number }` option. The `disabledFeatures` defines how various code output of `serialize`, `serializeAsync` and `compileJSON`.
+`serialize`, `serializeAsync`, `toJSON` and `toJSONAsync` can accept a `{ disabledFeatures: number }` option. The `disabledFeatures` defines how the output code would look like when serialized by `serialize`, `serializeAsync` and `compileJSON`.
 
 ```js
 import { serialize, Feature } from 'seroval';
@@ -281,31 +283,41 @@ By default, all feature flags are enabled. The following are the feature flags a
 - [`AggregateError`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError)
   - Compiles down to `Error` instead.
 - [`ArrayPrototypeValues`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values)
-  - Used for iterables, uses `Symbol.iterator` instead (if `SymbolIterator` is not set).
+  - Used for `Iterable`, uses `Symbol.iterator` instead.
 - [`ArrowFunction`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
-  - Uses function expressions for top-level and for deferred Promise values
-  - method shorthands (if `MethodShortand` is not set) or function expressions for iterables.
+  - Uses function expressions for top-level and for deferred `Promise` values
+  - method shorthands (if `MethodShortand` is not set) or function expressions for `Iterable`.
 - [`BigInt`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
   - Throws when attempted to use, includes `BigIntTypedArray`
+  - Disables use of `BigInt`, `BigInt64Array` and `BigUint64Array`
 - [`ErrorPrototypeStack`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack)
   - Skipped when detected.
+  - Affects both `Error` and `AggregateError`
 - [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
   - Throws when attempted to use.
+  - Disables serialization of `Map`
 - [`MethodShorthand`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions)
   - Uses function expressions instead.
+  - Only affects `Iterable`
 - [`ObjectAssign`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
   - Uses manual object assignments instead.
+  - Affects `Iterable`, `Error`, `AggregateError` and `Object.create(null)`
 - [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
   - Throws when attempted to use in `serializeAsync` and `toJSONAsync`.
+  - Disables serialization of `Promise`
 - [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
   - Throws when attempted to use.
-- [`SymbolIterator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/iterator)
+  - Disables serialization of `Set`
+- [`Symbol`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
   - Throws when attempted to use.
+  - This disables serialization of well-known symbols and `Iterable`.
 - [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
   - Throws when attempted to use.
+  - Disables serialization of `TypedArray`
 - [`BigIntTypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array)
   - Throws when attempted to use
   - Also throws if `BigInt` is disabled.
+  - Disables serialization of `BigInt64Array` and `BigUint64Array`
 
 ## Sponsors
 
