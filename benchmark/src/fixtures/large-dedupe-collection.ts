@@ -1,4 +1,5 @@
-import getData from "./large-simple-collection";
+import getData from './large-simple-collection';
+
 export default () => {
   const result = getData().slice(0, 250);
 

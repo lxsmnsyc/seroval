@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import { createRef, ParserContext } from '../context';
+import { createRef, getRootID, ParserContext } from '../context';
 import { BigIntTypedArrayValue, ServerValue, TypedArrayValue } from '../types';
 import {
   createBigIntNode,
@@ -82,7 +82,7 @@ function generateArrayNode(
     m: undefined,
     d: undefined,
     a: generateNodeList(ctx, current),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -124,7 +124,7 @@ function generateMapNode(
     m: undefined,
     d: { k: keyNodes, v: valueNodes, s: len },
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -160,7 +160,7 @@ function generateSetNode(
     m: undefined,
     d: undefined,
     a: nodes,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -220,7 +220,7 @@ function generateIterableNode(
       ? generateProperties(ctx, options as Record<string, ServerValue>)
       : undefined,
     a: generateNodeList(ctx, array),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -242,7 +242,7 @@ function generateObjectNode(
     m: undefined,
     d: generateProperties(ctx, current),
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -264,7 +264,7 @@ function generateAggregateErrorNode(
     m: current.message,
     d: optionsNode,
     a: generateNodeList(ctx, current.errors as ServerValue[]),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -286,7 +286,7 @@ function generateErrorNode(
     m: current.message,
     d: optionsNode,
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -302,18 +302,17 @@ function parse(
     case 'string':
       return createStringNode(current);
     case 'number':
+      switch (current) {
+        case Infinity: return INFINITY_NODE;
+        case -Infinity: return NEG_INFINITY_NODE;
+        default: break;
+      }
       // eslint-disable-next-line no-self-compare
       if (current !== current) {
         return NAN_NODE;
       }
       if (Object.is(current, -0)) {
         return NEG_ZERO_NODE;
-      }
-      if (Object.is(current, Infinity)) {
-        return INFINITY_NODE;
-      }
-      if (Object.is(current, -Infinity)) {
-        return NEG_INFINITY_NODE;
       }
       return createNumberNode(current);
     case 'bigint':
@@ -324,7 +323,7 @@ function parse(
       }
       // Non-primitive values needs a reference ID
       // mostly because the values themselves are stateful
-      const id = createRef(ctx, current, true);
+      const id = createRef(ctx, current);
       if (ctx.markedRefs.has(id)) {
         return createReferenceNode(id);
       }
@@ -373,8 +372,11 @@ function parse(
         default:
           break;
       }
-      if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
-        return generateAggregateErrorNode(ctx, id, current);
+      if (current instanceof AggregateError) {
+        if (ctx.features & Feature.AggregateError) {
+          return generateAggregateErrorNode(ctx, id, current);
+        }
+        return generateErrorNode(ctx, id, current);
       }
       if (current instanceof Error) {
         return generateErrorNode(ctx, id, current);
@@ -401,5 +403,5 @@ export default function parseSync(
   const result = parse(ctx, current);
   const isObject = result.t === SerovalNodeType.Object
     || result.t === SerovalNodeType.Iterable;
-  return [result, createRef(ctx, current, false), isObject] as const;
+  return [result, getRootID(ctx, current), isObject] as const;
 }

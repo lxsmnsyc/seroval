@@ -195,7 +195,7 @@ function deserializePromise(
 ) {
   const deferred = createDeferred();
   const result = assignRef(ctx, node.i, deferred.promise);
-  deferred.resolve(deserializeTree(ctx, node.n));
+  deferred.resolve(deserializeTree(ctx, node.f));
   return result;
 }
 

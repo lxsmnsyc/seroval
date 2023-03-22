@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import { createRef, ParserContext } from '../context';
+import { createRef, getRootID, ParserContext } from '../context';
 import {
   AsyncServerValue,
   BigIntTypedArrayValue,
@@ -100,7 +100,7 @@ async function generateArrayNode(
     m: undefined,
     d: undefined,
     a: await generateNodeList(ctx, current),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -142,7 +142,7 @@ async function generateMapNode(
     m: undefined,
     d: { k: keyNodes, v: valueNodes, s: len },
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -178,7 +178,7 @@ async function generateSetNode(
     m: undefined,
     d: undefined,
     a: nodes,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -238,7 +238,7 @@ async function generateIterableNode(
       ? await generateProperties(ctx, options as Record<string, AsyncServerValue>)
       : undefined,
     a: await generateNodeList(ctx, array),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -258,7 +258,7 @@ async function generatePromiseNode(
     // Parse options first before the items
     d: undefined,
     a: undefined,
-    n: await parse(ctx, value),
+    f: await parse(ctx, value),
   }));
 }
 
@@ -283,7 +283,7 @@ async function generateObjectNode(
     m: undefined,
     d: await generateProperties(ctx, current as Record<string, AsyncServerValue>),
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -305,7 +305,7 @@ async function generateAggregateErrorNode(
     m: current.message,
     d: optionsNode,
     a: await generateNodeList(ctx, current.errors as AsyncServerValue[]),
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -327,7 +327,7 @@ async function generateErrorNode(
     m: current.message,
     d: optionsNode,
     a: undefined,
-    n: undefined,
+    f: undefined,
   };
 }
 
@@ -343,18 +343,17 @@ async function parse(
     case 'string':
       return createStringNode(current);
     case 'number':
+      switch (current) {
+        case Infinity: return INFINITY_NODE;
+        case -Infinity: return NEG_INFINITY_NODE;
+        default: break;
+      }
       // eslint-disable-next-line no-self-compare
       if (current !== current) {
         return NAN_NODE;
       }
       if (Object.is(current, -0)) {
         return NEG_ZERO_NODE;
-      }
-      if (Object.is(current, Infinity)) {
-        return INFINITY_NODE;
-      }
-      if (Object.is(current, -Infinity)) {
-        return NEG_INFINITY_NODE;
       }
       return createNumberNode(current);
     case 'bigint':
@@ -365,7 +364,7 @@ async function parse(
       }
       // Non-primitive values needs a reference ID
       // mostly because the values themselves are stateful
-      const id = createRef(ctx, current, true);
+      const id = createRef(ctx, current);
       if (ctx.markedRefs.has(id)) {
         return createReferenceNode(id);
       }
@@ -434,8 +433,11 @@ async function parse(
         default:
           break;
       }
-      if (current instanceof AggregateError && ctx.features & Feature.AggregateError) {
-        return generateAggregateErrorNode(ctx, id, current);
+      if (current instanceof AggregateError) {
+        if (ctx.features & Feature.AggregateError) {
+          return generateAggregateErrorNode(ctx, id, current);
+        }
+        return generateErrorNode(ctx, id, current);
       }
       if (current instanceof Error) {
         return generateErrorNode(ctx, id, current);
@@ -469,5 +471,5 @@ export default async function parseAsync(
   const result = await parse(ctx, current);
   const isObject = result.t === SerovalNodeType.Object
     || result.t === SerovalNodeType.Iterable;
-  return [result, createRef(ctx, current, false), isObject] as const;
+  return [result, getRootID(ctx, current), isObject] as const;
 }

@@ -1,6 +1,6 @@
 export default () => {
   const parent = {
-    name: "parent"
+    name: 'parent',
   } as { name: string; child: typeof child };
 
   const child = { parent };

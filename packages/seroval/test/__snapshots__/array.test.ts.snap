@@ -6,7 +6,7 @@ exports[`array holes > serializeAsync > supports array holes 1`] = `"Promise.res
 
 exports[`array holes > toJSON > supports array holes 1`] = `"{\\"t\\":{\\"t\\":15,\\"i\\":0,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null]},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`array holes > toJSONAsync > supports array holes 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"n\\":{\\"t\\":15,\\"i\\":1,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null]}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`array holes > toJSONAsync > supports array holes 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":15,\\"i\\":1,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null]}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
 exports[`arrays > serialize > supports Arrays 1`] = `"[1,2,3]"`;
 
@@ -20,6 +20,6 @@ exports[`arrays > toJSON > supports Arrays 1`] = `"{\\"t\\":{\\"t\\":15,\\"i\\":
 
 exports[`arrays > toJSON > supports self recursion 1`] = `"{\\"t\\":{\\"t\\":15,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":10,\\"i\\":0},{\\"t\\":10,\\"i\\":0}]},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[0]}"`;
 
-exports[`arrays > toJSONAsync > supports Arrays 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"n\\":{\\"t\\":15,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`arrays > toJSONAsync > supports Arrays 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":15,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
 
-exports[`arrays > toJSONAsync > supports self recursion 1`] = `"{\\"t\\":{\\"t\\":15,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":18,\\"i\\":1,\\"n\\":{\\"t\\":10,\\"i\\":0}},{\\"t\\":18,\\"i\\":2,\\"n\\":{\\"t\\":10,\\"i\\":0}}]},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[0]}"`;
+exports[`arrays > toJSONAsync > supports self recursion 1`] = `"{\\"t\\":{\\"t\\":15,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":18,\\"i\\":1,\\"f\\":{\\"t\\":10,\\"i\\":0}},{\\"t\\":18,\\"i\\":2,\\"f\\":{\\"t\\":10,\\"i\\":0}}]},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[0]}"`;
