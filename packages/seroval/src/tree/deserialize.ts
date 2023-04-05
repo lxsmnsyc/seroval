@@ -153,7 +153,7 @@ function deserializeAggregateError(
   node: SerovalAggregateErrorNode,
 ) {
   // Serialize the required arguments
-  const result = assignRef(ctx, node.i, new AggregateError([], node.m));
+  const result = assignRef(ctx, node.i, new AggregateError([], invQuote(node.m)));
   ctx.stack.push(node.i);
   result.errors = deserializeNodeList(ctx, node, new Array<AsyncServerValue>(node.l));
   ctx.stack.pop();
@@ -168,7 +168,7 @@ function deserializeError(
   node: SerovalErrorNode,
 ) {
   const ErrorConstructor = getErrorConstructor(node.c);
-  const result = assignRef(ctx, node.i, new ErrorConstructor(node.m));
+  const result = assignRef(ctx, node.i, new ErrorConstructor(invQuote(node.m)));
   return deserializeDictionary(ctx, node, result);
 }
 

@@ -2,6 +2,7 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { createRef, getRootID, ParserContext } from '../context';
+import quote from '../quote';
 import { BigIntTypedArrayValue, ServerValue, TypedArrayValue } from '../types';
 import {
   createBigIntNode,
@@ -261,7 +262,7 @@ function generateAggregateErrorNode(
     s: undefined,
     l: current.errors.length,
     c: undefined,
-    m: current.message,
+    m: quote(current.message),
     d: optionsNode,
     a: generateNodeList(ctx, current.errors as ServerValue[]),
     f: undefined,
@@ -283,7 +284,7 @@ function generateErrorNode(
     s: undefined,
     l: undefined,
     c: getErrorConstructorName(current),
-    m: current.message,
+    m: quote(current.message),
     d: optionsNode,
     a: undefined,
     f: undefined,
