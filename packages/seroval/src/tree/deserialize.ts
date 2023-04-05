@@ -253,7 +253,7 @@ export default function deserializeTree(
       return NaN;
     case SerovalNodeType.BigInt:
       return BigInt(node.s);
-    case SerovalNodeType.Reference:
+    case SerovalNodeType.IndexedValue:
       return ctx.valueMap.get(node.i);
     case SerovalNodeType.Array:
       return deserializeArray(ctx, node);

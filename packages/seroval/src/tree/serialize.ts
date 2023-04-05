@@ -22,7 +22,7 @@ import {
   SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalPromiseNode,
-  SerovalReferenceNode,
+  SerovalIndexedValueNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
 } from './types';
@@ -205,11 +205,11 @@ function assignRef(
   return value;
 }
 
-function isReferenceInStack(
+function isIndexedValueInStack(
   ctx: SerializationContext,
   node: SerovalNode,
-): node is SerovalReferenceNode {
-  return node.t === SerovalNodeType.Reference && ctx.stack.includes(node.i);
+): node is SerovalIndexedValueNode {
+  return node.t === SerovalNodeType.IndexedValue && ctx.stack.includes(node.i);
 }
 
 function serializeNodeList(
@@ -232,7 +232,7 @@ function serializeNodeList(
     // Check if index is a hole
     if (item) {
       // Check if item is a parent
-      if (isReferenceInStack(ctx, item)) {
+      if (isIndexedValueInStack(ctx, item)) {
         createArrayAssign(ctx, node.i, i, getRefParam(ctx, item.i));
         isHoley = true;
       } else {
@@ -279,7 +279,7 @@ function serializeProperties(
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
     isIdentifier = check >= 0 || isValidIdentifier(key);
-    if (isReferenceInStack(ctx, val)) {
+    if (isIndexedValueInStack(ctx, val)) {
       refParam = getRefParam(ctx, val.i);
       if (isIdentifier && Number.isNaN(check)) {
         createObjectAssign(ctx, sourceID, key, refParam);
@@ -393,7 +393,7 @@ function serializeSet(
     let hasPrev = false;
     for (let i = 0; i < size; i++) {
       item = node.a[i];
-      if (isReferenceInStack(ctx, item)) {
+      if (isIndexedValueInStack(ctx, item)) {
         createSetAdd(ctx, node.i, getRefParam(ctx, item.i));
       } else {
         // Push directly
@@ -427,11 +427,11 @@ function serializeMap(
       // Check if key is a parent
       key = node.d.k[i];
       val = node.d.v[i];
-      if (isReferenceInStack(ctx, key)) {
+      if (isIndexedValueInStack(ctx, key)) {
         // Create reference for the map instance
         keyRef = getRefParam(ctx, key.i);
         // Check if value is a parent
-        if (isReferenceInStack(ctx, val)) {
+        if (isIndexedValueInStack(ctx, val)) {
           valueRef = getRefParam(ctx, val.i);
           // Register an assignment since
           // both key and value are a parent of this
@@ -448,7 +448,7 @@ function serializeMap(
           createMapSet(ctx, node.i, keyRef, serializeTree(ctx, val));
           ctx.stack = parent;
         }
-      } else if (isReferenceInStack(ctx, val)) {
+      } else if (isIndexedValueInStack(ctx, val)) {
         // Create ref for the Map instance
         valueRef = getRefParam(ctx, val.i);
         // Reset stack for the key serialization
@@ -500,7 +500,7 @@ function serializePromise(
 ) {
   let serialized: string;
   // Check if resolved value is a parent expression
-  if (isReferenceInStack(ctx, node.f)) {
+  if (isIndexedValueInStack(ctx, node.f)) {
     // A Promise trick, reference the value
     // inside the `then` expression so that
     // the Promise evaluates after the parent
@@ -583,7 +583,7 @@ export default function serializeTree(
       return 'NaN';
     case SerovalNodeType.BigInt:
       return node.s + 'n';
-    case SerovalNodeType.Reference:
+    case SerovalNodeType.IndexedValue:
       return getRefParam(ctx, node.i);
     case SerovalNodeType.Array:
       return serializeArray(ctx, node);

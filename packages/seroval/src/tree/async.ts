@@ -14,7 +14,7 @@ import {
   createBigIntTypedArrayNode,
   createDateNode,
   createNumberNode,
-  createReferenceNode,
+  createIndexedValueNode,
   createRegExpNode,
   createStringNode,
   createTypedArrayNode,
@@ -367,7 +367,7 @@ async function parse(
       // mostly because the values themselves are stateful
       const id = createRef(ctx, current);
       if (ctx.markedRefs.has(id)) {
-        return createReferenceNode(id);
+        return createIndexedValueNode(id);
       }
       if (Array.isArray(current)) {
         return generateArrayNode(ctx, id, current);

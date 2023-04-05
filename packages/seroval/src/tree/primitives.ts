@@ -16,12 +16,13 @@ import {
   SerovalNodeType,
   SerovalNullNode,
   SerovalNumberNode,
-  SerovalReferenceNode,
+  SerovalIndexedValueNode,
   SerovalRegExpNode,
   SerovalStringNode,
   SerovalTypedArrayNode,
   SerovalUndefinedNode,
   SerovalWKSymbolNode,
+  SerovalReferenceNode,
 } from './types';
 
 export const TRUE_NODE: SerovalBooleanNode = {
@@ -159,9 +160,9 @@ export function createBigIntNode(
   };
 }
 
-export function createReferenceNode(id: number): SerovalReferenceNode {
+export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
   return {
-    t: SerovalNodeType.Reference,
+    t: SerovalNodeType.IndexedValue,
     i: id,
     s: undefined,
     l: undefined,
@@ -266,6 +267,22 @@ export function createWKSymbolNode(
     t: SerovalNodeType.WKSymbol,
     i: undefined,
     s: INV_SYMBOL_REF[current],
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: undefined,
+  };
+}
+
+export function createReferenceNode(
+  id: string,
+): SerovalReferenceNode {
+  return {
+    t: SerovalNodeType.Reference,
+    i: undefined,
+    s: id,
     l: undefined,
     c: undefined,
     m: undefined,
