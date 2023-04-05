@@ -235,13 +235,14 @@ export interface SerovalWKSymbolNode extends SerovalBaseNode {
 
 export interface SerovalURLNode extends SerovalBaseNode {
   t: SerovalNodeType.URL;
+  i: number;
   s: string;
 }
 
 export interface SerovalURLSearchParamsNode extends SerovalBaseNode {
   t: SerovalNodeType.URLSearchParams;
   i: number;
-  a: SerovalNode[];
+  s: string;
 }
 
 export type SerovalNode =

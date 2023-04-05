@@ -282,6 +282,10 @@ export default function deserializeTree(
       return deserializePromise(ctx, node);
     case SerovalNodeType.WKSymbol:
       return SYMBOL_REF[node.s];
+    case SerovalNodeType.URL:
+      return assignRef(ctx, node.i, new URL(node.s));
+    case SerovalNodeType.URLSearchParams:
+      return assignRef(ctx, node.i, new URLSearchParams(node.s));
     default:
       throw new Error('Unsupported type');
   }

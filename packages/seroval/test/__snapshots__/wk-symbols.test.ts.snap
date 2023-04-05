@@ -52,54 +52,54 @@ exports[`well-known symbols > serializeAsync > supports strings 12`] = `"Promise
 
 exports[`well-known symbols > serializeAsync > supports strings 13`] = `"Promise.resolve(Symbol.unscopables)"`;
 
-exports[`well-known symbols > toJSON > supports strings 1`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":0},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 1`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":0},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 2`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":1},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 2`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":1},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 3`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":2},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 3`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":2},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 4`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":3},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 4`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":3},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 5`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":4},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 5`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":4},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 6`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":5},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 6`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":5},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 7`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":6},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 7`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":6},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 8`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":7},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 8`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":7},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 9`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":8},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 9`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":8},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 10`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":9},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 10`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":9},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 11`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":10},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 11`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":10},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 12`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":11},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 12`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":11},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSON > supports strings 13`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":12},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports strings 13`] = `"{\\"t\\":{\\"t\\":24,\\"s\\":12},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":0}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":0}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 2`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 2`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 3`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":2}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 3`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":2}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 4`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":3}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 4`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":3}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 5`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":4}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 5`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":4}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 6`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":5}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 6`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":5}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 7`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":6}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 7`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":6}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 8`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":7}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 8`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":7}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 9`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":8}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 9`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":8}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 10`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":9}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 10`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":9}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 11`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":10}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 11`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":10}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 12`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":11}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 12`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":11}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports strings 13`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":12}},\\"r\\":0,\\"i\\":false,\\"f\\":8191,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports strings 13`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":24,\\"s\\":12}},\\"r\\":0,\\"i\\":false,\\"f\\":12287,\\"m\\":[]}"`;
