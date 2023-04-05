@@ -305,16 +305,16 @@ function parse(
       switch (current) {
         case Infinity: return INFINITY_NODE;
         case -Infinity: return NEG_INFINITY_NODE;
-        default: break;
+        default:
+          // eslint-disable-next-line no-self-compare
+          if (current !== current) {
+            return NAN_NODE;
+          }
+          if (Object.is(current, -0)) {
+            return NEG_ZERO_NODE;
+          }
+          return createNumberNode(current);
       }
-      // eslint-disable-next-line no-self-compare
-      if (current !== current) {
-        return NAN_NODE;
-      }
-      if (Object.is(current, -0)) {
-        return NEG_ZERO_NODE;
-      }
-      return createNumberNode(current);
     case 'bigint':
       return createBigIntNode(ctx, current);
     case 'object': {
