@@ -232,6 +232,8 @@ The following values are the only values accepted by `seroval`:
 - `Promise` (with `serializeAsync`)
 - [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties)
+- [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+- [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
 - Cyclic references (both self and mutual)
 
 ## Compat
@@ -318,6 +320,10 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Throws when attempted to use
   - Also throws if `BigInt` is disabled.
   - Disables serialization of `BigInt64Array` and `BigUint64Array`
+- `WebAPI`
+  - Throws and disables the following usage:
+    - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+    - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
 
 ## Sponsors
 
