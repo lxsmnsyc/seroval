@@ -28,7 +28,6 @@ import {
   getIterableOptions,
   isIterable,
 } from './shared';
-import { INV_SYMBOL_REF } from './symbols';
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -388,9 +387,7 @@ function parse(
       throw new Error('Unsupported type');
     }
     case 'symbol':
-      assert(ctx.features & Feature.Symbol, 'Unsupported type "symbol"');
-      assert(current in INV_SYMBOL_REF, 'seroval only supports well-known symbols');
-      return createWKSymbolNode(current);
+      return createWKSymbolNode(ctx, current);
     default:
       throw new Error('Unsupported type');
   }

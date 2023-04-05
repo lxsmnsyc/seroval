@@ -257,8 +257,11 @@ export function createBigIntTypedArrayNode(
 }
 
 export function createWKSymbolNode(
+  ctx: ParserContext,
   current: WellKnownSymbols,
 ): SerovalWKSymbolNode {
+  assert(ctx.features & Feature.Symbol, 'Unsupported type "symbol"');
+  assert(current in INV_SYMBOL_REF, 'seroval only supports well-known symbols');
   return {
     t: SerovalNodeType.WKSymbol,
     i: undefined,
