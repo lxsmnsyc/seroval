@@ -238,6 +238,12 @@ export interface SerovalURLNode extends SerovalBaseNode {
   s: string;
 }
 
+export interface SerovalURLSearchParamsNode extends SerovalBaseNode {
+  t: SerovalNodeType.URLSearchParams;
+  i: number;
+  a: SerovalNode[];
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalReferenceNode
@@ -252,4 +258,5 @@ export type SerovalNode =
   | SerovalAggregateErrorNode
   | SerovalIterableNode
   | SerovalWKSymbolNode
-  | SerovalURLNode;
+  | SerovalURLNode
+  | SerovalURLSearchParamsNode;

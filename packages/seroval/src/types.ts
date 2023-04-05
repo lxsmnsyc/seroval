@@ -35,7 +35,8 @@ export type BigIntTypedArrayValue =
   | BigUint64Array;
 
 export type WebAPIValue =
-  | URL;
+  | URL
+  | URLSearchParams;
 
 export type SemiPrimitiveValue =
   | RegExp

@@ -40,6 +40,7 @@ import {
   SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalSetNode,
+  SerovalURLSearchParamsNode,
 } from './types';
 import { createURLNode } from './web-api';
 
@@ -290,6 +291,29 @@ function generateErrorNode(
   };
 }
 
+function generateURLSearchParamsNode(
+  ctx: ParserContext,
+  id: number,
+  current: URLSearchParams,
+): SerovalURLSearchParamsNode {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "URLSearchParams"');
+  const values: SerovalNode[] = [];
+  for (const entry of current.entries()) {
+    values.push(parse(ctx, entry));
+  }
+  return {
+    t: SerovalNodeType.URLSearchParams,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: values,
+    f: undefined,
+  };
+}
+
 function parse(
   ctx: ParserContext,
   current: ServerValue,
@@ -371,6 +395,8 @@ function parse(
           return generateErrorNode(ctx, id, current as Error);
         case URL:
           return createURLNode(ctx, id, current as URL);
+        case URLSearchParams:
+          return generateURLSearchParamsNode(ctx, id, current as URLSearchParams);
         default:
           break;
       }
