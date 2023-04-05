@@ -47,6 +47,7 @@ import {
   SerovalPromiseNode,
   SerovalSetNode,
 } from './types';
+import { createURLNode } from './web-api';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -429,6 +430,8 @@ async function parse(
         case TypeError:
         case URIError:
           return generateErrorNode(ctx, id, current as Error);
+        case URL:
+          return createURLNode(ctx, id, current as URL);
         default:
           break;
       }

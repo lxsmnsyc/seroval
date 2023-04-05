@@ -26,6 +26,8 @@ export const enum SerovalNodeType {
   TypedArray,
   BigIntTypedArray,
   WKSymbol,
+  URL,
+  URLSearchParams
 }
 
 export interface SerovalBaseNode {
@@ -231,6 +233,11 @@ export interface SerovalWKSymbolNode extends SerovalBaseNode {
   s: Symbols;
 }
 
+export interface SerovalURLNode extends SerovalBaseNode {
+  t: SerovalNodeType.URL;
+  s: string;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalReferenceNode
@@ -244,4 +251,5 @@ export type SerovalNode =
   | SerovalErrorNode
   | SerovalAggregateErrorNode
   | SerovalIterableNode
-  | SerovalWKSymbolNode;
+  | SerovalWKSymbolNode
+  | SerovalURLNode;

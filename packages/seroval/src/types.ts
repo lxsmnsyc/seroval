@@ -34,12 +34,16 @@ export type BigIntTypedArrayValue =
   | BigInt64Array
   | BigUint64Array;
 
+export type WebAPIValue =
+  | URL;
+
 export type SemiPrimitiveValue =
   | RegExp
   | Date
   | TypedArrayValue
   | BigIntTypedArrayValue
-  | bigint;
+  | bigint
+  | WebAPIValue;
 
 export type CommonServerValue =
   | PrimitiveValue
