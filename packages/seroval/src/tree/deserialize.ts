@@ -4,6 +4,7 @@ import {
 } from '../context';
 import { invQuote } from '../quote';
 import { AsyncServerValue } from '../types';
+import { getReference } from './reference';
 import { getErrorConstructor, getTypedArrayConstructor } from './shared';
 import { SYMBOL_REF } from './symbols';
 import {
@@ -23,7 +24,7 @@ import {
   SerovalTypedArrayNode,
 } from './types';
 
-function assignRef<T extends AsyncServerValue>(
+function assignIndexedValue<T>(
   ctx: SerializationContext,
   index: number,
   value: T,
@@ -35,7 +36,7 @@ function assignRef<T extends AsyncServerValue>(
 function deserializeNodeList(
   ctx: SerializationContext,
   node: SerovalArrayNode | SerovalIterableNode | SerovalAggregateErrorNode,
-  result: AsyncServerValue[],
+  result: unknown[],
 ) {
   let item: SerovalNode;
   for (let i = 0, len = node.a.length; i < len; i++) {
@@ -51,7 +52,7 @@ function deserializeArray(
   ctx: SerializationContext,
   node: SerovalArrayNode,
 ) {
-  const result: AsyncServerValue[] = assignRef(
+  const result: AsyncServerValue[] = assignIndexedValue(
     ctx,
     node.i,
     new Array<AsyncServerValue>(node.l),
@@ -65,7 +66,7 @@ function deserializeArray(
 function deserializeProperties(
   ctx: SerializationContext,
   node: SerovalObjectRecordNode,
-  result: Record<string, AsyncServerValue>,
+  result: Record<string, unknown>,
 ) {
   if (node.s === 0) {
     return {};
@@ -80,7 +81,11 @@ function deserializeNullConstructor(
   ctx: SerializationContext,
   node: SerovalNullConstructorNode,
 ) {
-  const result = assignRef(ctx, node.i, Object.create(null) as Record<string, AsyncServerValue>);
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    Object.create(null) as Record<string, AsyncServerValue>,
+  );
   ctx.stack.push(node.i);
   deserializeProperties(ctx, node.d, result);
   ctx.stack.pop();
@@ -91,7 +96,7 @@ function deserializeObject(
   ctx: SerializationContext,
   node: SerovalObjectNode,
 ) {
-  const result = assignRef(ctx, node.i, {} as Record<string, AsyncServerValue>);
+  const result = assignIndexedValue(ctx, node.i, {} as Record<string, AsyncServerValue>);
   ctx.stack.push(node.i);
   deserializeProperties(ctx, node.d, result);
   ctx.stack.pop();
@@ -102,7 +107,7 @@ function deserializeSet(
   ctx: SerializationContext,
   node: SerovalSetNode,
 ) {
-  const result = assignRef(ctx, node.i, new Set<AsyncServerValue>());
+  const result = assignIndexedValue(ctx, node.i, new Set<unknown>());
   ctx.stack.push(node.i);
   for (let i = 0, len = node.a.length; i < len; i++) {
     result.add(deserializeTree(ctx, node.a[i]));
@@ -115,10 +120,10 @@ function deserializeMap(
   ctx: SerializationContext,
   node: SerovalMapNode,
 ) {
-  const result = assignRef(
+  const result = assignIndexedValue(
     ctx,
     node.i,
-    new Map<AsyncServerValue, AsyncServerValue>(),
+    new Map<unknown, unknown>(),
   );
   ctx.stack.push(node.i);
   for (let i = 0; i < node.d.s; i++) {
@@ -153,7 +158,7 @@ function deserializeAggregateError(
   node: SerovalAggregateErrorNode,
 ) {
   // Serialize the required arguments
-  const result = assignRef(ctx, node.i, new AggregateError([], invQuote(node.m)));
+  const result = assignIndexedValue(ctx, node.i, new AggregateError([], invQuote(node.m)));
   ctx.stack.push(node.i);
   result.errors = deserializeNodeList(ctx, node, new Array<AsyncServerValue>(node.l));
   ctx.stack.pop();
@@ -168,13 +173,13 @@ function deserializeError(
   node: SerovalErrorNode,
 ) {
   const ErrorConstructor = getErrorConstructor(node.c);
-  const result = assignRef(ctx, node.i, new ErrorConstructor(invQuote(node.m)));
+  const result = assignIndexedValue(ctx, node.i, new ErrorConstructor(invQuote(node.m)));
   return deserializeDictionary(ctx, node, result);
 }
 
 interface Deferred {
-  resolve(value: AsyncServerValue): void;
-  promise: Promise<AsyncServerValue>;
+  resolve(value: unknown): void;
+  promise: Promise<unknown>;
 }
 
 function createDeferred(): Deferred {
@@ -194,7 +199,7 @@ function deserializePromise(
   node: SerovalPromiseNode,
 ) {
   const deferred = createDeferred();
-  const result = assignRef(ctx, node.i, deferred.promise);
+  const result = assignIndexedValue(ctx, node.i, deferred.promise);
   deferred.resolve(deserializeTree(ctx, node.f));
   return result;
 }
@@ -205,7 +210,7 @@ function deserializeTypedArray(
 ) {
   const TypedArray = getTypedArrayConstructor(node.c);
   const dummy = new TypedArray();
-  const result = assignRef(ctx, node.i, new TypedArray(
+  const result = assignIndexedValue(ctx, node.i, new TypedArray(
     dummy.buffer,
     node.l,
   ));
@@ -223,7 +228,7 @@ function deserializeIterable(
 ) {
   const values: AsyncServerValue[] = [];
   deserializeNodeList(ctx, node, values);
-  const result = assignRef(ctx, node.i, {
+  const result = assignIndexedValue(ctx, node.i, {
     [Symbol.iterator]: () => values.values(),
   });
   return deserializeDictionary(ctx, node, result);
@@ -232,7 +237,7 @@ function deserializeIterable(
 export default function deserializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
-): AsyncServerValue {
+): unknown {
   switch (node.t) {
     case SerovalNodeType.Number:
     case SerovalNodeType.Boolean:
@@ -262,9 +267,9 @@ export default function deserializeTree(
     case SerovalNodeType.NullConstructor:
       return deserializeNullConstructor(ctx, node);
     case SerovalNodeType.Date:
-      return assignRef(ctx, node.i, new Date(node.s));
+      return assignIndexedValue(ctx, node.i, new Date(node.s));
     case SerovalNodeType.RegExp:
-      return assignRef(ctx, node.i, new RegExp(node.c, node.m));
+      return assignIndexedValue(ctx, node.i, new RegExp(node.c, node.m));
     case SerovalNodeType.Set:
       return deserializeSet(ctx, node);
     case SerovalNodeType.Map:
@@ -283,9 +288,11 @@ export default function deserializeTree(
     case SerovalNodeType.WKSymbol:
       return SYMBOL_REF[node.s];
     case SerovalNodeType.URL:
-      return assignRef(ctx, node.i, new URL(node.s));
+      return assignIndexedValue(ctx, node.i, new URL(node.s));
     case SerovalNodeType.URLSearchParams:
-      return assignRef(ctx, node.i, new URLSearchParams(node.s));
+      return assignIndexedValue(ctx, node.i, new URLSearchParams(node.s));
+    case SerovalNodeType.Reference:
+      return assignIndexedValue(ctx, node.i, getReference(invQuote(node.s)));
     default:
       throw new Error('Unsupported type');
   }

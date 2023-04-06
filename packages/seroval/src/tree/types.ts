@@ -28,6 +28,7 @@ export const enum SerovalNodeType {
   WKSymbol,
   URL,
   URLSearchParams,
+  Reference,
 }
 
 export interface SerovalBaseNode {
@@ -245,6 +246,12 @@ export interface SerovalURLSearchParamsNode extends SerovalBaseNode {
   s: string;
 }
 
+export interface SerovalReferenceNode extends SerovalBaseNode {
+  t: SerovalNodeType.Reference;
+  i: number;
+  s: string;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -260,4 +267,5 @@ export type SerovalNode =
   | SerovalIterableNode
   | SerovalWKSymbolNode
   | SerovalURLNode
-  | SerovalURLSearchParamsNode;
+  | SerovalURLSearchParamsNode
+  | SerovalReferenceNode;

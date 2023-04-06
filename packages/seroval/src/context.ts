@@ -1,6 +1,5 @@
 import { ALL_ENABLED } from './compat';
 import getIdentifier from './get-identifier';
-import { AsyncServerValue } from './types';
 
 interface IndexAssignment {
   t: 'index';
@@ -49,7 +48,7 @@ export interface SerializationContext {
   // Supported features
   features: number;
 
-  valueMap: Map<number, AsyncServerValue>;
+  valueMap: Map<number, unknown>;
 }
 
 export interface Options {
@@ -118,9 +117,9 @@ export function getRefParam(ctx: SerializationContext, index: number) {
   return identifier;
 }
 
-export function getRootID(
+export function getRootID<T>(
   ctx: ParserContext,
-  current: AsyncServerValue,
+  current: T,
 ) {
   const ref = ctx.refs.get(current);
   if (ref == null) {
@@ -129,9 +128,9 @@ export function getRootID(
   return ref;
 }
 
-export function createRef(
+export function createIndexedValue<T>(
   ctx: ParserContext,
-  current: AsyncServerValue,
+  current: T,
 ) {
   const ref = ctx.refs.get(current);
   if (ref == null) {

@@ -3,6 +3,7 @@ import { Feature } from '../compat';
 import { ParserContext } from '../context';
 import quote from '../quote';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import { getReferenceID } from './reference';
 import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
 import {
   SerovalBigIntNode,
@@ -276,13 +277,14 @@ export function createWKSymbolNode(
   };
 }
 
-export function createReferenceNode(
-  id: string,
+export function createReferenceNode<T>(
+  id: number,
+  ref: T,
 ): SerovalReferenceNode {
   return {
     t: SerovalNodeType.Reference,
-    i: undefined,
-    s: id,
+    i: id,
+    s: quote(getReferenceID(ref)),
     l: undefined,
     c: undefined,
     m: undefined,
