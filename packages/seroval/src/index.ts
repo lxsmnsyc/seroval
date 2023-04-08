@@ -12,14 +12,6 @@ import deserializeTree from './tree/deserialize';
 import serializeTree, { resolvePatches } from './tree/serialize';
 import parseSync from './tree/sync';
 import { SerovalNode } from './tree/types';
-import {
-  AsyncServerValue,
-  PrimitiveValue,
-  ServerValue,
-  CommonServerValue,
-  SemiPrimitiveValue,
-  ErrorValue,
-} from './types';
 
 export {
   AsyncServerValue,
@@ -28,8 +20,8 @@ export {
   CommonServerValue,
   SemiPrimitiveValue,
   ErrorValue,
-  Feature,
-};
+} from './types';
+export { Feature } from './compat';
 
 function finalize(
   ctx: SerializationContext,
@@ -67,7 +59,7 @@ function finalize(
   return result;
 }
 
-export function serialize<T extends ServerValue>(
+export function serialize<T>(
   source: T,
   options?: Partial<Options>,
 ) {
@@ -78,7 +70,7 @@ export function serialize<T extends ServerValue>(
   return finalize(serial, rootID, isObject, result);
 }
 
-export async function serializeAsync<T extends AsyncServerValue>(
+export async function serializeAsync<T>(
   source: T,
   options?: Partial<Options>,
 ) {
@@ -89,7 +81,7 @@ export async function serializeAsync<T extends AsyncServerValue>(
   return finalize(serial, rootID, isObject, result);
 }
 
-export function deserialize<T extends AsyncServerValue>(source: string): T {
+export function deserialize<T>(source: string): T {
   // eslint-disable-next-line no-eval
   return (0, eval)(source) as T;
 }
@@ -102,7 +94,7 @@ export interface SerovalJSON {
   m: number[],
 }
 
-export function toJSON<T extends ServerValue>(
+export function toJSON<T>(
   source: T,
   options?: Partial<Options>,
 ): SerovalJSON {
@@ -117,7 +109,7 @@ export function toJSON<T extends ServerValue>(
   };
 }
 
-export async function toJSONAsync<T extends AsyncServerValue>(
+export async function toJSONAsync<T>(
   source: T,
   options?: Partial<Options>,
 ): Promise<SerovalJSON> {
@@ -141,7 +133,7 @@ export function compileJSON(source: SerovalJSON): string {
   return finalize(serial, source.r, source.i, result);
 }
 
-export function fromJSON<T extends AsyncServerValue>(source: SerovalJSON): T {
+export function fromJSON<T>(source: SerovalJSON): T {
   const serial = createSerializationContext({
     features: source.f,
     markedRefs: source.m,
@@ -150,3 +142,5 @@ export function fromJSON<T extends AsyncServerValue>(source: SerovalJSON): T {
 }
 
 export default serialize;
+
+export { createReference } from './tree/reference';

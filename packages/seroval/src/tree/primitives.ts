@@ -3,6 +3,7 @@ import { Feature } from '../compat';
 import { ParserContext } from '../context';
 import quote from '../quote';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import { getReferenceID } from './reference';
 import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
 import {
   SerovalBigIntNode,
@@ -16,12 +17,13 @@ import {
   SerovalNodeType,
   SerovalNullNode,
   SerovalNumberNode,
-  SerovalReferenceNode,
+  SerovalIndexedValueNode,
   SerovalRegExpNode,
   SerovalStringNode,
   SerovalTypedArrayNode,
   SerovalUndefinedNode,
   SerovalWKSymbolNode,
+  SerovalReferenceNode,
 } from './types';
 
 export const TRUE_NODE: SerovalBooleanNode = {
@@ -159,9 +161,9 @@ export function createBigIntNode(
   };
 }
 
-export function createReferenceNode(id: number): SerovalReferenceNode {
+export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
   return {
-    t: SerovalNodeType.Reference,
+    t: SerovalNodeType.IndexedValue,
     i: id,
     s: undefined,
     l: undefined,
@@ -257,12 +259,32 @@ export function createBigIntTypedArrayNode(
 }
 
 export function createWKSymbolNode(
+  ctx: ParserContext,
   current: WellKnownSymbols,
 ): SerovalWKSymbolNode {
+  assert(ctx.features & Feature.Symbol, 'Unsupported type "symbol"');
+  assert(current in INV_SYMBOL_REF, 'seroval only supports well-known symbols');
   return {
     t: SerovalNodeType.WKSymbol,
     i: undefined,
     s: INV_SYMBOL_REF[current],
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: undefined,
+  };
+}
+
+export function createReferenceNode<T>(
+  id: number,
+  ref: T,
+): SerovalReferenceNode {
+  return {
+    t: SerovalNodeType.Reference,
+    i: id,
+    s: quote(getReferenceID(ref)),
     l: undefined,
     c: undefined,
     m: undefined,

@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import { createRef, getRootID, ParserContext } from '../context';
-import { BigIntTypedArrayValue, ServerValue, TypedArrayValue } from '../types';
+import { createIndexedValue, getRootID, ParserContext } from '../context';
+import quote from '../quote';
+import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import {
   createBigIntNode,
   createBigIntTypedArrayNode,
   createDateNode,
   createNumberNode,
-  createReferenceNode,
+  createIndexedValueNode,
   createRegExpNode,
   createStringNode,
   createTypedArrayNode,
@@ -21,14 +22,18 @@ import {
   NULL_NODE,
   TRUE_NODE,
   UNDEFINED_NODE,
+  createReferenceNode,
 } from './primitives';
+import {
+  hasReferenceID,
+} from './reference';
 import {
   getErrorConstructorName,
   getErrorOptions,
   getIterableOptions,
   isIterable,
 } from './shared';
-import { INV_SYMBOL_REF } from './symbols';
+import { WellKnownSymbols } from './symbols';
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -42,14 +47,15 @@ import {
   SerovalObjectRecordNode,
   SerovalSetNode,
 } from './types';
+import { createURLNode, createURLSearchParamsNode } from './web-api';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode | SerovalIterableNode;
 
-function generateNodeList(ctx: ParserContext, current: ServerValue[]) {
+function generateNodeList(ctx: ParserContext, current: unknown[]) {
   const size = current.length;
   const nodes = new Array<SerovalNode>(size);
-  const deferred = new Array<ServerValue>(size);
-  let item: ServerValue;
+  const deferred = new Array<unknown>(size);
+  let item: unknown;
   for (let i = 0; i < size; i++) {
     if (i in current) {
       item = current[i];
@@ -71,7 +77,7 @@ function generateNodeList(ctx: ParserContext, current: ServerValue[]) {
 function generateArrayNode(
   ctx: ParserContext,
   id: number,
-  current: ServerValue[],
+  current: unknown[],
 ): SerovalArrayNode {
   return {
     t: SerovalNodeType.Array,
@@ -89,14 +95,14 @@ function generateArrayNode(
 function generateMapNode(
   ctx: ParserContext,
   id: number,
-  current: Map<ServerValue, ServerValue>,
+  current: Map<unknown, unknown>,
 ): SerovalMapNode {
   assert(ctx.features & Feature.Map, 'Unsupported type "Map"');
   const len = current.size;
   const keyNodes = new Array<SerovalNode>(len);
   const valueNodes = new Array<SerovalNode>(len);
-  const deferredKey = new Array<ServerValue>(len);
-  const deferredValue = new Array<ServerValue>(len);
+  const deferredKey = new Array<unknown>(len);
+  const deferredValue = new Array<unknown>(len);
   let deferredSize = 0;
   let nodeSize = 0;
   for (const [key, value] of current.entries()) {
@@ -131,12 +137,12 @@ function generateMapNode(
 function generateSetNode(
   ctx: ParserContext,
   id: number,
-  current: Set<ServerValue>,
+  current: Set<unknown>,
 ): SerovalSetNode {
   assert(ctx.features & Feature.Set, 'Unsupported type "Set"');
   const len = current.size;
   const nodes = new Array<SerovalNode>(len);
-  const deferred = new Array<ServerValue>(len);
+  const deferred = new Array<unknown>(len);
   let deferredSize = 0;
   let nodeSize = 0;
   for (const item of current.keys()) {
@@ -166,17 +172,17 @@ function generateSetNode(
 
 function generateProperties(
   ctx: ParserContext,
-  properties: Record<string, ServerValue>,
+  properties: Record<string, unknown>,
 ): SerovalObjectRecordNode {
   const keys = Object.keys(properties);
   const size = keys.length;
   const keyNodes = new Array<string>(size);
   const valueNodes = new Array<SerovalNode>(size);
   const deferredKeys = new Array<string>(size);
-  const deferredValues = new Array<ServerValue>(size);
+  const deferredValues = new Array<unknown>(size);
   let deferredSize = 0;
   let nodesSize = 0;
-  let item: ServerValue;
+  let item: unknown;
   for (const key of keys) {
     item = properties[key];
     if (isIterable(item)) {
@@ -203,7 +209,7 @@ function generateProperties(
 function generateIterableNode(
   ctx: ParserContext,
   id: number,
-  current: Iterable<ServerValue>,
+  current: Iterable<unknown>,
 ): SerovalIterableNode {
   assert(ctx.features & Feature.Symbol, 'Unsupported type "Iterable"');
   const options = getIterableOptions(current);
@@ -217,7 +223,7 @@ function generateIterableNode(
     m: undefined,
     // Parse options first before the items
     d: options
-      ? generateProperties(ctx, options as Record<string, ServerValue>)
+      ? generateProperties(ctx, options)
       : undefined,
     a: generateNodeList(ctx, array),
     f: undefined,
@@ -227,7 +233,7 @@ function generateIterableNode(
 function generateObjectNode(
   ctx: ParserContext,
   id: number,
-  current: Record<string, ServerValue> | Iterable<ServerValue>,
+  current: Record<string, unknown> | Iterable<unknown>,
   empty: boolean,
 ): ObjectLikeNode {
   if (Symbol.iterator in current) {
@@ -261,9 +267,9 @@ function generateAggregateErrorNode(
     s: undefined,
     l: current.errors.length,
     c: undefined,
-    m: current.message,
+    m: quote(current.message),
     d: optionsNode,
-    a: generateNodeList(ctx, current.errors as ServerValue[]),
+    a: generateNodeList(ctx, current.errors as unknown[]),
     f: undefined,
   };
 }
@@ -283,16 +289,16 @@ function generateErrorNode(
     s: undefined,
     l: undefined,
     c: getErrorConstructorName(current),
-    m: current.message,
+    m: quote(current.message),
     d: optionsNode,
     a: undefined,
     f: undefined,
   };
 }
 
-function parse(
+function parse<T>(
   ctx: ParserContext,
-  current: ServerValue,
+  current: T,
 ): SerovalNode {
   switch (typeof current) {
     case 'boolean':
@@ -305,16 +311,16 @@ function parse(
       switch (current) {
         case Infinity: return INFINITY_NODE;
         case -Infinity: return NEG_INFINITY_NODE;
-        default: break;
+        default:
+          // eslint-disable-next-line no-self-compare
+          if (current !== current) {
+            return NAN_NODE;
+          }
+          if (Object.is(current, -0)) {
+            return NEG_ZERO_NODE;
+          }
+          return createNumberNode(current);
       }
-      // eslint-disable-next-line no-self-compare
-      if (current !== current) {
-        return NAN_NODE;
-      }
-      if (Object.is(current, -0)) {
-        return NEG_ZERO_NODE;
-      }
-      return createNumberNode(current);
     case 'bigint':
       return createBigIntNode(ctx, current);
     case 'object': {
@@ -323,18 +329,21 @@ function parse(
       }
       // Non-primitive values needs a reference ID
       // mostly because the values themselves are stateful
-      const id = createRef(ctx, current);
+      const id = createIndexedValue(ctx, current);
       if (ctx.markedRefs.has(id)) {
-        return createReferenceNode(id);
+        return createIndexedValueNode(id);
+      }
+      if (hasReferenceID(current)) {
+        return createReferenceNode(id, current);
       }
       if (Array.isArray(current)) {
         return generateArrayNode(ctx, id, current);
       }
       switch (current.constructor) {
         case Date:
-          return createDateNode(id, current as Date);
+          return createDateNode(id, current as unknown as Date);
         case RegExp:
-          return createRegExpNode(id, current as RegExp);
+          return createRegExpNode(id, current as unknown as RegExp);
         case Int8Array:
         case Int16Array:
         case Int32Array:
@@ -344,23 +353,33 @@ function parse(
         case Uint8ClampedArray:
         case Float32Array:
         case Float64Array:
-          return createTypedArrayNode(ctx, id, current as TypedArrayValue);
+          return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
         case BigInt64Array:
         case BigUint64Array:
-          return createBigIntTypedArrayNode(ctx, id, current as BigIntTypedArrayValue);
+          return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
         case Map:
-          return generateMapNode(ctx, id, current as Map<ServerValue, ServerValue>);
+          return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
         case Set:
-          return generateSetNode(ctx, id, current as Set<ServerValue>);
+          return generateSetNode(ctx, id, current as unknown as Set<unknown>);
         case Object:
-          return generateObjectNode(ctx, id, current as Record<string, ServerValue>, false);
+          return generateObjectNode(
+            ctx,
+            id,
+            current as unknown as Record<string, unknown>,
+            false,
+          );
         case undefined:
-          return generateObjectNode(ctx, id, current as Record<string, ServerValue>, true);
+          return generateObjectNode(
+            ctx,
+            id,
+            current as unknown as Record<string, unknown>,
+            true,
+          );
         case AggregateError:
           if (ctx.features & Feature.AggregateError) {
-            return generateAggregateErrorNode(ctx, id, current as AggregateError);
+            return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
           }
-          return generateErrorNode(ctx, id, current as AggregateError);
+          return generateErrorNode(ctx, id, current as unknown as AggregateError);
         case Error:
         case EvalError:
         case RangeError:
@@ -368,7 +387,11 @@ function parse(
         case SyntaxError:
         case TypeError:
         case URIError:
-          return generateErrorNode(ctx, id, current as Error);
+          return generateErrorNode(ctx, id, current as unknown as Error);
+        case URL:
+          return createURLNode(ctx, id, current as unknown as URL);
+        case URLSearchParams:
+          return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
         default:
           break;
       }
@@ -383,22 +406,35 @@ function parse(
       }
       // Generator functions don't have a global constructor
       if (Symbol.iterator in current) {
-        return generateIterableNode(ctx, id, current);
+        return generateIterableNode(ctx, id, current as Iterable<unknown>);
       }
       throw new Error('Unsupported type');
     }
     case 'symbol':
-      assert(ctx.features & Feature.Symbol, 'Unsupported type "symbol"');
-      assert(current in INV_SYMBOL_REF, 'seroval only supports well-known symbols');
-      return createWKSymbolNode(current);
+      if (hasReferenceID(current)) {
+        const id = createIndexedValue(ctx, current);
+        if (ctx.markedRefs.has(id)) {
+          return createIndexedValueNode(id);
+        }
+        return createReferenceNode(id, current);
+      }
+      return createWKSymbolNode(ctx, current as WellKnownSymbols);
+    case 'function': {
+      assert(hasReferenceID(current), 'Cannot serialize function without reference ID.');
+      const id = createIndexedValue(ctx, current);
+      if (ctx.markedRefs.has(id)) {
+        return createIndexedValueNode(id);
+      }
+      return createReferenceNode(id, current);
+    }
     default:
       throw new Error('Unsupported type');
   }
 }
 
-export default function parseSync(
+export default function parseSync<T>(
   ctx: ParserContext,
-  current: ServerValue,
+  current: T,
 ) {
   const result = parse(ctx, current);
   const isObject = result.t === SerovalNodeType.Object

@@ -186,6 +186,37 @@ console.log(await deserialize(result)); // 100
 > **Note**
 > `seroval` can only serialize the resolved value and so the output will always be using `Promise.resolve`. If the Promise fulfills with rejection, the rejected value is thrown before serialization happens.
 
+## Serializable references
+
+There are values that has no way to be serializable at all, i.e. functions, but usually in an isomorphic code, functions can exist on both client and server-side. What if we can serialize these functions in such a way we can refer to their counterparts?
+
+`seroval` has `createReference` that you can use to map user-defined strings to their references.
+
+```js
+import { createReference } from 'seroval';
+
+const thisIsAnIsomorphicFunction = createReference(
+  // This is (ideally) a unique identifier
+  // that is used to map the serialized value
+  // to its actual reference (and vice versa)
+  'my-function',
+  () => {
+    // Ideally this function should exist on both
+    // server and client, but we want to add the ability
+    // to serialize and deserialize this reference on
+    // both sides
+  }
+);
+
+// we can now serialize this
+const serialized = toJSON(thisIsAnIsomorphicFunction); // or any of the serializer
+thisIsAnIsomorphicFunction === fromJSON(serialized); // true
+```
+
+> **Note**
+> It can only accept objects, functions and symbols and it doesn't actually
+> serialize their values but only the string you used to identify the reference
+
 ## Supports
 
 The following values are the only values accepted by `seroval`:
@@ -232,7 +263,10 @@ The following values are the only values accepted by `seroval`:
 - `Promise` (with `serializeAsync`)
 - [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties)
+- [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+- [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
 - Cyclic references (both self and mutual)
+- Isomorphic references (a reference that exist on both the serializer and deserializer side)
 
 ## Compat
 
@@ -318,6 +352,10 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Throws when attempted to use
   - Also throws if `BigInt` is disabled.
   - Disables serialization of `BigInt64Array` and `BigUint64Array`
+- `WebAPI`
+  - Throws and disables the following usage:
+    - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+    - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
 
 ## Sponsors
 

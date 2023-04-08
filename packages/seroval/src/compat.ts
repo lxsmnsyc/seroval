@@ -19,6 +19,7 @@ export const enum Feature {
   Symbol = 0x400,
   TypedArray = 0x800,
   BigIntTypedArray = 0x1000,
+  WebAPI = 0x2000,
 }
 
-export const ALL_ENABLED = 0x1FFF;
+export const ALL_ENABLED = 0x2FFF;

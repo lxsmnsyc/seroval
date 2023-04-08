@@ -11,7 +11,7 @@ export const enum SerovalNodeType {
   NegativeInfinity,
   NaN,
   BigInt,
-  Reference,
+  IndexedValue,
   Date,
   RegExp,
   Set,
@@ -26,6 +26,9 @@ export const enum SerovalNodeType {
   TypedArray,
   BigIntTypedArray,
   WKSymbol,
+  URL,
+  URLSearchParams,
+  Reference,
 }
 
 export interface SerovalBaseNode {
@@ -115,8 +118,8 @@ export type SerovalPrimitiveNode =
   | SerovalInfinityNode
   | SerovalNaNNode;
 
-export interface SerovalReferenceNode extends SerovalBaseNode {
-  t: SerovalNodeType.Reference;
+export interface SerovalIndexedValueNode extends SerovalBaseNode {
+  t: SerovalNodeType.IndexedValue;
   i: number;
 }
 
@@ -231,9 +234,27 @@ export interface SerovalWKSymbolNode extends SerovalBaseNode {
   s: Symbols;
 }
 
+export interface SerovalURLNode extends SerovalBaseNode {
+  t: SerovalNodeType.URL;
+  i: number;
+  s: string;
+}
+
+export interface SerovalURLSearchParamsNode extends SerovalBaseNode {
+  t: SerovalNodeType.URLSearchParams;
+  i: number;
+  s: string;
+}
+
+export interface SerovalReferenceNode extends SerovalBaseNode {
+  t: SerovalNodeType.Reference;
+  i: number;
+  s: string;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
-  | SerovalReferenceNode
+  | SerovalIndexedValueNode
   | SerovalSemiPrimitiveNode
   | SerovalSetNode
   | SerovalMapNode
@@ -244,4 +265,7 @@ export type SerovalNode =
   | SerovalErrorNode
   | SerovalAggregateErrorNode
   | SerovalIterableNode
-  | SerovalWKSymbolNode;
+  | SerovalWKSymbolNode
+  | SerovalURLNode
+  | SerovalURLSearchParamsNode
+  | SerovalReferenceNode;
