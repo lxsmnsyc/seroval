@@ -264,13 +264,13 @@ export function createTypedArrayNode(
     t: SerovalNodeType.TypedArray,
     i: id,
     s: undefined,
-    l: current.byteOffset,
+    l: current.length,
     c: constructor,
     m: undefined,
     d: undefined,
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
-    b: current.byteLength,
+    b: current.byteOffset,
   };
 }
 
@@ -291,13 +291,13 @@ export function createBigIntTypedArrayNode(
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
     s: undefined,
-    l: current.byteOffset,
+    l: current.length,
     c: constructor,
     m: undefined,
     d: undefined,
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
-    b: current.byteLength,
+    b: current.byteOffset,
   };
 }
 
