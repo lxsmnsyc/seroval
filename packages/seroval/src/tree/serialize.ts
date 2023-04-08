@@ -6,7 +6,7 @@ import {
   getRefParam,
   markRef,
 } from '../context';
-import quote from '../quote';
+import { serializeString } from '../string';
 import { GLOBAL_KEY } from './reference';
 import { isValidIdentifier } from './shared';
 import { SYMBOL_STRING } from './symbols';
@@ -285,11 +285,11 @@ function serializeProperties(
       if (isIdentifier && Number.isNaN(check)) {
         createObjectAssign(ctx, sourceID, key, refParam);
       } else {
-        createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + quote(key) + '"'), refParam);
+        createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + serializeString(key) + '"'), refParam);
       }
     } else {
       result += (hasPrev ? ',' : '')
-        + (isIdentifier ? key : ('"' + quote(key) + '"'))
+        + (isIdentifier ? key : ('"' + serializeString(key) + '"'))
         + ':' + serializeTree(ctx, val);
       hasPrev = true;
     }
@@ -339,7 +339,7 @@ function serializeAssignments(
     if (isIdentifier && Number.isNaN(check)) {
       createObjectAssign(ctx, sourceID, key, refParam);
     } else {
-      createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + quote(key) + '"'), refParam);
+      createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + serializeString(key) + '"'), refParam);
     }
     ctx.assignments = parentAssignment;
   }
@@ -479,7 +479,7 @@ function serializeAggregateError(
 ) {
   // Serialize the required arguments
   ctx.stack.push(node.i);
-  const serialized = 'new AggregateError(' + serializeNodeList(ctx, node) + ',"' + quote(node.m) + '")';
+  const serialized = 'new AggregateError(' + serializeNodeList(ctx, node) + ',"' + serializeString(node.m) + '")';
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties
@@ -491,7 +491,7 @@ function serializeError(
   ctx: SerializationContext,
   node: SerovalErrorNode,
 ) {
-  const serialized = 'new ' + node.c + '("' + quote(node.m) + '")';
+  const serialized = 'new ' + node.c + '("' + serializeString(node.m) + '")';
   return serializeDictionary(ctx, node.i, node.d, serialized);
 }
 

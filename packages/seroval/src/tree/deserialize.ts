@@ -2,7 +2,7 @@
 import {
   SerializationContext,
 } from '../context';
-import { invQuote } from '../quote';
+import { deserializeString } from '../string';
 import { AsyncServerValue } from '../types';
 import { getReference } from './reference';
 import { getErrorConstructor, getTypedArrayConstructor } from './shared';
@@ -158,7 +158,7 @@ function deserializeAggregateError(
   node: SerovalAggregateErrorNode,
 ) {
   // Serialize the required arguments
-  const result = assignIndexedValue(ctx, node.i, new AggregateError([], invQuote(node.m)));
+  const result = assignIndexedValue(ctx, node.i, new AggregateError([], deserializeString(node.m)));
   ctx.stack.push(node.i);
   result.errors = deserializeNodeList(ctx, node, new Array<AsyncServerValue>(node.l));
   ctx.stack.pop();
@@ -173,7 +173,7 @@ function deserializeError(
   node: SerovalErrorNode,
 ) {
   const ErrorConstructor = getErrorConstructor(node.c);
-  const result = assignIndexedValue(ctx, node.i, new ErrorConstructor(invQuote(node.m)));
+  const result = assignIndexedValue(ctx, node.i, new ErrorConstructor(deserializeString(node.m)));
   return deserializeDictionary(ctx, node, result);
 }
 
@@ -243,7 +243,7 @@ export default function deserializeTree(
     case SerovalNodeType.Boolean:
       return node.s;
     case SerovalNodeType.String:
-      return invQuote(node.s);
+      return deserializeString(node.s);
     case SerovalNodeType.Undefined:
       return undefined;
     case SerovalNodeType.Null:
@@ -292,7 +292,7 @@ export default function deserializeTree(
     case SerovalNodeType.URLSearchParams:
       return assignIndexedValue(ctx, node.i, new URLSearchParams(node.s));
     case SerovalNodeType.Reference:
-      return assignIndexedValue(ctx, node.i, getReference(invQuote(node.s)));
+      return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
     default:
       throw new Error('Unsupported type');
   }

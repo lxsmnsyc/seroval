@@ -1,7 +1,7 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { ParserContext } from '../context';
-import quote from '../quote';
+import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import { getReferenceID } from './reference';
 import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
@@ -133,7 +133,7 @@ export function createStringNode(value: string): SerovalStringNode {
   return {
     t: SerovalNodeType.String,
     i: undefined,
-    s: quote(value),
+    s: serializeString(value),
     l: undefined,
     c: undefined,
     m: undefined,
@@ -284,7 +284,7 @@ export function createReferenceNode<T>(
   return {
     t: SerovalNodeType.Reference,
     i: id,
-    s: quote(getReferenceID(ref)),
+    s: serializeString(getReferenceID(ref)),
     l: undefined,
     c: undefined,
     m: undefined,

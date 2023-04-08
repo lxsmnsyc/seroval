@@ -3,7 +3,7 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { createIndexedValue, getRootID, ParserContext } from '../context';
-import quote from '../quote';
+import { serializeString } from '../string';
 import {
   BigIntTypedArrayValue,
   TypedArrayValue,
@@ -305,7 +305,7 @@ async function generateAggregateErrorNode(
     s: undefined,
     l: current.errors.length,
     c: undefined,
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
     a: await generateNodeList(ctx, current.errors as unknown[]),
     f: undefined,
@@ -327,7 +327,7 @@ async function generateErrorNode(
     s: undefined,
     l: undefined,
     c: getErrorConstructorName(current),
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
     a: undefined,
     f: undefined,

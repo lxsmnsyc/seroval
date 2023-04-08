@@ -2,7 +2,7 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { createIndexedValue, getRootID, ParserContext } from '../context';
-import quote from '../quote';
+import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import {
   createBigIntNode,
@@ -267,7 +267,7 @@ function generateAggregateErrorNode(
     s: undefined,
     l: current.errors.length,
     c: undefined,
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
     a: generateNodeList(ctx, current.errors as unknown[]),
     f: undefined,
@@ -289,7 +289,7 @@ function generateErrorNode(
     s: undefined,
     l: undefined,
     c: getErrorConstructorName(current),
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
     a: undefined,
     f: undefined,
