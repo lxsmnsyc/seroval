@@ -25,6 +25,7 @@ import {
   SerovalWKSymbolNode,
   SerovalReferenceNode,
   SerovalArrayBufferNode,
+  SerovalDataViewNode,
 } from './types';
 
 export const TRUE_NODE: SerovalBooleanNode = {
@@ -336,5 +337,24 @@ export function createReferenceNode<T>(
     a: undefined,
     f: undefined,
     b: undefined,
+  };
+}
+
+export function createDataViewNode(
+  ctx: ParserContext,
+  id: number,
+  current: DataView,
+): SerovalDataViewNode {
+  return {
+    t: SerovalNodeType.DataView,
+    i: id,
+    s: undefined,
+    l: current.byteLength,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: serializeArrayBuffer(ctx, current.buffer),
+    b: current.byteOffset,
   };
 }

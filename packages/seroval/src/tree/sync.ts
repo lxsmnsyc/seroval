@@ -24,6 +24,7 @@ import {
   UNDEFINED_NODE,
   createReferenceNode,
   createArrayBufferNode,
+  createDataViewNode,
 } from './primitives';
 import {
   hasReferenceID,
@@ -367,6 +368,8 @@ function parse<T>(
         case BigInt64Array:
         case BigUint64Array:
           return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
+        case DataView:
+          return createDataViewNode(ctx, id, current as unknown as DataView);
         case Map:
           return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
         case Set:

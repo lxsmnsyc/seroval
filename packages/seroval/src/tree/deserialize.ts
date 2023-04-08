@@ -12,6 +12,7 @@ import {
   SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
+  SerovalDataViewNode,
   SerovalErrorNode,
   SerovalIterableNode,
   SerovalMapNode,
@@ -240,6 +241,19 @@ function deserializeIterable(
   return deserializeDictionary(ctx, node, result);
 }
 
+function deserializeDataView(
+  ctx: SerializationContext,
+  node: SerovalDataViewNode,
+) {
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
+  const result = assignIndexedValue(ctx, node.i, new DataView(
+    source,
+    node.b,
+    node.l,
+  ));
+  return result;
+}
+
 export default function deserializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -285,6 +299,8 @@ export default function deserializeTree(
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
       return deserializeTypedArray(ctx, node);
+    case SerovalNodeType.DataView:
+      return deserializeDataView(ctx, node);
     case SerovalNodeType.AggregateError:
       return deserializeAggregateError(ctx, node);
     case SerovalNodeType.Error:

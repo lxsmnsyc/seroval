@@ -30,6 +30,7 @@ export const enum SerovalNodeType {
   URLSearchParams,
   Reference,
   ArrayBuffer,
+  DataView,
 }
 
 export interface SerovalBaseNode {
@@ -263,6 +264,14 @@ export interface SerovalReferenceNode extends SerovalBaseNode {
   s: string;
 }
 
+export interface SerovalDataViewNode extends SerovalBaseNode {
+  t: SerovalNodeType.DataView;
+  i: number;
+  l: number;
+  f: SerovalNode;
+  b: number;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -280,4 +289,5 @@ export type SerovalNode =
   | SerovalURLNode
   | SerovalURLSearchParamsNode
   | SerovalReferenceNode
-  | SerovalArrayBufferNode;
+  | SerovalArrayBufferNode
+  | SerovalDataViewNode;

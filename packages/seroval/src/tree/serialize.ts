@@ -27,6 +27,7 @@ import {
   SerovalSetNode,
   SerovalTypedArrayNode,
   SerovalArrayBufferNode,
+  SerovalDataViewNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -570,6 +571,14 @@ function serializeIterable(
   return serializeDictionary(ctx, node.i, node.d, serialized);
 }
 
+function serializeDataView(
+  ctx: SerializationContext,
+  node: SerovalDataViewNode,
+) {
+  const args = serializeTree(ctx, node.f) + ',' + node.b + ',' + node.l;
+  return assignIndexedValue(ctx, node.i, 'new DataView(' + args + ')');
+}
+
 export default function serializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -616,6 +625,8 @@ export default function serializeTree(
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
       return serializeTypedArray(ctx, node);
+    case SerovalNodeType.DataView:
+      return serializeDataView(ctx, node);
     case SerovalNodeType.AggregateError:
       return serializeAggregateError(ctx, node);
     case SerovalNodeType.Error:
