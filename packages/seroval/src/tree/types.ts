@@ -39,11 +39,11 @@ export interface SerovalBaseNode {
   i: number | undefined;
   // Serialized value
   s: any;
-  // Size/Byte offset
+  // size/length
   l: number | undefined;
   // Constructor name / RegExp source
   c: string | undefined;
-  // message /flags
+  // message/flags
   m: string | undefined;
   // dictionary
   d: SerovalDictionaryNode | undefined;
@@ -51,6 +51,8 @@ export interface SerovalBaseNode {
   a: SerovalNode[] | undefined;
   // fulfilled node
   f: SerovalNode | undefined;
+  // byte offset
+  b: number | undefined;
 }
 
 export interface SerovalObjectRecordNode {
@@ -156,6 +158,7 @@ export interface SerovalTypedArrayNode extends SerovalBaseNode {
   l: number;
   c: string;
   f: SerovalNode;
+  b: number;
 }
 
 export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
@@ -164,6 +167,7 @@ export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   l: number;
   c: string;
   f: SerovalNode;
+  b: number;
 }
 
 export type SerovalSemiPrimitiveNode =

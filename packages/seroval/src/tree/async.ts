@@ -105,6 +105,7 @@ async function generateArrayNode(
     d: undefined,
     a: await generateNodeList(ctx, current),
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -147,6 +148,7 @@ async function generateMapNode(
     d: { k: keyNodes, v: valueNodes, s: len },
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -183,6 +185,7 @@ async function generateSetNode(
     d: undefined,
     a: nodes,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -243,6 +246,7 @@ async function generateIterableNode(
       : undefined,
     a: await generateNodeList(ctx, array),
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -263,6 +267,7 @@ async function generatePromiseNode(
     d: undefined,
     a: undefined,
     f: await parse(ctx, value),
+    b: undefined,
   }));
 }
 
@@ -288,6 +293,7 @@ async function generateObjectNode(
     d: await generateProperties(ctx, current as Record<string, unknown>),
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -310,6 +316,7 @@ async function generateAggregateErrorNode(
     d: optionsNode,
     a: await generateNodeList(ctx, current.errors as unknown[]),
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -332,6 +339,7 @@ async function generateErrorNode(
     d: optionsNode,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 

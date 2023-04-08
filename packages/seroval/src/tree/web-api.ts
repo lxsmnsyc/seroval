@@ -19,6 +19,7 @@ export function createURLNode(
     d: undefined,
     f: undefined,
     a: undefined,
+    b: undefined,
   };
 }
 
@@ -38,5 +39,6 @@ export function createURLSearchParamsNode(
     d: undefined,
     f: undefined,
     a: undefined,
+    b: undefined,
   };
 }

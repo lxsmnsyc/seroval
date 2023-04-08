@@ -222,6 +222,7 @@ function deserializeTypedArray(
   const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new TypedArray(
     source,
+    node.b,
     node.l,
   ));
   return result;

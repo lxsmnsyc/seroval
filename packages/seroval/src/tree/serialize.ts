@@ -542,7 +542,7 @@ function serializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
-  const args = serializeTree(ctx, node.f) + (node.l !== 0 ? (',' + node.l) : '');
+  const args = serializeTree(ctx, node.f) + ',' + node.b + ',' + node.l;
   return assignIndexedValue(ctx, node.i, 'new ' + node.c + '(' + args + ')');
 }
 

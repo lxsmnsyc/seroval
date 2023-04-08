@@ -37,6 +37,7 @@ export const TRUE_NODE: SerovalBooleanNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const FALSE_NODE: SerovalBooleanNode = {
   t: SerovalNodeType.Boolean,
@@ -48,6 +49,7 @@ export const FALSE_NODE: SerovalBooleanNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const UNDEFINED_NODE: SerovalUndefinedNode = {
   t: SerovalNodeType.Undefined,
@@ -59,6 +61,7 @@ export const UNDEFINED_NODE: SerovalUndefinedNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NULL_NODE: SerovalNullNode = {
   t: SerovalNodeType.Null,
@@ -70,6 +73,7 @@ export const NULL_NODE: SerovalNullNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NEG_ZERO_NODE: SerovalNegativeZeroNode = {
   t: SerovalNodeType.NegativeZero,
@@ -81,6 +85,7 @@ export const NEG_ZERO_NODE: SerovalNegativeZeroNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const INFINITY_NODE: SerovalInfinityNode = {
   t: SerovalNodeType.Infinity,
@@ -92,6 +97,7 @@ export const INFINITY_NODE: SerovalInfinityNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NEG_INFINITY_NODE: SerovalNegativeInfinityNode = {
   t: SerovalNodeType.NegativeInfinity,
@@ -103,6 +109,7 @@ export const NEG_INFINITY_NODE: SerovalNegativeInfinityNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NAN_NODE: SerovalNaNNode = {
   t: SerovalNodeType.NaN,
@@ -114,6 +121,7 @@ export const NAN_NODE: SerovalNaNNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 
 export function createNumberNode(value: number): SerovalNumberNode {
@@ -127,6 +135,7 @@ export function createNumberNode(value: number): SerovalNumberNode {
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -141,6 +150,7 @@ export function createStringNode(value: string): SerovalStringNode {
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -159,6 +169,7 @@ export function createBigIntNode(
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -173,6 +184,7 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -187,6 +199,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     d: undefined,
     f: undefined,
     a: undefined,
+    b: undefined,
   };
 }
 
@@ -201,6 +214,7 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -224,6 +238,7 @@ export function createArrayBufferNode(
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -255,6 +270,7 @@ export function createTypedArrayNode(
     d: undefined,
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
+    b: current.byteLength,
   };
 }
 
@@ -281,6 +297,7 @@ export function createBigIntTypedArrayNode(
     d: undefined,
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
+    b: current.byteLength,
   };
 }
 
@@ -300,6 +317,7 @@ export function createWKSymbolNode(
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -317,5 +335,6 @@ export function createReferenceNode<T>(
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
