@@ -1,6 +1,6 @@
 import assert from '../assert';
 import { Feature } from '../compat';
-import { ParserContext } from '../context';
+import { ParserContext, createIndexedValue } from '../context';
 import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import { getReferenceID } from './reference';
@@ -24,6 +24,7 @@ import {
   SerovalUndefinedNode,
   SerovalWKSymbolNode,
   SerovalReferenceNode,
+  SerovalArrayBufferNode,
 } from './types';
 
 export const TRUE_NODE: SerovalBooleanNode = {
@@ -203,6 +204,40 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
   };
 }
 
+export function createArrayBufferNode(
+  id: number,
+  current: ArrayBuffer,
+): SerovalArrayBufferNode {
+  const bytes = new Uint8Array(current);
+  const len = bytes.length;
+  const values = new Array<number>(len);
+  for (let i = 0; i < len; i++) {
+    values[i] = bytes[i];
+  }
+  return {
+    t: SerovalNodeType.ArrayBuffer,
+    i: id,
+    s: values,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: undefined,
+  };
+}
+
+function serializeArrayBuffer(
+  ctx: ParserContext,
+  current: ArrayBuffer,
+) {
+  const id = createIndexedValue(ctx, current);
+  if (ctx.markedRefs.has(id)) {
+    return createIndexedValueNode(id);
+  }
+  return createArrayBufferNode(id, current);
+}
+
 export function createTypedArrayNode(
   ctx: ParserContext,
   id: number,
@@ -210,21 +245,16 @@ export function createTypedArrayNode(
 ): SerovalTypedArrayNode {
   const constructor = current.constructor.name;
   assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
-  const len = current.length;
-  const values = new Array<string>(len);
-  for (let i = 0; i < len; i++) {
-    values[i] = '' + current[i];
-  }
   return {
     t: SerovalNodeType.TypedArray,
     i: id,
-    s: values,
+    s: undefined,
     l: current.byteOffset,
     c: constructor,
     m: undefined,
     d: undefined,
     a: undefined,
-    f: undefined,
+    f: serializeArrayBuffer(ctx, current.buffer),
   };
 }
 
@@ -236,25 +266,21 @@ export function createBigIntTypedArrayNode(
   current: BigIntTypedArrayValue,
 ): SerovalBigIntTypedArrayNode {
   const constructor = current.constructor.name;
+  console.log(ctx.features.toString(2), BIGINT_FLAG.toString(2), (ctx.features & BIGINT_FLAG).toString(2));
   assert(
     (ctx.features & BIGINT_FLAG) === BIGINT_FLAG,
     `Unsupported value type "${constructor}"`,
   );
-  const len = current.length;
-  const values = new Array<string>(len);
-  for (let i = 0; i < len; i++) {
-    values[i] = '' + current[i];
-  }
   return {
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
-    s: values,
+    s: undefined,
     l: current.byteOffset,
     c: constructor,
     m: undefined,
     d: undefined,
     a: undefined,
-    f: undefined,
+    f: serializeArrayBuffer(ctx, current.buffer),
   };
 }
 

@@ -22,4 +22,4 @@ export const enum Feature {
   WebAPI = 0x2000,
 }
 
-export const ALL_ENABLED = 0x2FFF;
+export const ALL_ENABLED = 0x3FFF;

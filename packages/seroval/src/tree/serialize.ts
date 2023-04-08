@@ -26,6 +26,7 @@ import {
   SerovalIndexedValueNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
+  SerovalArrayBufferNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -522,16 +523,26 @@ function serializePromise(
   return assignIndexedValue(ctx, node.i, serialized);
 }
 
+function serializeArrayBuffer(
+  ctx: SerializationContext,
+  node: SerovalArrayBufferNode,
+) {
+  let result = 'new Uint8Array(';
+  if (node.s.length) {
+    result += '[';
+    for (let i = 0, len = node.s.length; i < len; i++) {
+      result += ((i > 0) ? ',' : '') + node.s[i];
+    }
+    result += ']';
+  }
+  return assignIndexedValue(ctx, node.i, result + ').buffer');
+}
+
 function serializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
-  let result = '';
-  const isBigInt = node.t === SerovalNodeType.BigIntTypedArray;
-  for (let i = 0, len = node.s.length; i < len; i++) {
-    result += (i !== 0 ? ',' : '') + node.s[i] + (isBigInt ? 'n' : '');
-  }
-  const args = '[' + result + ']' + (node.l !== 0 ? (',' + node.l) : '');
+  const args = serializeTree(ctx, node.f) + (node.l !== 0 ? (',' + node.l) : '');
   return assignIndexedValue(ctx, node.i, 'new ' + node.c + '(' + args + ')');
 }
 
@@ -600,6 +611,8 @@ export default function serializeTree(
       return serializeSet(ctx, node);
     case SerovalNodeType.Map:
       return serializeMap(ctx, node);
+    case SerovalNodeType.ArrayBuffer:
+      return serializeArrayBuffer(ctx, node);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
       return serializeTypedArray(ctx, node);

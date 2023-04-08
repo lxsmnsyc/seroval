@@ -23,6 +23,7 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
   createReferenceNode,
+  createArrayBufferNode,
 } from './primitives';
 import {
   hasReferenceID,
@@ -344,6 +345,8 @@ function parse<T>(
           return createDateNode(id, current as unknown as Date);
         case RegExp:
           return createRegExpNode(id, current as unknown as RegExp);
+        case ArrayBuffer:
+          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
         case Int8Array:
         case Int16Array:
         case Int32Array:

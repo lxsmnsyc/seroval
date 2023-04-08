@@ -27,6 +27,7 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
   createReferenceNode,
+  createArrayBufferNode,
 } from './primitives';
 import { hasReferenceID } from './reference';
 import {
@@ -384,6 +385,8 @@ async function parse<T>(
           return createRegExpNode(id, current as unknown as RegExp);
         case Promise:
           return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
+        case ArrayBuffer:
+          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
         case Int8Array:
         case Int16Array:
         case Int32Array:

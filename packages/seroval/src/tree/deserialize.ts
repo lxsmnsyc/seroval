@@ -9,6 +9,7 @@ import { getErrorConstructor, getTypedArrayConstructor } from './shared';
 import { SYMBOL_REF } from './symbols';
 import {
   SerovalAggregateErrorNode,
+  SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalErrorNode,
@@ -204,21 +205,25 @@ function deserializePromise(
   return result;
 }
 
+function deserializeArrayBuffer(
+  ctx: SerializationContext,
+  node: SerovalArrayBufferNode,
+) {
+  const bytes = new Uint8Array(node.s);
+  const result = assignIndexedValue(ctx, node.i, bytes.buffer);
+  return result;
+}
+
 function deserializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
   const TypedArray = getTypedArrayConstructor(node.c);
-  const dummy = new TypedArray();
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new TypedArray(
-    dummy.buffer,
+    source,
     node.l,
   ));
-  for (let i = 0, len = node.s.length; i < len; i++) {
-    result[i] = node.t === SerovalNodeType.BigIntTypedArray
-      ? BigInt(node.s[i])
-      : Number(node.s[i]);
-  }
   return result;
 }
 
@@ -274,6 +279,8 @@ export default function deserializeTree(
       return deserializeSet(ctx, node);
     case SerovalNodeType.Map:
       return deserializeMap(ctx, node);
+    case SerovalNodeType.ArrayBuffer:
+      return deserializeArrayBuffer(ctx, node);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
       return deserializeTypedArray(ctx, node);

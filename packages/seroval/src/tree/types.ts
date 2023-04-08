@@ -29,6 +29,7 @@ export const enum SerovalNodeType {
   URL,
   URLSearchParams,
   Reference,
+  ArrayBuffer,
 }
 
 export interface SerovalBaseNode {
@@ -143,20 +144,26 @@ export interface SerovalRegExpNode extends SerovalBaseNode {
   m: string;
 }
 
+export interface SerovalArrayBufferNode extends SerovalBaseNode {
+  t: SerovalNodeType.ArrayBuffer;
+  i: number;
+  s: number[];
+}
+
 export interface SerovalTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.TypedArray;
   i: number;
-  s: string[];
   l: number;
   c: string;
+  f: SerovalNode;
 }
 
 export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.BigIntTypedArray;
   i: number;
-  s: string[];
   l: number;
   c: string;
+  f: SerovalNode;
 }
 
 export type SerovalSemiPrimitiveNode =
@@ -268,4 +275,5 @@ export type SerovalNode =
   | SerovalWKSymbolNode
   | SerovalURLNode
   | SerovalURLSearchParamsNode
-  | SerovalReferenceNode;
+  | SerovalReferenceNode
+  | SerovalArrayBufferNode;
