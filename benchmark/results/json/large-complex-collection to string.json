@@ -1,67 +1,67 @@
 {
   "name": "large-complex-collection to string",
-  "date": "2023-03-21T05:55:28.545Z",
+  "date": "2023-04-08T13:15:07.966Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 2201,
-      "margin": 1.54,
-      "percentSlower": 85.86
+      "ops": 2116,
+      "margin": 1.36,
+      "percentSlower": 85.89
     },
     {
       "name": "flatted",
-      "ops": 2947,
-      "margin": 1.01,
-      "percentSlower": 81.07
+      "ops": 2821,
+      "margin": 1.45,
+      "percentSlower": 81.19
     },
     {
       "name": "JSON",
-      "ops": 15571,
-      "margin": 0.79,
+      "ops": 15001,
+      "margin": 1.12,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 3742,
-      "margin": 1.68,
-      "percentSlower": 75.97
+      "ops": 3611,
+      "margin": 2.76,
+      "percentSlower": 75.93
     },
     {
       "name": "o-son",
-      "ops": 6799,
-      "margin": 0.84,
-      "percentSlower": 56.34
+      "ops": 6444,
+      "margin": 1.56,
+      "percentSlower": 57.04
     },
     {
       "name": "serialize-javascript",
-      "ops": 6910,
-      "margin": 0.89,
-      "percentSlower": 55.62
+      "ops": 6636,
+      "margin": 2.01,
+      "percentSlower": 55.76
     },
     {
       "name": "seroval",
-      "ops": 9636,
-      "margin": 0.98,
-      "percentSlower": 38.12
+      "ops": 8946,
+      "margin": 1.3,
+      "percentSlower": 40.36
     },
     {
       "name": "superjson",
-      "ops": 2210,
-      "margin": 0.91,
-      "percentSlower": 85.81
+      "ops": 2096,
+      "margin": 1.31,
+      "percentSlower": 86.03
     },
     {
       "name": "tosource",
-      "ops": 6019,
-      "margin": 1.03,
-      "percentSlower": 61.34
+      "ops": 5706,
+      "margin": 1.48,
+      "percentSlower": 61.96
     },
     {
       "name": "warp10",
-      "ops": 8633,
-      "margin": 1.04,
-      "percentSlower": 44.56
+      "ops": 8119,
+      "margin": 1.73,
+      "percentSlower": 45.88
     }
   ],
   "fastest": {
@@ -69,7 +69,7 @@
     "index": 2
   },
   "slowest": {
-    "name": "devalue",
-    "index": 0
+    "name": "superjson",
+    "index": 7
   }
 }

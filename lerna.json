@@ -2,7 +2,6 @@
   "useWorkspaces": true,
   "packages": [
     "packages/*",
-    "examples/*",
     "benchmark"
   ],
   "command": {
