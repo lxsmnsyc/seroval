@@ -240,6 +240,8 @@ The following values are the only values accepted by `seroval`:
   - `Map`
   - `Set`
   - `Object.create(null)`
+- `ArrayBuffer`
+- `DataView`
 - `TypedArray`
   - `Int8Array`
   - `Int16Array`
