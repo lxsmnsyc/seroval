@@ -1,0 +1,9 @@
+// Vitest Snapshot v1
+
+exports[`Headers > serialize > supports Headers 1`] = `"new Headers([[\\"content-type\\",\\"text/plain\\"]])"`;
+
+exports[`Headers > serializeAsync > supports Headers 1`] = `"Promise.resolve(new Headers([[\\"content-type\\",\\"text/plain\\"]]))"`;
+
+exports[`Headers > toJSON > supports Headers 1`] = `"{\\"t\\":{\\"t\\":32,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":15,\\"i\\":1,\\"l\\":2,\\"a\\":[{\\"t\\":1,\\"s\\":\\"content-type\\"},{\\"t\\":1,\\"s\\":\\"text/plain\\"}]}]},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`Headers > toJSONAsync > supports Headers 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":32,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":15,\\"i\\":2,\\"l\\":2,\\"a\\":[{\\"t\\":1,\\"s\\":\\"content-type\\"},{\\"t\\":1,\\"s\\":\\"text/plain\\"}]}]}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;

@@ -1,8 +1,10 @@
 
-import { serialize } from 'seroval';
+import { serialize, Feature } from 'seroval';
 
-console.dir([(serialize({
-  ['<script></script>']: '<script></script>'
-}))], {
+const example = new AggregateError([]);
+
+example.errors = [example];
+
+console.dir(serialize(example, { disabledFeatures: Feature.ErrorPrototypeStack }), {
   depth: null
 });

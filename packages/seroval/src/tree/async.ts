@@ -42,6 +42,7 @@ import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalErrorNode,
+  SerovalHeadersNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
@@ -310,7 +311,7 @@ async function generateAggregateErrorNode(
   id: number,
   current: AggregateError,
 ): Promise<SerovalAggregateErrorNode> {
-  const options = getErrorOptions(ctx, current);
+  const options = getErrorOptions(ctx, current, true);
   const optionsNode = options
     ? await generateProperties(ctx, options)
     : undefined;
@@ -333,7 +334,7 @@ async function generateErrorNode(
   id: number,
   current: Error,
 ): Promise<SerovalErrorNode> {
-  const options = getErrorOptions(ctx, current);
+  const options = getErrorOptions(ctx, current, false);
   const optionsNode = options
     ? await generateProperties(ctx, options)
     : undefined;
@@ -346,6 +347,30 @@ async function generateErrorNode(
     m: serializeString(current.message),
     d: optionsNode,
     a: undefined,
+    f: undefined,
+    b: undefined,
+  };
+}
+
+async function generateHeadersNode(
+  ctx: ParserContext,
+  id: number,
+  current: Headers,
+): Promise<SerovalHeadersNode> {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "File"');
+  const items: [string, string][] = [];
+  current.forEach((value, key) => {
+    items.push([key, value]);
+  });
+  return {
+    t: SerovalNodeType.Headers,
+    i: id,
+    s: undefined,
+    l: items.length,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: await generateNodeList(ctx, items),
     f: undefined,
     b: undefined,
   };
@@ -465,6 +490,8 @@ async function parse<T>(
           return createBlobNode(ctx, id, current as unknown as Blob);
         case File:
           return createFileNode(ctx, id, current as unknown as File);
+        case Headers:
+          return generateHeadersNode(ctx, id, current as unknown as Headers);
         default:
           break;
       }

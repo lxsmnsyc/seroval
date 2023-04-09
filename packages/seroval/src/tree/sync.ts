@@ -40,6 +40,7 @@ import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalErrorNode,
+  SerovalHeadersNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
@@ -266,7 +267,7 @@ function generateAggregateErrorNode(
   id: number,
   current: AggregateError,
 ): SerovalAggregateErrorNode {
-  const options = getErrorOptions(ctx, current);
+  const options = getErrorOptions(ctx, current, true);
   const optionsNode = options
     ? generateProperties(ctx, options)
     : undefined;
@@ -289,7 +290,7 @@ function generateErrorNode(
   id: number,
   current: Error,
 ): SerovalErrorNode {
-  const options = getErrorOptions(ctx, current);
+  const options = getErrorOptions(ctx, current, false);
   const optionsNode = options
     ? generateProperties(ctx, options)
     : undefined;
@@ -302,6 +303,30 @@ function generateErrorNode(
     m: serializeString(current.message),
     d: optionsNode,
     a: undefined,
+    f: undefined,
+    b: undefined,
+  };
+}
+
+function generateHeadersNode(
+  ctx: ParserContext,
+  id: number,
+  current: Headers,
+): SerovalHeadersNode {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "File"');
+  const items: [string, string][] = [];
+  current.forEach((value, key) => {
+    items.push([key, value]);
+  });
+  return {
+    t: SerovalNodeType.Headers,
+    i: id,
+    s: undefined,
+    l: items.length,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: generateNodeList(ctx, items),
     f: undefined,
     b: undefined,
   };
@@ -407,6 +432,8 @@ function parse<T>(
           return createURLNode(ctx, id, current as unknown as URL);
         case URLSearchParams:
           return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
+        case Headers:
+          return generateHeadersNode(ctx, id, current as unknown as Headers);
         default:
           break;
       }

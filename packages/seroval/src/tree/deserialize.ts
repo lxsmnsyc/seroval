@@ -14,8 +14,10 @@ import {
   SerovalBigIntTypedArrayNode,
   SerovalBlobNode,
   SerovalDataViewNode,
+  SerovalDateNode,
   SerovalErrorNode,
   SerovalFileNode,
+  SerovalHeadersNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
@@ -24,8 +26,12 @@ import {
   SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalPromiseNode,
+  SerovalReferenceNode,
+  SerovalRegExpNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
+  SerovalURLNode,
+  SerovalURLSearchParamsNode,
 } from './types';
 
 function assignIndexedValue<T>(
@@ -37,9 +43,15 @@ function assignIndexedValue<T>(
   return value;
 }
 
+type SerovalNodeListNode =
+  | SerovalArrayNode
+  | SerovalIterableNode
+  | SerovalAggregateErrorNode
+  | SerovalHeadersNode;
+
 function deserializeNodeList(
   ctx: SerializationContext,
-  node: SerovalArrayNode | SerovalIterableNode | SerovalAggregateErrorNode,
+  node: SerovalNodeListNode,
   result: unknown[],
 ) {
   let item: SerovalNode;
@@ -243,6 +255,41 @@ function deserializeIterable(
   return deserializeDictionary(ctx, node, result);
 }
 
+function deserializeDate(
+  ctx: SerializationContext,
+  node: SerovalDateNode,
+) {
+  return assignIndexedValue(ctx, node.i, new Date(node.s));
+}
+
+function deserializeRegExp(
+  ctx: SerializationContext,
+  node: SerovalRegExpNode,
+) {
+  return assignIndexedValue(ctx, node.i, new RegExp(node.c, node.m));
+}
+
+function deserializeURL(
+  ctx: SerializationContext,
+  node: SerovalURLNode,
+) {
+  return assignIndexedValue(ctx, node.i, new URL(deserializeString(node.s)));
+}
+
+function deserializeURLSearchParams(
+  ctx: SerializationContext,
+  node: SerovalURLSearchParamsNode,
+) {
+  return assignIndexedValue(ctx, node.i, new URLSearchParams(deserializeString(node.s)));
+}
+
+function deserializeReference(
+  ctx: SerializationContext,
+  node: SerovalReferenceNode,
+) {
+  return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
+}
+
 function deserializeDataView(
   ctx: SerializationContext,
   node: SerovalDataViewNode,
@@ -281,6 +328,15 @@ function deserializeFile(
   return result;
 }
 
+function deserializeHeaders(
+  ctx: SerializationContext,
+  node: SerovalHeadersNode,
+) {
+  const values: [string, string][] = [];
+  deserializeNodeList(ctx, node, values);
+  return assignIndexedValue(ctx, node.i, new Headers(values));
+}
+
 export default function deserializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -314,9 +370,9 @@ export default function deserializeTree(
     case SerovalNodeType.NullConstructor:
       return deserializeNullConstructor(ctx, node);
     case SerovalNodeType.Date:
-      return assignIndexedValue(ctx, node.i, new Date(node.s));
+      return deserializeDate(ctx, node);
     case SerovalNodeType.RegExp:
-      return assignIndexedValue(ctx, node.i, new RegExp(node.c, node.m));
+      return deserializeRegExp(ctx, node);
     case SerovalNodeType.Set:
       return deserializeSet(ctx, node);
     case SerovalNodeType.Map:
@@ -339,15 +395,17 @@ export default function deserializeTree(
     case SerovalNodeType.WKSymbol:
       return SYMBOL_REF[node.s];
     case SerovalNodeType.URL:
-      return assignIndexedValue(ctx, node.i, new URL(deserializeString(node.s)));
+      return deserializeURL(ctx, node);
     case SerovalNodeType.URLSearchParams:
-      return assignIndexedValue(ctx, node.i, new URLSearchParams(deserializeString(node.s)));
+      return deserializeURLSearchParams(ctx, node);
     case SerovalNodeType.Reference:
-      return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
+      return deserializeReference(ctx, node);
     case SerovalNodeType.Blob:
       return deserializeBlob(ctx, node);
     case SerovalNodeType.File:
       return deserializeFile(ctx, node);
+    case SerovalNodeType.Headers:
+      return deserializeHeaders(ctx, node);
     default:
       throw new Error('Unsupported type');
   }

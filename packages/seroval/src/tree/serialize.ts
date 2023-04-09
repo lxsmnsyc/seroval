@@ -29,6 +29,12 @@ import {
   SerovalDataViewNode,
   SerovalBlobNode,
   SerovalFileNode,
+  SerovalHeadersNode,
+  SerovalRegExpNode,
+  SerovalDateNode,
+  SerovalURLNode,
+  SerovalURLSearchParamsNode,
+  SerovalReferenceNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -216,9 +222,15 @@ function isIndexedValueInStack(
   return node.t === SerovalNodeType.IndexedValue && ctx.stack.includes(node.i);
 }
 
+type SerovalNodeListNode =
+  | SerovalArrayNode
+  | SerovalIterableNode
+  | SerovalAggregateErrorNode
+  | SerovalHeadersNode;
+
 function serializeNodeList(
   ctx: SerializationContext,
-  node: SerovalArrayNode | SerovalIterableNode | SerovalAggregateErrorNode,
+  node: SerovalNodeListNode,
 ) {
   // This is different than Map and Set
   // because we also need to serialize
@@ -572,6 +584,41 @@ function serializeIterable(
   return serializeDictionary(ctx, node.i, node.d, serialized);
 }
 
+function serializeDate(
+  ctx: SerializationContext,
+  node: SerovalDateNode,
+) {
+  return assignIndexedValue(ctx, node.i, 'new Date("' + node.s + '")');
+}
+
+function serializeRegExp(
+  ctx: SerializationContext,
+  node: SerovalRegExpNode,
+) {
+  return assignIndexedValue(ctx, node.i, '/' + node.c + '/' + node.m);
+}
+
+function serializeURL(
+  ctx: SerializationContext,
+  node: SerovalURLNode,
+) {
+  return assignIndexedValue(ctx, node.i, 'new URL("' + node.s + '")');
+}
+
+function serializeURLSearchParams(
+  ctx: SerializationContext,
+  node: SerovalURLSearchParamsNode,
+) {
+  return assignIndexedValue(ctx, node.i, node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams');
+}
+
+function serializeReference(
+  ctx: SerializationContext,
+  node: SerovalReferenceNode,
+) {
+  return assignIndexedValue(ctx, node.i, GLOBAL_KEY + '.get("' + node.s + '")');
+}
+
 function serializeDataView(
   ctx: SerializationContext,
   node: SerovalDataViewNode,
@@ -595,6 +642,13 @@ function serializeFile(
   const options = '{type:"' + node.c + '",lastModified:' + node.b + '}';
   const args = '[' + serializeTree(ctx, node.f) + '],"' + node.m + '",' + options;
   return assignIndexedValue(ctx, node.i, 'new File(' + args + ')');
+}
+
+function serializeHeaders(
+  ctx: SerializationContext,
+  node: SerovalHeadersNode,
+) {
+  return assignIndexedValue(ctx, node.i, 'new Headers(' + serializeNodeList(ctx, node) + ')');
 }
 
 export default function serializeTree(
@@ -631,9 +685,9 @@ export default function serializeTree(
     case SerovalNodeType.NullConstructor:
       return serializeNullConstructor(ctx, node);
     case SerovalNodeType.Date:
-      return assignIndexedValue(ctx, node.i, 'new Date("' + node.s + '")');
+      return serializeDate(ctx, node);
     case SerovalNodeType.RegExp:
-      return assignIndexedValue(ctx, node.i, '/' + node.c + '/' + node.m);
+      return serializeRegExp(ctx, node);
     case SerovalNodeType.Set:
       return serializeSet(ctx, node);
     case SerovalNodeType.Map:
@@ -656,15 +710,17 @@ export default function serializeTree(
     case SerovalNodeType.WKSymbol:
       return SYMBOL_STRING[node.s];
     case SerovalNodeType.URL:
-      return assignIndexedValue(ctx, node.i, 'new URL("' + node.s + '")');
+      return serializeURL(ctx, node);
     case SerovalNodeType.URLSearchParams:
-      return assignIndexedValue(ctx, node.i, node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams');
+      return serializeURLSearchParams(ctx, node);
     case SerovalNodeType.Reference:
-      return assignIndexedValue(ctx, node.i, GLOBAL_KEY + '.get("' + node.s + '")');
+      return serializeReference(ctx, node);
     case SerovalNodeType.Blob:
-      return assignIndexedValue(ctx, node.i, serializeBlob(ctx, node));
+      return serializeBlob(ctx, node);
     case SerovalNodeType.File:
-      return assignIndexedValue(ctx, node.i, serializeFile(ctx, node));
+      return serializeFile(ctx, node);
+    case SerovalNodeType.Headers:
+      return serializeHeaders(ctx, node);
     default:
       throw new Error('Unsupported type');
   }
