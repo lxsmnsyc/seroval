@@ -168,7 +168,6 @@ function createAddAssignment(
   ref: number,
   value: string,
 ) {
-  markRef(ctx, ref);
   ctx.assignments.push({
     t: 'add',
     s: getRefParam(ctx, ref),
@@ -183,7 +182,6 @@ function createSetAssignment(
   key: string,
   value: string,
 ) {
-  markRef(ctx, ref);
   ctx.assignments.push({
     t: 'set',
     s: getRefParam(ctx, ref),
@@ -198,7 +196,6 @@ function createAppendAssignment(
   key: string,
   value: string,
 ) {
-  markRef(ctx, ref);
   ctx.assignments.push({
     t: 'append',
     s: getRefParam(ctx, ref),
@@ -213,7 +210,6 @@ function createArrayAssign(
   index: number | string,
   value: string,
 ) {
-  markRef(ctx, ref);
   createAssignment(ctx, getRefParam(ctx, ref) + '[' + index + ']', value);
 }
 
@@ -270,6 +266,7 @@ function serializeNodeList(
     if (item) {
       // Check if item is a parent
       if (isIndexedValueInStack(ctx, item)) {
+        markRef(ctx, node.i);
         createArrayAssign(ctx, node.i, i, getRefParam(ctx, item.i));
         isHoley = true;
       } else {
@@ -309,9 +306,11 @@ function serializeProperties(
   let isIdentifier: boolean;
   let refParam: string;
   let hasPrev = false;
-  for (let i = 0; i < node.s; i++) {
-    key = node.k[i];
-    val = node.v[i];
+  const keys = node.k;
+  const values = node.v;
+  for (let i = 0, len = node.s; i < len; i++) {
+    key = keys[i];
+    val = values[i];
     check = Number(key);
     // Test if key is a valid number or JS identifier
     // so that we don't have to serialize the key and wrap with brackets
@@ -319,8 +318,10 @@ function serializeProperties(
     if (isIndexedValueInStack(ctx, val)) {
       refParam = getRefParam(ctx, val.i);
       if (isIdentifier && Number.isNaN(check)) {
+        markRef(ctx, sourceID);
         createObjectAssign(ctx, sourceID, key, refParam);
       } else {
+        markRef(ctx, sourceID);
         createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), refParam);
       }
     } else {
@@ -360,12 +361,14 @@ function serializeAssignments(
   let check: number;
   let parentAssignment: Assignment[];
   let isIdentifier: boolean;
-  for (let i = 0; i < node.s; i++) {
+  const keys = node.k;
+  const values = node.v;
+  for (let i = 0, len = node.s; i < len; i++) {
     parentStack = ctx.stack;
     ctx.stack = [];
-    refParam = serializeTree(ctx, node.v[i]);
+    refParam = serializeTree(ctx, values[i]);
     ctx.stack = parentStack;
-    key = node.k[i];
+    key = keys[i];
     check = Number(key);
     parentAssignment = ctx.assignments;
     ctx.assignments = mainAssignments;
@@ -431,6 +434,7 @@ function serializeSet(
     for (let i = 0; i < size; i++) {
       item = node.a[i];
       if (isIndexedValueInStack(ctx, item)) {
+        markRef(ctx, node.i);
         createAddAssignment(ctx, node.i, getRefParam(ctx, item.i));
       } else {
         // Push directly
@@ -467,6 +471,7 @@ function serializeMap(
       if (isIndexedValueInStack(ctx, key)) {
         // Create reference for the map instance
         keyRef = getRefParam(ctx, key.i);
+        markRef(ctx, node.i);
         // Check if value is a parent
         if (isIndexedValueInStack(ctx, val)) {
           valueRef = getRefParam(ctx, val.i);
@@ -488,6 +493,7 @@ function serializeMap(
       } else if (isIndexedValueInStack(ctx, val)) {
         // Create ref for the Map instance
         valueRef = getRefParam(ctx, val.i);
+        markRef(ctx, node.i);
         // Reset stack for the key serialization
         parent = ctx.stack;
         ctx.stack = [];
