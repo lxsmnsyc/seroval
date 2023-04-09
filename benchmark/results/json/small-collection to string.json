@@ -1,67 +1,67 @@
 {
   "name": "small-collection to string",
-  "date": "2023-04-08T13:19:24.479Z",
+  "date": "2023-04-09T05:59:38.169Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 48720,
-      "margin": 4.74,
-      "percentSlower": 78.54
+      "ops": 55357,
+      "margin": 1.51,
+      "percentSlower": 76.85
     },
     {
       "name": "flatted",
-      "ops": 39692,
-      "margin": 4.24,
-      "percentSlower": 82.51
+      "ops": 44748,
+      "margin": 2.18,
+      "percentSlower": 81.29
     },
     {
       "name": "JSON",
-      "ops": 226978,
-      "margin": 1.84,
+      "ops": 239132,
+      "margin": 0.97,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 62010,
-      "margin": 5.16,
-      "percentSlower": 72.68
+      "ops": 65491,
+      "margin": 1.56,
+      "percentSlower": 72.61
     },
     {
       "name": "o-son",
-      "ops": 96939,
-      "margin": 2.06,
-      "percentSlower": 57.29
+      "ops": 99542,
+      "margin": 1.93,
+      "percentSlower": 58.37
     },
     {
       "name": "serialize-javascript",
-      "ops": 109592,
-      "margin": 1.68,
-      "percentSlower": 51.72
+      "ops": 113358,
+      "margin": 0.91,
+      "percentSlower": 52.6
     },
     {
       "name": "seroval",
-      "ops": 167843,
-      "margin": 1.16,
-      "percentSlower": 26.05
+      "ops": 138195,
+      "margin": 0.88,
+      "percentSlower": 42.21
     },
     {
       "name": "superjson",
-      "ops": 40335,
-      "margin": 2.73,
-      "percentSlower": 82.23
+      "ops": 41371,
+      "margin": 1.82,
+      "percentSlower": 82.7
     },
     {
       "name": "tosource",
-      "ops": 107257,
-      "margin": 1.42,
-      "percentSlower": 52.75
+      "ops": 112114,
+      "margin": 0.75,
+      "percentSlower": 53.12
     },
     {
       "name": "warp10",
-      "ops": 166869,
-      "margin": 1.38,
-      "percentSlower": 26.48
+      "ops": 147947,
+      "margin": 1.78,
+      "percentSlower": 38.13
     }
   ],
   "fastest": {
@@ -69,7 +69,7 @@
     "index": 2
   },
   "slowest": {
-    "name": "flatted",
-    "index": 1
+    "name": "superjson",
+    "index": 7
   }
 }
