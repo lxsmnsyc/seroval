@@ -1,17 +1,24 @@
+/* eslint-disable prefer-spread */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
   SerializationContext,
 } from '../context';
-import { invQuote } from '../quote';
-import { AsyncServerValue } from '../types';
+import { deserializeString } from '../string';
 import { getReference } from './reference';
 import { getErrorConstructor, getTypedArrayConstructor } from './shared';
 import { SYMBOL_REF } from './symbols';
 import {
   SerovalAggregateErrorNode,
+  SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
+  SerovalBlobNode,
+  SerovalDataViewNode,
+  SerovalDateNode,
   SerovalErrorNode,
+  SerovalFileNode,
+  SerovalFormDataNode,
+  SerovalHeadersNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
@@ -20,8 +27,12 @@ import {
   SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalPromiseNode,
+  SerovalReferenceNode,
+  SerovalRegExpNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
+  SerovalURLNode,
+  SerovalURLSearchParamsNode,
 } from './types';
 
 function assignIndexedValue<T>(
@@ -29,37 +40,28 @@ function assignIndexedValue<T>(
   index: number,
   value: T,
 ) {
-  ctx.valueMap.set(index, value);
-  return value;
-}
-
-function deserializeNodeList(
-  ctx: SerializationContext,
-  node: SerovalArrayNode | SerovalIterableNode | SerovalAggregateErrorNode,
-  result: unknown[],
-) {
-  let item: SerovalNode;
-  for (let i = 0, len = node.a.length; i < len; i++) {
-    item = node.a[i];
-    if (item) {
-      result[i] = deserializeTree(ctx, item);
-    }
+  if (ctx.markedRefs.has(index)) {
+    ctx.valueMap.set(index, value);
   }
-  return result;
+  return value;
 }
 
 function deserializeArray(
   ctx: SerializationContext,
   node: SerovalArrayNode,
 ) {
-  const result: AsyncServerValue[] = assignIndexedValue(
+  const result: unknown[] = assignIndexedValue(
     ctx,
     node.i,
-    new Array<AsyncServerValue>(node.l),
+    new Array<unknown>(node.l),
   );
-  ctx.stack.push(node.i);
-  deserializeNodeList(ctx, node, result);
-  ctx.stack.pop();
+  let item: SerovalNode;
+  for (let i = 0, len = node.l; i < len; i++) {
+    item = node.a[i];
+    if (item) {
+      result[i] = deserializeTree(ctx, item);
+    }
+  }
   return result;
 }
 
@@ -72,7 +74,7 @@ function deserializeProperties(
     return {};
   }
   for (let i = 0; i < node.s; i++) {
-    result[node.k[i]] = deserializeTree(ctx, node.v[i]);
+    result[deserializeString(node.k[i])] = deserializeTree(ctx, node.v[i]);
   }
   return result;
 }
@@ -84,11 +86,9 @@ function deserializeNullConstructor(
   const result = assignIndexedValue(
     ctx,
     node.i,
-    Object.create(null) as Record<string, AsyncServerValue>,
+    Object.create(null) as Record<string, unknown>,
   );
-  ctx.stack.push(node.i);
   deserializeProperties(ctx, node.d, result);
-  ctx.stack.pop();
   return result;
 }
 
@@ -96,10 +96,8 @@ function deserializeObject(
   ctx: SerializationContext,
   node: SerovalObjectNode,
 ) {
-  const result = assignIndexedValue(ctx, node.i, {} as Record<string, AsyncServerValue>);
-  ctx.stack.push(node.i);
+  const result = assignIndexedValue(ctx, node.i, {} as Record<string, unknown>);
   deserializeProperties(ctx, node.d, result);
-  ctx.stack.pop();
   return result;
 }
 
@@ -108,11 +106,9 @@ function deserializeSet(
   node: SerovalSetNode,
 ) {
   const result = assignIndexedValue(ctx, node.i, new Set<unknown>());
-  ctx.stack.push(node.i);
-  for (let i = 0, len = node.a.length; i < len; i++) {
+  for (let i = 0, len = node.l; i < len; i++) {
     result.add(deserializeTree(ctx, node.a[i]));
   }
-  ctx.stack.pop();
   return result;
 }
 
@@ -125,18 +121,16 @@ function deserializeMap(
     node.i,
     new Map<unknown, unknown>(),
   );
-  ctx.stack.push(node.i);
-  for (let i = 0; i < node.d.s; i++) {
+  for (let i = 0, len = node.d.s; i < len; i++) {
     result.set(
       deserializeTree(ctx, node.d.k[i]),
       deserializeTree(ctx, node.d.v[i]),
     );
   }
-  ctx.stack.pop();
   return result;
 }
 
-type AssignableValue = AggregateError | Error | Iterable<AsyncServerValue>
+type AssignableValue = AggregateError | Error | Iterable<unknown>
 type AssignableNode = SerovalAggregateErrorNode | SerovalErrorNode | SerovalIterableNode;
 
 function deserializeDictionary<T extends AssignableValue>(
@@ -145,9 +139,7 @@ function deserializeDictionary<T extends AssignableValue>(
   result: T,
 ) {
   if (node.d) {
-    ctx.stack.push(node.i);
     const fields = deserializeProperties(ctx, node.d, {});
-    ctx.stack.pop();
     Object.assign(result, fields);
   }
   return result;
@@ -158,10 +150,11 @@ function deserializeAggregateError(
   node: SerovalAggregateErrorNode,
 ) {
   // Serialize the required arguments
-  const result = assignIndexedValue(ctx, node.i, new AggregateError([], invQuote(node.m)));
-  ctx.stack.push(node.i);
-  result.errors = deserializeNodeList(ctx, node, new Array<AsyncServerValue>(node.l));
-  ctx.stack.pop();
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    new AggregateError([], deserializeString(node.m)),
+  );
   // `AggregateError` might've been extended
   // either through class or custom properties
   // Make sure to assign extra properties
@@ -173,7 +166,7 @@ function deserializeError(
   node: SerovalErrorNode,
 ) {
   const ErrorConstructor = getErrorConstructor(node.c);
-  const result = assignIndexedValue(ctx, node.i, new ErrorConstructor(invQuote(node.m)));
+  const result = assignIndexedValue(ctx, node.i, new ErrorConstructor(deserializeString(node.m)));
   return deserializeDictionary(ctx, node, result);
 }
 
@@ -204,21 +197,26 @@ function deserializePromise(
   return result;
 }
 
+function deserializeArrayBuffer(
+  ctx: SerializationContext,
+  node: SerovalArrayBufferNode,
+) {
+  const bytes = new Uint8Array(node.s);
+  const result = assignIndexedValue(ctx, node.i, bytes.buffer);
+  return result;
+}
+
 function deserializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
   const TypedArray = getTypedArrayConstructor(node.c);
-  const dummy = new TypedArray();
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new TypedArray(
-    dummy.buffer,
+    source,
+    node.b,
     node.l,
   ));
-  for (let i = 0, len = node.s.length; i < len; i++) {
-    result[i] = node.t === SerovalNodeType.BigIntTypedArray
-      ? BigInt(node.s[i])
-      : Number(node.s[i]);
-  }
   return result;
 }
 
@@ -226,12 +224,119 @@ function deserializeIterable(
   ctx: SerializationContext,
   node: SerovalIterableNode,
 ) {
-  const values: AsyncServerValue[] = [];
-  deserializeNodeList(ctx, node, values);
-  const result = assignIndexedValue(ctx, node.i, {
+  const values: unknown[] = [];
+  let item: SerovalNode;
+  for (let i = 0, len = node.l; i < len; i++) {
+    item = node.a[i];
+    if (item) {
+      values[i] = deserializeTree(ctx, item);
+    }
+  }
+  const result: Iterable<unknown> = assignIndexedValue(ctx, node.i, {
     [Symbol.iterator]: () => values.values(),
   });
   return deserializeDictionary(ctx, node, result);
+}
+
+function deserializeDate(
+  ctx: SerializationContext,
+  node: SerovalDateNode,
+) {
+  return assignIndexedValue(ctx, node.i, new Date(node.s));
+}
+
+function deserializeRegExp(
+  ctx: SerializationContext,
+  node: SerovalRegExpNode,
+) {
+  return assignIndexedValue(ctx, node.i, new RegExp(node.c, node.m));
+}
+
+function deserializeURL(
+  ctx: SerializationContext,
+  node: SerovalURLNode,
+) {
+  return assignIndexedValue(ctx, node.i, new URL(deserializeString(node.s)));
+}
+
+function deserializeURLSearchParams(
+  ctx: SerializationContext,
+  node: SerovalURLSearchParamsNode,
+) {
+  return assignIndexedValue(ctx, node.i, new URLSearchParams(deserializeString(node.s)));
+}
+
+function deserializeReference(
+  ctx: SerializationContext,
+  node: SerovalReferenceNode,
+) {
+  return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
+}
+
+function deserializeDataView(
+  ctx: SerializationContext,
+  node: SerovalDataViewNode,
+) {
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
+  const result = assignIndexedValue(ctx, node.i, new DataView(
+    source,
+    node.b,
+    node.l,
+  ));
+  return result;
+}
+
+function deserializeBlob(
+  ctx: SerializationContext,
+  node: SerovalBlobNode,
+) {
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
+  const result = assignIndexedValue(ctx, node.i, new Blob(
+    [source],
+    { type: deserializeString(node.c) },
+  ));
+  return result;
+}
+
+function deserializeFile(
+  ctx: SerializationContext,
+  node: SerovalFileNode,
+) {
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
+  const result = assignIndexedValue(ctx, node.i, new File(
+    [source],
+    deserializeString(node.m),
+    { type: deserializeString(node.c), lastModified: node.b },
+  ));
+  return result;
+}
+
+function deserializeHeaders(
+  ctx: SerializationContext,
+  node: SerovalHeadersNode,
+) {
+  const result = assignIndexedValue(ctx, node.i, new Headers());
+  for (let i = 0, len = node.d.s; i < len; i++) {
+    result.set(
+      deserializeString(node.d.k[i]),
+      deserializeTree(ctx, node.d.v[i]) as string,
+    );
+  }
+  return result;
+}
+
+function deserializeFormData(
+  ctx: SerializationContext,
+  node: SerovalFormDataNode,
+) {
+  const result = assignIndexedValue(ctx, node.i, new FormData());
+  for (let i = 0, len = node.d.s; i < len; i++) {
+    result.set(
+      deserializeString(node.d.k[i]),
+      deserializeTree(ctx, node.d.v[i]) as FormDataEntryValue,
+    );
+  }
+  return result;
 }
 
 export default function deserializeTree(
@@ -243,7 +348,7 @@ export default function deserializeTree(
     case SerovalNodeType.Boolean:
       return node.s;
     case SerovalNodeType.String:
-      return invQuote(node.s);
+      return deserializeString(node.s);
     case SerovalNodeType.Undefined:
       return undefined;
     case SerovalNodeType.Null:
@@ -267,16 +372,20 @@ export default function deserializeTree(
     case SerovalNodeType.NullConstructor:
       return deserializeNullConstructor(ctx, node);
     case SerovalNodeType.Date:
-      return assignIndexedValue(ctx, node.i, new Date(node.s));
+      return deserializeDate(ctx, node);
     case SerovalNodeType.RegExp:
-      return assignIndexedValue(ctx, node.i, new RegExp(node.c, node.m));
+      return deserializeRegExp(ctx, node);
     case SerovalNodeType.Set:
       return deserializeSet(ctx, node);
     case SerovalNodeType.Map:
       return deserializeMap(ctx, node);
+    case SerovalNodeType.ArrayBuffer:
+      return deserializeArrayBuffer(ctx, node);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
       return deserializeTypedArray(ctx, node);
+    case SerovalNodeType.DataView:
+      return deserializeDataView(ctx, node);
     case SerovalNodeType.AggregateError:
       return deserializeAggregateError(ctx, node);
     case SerovalNodeType.Error:
@@ -288,11 +397,19 @@ export default function deserializeTree(
     case SerovalNodeType.WKSymbol:
       return SYMBOL_REF[node.s];
     case SerovalNodeType.URL:
-      return assignIndexedValue(ctx, node.i, new URL(node.s));
+      return deserializeURL(ctx, node);
     case SerovalNodeType.URLSearchParams:
-      return assignIndexedValue(ctx, node.i, new URLSearchParams(node.s));
+      return deserializeURLSearchParams(ctx, node);
     case SerovalNodeType.Reference:
-      return assignIndexedValue(ctx, node.i, getReference(invQuote(node.s)));
+      return deserializeReference(ctx, node);
+    case SerovalNodeType.Blob:
+      return deserializeBlob(ctx, node);
+    case SerovalNodeType.File:
+      return deserializeFile(ctx, node);
+    case SerovalNodeType.Headers:
+      return deserializeHeaders(ctx, node);
+    case SerovalNodeType.FormData:
+      return deserializeFormData(ctx, node);
     default:
       throw new Error('Unsupported type');
   }

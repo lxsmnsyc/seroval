@@ -1,67 +1,67 @@
 {
   "name": "large-complex-collection to string",
-  "date": "2023-04-08T13:15:07.966Z",
+  "date": "2023-04-09T14:14:59.617Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 2116,
-      "margin": 1.36,
-      "percentSlower": 85.89
+      "ops": 2258,
+      "margin": 1.12,
+      "percentSlower": 85.49
     },
     {
       "name": "flatted",
-      "ops": 2821,
-      "margin": 1.45,
-      "percentSlower": 81.19
+      "ops": 2991,
+      "margin": 0.94,
+      "percentSlower": 80.79
     },
     {
       "name": "JSON",
-      "ops": 15001,
-      "margin": 1.12,
+      "ops": 15567,
+      "margin": 0.95,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 3611,
-      "margin": 2.76,
-      "percentSlower": 75.93
+      "ops": 3785,
+      "margin": 1.97,
+      "percentSlower": 75.69
     },
     {
       "name": "o-son",
-      "ops": 6444,
-      "margin": 1.56,
-      "percentSlower": 57.04
+      "ops": 6670,
+      "margin": 0.92,
+      "percentSlower": 57.15
     },
     {
       "name": "serialize-javascript",
-      "ops": 6636,
-      "margin": 2.01,
-      "percentSlower": 55.76
+      "ops": 6973,
+      "margin": 0.86,
+      "percentSlower": 55.21
     },
     {
       "name": "seroval",
-      "ops": 8946,
-      "margin": 1.3,
-      "percentSlower": 40.36
+      "ops": 8383,
+      "margin": 0.83,
+      "percentSlower": 46.15
     },
     {
       "name": "superjson",
-      "ops": 2096,
-      "margin": 1.31,
-      "percentSlower": 86.03
+      "ops": 2249,
+      "margin": 0.92,
+      "percentSlower": 85.55
     },
     {
       "name": "tosource",
-      "ops": 5706,
-      "margin": 1.48,
-      "percentSlower": 61.96
+      "ops": 5927,
+      "margin": 0.88,
+      "percentSlower": 61.93
     },
     {
       "name": "warp10",
-      "ops": 8119,
-      "margin": 1.73,
-      "percentSlower": 45.88
+      "ops": 8642,
+      "margin": 0.98,
+      "percentSlower": 44.49
     }
   ],
   "fastest": {

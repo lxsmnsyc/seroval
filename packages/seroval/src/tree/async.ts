@@ -3,7 +3,7 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { createIndexedValue, getRootID, ParserContext } from '../context';
-import quote from '../quote';
+import { serializeString } from '../string';
 import {
   BigIntTypedArrayValue,
   TypedArrayValue,
@@ -27,6 +27,8 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
   createReferenceNode,
+  createArrayBufferNode,
+  createDataViewNode,
 } from './primitives';
 import { hasReferenceID } from './reference';
 import {
@@ -40,6 +42,8 @@ import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalErrorNode,
+  SerovalFormDataNode,
+  SerovalHeadersNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
@@ -50,7 +54,12 @@ import {
   SerovalPromiseNode,
   SerovalSetNode,
 } from './types';
-import { createURLNode, createURLSearchParamsNode } from './web-api';
+import {
+  createBlobNode,
+  createFileNode,
+  createURLNode,
+  createURLSearchParamsNode,
+} from './web-api';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -104,6 +113,7 @@ async function generateArrayNode(
     d: undefined,
     a: await generateNodeList(ctx, current),
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -146,6 +156,7 @@ async function generateMapNode(
     d: { k: keyNodes, v: valueNodes, s: len },
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -182,6 +193,7 @@ async function generateSetNode(
     d: undefined,
     a: nodes,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -198,14 +210,16 @@ async function generateProperties(
   let deferredSize = 0;
   let nodesSize = 0;
   let item: unknown;
+  let escaped: string;
   for (const key of keys) {
     item = properties[key];
+    escaped = serializeString(key);
     if (isIterable(item)) {
-      deferredKeys[deferredSize] = key;
+      deferredKeys[deferredSize] = escaped;
       deferredValues[deferredSize] = item;
       deferredSize++;
     } else {
-      keyNodes[nodesSize] = key;
+      keyNodes[nodesSize] = escaped;
       valueNodes[nodesSize] = await parse(ctx, item);
       nodesSize++;
     }
@@ -242,6 +256,7 @@ async function generateIterableNode(
       : undefined,
     a: await generateNodeList(ctx, array),
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -262,6 +277,7 @@ async function generatePromiseNode(
     d: undefined,
     a: undefined,
     f: await parse(ctx, value),
+    b: undefined,
   }));
 }
 
@@ -287,6 +303,7 @@ async function generateObjectNode(
     d: await generateProperties(ctx, current as Record<string, unknown>),
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -303,12 +320,13 @@ async function generateAggregateErrorNode(
     t: SerovalNodeType.AggregateError,
     i: id,
     s: undefined,
-    l: current.errors.length,
+    l: undefined,
     c: undefined,
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
-    a: await generateNodeList(ctx, current.errors as unknown[]),
+    a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -327,10 +345,59 @@ async function generateErrorNode(
     s: undefined,
     l: undefined,
     c: getErrorConstructorName(current),
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
     a: undefined,
     f: undefined,
+    b: undefined,
+  };
+}
+
+async function generateHeadersNode(
+  ctx: ParserContext,
+  id: number,
+  current: Headers,
+): Promise<SerovalHeadersNode> {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "Headers"');
+  const items: Record<string, string> = {};
+  current.forEach((value, key) => {
+    items[key] = value;
+  });
+  return {
+    t: SerovalNodeType.Headers,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: await generateProperties(ctx, items),
+    a: undefined,
+    f: undefined,
+    b: undefined,
+  };
+}
+
+async function generateFormDataNode(
+  ctx: ParserContext,
+  id: number,
+  current: FormData,
+): Promise<SerovalFormDataNode> {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "FormData"');
+  const items: Record<string, FormDataEntryValue> = {};
+  current.forEach((value, key) => {
+    items[key] = value;
+  });
+  return {
+    t: SerovalNodeType.FormData,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: await generateProperties(ctx, items),
+    a: undefined,
+    f: undefined,
+    b: undefined,
   };
 }
 
@@ -384,6 +451,8 @@ async function parse<T>(
           return createRegExpNode(id, current as unknown as RegExp);
         case Promise:
           return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
+        case ArrayBuffer:
+          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
         case Int8Array:
         case Int16Array:
         case Int32Array:
@@ -397,6 +466,8 @@ async function parse<T>(
         case BigInt64Array:
         case BigUint64Array:
           return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
+        case DataView:
+          return createDataViewNode(ctx, id, current as unknown as DataView);
         case Map:
           return generateMapNode(
             ctx,
@@ -440,6 +511,14 @@ async function parse<T>(
           return createURLNode(ctx, id, current as unknown as URL);
         case URLSearchParams:
           return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
+        case Blob:
+          return createBlobNode(ctx, id, current as unknown as Blob);
+        case File:
+          return createFileNode(ctx, id, current as unknown as File);
+        case Headers:
+          return generateHeadersNode(ctx, id, current as unknown as Headers);
+        case FormData:
+          return generateFormDataNode(ctx, id, current as unknown as FormData);
         default:
           break;
       }

@@ -6,7 +6,7 @@ import {
   serializeAsync,
   toJSON,
   toJSONAsync,
-} from '../src';
+} from '../../src';
 
 describe('URLSearchParams', () => {
   describe('serialize', () => {

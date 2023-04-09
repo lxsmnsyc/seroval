@@ -1,0 +1,5 @@
+// Vitest Snapshot v1
+
+exports[`File > serializeAsync > supports File 1`] = `"Promise.resolve(new File([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680}))"`;
+
+exports[`File > toJSONAsync > supports File 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":31,\\"i\\":1,\\"c\\":\\"text/plain\\",\\"m\\":\\"hello.txt\\",\\"f\\":{\\"t\\":28,\\"i\\":2,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100]},\\"b\\":1681027542680}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;

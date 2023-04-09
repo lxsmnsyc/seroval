@@ -240,6 +240,8 @@ The following values are the only values accepted by `seroval`:
   - `Map`
   - `Set`
   - `Object.create(null)`
+- `ArrayBuffer`
+- `DataView`
 - `TypedArray`
   - `Int8Array`
   - `Int16Array`
@@ -260,11 +262,17 @@ The following values are the only values accepted by `seroval`:
   - `SyntaxError`
   - `TypeError`
   - `URIError`
-- `Promise` (with `serializeAsync`)
+- `Promise` (with `serializeAsync` and `toJSONAsync`)
 - [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties)
-- [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
-- [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+- Web API
+  - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+  - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+  - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) (with `serializeAsync` and `toJSONAsync`)
+  - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) (with `serializeAsync` and `toJSONAsync`)
+  - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
+  - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
+    - If `FormData` has a `Blob`/`File` entry, it can only be serialized with `serializeAsync` and `toJSONAsync`
 - Cyclic references (both self and mutual)
 - Isomorphic references (a reference that exist on both the serializer and deserializer side)
 
@@ -356,6 +364,10 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Throws and disables the following usage:
     - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
     - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+    - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+    - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
+    - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
+    - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
 
 ## Sponsors
 

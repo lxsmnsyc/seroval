@@ -2,7 +2,7 @@
 import assert from '../assert';
 import { Feature } from '../compat';
 import { createIndexedValue, getRootID, ParserContext } from '../context';
-import quote from '../quote';
+import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import {
   createBigIntNode,
@@ -23,6 +23,8 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
   createReferenceNode,
+  createArrayBufferNode,
+  createDataViewNode,
 } from './primitives';
 import {
   hasReferenceID,
@@ -38,6 +40,8 @@ import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalErrorNode,
+  SerovalFormDataNode,
+  SerovalHeadersNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
@@ -89,6 +93,7 @@ function generateArrayNode(
     d: undefined,
     a: generateNodeList(ctx, current),
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -131,6 +136,7 @@ function generateMapNode(
     d: { k: keyNodes, v: valueNodes, s: len },
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -167,6 +173,7 @@ function generateSetNode(
     d: undefined,
     a: nodes,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -183,14 +190,16 @@ function generateProperties(
   let deferredSize = 0;
   let nodesSize = 0;
   let item: unknown;
+  let escaped: string;
   for (const key of keys) {
     item = properties[key];
+    escaped = serializeString(key);
     if (isIterable(item)) {
-      deferredKeys[deferredSize] = key;
+      deferredKeys[deferredSize] = escaped;
       deferredValues[deferredSize] = item;
       deferredSize++;
     } else {
-      keyNodes[nodesSize] = key;
+      keyNodes[nodesSize] = escaped;
       valueNodes[nodesSize] = parse(ctx, item);
       nodesSize++;
     }
@@ -227,6 +236,7 @@ function generateIterableNode(
       : undefined,
     a: generateNodeList(ctx, array),
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -249,6 +259,7 @@ function generateObjectNode(
     d: generateProperties(ctx, current),
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -265,12 +276,13 @@ function generateAggregateErrorNode(
     t: SerovalNodeType.AggregateError,
     i: id,
     s: undefined,
-    l: current.errors.length,
+    l: undefined,
     c: undefined,
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
-    a: generateNodeList(ctx, current.errors as unknown[]),
+    a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -289,10 +301,59 @@ function generateErrorNode(
     s: undefined,
     l: undefined,
     c: getErrorConstructorName(current),
-    m: quote(current.message),
+    m: serializeString(current.message),
     d: optionsNode,
     a: undefined,
     f: undefined,
+    b: undefined,
+  };
+}
+
+function generateHeadersNode(
+  ctx: ParserContext,
+  id: number,
+  current: Headers,
+): SerovalHeadersNode {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "Headers"');
+  const items: Record<string, string> = {};
+  current.forEach((value, key) => {
+    items[key] = value;
+  });
+  return {
+    t: SerovalNodeType.Headers,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: generateProperties(ctx, items),
+    a: undefined,
+    f: undefined,
+    b: undefined,
+  };
+}
+
+function generateFormDataNode(
+  ctx: ParserContext,
+  id: number,
+  current: FormData,
+): SerovalFormDataNode {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "FormData"');
+  const items: Record<string, FormDataEntryValue> = {};
+  current.forEach((value, key) => {
+    items[key] = value;
+  });
+  return {
+    t: SerovalNodeType.FormData,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: generateProperties(ctx, items),
+    a: undefined,
+    f: undefined,
+    b: undefined,
   };
 }
 
@@ -344,6 +405,8 @@ function parse<T>(
           return createDateNode(id, current as unknown as Date);
         case RegExp:
           return createRegExpNode(id, current as unknown as RegExp);
+        case ArrayBuffer:
+          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
         case Int8Array:
         case Int16Array:
         case Int32Array:
@@ -357,6 +420,8 @@ function parse<T>(
         case BigInt64Array:
         case BigUint64Array:
           return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
+        case DataView:
+          return createDataViewNode(ctx, id, current as unknown as DataView);
         case Map:
           return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
         case Set:
@@ -392,6 +457,10 @@ function parse<T>(
           return createURLNode(ctx, id, current as unknown as URL);
         case URLSearchParams:
           return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
+        case Headers:
+          return generateHeadersNode(ctx, id, current as unknown as Headers);
+        case FormData:
+          return generateFormDataNode(ctx, id, current as unknown as FormData);
         default:
           break;
       }

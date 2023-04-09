@@ -1,7 +1,7 @@
 import assert from '../assert';
 import { Feature } from '../compat';
-import { ParserContext } from '../context';
-import quote from '../quote';
+import { ParserContext, createIndexedValue } from '../context';
+import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import { getReferenceID } from './reference';
 import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
@@ -24,6 +24,8 @@ import {
   SerovalUndefinedNode,
   SerovalWKSymbolNode,
   SerovalReferenceNode,
+  SerovalArrayBufferNode,
+  SerovalDataViewNode,
 } from './types';
 
 export const TRUE_NODE: SerovalBooleanNode = {
@@ -36,6 +38,7 @@ export const TRUE_NODE: SerovalBooleanNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const FALSE_NODE: SerovalBooleanNode = {
   t: SerovalNodeType.Boolean,
@@ -47,6 +50,7 @@ export const FALSE_NODE: SerovalBooleanNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const UNDEFINED_NODE: SerovalUndefinedNode = {
   t: SerovalNodeType.Undefined,
@@ -58,6 +62,7 @@ export const UNDEFINED_NODE: SerovalUndefinedNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NULL_NODE: SerovalNullNode = {
   t: SerovalNodeType.Null,
@@ -69,6 +74,7 @@ export const NULL_NODE: SerovalNullNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NEG_ZERO_NODE: SerovalNegativeZeroNode = {
   t: SerovalNodeType.NegativeZero,
@@ -80,6 +86,7 @@ export const NEG_ZERO_NODE: SerovalNegativeZeroNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const INFINITY_NODE: SerovalInfinityNode = {
   t: SerovalNodeType.Infinity,
@@ -91,6 +98,7 @@ export const INFINITY_NODE: SerovalInfinityNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NEG_INFINITY_NODE: SerovalNegativeInfinityNode = {
   t: SerovalNodeType.NegativeInfinity,
@@ -102,6 +110,7 @@ export const NEG_INFINITY_NODE: SerovalNegativeInfinityNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 export const NAN_NODE: SerovalNaNNode = {
   t: SerovalNodeType.NaN,
@@ -113,6 +122,7 @@ export const NAN_NODE: SerovalNaNNode = {
   d: undefined,
   a: undefined,
   f: undefined,
+  b: undefined,
 };
 
 export function createNumberNode(value: number): SerovalNumberNode {
@@ -126,6 +136,7 @@ export function createNumberNode(value: number): SerovalNumberNode {
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -133,13 +144,14 @@ export function createStringNode(value: string): SerovalStringNode {
   return {
     t: SerovalNodeType.String,
     i: undefined,
-    s: quote(value),
+    s: serializeString(value),
     l: undefined,
     c: undefined,
     m: undefined,
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -158,6 +170,7 @@ export function createBigIntNode(
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -172,6 +185,7 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -186,6 +200,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     d: undefined,
     f: undefined,
     a: undefined,
+    b: undefined,
   };
 }
 
@@ -200,7 +215,43 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
+}
+
+export function createArrayBufferNode(
+  id: number,
+  current: ArrayBuffer,
+): SerovalArrayBufferNode {
+  const bytes = new Uint8Array(current);
+  const len = bytes.length;
+  const values = new Array<number>(len);
+  for (let i = 0; i < len; i++) {
+    values[i] = bytes[i];
+  }
+  return {
+    t: SerovalNodeType.ArrayBuffer,
+    i: id,
+    s: values,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+  };
+}
+
+export function serializeArrayBuffer(
+  ctx: ParserContext,
+  current: ArrayBuffer,
+) {
+  const id = createIndexedValue(ctx, current);
+  if (ctx.markedRefs.has(id)) {
+    return createIndexedValueNode(id);
+  }
+  return createArrayBufferNode(id, current);
 }
 
 export function createTypedArrayNode(
@@ -210,21 +261,17 @@ export function createTypedArrayNode(
 ): SerovalTypedArrayNode {
   const constructor = current.constructor.name;
   assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
-  const len = current.length;
-  const values = new Array<string>(len);
-  for (let i = 0; i < len; i++) {
-    values[i] = '' + current[i];
-  }
   return {
     t: SerovalNodeType.TypedArray,
     i: id,
-    s: values,
-    l: current.byteOffset,
+    s: undefined,
+    l: current.length,
     c: constructor,
     m: undefined,
     d: undefined,
     a: undefined,
-    f: undefined,
+    f: serializeArrayBuffer(ctx, current.buffer),
+    b: current.byteOffset,
   };
 }
 
@@ -240,21 +287,17 @@ export function createBigIntTypedArrayNode(
     (ctx.features & BIGINT_FLAG) === BIGINT_FLAG,
     `Unsupported value type "${constructor}"`,
   );
-  const len = current.length;
-  const values = new Array<string>(len);
-  for (let i = 0; i < len; i++) {
-    values[i] = '' + current[i];
-  }
   return {
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
-    s: values,
-    l: current.byteOffset,
+    s: undefined,
+    l: current.length,
     c: constructor,
     m: undefined,
     d: undefined,
     a: undefined,
-    f: undefined,
+    f: serializeArrayBuffer(ctx, current.buffer),
+    b: current.byteOffset,
   };
 }
 
@@ -274,6 +317,7 @@ export function createWKSymbolNode(
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
   };
 }
 
@@ -284,12 +328,32 @@ export function createReferenceNode<T>(
   return {
     t: SerovalNodeType.Reference,
     i: id,
-    s: quote(getReferenceID(ref)),
+    s: serializeString(getReferenceID(ref)),
     l: undefined,
     c: undefined,
     m: undefined,
     d: undefined,
     a: undefined,
     f: undefined,
+    b: undefined,
+  };
+}
+
+export function createDataViewNode(
+  ctx: ParserContext,
+  id: number,
+  current: DataView,
+): SerovalDataViewNode {
+  return {
+    t: SerovalNodeType.DataView,
+    i: id,
+    s: undefined,
+    l: current.byteLength,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: serializeArrayBuffer(ctx, current.buffer),
+    b: current.byteOffset,
   };
 }

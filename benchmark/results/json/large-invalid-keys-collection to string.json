@@ -1,72 +1,72 @@
 {
   "name": "large-invalid-keys-collection to string",
-  "date": "2023-04-08T13:16:56.817Z",
+  "date": "2023-04-09T14:16:47.848Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 113,
-      "margin": 1.38,
-      "percentSlower": 83.28
+      "ops": 107,
+      "margin": 2.18,
+      "percentSlower": 88.1
     },
     {
       "name": "flatted",
-      "ops": 164,
-      "margin": 5.06,
-      "percentSlower": 75.74
+      "ops": 181,
+      "margin": 0.91,
+      "percentSlower": 79.87
     },
     {
       "name": "JSON",
-      "ops": 653,
-      "margin": 4.48,
-      "percentSlower": 3.4
+      "ops": 899,
+      "margin": 0.88,
+      "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 134,
-      "margin": 4.85,
-      "percentSlower": 80.18
+      "ops": 185,
+      "margin": 1.9,
+      "percentSlower": 79.42
     },
     {
       "name": "o-son",
-      "ops": 231,
-      "margin": 5.82,
-      "percentSlower": 65.83
+      "ops": 373,
+      "margin": 0.86,
+      "percentSlower": 58.51
     },
     {
       "name": "serialize-javascript",
-      "ops": 381,
-      "margin": 7.13,
-      "percentSlower": 43.64
+      "ops": 413,
+      "margin": 1.01,
+      "percentSlower": 54.06
     },
     {
       "name": "seroval",
-      "ops": 363,
-      "margin": 1.64,
-      "percentSlower": 46.3
+      "ops": 322,
+      "margin": 0.88,
+      "percentSlower": 64.18
     },
     {
       "name": "superjson",
-      "ops": 141,
-      "margin": 1.53,
-      "percentSlower": 79.14
+      "ops": 135,
+      "margin": 1.97,
+      "percentSlower": 84.98
     },
     {
       "name": "tosource",
-      "ops": 252,
-      "margin": 1.96,
-      "percentSlower": 62.72
+      "ops": 239,
+      "margin": 2.25,
+      "percentSlower": 73.41
     },
     {
       "name": "warp10",
-      "ops": 676,
-      "margin": 0.83,
-      "percentSlower": 0
+      "ops": 611,
+      "margin": 3.51,
+      "percentSlower": 32.04
     }
   ],
   "fastest": {
-    "name": "warp10",
-    "index": 9
+    "name": "JSON",
+    "index": 2
   },
   "slowest": {
     "name": "devalue",
