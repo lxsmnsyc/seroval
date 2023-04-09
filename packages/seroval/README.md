@@ -270,6 +270,8 @@ The following values are the only values accepted by `seroval`:
   - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
   - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
   - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
+  - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
+  - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
 - Cyclic references (both self and mutual)
 - Isomorphic references (a reference that exist on both the serializer and deserializer side)
 
@@ -363,6 +365,8 @@ By default, all feature flags are enabled. The following are the feature flags a
     - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
     - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
     - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
+    - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
+    - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
 
 ## Sponsors
 
