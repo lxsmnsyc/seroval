@@ -15,6 +15,7 @@ import {
   SerovalBlobNode,
   SerovalDataViewNode,
   SerovalErrorNode,
+  SerovalFileNode,
   SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
@@ -262,7 +263,20 @@ function deserializeBlob(
   const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new Blob(
     [source],
-    { type: node.c },
+    { type: deserializeString(node.c) },
+  ));
+  return result;
+}
+
+function deserializeFile(
+  ctx: SerializationContext,
+  node: SerovalFileNode,
+) {
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
+  const result = assignIndexedValue(ctx, node.i, new File(
+    [source],
+    deserializeString(node.m),
+    { type: deserializeString(node.c), lastModified: node.b },
   ));
   return result;
 }
@@ -332,6 +346,8 @@ export default function deserializeTree(
       return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
     case SerovalNodeType.Blob:
       return deserializeBlob(ctx, node);
+    case SerovalNodeType.File:
+      return deserializeFile(ctx, node);
     default:
       throw new Error('Unsupported type');
   }

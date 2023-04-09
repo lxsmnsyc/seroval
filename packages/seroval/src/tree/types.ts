@@ -32,6 +32,7 @@ export const enum SerovalNodeType {
   ArrayBuffer,
   DataView,
   Blob,
+  File,
 }
 
 export interface SerovalBaseNode {
@@ -323,6 +324,19 @@ export interface SerovalBlobNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
+export interface SerovalFileNode extends SerovalBaseNode {
+  t: SerovalNodeType.File;
+  i: number;
+  // file type
+  c: string;
+  // file name
+  m: string;
+  // reference to array buffer
+  f: SerovalNode;
+  // last modified
+  b: number;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -342,4 +356,5 @@ export type SerovalNode =
   | SerovalReferenceNode
   | SerovalArrayBufferNode
   | SerovalDataViewNode
-  | SerovalBlobNode;
+  | SerovalBlobNode
+  | SerovalFileNode;

@@ -5,6 +5,7 @@ import { serializeString } from '../string';
 import { serializeArrayBuffer } from './primitives';
 import {
   SerovalBlobNode,
+  SerovalFileNode,
   SerovalNodeType,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
@@ -67,5 +68,25 @@ export async function createBlobNode(
     f: serializeArrayBuffer(ctx, await current.arrayBuffer()),
     a: undefined,
     b: undefined,
+  };
+}
+
+export async function createFileNode(
+  ctx: ParserContext,
+  id: number,
+  current: File,
+): Promise<SerovalFileNode> {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "File"');
+  return {
+    t: SerovalNodeType.File,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: serializeString(current.type),
+    m: serializeString(current.name),
+    d: undefined,
+    f: serializeArrayBuffer(ctx, await current.arrayBuffer()),
+    a: undefined,
+    b: current.lastModified,
   };
 }

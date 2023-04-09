@@ -28,6 +28,7 @@ import {
   SerovalArrayBufferNode,
   SerovalDataViewNode,
   SerovalBlobNode,
+  SerovalFileNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -587,6 +588,15 @@ function serializeBlob(
   return assignIndexedValue(ctx, node.i, 'new Blob(' + args + ')');
 }
 
+function serializeFile(
+  ctx: SerializationContext,
+  node: SerovalFileNode,
+) {
+  const options = '{type:"' + node.c + '",lastModified:' + node.b + '}';
+  const args = '[' + serializeTree(ctx, node.f) + '],"' + node.m + '",' + options;
+  return assignIndexedValue(ctx, node.i, 'new File(' + args + ')');
+}
+
 export default function serializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -653,6 +663,8 @@ export default function serializeTree(
       return assignIndexedValue(ctx, node.i, GLOBAL_KEY + '.get("' + node.s + '")');
     case SerovalNodeType.Blob:
       return assignIndexedValue(ctx, node.i, serializeBlob(ctx, node));
+    case SerovalNodeType.File:
+      return assignIndexedValue(ctx, node.i, serializeFile(ctx, node));
     default:
       throw new Error('Unsupported type');
   }

@@ -265,8 +265,11 @@ The following values are the only values accepted by `seroval`:
 - `Promise` (with `serializeAsync`)
 - [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties)
-- [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
-- [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+- Web API
+  - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+  - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+  - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+  - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
 - Cyclic references (both self and mutual)
 - Isomorphic references (a reference that exist on both the serializer and deserializer side)
 
@@ -358,6 +361,8 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Throws and disables the following usage:
     - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
     - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+    - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+    - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
 
 ## Sponsors
 

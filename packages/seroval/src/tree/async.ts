@@ -52,7 +52,12 @@ import {
   SerovalPromiseNode,
   SerovalSetNode,
 } from './types';
-import { createBlobNode, createURLNode, createURLSearchParamsNode } from './web-api';
+import {
+  createBlobNode,
+  createFileNode,
+  createURLNode,
+  createURLSearchParamsNode,
+} from './web-api';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -458,6 +463,8 @@ async function parse<T>(
           return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
         case Blob:
           return createBlobNode(ctx, id, current as unknown as Blob);
+        case File:
+          return createFileNode(ctx, id, current as unknown as File);
         default:
           break;
       }
