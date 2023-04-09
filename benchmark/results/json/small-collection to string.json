@@ -1,67 +1,67 @@
 {
   "name": "small-collection to string",
-  "date": "2023-04-09T05:59:38.169Z",
+  "date": "2023-04-09T14:03:46.851Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 55357,
-      "margin": 1.51,
-      "percentSlower": 76.85
+      "ops": 53636,
+      "margin": 2.14,
+      "percentSlower": 77.42
     },
     {
       "name": "flatted",
-      "ops": 44748,
-      "margin": 2.18,
-      "percentSlower": 81.29
+      "ops": 44006,
+      "margin": 0.95,
+      "percentSlower": 81.48
     },
     {
       "name": "JSON",
-      "ops": 239132,
-      "margin": 0.97,
+      "ops": 237562,
+      "margin": 2.11,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 65491,
-      "margin": 1.56,
-      "percentSlower": 72.61
+      "ops": 65540,
+      "margin": 1.65,
+      "percentSlower": 72.41
     },
     {
       "name": "o-son",
-      "ops": 99542,
-      "margin": 1.93,
-      "percentSlower": 58.37
+      "ops": 99492,
+      "margin": 1.6,
+      "percentSlower": 58.12
     },
     {
       "name": "serialize-javascript",
-      "ops": 113358,
-      "margin": 0.91,
-      "percentSlower": 52.6
+      "ops": 111257,
+      "margin": 1.29,
+      "percentSlower": 53.17
     },
     {
       "name": "seroval",
-      "ops": 138195,
-      "margin": 0.88,
-      "percentSlower": 42.21
+      "ops": 139456,
+      "margin": 1.22,
+      "percentSlower": 41.3
     },
     {
       "name": "superjson",
-      "ops": 41371,
-      "margin": 1.82,
-      "percentSlower": 82.7
+      "ops": 40941,
+      "margin": 2.33,
+      "percentSlower": 82.77
     },
     {
       "name": "tosource",
-      "ops": 112114,
-      "margin": 0.75,
-      "percentSlower": 53.12
+      "ops": 107337,
+      "margin": 2.2,
+      "percentSlower": 54.82
     },
     {
       "name": "warp10",
-      "ops": 147947,
-      "margin": 1.78,
-      "percentSlower": 38.13
+      "ops": 170221,
+      "margin": 1.22,
+      "percentSlower": 28.35
     }
   ],
   "fastest": {

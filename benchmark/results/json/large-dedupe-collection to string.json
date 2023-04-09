@@ -1,66 +1,66 @@
 {
   "name": "large-dedupe-collection to string",
-  "date": "2023-04-09T05:56:17.548Z",
+  "date": "2023-04-09T14:00:26.249Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 596,
-      "margin": 0.9,
-      "percentSlower": 58.47
+      "ops": 622,
+      "margin": 1.02,
+      "percentSlower": 63.02
     },
     {
       "name": "flatted",
-      "ops": 589,
-      "margin": 0.82,
-      "percentSlower": 58.95
+      "ops": 598,
+      "margin": 0.87,
+      "percentSlower": 64.45
     },
     {
       "name": "JSON",
-      "ops": 971,
-      "margin": 0.95,
-      "percentSlower": 32.33
+      "ops": 980,
+      "margin": 1.06,
+      "percentSlower": 41.74
     },
     {
       "name": "next-json",
-      "ops": 625,
-      "margin": 1.81,
-      "percentSlower": 56.45
+      "ops": 630,
+      "margin": 1.66,
+      "percentSlower": 62.54
     },
     {
       "name": "o-son",
-      "ops": 1280,
-      "margin": 0.91,
-      "percentSlower": 10.8
+      "ops": 1247,
+      "margin": 1.9,
+      "percentSlower": 25.86
     },
     {
       "name": "serialize-javascript",
-      "ops": 456,
-      "margin": 0.99,
-      "percentSlower": 68.22
+      "ops": 436,
+      "margin": 1.32,
+      "percentSlower": 74.08
     },
     {
       "name": "seroval",
-      "ops": 1251,
-      "margin": 1.16,
-      "percentSlower": 12.82
+      "ops": 1242,
+      "margin": 1.92,
+      "percentSlower": 26.16
     },
     {
       "name": "superjson",
-      "ops": 136,
-      "margin": 1.17,
-      "percentSlower": 90.52
+      "ops": 123,
+      "margin": 7.77,
+      "percentSlower": 92.69
     },
     {
       "name": "tosource",
-      "ops": 321,
-      "margin": 1.04,
-      "percentSlower": 77.63
+      "ops": 275,
+      "margin": 6.85,
+      "percentSlower": 83.65
     },
     {
       "name": "warp10",
-      "ops": 1435,
-      "margin": 1.36,
+      "ops": 1682,
+      "margin": 2.38,
       "percentSlower": 0
     }
   ],

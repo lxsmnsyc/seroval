@@ -1,48 +1,48 @@
 {
   "name": "large-circular-collection to string",
-  "date": "2023-04-09T05:54:27.837Z",
+  "date": "2023-04-09T13:58:37.618Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 507,
-      "margin": 5.32,
-      "percentSlower": 65.27
+      "ops": 601,
+      "margin": 1.08,
+      "percentSlower": 67.51
     },
     {
       "name": "flatted",
-      "ops": 510,
-      "margin": 4.37,
-      "percentSlower": 65.07
+      "ops": 596,
+      "margin": 0.99,
+      "percentSlower": 67.78
     },
     {
       "name": "next-json",
-      "ops": 492,
-      "margin": 4,
-      "percentSlower": 66.3
+      "ops": 567,
+      "margin": 1.7,
+      "percentSlower": 69.35
     },
     {
       "name": "o-son",
-      "ops": 1170,
-      "margin": 3.81,
-      "percentSlower": 19.86
+      "ops": 1325,
+      "margin": 0.86,
+      "percentSlower": 28.38
     },
     {
       "name": "seroval",
-      "ops": 1029,
-      "margin": 0.94,
-      "percentSlower": 29.52
+      "ops": 1046,
+      "margin": 1.57,
+      "percentSlower": 43.46
     },
     {
       "name": "superjson",
-      "ops": 365,
-      "margin": 4.04,
-      "percentSlower": 75
+      "ops": 389,
+      "margin": 1.37,
+      "percentSlower": 78.97
     },
     {
       "name": "warp10",
-      "ops": 1460,
-      "margin": 2.79,
+      "ops": 1850,
+      "margin": 1.11,
       "percentSlower": 0
     }
   ],
