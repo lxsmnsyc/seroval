@@ -316,14 +316,11 @@ function deserializeHeaders(
   node: SerovalHeadersNode,
 ) {
   const result = assignIndexedValue(ctx, node.i, new Headers());
-  let item: SerovalNode;
-  let entry: [string, string];
-  for (let i = 0, len = node.l; i < len; i++) {
-    item = node.a[i];
-    if (item) {
-      entry = deserializeTree(ctx, item) as [string, string];
-      result.append.apply(result, entry);
-    }
+  for (let i = 0, len = node.d.s; i < len; i++) {
+    result.set(
+      deserializeString(node.d.k[i]),
+      deserializeTree(ctx, node.d.v[i]) as string,
+    );
   }
   return result;
 }

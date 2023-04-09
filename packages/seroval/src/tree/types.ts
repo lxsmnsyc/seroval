@@ -338,8 +338,7 @@ export interface SerovalFileNode extends SerovalBaseNode {
 export interface SerovalHeadersNode extends SerovalBaseNode {
   t: SerovalNodeType.Headers;
   i: number;
-  l: number;
-  a: SerovalNode[];
+  d: SerovalObjectRecordNode;
 }
 
 export interface SerovalFormDataNode extends SerovalBaseNode {

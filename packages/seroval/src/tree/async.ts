@@ -359,19 +359,19 @@ async function generateHeadersNode(
   current: Headers,
 ): Promise<SerovalHeadersNode> {
   assert(ctx.features & Feature.WebAPI, 'Unsupported type "Headers"');
-  const items: [string, string][] = [];
+  const items: Record<string, string> = {};
   current.forEach((value, key) => {
-    items.push([key, value]);
+    items[key] = value;
   });
   return {
     t: SerovalNodeType.Headers,
     i: id,
     s: undefined,
-    l: items.length,
+    l: undefined,
     c: undefined,
     m: undefined,
-    d: undefined,
-    a: await generateNodeList(ctx, items),
+    d: await generateProperties(ctx, items),
+    a: undefined,
     f: undefined,
     b: undefined,
   };

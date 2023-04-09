@@ -247,8 +247,7 @@ function isIndexedValueInStack(
 
 type SerovalNodeListNode =
   | SerovalArrayNode
-  | SerovalIterableNode
-  | SerovalHeadersNode;
+  | SerovalIterableNode;
 
 function serializeNodeList(
   ctx: SerializationContext,
@@ -670,7 +669,7 @@ function serializeHeaders(
   ctx: SerializationContext,
   node: SerovalHeadersNode,
 ) {
-  return assignIndexedValue(ctx, node.i, 'new Headers(' + serializeNodeList(ctx, node) + ')');
+  return assignIndexedValue(ctx, node.i, 'new Headers(' + serializeProperties(ctx, node.i, node.d) + ')');
 }
 
 function serializeFormDataEntries(
