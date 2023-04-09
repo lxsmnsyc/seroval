@@ -14,6 +14,7 @@ describe('Headers', () => {
     it('supports Headers', () => {
       const example = new Headers([
         ['Content-Type', 'text/plain'],
+        ['Content-Encoding', 'gzip'],
       ]);
       const result = serialize(example);
       expect(result).toMatchSnapshot();
@@ -26,6 +27,7 @@ describe('Headers', () => {
     it('supports Headers', async () => {
       const example = new Headers([
         ['Content-Type', 'text/plain'],
+        ['Content-Encoding', 'gzip'],
       ]);
       const result = await serializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
@@ -38,6 +40,7 @@ describe('Headers', () => {
     it('supports Headers', () => {
       const example = new Headers([
         ['Content-Type', 'text/plain'],
+        ['Content-Encoding', 'gzip'],
       ]);
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
@@ -50,6 +53,7 @@ describe('Headers', () => {
     it('supports Headers', async () => {
       const example = new Headers([
         ['Content-Type', 'text/plain'],
+        ['Content-Encoding', 'gzip'],
       ]);
       const result = await toJSONAsync(Promise.resolve(example));
       expect(JSON.stringify(result)).toMatchSnapshot();

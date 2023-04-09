@@ -1,9 +1,9 @@
 // Vitest Snapshot v1
 
-exports[`FormData > serialize > supports FormData 1`] = `"(h=>((h=new FormData(),h.append(\\"hello\\",\\"world\\"),h)))()"`;
+exports[`FormData > serialize > supports FormData 1`] = `"(h=>((h=new FormData(),h.append(\\"hello\\",\\"world\\"),h.append(\\"foo\\",\\"bar\\"),h)))()"`;
 
-exports[`FormData > serializeAsync > supports FormData 1`] = `"(h=>(Promise.resolve((h=new FormData(),h.append(\\"example\\",new File([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),h))))()"`;
+exports[`FormData > serializeAsync > supports FormData 1`] = `"(h=>(Promise.resolve((h=new FormData(),h.append(\\"hello-world\\",new File([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),h.append(\\"foo-bar\\",new File([new Uint8Array([70,111,111,32,66,97,114]).buffer],\\"foo-bar.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),h))))()"`;
 
-exports[`FormData > toJSON > supports FormData 1`] = `"{\\"t\\":{\\"t\\":33,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`FormData > toJSON > supports FormData 1`] = `"{\\"t\\":{\\"t\\":33,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\",\\"foo\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"},{\\"t\\":1,\\"s\\":\\"bar\\"}],\\"s\\":2}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`FormData > toJSONAsync > supports FormData 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":33,\\"i\\":1,\\"d\\":{\\"k\\":[\\"example\\"],\\"v\\":[{\\"t\\":31,\\"i\\":2,\\"c\\":\\"text/plain\\",\\"m\\":\\"hello.txt\\",\\"f\\":{\\"t\\":28,\\"i\\":3,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100]},\\"b\\":1681027542680}],\\"s\\":1}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`FormData > toJSONAsync > supports FormData 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":33,\\"i\\":1,\\"d\\":{\\"k\\":[\\"example\\",\\"foo-bar\\"],\\"v\\":[{\\"t\\":31,\\"i\\":2,\\"c\\":\\"text/plain\\",\\"m\\":\\"hello.txt\\",\\"f\\":{\\"t\\":28,\\"i\\":3,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100]},\\"b\\":1681027542680},{\\"t\\":31,\\"i\\":4,\\"c\\":\\"text/plain\\",\\"m\\":\\"foo-bar.txt\\",\\"f\\":{\\"t\\":28,\\"i\\":5,\\"s\\":[70,111,111,32,66,97,114]},\\"b\\":1681027542680}],\\"s\\":2}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;

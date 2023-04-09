@@ -14,6 +14,7 @@ describe('FormData', () => {
     it('supports FormData', () => {
       const example = new FormData();
       example.set('hello', 'world');
+      example.set('foo', 'bar');
       const result = serialize(example);
       expect(result).toMatchSnapshot();
       const back = deserialize<FormData>(result);
@@ -23,7 +24,11 @@ describe('FormData', () => {
   describe('serializeAsync', () => {
     it('supports FormData', async () => {
       const example = new FormData();
-      example.set('example', new File(['Hello World'], 'hello.txt', {
+      example.set('hello-world', new File(['Hello World'], 'hello.txt', {
+        type: 'text/plain',
+        lastModified: 1681027542680,
+      }));
+      example.set('foo-bar', new File(['Foo Bar'], 'foo-bar.txt', {
         type: 'text/plain',
         lastModified: 1681027542680,
       }));
@@ -37,6 +42,7 @@ describe('FormData', () => {
     it('supports FormData', () => {
       const example = new FormData();
       example.set('hello', 'world');
+      example.set('foo', 'bar');
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<FormData>(result);
@@ -47,6 +53,10 @@ describe('FormData', () => {
     it('supports FormData', async () => {
       const example = new FormData();
       example.set('example', new File(['Hello World'], 'hello.txt', {
+        type: 'text/plain',
+        lastModified: 1681027542680,
+      }));
+      example.set('foo-bar', new File(['Foo Bar'], 'foo-bar.txt', {
         type: 'text/plain',
         lastModified: 1681027542680,
       }));
