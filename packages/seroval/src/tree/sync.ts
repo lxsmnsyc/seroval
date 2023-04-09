@@ -267,7 +267,7 @@ function generateAggregateErrorNode(
   id: number,
   current: AggregateError,
 ): SerovalAggregateErrorNode {
-  const options = getErrorOptions(ctx, current, true);
+  const options = getErrorOptions(ctx, current);
   const optionsNode = options
     ? generateProperties(ctx, options)
     : undefined;
@@ -275,11 +275,11 @@ function generateAggregateErrorNode(
     t: SerovalNodeType.AggregateError,
     i: id,
     s: undefined,
-    l: current.errors.length,
+    l: undefined,
     c: undefined,
     m: serializeString(current.message),
     d: optionsNode,
-    a: generateNodeList(ctx, current.errors as unknown[]),
+    a: undefined,
     f: undefined,
     b: undefined,
   };
@@ -290,7 +290,7 @@ function generateErrorNode(
   id: number,
   current: Error,
 ): SerovalErrorNode {
-  const options = getErrorOptions(ctx, current, false);
+  const options = getErrorOptions(ctx, current);
   const optionsNode = options
     ? generateProperties(ctx, options)
     : undefined;

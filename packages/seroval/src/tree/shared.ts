@@ -44,7 +44,6 @@ export function getErrorConstructor(errorName: string) {
 export function getErrorOptions(
   ctx: ParserContext,
   error: Error,
-  isAggregate: boolean,
 ) {
   let options: Record<string, any> | undefined;
   const constructor = getErrorConstructorName(error);
@@ -61,11 +60,6 @@ export function getErrorOptions(
     if (name !== 'name' && name !== 'message') {
       if (name === 'stack') {
         if (ctx.features & Feature.ErrorPrototypeStack) {
-          options = options || {};
-          options[name] = error[name as keyof Error];
-        }
-      } else if (name === 'errors') {
-        if (!isAggregate) {
           options = options || {};
           options[name] = error[name as keyof Error];
         }

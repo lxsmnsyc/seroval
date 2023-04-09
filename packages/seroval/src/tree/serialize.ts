@@ -225,7 +225,6 @@ function isIndexedValueInStack(
 type SerovalNodeListNode =
   | SerovalArrayNode
   | SerovalIterableNode
-  | SerovalAggregateErrorNode
   | SerovalHeadersNode;
 
 function serializeNodeList(
@@ -494,7 +493,7 @@ function serializeAggregateError(
 ) {
   // Serialize the required arguments
   ctx.stack.push(node.i);
-  const serialized = 'new AggregateError(' + serializeNodeList(ctx, node) + ',"' + node.m + '")';
+  const serialized = 'new AggregateError([],"' + node.m + '")';
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties

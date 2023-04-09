@@ -311,7 +311,7 @@ async function generateAggregateErrorNode(
   id: number,
   current: AggregateError,
 ): Promise<SerovalAggregateErrorNode> {
-  const options = getErrorOptions(ctx, current, true);
+  const options = getErrorOptions(ctx, current);
   const optionsNode = options
     ? await generateProperties(ctx, options)
     : undefined;
@@ -319,11 +319,11 @@ async function generateAggregateErrorNode(
     t: SerovalNodeType.AggregateError,
     i: id,
     s: undefined,
-    l: current.errors.length,
+    l: undefined,
     c: undefined,
     m: serializeString(current.message),
     d: optionsNode,
-    a: await generateNodeList(ctx, current.errors as unknown[]),
+    a: undefined,
     f: undefined,
     b: undefined,
   };
@@ -334,7 +334,7 @@ async function generateErrorNode(
   id: number,
   current: Error,
 ): Promise<SerovalErrorNode> {
-  const options = getErrorOptions(ctx, current, false);
+  const options = getErrorOptions(ctx, current);
   const optionsNode = options
     ? await generateProperties(ctx, options)
     : undefined;

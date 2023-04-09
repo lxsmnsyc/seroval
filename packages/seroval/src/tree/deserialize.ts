@@ -46,7 +46,6 @@ function assignIndexedValue<T>(
 type SerovalNodeListNode =
   | SerovalArrayNode
   | SerovalIterableNode
-  | SerovalAggregateErrorNode
   | SerovalHeadersNode;
 
 function deserializeNodeList(
@@ -174,10 +173,11 @@ function deserializeAggregateError(
   node: SerovalAggregateErrorNode,
 ) {
   // Serialize the required arguments
-  const result = assignIndexedValue(ctx, node.i, new AggregateError([], deserializeString(node.m)));
-  ctx.stack.push(node.i);
-  result.errors = deserializeNodeList(ctx, node, new Array<AsyncServerValue>(node.l));
-  ctx.stack.pop();
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    new AggregateError([], deserializeString(node.m)),
+  );
   // `AggregateError` might've been extended
   // either through class or custom properties
   // Make sure to assign extra properties

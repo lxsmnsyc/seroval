@@ -257,15 +257,11 @@ export interface SerovalErrorNode extends SerovalBaseNode {
 
 export interface SerovalAggregateErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.AggregateError;
+  i: number;
   // message
   m: string;
   // other properties
   d: SerovalObjectRecordNode | undefined;
-  // length (number of errors)
-  l: number;
-  // array of errors
-  a: SerovalNode[];
-  i: number;
 }
 
 export interface SerovalIterableNode extends SerovalBaseNode {
