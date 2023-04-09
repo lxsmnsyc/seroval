@@ -243,7 +243,7 @@ export function createArrayBufferNode(
   };
 }
 
-function serializeArrayBuffer(
+export function serializeArrayBuffer(
   ctx: ParserContext,
   current: ArrayBuffer,
 ) {
@@ -283,7 +283,6 @@ export function createBigIntTypedArrayNode(
   current: BigIntTypedArrayValue,
 ): SerovalBigIntTypedArrayNode {
   const constructor = current.constructor.name;
-  console.log(ctx.features.toString(2), BIGINT_FLAG.toString(2), (ctx.features & BIGINT_FLAG).toString(2));
   assert(
     (ctx.features & BIGINT_FLAG) === BIGINT_FLAG,
     `Unsupported value type "${constructor}"`,

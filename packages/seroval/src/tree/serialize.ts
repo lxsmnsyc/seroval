@@ -6,7 +6,6 @@ import {
   getRefParam,
   markRef,
 } from '../context';
-import { serializeString } from '../string';
 import { GLOBAL_KEY } from './reference';
 import { isValidIdentifier } from './shared';
 import { SYMBOL_STRING } from './symbols';
@@ -28,6 +27,7 @@ import {
   SerovalTypedArrayNode,
   SerovalArrayBufferNode,
   SerovalDataViewNode,
+  SerovalBlobNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -287,11 +287,11 @@ function serializeProperties(
       if (isIdentifier && Number.isNaN(check)) {
         createObjectAssign(ctx, sourceID, key, refParam);
       } else {
-        createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + serializeString(key) + '"'), refParam);
+        createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), refParam);
       }
     } else {
       result += (hasPrev ? ',' : '')
-        + (isIdentifier ? key : ('"' + serializeString(key) + '"'))
+        + (isIdentifier ? key : ('"' + key + '"'))
         + ':' + serializeTree(ctx, val);
       hasPrev = true;
     }
@@ -341,7 +341,7 @@ function serializeAssignments(
     if (isIdentifier && Number.isNaN(check)) {
       createObjectAssign(ctx, sourceID, key, refParam);
     } else {
-      createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + serializeString(key) + '"'), refParam);
+      createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), refParam);
     }
     ctx.assignments = parentAssignment;
   }
@@ -481,7 +481,7 @@ function serializeAggregateError(
 ) {
   // Serialize the required arguments
   ctx.stack.push(node.i);
-  const serialized = 'new AggregateError(' + serializeNodeList(ctx, node) + ',"' + serializeString(node.m) + '")';
+  const serialized = 'new AggregateError(' + serializeNodeList(ctx, node) + ',"' + node.m + '")';
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties
@@ -493,7 +493,7 @@ function serializeError(
   ctx: SerializationContext,
   node: SerovalErrorNode,
 ) {
-  const serialized = 'new ' + node.c + '("' + serializeString(node.m) + '")';
+  const serialized = 'new ' + node.c + '("' + node.m + '")';
   return serializeDictionary(ctx, node.i, node.d, serialized);
 }
 
@@ -579,6 +579,14 @@ function serializeDataView(
   return assignIndexedValue(ctx, node.i, 'new DataView(' + args + ')');
 }
 
+function serializeBlob(
+  ctx: SerializationContext,
+  node: SerovalBlobNode,
+) {
+  const args = '[' + serializeTree(ctx, node.f) + '],{type:"' + node.c + '"}';
+  return assignIndexedValue(ctx, node.i, 'new Blob(' + args + ')');
+}
+
 export default function serializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -643,6 +651,8 @@ export default function serializeTree(
       return assignIndexedValue(ctx, node.i, node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams');
     case SerovalNodeType.Reference:
       return assignIndexedValue(ctx, node.i, GLOBAL_KEY + '.get("' + node.s + '")');
+    case SerovalNodeType.Blob:
+      return assignIndexedValue(ctx, node.i, serializeBlob(ctx, node));
     default:
       throw new Error('Unsupported type');
   }

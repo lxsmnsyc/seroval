@@ -188,14 +188,16 @@ function generateProperties(
   let deferredSize = 0;
   let nodesSize = 0;
   let item: unknown;
+  let escaped: string;
   for (const key of keys) {
     item = properties[key];
+    escaped = serializeString(key);
     if (isIterable(item)) {
-      deferredKeys[deferredSize] = key;
+      deferredKeys[deferredSize] = escaped;
       deferredValues[deferredSize] = item;
       deferredSize++;
     } else {
-      keyNodes[nodesSize] = key;
+      keyNodes[nodesSize] = escaped;
       valueNodes[nodesSize] = parse(ctx, item);
       nodesSize++;
     }

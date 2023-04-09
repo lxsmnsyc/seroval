@@ -1,5 +1,8 @@
 
-import { fromJSON, toJSON } from 'seroval';
+import { serialize } from 'seroval';
 
-console.log([fromJSON(toJSON('"hello"'))]);
-console.log([fromJSON(toJSON('<script></script>'))]);
+console.dir([(serialize({
+  ['<script></script>']: '<script></script>'
+}))], {
+  depth: null
+});

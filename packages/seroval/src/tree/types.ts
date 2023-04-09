@@ -31,6 +31,7 @@ export const enum SerovalNodeType {
   Reference,
   ArrayBuffer,
   DataView,
+  Blob,
 }
 
 export interface SerovalBaseNode {
@@ -124,22 +125,27 @@ export type SerovalPrimitiveNode =
 
 export interface SerovalIndexedValueNode extends SerovalBaseNode {
   t: SerovalNodeType.IndexedValue;
+  // id
   i: number;
 }
 
 export interface SerovalBigIntNode extends SerovalBaseNode {
   t: SerovalNodeType.BigInt;
+  // value in string
   s: string;
 }
 
 export interface SerovalDateNode extends SerovalBaseNode {
   t: SerovalNodeType.Date;
+  // id (Dates are stateful)
   i: number;
+  // value in ISO string
   s: string;
 }
 
 export interface SerovalRegExpNode extends SerovalBaseNode {
   t: SerovalNodeType.RegExp;
+  // id (RegExp are stateful)
   i: number;
   // source
   c: string;
@@ -149,25 +155,36 @@ export interface SerovalRegExpNode extends SerovalBaseNode {
 
 export interface SerovalArrayBufferNode extends SerovalBaseNode {
   t: SerovalNodeType.ArrayBuffer;
+  // id
   i: number;
+  // sequence in bytes
   s: number[];
 }
 
 export interface SerovalTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.TypedArray;
+  // id
   i: number;
+  // length
   l: number;
+  // TypedArray Constructor
   c: string;
+  // ArrayBuffer reference
   f: SerovalNode;
+  // Byte Offset
   b: number;
 }
 
 export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.BigIntTypedArray;
   i: number;
+  // length
   l: number;
+  // TypedArray Constructor
   c: string;
+  // ArrayBuffer reference
   f: SerovalNode;
+  // Byte Offset
   b: number;
 }
 
@@ -180,63 +197,82 @@ export type SerovalSemiPrimitiveNode =
 
 export interface SerovalSetNode extends SerovalBaseNode {
   t: SerovalNodeType.Set;
-  l: number;
-  a: SerovalNode[];
+  // id
   i: number;
+  // Size of Set
+  l: number;
+  // Items in Set (as array)
+  a: SerovalNode[];
 }
 
 export interface SerovalMapNode extends SerovalBaseNode {
   t: SerovalNodeType.Map;
-  d: SerovalMapRecordNode;
   i: number;
+  // key/value pairs
+  d: SerovalMapRecordNode;
 }
 
 export interface SerovalArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.Array;
+  // size of array
   l: number;
+  // items
   a: SerovalNode[];
   i: number;
 }
 
 export interface SerovalObjectNode extends SerovalBaseNode {
   t: SerovalNodeType.Object;
+  // key/value pairs
   d: SerovalObjectRecordNode;
   i: number;
 }
 
 export interface SerovalNullConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.NullConstructor;
+  // key/value pairs
   d: SerovalObjectRecordNode;
   i: number;
 }
 
 export interface SerovalPromiseNode extends SerovalBaseNode {
   t: SerovalNodeType.Promise;
+  // resolved value
   f: SerovalNode;
   i: number;
 }
 
 export interface SerovalErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.Error;
+  // constructor name
   c: string;
+  // message
   m: string;
+  // other properties
   d: SerovalObjectRecordNode | undefined;
   i: number;
 }
 
 export interface SerovalAggregateErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.AggregateError;
+  // message
   m: string;
+  // other properties
   d: SerovalObjectRecordNode | undefined;
+  // length (number of errors)
   l: number;
+  // array of errors
   a: SerovalNode[];
   i: number;
 }
 
 export interface SerovalIterableNode extends SerovalBaseNode {
   t: SerovalNodeType.Iterable;
+  // other properties
   d: SerovalObjectRecordNode | undefined;
+  // number of emitted items
   l: number;
+  // array of items
   a: SerovalNode[];
   i: number;
 }
@@ -249,27 +285,42 @@ export interface SerovalWKSymbolNode extends SerovalBaseNode {
 export interface SerovalURLNode extends SerovalBaseNode {
   t: SerovalNodeType.URL;
   i: number;
+  // raw URL
   s: string;
 }
 
 export interface SerovalURLSearchParamsNode extends SerovalBaseNode {
   t: SerovalNodeType.URLSearchParams;
   i: number;
+  // raw URL search params
   s: string;
 }
 
 export interface SerovalReferenceNode extends SerovalBaseNode {
   t: SerovalNodeType.Reference;
   i: number;
+  // id of the reference in the map
   s: string;
 }
 
 export interface SerovalDataViewNode extends SerovalBaseNode {
   t: SerovalNodeType.DataView;
   i: number;
+  // byte length
   l: number;
+  // reference to array buffer
   f: SerovalNode;
+  // byte offset
   b: number;
+}
+
+export interface SerovalBlobNode extends SerovalBaseNode {
+  t: SerovalNodeType.Blob;
+  i: number;
+  // file type
+  c: string;
+  // reference to array buffer
+  f: SerovalNode;
 }
 
 export type SerovalNode =
@@ -290,4 +341,5 @@ export type SerovalNode =
   | SerovalURLSearchParamsNode
   | SerovalReferenceNode
   | SerovalArrayBufferNode
-  | SerovalDataViewNode;
+  | SerovalDataViewNode
+  | SerovalBlobNode;

@@ -12,6 +12,7 @@ import {
   SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
+  SerovalBlobNode,
   SerovalDataViewNode,
   SerovalErrorNode,
   SerovalIterableNode,
@@ -74,7 +75,7 @@ function deserializeProperties(
     return {};
   }
   for (let i = 0; i < node.s; i++) {
-    result[node.k[i]] = deserializeTree(ctx, node.v[i]);
+    result[deserializeString(node.k[i])] = deserializeTree(ctx, node.v[i]);
   }
   return result;
 }
@@ -254,6 +255,18 @@ function deserializeDataView(
   return result;
 }
 
+function deserializeBlob(
+  ctx: SerializationContext,
+  node: SerovalBlobNode,
+) {
+  const source = deserializeTree(ctx, node.f) as ArrayBuffer;
+  const result = assignIndexedValue(ctx, node.i, new Blob(
+    [source],
+    { type: node.c },
+  ));
+  return result;
+}
+
 export default function deserializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -312,11 +325,13 @@ export default function deserializeTree(
     case SerovalNodeType.WKSymbol:
       return SYMBOL_REF[node.s];
     case SerovalNodeType.URL:
-      return assignIndexedValue(ctx, node.i, new URL(node.s));
+      return assignIndexedValue(ctx, node.i, new URL(deserializeString(node.s)));
     case SerovalNodeType.URLSearchParams:
-      return assignIndexedValue(ctx, node.i, new URLSearchParams(node.s));
+      return assignIndexedValue(ctx, node.i, new URLSearchParams(deserializeString(node.s)));
     case SerovalNodeType.Reference:
       return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
+    case SerovalNodeType.Blob:
+      return deserializeBlob(ctx, node);
     default:
       throw new Error('Unsupported type');
   }

@@ -52,7 +52,7 @@ import {
   SerovalPromiseNode,
   SerovalSetNode,
 } from './types';
-import { createURLNode, createURLSearchParamsNode } from './web-api';
+import { createBlobNode, createURLNode, createURLSearchParamsNode } from './web-api';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -203,14 +203,16 @@ async function generateProperties(
   let deferredSize = 0;
   let nodesSize = 0;
   let item: unknown;
+  let escaped: string;
   for (const key of keys) {
     item = properties[key];
+    escaped = serializeString(key);
     if (isIterable(item)) {
-      deferredKeys[deferredSize] = key;
+      deferredKeys[deferredSize] = escaped;
       deferredValues[deferredSize] = item;
       deferredSize++;
     } else {
-      keyNodes[nodesSize] = key;
+      keyNodes[nodesSize] = escaped;
       valueNodes[nodesSize] = await parse(ctx, item);
       nodesSize++;
     }
@@ -454,6 +456,8 @@ async function parse<T>(
           return createURLNode(ctx, id, current as unknown as URL);
         case URLSearchParams:
           return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
+        case Blob:
+          return createBlobNode(ctx, id, current as unknown as Blob);
         default:
           break;
       }
