@@ -34,6 +34,7 @@ export const enum SerovalNodeType {
   Blob,
   File,
   Headers,
+  FormData,
 }
 
 export interface SerovalBaseNode {
@@ -341,6 +342,12 @@ export interface SerovalHeadersNode extends SerovalBaseNode {
   a: SerovalNode[];
 }
 
+export interface SerovalFormDataNode extends SerovalBaseNode {
+  t: SerovalNodeType.FormData;
+  i: number;
+  d: SerovalObjectRecordNode;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -362,4 +369,5 @@ export type SerovalNode =
   | SerovalDataViewNode
   | SerovalBlobNode
   | SerovalFileNode
-  | SerovalHeadersNode;
+  | SerovalHeadersNode
+  | SerovalFormDataNode;

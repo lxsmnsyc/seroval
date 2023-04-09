@@ -35,16 +35,19 @@ import {
   SerovalURLNode,
   SerovalURLSearchParamsNode,
   SerovalReferenceNode,
+  SerovalFormDataNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
   switch (assignment.t) {
     case 'index':
       return assignment.s + '=' + assignment.v;
-    case 'map':
-      return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
     case 'set':
+      return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
+    case 'add':
       return assignment.s + '.add(' + assignment.v + ')';
+    case 'append':
+      return assignment.s + '.append(' + assignment.k + ',' + assignment.v + ')';
     default:
       return '';
   }
@@ -75,11 +78,11 @@ function mergeAssignments(assignments: Assignment[]) {
             current = item;
           }
           break;
-        case 'map':
+        case 'set':
           if (item.s === prev.s) {
             // Maps has chaining methods, merge if source is the same
             current = {
-              t: 'map',
+              t: 'set',
               s: getAssignmentExpression(current),
               k: item.k,
               v: item.v,
@@ -90,11 +93,11 @@ function mergeAssignments(assignments: Assignment[]) {
             current = item;
           }
           break;
-        case 'set':
+        case 'add':
           if (item.s === prev.s) {
             // Sets has chaining methods too
             current = {
-              t: 'set',
+              t: 'add',
               s: getAssignmentExpression(current),
               k: undefined,
               v: item.v,
@@ -104,6 +107,11 @@ function mergeAssignments(assignments: Assignment[]) {
             newAssignments.push(current);
             current = item;
           }
+          break;
+        case 'append':
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
           break;
         default:
           break;
@@ -155,21 +163,21 @@ function createAssignment(
   });
 }
 
-function createSetAdd(
+function createAddAssignment(
   ctx: SerializationContext,
   ref: number,
   value: string,
 ) {
   markRef(ctx, ref);
   ctx.assignments.push({
-    t: 'set',
+    t: 'add',
     s: getRefParam(ctx, ref),
     k: undefined,
     v: value,
   });
 }
 
-function createMapSet(
+function createSetAssignment(
   ctx: SerializationContext,
   ref: number,
   key: string,
@@ -177,7 +185,22 @@ function createMapSet(
 ) {
   markRef(ctx, ref);
   ctx.assignments.push({
-    t: 'map',
+    t: 'set',
+    s: getRefParam(ctx, ref),
+    k: key,
+    v: value,
+  });
+}
+
+function createAppendAssignment(
+  ctx: SerializationContext,
+  ref: number,
+  key: string,
+  value: string,
+) {
+  markRef(ctx, ref);
+  ctx.assignments.push({
+    t: 'append',
     s: getRefParam(ctx, ref),
     k: key,
     v: value,
@@ -409,7 +432,7 @@ function serializeSet(
     for (let i = 0; i < size; i++) {
       item = node.a[i];
       if (isIndexedValueInStack(ctx, item)) {
-        createSetAdd(ctx, node.i, getRefParam(ctx, item.i));
+        createAddAssignment(ctx, node.i, getRefParam(ctx, item.i));
       } else {
         // Push directly
         result += (hasPrev ? ',' : '') + serializeTree(ctx, item);
@@ -451,7 +474,7 @@ function serializeMap(
           // Register an assignment since
           // both key and value are a parent of this
           // Map instance
-          createMapSet(ctx, node.i, keyRef, valueRef);
+          createSetAssignment(ctx, node.i, keyRef, valueRef);
         } else {
           // Reset the stack
           // This is required because the serialized
@@ -460,7 +483,7 @@ function serializeMap(
           // assignment
           parent = ctx.stack;
           ctx.stack = [];
-          createMapSet(ctx, node.i, keyRef, serializeTree(ctx, val));
+          createSetAssignment(ctx, node.i, keyRef, serializeTree(ctx, val));
           ctx.stack = parent;
         }
       } else if (isIndexedValueInStack(ctx, val)) {
@@ -469,7 +492,7 @@ function serializeMap(
         // Reset stack for the key serialization
         parent = ctx.stack;
         ctx.stack = [];
-        createMapSet(ctx, node.i, serializeTree(ctx, key), valueRef);
+        createSetAssignment(ctx, node.i, serializeTree(ctx, key), valueRef);
         ctx.stack = parent;
       } else {
         result += (hasPrev ? ',[' : '[') + serializeTree(ctx, key) + ',' + serializeTree(ctx, val) + ']';
@@ -650,6 +673,45 @@ function serializeHeaders(
   return assignIndexedValue(ctx, node.i, 'new Headers(' + serializeNodeList(ctx, node) + ')');
 }
 
+function serializeFormDataEntries(
+  ctx: SerializationContext,
+  node: SerovalFormDataNode,
+) {
+  ctx.stack.push(node.i);
+  const mainAssignments: Assignment[] = [];
+  let parentStack: number[];
+  let value: string;
+  let key: string;
+  let parentAssignment: Assignment[];
+  for (let i = 0; i < node.d.s; i++) {
+    parentStack = ctx.stack;
+    ctx.stack = [];
+    value = serializeTree(ctx, node.d.v[i]);
+    key = node.d.k[i];
+    ctx.stack = parentStack;
+    parentAssignment = ctx.assignments;
+    ctx.assignments = mainAssignments;
+    createAppendAssignment(ctx, node.i, '"' + key + '"', value);
+    ctx.assignments = parentAssignment;
+  }
+  ctx.stack.pop();
+  return resolveAssignments(mainAssignments);
+}
+
+function serializeFormData(
+  ctx: SerializationContext,
+  node: SerovalFormDataNode,
+) {
+  if (node.d.s) {
+    markRef(ctx, node.i);
+  }
+  const result = assignIndexedValue(ctx, node.i, 'new FormData()');
+  if (node.d.s) {
+    return '(' + result + ',' + serializeFormDataEntries(ctx, node) + getRefParam(ctx, node.i) + ')';
+  }
+  return result;
+}
+
 export default function serializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -720,6 +782,8 @@ export default function serializeTree(
       return serializeFile(ctx, node);
     case SerovalNodeType.Headers:
       return serializeHeaders(ctx, node);
+    case SerovalNodeType.FormData:
+      return serializeFormData(ctx, node);
     default:
       throw new Error('Unsupported type');
   }

@@ -42,6 +42,7 @@ import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalErrorNode,
+  SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalIterableNode,
   SerovalMapNode,
@@ -357,7 +358,7 @@ async function generateHeadersNode(
   id: number,
   current: Headers,
 ): Promise<SerovalHeadersNode> {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "File"');
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "Headers"');
   const items: [string, string][] = [];
   current.forEach((value, key) => {
     items.push([key, value]);
@@ -371,6 +372,30 @@ async function generateHeadersNode(
     m: undefined,
     d: undefined,
     a: await generateNodeList(ctx, items),
+    f: undefined,
+    b: undefined,
+  };
+}
+
+async function generateFormDataNode(
+  ctx: ParserContext,
+  id: number,
+  current: FormData,
+): Promise<SerovalFormDataNode> {
+  assert(ctx.features & Feature.WebAPI, 'Unsupported type "FormData"');
+  const items: Record<string, FormDataEntryValue> = {};
+  current.forEach((value, key) => {
+    items[key] = value;
+  });
+  return {
+    t: SerovalNodeType.FormData,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: await generateProperties(ctx, items),
+    a: undefined,
     f: undefined,
     b: undefined,
   };
@@ -492,6 +517,8 @@ async function parse<T>(
           return createFileNode(ctx, id, current as unknown as File);
         case Headers:
           return generateHeadersNode(ctx, id, current as unknown as Headers);
+        case FormData:
+          return generateFormDataNode(ctx, id, current as unknown as FormData);
         default:
           break;
       }

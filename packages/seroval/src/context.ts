@@ -8,25 +8,33 @@ interface IndexAssignment {
   v: string;
 }
 
-interface MapAssignment {
-  t: 'map';
+interface SetAssignment {
+  t: 'set';
   s: string;
   k: string;
   v: string;
 }
 
-interface SetAssignment {
-  t: 'set';
+interface AddAssignment {
+  t: 'add';
   s: string;
   k: undefined;
+  v: string;
+}
+
+interface AppendAssignment {
+  t: 'append';
+  s: string;
+  k: string;
   v: string;
 }
 
 // Array of assignments to be done (used for recursion)
 export type Assignment =
   | IndexAssignment
-  | MapAssignment
-  | SetAssignment;
+  | AddAssignment
+  | SetAssignment
+  | AppendAssignment;
 
 export interface ParserContext {
   refs: Map<unknown, number>;

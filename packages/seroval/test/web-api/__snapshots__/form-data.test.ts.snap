@@ -1,0 +1,9 @@
+// Vitest Snapshot v1
+
+exports[`FormData > serialize > supports FormData 1`] = `"(h=>((h=new FormData(),h.append(\\"hello\\",\\"world\\"),h)))()"`;
+
+exports[`FormData > serializeAsync > supports FormData 1`] = `"(h=>(Promise.resolve((h=new FormData(),h.append(\\"example\\",new File([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),h))))()"`;
+
+exports[`FormData > toJSON > supports FormData 1`] = `"{\\"t\\":{\\"t\\":33,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`FormData > toJSONAsync > supports FormData 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":33,\\"i\\":1,\\"d\\":{\\"k\\":[\\"example\\"],\\"v\\":[{\\"t\\":31,\\"i\\":2,\\"c\\":\\"text/plain\\",\\"m\\":\\"hello.txt\\",\\"f\\":{\\"t\\":28,\\"i\\":3,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100]},\\"b\\":1681027542680}],\\"s\\":1}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
