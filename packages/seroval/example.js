@@ -1,4 +1,4 @@
-import { toJSON } from 'seroval';
+import { serialize } from 'seroval';
 
 const object = {
   number: [Math.random(), -0, NaN, Infinity, -Infinity],
@@ -29,5 +29,5 @@ object.array.push(object.map);
 object.map.set('mutual', object.set);
 object.set.add(object.array);
 
-const result = toJSON(object);
+const result = serialize(object);
 console.log(result);
