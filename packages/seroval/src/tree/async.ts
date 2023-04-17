@@ -34,7 +34,6 @@ import { hasReferenceID } from './reference';
 import {
   getErrorConstructorName,
   getErrorOptions,
-  getIterableOptions,
   isIterable,
 } from './shared';
 import { WellKnownSymbols } from './symbols';
@@ -44,13 +43,14 @@ import {
   SerovalErrorNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
-  SerovalIterableNode,
   SerovalMapNode,
   SerovalNode,
   SerovalNodeType,
   SerovalNullConstructorNode,
   SerovalObjectNode,
+  SerovalObjectRecordKey,
   SerovalObjectRecordNode,
+  SerovalPlainRecordNode,
   SerovalPromiseNode,
   SerovalSetNode,
 } from './types';
@@ -64,12 +64,10 @@ import {
 type ObjectLikeNode =
   | SerovalObjectNode
   | SerovalNullConstructorNode
-  | SerovalIterableNode
   | SerovalPromiseNode;
 
 type ObjectLikeValue =
   | Record<string, unknown>
-  | Iterable<unknown>
   | PromiseLike<unknown>;
 
 async function generateNodeList(
@@ -202,6 +200,53 @@ async function generateProperties(
   properties: Record<string, unknown>,
 ): Promise<SerovalObjectRecordNode> {
   const keys = Object.keys(properties);
+  let size = keys.length;
+  const keyNodes = new Array<SerovalObjectRecordKey>(size);
+  const valueNodes = new Array<SerovalNode>(size);
+  const deferredKeys = new Array<SerovalObjectRecordKey>(size);
+  const deferredValues = new Array<unknown>(size);
+  let deferredSize = 0;
+  let nodesSize = 0;
+  let item: unknown;
+  let escaped: SerovalObjectRecordKey;
+  for (const key of keys) {
+    item = properties[key];
+    escaped = serializeString(key);
+    if (isIterable(item)) {
+      deferredKeys[deferredSize] = escaped;
+      deferredValues[deferredSize] = item;
+      deferredSize++;
+    } else {
+      keyNodes[nodesSize] = escaped;
+      valueNodes[nodesSize] = await parse(ctx, item);
+      nodesSize++;
+    }
+  }
+  for (let i = 0; i < deferredSize; i++) {
+    keyNodes[nodesSize + i] = deferredKeys[i];
+    valueNodes[nodesSize + i] = await parse(ctx, deferredValues[i]);
+  }
+  if (ctx.features & Feature.Symbol) {
+    if (Symbol.iterator in properties) {
+      keyNodes[size] = createWKSymbolNode(ctx, Symbol.iterator);
+      const items = Array.from(properties as Iterable<unknown>);
+      const id = createIndexedValue(ctx, items);
+      valueNodes[size] = await generateArrayNode(ctx, id, items);
+      size++;
+    }
+  }
+  return {
+    k: keyNodes,
+    v: valueNodes,
+    s: size,
+  };
+}
+
+async function generatePlainProperties(
+  ctx: ParserContext,
+  properties: Record<string, unknown>,
+): Promise<SerovalPlainRecordNode> {
+  const keys = Object.keys(properties);
   const size = keys.length;
   const keyNodes = new Array<string>(size);
   const valueNodes = new Array<SerovalNode>(size);
@@ -235,31 +280,6 @@ async function generateProperties(
   };
 }
 
-async function generateIterableNode(
-  ctx: ParserContext,
-  id: number,
-  current: Iterable<unknown>,
-): Promise<SerovalIterableNode> {
-  assert(ctx.features & Feature.Symbol, 'Unsupported type "Iterable"');
-  const options = getIterableOptions(current);
-  const array = Array.from(current);
-  return {
-    t: SerovalNodeType.Iterable,
-    i: id,
-    s: undefined,
-    l: array.length,
-    c: undefined,
-    m: undefined,
-    // Parse options first before the items
-    d: options
-      ? await generateProperties(ctx, options)
-      : undefined,
-    a: await generateNodeList(ctx, array),
-    f: undefined,
-    b: undefined,
-  };
-}
-
 async function generatePromiseNode(
   ctx: ParserContext,
   id: number,
@@ -287,9 +307,6 @@ async function generateObjectNode(
   current: ObjectLikeValue,
   empty: boolean,
 ): Promise<ObjectLikeNode> {
-  if (Symbol.iterator in current) {
-    return generateIterableNode(ctx, id, current);
-  }
   if ('then' in current && typeof current.then === 'function') {
     return generatePromiseNode(ctx, id, current as PromiseLike<unknown>);
   }
@@ -370,7 +387,7 @@ async function generateHeadersNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: await generateProperties(ctx, items),
+    d: await generatePlainProperties(ctx, items),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -394,7 +411,7 @@ async function generateFormDataNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: await generateProperties(ctx, items),
+    d: await generatePlainProperties(ctx, items),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -536,7 +553,7 @@ async function parse<T>(
       }
       // Generator functions don't have a global constructor
       if (Symbol.iterator in current) {
-        return generateIterableNode(ctx, id, current as Iterable<unknown>);
+        return generateObjectNode(ctx, id, current, current.constructor == null);
       }
       // For Promise-like objects
       if ('then' in current && typeof current.then === 'function') {
@@ -571,7 +588,9 @@ export default async function parseAsync<T>(
   current: T,
 ) {
   const result = await parse(ctx, current);
-  const isObject = result.t === SerovalNodeType.Object
-    || result.t === SerovalNodeType.Iterable;
-  return [result, getRootID(ctx, current), isObject] as const;
+  return [
+    result,
+    getRootID(ctx, current),
+    result.t === SerovalNodeType.Object,
+  ] as const;
 }

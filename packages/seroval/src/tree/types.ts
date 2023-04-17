@@ -22,7 +22,6 @@ export const enum SerovalNodeType {
   Promise,
   Error,
   AggregateError,
-  Iterable,
   TypedArray,
   BigIntTypedArray,
   WKSymbol,
@@ -51,7 +50,7 @@ export interface SerovalBaseNode {
   // message/flags
   m: string | undefined;
   // dictionary
-  d: SerovalDictionaryNode | undefined;
+  d: SerovalObjectRecordNode | SerovalMapRecordNode | undefined;
   // array of nodes
   a: SerovalNode[] | undefined;
   // fulfilled node
@@ -60,8 +59,18 @@ export interface SerovalBaseNode {
   b: number | undefined;
 }
 
-export interface SerovalObjectRecordNode {
+export type SerovalObjectRecordKey =
+  | string
+  | SerovalWKSymbolNode;
+
+export interface SerovalPlainRecordNode {
   k: string[];
+  v: SerovalNode[];
+  s: number;
+}
+
+export interface SerovalObjectRecordNode {
+  k: SerovalObjectRecordKey[];
   v: SerovalNode[];
   s: number;
 }
@@ -71,10 +80,6 @@ export interface SerovalMapRecordNode {
   v: SerovalNode[];
   s: number;
 }
-
-export type SerovalDictionaryNode =
-  | SerovalObjectRecordNode
-  | SerovalMapRecordNode;
 
 export interface SerovalNumberNode extends SerovalBaseNode {
   t: SerovalNodeType.Number;
@@ -265,17 +270,6 @@ export interface SerovalAggregateErrorNode extends SerovalBaseNode {
   d: SerovalObjectRecordNode | undefined;
 }
 
-export interface SerovalIterableNode extends SerovalBaseNode {
-  t: SerovalNodeType.Iterable;
-  // other properties
-  d: SerovalObjectRecordNode | undefined;
-  // number of emitted items
-  l: number;
-  // array of items
-  a: SerovalNode[];
-  i: number;
-}
-
 export interface SerovalWKSymbolNode extends SerovalBaseNode {
   t: SerovalNodeType.WKSymbol;
   s: Symbols;
@@ -338,13 +332,13 @@ export interface SerovalFileNode extends SerovalBaseNode {
 export interface SerovalHeadersNode extends SerovalBaseNode {
   t: SerovalNodeType.Headers;
   i: number;
-  d: SerovalObjectRecordNode;
+  d: SerovalPlainRecordNode;
 }
 
 export interface SerovalFormDataNode extends SerovalBaseNode {
   t: SerovalNodeType.FormData;
   i: number;
-  d: SerovalObjectRecordNode;
+  d: SerovalPlainRecordNode;
 }
 
 export type SerovalNode =
@@ -359,7 +353,6 @@ export type SerovalNode =
   | SerovalPromiseNode
   | SerovalErrorNode
   | SerovalAggregateErrorNode
-  | SerovalIterableNode
   | SerovalWKSymbolNode
   | SerovalURLNode
   | SerovalURLSearchParamsNode
