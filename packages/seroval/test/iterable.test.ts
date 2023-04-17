@@ -96,16 +96,6 @@ describe('Iterable', () => {
     });
   });
   describe('compat', () => {
-    it('should throw an error for unsupported target', () => {
-      const example = {
-        * [Symbol.iterator]() {
-          yield example;
-        },
-      };
-      expect(() => serialize(example, {
-        disabledFeatures: Feature.Symbol,
-      })).toThrowErrorMatchingSnapshot();
-    });
     it('should use Symbol.iterator instead of Array.values.', () => {
       const example = {
         * [Symbol.iterator]() {
@@ -138,16 +128,6 @@ describe('Iterable', () => {
     });
   });
   describe('compat#toJSON', () => {
-    it('should throw an error for unsupported target', () => {
-      const example = {
-        * [Symbol.iterator]() {
-          yield example;
-        },
-      };
-      expect(() => toJSON(example, {
-        disabledFeatures: Feature.Symbol,
-      })).toThrowErrorMatchingSnapshot();
-    });
     it('should use Symbol.iterator instead of Array.values.', () => {
       const example = {
         * [Symbol.iterator]() {

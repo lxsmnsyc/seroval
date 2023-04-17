@@ -15,6 +15,7 @@
   ],
   "devDependencies": {
     "@types/node": "^18.15.3",
+    "@vitest/ui": "^0.30.1",
     "eslint": "^8.32.0",
     "eslint-config-lxsmnsyc": "^0.5.1",
     "node-fetch-native": "^1.1.0",
@@ -32,7 +33,8 @@
     "watch": "pridepack watch",
     "start": "pridepack start",
     "dev": "pridepack dev",
-    "test": "vitest"
+    "test": "vitest",
+    "test:ui": "vitest --ui"
   },
   "private": false,
   "description": "Stringify JS values",

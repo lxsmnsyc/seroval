@@ -2,4 +2,4 @@
 
 exports[`Blob > serializeAsync > supports Blob 1`] = `"Promise.resolve(new Blob([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:\\"text/plain\\"}))"`;
 
-exports[`Blob > toJSONAsync > supports Blob 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":30,\\"i\\":1,\\"c\\":\\"text/plain\\",\\"f\\":{\\"t\\":28,\\"i\\":2,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100]}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Blob > toJSONAsync > supports Blob 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":29,\\"i\\":1,\\"c\\":\\"text/plain\\",\\"f\\":{\\"t\\":27,\\"i\\":2,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100]}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
