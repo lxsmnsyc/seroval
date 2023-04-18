@@ -9,7 +9,7 @@ import {
   NAN_NODE,
   NEG_ZERO_NODE,
 } from './constants';
-import { getReferenceID } from './reference';
+import { getReferenceID, hasReferenceID } from './reference';
 import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
 import {
   SerovalBigIntNode,
@@ -272,4 +272,18 @@ export function createDataViewNode(
     f: serializeArrayBuffer(ctx, current.buffer),
     b: current.byteOffset,
   };
+}
+
+export function createSymbolNode(
+  ctx: ParserContext,
+  current: symbol,
+) {
+  if (hasReferenceID(current)) {
+    const id = createIndexedValue(ctx, current);
+    if (ctx.markedRefs.has(id)) {
+      return createIndexedValueNode(id);
+    }
+    return createReferenceNode(id, current);
+  }
+  return createWKSymbolNode(ctx, current as WellKnownSymbols);
 }

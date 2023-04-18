@@ -23,6 +23,7 @@ import {
   createReferenceNode,
   createArrayBufferNode,
   createDataViewNode,
+  createSymbolNode,
 } from './primitives';
 import {
   hasReferenceID,
@@ -32,7 +33,6 @@ import {
   getErrorOptions,
   isIterable,
 } from './shared';
-import { WellKnownSymbols } from './symbols';
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -486,14 +486,7 @@ function parse<T>(
       throw new Error('Unsupported type');
     }
     case 'symbol':
-      if (hasReferenceID(current)) {
-        const id = createIndexedValue(ctx, current);
-        if (ctx.markedRefs.has(id)) {
-          return createIndexedValueNode(id);
-        }
-        return createReferenceNode(id, current);
-      }
-      return createWKSymbolNode(ctx, current as WellKnownSymbols);
+      return createSymbolNode(ctx, current);
     case 'function': {
       assert(hasReferenceID(current), 'Cannot serialize function without reference ID.');
       const id = createIndexedValue(ctx, current);
