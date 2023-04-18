@@ -9,6 +9,12 @@ import {
   TypedArrayValue,
 } from '../types';
 import {
+  TRUE_NODE,
+  FALSE_NODE,
+  UNDEFINED_NODE,
+  NULL_NODE,
+} from './constants';
+import {
   createBigIntNode,
   createBigIntTypedArrayNode,
   createDateNode,
@@ -18,14 +24,6 @@ import {
   createStringNode,
   createTypedArrayNode,
   createWKSymbolNode,
-  FALSE_NODE,
-  INFINITY_NODE,
-  NAN_NODE,
-  NEG_INFINITY_NODE,
-  NEG_ZERO_NODE,
-  NULL_NODE,
-  TRUE_NODE,
-  UNDEFINED_NODE,
   createReferenceNode,
   createArrayBufferNode,
   createDataViewNode,
@@ -430,19 +428,7 @@ async function parse<T>(
     case 'string':
       return createStringNode(current);
     case 'number':
-      switch (current) {
-        case Infinity: return INFINITY_NODE;
-        case -Infinity: return NEG_INFINITY_NODE;
-        default:
-          // eslint-disable-next-line no-self-compare
-          if (current !== current) {
-            return NAN_NODE;
-          }
-          if (Object.is(current, -0)) {
-            return NEG_ZERO_NODE;
-          }
-          return createNumberNode(current);
-      }
+      return createNumberNode(current);
     case 'bigint':
       return createBigIntNode(ctx, current);
     case 'object': {

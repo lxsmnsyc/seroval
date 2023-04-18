@@ -1,14 +1,20 @@
 import { Symbols } from './symbols';
 
-export const enum SerovalNodeType {
-  Number,
-  String,
-  Boolean,
+export const enum SerovalConstant {
   Null,
   Undefined,
+  True,
+  False,
   NegativeZero,
   Infinity,
   NegativeInfinity,
+  NaN,
+}
+
+export const enum SerovalNodeType {
+  Number,
+  String,
+  Constant,
   NaN,
   BigInt,
   IndexedValue,
@@ -91,45 +97,15 @@ export interface SerovalStringNode extends SerovalBaseNode {
   s: string;
 }
 
-export interface SerovalBooleanNode extends SerovalBaseNode {
-  t: SerovalNodeType.Boolean;
-  s: boolean;
-}
-
-export interface SerovalNullNode extends SerovalBaseNode {
-  t: SerovalNodeType.Null;
-}
-
-export interface SerovalUndefinedNode extends SerovalBaseNode {
-  t: SerovalNodeType.Undefined;
-}
-
-export interface SerovalNegativeZeroNode extends SerovalBaseNode {
-  t: SerovalNodeType.NegativeZero;
-}
-
-export interface SerovalInfinityNode extends SerovalBaseNode {
-  t: SerovalNodeType.Infinity;
-}
-
-export interface SerovalNegativeInfinityNode extends SerovalBaseNode {
-  t: SerovalNodeType.NegativeInfinity;
-}
-
-export interface SerovalNaNNode extends SerovalBaseNode {
-  t: SerovalNodeType.NaN;
+export interface SerovalConstantNode extends SerovalBaseNode {
+  t: SerovalNodeType.Constant;
+  s: SerovalConstant;
 }
 
 export type SerovalPrimitiveNode =
   | SerovalNumberNode
   | SerovalStringNode
-  | SerovalBooleanNode
-  | SerovalNullNode
-  | SerovalUndefinedNode
-  | SerovalNegativeZeroNode
-  | SerovalNegativeInfinityNode
-  | SerovalInfinityNode
-  | SerovalNaNNode;
+  | SerovalConstantNode;
 
 export interface SerovalIndexedValueNode extends SerovalBaseNode {
   t: SerovalNodeType.IndexedValue;

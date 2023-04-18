@@ -6,6 +6,7 @@ import {
   getRefParam,
   markRef,
 } from '../context';
+import { serializeConstant } from './constants';
 import { GLOBAL_KEY } from './reference';
 import { isValidIdentifier } from './shared';
 import { SYMBOL_STRING } from './symbols';
@@ -740,20 +741,8 @@ export default function serializeTree(
       return '' + node.s;
     case SerovalNodeType.String:
       return '"' + node.s + '"';
-    case SerovalNodeType.Boolean:
-      return node.s ? '!0' : '!1';
-    case SerovalNodeType.Undefined:
-      return 'void 0';
-    case SerovalNodeType.Null:
-      return 'null';
-    case SerovalNodeType.NegativeZero:
-      return '-0';
-    case SerovalNodeType.Infinity:
-      return '1/0';
-    case SerovalNodeType.NegativeInfinity:
-      return '-1/0';
-    case SerovalNodeType.NaN:
-      return 'NaN';
+    case SerovalNodeType.Constant:
+      return serializeConstant(node);
     case SerovalNodeType.BigInt:
       return node.s + 'n';
     case SerovalNodeType.IndexedValue:

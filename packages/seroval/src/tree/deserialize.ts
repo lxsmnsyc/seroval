@@ -1,9 +1,11 @@
 /* eslint-disable prefer-spread */
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import assert from '../assert';
 import {
   SerializationContext,
 } from '../context';
 import { deserializeString } from '../string';
+import { deserializeConstant } from './constants';
 import { getReference } from './reference';
 import { getErrorConstructor, getTypedArrayConstructor } from './shared';
 import { SYMBOL_REF } from './symbols';
@@ -328,23 +330,12 @@ export default function deserializeTree(
   node: SerovalNode,
 ): unknown {
   switch (node.t) {
+    case SerovalNodeType.Constant:
+      return deserializeConstant(node);
     case SerovalNodeType.Number:
-    case SerovalNodeType.Boolean:
       return node.s;
     case SerovalNodeType.String:
       return deserializeString(node.s);
-    case SerovalNodeType.Undefined:
-      return undefined;
-    case SerovalNodeType.Null:
-      return null;
-    case SerovalNodeType.NegativeZero:
-      return -0;
-    case SerovalNodeType.Infinity:
-      return Infinity;
-    case SerovalNodeType.NegativeInfinity:
-      return -Infinity;
-    case SerovalNodeType.NaN:
-      return NaN;
     case SerovalNodeType.BigInt:
       return BigInt(node.s);
     case SerovalNodeType.IndexedValue:
@@ -392,6 +383,7 @@ export default function deserializeTree(
     case SerovalNodeType.FormData:
       return deserializeFormData(ctx, node);
     default:
-      throw new Error('Unsupported type');
+      assert(false, 'Unsupported type');
+      return null;
   }
 }

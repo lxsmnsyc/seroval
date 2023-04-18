@@ -3,141 +3,57 @@ import { Feature } from '../compat';
 import { ParserContext, createIndexedValue } from '../context';
 import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import {
+  INFINITY_NODE,
+  NEG_INFINITY_NODE,
+  NAN_NODE,
+  NEG_ZERO_NODE,
+} from './constants';
 import { getReferenceID } from './reference';
 import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
 import {
   SerovalBigIntNode,
   SerovalBigIntTypedArrayNode,
-  SerovalBooleanNode,
   SerovalDateNode,
-  SerovalInfinityNode,
-  SerovalNaNNode,
-  SerovalNegativeInfinityNode,
-  SerovalNegativeZeroNode,
   SerovalNodeType,
-  SerovalNullNode,
-  SerovalNumberNode,
   SerovalIndexedValueNode,
   SerovalRegExpNode,
   SerovalStringNode,
   SerovalTypedArrayNode,
-  SerovalUndefinedNode,
   SerovalWKSymbolNode,
   SerovalReferenceNode,
   SerovalArrayBufferNode,
   SerovalDataViewNode,
+  SerovalNode,
 } from './types';
 
-export const TRUE_NODE: SerovalBooleanNode = {
-  t: SerovalNodeType.Boolean,
-  i: undefined,
-  s: true,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-export const FALSE_NODE: SerovalBooleanNode = {
-  t: SerovalNodeType.Boolean,
-  i: undefined,
-  s: false,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-export const UNDEFINED_NODE: SerovalUndefinedNode = {
-  t: SerovalNodeType.Undefined,
-  i: undefined,
-  s: undefined,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-export const NULL_NODE: SerovalNullNode = {
-  t: SerovalNodeType.Null,
-  i: undefined,
-  s: undefined,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-export const NEG_ZERO_NODE: SerovalNegativeZeroNode = {
-  t: SerovalNodeType.NegativeZero,
-  i: undefined,
-  s: undefined,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-export const INFINITY_NODE: SerovalInfinityNode = {
-  t: SerovalNodeType.Infinity,
-  i: undefined,
-  s: undefined,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-export const NEG_INFINITY_NODE: SerovalNegativeInfinityNode = {
-  t: SerovalNodeType.NegativeInfinity,
-  i: undefined,
-  s: undefined,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-export const NAN_NODE: SerovalNaNNode = {
-  t: SerovalNodeType.NaN,
-  i: undefined,
-  s: undefined,
-  l: undefined,
-  c: undefined,
-  m: undefined,
-  d: undefined,
-  a: undefined,
-  f: undefined,
-  b: undefined,
-};
-
-export function createNumberNode(value: number): SerovalNumberNode {
-  return {
-    t: SerovalNodeType.Number,
-    i: undefined,
-    s: value,
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    d: undefined,
-    a: undefined,
-    f: undefined,
-    b: undefined,
-  };
+export function createNumberNode(value: number): SerovalNode {
+  switch (value) {
+    case Infinity:
+      return INFINITY_NODE;
+    case -Infinity:
+      return NEG_INFINITY_NODE;
+    default:
+      // eslint-disable-next-line no-self-compare
+      if (value !== value) {
+        return NAN_NODE;
+      }
+      if (Object.is(value, -0)) {
+        return NEG_ZERO_NODE;
+      }
+      return {
+        t: SerovalNodeType.Number,
+        i: undefined,
+        s: value,
+        l: undefined,
+        c: undefined,
+        m: undefined,
+        d: undefined,
+        a: undefined,
+        f: undefined,
+        b: undefined,
+      };
+  }
 }
 
 export function createStringNode(value: string): SerovalStringNode {
