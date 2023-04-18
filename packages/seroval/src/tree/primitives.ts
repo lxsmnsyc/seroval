@@ -287,3 +287,16 @@ export function createSymbolNode(
   }
   return createWKSymbolNode(ctx, current as WellKnownSymbols);
 }
+
+export function createFunctionNode(
+  ctx: ParserContext,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  current: Function,
+) {
+  assert(hasReferenceID(current), 'Cannot serialize function without reference ID.');
+  const id = createIndexedValue(ctx, current);
+  if (ctx.markedRefs.has(id)) {
+    return createIndexedValueNode(id);
+  }
+  return createReferenceNode(id, current);
+}

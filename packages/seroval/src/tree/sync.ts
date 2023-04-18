@@ -24,6 +24,7 @@ import {
   createArrayBufferNode,
   createDataViewNode,
   createSymbolNode,
+  createFunctionNode,
 } from './primitives';
 import {
   hasReferenceID,
@@ -487,14 +488,8 @@ function parse<T>(
     }
     case 'symbol':
       return createSymbolNode(ctx, current);
-    case 'function': {
-      assert(hasReferenceID(current), 'Cannot serialize function without reference ID.');
-      const id = createIndexedValue(ctx, current);
-      if (ctx.markedRefs.has(id)) {
-        return createIndexedValueNode(id);
-      }
-      return createReferenceNode(id, current);
-    }
+    case 'function':
+      return createFunctionNode(ctx, current);
     default:
       throw new Error('Unsupported type');
   }
