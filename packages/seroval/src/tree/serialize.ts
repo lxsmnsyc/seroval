@@ -572,8 +572,7 @@ function serializeError(
   ctx: SerializationContext,
   node: SerovalErrorNode,
 ) {
-  const serialized = 'new ' + node.c + '("' + node.m + '")';
-  return serializeDictionary(ctx, node.i, node.d, serialized);
+  return serializeDictionary(ctx, node.i, node.d, 'new ' + node.c + '("' + node.m + '")');
 }
 
 function serializePromise(
@@ -622,8 +621,11 @@ function serializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ) {
-  const args = serializeTree(ctx, node.f) + ',' + node.b + ',' + node.l;
-  return assignIndexedValue(ctx, node.i, 'new ' + node.c + '(' + args + ')');
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    'new ' + node.c + '(' + serializeTree(ctx, node.f) + ',' + node.b + ',' + node.l + ')',
+  );
 }
 
 function serializeDate(
@@ -651,7 +653,11 @@ function serializeURLSearchParams(
   ctx: SerializationContext,
   node: SerovalURLSearchParamsNode,
 ) {
-  return assignIndexedValue(ctx, node.i, node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams');
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams',
+  );
 }
 
 function serializeReference(
@@ -665,32 +671,44 @@ function serializeDataView(
   ctx: SerializationContext,
   node: SerovalDataViewNode,
 ) {
-  const args = serializeTree(ctx, node.f) + ',' + node.b + ',' + node.l;
-  return assignIndexedValue(ctx, node.i, 'new DataView(' + args + ')');
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    'new DataView(' + serializeTree(ctx, node.f) + ',' + node.b + ',' + node.l + ')',
+  );
 }
 
 function serializeBlob(
   ctx: SerializationContext,
   node: SerovalBlobNode,
 ) {
-  const args = '[' + serializeTree(ctx, node.f) + '],{type:"' + node.c + '"}';
-  return assignIndexedValue(ctx, node.i, 'new Blob(' + args + ')');
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    'new Blob([' + serializeTree(ctx, node.f) + '],{type:"' + node.c + '"})',
+  );
 }
 
 function serializeFile(
   ctx: SerializationContext,
   node: SerovalFileNode,
 ) {
-  const options = '{type:"' + node.c + '",lastModified:' + node.b + '}';
-  const args = '[' + serializeTree(ctx, node.f) + '],"' + node.m + '",' + options;
-  return assignIndexedValue(ctx, node.i, 'new File(' + args + ')');
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    'new File([' + serializeTree(ctx, node.f) + '],"' + node.m + '",{type:"' + node.c + '",lastModified:' + node.b + '})',
+  );
 }
 
 function serializeHeaders(
   ctx: SerializationContext,
   node: SerovalHeadersNode,
 ) {
-  return assignIndexedValue(ctx, node.i, 'new Headers(' + serializeProperties(ctx, node.i, node.d) + ')');
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    'new Headers(' + serializeProperties(ctx, node.i, node.d) + ')',
+  );
 }
 
 function serializeFormDataEntries(
