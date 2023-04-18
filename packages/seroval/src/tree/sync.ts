@@ -375,6 +375,106 @@ function generateFormDataNode(
   };
 }
 
+function parseObject<T extends object | null>(
+  ctx: ParserContext,
+  current: T,
+): SerovalNode {
+  if (!current) {
+    return NULL_NODE;
+  }
+  // Non-primitive values needs a reference ID
+  // mostly because the values themselves are stateful
+  const id = createIndexedValue(ctx, current);
+  if (ctx.markedRefs.has(id)) {
+    return createIndexedValueNode(id);
+  }
+  if (hasReferenceID(current)) {
+    return createReferenceNode(id, current);
+  }
+  if (Array.isArray(current)) {
+    return generateArrayNode(ctx, id, current);
+  }
+  switch (current.constructor) {
+    case Date:
+      return createDateNode(id, current as unknown as Date);
+    case RegExp:
+      return createRegExpNode(id, current as unknown as RegExp);
+    case ArrayBuffer:
+      return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+    case Int8Array:
+    case Int16Array:
+    case Int32Array:
+    case Uint8Array:
+    case Uint16Array:
+    case Uint32Array:
+    case Uint8ClampedArray:
+    case Float32Array:
+    case Float64Array:
+      return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
+    case BigInt64Array:
+    case BigUint64Array:
+      return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
+    case DataView:
+      return createDataViewNode(ctx, id, current as unknown as DataView);
+    case Map:
+      return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
+    case Set:
+      return generateSetNode(ctx, id, current as unknown as Set<unknown>);
+    case Object:
+      return generateObjectNode(
+        ctx,
+        id,
+        current as unknown as Record<string, unknown>,
+        false,
+      );
+    case undefined:
+      return generateObjectNode(
+        ctx,
+        id,
+        current as unknown as Record<string, unknown>,
+        true,
+      );
+    case AggregateError:
+      if (ctx.features & Feature.AggregateError) {
+        return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
+      }
+      return generateErrorNode(ctx, id, current as unknown as AggregateError);
+    case Error:
+    case EvalError:
+    case RangeError:
+    case ReferenceError:
+    case SyntaxError:
+    case TypeError:
+    case URIError:
+      return generateErrorNode(ctx, id, current as unknown as Error);
+    case URL:
+      return createURLNode(ctx, id, current as unknown as URL);
+    case URLSearchParams:
+      return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
+    case Headers:
+      return generateHeadersNode(ctx, id, current as unknown as Headers);
+    case FormData:
+      return generateFormDataNode(ctx, id, current as unknown as FormData);
+    default:
+      break;
+  }
+  if (current instanceof AggregateError) {
+    if (ctx.features & Feature.AggregateError) {
+      return generateAggregateErrorNode(ctx, id, current);
+    }
+    return generateErrorNode(ctx, id, current);
+  }
+  if (current instanceof Error) {
+    return generateErrorNode(ctx, id, current);
+  }
+  // Generator functions don't have a global constructor
+  // despite existing
+  if (Symbol.iterator in current) {
+    return generateObjectNode(ctx, id, current, current.constructor == null);
+  }
+  throw new Error('Unsupported type');
+}
+
 function parse<T>(
   ctx: ParserContext,
   current: T,
@@ -390,102 +490,8 @@ function parse<T>(
       return createNumberNode(current);
     case 'bigint':
       return createBigIntNode(ctx, current);
-    case 'object': {
-      if (!current) {
-        return NULL_NODE;
-      }
-      // Non-primitive values needs a reference ID
-      // mostly because the values themselves are stateful
-      const id = createIndexedValue(ctx, current);
-      if (ctx.markedRefs.has(id)) {
-        return createIndexedValueNode(id);
-      }
-      if (hasReferenceID(current)) {
-        return createReferenceNode(id, current);
-      }
-      if (Array.isArray(current)) {
-        return generateArrayNode(ctx, id, current);
-      }
-      switch (current.constructor) {
-        case Date:
-          return createDateNode(id, current as unknown as Date);
-        case RegExp:
-          return createRegExpNode(id, current as unknown as RegExp);
-        case ArrayBuffer:
-          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-        case Int8Array:
-        case Int16Array:
-        case Int32Array:
-        case Uint8Array:
-        case Uint16Array:
-        case Uint32Array:
-        case Uint8ClampedArray:
-        case Float32Array:
-        case Float64Array:
-          return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
-        case BigInt64Array:
-        case BigUint64Array:
-          return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
-        case DataView:
-          return createDataViewNode(ctx, id, current as unknown as DataView);
-        case Map:
-          return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
-        case Set:
-          return generateSetNode(ctx, id, current as unknown as Set<unknown>);
-        case Object:
-          return generateObjectNode(
-            ctx,
-            id,
-            current as unknown as Record<string, unknown>,
-            false,
-          );
-        case undefined:
-          return generateObjectNode(
-            ctx,
-            id,
-            current as unknown as Record<string, unknown>,
-            true,
-          );
-        case AggregateError:
-          if (ctx.features & Feature.AggregateError) {
-            return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
-          }
-          return generateErrorNode(ctx, id, current as unknown as AggregateError);
-        case Error:
-        case EvalError:
-        case RangeError:
-        case ReferenceError:
-        case SyntaxError:
-        case TypeError:
-        case URIError:
-          return generateErrorNode(ctx, id, current as unknown as Error);
-        case URL:
-          return createURLNode(ctx, id, current as unknown as URL);
-        case URLSearchParams:
-          return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
-        case Headers:
-          return generateHeadersNode(ctx, id, current as unknown as Headers);
-        case FormData:
-          return generateFormDataNode(ctx, id, current as unknown as FormData);
-        default:
-          break;
-      }
-      if (current instanceof AggregateError) {
-        if (ctx.features & Feature.AggregateError) {
-          return generateAggregateErrorNode(ctx, id, current);
-        }
-        return generateErrorNode(ctx, id, current);
-      }
-      if (current instanceof Error) {
-        return generateErrorNode(ctx, id, current);
-      }
-      // Generator functions don't have a global constructor
-      // despite existing
-      if (Symbol.iterator in current) {
-        return generateObjectNode(ctx, id, current, current.constructor == null);
-      }
-      throw new Error('Unsupported type');
-    }
+    case 'object':
+      return parseObject(ctx, current);
     case 'symbol':
       return createSymbolNode(ctx, current);
     case 'function':
