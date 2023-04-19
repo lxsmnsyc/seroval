@@ -52,13 +52,14 @@ function deserializeArray(
   ctx: SerializationContext,
   node: SerovalArrayNode,
 ) {
+  const len = node.l;
   const result: unknown[] = assignIndexedValue(
     ctx,
     node.i,
-    new Array<unknown>(node.l),
+    new Array<unknown>(len),
   );
   let item: SerovalNode;
-  for (let i = 0, len = node.l; i < len; i++) {
+  for (let i = 0; i < len; i++) {
     item = node.a[i];
     if (item) {
       result[i] = deserializeTree(ctx, item);
@@ -72,14 +73,17 @@ function deserializeProperties(
   node: SerovalObjectRecordNode,
   result: Record<string | symbol, unknown>,
 ) {
-  if (node.s === 0) {
+  const len = node.s;
+  if (len) {
     return {};
   }
   let key: SerovalObjectRecordKey;
   let value: unknown;
-  for (let i = 0; i < node.s; i++) {
-    key = node.k[i];
-    value = deserializeTree(ctx, node.v[i]);
+  const keys = node.k;
+  const vals = node.v;
+  for (let i = 0; i < len; i++) {
+    key = keys[i];
+    value = deserializeTree(ctx, vals[i]);
     if (typeof key === 'string') {
       result[deserializeString(key)] = value;
     } else {
@@ -110,8 +114,9 @@ function deserializeSet(
   node: SerovalSetNode,
 ) {
   const result = assignIndexedValue(ctx, node.i, new Set<unknown>());
+  const items = node.a;
   for (let i = 0, len = node.l; i < len; i++) {
-    result.add(deserializeTree(ctx, node.a[i]));
+    result.add(deserializeTree(ctx, items[i]));
   }
   return result;
 }
@@ -125,10 +130,12 @@ function deserializeMap(
     node.i,
     new Map<unknown, unknown>(),
   );
+  const keys = node.d.k;
+  const vals = node.d.v;
   for (let i = 0, len = node.d.s; i < len; i++) {
     result.set(
-      deserializeTree(ctx, node.d.k[i]),
-      deserializeTree(ctx, node.d.v[i]),
+      deserializeTree(ctx, keys[i]),
+      deserializeTree(ctx, vals[i]),
     );
   }
   return result;
@@ -302,10 +309,12 @@ function deserializeHeaders(
   node: SerovalHeadersNode,
 ) {
   const result = assignIndexedValue(ctx, node.i, new Headers());
+  const keys = node.d.k;
+  const vals = node.d.v;
   for (let i = 0, len = node.d.s; i < len; i++) {
     result.set(
-      deserializeString(node.d.k[i]),
-      deserializeTree(ctx, node.d.v[i]) as string,
+      deserializeString(keys[i]),
+      deserializeTree(ctx, vals[i]) as string,
     );
   }
   return result;
@@ -316,10 +325,12 @@ function deserializeFormData(
   node: SerovalFormDataNode,
 ) {
   const result = assignIndexedValue(ctx, node.i, new FormData());
+  const keys = node.d.k;
+  const vals = node.d.v;
   for (let i = 0, len = node.d.s; i < len; i++) {
     result.set(
-      deserializeString(node.d.k[i]),
-      deserializeTree(ctx, node.d.v[i]) as FormDataEntryValue,
+      deserializeString(keys[i]),
+      deserializeTree(ctx, vals[i]) as FormDataEntryValue,
     );
   }
   return result;
