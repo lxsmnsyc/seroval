@@ -75,20 +75,19 @@ function deserializeProperties(
 ) {
   const len = node.s;
   if (len) {
-    return {};
-  }
-  let key: SerovalObjectRecordKey;
-  let value: unknown;
-  const keys = node.k;
-  const vals = node.v;
-  for (let i = 0; i < len; i++) {
-    key = keys[i];
-    value = deserializeTree(ctx, vals[i]);
-    if (typeof key === 'string') {
-      result[deserializeString(key)] = value;
-    } else {
-      const current = value as unknown[];
-      result[Symbol.iterator] = () => current.values();
+    let key: SerovalObjectRecordKey;
+    let value: unknown;
+    const keys = node.k;
+    const vals = node.v;
+    for (let i = 0; i < len; i++) {
+      key = keys[i];
+      value = deserializeTree(ctx, vals[i]);
+      if (typeof key === 'string') {
+        result[deserializeString(key)] = value;
+      } else {
+        const current = value as unknown[];
+        result[Symbol.iterator] = () => current.values();
+      }
     }
   }
   return result;
