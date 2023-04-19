@@ -455,16 +455,18 @@ function serializeSet(
 ) {
   let serialized = 'new Set';
   const size = node.l;
+  const id = node.i;
   if (size) {
     let result = '';
     ctx.stack.push(node.i);
     let item: SerovalNode;
     let hasPrev = false;
+    const items = node.a;
     for (let i = 0; i < size; i++) {
-      item = node.a[i];
+      item = items[i];
       if (isIndexedValueInStack(ctx, item)) {
-        markRef(ctx, node.i);
-        createAddAssignment(ctx, node.i, getRefParam(ctx, item.i));
+        markRef(ctx, id);
+        createAddAssignment(ctx, id, getRefParam(ctx, item.i));
       } else {
         // Push directly
         result += (hasPrev ? ',' : '') + serializeTree(ctx, item);
@@ -476,7 +478,7 @@ function serializeSet(
       serialized += '([' + result + '])';
     }
   }
-  return assignIndexedValue(ctx, node.i, serialized);
+  return assignIndexedValue(ctx, id, serialized);
 }
 
 function serializeMap(
