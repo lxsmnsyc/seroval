@@ -555,13 +555,14 @@ function serializeAggregateError(
   node: SerovalAggregateErrorNode,
 ) {
   // Serialize the required arguments
-  ctx.stack.push(node.i);
+  const id = node.i;
+  ctx.stack.push(id);
   const serialized = 'new AggregateError([],"' + node.m + '")';
   ctx.stack.pop();
   // `AggregateError` might've been extended
   // either through class or custom properties
   // Make sure to assign extra properties
-  return serializeDictionary(ctx, node.i, node.d, serialized);
+  return serializeDictionary(ctx, id, node.d, serialized);
 }
 
 function serializeError(
@@ -577,25 +578,27 @@ function serializePromise(
 ) {
   let serialized: string;
   // Check if resolved value is a parent expression
-  if (isIndexedValueInStack(ctx, node.f)) {
+  const fulfilled = node.f;
+  const id = node.i;
+  if (isIndexedValueInStack(ctx, fulfilled)) {
     // A Promise trick, reference the value
     // inside the `then` expression so that
     // the Promise evaluates after the parent
     // has initialized
-    const ref = getRefParam(ctx, node.f.i);
+    const ref = getRefParam(ctx, fulfilled.i);
     if (ctx.features & Feature.ArrowFunction) {
       serialized = 'Promise.resolve().then(()=>' + ref + ')';
     } else {
       serialized = 'Promise.resolve().then(function(){return ' + ref + '})';
     }
   } else {
-    ctx.stack.push(node.i);
-    const result = serializeTree(ctx, node.f);
+    ctx.stack.push(id);
+    const result = serializeTree(ctx, fulfilled);
     ctx.stack.pop();
     // just inline the value/reference here
     serialized = 'Promise.resolve(' + result + ')';
   }
-  return assignIndexedValue(ctx, node.i, serialized);
+  return assignIndexedValue(ctx, id, serialized);
 }
 
 function serializeArrayBuffer(
@@ -603,10 +606,12 @@ function serializeArrayBuffer(
   node: SerovalArrayBufferNode,
 ) {
   let result = 'new Uint8Array(';
-  if (node.s.length) {
+  const buffer = node.s;
+  const len = buffer.length;
+  if (len) {
     result += '[';
-    for (let i = 0, len = node.s.length; i < len; i++) {
-      result += ((i > 0) ? ',' : '') + node.s[i];
+    for (let i = 0; i < len; i++) {
+      result += ((i > 0) ? ',' : '') + buffer[i];
     }
     result += ']';
   }
@@ -711,17 +716,20 @@ function serializeFormDataEntries(
   ctx: SerializationContext,
   node: SerovalFormDataNode,
 ) {
-  ctx.stack.push(node.i);
-  const mainAssignments: Assignment[] = [];
   let value: string;
   let key: string;
+  const keys = node.d.k;
+  const vals = node.d.v;
+  const id = node.i;
+  const mainAssignments: Assignment[] = [];
   let parentAssignment: Assignment[];
-  for (let i = 0; i < node.d.s; i++) {
-    value = serializeTree(ctx, node.d.v[i]);
-    key = node.d.k[i];
+  ctx.stack.push(id);
+  for (let i = 0, len = node.d.s; i < len; i++) {
+    key = keys[i];
+    value = serializeTree(ctx, vals[i]);
     parentAssignment = ctx.assignments;
     ctx.assignments = mainAssignments;
-    createAppendAssignment(ctx, node.i, '"' + key + '"', value);
+    createAppendAssignment(ctx, id, '"' + key + '"', value);
     ctx.assignments = parentAssignment;
   }
   ctx.stack.pop();
@@ -732,12 +740,14 @@ function serializeFormData(
   ctx: SerializationContext,
   node: SerovalFormDataNode,
 ) {
-  if (node.d.s) {
-    markRef(ctx, node.i);
+  const size = node.d.s;
+  const id = node.i;
+  if (size) {
+    markRef(ctx, id);
   }
-  const result = assignIndexedValue(ctx, node.i, 'new FormData()');
-  if (node.d.s) {
-    return '(' + result + ',' + serializeFormDataEntries(ctx, node) + getRefParam(ctx, node.i) + ')';
+  const result = assignIndexedValue(ctx, id, 'new FormData()');
+  if (size) {
+    return '(' + result + ',' + serializeFormDataEntries(ctx, node) + getRefParam(ctx, id) + ')';
   }
   return result;
 }
