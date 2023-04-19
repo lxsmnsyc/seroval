@@ -28,6 +28,7 @@ import {
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
+  SerovalObjectRecordSpecialKey,
   SerovalPromiseNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
@@ -82,11 +83,16 @@ function deserializeProperties(
     for (let i = 0; i < len; i++) {
       key = keys[i];
       value = deserializeTree(ctx, vals[i]);
-      if (typeof key === 'string') {
-        result[deserializeString(key)] = value;
-      } else {
-        const current = value as unknown[];
-        result[Symbol.iterator] = () => current.values();
+      switch (key) {
+        case SerovalObjectRecordSpecialKey.SymbolIterator: {
+          const current = value as unknown[];
+          result[Symbol.iterator] = () => current.values();
+        }
+          break;
+        case SerovalObjectRecordSpecialKey.PromiseLike:
+          break;
+        default:
+          result[deserializeString(key)] = value;
       }
     }
   }

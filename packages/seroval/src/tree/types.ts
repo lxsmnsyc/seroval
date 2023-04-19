@@ -65,9 +65,14 @@ export interface SerovalBaseNode {
   b: number | undefined;
 }
 
+export const enum SerovalObjectRecordSpecialKey {
+  SymbolIterator,
+  PromiseLike,
+}
+
 export type SerovalObjectRecordKey =
   | string
-  | SerovalWKSymbolNode;
+  | SerovalObjectRecordSpecialKey;
 
 export interface SerovalPlainRecordNode {
   k: string[];

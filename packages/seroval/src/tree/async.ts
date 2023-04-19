@@ -23,7 +23,6 @@ import {
   createRegExpNode,
   createStringNode,
   createTypedArrayNode,
-  createWKSymbolNode,
   createReferenceNode,
   createArrayBufferNode,
   createDataViewNode,
@@ -49,6 +48,7 @@ import {
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
+  SerovalObjectRecordSpecialKey,
   SerovalPlainRecordNode,
   SerovalPromiseNode,
   SerovalSetNode,
@@ -227,7 +227,7 @@ async function generateProperties(
   }
   if (ctx.features & Feature.Symbol) {
     if (Symbol.iterator in properties) {
-      keyNodes[size] = createWKSymbolNode(ctx, Symbol.iterator);
+      keyNodes[size] = SerovalObjectRecordSpecialKey.SymbolIterator;
       const items = Array.from(properties as Iterable<unknown>);
       const id = createIndexedValue(ctx, items);
       valueNodes[size] = await generateArrayNode(ctx, id, items);

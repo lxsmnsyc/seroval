@@ -37,6 +37,7 @@ import {
   SerovalFormDataNode,
   SerovalObjectRecordNode,
   SerovalObjectRecordKey,
+  SerovalObjectRecordSpecialKey,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -326,28 +327,33 @@ function serializeProperties(
   for (let i = 0; i < len; i++) {
     key = keys[i];
     val = values[i];
-    if (typeof key === 'string') {
-      check = Number(key);
-      // Test if key is a valid number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      isIdentifier = check >= 0 || isValidIdentifier(key);
-      if (isIndexedValueInStack(ctx, val)) {
-        refParam = getRefParam(ctx, val.i);
-        markRef(ctx, sourceID);
-        if (isIdentifier && Number.isNaN(check)) {
-          createObjectAssign(ctx, sourceID, key, refParam);
-        } else {
-          createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), refParam);
-        }
-      } else {
-        result += (hasPrev ? ',' : '')
-          + (isIdentifier ? key : ('"' + key + '"'))
-          + ':' + serializeTree(ctx, val);
+    switch (key) {
+      case SerovalObjectRecordSpecialKey.SymbolIterator:
+        result += (hasPrev ? ',' : '') + serializeIterable(ctx, val);
         hasPrev = true;
+        break;
+      case SerovalObjectRecordSpecialKey.PromiseLike:
+        break;
+      default: {
+        check = Number(key);
+        // Test if key is a valid number or JS identifier
+        // so that we don't have to serialize the key and wrap with brackets
+        isIdentifier = check >= 0 || isValidIdentifier(key);
+        if (isIndexedValueInStack(ctx, val)) {
+          refParam = getRefParam(ctx, val.i);
+          markRef(ctx, sourceID);
+          if (isIdentifier && Number.isNaN(check)) {
+            createObjectAssign(ctx, sourceID, key, refParam);
+          } else {
+            createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), refParam);
+          }
+        } else {
+          result += (hasPrev ? ',' : '')
+            + (isIdentifier ? key : ('"' + key + '"'))
+            + ':' + serializeTree(ctx, val);
+          hasPrev = true;
+        }
       }
-    } else {
-      result += (hasPrev ? ',' : '') + serializeIterable(ctx, val);
-      hasPrev = true;
     }
   }
   ctx.stack.pop();
