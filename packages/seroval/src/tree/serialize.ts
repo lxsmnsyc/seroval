@@ -242,28 +242,31 @@ function isIndexedValueInStack(
   return node.t === SerovalNodeType.IndexedValue && ctx.stack.includes(node.i);
 }
 
-function serializeNodeList(
+function serializeArray(
   ctx: SerializationContext,
   node: SerovalArrayNode,
 ) {
+  const id = node.i;
+  ctx.stack.push(id);
   // This is different than Map and Set
   // because we also need to serialize
   // the holes of the Array
   let values = '';
   let item: SerovalNode;
   let isHoley = false;
-  for (let i = 0; i < node.l; i++) {
+  const list = node.a;
+  for (let i = 0, len = node.l; i < len; i++) {
     if (i !== 0) {
       // Add an empty item
       values += ',';
     }
-    item = node.a[i];
+    item = list[i];
     // Check if index is a hole
     if (item) {
       // Check if item is a parent
       if (isIndexedValueInStack(ctx, item)) {
-        markRef(ctx, node.i);
-        createArrayAssign(ctx, node.i, i, getRefParam(ctx, item.i));
+        markRef(ctx, id);
+        createArrayAssign(ctx, id, i, getRefParam(ctx, item.i));
         isHoley = true;
       } else {
         values += serializeTree(ctx, item);
@@ -273,17 +276,8 @@ function serializeNodeList(
       isHoley = true;
     }
   }
-  return '[' + values + (isHoley ? ',]' : ']');
-}
-
-function serializeArray(
-  ctx: SerializationContext,
-  node: SerovalArrayNode,
-) {
-  ctx.stack.push(node.i);
-  const result = serializeNodeList(ctx, node);
   ctx.stack.pop();
-  return assignIndexedValue(ctx, node.i, result);
+  return assignIndexedValue(ctx, id, '[' + values + (isHoley ? ',]' : ']'));
 }
 
 function getIterableAccess(ctx: SerializationContext) {
