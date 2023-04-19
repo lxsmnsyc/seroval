@@ -309,7 +309,8 @@ function serializeProperties(
   sourceID: number,
   node: SerovalObjectRecordNode,
 ) {
-  if (node.s === 0) {
+  const len = node.s;
+  if (len === 0) {
     return '{}';
   }
   let result = '';
@@ -322,7 +323,7 @@ function serializeProperties(
   let hasPrev = false;
   const keys = node.k;
   const values = node.v;
-  for (let i = 0, len = node.s; i < len; i++) {
+  for (let i = 0; i < len; i++) {
     key = keys[i];
     val = values[i];
     if (typeof key === 'string') {
@@ -332,11 +333,10 @@ function serializeProperties(
       isIdentifier = check >= 0 || isValidIdentifier(key);
       if (isIndexedValueInStack(ctx, val)) {
         refParam = getRefParam(ctx, val.i);
+        markRef(ctx, sourceID);
         if (isIdentifier && Number.isNaN(check)) {
-          markRef(ctx, sourceID);
           createObjectAssign(ctx, sourceID, key, refParam);
         } else {
-          markRef(ctx, sourceID);
           createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), refParam);
         }
       } else {
