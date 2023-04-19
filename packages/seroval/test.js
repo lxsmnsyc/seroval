@@ -3,13 +3,10 @@ import { serialize, Feature } from './dist/esm/development/index.mjs';
 
 const example = Object.create(null);
 
-example[Symbol.iterator] = function* () {
-  yield example;
-  yield example;
-  yield example;
+example.a = {
+  b: {},
 };
-
-example.self = example;
+example.a.b.parent = example.a;
 
 console.dir(serialize(example, {
   disabledFeatures: Feature.ObjectAssign,

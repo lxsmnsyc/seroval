@@ -380,7 +380,6 @@ function serializeAssignments(
 ) {
   ctx.stack.push(sourceID);
   const mainAssignments: Assignment[] = [];
-  let parentStack: number[];
   let refParam: string;
   let key: SerovalObjectRecordKey;
   let check: number;
@@ -389,10 +388,7 @@ function serializeAssignments(
   const keys = node.k;
   const values = node.v;
   for (let i = 0, len = node.s; i < len; i++) {
-    parentStack = ctx.stack;
-    ctx.stack = [];
     refParam = serializeTree(ctx, values[i]);
-    ctx.stack = parentStack;
     key = keys[i];
     parentAssignment = ctx.assignments;
     ctx.assignments = mainAssignments;
@@ -717,16 +713,12 @@ function serializeFormDataEntries(
 ) {
   ctx.stack.push(node.i);
   const mainAssignments: Assignment[] = [];
-  let parentStack: number[];
   let value: string;
   let key: string;
   let parentAssignment: Assignment[];
   for (let i = 0; i < node.d.s; i++) {
-    parentStack = ctx.stack;
-    ctx.stack = [];
     value = serializeTree(ctx, node.d.v[i]);
     key = node.d.k[i];
-    ctx.stack = parentStack;
     parentAssignment = ctx.assignments;
     ctx.assignments = mainAssignments;
     createAppendAssignment(ctx, node.i, '"' + key + '"', value);
