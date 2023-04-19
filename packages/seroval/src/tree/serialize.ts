@@ -458,10 +458,10 @@ function serializeSet(
   const id = node.i;
   if (size) {
     let result = '';
-    ctx.stack.push(node.i);
     let item: SerovalNode;
     let hasPrev = false;
     const items = node.a;
+    ctx.stack.push(id);
     for (let i = 0; i < size; i++) {
       item = items[i];
       if (isIndexedValueInStack(ctx, item)) {
@@ -486,30 +486,34 @@ function serializeMap(
   node: SerovalMapNode,
 ) {
   let serialized = 'new Map';
-  if (node.d.s) {
+  const size = node.d.s;
+  const id = node.i;
+  if (size) {
     let result = '';
-    ctx.stack.push(node.i);
     let key: SerovalNode;
     let val: SerovalNode;
     let keyRef: string;
     let valueRef: string;
     let parent: number[];
     let hasPrev = false;
-    for (let i = 0; i < node.d.s; i++) {
+    const keys = node.d.k;
+    const vals = node.d.v;
+    ctx.stack.push(id);
+    for (let i = 0; i < size; i++) {
       // Check if key is a parent
-      key = node.d.k[i];
-      val = node.d.v[i];
+      key = keys[i];
+      val = vals[i];
       if (isIndexedValueInStack(ctx, key)) {
         // Create reference for the map instance
-        keyRef = getRefParam(ctx, key.i);
-        markRef(ctx, node.i);
+        keyRef = getRefParam(ctx, id);
+        markRef(ctx, id);
         // Check if value is a parent
         if (isIndexedValueInStack(ctx, val)) {
           valueRef = getRefParam(ctx, val.i);
           // Register an assignment since
           // both key and value are a parent of this
           // Map instance
-          createSetAssignment(ctx, node.i, keyRef, valueRef);
+          createSetAssignment(ctx, id, keyRef, valueRef);
         } else {
           // Reset the stack
           // This is required because the serialized
@@ -518,17 +522,17 @@ function serializeMap(
           // assignment
           parent = ctx.stack;
           ctx.stack = [];
-          createSetAssignment(ctx, node.i, keyRef, serializeTree(ctx, val));
+          createSetAssignment(ctx, id, keyRef, serializeTree(ctx, val));
           ctx.stack = parent;
         }
       } else if (isIndexedValueInStack(ctx, val)) {
         // Create ref for the Map instance
         valueRef = getRefParam(ctx, val.i);
-        markRef(ctx, node.i);
+        markRef(ctx, id);
         // Reset stack for the key serialization
         parent = ctx.stack;
         ctx.stack = [];
-        createSetAssignment(ctx, node.i, serializeTree(ctx, key), valueRef);
+        createSetAssignment(ctx, id, serializeTree(ctx, key), valueRef);
         ctx.stack = parent;
       } else {
         result += (hasPrev ? ',[' : '[') + serializeTree(ctx, key) + ',' + serializeTree(ctx, val) + ']';
@@ -543,7 +547,7 @@ function serializeMap(
       serialized += '([' + result + '])';
     }
   }
-  return assignIndexedValue(ctx, node.i, serialized);
+  return assignIndexedValue(ctx, id, serialized);
 }
 
 function serializeAggregateError(
