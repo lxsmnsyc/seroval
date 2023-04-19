@@ -36,11 +36,15 @@ export type BigIntTypedArrayValue =
 
 export type WebAPIValue =
   | URL
-  | URLSearchParams;
+  | URLSearchParams
+  | Blob
+  | File;
 
 export type SemiPrimitiveValue =
   | RegExp
   | Date
+  | ArrayBuffer
+  | DataView
   | TypedArrayValue
   | BigIntTypedArrayValue
   | bigint
