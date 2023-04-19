@@ -1,67 +1,67 @@
 {
   "name": "large-complex-collection to string",
-  "date": "2023-04-17T15:01:57.190Z",
+  "date": "2023-04-19T09:34:11.851Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 2212,
-      "margin": 0.85,
-      "percentSlower": 85.56
+      "ops": 2199,
+      "margin": 0.97,
+      "percentSlower": 85.05
     },
     {
       "name": "flatted",
-      "ops": 2927,
-      "margin": 0.83,
-      "percentSlower": 80.89
+      "ops": 2949,
+      "margin": 0.86,
+      "percentSlower": 79.95
     },
     {
       "name": "JSON",
-      "ops": 15318,
-      "margin": 0.85,
+      "ops": 14707,
+      "margin": 0.88,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 3450,
-      "margin": 3.43,
-      "percentSlower": 77.48
+      "ops": 3666,
+      "margin": 2.97,
+      "percentSlower": 75.07
     },
     {
       "name": "o-son",
-      "ops": 6561,
-      "margin": 0.87,
-      "percentSlower": 57.17
+      "ops": 6629,
+      "margin": 0.93,
+      "percentSlower": 54.93
     },
     {
       "name": "serialize-javascript",
-      "ops": 6800,
-      "margin": 0.82,
-      "percentSlower": 55.61
+      "ops": 6475,
+      "margin": 0.74,
+      "percentSlower": 55.97
     },
     {
       "name": "seroval",
-      "ops": 7855,
-      "margin": 0.97,
-      "percentSlower": 48.72
+      "ops": 8403,
+      "margin": 0.94,
+      "percentSlower": 42.86
     },
     {
       "name": "superjson",
-      "ops": 2191,
-      "margin": 0.7,
-      "percentSlower": 85.7
+      "ops": 2124,
+      "margin": 0.97,
+      "percentSlower": 85.56
     },
     {
       "name": "tosource",
-      "ops": 5908,
-      "margin": 0.9,
-      "percentSlower": 61.43
+      "ops": 5957,
+      "margin": 0.99,
+      "percentSlower": 59.5
     },
     {
       "name": "warp10",
-      "ops": 8589,
-      "margin": 0.95,
-      "percentSlower": 43.93
+      "ops": 8338,
+      "margin": 0.89,
+      "percentSlower": 43.31
     }
   ],
   "fastest": {
