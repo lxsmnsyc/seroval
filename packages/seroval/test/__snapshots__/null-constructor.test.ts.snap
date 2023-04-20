@@ -8,8 +8,313 @@ exports[`null-constructor > compat#toJSON > should use manual assignment instead
 
 exports[`null-constructor > serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
-exports[`null-constructor > serializeAsync > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
+exports[`null-constructor > serialize > supports Symbol.iterator 1`] = `"Object.assign(Object.create(null),{[Symbol.iterator]:()=>[1,2,3].values()})"`;
+
+exports[`null-constructor > serialize > supports self-recursion 1`] = `"(h=>(h=Object.create(null),h.b=h.a=h,h))()"`;
+
+exports[`null-constructor > serializeAsync > supports Object.create(null) 1`] = `"Promise.resolve(Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
+
+exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `"Promise.resolve(Object.assign(Object.create(null),{[Symbol.iterator]:()=>[1,2,3].values()}))"`;
+
+exports[`null-constructor > serializeAsync > supports self-recursion 1`] = `"(h=>(h=Object.assign(Object.create(null),{a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)})))()"`;
 
 exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
 
+exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `
+{
+  "f": 16383,
+  "i": false,
+  "m": [],
+  "r": 0,
+  "t": {
+    "a": undefined,
+    "b": undefined,
+    "c": undefined,
+    "d": {
+      "k": [
+        0,
+      ],
+      "s": 1,
+      "v": [
+        {
+          "a": [
+            {
+              "a": undefined,
+              "b": undefined,
+              "c": undefined,
+              "d": undefined,
+              "f": undefined,
+              "i": undefined,
+              "l": undefined,
+              "m": undefined,
+              "s": 1,
+              "t": 0,
+            },
+            {
+              "a": undefined,
+              "b": undefined,
+              "c": undefined,
+              "d": undefined,
+              "f": undefined,
+              "i": undefined,
+              "l": undefined,
+              "m": undefined,
+              "s": 2,
+              "t": 0,
+            },
+            {
+              "a": undefined,
+              "b": undefined,
+              "c": undefined,
+              "d": undefined,
+              "f": undefined,
+              "i": undefined,
+              "l": undefined,
+              "m": undefined,
+              "s": 3,
+              "t": 0,
+            },
+          ],
+          "b": undefined,
+          "c": undefined,
+          "d": undefined,
+          "f": undefined,
+          "i": 1,
+          "l": 3,
+          "m": undefined,
+          "s": undefined,
+          "t": 10,
+        },
+      ],
+    },
+    "f": undefined,
+    "i": 0,
+    "l": undefined,
+    "m": undefined,
+    "s": undefined,
+    "t": 12,
+  },
+}
+`;
+
+exports[`null-constructor > toJSON > supports self-recursion 1`] = `
+{
+  "f": 16383,
+  "i": false,
+  "m": [
+    0,
+  ],
+  "r": 0,
+  "t": {
+    "a": undefined,
+    "b": undefined,
+    "c": undefined,
+    "d": {
+      "k": [
+        "a",
+        "b",
+      ],
+      "s": 2,
+      "v": [
+        {
+          "a": undefined,
+          "b": undefined,
+          "c": undefined,
+          "d": undefined,
+          "f": undefined,
+          "i": 0,
+          "l": undefined,
+          "m": undefined,
+          "s": undefined,
+          "t": 5,
+        },
+        {
+          "a": undefined,
+          "b": undefined,
+          "c": undefined,
+          "d": undefined,
+          "f": undefined,
+          "i": 0,
+          "l": undefined,
+          "m": undefined,
+          "s": undefined,
+          "t": 5,
+        },
+      ],
+    },
+    "f": undefined,
+    "i": 0,
+    "l": undefined,
+    "m": undefined,
+    "s": undefined,
+    "t": 12,
+  },
+}
+`;
+
 exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `
+{
+  "f": 16383,
+  "i": false,
+  "m": [],
+  "r": 0,
+  "t": {
+    "a": undefined,
+    "b": undefined,
+    "c": undefined,
+    "d": undefined,
+    "f": {
+      "a": undefined,
+      "b": undefined,
+      "c": undefined,
+      "d": {
+        "k": [
+          0,
+        ],
+        "s": 1,
+        "v": [
+          {
+            "a": [
+              {
+                "a": undefined,
+                "b": undefined,
+                "c": undefined,
+                "d": undefined,
+                "f": undefined,
+                "i": undefined,
+                "l": undefined,
+                "m": undefined,
+                "s": 1,
+                "t": 0,
+              },
+              {
+                "a": undefined,
+                "b": undefined,
+                "c": undefined,
+                "d": undefined,
+                "f": undefined,
+                "i": undefined,
+                "l": undefined,
+                "m": undefined,
+                "s": 2,
+                "t": 0,
+              },
+              {
+                "a": undefined,
+                "b": undefined,
+                "c": undefined,
+                "d": undefined,
+                "f": undefined,
+                "i": undefined,
+                "l": undefined,
+                "m": undefined,
+                "s": 3,
+                "t": 0,
+              },
+            ],
+            "b": undefined,
+            "c": undefined,
+            "d": undefined,
+            "f": undefined,
+            "i": 2,
+            "l": 3,
+            "m": undefined,
+            "s": undefined,
+            "t": 10,
+          },
+        ],
+      },
+      "f": undefined,
+      "i": 1,
+      "l": undefined,
+      "m": undefined,
+      "s": undefined,
+      "t": 12,
+    },
+    "i": 0,
+    "l": undefined,
+    "m": undefined,
+    "s": undefined,
+    "t": 13,
+  },
+}
+`;
+
+exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `
+{
+  "f": 16383,
+  "i": false,
+  "m": [
+    0,
+  ],
+  "r": 0,
+  "t": {
+    "a": undefined,
+    "b": undefined,
+    "c": undefined,
+    "d": {
+      "k": [
+        "a",
+        "b",
+      ],
+      "s": 2,
+      "v": [
+        {
+          "a": undefined,
+          "b": undefined,
+          "c": undefined,
+          "d": undefined,
+          "f": {
+            "a": undefined,
+            "b": undefined,
+            "c": undefined,
+            "d": undefined,
+            "f": undefined,
+            "i": 0,
+            "l": undefined,
+            "m": undefined,
+            "s": undefined,
+            "t": 5,
+          },
+          "i": 1,
+          "l": undefined,
+          "m": undefined,
+          "s": undefined,
+          "t": 13,
+        },
+        {
+          "a": undefined,
+          "b": undefined,
+          "c": undefined,
+          "d": undefined,
+          "f": {
+            "a": undefined,
+            "b": undefined,
+            "c": undefined,
+            "d": undefined,
+            "f": undefined,
+            "i": 0,
+            "l": undefined,
+            "m": undefined,
+            "s": undefined,
+            "t": 5,
+          },
+          "i": 2,
+          "l": undefined,
+          "m": undefined,
+          "s": undefined,
+          "t": 13,
+        },
+      ],
+    },
+    "f": undefined,
+    "i": 0,
+    "l": undefined,
+    "m": undefined,
+    "s": undefined,
+    "t": 12,
+  },
+}
+`;

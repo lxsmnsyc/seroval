@@ -1,8 +1,8 @@
 // Vitest Snapshot v1
 
-exports[`bigint > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"BigInt\\""`;
+exports[`bigint > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object BigInt]\\""`;
 
-exports[`bigint > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"BigInt\\""`;
+exports[`bigint > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object BigInt]\\""`;
 
 exports[`bigint > serialize > supports bigint 1`] = `"9007199254740991n"`;
 

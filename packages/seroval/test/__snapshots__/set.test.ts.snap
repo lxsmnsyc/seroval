@@ -1,8 +1,8 @@
 // Vitest Snapshot v1
 
-exports[`Set > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Set\\""`;
+exports[`Set > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Set]\\""`;
 
-exports[`Set > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"Set\\""`;
+exports[`Set > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Set]\\""`;
 
 exports[`Set > serialize > supports Set 1`] = `"new Set([1,2,3])"`;
 

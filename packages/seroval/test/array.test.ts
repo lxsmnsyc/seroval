@@ -1,11 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
-  AsyncServerValue,
   deserialize,
   fromJSON,
   serialize,
   serializeAsync,
-  ServerValue,
   toJSONAsync,
   toJSON,
 } from '../src';
@@ -23,12 +21,12 @@ describe('arrays', () => {
       expect(back[2]).toBe(example[2]);
     });
     it('supports self recursion', () => {
-      const example: ServerValue[] = [];
+      const example: unknown[] = [];
       example[0] = example;
       example[1] = example;
       const result = serialize(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<ServerValue[]>(result);
+      const back = deserialize<unknown[]>(result);
       expect(back[0]).toBe(back);
       expect(back[1]).toBe(back);
     });
@@ -45,7 +43,7 @@ describe('arrays', () => {
       expect(back[2]).toBe(example[2]);
     });
     it('supports self recursion', async () => {
-      const example: AsyncServerValue[] = [];
+      const example: Promise<unknown>[] = [];
       example[0] = Promise.resolve(example);
       example[1] = Promise.resolve(example);
       const result = await serializeAsync(example);
@@ -67,12 +65,12 @@ describe('arrays', () => {
       expect(back[2]).toBe(example[2]);
     });
     it('supports self recursion', () => {
-      const example: ServerValue[] = [];
+      const example: unknown[] = [];
       example[0] = example;
       example[1] = example;
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<ServerValue[]>(result);
+      const back = fromJSON<unknown[]>(result);
       expect(back[0]).toBe(back);
       expect(back[1]).toBe(back);
     });
@@ -89,7 +87,7 @@ describe('arrays', () => {
       expect(back[2]).toBe(example[2]);
     });
     it('supports self recursion', async () => {
-      const example: AsyncServerValue[] = [];
+      const example: Promise<unknown>[] = [];
       example[0] = Promise.resolve(example);
       example[1] = Promise.resolve(example);
       const result = await toJSONAsync(example);

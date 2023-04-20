@@ -1,13 +1,11 @@
 /* eslint-disable no-await-in-loop */
 import { describe, it, expect } from 'vitest';
 import {
-  AsyncServerValue,
   deserialize,
   Feature,
   fromJSON,
   serialize,
   serializeAsync,
-  ServerValue,
   toJSON,
   toJSONAsync,
 } from '../src';
@@ -25,11 +23,11 @@ describe('Set', () => {
       expect(back.has(3)).toBe(example.has(3));
     });
     it('supports self-recursion', () => {
-      const example: Set<ServerValue> = new Set();
+      const example: Set<unknown> = new Set();
       example.add(example);
       const result = serialize(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Set<ServerValue>>(result);
+      const back = deserialize<Set<unknown>>(result);
       expect(back.has(back)).toBe(true);
     });
   });
@@ -45,11 +43,11 @@ describe('Set', () => {
       expect(back.has(3)).toBe(example.has(3));
     });
     it('supports self-recursion', async () => {
-      const example: Set<AsyncServerValue> = new Set();
+      const example: Set<Promise<unknown>> = new Set();
       example.add(Promise.resolve(example));
       const result = await serializeAsync(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Set<Promise<any>>>(result);
+      const back = deserialize<Set<Promise<unknown>>>(result);
       for (const key of back) {
         expect(await key).toBe(back);
       }
@@ -67,11 +65,11 @@ describe('Set', () => {
       expect(back.has(3)).toBe(example.has(3));
     });
     it('supports self-recursion', () => {
-      const example: Set<ServerValue> = new Set();
+      const example: Set<unknown> = new Set();
       example.add(example);
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Set<ServerValue>>(result);
+      const back = fromJSON<Set<unknown>>(result);
       expect(back.has(back)).toBe(true);
     });
   });
@@ -87,11 +85,11 @@ describe('Set', () => {
       expect(back.has(3)).toBe(example.has(3));
     });
     it('supports self-recursion', async () => {
-      const example: Set<AsyncServerValue> = new Set();
+      const example: Set<Promise<unknown>> = new Set();
       example.add(Promise.resolve(example));
       const result = await toJSONAsync(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Set<Promise<any>>>(result);
+      const back = fromJSON<Set<Promise<unknown>>>(result);
       for (const key of back) {
         expect(await key).toBe(back);
       }

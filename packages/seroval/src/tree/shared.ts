@@ -1,7 +1,6 @@
 import { Feature } from '../compat';
 import { ParserContext } from '../context';
 import {
-  AsyncServerValue,
   ErrorValue,
 } from '../types';
 
@@ -86,7 +85,7 @@ export function getIterableOptions(obj: Iterable<any>) {
 
 export function isIterable(
   value: unknown,
-): value is Iterable<AsyncServerValue> {
+): value is Iterable<unknown> {
   if (!value || typeof value !== 'object') {
     return false;
   }

@@ -1,8 +1,8 @@
 // Vitest Snapshot v1
 
-exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"Map\\""`;
+exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
-exports[`Map > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"Map\\""`;
+exports[`Map > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
 exports[`Map > serialize > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
 

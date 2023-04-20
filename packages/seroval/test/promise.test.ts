@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  AsyncServerValue,
   Feature,
   serializeAsync,
   toJSONAsync,
@@ -16,7 +15,7 @@ describe('Promise', () => {
         .toThrowErrorMatchingSnapshot();
     });
     it('should use function expression instead of arrow functions', async () => {
-      const example: Record<string, AsyncServerValue> = {};
+      const example: Record<string, Promise<unknown>> = {};
       example.self = Promise.resolve(example);
       expect(await serializeAsync(example, {
         disabledFeatures: Feature.ArrowFunction,

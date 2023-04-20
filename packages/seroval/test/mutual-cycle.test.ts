@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   serialize,
   deserialize,
-  ServerValue,
-  AsyncServerValue,
   serializeAsync,
   fromJSON,
   toJSON,
@@ -13,152 +11,152 @@ import {
 describe('mutual cyclic references', () => {
   describe('serialize', () => {
     it('supports Arrays and Arrays', () => {
-      const a: ServerValue[] = [];
-      const b: ServerValue[] = [];
+      const a: unknown[] = [];
+      const b: unknown[] = [];
       a[0] = b;
       b[0] = a;
       const example = [a, b];
       const result = serialize(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<ServerValue[][]>(result);
+      const back = deserialize<unknown[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
     });
     it('supports Arrays and Objects', () => {
-      const a: ServerValue[] = [];
-      const b: Record<string, ServerValue> = {};
+      const a: unknown[] = [];
+      const b: Record<string, unknown> = {};
       a[0] = b;
       b[0] = a;
       const example = [a, b];
       const result = serialize(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<ServerValue[][]>(result);
+      const back = deserialize<unknown[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
     });
     it('supports Objects and Objects', () => {
-      const a: Record<string, ServerValue> = {};
-      const b: Record<string, ServerValue> = {};
+      const a: Record<string, unknown> = {};
+      const b: Record<string, unknown> = {};
       a[0] = b;
       b[0] = a;
       const example = [a, b];
       const result = serialize(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<ServerValue[][]>(result);
+      const back = deserialize<unknown[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
     });
   });
   describe('serializeAsync', () => {
     it('supports Arrays and Arrays', async () => {
-      const a: AsyncServerValue[] = [];
-      const b: AsyncServerValue[] = [];
+      const a: Promise<unknown>[] = [];
+      const b: Promise<unknown>[] = [];
       a[0] = Promise.resolve(b);
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await serializeAsync(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Promise<any>[][]>(result);
+      const back = deserialize<Promise<unknown>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
     });
     it('supports Arrays and Objects', async () => {
-      const a: AsyncServerValue[] = [];
-      const b: Record<string, AsyncServerValue> = {};
+      const a: Promise<unknown>[] = [];
+      const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await serializeAsync(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Promise<any>[][]>(result);
+      const back = deserialize<Promise<unknown>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
     });
     it('supports Objects and Objects', async () => {
-      const a: Record<string, AsyncServerValue> = {};
-      const b: Record<string, AsyncServerValue> = {};
+      const a: Record<string, Promise<unknown>> = {};
+      const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await serializeAsync(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Promise<any>[][]>(result);
+      const back = deserialize<Promise<unknown>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
     });
   });
   describe('toJSON', () => {
     it('supports Arrays and Arrays', () => {
-      const a: ServerValue[] = [];
-      const b: ServerValue[] = [];
+      const a: unknown[] = [];
+      const b: unknown[] = [];
       a[0] = b;
       b[0] = a;
       const example = [a, b];
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<ServerValue[][]>(result);
+      const back = fromJSON<unknown[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
     });
     it('supports Arrays and Objects', () => {
-      const a: ServerValue[] = [];
-      const b: Record<string, ServerValue> = {};
+      const a: unknown[] = [];
+      const b: Record<string, unknown> = {};
       a[0] = b;
       b[0] = a;
       const example = [a, b];
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<ServerValue[][]>(result);
+      const back = fromJSON<unknown[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
     });
     it('supports Objects and Objects', () => {
-      const a: Record<string, ServerValue> = {};
-      const b: Record<string, ServerValue> = {};
+      const a: Record<string, unknown> = {};
+      const b: Record<string, unknown> = {};
       a[0] = b;
       b[0] = a;
       const example = [a, b];
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<ServerValue[][]>(result);
+      const back = fromJSON<unknown[][]>(result);
       expect(back[0]).toBe(back[1][0]);
       expect(back[1]).toBe(back[0][0]);
     });
   });
   describe('toJSONAsync', () => {
     it('supports Arrays and Arrays', async () => {
-      const a: AsyncServerValue[] = [];
-      const b: AsyncServerValue[] = [];
+      const a: Promise<unknown>[] = [];
+      const b: Promise<unknown>[] = [];
       a[0] = Promise.resolve(b);
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await toJSONAsync(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Promise<any>[][]>(result);
+      const back = fromJSON<Promise<unknown>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
     });
     it('supports Arrays and Objects', async () => {
-      const a: AsyncServerValue[] = [];
-      const b: Record<string, AsyncServerValue> = {};
+      const a: Promise<unknown>[] = [];
+      const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await toJSONAsync(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Promise<any>[][]>(result);
+      const back = fromJSON<Promise<unknown>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
     });
     it('supports Objects and Objects', async () => {
-      const a: Record<string, AsyncServerValue> = {};
-      const b: Record<string, AsyncServerValue> = {};
+      const a: Record<string, Promise<unknown>> = {};
+      const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
       b[0] = Promise.resolve(a);
       const example = [a, b];
       const result = await toJSONAsync(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Promise<any>[][]>(result);
+      const back = fromJSON<Promise<unknown>[][]>(result);
       expect(back[0]).toStrictEqual(await back[1][0]);
       expect(back[1]).toStrictEqual(await back[0][0]);
     });
