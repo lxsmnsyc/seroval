@@ -1,5 +1,5 @@
-export default function assert(cond: unknown, error: string): asserts cond {
+export default function assert(cond: unknown, error: Error): asserts cond {
   if (!cond) {
-    throw new Error(error);
+    throw error;
   }
 }

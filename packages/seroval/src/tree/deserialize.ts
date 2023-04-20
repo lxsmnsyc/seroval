@@ -1,6 +1,5 @@
 /* eslint-disable prefer-spread */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import assert from '../assert';
 import {
   SerializationContext,
 } from '../context';
@@ -89,10 +88,9 @@ function deserializeProperties(
           result[Symbol.iterator] = () => current.values();
         }
           break;
-        case SerovalObjectRecordSpecialKey.PromiseLike:
-          break;
         default:
           result[deserializeString(key)] = value;
+          break;
       }
     }
   }
@@ -399,7 +397,6 @@ export default function deserializeTree(
     case SerovalNodeType.FormData:
       return deserializeFormData(ctx, node);
     default:
-      assert(false, 'Unsupported type');
-      return null;
+      throw new Error('invariant');
   }
 }

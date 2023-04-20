@@ -1,4 +1,3 @@
-import assert from '../assert';
 import { SerovalConstant, SerovalConstantNode, SerovalNodeType } from './types';
 
 function createConstantNode(value: SerovalConstant): SerovalConstantNode {
@@ -44,8 +43,7 @@ export function serializeConstant(node: SerovalConstantNode): string {
     case SerovalConstant.NaN:
       return 'NaN';
     default:
-      assert(false, 'invariant');
-      return '';
+      throw new Error('invariant');
   }
 }
 
@@ -68,7 +66,6 @@ export function deserializeConstant(node: SerovalConstantNode): unknown {
     case SerovalConstant.NaN:
       return NaN;
     default:
-      assert(false, 'invariant');
-      return '';
+      throw new Error('invariant');
   }
 }

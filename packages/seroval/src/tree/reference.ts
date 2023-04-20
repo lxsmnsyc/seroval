@@ -19,12 +19,12 @@ export function hasReference(id: string): boolean {
 }
 
 export function getReferenceID<T>(value: T): string {
-  assert(hasReferenceID(value), 'Missing reference id');
+  assert(hasReferenceID(value), new Error('Missing reference id'));
   return REFERENCE.get(value) as string;
 }
 
 export function getReference<T>(id: string): T {
-  assert(hasReference(id), 'Missing reference for id:' + id);
+  assert(hasReference(id), new Error('Missing reference for id:' + id));
   return INV_REFERENCE.get(id) as T;
 }
 

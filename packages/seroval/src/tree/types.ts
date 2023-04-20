@@ -48,7 +48,7 @@ export interface SerovalBaseNode {
   // Reference ID
   i: number | undefined;
   // Serialized value
-  s: any;
+  s: unknown;
   // size/length
   l: number | undefined;
   // Constructor name / RegExp source
@@ -67,7 +67,6 @@ export interface SerovalBaseNode {
 
 export const enum SerovalObjectRecordSpecialKey {
   SymbolIterator,
-  PromiseLike,
 }
 
 export type SerovalObjectRecordKey =

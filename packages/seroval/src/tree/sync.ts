@@ -4,6 +4,7 @@ import { Feature } from '../compat';
 import { createIndexedValue, getRootID, ParserContext } from '../context';
 import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import UnsupportedTypeError from './UnsupportedTypeError';
 import {
   TRUE_NODE,
   FALSE_NODE,
@@ -101,7 +102,7 @@ function generateMapNode(
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
-  assert(ctx.features & Feature.Map, 'Unsupported type "Map"');
+  assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
   const keyNodes = new Array<SerovalNode>(len);
   const valueNodes = new Array<SerovalNode>(len);
@@ -144,7 +145,7 @@ function generateSetNode(
   id: number,
   current: Set<unknown>,
 ): SerovalSetNode {
-  assert(ctx.features & Feature.Set, 'Unsupported type "Set"');
+  assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
   const nodes = new Array<SerovalNode>(len);
   const deferred = new Array<unknown>(len);
@@ -332,8 +333,9 @@ function generateHeadersNode(
   id: number,
   current: Headers,
 ): SerovalHeadersNode {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "Headers"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, string> = {};
+  // TS Headers not an Iterable
   current.forEach((value, key) => {
     items[key] = value;
   });
@@ -356,8 +358,9 @@ function generateFormDataNode(
   id: number,
   current: FormData,
 ): SerovalFormDataNode {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "FormData"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, FormDataEntryValue> = {};
+  // TS FormData isn't an Iterable sadly
   current.forEach((value, key) => {
     items[key] = value;
   });
@@ -391,9 +394,11 @@ function parseObject<T extends object | null>(
   if (hasReferenceID(current)) {
     return createReferenceNode(id, current);
   }
+  // Well well well
   if (Array.isArray(current)) {
     return generateArrayNode(ctx, id, current);
   }
+  // Fast path
   switch (current.constructor) {
     case Date:
       return createDateNode(id, current as unknown as Date);
@@ -435,6 +440,7 @@ function parseObject<T extends object | null>(
         true,
       );
     case AggregateError:
+      // Compile-down AggregateError to Error if disabled
       if (ctx.features & Feature.AggregateError) {
         return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
       }
@@ -458,6 +464,8 @@ function parseObject<T extends object | null>(
     default:
       break;
   }
+  // Slow path. We only need to handle Errors and Iterators
+  // since they have very broad implementations.
   if (current instanceof AggregateError) {
     if (ctx.features & Feature.AggregateError) {
       return generateAggregateErrorNode(ctx, id, current);
@@ -472,7 +480,7 @@ function parseObject<T extends object | null>(
   if (Symbol.iterator in current) {
     return generateObjectNode(ctx, id, current, current.constructor == null);
   }
-  throw new Error('Unsupported type');
+  throw new UnsupportedTypeError(current);
 }
 
 function parse<T>(
@@ -497,7 +505,7 @@ function parse<T>(
     case 'function':
       return createFunctionNode(ctx, current);
     default:
-      throw new Error('Unsupported type');
+      throw new UnsupportedTypeError(current);
   }
 }
 

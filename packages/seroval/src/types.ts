@@ -74,7 +74,7 @@ export type AsyncServerValue =
   | { readonly [key: string | number]: AsyncServerValue }
   | Set<AsyncServerValue>
   | Map<AsyncServerValue, AsyncServerValue>
-  | PromiseLike<AsyncServerValue>;
+  | Promise<AsyncServerValue>;
 
 export type NonPrimitiveServerValue<T> =
   T extends PrimitiveValue

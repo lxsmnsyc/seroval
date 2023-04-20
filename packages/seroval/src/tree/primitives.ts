@@ -3,6 +3,7 @@ import { Feature } from '../compat';
 import { ParserContext, createIndexedValue } from '../context';
 import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import UnsupportedTypeError from './UnsupportedTypeError';
 import {
   INFINITY_NODE,
   NEG_INFINITY_NODE,
@@ -75,7 +76,7 @@ export function createBigIntNode(
   ctx: ParserContext,
   current: bigint,
 ): SerovalBigIntNode {
-  assert(ctx.features & Feature.BigInt, 'Unsupported type "BigInt"');
+  assert(ctx.features & Feature.BigInt, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.BigInt,
     i: undefined,
@@ -175,14 +176,13 @@ export function createTypedArrayNode(
   id: number,
   current: TypedArrayValue,
 ): SerovalTypedArrayNode {
-  const constructor = current.constructor.name;
-  assert(ctx.features & Feature.TypedArray, `Unsupported value type "${constructor}"`);
+  assert(ctx.features & Feature.TypedArray, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.TypedArray,
     i: id,
     s: undefined,
     l: current.length,
-    c: constructor,
+    c: current.constructor.name,
     m: undefined,
     d: undefined,
     a: undefined,
@@ -198,17 +198,16 @@ export function createBigIntTypedArrayNode(
   id: number,
   current: BigIntTypedArrayValue,
 ): SerovalBigIntTypedArrayNode {
-  const constructor = current.constructor.name;
   assert(
     (ctx.features & BIGINT_FLAG) === BIGINT_FLAG,
-    `Unsupported value type "${constructor}"`,
+    new UnsupportedTypeError(current),
   );
   return {
     t: SerovalNodeType.BigIntTypedArray,
     i: id,
     s: undefined,
     l: current.length,
-    c: constructor,
+    c: current.constructor.name,
     m: undefined,
     d: undefined,
     a: undefined,
@@ -221,8 +220,8 @@ export function createWKSymbolNode(
   ctx: ParserContext,
   current: WellKnownSymbols,
 ): SerovalWKSymbolNode {
-  assert(ctx.features & Feature.Symbol, 'Unsupported type "symbol"');
-  assert(current in INV_SYMBOL_REF, 'seroval only supports well-known symbols');
+  assert(ctx.features & Feature.Symbol, new UnsupportedTypeError(current));
+  assert(current in INV_SYMBOL_REF, new Error('Only well-known symbols are supported.'));
   return {
     t: SerovalNodeType.WKSymbol,
     i: undefined,
@@ -293,7 +292,7 @@ export function createFunctionNode(
   // eslint-disable-next-line @typescript-eslint/ban-types
   current: Function,
 ) {
-  assert(hasReferenceID(current), 'Cannot serialize function without reference ID.');
+  assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
   const id = createIndexedValue(ctx, current);
   if (ctx.markedRefs.has(id)) {
     return createIndexedValueNode(id);

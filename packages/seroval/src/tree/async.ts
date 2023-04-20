@@ -2,12 +2,17 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import { createIndexedValue, getRootID, ParserContext } from '../context';
+import {
+  createIndexedValue,
+  getRootID,
+  ParserContext,
+} from '../context';
 import { serializeString } from '../string';
 import {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from '../types';
+import UnsupportedTypeError from './UnsupportedTypeError';
 import {
   TRUE_NODE,
   FALSE_NODE,
@@ -65,10 +70,6 @@ type ObjectLikeNode =
   | SerovalNullConstructorNode
   | SerovalPromiseNode;
 
-type ObjectLikeValue =
-  | Record<string, unknown>
-  | PromiseLike<unknown>;
-
 async function generateNodeList(
   ctx: ParserContext,
   current: unknown[],
@@ -119,7 +120,7 @@ async function generateMapNode(
   id: number,
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
-  assert(ctx.features & Feature.Map, 'Unsupported type "Map"');
+  assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
   const keyNodes = new Array<SerovalNode>(len);
   const valueNodes = new Array<SerovalNode>(len);
@@ -162,7 +163,7 @@ async function generateSetNode(
   id: number,
   current: Set<unknown>,
 ): Promise<SerovalSetNode> {
-  assert(ctx.features & Feature.Set, 'Unsupported type "Set"');
+  assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
   const nodes = new Array<SerovalNode>(len);
   const deferred = new Array<unknown>(len);
@@ -229,8 +230,11 @@ async function generateProperties(
     if (Symbol.iterator in properties) {
       keyNodes[size] = SerovalObjectRecordSpecialKey.SymbolIterator;
       const items = Array.from(properties as Iterable<unknown>);
-      const id = createIndexedValue(ctx, items);
-      valueNodes[size] = await generateArrayNode(ctx, id, items);
+      valueNodes[size] = await generateArrayNode(
+        ctx,
+        createIndexedValue(ctx, items),
+        items,
+      );
       size++;
     }
   }
@@ -282,10 +286,10 @@ async function generatePlainProperties(
 async function generatePromiseNode(
   ctx: ParserContext,
   id: number,
-  current: PromiseLike<unknown>,
+  current: Promise<unknown>,
 ): Promise<SerovalPromiseNode> {
-  assert(ctx.features & Feature.Promise, 'Unsupported type "Promise"');
-  return current.then(async (value) => ({
+  assert(ctx.features & Feature.Promise, new UnsupportedTypeError(current));
+  return {
     t: SerovalNodeType.Promise,
     i: id,
     s: undefined,
@@ -295,20 +299,17 @@ async function generatePromiseNode(
     // Parse options first before the items
     d: undefined,
     a: undefined,
-    f: await parse(ctx, value),
+    f: await parse(ctx, await current),
     b: undefined,
-  }));
+  };
 }
 
 async function generateObjectNode(
   ctx: ParserContext,
   id: number,
-  current: ObjectLikeValue,
+  current: Record<string, unknown>,
   empty: boolean,
 ): Promise<ObjectLikeNode> {
-  if ('then' in current && typeof current.then === 'function') {
-    return generatePromiseNode(ctx, id, current as PromiseLike<unknown>);
-  }
   return {
     t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
     i: id,
@@ -316,7 +317,7 @@ async function generateObjectNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: await generateProperties(ctx, current as Record<string, unknown>),
+    d: await generateProperties(ctx, current),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -374,7 +375,7 @@ async function generateHeadersNode(
   id: number,
   current: Headers,
 ): Promise<SerovalHeadersNode> {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "Headers"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, string> = {};
   current.forEach((value, key) => {
     items[key] = value;
@@ -398,7 +399,7 @@ async function generateFormDataNode(
   id: number,
   current: FormData,
 ): Promise<SerovalFormDataNode> {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "FormData"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, FormDataEntryValue> = {};
   current.forEach((value, key) => {
     items[key] = value;
@@ -530,11 +531,7 @@ async function parseObject<T extends object | null>(
   if (Symbol.iterator in current) {
     return generateObjectNode(ctx, id, current, current.constructor == null);
   }
-  // For Promise-like objects
-  if ('then' in current && typeof current.then === 'function') {
-    return generatePromiseNode(ctx, id, current as PromiseLike<unknown>);
-  }
-  throw new Error('Unsupported type');
+  throw new UnsupportedTypeError(current);
 }
 
 async function parse<T>(
@@ -559,7 +556,7 @@ async function parse<T>(
     case 'function':
       return createFunctionNode(ctx, current);
     default:
-      throw new Error('Unsupported type');
+      throw new UnsupportedTypeError(current);
   }
 }
 

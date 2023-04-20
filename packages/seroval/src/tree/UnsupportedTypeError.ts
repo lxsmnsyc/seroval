@@ -1,0 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const { toString } = Object.prototype;
+
+export default class UnsupportedTypeError extends Error {
+  constructor(value: unknown) {
+    super('Unsupported type "' + toString.call(value) + '"');
+  }
+}
