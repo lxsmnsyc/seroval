@@ -4,7 +4,6 @@ import assert from '../assert';
 import { Feature } from '../compat';
 import {
   createIndexedValue,
-  getRootID,
   ParserContext,
 } from '../context';
 import { serializeString } from '../string';
@@ -85,13 +84,13 @@ async function generateNodeList(
       if (isIterable(item)) {
         deferred[i] = item;
       } else {
-        nodes[i] = await parse(ctx, item);
+        nodes[i] = await parseAsync(ctx, item);
       }
     }
   }
   for (let i = 0; i < size; i++) {
     if (i in deferred) {
-      nodes[i] = await parse(ctx, deferred[i]);
+      nodes[i] = await parseAsync(ctx, deferred[i]);
     }
   }
   return nodes;
@@ -136,14 +135,14 @@ async function generateMapNode(
       deferredValue[deferredSize] = value;
       deferredSize++;
     } else {
-      keyNodes[nodeSize] = await parse(ctx, key);
-      valueNodes[nodeSize] = await parse(ctx, value);
+      keyNodes[nodeSize] = await parseAsync(ctx, key);
+      valueNodes[nodeSize] = await parseAsync(ctx, value);
       nodeSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
-    keyNodes[nodeSize + i] = await parse(ctx, deferredKey[i]);
-    valueNodes[nodeSize + i] = await parse(ctx, deferredValue[i]);
+    keyNodes[nodeSize + i] = await parseAsync(ctx, deferredKey[i]);
+    valueNodes[nodeSize + i] = await parseAsync(ctx, deferredValue[i]);
   }
   return {
     t: SerovalNodeType.Map,
@@ -175,12 +174,12 @@ async function generateSetNode(
     if (isIterable(item)) {
       deferred[deferredSize++] = item;
     } else {
-      nodes[nodeSize++] = await parse(ctx, item);
+      nodes[nodeSize++] = await parseAsync(ctx, item);
     }
   }
   // Parse deferred items
   for (let i = 0; i < deferredSize; i++) {
-    nodes[nodeSize + i] = await parse(ctx, deferred[i]);
+    nodes[nodeSize + i] = await parseAsync(ctx, deferred[i]);
   }
   return {
     t: SerovalNodeType.Set,
@@ -219,13 +218,13 @@ async function generateProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = await parse(ctx, item);
+      valueNodes[nodesSize] = await parseAsync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = await parse(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = await parseAsync(ctx, deferredValues[i]);
   }
   if (ctx.features & Feature.Symbol) {
     if (Symbol.iterator in properties) {
@@ -269,13 +268,13 @@ async function generatePlainProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = await parse(ctx, item);
+      valueNodes[nodesSize] = await parseAsync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = await parse(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = await parseAsync(ctx, deferredValues[i]);
   }
   return {
     k: keyNodes,
@@ -300,7 +299,7 @@ async function generatePromiseNode(
     // Parse options first before the items
     d: undefined,
     a: undefined,
-    f: await parse(ctx, await current),
+    f: await parseAsync(ctx, await current),
     b: undefined,
   };
 }
@@ -433,7 +432,7 @@ async function generateBoxedNode(
     m: undefined,
     d: undefined,
     a: undefined,
-    f: await parse(ctx, current.valueOf()),
+    f: await parseAsync(ctx, current.valueOf()),
     b: undefined,
   };
 }
@@ -561,7 +560,7 @@ async function parseObject<T extends object | null>(
   throw new UnsupportedTypeError(current);
 }
 
-async function parse<T>(
+export default async function parseAsync<T>(
   ctx: ParserContext,
   current: T,
 ): Promise<SerovalNode> {
@@ -585,16 +584,4 @@ async function parse<T>(
     default:
       throw new UnsupportedTypeError(current);
   }
-}
-
-export default async function parseAsync<T>(
-  ctx: ParserContext,
-  current: T,
-) {
-  const result = await parse(ctx, current);
-  return [
-    result,
-    getRootID(ctx, current),
-    result.t === SerovalNodeType.Object,
-  ] as const;
 }

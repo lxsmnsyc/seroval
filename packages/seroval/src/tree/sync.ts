@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import { createIndexedValue, getRootID, ParserContext } from '../context';
+import { createIndexedValue, ParserContext } from '../context';
 import { serializeString } from '../string';
 import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import UnsupportedTypeError from './UnsupportedTypeError';
@@ -67,13 +67,13 @@ function generateNodeList(ctx: ParserContext, current: unknown[]) {
       if (isIterable(item)) {
         deferred[i] = item;
       } else {
-        nodes[i] = parse(ctx, item);
+        nodes[i] = parseSync(ctx, item);
       }
     }
   }
   for (let i = 0; i < size; i++) {
     if (i in deferred) {
-      nodes[i] = parse(ctx, deferred[i]);
+      nodes[i] = parseSync(ctx, deferred[i]);
     }
   }
   return nodes;
@@ -118,14 +118,14 @@ function generateMapNode(
       deferredValue[deferredSize] = value;
       deferredSize++;
     } else {
-      keyNodes[nodeSize] = parse(ctx, key);
-      valueNodes[nodeSize] = parse(ctx, value);
+      keyNodes[nodeSize] = parseSync(ctx, key);
+      valueNodes[nodeSize] = parseSync(ctx, value);
       nodeSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
-    keyNodes[nodeSize + i] = parse(ctx, deferredKey[i]);
-    valueNodes[nodeSize + i] = parse(ctx, deferredValue[i]);
+    keyNodes[nodeSize + i] = parseSync(ctx, deferredKey[i]);
+    valueNodes[nodeSize + i] = parseSync(ctx, deferredValue[i]);
   }
   return {
     t: SerovalNodeType.Map,
@@ -157,12 +157,12 @@ function generateSetNode(
     if (isIterable(item)) {
       deferred[deferredSize++] = item;
     } else {
-      nodes[nodeSize++] = parse(ctx, item);
+      nodes[nodeSize++] = parseSync(ctx, item);
     }
   }
   // Parse deferred items
   for (let i = 0; i < deferredSize; i++) {
-    nodes[nodeSize + i] = parse(ctx, deferred[i]);
+    nodes[nodeSize + i] = parseSync(ctx, deferred[i]);
   }
   return {
     t: SerovalNodeType.Set,
@@ -201,13 +201,13 @@ function generateProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = parse(ctx, item);
+      valueNodes[nodesSize] = parseSync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = parse(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = parseSync(ctx, deferredValues[i]);
   }
   if (ctx.features & Feature.Symbol) {
     if (Symbol.iterator in properties) {
@@ -248,13 +248,13 @@ function generatePlainProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = parse(ctx, item);
+      valueNodes[nodesSize] = parseSync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = parse(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = parseSync(ctx, deferredValues[i]);
   }
   return {
     k: keyNodes,
@@ -393,7 +393,7 @@ function generateBoxedNode(
     m: undefined,
     d: undefined,
     a: undefined,
-    f: parse(ctx, current.valueOf()),
+    f: parseSync(ctx, current.valueOf()),
     b: undefined,
   };
 }
@@ -510,7 +510,7 @@ function parseObject<T extends object | null>(
   throw new UnsupportedTypeError(current);
 }
 
-function parse<T>(
+export default function parseSync<T>(
   ctx: ParserContext,
   current: T,
 ): SerovalNode {
@@ -534,16 +534,4 @@ function parse<T>(
     default:
       throw new UnsupportedTypeError(current);
   }
-}
-
-export default function parseSync<T>(
-  ctx: ParserContext,
-  current: T,
-) {
-  const result = parse(ctx, current);
-  return [
-    result,
-    getRootID(ctx, current),
-    result.t === SerovalNodeType.Object,
-  ] as const;
 }

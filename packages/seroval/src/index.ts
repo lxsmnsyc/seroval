@@ -6,12 +6,13 @@ import {
   Options,
   createParserContext,
   createSerializationContext,
+  getRootID,
 } from './context';
+import parseSync from './tree/sync';
 import parseAsync from './tree/async';
 import deserializeTree from './tree/deserialize';
 import serializeTree, { resolvePatches } from './tree/serialize';
-import parseSync from './tree/sync';
-import { SerovalNode } from './tree/types';
+import { SerovalNode, SerovalNodeType } from './tree/types';
 
 export {
   AsyncServerValue,
@@ -64,10 +65,15 @@ export function serialize<T>(
   options?: Partial<Options>,
 ) {
   const ctx = createParserContext(options);
-  const [tree, rootID, isObject] = parseSync(ctx, source);
+  const tree = parseSync(ctx, source);
   const serial = createSerializationContext(ctx);
   const result = serializeTree(serial, tree);
-  return finalize(serial, rootID, isObject, result);
+  return finalize(
+    serial,
+    getRootID(ctx, source),
+    tree.t === SerovalNodeType.Object,
+    result,
+  );
 }
 
 export async function serializeAsync<T>(
@@ -75,10 +81,15 @@ export async function serializeAsync<T>(
   options?: Partial<Options>,
 ) {
   const ctx = createParserContext(options);
-  const [tree, rootID, isObject] = await parseAsync(ctx, source);
+  const tree = await parseAsync(ctx, source);
   const serial = createSerializationContext(ctx);
   const result = serializeTree(serial, tree);
-  return finalize(serial, rootID, isObject, result);
+  return finalize(
+    serial,
+    getRootID(ctx, source),
+    tree.t === SerovalNodeType.Object,
+    result,
+  );
 }
 
 export function deserialize<T>(source: string): T {
@@ -89,7 +100,6 @@ export function deserialize<T>(source: string): T {
 export interface SerovalJSON {
   t: SerovalNode,
   r: number,
-  i: boolean,
   f: number,
   m: number[],
 }
@@ -99,11 +109,9 @@ export function toJSON<T>(
   options?: Partial<Options>,
 ): SerovalJSON {
   const ctx = createParserContext(options);
-  const [tree, root, isObject] = parseSync(ctx, source);
   return {
-    t: tree,
-    r: root,
-    i: isObject,
+    t: parseSync(ctx, source),
+    r: getRootID(ctx, source),
     f: ctx.features,
     m: Array.from(ctx.markedRefs),
   };
@@ -114,11 +122,9 @@ export async function toJSONAsync<T>(
   options?: Partial<Options>,
 ): Promise<SerovalJSON> {
   const ctx = createParserContext(options);
-  const [tree, root, isObject] = await parseAsync(ctx, source);
   return {
-    t: tree,
-    r: root,
-    i: isObject,
+    t: await parseAsync(ctx, source),
+    r: getRootID(ctx, source),
     f: ctx.features,
     m: Array.from(ctx.markedRefs),
   };
@@ -130,7 +136,7 @@ export function compileJSON(source: SerovalJSON): string {
     markedRefs: source.m,
   });
   const result = serializeTree(serial, source.t);
-  return finalize(serial, source.r, source.i, result);
+  return finalize(serial, source.r, source.t.i === SerovalNodeType.Object, result);
 }
 
 export function fromJSON<T>(source: SerovalJSON): T {
