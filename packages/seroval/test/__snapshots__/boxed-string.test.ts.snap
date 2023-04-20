@@ -8,10 +8,10 @@ exports[`boxed string > serializeAsync > supports boxed strings 1`] = `"Promise.
 
 exports[`boxed string > serializeAsync > supports boxed strings 2`] = `"Promise.resolve(Object(\\"\\\\x3Cscript>\\\\x3C/script>\\"))"`;
 
-exports[`boxed string > toJSON > supports boxed strings 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed string > toJSON > supports boxed strings 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`boxed string > toJSON > supports boxed strings 2`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed string > toJSON > supports boxed strings 2`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`boxed string > toJSONAsync > supports boxed strings 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed string > toJSONAsync > supports boxed strings 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`boxed string > toJSONAsync > supports boxed strings 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed string > toJSONAsync > supports boxed strings 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;

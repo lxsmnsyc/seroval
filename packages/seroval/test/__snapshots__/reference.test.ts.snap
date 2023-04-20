@@ -4,6 +4,6 @@ exports[`Reference > serialize > supports Reference 1`] = `"__SEROVAL__.get(\\"e
 
 exports[`Reference > serializeAsync > supports Reference 1`] = `"Promise.resolve(__SEROVAL__.get(\\"example\\"))"`;
 
-exports[`Reference > toJSON > supports Reference 1`] = `"{\\"t\\":{\\"t\\":20,\\"i\\":0,\\"s\\":\\"example\\"},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Reference > toJSON > supports Reference 1`] = `"{\\"t\\":{\\"t\\":20,\\"i\\":0,\\"s\\":\\"example\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Reference > toJSONAsync > supports Reference 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":20,\\"i\\":1,\\"s\\":\\"example\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Reference > toJSONAsync > supports Reference 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":20,\\"i\\":1,\\"s\\":\\"example\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
