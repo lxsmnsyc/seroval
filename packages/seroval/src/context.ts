@@ -69,7 +69,7 @@ const DEFAULT_OPTIONS: Options = {
 
 export function createParserContext(options: Partial<Options> = {}): ParserContext {
   // eslint-disable-next-line prefer-object-spread
-  const result = Object.assign({}, DEFAULT_OPTIONS, options || {});
+  const result = Object.assign({}, DEFAULT_OPTIONS, options);
   return {
     markedRefs: new Set(),
     refs: new Map(),
