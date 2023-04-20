@@ -252,6 +252,7 @@ export interface SerovalAggregateErrorNode extends SerovalBaseNode {
 
 export interface SerovalWKSymbolNode extends SerovalBaseNode {
   t: SerovalNodeType.WKSymbol;
+  i: number;
   s: Symbols;
 }
 

@@ -218,13 +218,14 @@ export function createBigIntTypedArrayNode(
 
 export function createWKSymbolNode(
   ctx: ParserContext,
+  id: number,
   current: WellKnownSymbols,
 ): SerovalWKSymbolNode {
   assert(ctx.features & Feature.Symbol, new UnsupportedTypeError(current));
   assert(current in INV_SYMBOL_REF, new Error('Only well-known symbols are supported.'));
   return {
     t: SerovalNodeType.WKSymbol,
-    i: undefined,
+    i: id,
     s: INV_SYMBOL_REF[current],
     l: undefined,
     c: undefined,
@@ -277,14 +278,14 @@ export function createSymbolNode(
   ctx: ParserContext,
   current: symbol,
 ) {
+  const id = createIndexedValue(ctx, current);
+  if (ctx.markedRefs.has(id)) {
+    return createIndexedValueNode(id);
+  }
   if (hasReferenceID(current)) {
-    const id = createIndexedValue(ctx, current);
-    if (ctx.markedRefs.has(id)) {
-      return createIndexedValueNode(id);
-    }
     return createReferenceNode(id, current);
   }
-  return createWKSymbolNode(ctx, current as WellKnownSymbols);
+  return createWKSymbolNode(ctx, id, current as WellKnownSymbols);
 }
 
 export function createFunctionNode(

@@ -39,6 +39,7 @@ import {
   SerovalObjectRecordKey,
   SerovalObjectRecordSpecialKey,
   SerovalBoxedNode,
+  SerovalWKSymbolNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -770,6 +771,13 @@ function serializeBoxed(
   return assignIndexedValue(ctx, node.i, 'Object(' + serializeTree(ctx, node.f) + ')');
 }
 
+function serializeWKSymbol(
+  ctx: SerializationContext,
+  node: SerovalWKSymbolNode,
+) {
+  return assignIndexedValue(ctx, node.i, SYMBOL_STRING[node.s]);
+}
+
 export default function serializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -813,7 +821,7 @@ export default function serializeTree(
     case SerovalNodeType.Promise:
       return serializePromise(ctx, node);
     case SerovalNodeType.WKSymbol:
-      return SYMBOL_STRING[node.s];
+      return serializeWKSymbol(ctx, node);
     case SerovalNodeType.URL:
       return serializeURL(ctx, node);
     case SerovalNodeType.URLSearchParams:
