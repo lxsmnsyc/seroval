@@ -37,6 +37,7 @@ import {
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
+  SerovalBoxedNode,
   SerovalErrorNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
@@ -378,6 +379,25 @@ function generateFormDataNode(
   };
 }
 
+function generateBoxedNode(
+  ctx: ParserContext,
+  id: number,
+  current: object,
+): SerovalBoxedNode {
+  return {
+    t: SerovalNodeType.Boxed,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: parse(ctx, current.valueOf()),
+    b: undefined,
+  };
+}
+
 function parseObject<T extends object | null>(
   ctx: ParserContext,
   current: T,
@@ -400,6 +420,13 @@ function parseObject<T extends object | null>(
   }
   // Fast path
   switch (current.constructor) {
+    case Number:
+    case Boolean:
+    case String:
+    case BigInt:
+    case Function:
+    case Symbol:
+      return generateBoxedNode(ctx, id, current);
     case Date:
       return createDateNode(id, current as unknown as Date);
     case RegExp:

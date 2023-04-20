@@ -43,6 +43,7 @@ import {
 import {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
+  SerovalBoxedNode,
   SerovalErrorNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
@@ -418,6 +419,25 @@ async function generateFormDataNode(
   };
 }
 
+async function generateBoxedNode(
+  ctx: ParserContext,
+  id: number,
+  current: object,
+): Promise<SerovalBoxedNode> {
+  return {
+    t: SerovalNodeType.Boxed,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: await parse(ctx, current.valueOf()),
+    b: undefined,
+  };
+}
+
 async function parseObject<T extends object | null>(
   ctx: ParserContext,
   current: T,
@@ -438,6 +458,13 @@ async function parseObject<T extends object | null>(
     return generateArrayNode(ctx, id, current);
   }
   switch (current.constructor) {
+    case Number:
+    case Boolean:
+    case String:
+    case BigInt:
+    case Function:
+    case Symbol:
+      return generateBoxedNode(ctx, id, current);
     case Date:
       return createDateNode(id, current as unknown as Date);
     case RegExp:

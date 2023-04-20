@@ -38,6 +38,7 @@ import {
   SerovalObjectRecordNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordSpecialKey,
+  SerovalBoxedNode,
 } from './types';
 
 function getAssignmentExpression(assignment: Assignment): string {
@@ -762,6 +763,13 @@ function serializeFormData(
   return result;
 }
 
+function serializeBoxed(
+  ctx: SerializationContext,
+  node: SerovalBoxedNode,
+) {
+  return assignIndexedValue(ctx, node.i, 'Object(' + serializeTree(ctx, node.f) + ')');
+}
+
 export default function serializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -820,6 +828,8 @@ export default function serializeTree(
       return serializeHeaders(ctx, node);
     case SerovalNodeType.FormData:
       return serializeFormData(ctx, node);
+    case SerovalNodeType.Boxed:
+      return serializeBoxed(ctx, node);
     default:
       throw new Error('invariant');
   }

@@ -1,12 +1,7 @@
 
 import { serialize, Feature } from './dist/esm/development/index.mjs';
 
-const example = Object.create(null);
-
-example.a = {
-  b: {},
-};
-example.a.b.parent = example.a;
+const example = Object(Symbol.iterator);
 
 console.dir(serialize(example, {
   disabledFeatures: Feature.ObjectAssign,

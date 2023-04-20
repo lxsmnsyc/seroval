@@ -15,7 +15,6 @@ export const enum SerovalNodeType {
   Number,
   String,
   Constant,
-  NaN,
   BigInt,
   IndexedValue,
   Date,
@@ -40,6 +39,7 @@ export const enum SerovalNodeType {
   File,
   Headers,
   FormData,
+  Boxed,
 }
 
 export interface SerovalBaseNode {
@@ -321,6 +321,12 @@ export interface SerovalFormDataNode extends SerovalBaseNode {
   d: SerovalPlainRecordNode;
 }
 
+export interface SerovalBoxedNode extends SerovalBaseNode {
+  t: SerovalNodeType.Boxed;
+  i: number;
+  f: SerovalNode;
+}
+
 export type SerovalNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -342,4 +348,5 @@ export type SerovalNode =
   | SerovalBlobNode
   | SerovalFileNode
   | SerovalHeadersNode
-  | SerovalFormDataNode;
+  | SerovalFormDataNode
+  | SerovalBoxedNode;

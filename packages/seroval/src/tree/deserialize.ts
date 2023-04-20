@@ -14,6 +14,7 @@ import {
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalBlobNode,
+  SerovalBoxedNode,
   SerovalDataViewNode,
   SerovalDateNode,
   SerovalErrorNode,
@@ -339,6 +340,18 @@ function deserializeFormData(
   return result;
 }
 
+function deserializeBoxed(
+  ctx: SerializationContext,
+  node: SerovalBoxedNode,
+) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    Object(deserializeTree(ctx, node.f)),
+  );
+}
+
 export default function deserializeTree(
   ctx: SerializationContext,
   node: SerovalNode,
@@ -396,6 +409,8 @@ export default function deserializeTree(
       return deserializeHeaders(ctx, node);
     case SerovalNodeType.FormData:
       return deserializeFormData(ctx, node);
+    case SerovalNodeType.Boxed:
+      return deserializeBoxed(ctx, node);
     default:
       throw new Error('invariant');
   }
