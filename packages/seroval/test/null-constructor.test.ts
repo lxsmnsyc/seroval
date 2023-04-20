@@ -107,7 +107,7 @@ describe('null-constructor', () => {
         },
       }) as Iterable<number>;
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Iterable<number>>(result);
       expect(back.constructor).toBeUndefined();
       expect([...back]).toMatchObject([1, 2, 3]);
@@ -141,7 +141,7 @@ describe('null-constructor', () => {
         },
       }) as Iterable<number>);
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<Iterable<number>>>(result);
       expect(back.constructor).toBeUndefined();
       expect([...back]).toMatchObject([1, 2, 3]);

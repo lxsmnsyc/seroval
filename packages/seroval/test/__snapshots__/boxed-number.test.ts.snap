@@ -1,0 +1,21 @@
+// Vitest Snapshot v1
+
+exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":7}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":5}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":6}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":4}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":7}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":5}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":6}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":4}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;

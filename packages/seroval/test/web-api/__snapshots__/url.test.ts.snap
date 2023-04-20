@@ -4,6 +4,6 @@ exports[`URL > serialize > supports URL 1`] = `"new URL(\\"https://github.com/lx
 
 exports[`URL > serializeAsync > supports URL 1`] = `"Promise.resolve(new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))"`;
 
-exports[`URL > toJSON > supports URL 1`] = `"{\\"t\\":{\\"t\\":19,\\"i\\":0,\\"s\\":\\"https://github.com/lxsmnsyc/seroval?hello=world\\"},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`URL > toJSON > supports URL 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"s\\":\\"https://github.com/lxsmnsyc/seroval?hello=world\\"},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`URL > toJSONAsync > supports URL 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"https://github.com/lxsmnsyc/seroval?hello=world\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`URL > toJSONAsync > supports URL 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":18,\\"i\\":1,\\"s\\":\\"https://github.com/lxsmnsyc/seroval?hello=world\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;

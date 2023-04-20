@@ -44,7 +44,7 @@ export function getErrorOptions(
   ctx: ParserContext,
   error: Error,
 ) {
-  let options: Record<string, any> | undefined;
+  let options: Record<string, unknown> | undefined;
   const constructor = getErrorConstructorName(error);
   // Name has been modified
   if (error.name !== constructor) {
@@ -69,18 +69,6 @@ export function getErrorOptions(
     }
   }
   return options;
-}
-
-export function getIterableOptions(obj: Iterable<any>) {
-  const names = Object.getOwnPropertyNames(obj);
-  if (names.length) {
-    const options: Record<string, unknown> = {};
-    for (const name of names) {
-      options[name] = obj[name as unknown as keyof typeof obj];
-    }
-    return options;
-  }
-  return undefined;
 }
 
 export function isIterable(

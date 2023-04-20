@@ -1,0 +1,13 @@
+// Vitest Snapshot v1
+
+exports[`boxed bigint > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object BigInt]\\""`;
+
+exports[`boxed bigint > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object BigInt]\\""`;
+
+exports[`boxed bigint > serialize > supports boxed bigint 1`] = `"Object(9007199254740991n)"`;
+
+exports[`boxed bigint > serializeAsync > supports boxed bigint 1`] = `"Promise.resolve(Object(9007199254740991n))"`;
+
+exports[`boxed bigint > toJSON > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
