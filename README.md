@@ -303,7 +303,7 @@ serializeWithTarget(y, 0);
 (h=>(h=Object.assign(Object.create(null),{example:"Hello World"}),h.self=h,h))()
 ```
 
-`disabledFeatures` uses bit flags for faster checking, so if you need to disable multiple features, you can use the logical OR symbol (`|`).
+`disabledFeatures` uses bit flags for faster checking, so if you need to disable multiple features, you can use the bitwise OR symbol (`|`).
 
 Here's an `ES2017` flag:
 
