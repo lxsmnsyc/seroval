@@ -1,45 +1,45 @@
-import { Symbols } from './symbols';
+import type { Symbols } from './symbols';
 
 export const enum SerovalConstant {
-  Null,
-  Undefined,
-  True,
-  False,
-  NegativeZero,
-  Infinity,
-  NegativeInfinity,
-  NaN,
+  Null = 0,
+  Undefined = 1,
+  True = 2,
+  False = 3,
+  NegativeZero = 4,
+  Infinity = 5,
+  NegativeInfinity = 6,
+  NaN = 7,
 }
 
 export const enum SerovalNodeType {
-  Number,
-  String,
-  Constant,
-  BigInt,
-  IndexedValue,
-  Date,
-  RegExp,
-  Set,
-  Map,
-  Array,
-  Object,
-  NullConstructor,
-  Promise,
-  Error,
-  AggregateError,
-  TypedArray,
-  BigIntTypedArray,
-  WKSymbol,
-  URL,
-  URLSearchParams,
-  Reference,
-  ArrayBuffer,
-  DataView,
-  Blob,
-  File,
-  Headers,
-  FormData,
-  Boxed,
+  Number = 0,
+  String = 1,
+  Constant = 2,
+  BigInt = 3,
+  IndexedValue = 4,
+  Date = 5,
+  RegExp = 6,
+  Set = 7,
+  Map = 8,
+  Array = 9,
+  Object = 10,
+  NullConstructor = 11,
+  Promise = 12,
+  Error = 13,
+  AggregateError = 14,
+  TypedArray = 15,
+  BigIntTypedArray = 16,
+  WKSymbol = 17,
+  URL = 18,
+  URLSearchParams = 19,
+  Reference = 20,
+  ArrayBuffer = 21,
+  DataView = 22,
+  Blob = 23,
+  File = 24,
+  Headers = 25,
+  FormData = 26,
+  Boxed = 27,
 }
 
 export interface SerovalBaseNode {
@@ -58,7 +58,7 @@ export interface SerovalBaseNode {
   // dictionary
   d: SerovalObjectRecordNode | SerovalMapRecordNode | undefined;
   // array of nodes
-  a: SerovalNode[] | undefined;
+  a: (SerovalNode | undefined)[] | undefined;
   // fulfilled node
   f: SerovalNode | undefined;
   // byte offset
@@ -66,7 +66,7 @@ export interface SerovalBaseNode {
 }
 
 export const enum SerovalObjectRecordSpecialKey {
-  SymbolIterator,
+  SymbolIterator = 0,
 }
 
 export type SerovalObjectRecordKey =
@@ -205,7 +205,7 @@ export interface SerovalArrayNode extends SerovalBaseNode {
   // size of array
   l: number;
   // items
-  a: SerovalNode[];
+  a: (SerovalNode | undefined)[];
   i: number;
 }
 

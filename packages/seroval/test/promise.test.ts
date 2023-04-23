@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { SerovalJSON } from '../src';
 import {
   Feature,
   serializeAsync,
@@ -8,7 +9,7 @@ import {
 describe('Promise', () => {
   describe('compat', () => {
     it('should throw an error for unsupported target', async () => {
-      await expect(() => serializeAsync(Promise.resolve('test'), {
+      await expect(async (): Promise<string> => serializeAsync(Promise.resolve('test'), {
         disabledFeatures: Feature.Promise,
       }))
         .rejects
@@ -25,7 +26,7 @@ describe('Promise', () => {
   });
   describe('compat#toJSON', () => {
     it('should throw an error for unsupported target', async () => {
-      await expect(() => toJSONAsync(Promise.resolve('test'), {
+      await expect(async (): Promise<SerovalJSON> => toJSONAsync(Promise.resolve('test'), {
         disabledFeatures: Feature.Promise,
       }))
         .rejects

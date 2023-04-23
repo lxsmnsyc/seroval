@@ -1,4 +1,5 @@
-import { SerovalConstant, SerovalConstantNode, SerovalNodeType } from './types';
+import type { SerovalConstantNode } from './types';
+import { SerovalConstant, SerovalNodeType } from './types';
 
 function createConstantNode(value: SerovalConstant): SerovalConstantNode {
   return {

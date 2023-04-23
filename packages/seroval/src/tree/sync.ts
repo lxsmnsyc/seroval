@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import { createIndexedValue, ParserContext } from '../context';
+import type { ParserContext } from '../context';
+import { createIndexedValue } from '../context';
 import { serializeString } from '../string';
-import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import UnsupportedTypeError from './UnsupportedTypeError';
 import {
   TRUE_NODE,
@@ -34,7 +35,7 @@ import {
   getErrorOptions,
   isIterable,
 } from './shared';
-import {
+import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBoxedNode,
@@ -43,20 +44,22 @@ import {
   SerovalHeadersNode,
   SerovalMapNode,
   SerovalNode,
-  SerovalNodeType,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
-  SerovalObjectRecordSpecialKey,
   SerovalPlainRecordNode,
   SerovalSetNode,
+} from './types';
+import {
+  SerovalNodeType,
+  SerovalObjectRecordSpecialKey,
 } from './types';
 import { createURLNode, createURLSearchParamsNode } from './web-api';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
-function generateNodeList(ctx: ParserContext, current: unknown[]) {
+function generateNodeList(ctx: ParserContext, current: unknown[]): SerovalNode[] {
   const size = current.length;
   const nodes = new Array<SerovalNode>(size);
   const deferred = new Array<unknown>(size);
@@ -398,9 +401,9 @@ function generateBoxedNode(
   };
 }
 
-function parseObject<T extends object | null>(
+function parseObject(
   ctx: ParserContext,
-  current: T,
+  current: object | null,
 ): SerovalNode {
   if (!current) {
     return NULL_NODE;
@@ -505,7 +508,7 @@ function parseObject<T extends object | null>(
   // Generator functions don't have a global constructor
   // despite existing
   if (Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, current.constructor == null);
+    return generateObjectNode(ctx, id, current, !!current.constructor);
   }
   throw new UnsupportedTypeError(current);
 }

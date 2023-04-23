@@ -1,15 +1,17 @@
 import assert from '../assert';
 import { Feature } from '../compat';
-import { ParserContext } from '../context';
+import type { ParserContext } from '../context';
 import { serializeString } from '../string';
 import UnsupportedTypeError from './UnsupportedTypeError';
 import { serializeArrayBuffer } from './primitives';
-import {
+import type {
   SerovalBlobNode,
   SerovalFileNode,
-  SerovalNodeType,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
+} from './types';
+import {
+  SerovalNodeType,
 } from './types';
 
 export function createURLNode(

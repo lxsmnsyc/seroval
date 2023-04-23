@@ -17,7 +17,7 @@
     "@types/node": "^18.15.3",
     "@vitest/ui": "^0.30.1",
     "eslint": "^8.32.0",
-    "eslint-config-lxsmnsyc": "^0.5.1",
+    "eslint-config-lxsmnsyc": "^0.6.3",
     "node-fetch-native": "^1.1.0",
     "pridepack": "2.4.1",
     "tslib": "^2.4.1",

@@ -7,7 +7,7 @@
   ],
   "devDependencies": {
     "eslint": "^8.38.0",
-    "eslint-config-lxsmnsyc": "^0.5.1",
+    "eslint-config-lxsmnsyc": "^0.6.3",
     "lerna": "^6.4.1",
     "typescript": "^4.9.5"
   }

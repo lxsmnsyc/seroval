@@ -1,14 +1,15 @@
 /* eslint-disable prefer-spread */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import {
+import type {
   SerializationContext,
 } from '../context';
 import { deserializeString } from '../string';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import { deserializeConstant } from './constants';
 import { getReference } from './reference';
 import { getErrorConstructor, getTypedArrayConstructor } from './shared';
 import { SYMBOL_REF } from './symbols';
-import {
+import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
@@ -23,12 +24,10 @@ import {
   SerovalHeadersNode,
   SerovalMapNode,
   SerovalNode,
-  SerovalNodeType,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
-  SerovalObjectRecordSpecialKey,
   SerovalPromiseNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
@@ -37,12 +36,16 @@ import {
   SerovalURLNode,
   SerovalURLSearchParamsNode,
 } from './types';
+import {
+  SerovalNodeType,
+  SerovalObjectRecordSpecialKey,
+} from './types';
 
 function assignIndexedValue<T>(
   ctx: SerializationContext,
   index: number,
   value: T,
-) {
+): T {
   if (ctx.markedRefs.has(index)) {
     ctx.valueMap.set(index, value);
   }
@@ -52,14 +55,14 @@ function assignIndexedValue<T>(
 function deserializeArray(
   ctx: SerializationContext,
   node: SerovalArrayNode,
-) {
+): unknown[] {
   const len = node.l;
   const result: unknown[] = assignIndexedValue(
     ctx,
     node.i,
     new Array<unknown>(len),
   );
-  let item: SerovalNode;
+  let item: SerovalNode | undefined;
   for (let i = 0; i < len; i++) {
     item = node.a[i];
     if (item) {
@@ -73,7 +76,7 @@ function deserializeProperties(
   ctx: SerializationContext,
   node: SerovalObjectRecordNode,
   result: Record<string | symbol, unknown>,
-) {
+): Record<string | symbol, unknown> {
   const len = node.s;
   if (len) {
     let key: SerovalObjectRecordKey;
@@ -86,7 +89,7 @@ function deserializeProperties(
       switch (key) {
         case SerovalObjectRecordSpecialKey.SymbolIterator: {
           const current = value as unknown[];
-          result[Symbol.iterator] = () => current.values();
+          result[Symbol.iterator] = (): IterableIterator<unknown> => current.values();
         }
           break;
         default:
@@ -101,7 +104,7 @@ function deserializeProperties(
 function deserializeObject(
   ctx: SerializationContext,
   node: SerovalObjectNode | SerovalNullConstructorNode,
-) {
+): Record<string, unknown> {
   const result = assignIndexedValue(
     ctx,
     node.i,
@@ -116,7 +119,7 @@ function deserializeObject(
 function deserializeSet(
   ctx: SerializationContext,
   node: SerovalSetNode,
-) {
+): Set<unknown> {
   const result = assignIndexedValue(ctx, node.i, new Set<unknown>());
   const items = node.a;
   for (let i = 0, len = node.l; i < len; i++) {
@@ -128,7 +131,7 @@ function deserializeSet(
 function deserializeMap(
   ctx: SerializationContext,
   node: SerovalMapNode,
-) {
+): Map<unknown, unknown> {
   const result = assignIndexedValue(
     ctx,
     node.i,
@@ -152,7 +155,7 @@ function deserializeDictionary<T extends AssignableValue>(
   ctx: SerializationContext,
   node: AssignableNode,
   result: T,
-) {
+): T {
   if (node.d) {
     const fields = deserializeProperties(ctx, node.d, {});
     Object.assign(result, fields);
@@ -163,7 +166,7 @@ function deserializeDictionary<T extends AssignableValue>(
 function deserializeAggregateError(
   ctx: SerializationContext,
   node: SerovalAggregateErrorNode,
-) {
+): AggregateError {
   // Serialize the required arguments
   const result = assignIndexedValue(
     ctx,
@@ -179,7 +182,7 @@ function deserializeAggregateError(
 function deserializeError(
   ctx: SerializationContext,
   node: SerovalErrorNode,
-) {
+): Error {
   const ErrorConstructor = getErrorConstructor(node.c);
   const result = assignIndexedValue(ctx, node.i, new ErrorConstructor(deserializeString(node.m)));
   return deserializeDictionary(ctx, node, result);
@@ -193,7 +196,7 @@ interface Deferred {
 function createDeferred(): Deferred {
   let resolver: Deferred['resolve'];
   return {
-    resolve(v) {
+    resolve(v): void {
       resolver(v);
     },
     promise: new Promise((res) => {
@@ -202,10 +205,10 @@ function createDeferred(): Deferred {
   };
 }
 
-function deserializePromise(
+async function deserializePromise(
   ctx: SerializationContext,
   node: SerovalPromiseNode,
-) {
+): Promise<unknown> {
   const deferred = createDeferred();
   const result = assignIndexedValue(ctx, node.i, deferred.promise);
   deferred.resolve(deserializeTree(ctx, node.f));
@@ -215,7 +218,7 @@ function deserializePromise(
 function deserializeArrayBuffer(
   ctx: SerializationContext,
   node: SerovalArrayBufferNode,
-) {
+): ArrayBuffer {
   const bytes = new Uint8Array(node.s);
   const result = assignIndexedValue(ctx, node.i, bytes.buffer);
   return result;
@@ -224,7 +227,7 @@ function deserializeArrayBuffer(
 function deserializeTypedArray(
   ctx: SerializationContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
-) {
+): TypedArrayValue | BigIntTypedArrayValue {
   const TypedArray = getTypedArrayConstructor(node.c);
   const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new TypedArray(
@@ -238,42 +241,42 @@ function deserializeTypedArray(
 function deserializeDate(
   ctx: SerializationContext,
   node: SerovalDateNode,
-) {
+): Date {
   return assignIndexedValue(ctx, node.i, new Date(node.s));
 }
 
 function deserializeRegExp(
   ctx: SerializationContext,
   node: SerovalRegExpNode,
-) {
+): RegExp {
   return assignIndexedValue(ctx, node.i, new RegExp(node.c, node.m));
 }
 
 function deserializeURL(
   ctx: SerializationContext,
   node: SerovalURLNode,
-) {
+): URL {
   return assignIndexedValue(ctx, node.i, new URL(deserializeString(node.s)));
 }
 
 function deserializeURLSearchParams(
   ctx: SerializationContext,
   node: SerovalURLSearchParamsNode,
-) {
+): URLSearchParams {
   return assignIndexedValue(ctx, node.i, new URLSearchParams(deserializeString(node.s)));
 }
 
 function deserializeReference(
   ctx: SerializationContext,
   node: SerovalReferenceNode,
-) {
+): unknown {
   return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
 }
 
 function deserializeDataView(
   ctx: SerializationContext,
   node: SerovalDataViewNode,
-) {
+): DataView {
   const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new DataView(
     source,
@@ -286,7 +289,7 @@ function deserializeDataView(
 function deserializeBlob(
   ctx: SerializationContext,
   node: SerovalBlobNode,
-) {
+): Blob {
   const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new Blob(
     [source],
@@ -298,7 +301,7 @@ function deserializeBlob(
 function deserializeFile(
   ctx: SerializationContext,
   node: SerovalFileNode,
-) {
+): File {
   const source = deserializeTree(ctx, node.f) as ArrayBuffer;
   const result = assignIndexedValue(ctx, node.i, new File(
     [source],
@@ -311,7 +314,7 @@ function deserializeFile(
 function deserializeHeaders(
   ctx: SerializationContext,
   node: SerovalHeadersNode,
-) {
+): Headers {
   const result = assignIndexedValue(ctx, node.i, new Headers());
   const keys = node.d.k;
   const vals = node.d.v;
@@ -327,7 +330,7 @@ function deserializeHeaders(
 function deserializeFormData(
   ctx: SerializationContext,
   node: SerovalFormDataNode,
-) {
+): FormData {
   const result = assignIndexedValue(ctx, node.i, new FormData());
   const keys = node.d.k;
   const vals = node.d.v;
@@ -343,8 +346,7 @@ function deserializeFormData(
 function deserializeBoxed(
   ctx: SerializationContext,
   node: SerovalBoxedNode,
-) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+): unknown {
   return assignIndexedValue(
     ctx,
     node.i,

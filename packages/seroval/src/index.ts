@@ -1,9 +1,11 @@
 /* eslint-disable no-await-in-loop */
 import { Feature } from './compat';
-import {
+import type {
   SerializationContext,
-  getRefParam,
   Options,
+} from './context';
+import {
+  getRefParam,
   createParserContext,
   createSerializationContext,
   getRootID,
@@ -12,9 +14,10 @@ import parseSync from './tree/sync';
 import parseAsync from './tree/async';
 import deserializeTree from './tree/deserialize';
 import serializeTree, { resolvePatches } from './tree/serialize';
-import { SerovalNode, SerovalNodeType } from './tree/types';
+import type { SerovalNode } from './tree/types';
+import { SerovalNodeType } from './tree/types';
 
-export {
+export type {
   AsyncServerValue,
   ServerValue,
   PrimitiveValue,
@@ -29,7 +32,7 @@ function finalize(
   rootID: number,
   isObject: boolean,
   result: string,
-) {
+): string {
   // Shared references detected
   if (ctx.vars.length) {
     const patches = resolvePatches(ctx);
@@ -63,7 +66,7 @@ function finalize(
 export function serialize<T>(
   source: T,
   options?: Partial<Options>,
-) {
+): string {
   const ctx = createParserContext(options);
   const tree = parseSync(ctx, source);
   const serial = createSerializationContext(ctx);
@@ -79,7 +82,7 @@ export function serialize<T>(
 export async function serializeAsync<T>(
   source: T,
   options?: Partial<Options>,
-) {
+): Promise<string> {
   const ctx = createParserContext(options);
   const tree = await parseAsync(ctx, source);
   const serial = createSerializationContext(ctx);
@@ -98,10 +101,10 @@ export function deserialize<T>(source: string): T {
 }
 
 export interface SerovalJSON {
-  t: SerovalNode,
-  r: number,
-  f: number,
-  m: number[],
+  t: SerovalNode;
+  r: number;
+  f: number;
+  m: number[];
 }
 
 export function toJSON<T>(

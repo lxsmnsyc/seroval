@@ -1,4 +1,4 @@
-import { WellKnownSymbols } from './tree/symbols';
+import type { WellKnownSymbols } from './tree/symbols';
 
 // Values that are non-recursive
 export type PrimitiveValue =

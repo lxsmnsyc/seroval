@@ -1,8 +1,9 @@
 import assert from '../assert';
 import { Feature } from '../compat';
-import { ParserContext, createIndexedValue } from '../context';
+import type { ParserContext } from '../context';
+import { createIndexedValue } from '../context';
 import { serializeString } from '../string';
-import { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import UnsupportedTypeError from './UnsupportedTypeError';
 import {
   INFINITY_NODE,
@@ -11,12 +12,12 @@ import {
   NEG_ZERO_NODE,
 } from './constants';
 import { getReferenceID, hasReferenceID } from './reference';
-import { INV_SYMBOL_REF, WellKnownSymbols } from './symbols';
-import {
+import type { WellKnownSymbols } from './symbols';
+import { INV_SYMBOL_REF } from './symbols';
+import type {
   SerovalBigIntNode,
   SerovalBigIntTypedArrayNode,
   SerovalDateNode,
-  SerovalNodeType,
   SerovalIndexedValueNode,
   SerovalRegExpNode,
   SerovalStringNode,
@@ -26,6 +27,9 @@ import {
   SerovalArrayBufferNode,
   SerovalDataViewNode,
   SerovalNode,
+} from './types';
+import {
+  SerovalNodeType,
 } from './types';
 
 export function createNumberNode(value: number): SerovalNode {
@@ -163,7 +167,7 @@ export function createArrayBufferNode(
 export function serializeArrayBuffer(
   ctx: ParserContext,
   current: ArrayBuffer,
-) {
+): SerovalNode {
   const id = createIndexedValue(ctx, current);
   if (ctx.markedRefs.has(id)) {
     return createIndexedValueNode(id);
@@ -277,7 +281,7 @@ export function createDataViewNode(
 export function createSymbolNode(
   ctx: ParserContext,
   current: symbol,
-) {
+): SerovalNode {
   const id = createIndexedValue(ctx, current);
   if (ctx.markedRefs.has(id)) {
     return createIndexedValueNode(id);
@@ -292,7 +296,7 @@ export function createFunctionNode(
   ctx: ParserContext,
   // eslint-disable-next-line @typescript-eslint/ban-types
   current: Function,
-) {
+): SerovalNode {
   assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
   const id = createIndexedValue(ctx, current);
   if (ctx.markedRefs.has(id)) {

@@ -1,4 +1,4 @@
-export function serializeChar(str: string) {
+export function serializeChar(str: string): string | undefined {
   switch (str) {
     case '"': return '\\"';
     case '\\': return '\\\\';
@@ -19,7 +19,7 @@ export function serializeChar(str: string) {
 // not listed as DoubleStringCharacters on
 // Also includes "<" to escape "</script>" and "\" to avoid invalid escapes in the output.
 // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
-export function serializeString(str: string) {
+export function serializeString(str: string): string {
   let result = '';
   let lastPos = 0;
   let replacement: string | undefined;

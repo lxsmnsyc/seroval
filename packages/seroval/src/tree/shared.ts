@@ -1,10 +1,10 @@
 import { Feature } from '../compat';
-import { ParserContext } from '../context';
-import {
+import type { ParserContext } from '../context';
+import type {
   ErrorValue,
 } from '../types';
 
-export function getErrorConstructorName(error: ErrorValue) {
+export function getErrorConstructorName(error: ErrorValue): string {
   if (error instanceof EvalError) {
     return 'EvalError';
   }
@@ -26,7 +26,16 @@ export function getErrorConstructorName(error: ErrorValue) {
   return 'Error';
 }
 
-export function getErrorConstructor(errorName: string) {
+type ErrorConstructors =
+  | ErrorConstructor
+  | EvalErrorConstructor
+  | RangeErrorConstructor
+  | ReferenceErrorConstructor
+  | SyntaxErrorConstructor
+  | TypeErrorConstructor
+  | URIErrorConstructor;
+
+export function getErrorConstructor(errorName: string): ErrorConstructors {
   switch (errorName) {
     case 'Error': return Error;
     case 'EvalError': return EvalError;
@@ -43,7 +52,7 @@ export function getErrorConstructor(errorName: string) {
 export function getErrorOptions(
   ctx: ParserContext,
   error: Error,
-) {
+): Record<string, unknown> | undefined {
   let options: Record<string, unknown> | undefined;
   const constructor = getErrorConstructorName(error);
   // Name has been modified
@@ -101,7 +110,20 @@ export function isIterable(
   return Symbol.iterator in value;
 }
 
-export function getTypedArrayConstructor(name: string) {
+type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Int16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint8ArrayConstructor
+  | Uint16ArrayConstructor
+  | Uint32ArrayConstructor
+  | Uint8ClampedArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
+
+export function getTypedArrayConstructor(name: string): TypedArrayConstructor {
   switch (name) {
     case 'Int8Array': return Int8Array;
     case 'Int16Array': return Int16Array;
@@ -121,7 +143,7 @@ export function getTypedArrayConstructor(name: string) {
 
 const IDENTIFIER_CHECK = /^[$A-Z_][0-9A-Z_$]*$/i;
 
-export function isValidIdentifier(name: string) {
+export function isValidIdentifier(name: string): boolean {
   const char = name[0];
   return (
     char === '$'

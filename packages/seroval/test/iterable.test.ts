@@ -15,7 +15,7 @@ describe('Iterable', () => {
     it('supports Iterables', () => {
       const example = {
         title: 'Hello World',
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield 1;
           yield 2;
           yield 3;
@@ -57,7 +57,7 @@ describe('Iterable', () => {
     it('supports Iterables', () => {
       const example = {
         title: 'Hello World',
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield 1;
           yield 2;
           yield 3;
@@ -98,7 +98,7 @@ describe('Iterable', () => {
   describe('compat', () => {
     it('should use Symbol.iterator instead of Array.values.', () => {
       const example = {
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield example;
         },
       };
@@ -108,7 +108,7 @@ describe('Iterable', () => {
     });
     it('should use method shorthand instead of arrow functions.', () => {
       const example = {
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield example;
         },
       };
@@ -118,7 +118,7 @@ describe('Iterable', () => {
     });
     it('should use functions instead of method shorthand.', () => {
       const example = {
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield example;
         },
       };
@@ -130,7 +130,7 @@ describe('Iterable', () => {
   describe('compat#toJSON', () => {
     it('should use Symbol.iterator instead of Array.values.', () => {
       const example = {
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield example;
         },
       };
@@ -142,7 +142,7 @@ describe('Iterable', () => {
     });
     it('should use method shorthand instead of arrow functions.', () => {
       const example = {
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield example;
         },
       };
@@ -154,7 +154,7 @@ describe('Iterable', () => {
     });
     it('should use functions instead of method shorthand.', () => {
       const example = {
-        * [Symbol.iterator]() {
+        * [Symbol.iterator](): unknown {
           yield example;
         },
       };

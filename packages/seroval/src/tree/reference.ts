@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /* eslint-disable no-restricted-globals */
 import assert from '../assert';
 
@@ -20,7 +21,7 @@ export function hasReference(id: string): boolean {
 
 export function getReferenceID<T>(value: T): string {
   assert(hasReferenceID(value), new Error('Missing reference id'));
-  return REFERENCE.get(value) as string;
+  return REFERENCE.get(value)!;
 }
 
 export function getReference<T>(id: string): T {

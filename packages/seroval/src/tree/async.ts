@@ -2,12 +2,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
+import type { ParserContext } from '../context';
 import {
   createIndexedValue,
-  ParserContext,
 } from '../context';
 import { serializeString } from '../string';
-import {
+import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from '../types';
@@ -39,7 +39,7 @@ import {
   getErrorOptions,
   isIterable,
 } from './shared';
-import {
+import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBoxedNode,
@@ -48,15 +48,17 @@ import {
   SerovalHeadersNode,
   SerovalMapNode,
   SerovalNode,
-  SerovalNodeType,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
-  SerovalObjectRecordSpecialKey,
   SerovalPlainRecordNode,
   SerovalPromiseNode,
   SerovalSetNode,
+} from './types';
+import {
+  SerovalNodeType,
+  SerovalObjectRecordSpecialKey,
 } from './types';
 import {
   createBlobNode,
@@ -73,7 +75,7 @@ type ObjectLikeNode =
 async function generateNodeList(
   ctx: ParserContext,
   current: unknown[],
-) {
+): Promise<SerovalNode[]> {
   const size = current.length;
   const nodes = new Array<SerovalNode>(size);
   const deferred = new Array<unknown>(size);
@@ -437,9 +439,9 @@ async function generateBoxedNode(
   };
 }
 
-async function parseObject<T extends object | null>(
+async function parseObject(
   ctx: ParserContext,
-  current: T,
+  current: object | null,
 ): Promise<SerovalNode> {
   if (!current) {
     return NULL_NODE;
@@ -555,7 +557,7 @@ async function parseObject<T extends object | null>(
   }
   // Generator functions don't have a global constructor
   if (Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, current.constructor == null);
+    return generateObjectNode(ctx, id, current, !!current.constructor);
   }
   throw new UnsupportedTypeError(current);
 }
