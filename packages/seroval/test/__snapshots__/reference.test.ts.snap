@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Reference > serialize > supports Reference 1`] = `"__SEROVAL__.get(\\"example\\")"`;
 

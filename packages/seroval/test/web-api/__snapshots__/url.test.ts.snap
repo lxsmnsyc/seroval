@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`URL > serialize > supports URL 1`] = `"new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\")"`;
 

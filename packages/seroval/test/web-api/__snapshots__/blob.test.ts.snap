@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Blob > serializeAsync > supports Blob 1`] = `"Promise.resolve(new Blob([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:\\"text/plain\\"}))"`;
 
