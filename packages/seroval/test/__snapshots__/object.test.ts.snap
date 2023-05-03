@@ -1,17 +1,31 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`objects > compat > should use manual assignment instead of Object.assign 1`] = `"({hello:\\"world\\"})"`;
+
+exports[`objects > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"f\\":16255,\\"m\\":[]}"`;
+
+exports[`objects > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"{hello:\\"world\\"}"`;
 
 exports[`objects > serialize > supports Objects 1`] = `"({hello:\\"world\\"})"`;
+
+exports[`objects > serialize > supports Symbol.iterator 1`] = `"({[Symbol.iterator]:()=>[1,2,3].values()})"`;
 
 exports[`objects > serialize > supports self-recursion 1`] = `"(h=>(h={},h.b=h.a=h,h))()"`;
 
 exports[`objects > serializeAsync > supports Objects 1`] = `"Promise.resolve({hello:\\"world\\"})"`;
 
+exports[`objects > serializeAsync > supports Symbol.iterator 1`] = `"Promise.resolve({[Symbol.iterator]:()=>[1,2,3].values()})"`;
+
 exports[`objects > serializeAsync > supports self-recursion 1`] = `"(h=>(h={a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)}))()"`;
 
-exports[`objects > toJSON > supports Objects 1`] = `"{\\"t\\":{\\"t\\":16,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"i\\":true,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`objects > toJSON > supports Objects 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`objects > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":16,\\"i\\":0,\\"d\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":10,\\"i\\":0},{\\"t\\":10,\\"i\\":0}],\\"s\\":2}},\\"r\\":0,\\"i\\":true,\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`objects > toJSON > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}],\\"s\\":1}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`objects > toJSONAsync > supports Objects 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":16,\\"i\\":1,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`objects > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":4,\\"i\\":0}],\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[0]}"`;
 
-exports[`objects > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":16,\\"i\\":0,\\"d\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":18,\\"i\\":1,\\"f\\":{\\"t\\":10,\\"i\\":0}},{\\"t\\":18,\\"i\\":2,\\"f\\":{\\"t\\":10,\\"i\\":0}}],\\"s\\":2}},\\"r\\":0,\\"i\\":true,\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`objects > toJSONAsync > supports Objects 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`objects > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}],\\"s\\":1}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`objects > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":12,\\"i\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}},{\\"t\\":12,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[0]}"`;

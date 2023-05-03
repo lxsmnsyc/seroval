@@ -1,4 +1,3 @@
-/* eslint-disable guard-for-in */
 /**
  * References
  * - https://kangax.github.io/compat-table/es6/

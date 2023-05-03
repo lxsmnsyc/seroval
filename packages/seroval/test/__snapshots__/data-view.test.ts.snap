@@ -1,9 +1,9 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`DataView > serialize > supports DataView 1`] = `"new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
 
 exports[`DataView > serializeAsync > supports DataView 1`] = `"Promise.resolve(new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
-exports[`DataView > toJSON > supports DataView 1`] = `"{\\"t\\":{\\"t\\":29,\\"i\\":0,\\"l\\":16,\\"f\\":{\\"t\\":28,\\"i\\":1,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`DataView > toJSON > supports DataView 1`] = `"{\\"t\\":{\\"t\\":22,\\"i\\":0,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":1,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`DataView > toJSONAsync > supports DataView 1`] = `"{\\"t\\":{\\"t\\":18,\\"i\\":0,\\"f\\":{\\"t\\":29,\\"i\\":1,\\"l\\":16,\\"f\\":{\\"t\\":28,\\"i\\":2,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}},\\"r\\":0,\\"i\\":false,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`DataView > toJSONAsync > supports DataView 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":22,\\"i\\":1,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;

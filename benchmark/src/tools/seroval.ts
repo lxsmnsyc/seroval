@@ -1,9 +1,9 @@
-import { serialize, deserialize, ServerValue } from 'seroval';
+import { serialize, deserialize } from 'seroval';
 
 export const name = 'seroval';
 
 export function toString(data: unknown) {
-  return serialize(data as ServerValue);
+  return serialize(data);
 }
 
 export function fromString(str: string) {

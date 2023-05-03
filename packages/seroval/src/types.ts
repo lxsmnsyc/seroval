@@ -1,4 +1,4 @@
-import { WellKnownSymbols } from './tree/symbols';
+import type { WellKnownSymbols } from './tree/symbols';
 
 // Values that are non-recursive
 export type PrimitiveValue =
@@ -36,11 +36,15 @@ export type BigIntTypedArrayValue =
 
 export type WebAPIValue =
   | URL
-  | URLSearchParams;
+  | URLSearchParams
+  | Blob
+  | File;
 
 export type SemiPrimitiveValue =
   | RegExp
   | Date
+  | ArrayBuffer
+  | DataView
   | TypedArrayValue
   | BigIntTypedArrayValue
   | bigint
@@ -70,7 +74,7 @@ export type AsyncServerValue =
   | { readonly [key: string | number]: AsyncServerValue }
   | Set<AsyncServerValue>
   | Map<AsyncServerValue, AsyncServerValue>
-  | PromiseLike<AsyncServerValue>;
+  | Promise<AsyncServerValue>;
 
 export type NonPrimitiveServerValue<T> =
   T extends PrimitiveValue

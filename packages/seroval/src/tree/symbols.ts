@@ -1,17 +1,17 @@
 export const enum Symbols {
-  AsyncIterator,
-  HasInstance,
-  IsConcatSpreadable,
-  Iterator,
-  Match,
-  MatchAll,
-  Replace,
-  Search,
-  Species,
-  Split,
-  ToPrimitive,
-  ToStringTag,
-  Unscopables
+  AsyncIterator = 0,
+  HasInstance = 1,
+  IsConcatSpreadable = 2,
+  Iterator = 3,
+  Match = 4,
+  MatchAll = 5,
+  Replace = 6,
+  Search = 7,
+  Species = 8,
+  Split = 9,
+  ToPrimitive = 10,
+  ToStringTag = 11,
+  Unscopables = 12,
 }
 
 export const SYMBOL_STRING: Record<Symbols, string> = {

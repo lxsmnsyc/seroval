@@ -45,12 +45,12 @@ export interface ParserContext {
 export interface SerializationContext {
   stack: number[];
   // Map tree refs to actual refs
-  validRefs: number[];
+  validRefs: (number | undefined)[];
   refSize: number;
   // Refs that are...referenced
   markedRefs: Set<number>;
   // Variables
-  vars: string[];
+  vars: (string | undefined)[];
   // Array of assignments to be done (used for recursion)
   assignments: Assignment[];
   // Supported features
@@ -69,7 +69,7 @@ const DEFAULT_OPTIONS: Options = {
 
 export function createParserContext(options: Partial<Options> = {}): ParserContext {
   // eslint-disable-next-line prefer-object-spread
-  const result = Object.assign({}, DEFAULT_OPTIONS, options || {});
+  const result = Object.assign({}, DEFAULT_OPTIONS, options);
   return {
     markedRefs: new Set(),
     refs: new Map(),
@@ -98,14 +98,17 @@ export function createSerializationContext(options: SerializationOptions): Seria
 /**
  * Increments the number of references the referenced value has
  */
-export function markRef(ctx: ParserContext | SerializationContext, current: number) {
+export function markRef(
+  ctx: ParserContext | SerializationContext,
+  current: number,
+): void {
   ctx.markedRefs.add(current);
 }
 /**
  * Creates the reference param (identifier) from the given reference ID
  * Calling this function means the value has been referenced somewhere
  */
-export function getRefParam(ctx: SerializationContext, index: number) {
+export function getRefParam(ctx: SerializationContext, index: number): string {
   /**
    * Creates a new reference ID from a given reference ID
    * This new reference ID means that the reference itself
@@ -128,7 +131,7 @@ export function getRefParam(ctx: SerializationContext, index: number) {
 export function getRootID<T>(
   ctx: ParserContext,
   current: T,
-) {
+): number {
   const ref = ctx.refs.get(current);
   if (ref == null) {
     return ctx.refs.size;
@@ -139,7 +142,7 @@ export function getRootID<T>(
 export function createIndexedValue<T>(
   ctx: ParserContext,
   current: T,
-) {
+): number {
   const ref = ctx.refs.get(current);
   if (ref == null) {
     const id = ctx.refs.size;

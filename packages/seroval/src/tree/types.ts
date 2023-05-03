@@ -1,40 +1,45 @@
-import { Symbols } from './symbols';
+import type { Symbols } from './symbols';
+
+export const enum SerovalConstant {
+  Null = 0,
+  Undefined = 1,
+  True = 2,
+  False = 3,
+  NegativeZero = 4,
+  Infinity = 5,
+  NegativeInfinity = 6,
+  NaN = 7,
+}
 
 export const enum SerovalNodeType {
-  Number,
-  String,
-  Boolean,
-  Null,
-  Undefined,
-  NegativeZero,
-  Infinity,
-  NegativeInfinity,
-  NaN,
-  BigInt,
-  IndexedValue,
-  Date,
-  RegExp,
-  Set,
-  Map,
-  Array,
-  Object,
-  NullConstructor,
-  Promise,
-  Error,
-  AggregateError,
-  Iterable,
-  TypedArray,
-  BigIntTypedArray,
-  WKSymbol,
-  URL,
-  URLSearchParams,
-  Reference,
-  ArrayBuffer,
-  DataView,
-  Blob,
-  File,
-  Headers,
-  FormData,
+  Number = 0,
+  String = 1,
+  Constant = 2,
+  BigInt = 3,
+  IndexedValue = 4,
+  Date = 5,
+  RegExp = 6,
+  Set = 7,
+  Map = 8,
+  Array = 9,
+  Object = 10,
+  NullConstructor = 11,
+  Promise = 12,
+  Error = 13,
+  AggregateError = 14,
+  TypedArray = 15,
+  BigIntTypedArray = 16,
+  WKSymbol = 17,
+  URL = 18,
+  URLSearchParams = 19,
+  Reference = 20,
+  ArrayBuffer = 21,
+  DataView = 22,
+  Blob = 23,
+  File = 24,
+  Headers = 25,
+  FormData = 26,
+  Boxed = 27,
 }
 
 export interface SerovalBaseNode {
@@ -43,7 +48,7 @@ export interface SerovalBaseNode {
   // Reference ID
   i: number | undefined;
   // Serialized value
-  s: any;
+  s: unknown;
   // size/length
   l: number | undefined;
   // Constructor name / RegExp source
@@ -51,17 +56,31 @@ export interface SerovalBaseNode {
   // message/flags
   m: string | undefined;
   // dictionary
-  d: SerovalDictionaryNode | undefined;
+  d: SerovalObjectRecordNode | SerovalMapRecordNode | undefined;
   // array of nodes
-  a: SerovalNode[] | undefined;
+  a: (SerovalNode | undefined)[] | undefined;
   // fulfilled node
   f: SerovalNode | undefined;
   // byte offset
   b: number | undefined;
 }
 
-export interface SerovalObjectRecordNode {
+export const enum SerovalObjectRecordSpecialKey {
+  SymbolIterator = 0,
+}
+
+export type SerovalObjectRecordKey =
+  | string
+  | SerovalObjectRecordSpecialKey;
+
+export interface SerovalPlainRecordNode {
   k: string[];
+  v: SerovalNode[];
+  s: number;
+}
+
+export interface SerovalObjectRecordNode {
+  k: SerovalObjectRecordKey[];
   v: SerovalNode[];
   s: number;
 }
@@ -71,10 +90,6 @@ export interface SerovalMapRecordNode {
   v: SerovalNode[];
   s: number;
 }
-
-export type SerovalDictionaryNode =
-  | SerovalObjectRecordNode
-  | SerovalMapRecordNode;
 
 export interface SerovalNumberNode extends SerovalBaseNode {
   t: SerovalNodeType.Number;
@@ -86,45 +101,15 @@ export interface SerovalStringNode extends SerovalBaseNode {
   s: string;
 }
 
-export interface SerovalBooleanNode extends SerovalBaseNode {
-  t: SerovalNodeType.Boolean;
-  s: boolean;
-}
-
-export interface SerovalNullNode extends SerovalBaseNode {
-  t: SerovalNodeType.Null;
-}
-
-export interface SerovalUndefinedNode extends SerovalBaseNode {
-  t: SerovalNodeType.Undefined;
-}
-
-export interface SerovalNegativeZeroNode extends SerovalBaseNode {
-  t: SerovalNodeType.NegativeZero;
-}
-
-export interface SerovalInfinityNode extends SerovalBaseNode {
-  t: SerovalNodeType.Infinity;
-}
-
-export interface SerovalNegativeInfinityNode extends SerovalBaseNode {
-  t: SerovalNodeType.NegativeInfinity;
-}
-
-export interface SerovalNaNNode extends SerovalBaseNode {
-  t: SerovalNodeType.NaN;
+export interface SerovalConstantNode extends SerovalBaseNode {
+  t: SerovalNodeType.Constant;
+  s: SerovalConstant;
 }
 
 export type SerovalPrimitiveNode =
   | SerovalNumberNode
   | SerovalStringNode
-  | SerovalBooleanNode
-  | SerovalNullNode
-  | SerovalUndefinedNode
-  | SerovalNegativeZeroNode
-  | SerovalNegativeInfinityNode
-  | SerovalInfinityNode
-  | SerovalNaNNode;
+  | SerovalConstantNode;
 
 export interface SerovalIndexedValueNode extends SerovalBaseNode {
   t: SerovalNodeType.IndexedValue;
@@ -220,7 +205,7 @@ export interface SerovalArrayNode extends SerovalBaseNode {
   // size of array
   l: number;
   // items
-  a: SerovalNode[];
+  a: (SerovalNode | undefined)[];
   i: number;
 }
 
@@ -265,19 +250,9 @@ export interface SerovalAggregateErrorNode extends SerovalBaseNode {
   d: SerovalObjectRecordNode | undefined;
 }
 
-export interface SerovalIterableNode extends SerovalBaseNode {
-  t: SerovalNodeType.Iterable;
-  // other properties
-  d: SerovalObjectRecordNode | undefined;
-  // number of emitted items
-  l: number;
-  // array of items
-  a: SerovalNode[];
-  i: number;
-}
-
 export interface SerovalWKSymbolNode extends SerovalBaseNode {
   t: SerovalNodeType.WKSymbol;
+  i: number;
   s: Symbols;
 }
 
@@ -338,13 +313,19 @@ export interface SerovalFileNode extends SerovalBaseNode {
 export interface SerovalHeadersNode extends SerovalBaseNode {
   t: SerovalNodeType.Headers;
   i: number;
-  d: SerovalObjectRecordNode;
+  d: SerovalPlainRecordNode;
 }
 
 export interface SerovalFormDataNode extends SerovalBaseNode {
   t: SerovalNodeType.FormData;
   i: number;
-  d: SerovalObjectRecordNode;
+  d: SerovalPlainRecordNode;
+}
+
+export interface SerovalBoxedNode extends SerovalBaseNode {
+  t: SerovalNodeType.Boxed;
+  i: number;
+  f: SerovalNode;
 }
 
 export type SerovalNode =
@@ -359,7 +340,6 @@ export type SerovalNode =
   | SerovalPromiseNode
   | SerovalErrorNode
   | SerovalAggregateErrorNode
-  | SerovalIterableNode
   | SerovalWKSymbolNode
   | SerovalURLNode
   | SerovalURLSearchParamsNode
@@ -369,4 +349,5 @@ export type SerovalNode =
   | SerovalBlobNode
   | SerovalFileNode
   | SerovalHeadersNode
-  | SerovalFormDataNode;
+  | SerovalFormDataNode
+  | SerovalBoxedNode;

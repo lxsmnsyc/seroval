@@ -1,14 +1,17 @@
 import assert from '../assert';
 import { Feature } from '../compat';
-import { ParserContext } from '../context';
+import type { ParserContext } from '../context';
 import { serializeString } from '../string';
+import UnsupportedTypeError from './UnsupportedTypeError';
 import { serializeArrayBuffer } from './primitives';
-import {
+import type {
   SerovalBlobNode,
   SerovalFileNode,
-  SerovalNodeType,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
+} from './types';
+import {
+  SerovalNodeType,
 } from './types';
 
 export function createURLNode(
@@ -16,7 +19,7 @@ export function createURLNode(
   id: number,
   current: URL,
 ): SerovalURLNode {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "URL"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.URL,
     i: id,
@@ -36,7 +39,7 @@ export function createURLSearchParamsNode(
   id: number,
   current: URLSearchParams,
 ): SerovalURLSearchParamsNode {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "URLSearchParams"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.URLSearchParams,
     i: id,
@@ -56,7 +59,7 @@ export async function createBlobNode(
   id: number,
   current: Blob,
 ): Promise<SerovalBlobNode> {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "Blob"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.Blob,
     i: id,
@@ -76,7 +79,7 @@ export async function createFileNode(
   id: number,
   current: File,
 ): Promise<SerovalFileNode> {
-  assert(ctx.features & Feature.WebAPI, 'Unsupported type "File"');
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.File,
     i: id,

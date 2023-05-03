@@ -1,13 +1,11 @@
 /* eslint-disable no-await-in-loop */
 import { describe, it, expect } from 'vitest';
 import {
-  AsyncServerValue,
   deserialize,
   Feature,
   fromJSON,
   serialize,
   serializeAsync,
-  ServerValue,
   toJSON,
   toJSONAsync,
 } from '../src';
@@ -24,11 +22,11 @@ describe('Map', () => {
       expect(back.get(3)).toBe(example.get(3));
     });
     it('supports self-recursion', () => {
-      const example: Map<ServerValue, ServerValue> = new Map();
+      const example: Map<unknown, unknown> = new Map();
       example.set(example, example);
       const result = serialize(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Map<ServerValue, ServerValue>>(result);
+      const back = deserialize<Map<unknown, unknown>>(result);
       expect(back.has(back)).toBe(true);
       expect(back.get(back)).toBe(back);
     });
@@ -44,11 +42,11 @@ describe('Map', () => {
       expect(back.get(3)).toBe(example.get(3));
     });
     it('supports self-recursion', async () => {
-      const example: Map<AsyncServerValue, AsyncServerValue> = new Map();
+      const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
       example.set(Promise.resolve(example), Promise.resolve(example));
       const result = await serializeAsync(example);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Map<Promise<any>, Promise<any>>>(result);
+      const back = deserialize<Map<Promise<unknown>, Promise<unknown>>>(result);
       for (const [key, value] of back) {
         expect(await key).toBe(back);
         expect(await value).toBe(back);
@@ -66,11 +64,11 @@ describe('Map', () => {
       expect(back.get(3)).toBe(example.get(3));
     });
     it('supports self-recursion', () => {
-      const example: Map<ServerValue, ServerValue> = new Map();
+      const example: Map<unknown, unknown> = new Map();
       example.set(example, example);
       const result = toJSON(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Map<ServerValue, ServerValue>>(result);
+      const back = fromJSON<Map<unknown, unknown>>(result);
       expect(back.has(back)).toBe(true);
       expect(back.get(back)).toBe(back);
     });
@@ -86,11 +84,11 @@ describe('Map', () => {
       expect(back.get(3)).toBe(example.get(3));
     });
     it('supports self-recursion', async () => {
-      const example: Map<AsyncServerValue, AsyncServerValue> = new Map();
+      const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
       example.set(Promise.resolve(example), Promise.resolve(example));
       const result = await toJSONAsync(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Map<Promise<any>, Promise<any>>>(result);
+      const back = fromJSON<Map<Promise<unknown>, Promise<unknown>>>(result);
       for (const [key, value] of back) {
         expect(await key).toBe(back);
         expect(await value).toBe(back);
