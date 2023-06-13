@@ -63,24 +63,12 @@ function getAssignmentExpression(assignment: Assignment): string {
   }
 }
 
-const OBJECT_FREEZE = 'Object.freeze';
-const OBJECT_SEAL = 'Object.seal';
-const OBJECT_PREVENT_EXTENSIONS = 'Object.preventExtensions';
-
-function getObjectFlagConstructor(
-  flag: SerovalObjectFlags,
-): string | undefined {
-  switch (flag) {
-    case SerovalObjectFlags.Frozen:
-      return OBJECT_FREEZE;
-    case SerovalObjectFlags.NonExtensible:
-      return OBJECT_SEAL;
-    case SerovalObjectFlags.Sealed:
-      return OBJECT_PREVENT_EXTENSIONS;
-    default:
-      return undefined;
-  }
-}
+const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = {
+  [SerovalObjectFlags.Frozen]: 'Object.freeze',
+  [SerovalObjectFlags.Sealed]: 'Object.seal',
+  [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
+  [SerovalObjectFlags.None]: undefined,
+};
 
 function mergeAssignments(assignments: Assignment[]): Assignment[] {
   const newAssignments: Assignment[] = [];
@@ -169,8 +157,32 @@ function resolveAssignments(assignments: Assignment[]): string | undefined {
   return undefined;
 }
 
+function pushObjectFlag(ctx: SerializationContext, flag: SerovalObjectFlags, id: number): void {
+  ctx.flags.push({
+    type: flag,
+    value: getRefParam(ctx, id),
+  });
+}
+
+function resolveFlags(ctx: SerializationContext): string | undefined {
+  let result = '';
+  for (let i = 0, len = ctx.flags.length; i < len; i++) {
+    const flag = ctx.flags[i];
+    result += OBJECT_FLAG_CONSTRUCTOR[flag.type] + '(' + flag.value + '),';
+  }
+  return result;
+}
+
 export function resolvePatches(ctx: SerializationContext): string | undefined {
-  return resolveAssignments(ctx.assignments);
+  const assignments = resolveAssignments(ctx.assignments);
+  const flags = resolveFlags(ctx);
+  if (assignments) {
+    if (flags) {
+      return assignments + flags;
+    }
+    return assignments;
+  }
+  return flags;
 }
 
 /**
@@ -489,6 +501,9 @@ function serializeNullConstructor(
   ctx: SerializationContext,
   node: SerovalNullConstructorNode,
 ): string {
+  if (node.b !== SerovalObjectFlags.None) {
+    pushObjectFlag(ctx, node.b, node.i);
+  }
   return serializeDictionary(ctx, node.i, node.d, NULL_CONSTRUCTOR);
 }
 
@@ -496,6 +511,9 @@ function serializeObject(
   ctx: SerializationContext,
   node: SerovalObjectNode,
 ): string {
+  if (node.b !== SerovalObjectFlags.None) {
+    pushObjectFlag(ctx, node.b, node.i);
+  }
   return assignIndexedValue(ctx, node.i, serializeProperties(ctx, node.i, node.d));
 }
 

@@ -1,5 +1,6 @@
 import { ALL_ENABLED } from './compat';
 import getIdentifier from './get-identifier';
+import type { SerovalObjectFlags } from './tree/types';
 
 interface IndexAssignment {
   t: 'index';
@@ -42,6 +43,11 @@ export interface ParserContext {
   features: number;
 }
 
+export interface FlaggedObject {
+  type: SerovalObjectFlags;
+  value: string;
+}
+
 export interface SerializationContext {
   stack: number[];
   // Map tree refs to actual refs
@@ -57,6 +63,9 @@ export interface SerializationContext {
   features: number;
 
   valueMap: Map<number, unknown>;
+
+  // Object flags
+  flags: FlaggedObject[];
 }
 
 export interface Options {
@@ -92,6 +101,7 @@ export function createSerializationContext(options: SerializationOptions): Seria
     features: options.features,
     markedRefs: new Set(options.markedRefs),
     valueMap: new Map(),
+    flags: [],
   };
 }
 
