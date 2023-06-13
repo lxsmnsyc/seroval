@@ -42,6 +42,8 @@ import type {
   SerovalWKSymbolNode,
 } from './types';
 import {
+  SerovalObjectFlags,
+
   SerovalNodeType,
   SerovalObjectRecordSpecialKey,
 } from './types';
@@ -58,6 +60,25 @@ function getAssignmentExpression(assignment: Assignment): string {
       return assignment.s + '.append(' + assignment.k + ',' + assignment.v + ')';
     default:
       return '';
+  }
+}
+
+const OBJECT_FREEZE = 'Object.freeze';
+const OBJECT_SEAL = 'Object.seal';
+const OBJECT_PREVENT_EXTENSIONS = 'Object.preventExtensions';
+
+function getObjectFlagConstructor(
+  flag: SerovalObjectFlags,
+): string | undefined {
+  switch (flag) {
+    case SerovalObjectFlags.Frozen:
+      return OBJECT_FREEZE;
+    case SerovalObjectFlags.NonExtensible:
+      return OBJECT_SEAL;
+    case SerovalObjectFlags.Sealed:
+      return OBJECT_PREVENT_EXTENSIONS;
+    default:
+      return undefined;
   }
 }
 
@@ -392,14 +413,14 @@ function serializeAssignments(
   for (let i = 0, len = node.s; i < len; i++) {
     key = keys[i];
     value = values[i];
-    parentAssignment = ctx.assignments;
-    ctx.assignments = mainAssignments;
     switch (key) {
       case SerovalObjectRecordSpecialKey.SymbolIterator: {
         const parent = ctx.stack;
         ctx.stack = [];
         const serialized = serializeTree(ctx, value) + getIterableAccess(ctx);
         ctx.stack = parent;
+        parentAssignment = ctx.assignments;
+        ctx.assignments = mainAssignments;
         createArrayAssign(
           ctx,
           sourceID,
@@ -408,22 +429,35 @@ function serializeAssignments(
             ? '()=>' + serialized
             : 'function(){return ' + serialized + '}',
         );
+        ctx.assignments = parentAssignment;
       }
         break;
       default: {
         const serialized = serializeTree(ctx, value);
         const check = Number(key);
-        // Test if key is a valid number or JS identifier
-        // so that we don't have to serialize the key and wrap with brackets
         const isIdentifier = check >= 0 || isValidIdentifier(key);
-        if (isIdentifier && Number.isNaN(check)) {
-          createObjectAssign(ctx, sourceID, key, serialized);
+        if (isIndexedValueInStack(ctx, value)) {
+          // Test if key is a valid number or JS identifier
+          // so that we don't have to serialize the key and wrap with brackets
+          if (isIdentifier && Number.isNaN(check)) {
+            createObjectAssign(ctx, sourceID, key, serialized);
+          } else {
+            createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          }
         } else {
-          createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          // Test if key is a valid number or JS identifier
+          // so that we don't have to serialize the key and wrap with brackets
+          parentAssignment = ctx.assignments;
+          ctx.assignments = mainAssignments;
+          if (isIdentifier && Number.isNaN(check)) {
+            createObjectAssign(ctx, sourceID, key, serialized);
+          } else {
+            createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          }
+          ctx.assignments = parentAssignment;
         }
       }
     }
-    ctx.assignments = parentAssignment;
   }
   ctx.stack.pop();
   return resolveAssignments(mainAssignments);
