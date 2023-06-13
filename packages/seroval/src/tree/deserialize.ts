@@ -37,9 +37,23 @@ import type {
   SerovalURLSearchParamsNode,
 } from './types';
 import {
+  SerovalObjectFlags,
   SerovalNodeType,
   SerovalObjectRecordSpecialKey,
 } from './types';
+
+function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
+  switch (flag) {
+    case SerovalObjectFlags.Frozen:
+      return Object.freeze(obj);
+    case SerovalObjectFlags.NonExtensible:
+      return Object.preventExtensions(obj);
+    case SerovalObjectFlags.Sealed:
+      return Object.seal(obj);
+    default:
+      return obj;
+  }
+}
 
 function assignIndexedValue<T>(
   ctx: SerializationContext,
@@ -113,6 +127,7 @@ function deserializeObject(
       : Object.create(null)) as Record<string, unknown>,
   );
   deserializeProperties(ctx, node.d, result);
+  applyObjectFlag(result, node.b);
   return result;
 }
 
