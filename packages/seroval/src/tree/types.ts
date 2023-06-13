@@ -42,6 +42,13 @@ export const enum SerovalNodeType {
   Boxed = 27,
 }
 
+export const enum SerovalObjectFlags {
+  None = 0,
+  NonExtensible = 1,
+  Sealed = 2,
+  Frozen = 3,
+}
+
 export interface SerovalBaseNode {
   // Type of the node
   t: SerovalNodeType;
@@ -61,7 +68,7 @@ export interface SerovalBaseNode {
   a: (SerovalNode | undefined)[] | undefined;
   // fulfilled node
   f: SerovalNode | undefined;
-  // byte offset
+  // byte offset/object flags
   b: number | undefined;
 }
 
@@ -214,6 +221,7 @@ export interface SerovalObjectNode extends SerovalBaseNode {
   // key/value pairs
   d: SerovalObjectRecordNode;
   i: number;
+  b: SerovalObjectFlags;
 }
 
 export interface SerovalNullConstructorNode extends SerovalBaseNode {
@@ -221,6 +229,7 @@ export interface SerovalNullConstructorNode extends SerovalBaseNode {
   // key/value pairs
   d: SerovalObjectRecordNode;
   i: number;
+  b: SerovalObjectFlags;
 }
 
 export interface SerovalPromiseNode extends SerovalBaseNode {

@@ -37,6 +37,7 @@ import { hasReferenceID } from './reference';
 import {
   getErrorConstructorName,
   getErrorOptions,
+  getObjectFlag,
   isIterable,
 } from './shared';
 import type {
@@ -322,7 +323,7 @@ async function generateObjectNode(
     d: await generateProperties(ctx, current),
     a: undefined,
     f: undefined,
-    b: undefined,
+    b: getObjectFlag(current),
   };
 }
 

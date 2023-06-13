@@ -33,6 +33,7 @@ import {
 import {
   getErrorConstructorName,
   getErrorOptions,
+  getObjectFlag,
   isIterable,
 } from './shared';
 import type {
@@ -282,7 +283,7 @@ function generateObjectNode(
     d: generateProperties(ctx, current),
     a: undefined,
     f: undefined,
-    b: undefined,
+    b: getObjectFlag(current),
   };
 }
 

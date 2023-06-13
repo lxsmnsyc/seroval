@@ -3,6 +3,7 @@ import type { ParserContext } from '../context';
 import type {
   ErrorValue,
 } from '../types';
+import { SerovalObjectFlags } from './types';
 
 export function getErrorConstructorName(error: ErrorValue): string {
   if (error instanceof EvalError) {
@@ -151,4 +152,17 @@ export function isValidIdentifier(name: string): boolean {
     || (char >= 'A' && char <= 'Z')
     || (char >= 'a' && char <= 'z')
   ) && IDENTIFIER_CHECK.test(name);
+}
+
+export function getObjectFlag(obj: unknown): SerovalObjectFlags {
+  if (Object.isFrozen(obj)) {
+    return SerovalObjectFlags.Frozen;
+  }
+  if (Object.isSealed(obj)) {
+    return SerovalObjectFlags.Sealed;
+  }
+  if (Object.isExtensible(obj)) {
+    return SerovalObjectFlags.None;
+  }
+  return SerovalObjectFlags.NonExtensible;
 }
