@@ -57,6 +57,7 @@ export function createNumberNode(value: number): SerovalNode {
         a: undefined,
         f: undefined,
         b: undefined,
+        o: undefined,
       };
   }
 }
@@ -73,6 +74,7 @@ export function createStringNode(value: string): SerovalStringNode {
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -92,6 +94,7 @@ export function createBigIntNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -107,6 +110,7 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -122,6 +126,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     f: undefined,
     a: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -137,6 +142,7 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -161,6 +167,7 @@ export function createArrayBufferNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -192,6 +199,7 @@ export function createTypedArrayNode(
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
     b: current.byteOffset,
+    o: undefined,
   };
 }
 
@@ -217,6 +225,7 @@ export function createBigIntTypedArrayNode(
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
     b: current.byteOffset,
+    o: undefined,
   };
 }
 
@@ -238,6 +247,7 @@ export function createWKSymbolNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -256,6 +266,7 @@ export function createReferenceNode<T>(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -275,6 +286,7 @@ export function createDataViewNode(
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
     b: current.byteOffset,
+    o: undefined,
   };
 }
 

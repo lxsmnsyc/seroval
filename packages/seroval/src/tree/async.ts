@@ -115,6 +115,7 @@ async function generateArrayNode(
     a: await generateNodeList(ctx, current),
     f: undefined,
     b: undefined,
+    o: getObjectFlag(current),
   };
 }
 
@@ -158,6 +159,7 @@ async function generateMapNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -195,6 +197,7 @@ async function generateSetNode(
     a: nodes,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -304,6 +307,7 @@ async function generatePromiseNode(
     a: undefined,
     f: await parseAsync(ctx, await current),
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -323,7 +327,8 @@ async function generateObjectNode(
     d: await generateProperties(ctx, current),
     a: undefined,
     f: undefined,
-    b: getObjectFlag(current),
+    b: undefined,
+    o: getObjectFlag(current),
   };
 }
 
@@ -347,6 +352,7 @@ async function generateAggregateErrorNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -370,6 +376,7 @@ async function generateErrorNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -394,6 +401,7 @@ async function generateHeadersNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -418,6 +426,7 @@ async function generateFormDataNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -437,6 +446,7 @@ async function generateBoxedNode(
     a: undefined,
     f: await parseAsync(ctx, current.valueOf()),
     b: undefined,
+    o: undefined,
   };
 }
 

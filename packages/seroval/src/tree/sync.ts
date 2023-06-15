@@ -99,6 +99,7 @@ function generateArrayNode(
     a: generateNodeList(ctx, current),
     f: undefined,
     b: undefined,
+    o: getObjectFlag(current),
   };
 }
 
@@ -142,6 +143,7 @@ function generateMapNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -179,6 +181,7 @@ function generateSetNode(
     a: nodes,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -283,7 +286,8 @@ function generateObjectNode(
     d: generateProperties(ctx, current),
     a: undefined,
     f: undefined,
-    b: getObjectFlag(current),
+    b: undefined,
+    o: getObjectFlag(current),
   };
 }
 
@@ -307,6 +311,7 @@ function generateAggregateErrorNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -330,6 +335,7 @@ function generateErrorNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -355,6 +361,7 @@ function generateHeadersNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -380,6 +387,7 @@ function generateFormDataNode(
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -399,6 +407,7 @@ function generateBoxedNode(
     a: undefined,
     f: parseSync(ctx, current.valueOf()),
     b: undefined,
+    o: undefined,
   };
 }
 

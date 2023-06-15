@@ -70,6 +70,8 @@ export interface SerovalBaseNode {
   f: SerovalNode | undefined;
   // byte offset/object flags
   b: number | undefined;
+  // object flag
+  o: SerovalObjectFlags | undefined;
 }
 
 export const enum SerovalObjectRecordSpecialKey {
@@ -214,6 +216,7 @@ export interface SerovalArrayNode extends SerovalBaseNode {
   // items
   a: (SerovalNode | undefined)[];
   i: number;
+  o: SerovalObjectFlags;
 }
 
 export interface SerovalObjectNode extends SerovalBaseNode {
@@ -221,7 +224,7 @@ export interface SerovalObjectNode extends SerovalBaseNode {
   // key/value pairs
   d: SerovalObjectRecordNode;
   i: number;
-  b: SerovalObjectFlags;
+  o: SerovalObjectFlags;
 }
 
 export interface SerovalNullConstructorNode extends SerovalBaseNode {
@@ -229,7 +232,7 @@ export interface SerovalNullConstructorNode extends SerovalBaseNode {
   // key/value pairs
   d: SerovalObjectRecordNode;
   i: number;
-  b: SerovalObjectFlags;
+  o: SerovalObjectFlags;
 }
 
 export interface SerovalPromiseNode extends SerovalBaseNode {

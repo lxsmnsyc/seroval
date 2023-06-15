@@ -83,6 +83,7 @@ function deserializeArray(
       result[i] = deserializeTree(ctx, item);
     }
   }
+  applyObjectFlag(result, node.o);
   return result;
 }
 
@@ -127,7 +128,7 @@ function deserializeObject(
       : Object.create(null)) as Record<string, unknown>,
   );
   deserializeProperties(ctx, node.d, result);
-  applyObjectFlag(result, node.b);
+  applyObjectFlag(result, node.o);
   return result;
 }
 

@@ -13,6 +13,7 @@ function createConstantNode(value: SerovalConstant): SerovalConstantNode {
     a: undefined,
     f: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 

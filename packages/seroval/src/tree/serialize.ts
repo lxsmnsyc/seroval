@@ -158,10 +158,13 @@ function resolveAssignments(assignments: Assignment[]): string | undefined {
 }
 
 function pushObjectFlag(ctx: SerializationContext, flag: SerovalObjectFlags, id: number): void {
-  ctx.flags.push({
-    type: flag,
-    value: getRefParam(ctx, id),
-  });
+  if (flag !== SerovalObjectFlags.None) {
+    markRef(ctx, id);
+    ctx.flags.push({
+      type: flag,
+      value: getRefParam(ctx, id),
+    });
+  }
 }
 
 function resolveFlags(ctx: SerializationContext): string | undefined {
@@ -317,6 +320,7 @@ function serializeArray(
     }
   }
   ctx.stack.pop();
+  pushObjectFlag(ctx, node.o, node.i);
   return assignIndexedValue(ctx, id, '[' + values + (isHoley ? ',]' : ']'));
 }
 
@@ -501,10 +505,7 @@ function serializeNullConstructor(
   ctx: SerializationContext,
   node: SerovalNullConstructorNode,
 ): string {
-  if (node.b !== SerovalObjectFlags.None) {
-    markRef(ctx, node.i);
-    pushObjectFlag(ctx, node.b, node.i);
-  }
+  pushObjectFlag(ctx, node.o, node.i);
   return serializeDictionary(ctx, node.i, node.d, NULL_CONSTRUCTOR);
 }
 
@@ -512,10 +513,7 @@ function serializeObject(
   ctx: SerializationContext,
   node: SerovalObjectNode,
 ): string {
-  if (node.b !== SerovalObjectFlags.None) {
-    markRef(ctx, node.i);
-    pushObjectFlag(ctx, node.b, node.i);
-  }
+  pushObjectFlag(ctx, node.o, node.i);
   return assignIndexedValue(ctx, node.i, serializeProperties(ctx, node.i, node.d));
 }
 
