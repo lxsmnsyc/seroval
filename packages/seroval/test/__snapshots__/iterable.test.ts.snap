@@ -6,15 +6,15 @@ exports[`Iterable > compat > should use functions instead of method shorthand. 1
 
 exports[`Iterable > compat > should use method shorthand instead of arrow functions. 1`] = `"(function(h){return h={[Symbol.iterator](){return [h].values()}}})()"`;
 
-exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}],\\"s\\":1}},\\"r\\":0,\\"f\\":16381,\\"m\\":[0]}"`;
+exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}],\\"s\\":1},\\"b\\":0},\\"r\\":0,\\"f\\":16381,\\"m\\":[0]}"`;
 
 exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 2`] = `"(h=>(h={[Symbol.iterator]:()=>[h][Symbol.iterator]()}))()"`;
 
-exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}],\\"s\\":1}},\\"r\\":0,\\"f\\":16315,\\"m\\":[0]}"`;
+exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}],\\"s\\":1},\\"b\\":0},\\"r\\":0,\\"f\\":16315,\\"m\\":[0]}"`;
 
 exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 2`] = `"(function(h){return h={[Symbol.iterator]:function(){return [h].values()}}})()"`;
 
-exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}],\\"s\\":1}},\\"r\\":0,\\"f\\":16379,\\"m\\":[0]}"`;
+exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}],\\"s\\":1},\\"b\\":0},\\"r\\":0,\\"f\\":16379,\\"m\\":[0]}"`;
 
 exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 2`] = `"(function(h){return h={[Symbol.iterator](){return [h].values()}}})()"`;
 
@@ -22,6 +22,6 @@ exports[`Iterable > serialize > supports Iterables 1`] = `"({title:\\"Hello Worl
 
 exports[`Iterable > serializeAsync > supports Iterables 1`] = `"Promise.resolve({title:\\"Hello World\\",[Symbol.iterator]:()=>[1,2,3].values()})"`;
 
-exports[`Iterable > toJSON > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[\\"title\\",0],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}],\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Iterable > toJSON > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"d\\":{\\"k\\":[\\"title\\",0],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}],\\"s\\":2},\\"b\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"d\\":{\\"k\\":[\\"title\\",0],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}],\\"s\\":2}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"d\\":{\\"k\\":[\\"title\\",0],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}],\\"s\\":2},\\"b\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
