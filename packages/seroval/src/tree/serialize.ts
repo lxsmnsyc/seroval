@@ -502,6 +502,7 @@ function serializeNullConstructor(
   node: SerovalNullConstructorNode,
 ): string {
   if (node.b !== SerovalObjectFlags.None) {
+    markRef(ctx, node.i);
     pushObjectFlag(ctx, node.b, node.i);
   }
   return serializeDictionary(ctx, node.i, node.d, NULL_CONSTRUCTOR);
@@ -512,6 +513,7 @@ function serializeObject(
   node: SerovalObjectNode,
 ): string {
   if (node.b !== SerovalObjectFlags.None) {
+    markRef(ctx, node.i);
     pushObjectFlag(ctx, node.b, node.i);
   }
   return assignIndexedValue(ctx, node.i, serializeProperties(ctx, node.i, node.d));
