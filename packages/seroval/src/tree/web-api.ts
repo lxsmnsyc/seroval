@@ -31,6 +31,7 @@ export function createURLNode(
     f: undefined,
     a: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -51,6 +52,7 @@ export function createURLSearchParamsNode(
     f: undefined,
     a: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -71,6 +73,7 @@ export async function createBlobNode(
     f: serializeArrayBuffer(ctx, await current.arrayBuffer()),
     a: undefined,
     b: undefined,
+    o: undefined,
   };
 }
 
@@ -91,5 +94,6 @@ export async function createFileNode(
     f: serializeArrayBuffer(ctx, await current.arrayBuffer()),
     a: undefined,
     b: current.lastModified,
+    o: undefined,
   };
 }

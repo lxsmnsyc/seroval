@@ -42,6 +42,8 @@ import type {
   SerovalWKSymbolNode,
 } from './types';
 import {
+  SerovalObjectFlags,
+
   SerovalNodeType,
   SerovalObjectRecordSpecialKey,
 } from './types';
@@ -60,6 +62,13 @@ function getAssignmentExpression(assignment: Assignment): string {
       return '';
   }
 }
+
+const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = {
+  [SerovalObjectFlags.Frozen]: 'Object.freeze',
+  [SerovalObjectFlags.Sealed]: 'Object.seal',
+  [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
+  [SerovalObjectFlags.None]: undefined,
+};
 
 function mergeAssignments(assignments: Assignment[]): Assignment[] {
   const newAssignments: Assignment[] = [];
@@ -148,8 +157,35 @@ function resolveAssignments(assignments: Assignment[]): string | undefined {
   return undefined;
 }
 
+function pushObjectFlag(ctx: SerializationContext, flag: SerovalObjectFlags, id: number): void {
+  if (flag !== SerovalObjectFlags.None) {
+    markRef(ctx, id);
+    ctx.flags.push({
+      type: flag,
+      value: getRefParam(ctx, id),
+    });
+  }
+}
+
+function resolveFlags(ctx: SerializationContext): string | undefined {
+  let result = '';
+  for (let i = 0, len = ctx.flags.length; i < len; i++) {
+    const flag = ctx.flags[i];
+    result += OBJECT_FLAG_CONSTRUCTOR[flag.type] + '(' + flag.value + '),';
+  }
+  return result;
+}
+
 export function resolvePatches(ctx: SerializationContext): string | undefined {
-  return resolveAssignments(ctx.assignments);
+  const assignments = resolveAssignments(ctx.assignments);
+  const flags = resolveFlags(ctx);
+  if (assignments) {
+    if (flags) {
+      return assignments + flags;
+    }
+    return assignments;
+  }
+  return flags;
 }
 
 /**
@@ -284,6 +320,7 @@ function serializeArray(
     }
   }
   ctx.stack.pop();
+  pushObjectFlag(ctx, node.o, node.i);
   return assignIndexedValue(ctx, id, '[' + values + (isHoley ? ',]' : ']'));
 }
 
@@ -392,14 +429,14 @@ function serializeAssignments(
   for (let i = 0, len = node.s; i < len; i++) {
     key = keys[i];
     value = values[i];
-    parentAssignment = ctx.assignments;
-    ctx.assignments = mainAssignments;
     switch (key) {
       case SerovalObjectRecordSpecialKey.SymbolIterator: {
         const parent = ctx.stack;
         ctx.stack = [];
         const serialized = serializeTree(ctx, value) + getIterableAccess(ctx);
         ctx.stack = parent;
+        parentAssignment = ctx.assignments;
+        ctx.assignments = mainAssignments;
         createArrayAssign(
           ctx,
           sourceID,
@@ -408,22 +445,35 @@ function serializeAssignments(
             ? '()=>' + serialized
             : 'function(){return ' + serialized + '}',
         );
+        ctx.assignments = parentAssignment;
       }
         break;
       default: {
         const serialized = serializeTree(ctx, value);
         const check = Number(key);
-        // Test if key is a valid number or JS identifier
-        // so that we don't have to serialize the key and wrap with brackets
         const isIdentifier = check >= 0 || isValidIdentifier(key);
-        if (isIdentifier && Number.isNaN(check)) {
-          createObjectAssign(ctx, sourceID, key, serialized);
+        if (isIndexedValueInStack(ctx, value)) {
+          // Test if key is a valid number or JS identifier
+          // so that we don't have to serialize the key and wrap with brackets
+          if (isIdentifier && Number.isNaN(check)) {
+            createObjectAssign(ctx, sourceID, key, serialized);
+          } else {
+            createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          }
         } else {
-          createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          // Test if key is a valid number or JS identifier
+          // so that we don't have to serialize the key and wrap with brackets
+          parentAssignment = ctx.assignments;
+          ctx.assignments = mainAssignments;
+          if (isIdentifier && Number.isNaN(check)) {
+            createObjectAssign(ctx, sourceID, key, serialized);
+          } else {
+            createArrayAssign(ctx, sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          }
+          ctx.assignments = parentAssignment;
         }
       }
     }
-    ctx.assignments = parentAssignment;
   }
   ctx.stack.pop();
   return resolveAssignments(mainAssignments);
@@ -455,6 +505,7 @@ function serializeNullConstructor(
   ctx: SerializationContext,
   node: SerovalNullConstructorNode,
 ): string {
+  pushObjectFlag(ctx, node.o, node.i);
   return serializeDictionary(ctx, node.i, node.d, NULL_CONSTRUCTOR);
 }
 
@@ -462,6 +513,7 @@ function serializeObject(
   ctx: SerializationContext,
   node: SerovalObjectNode,
 ): string {
+  pushObjectFlag(ctx, node.o, node.i);
   return assignIndexedValue(ctx, node.i, serializeProperties(ctx, node.i, node.d));
 }
 
