@@ -12,8 +12,8 @@ import {
   NEG_ZERO_NODE,
 } from './constants';
 import { getReferenceID, hasReferenceID } from './reference';
-import type { WellKnownSymbols } from './symbols';
-import { INV_SYMBOL_REF } from './symbols';
+import type { WellKnownSymbols } from '../symbols';
+import { INV_SYMBOL_REF } from '../symbols';
 import type {
   SerovalBigIntNode,
   SerovalBigIntTypedArrayNode,

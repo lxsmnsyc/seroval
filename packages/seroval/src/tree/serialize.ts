@@ -11,7 +11,7 @@ import {
 import { serializeConstant } from './constants';
 import { GLOBAL_KEY } from './reference';
 import { isValidIdentifier } from './shared';
-import { SYMBOL_STRING } from './symbols';
+import { SYMBOL_STRING } from '../symbols';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,

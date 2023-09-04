@@ -3,7 +3,7 @@ import type { ParserContext } from './context';
 import type {
   ErrorValue,
 } from '../types';
-import { SerovalObjectFlags } from './types';
+import { SerovalObjectFlags } from '../constants';
 
 export function getErrorConstructorName(error: ErrorValue): string {
   if (error instanceof EvalError) {

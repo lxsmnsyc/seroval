@@ -58,7 +58,6 @@ import type {
   SerovalSetNode,
 } from './types';
 import {
-  SerovalNodeType,
   SerovalObjectRecordSpecialKey,
 } from './types';
 import {
@@ -67,6 +66,7 @@ import {
   createURLNode,
   createURLSearchParamsNode,
 } from './web-api';
+import { SerovalNodeType } from '../constants';
 
 type ObjectLikeNode =
   | SerovalObjectNode
