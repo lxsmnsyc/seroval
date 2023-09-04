@@ -15,7 +15,7 @@ import parseAsync from './tree/async';
 import deserializeTree from './tree/deserialize';
 import serializeTree, { resolvePatches } from './tree/serialize';
 import type { SerovalNode } from './tree/types';
-import { SerovalNodeType } from './tree/types';
+import { SerovalNodeType } from './constants';
 
 export type {
   AsyncServerValue,
