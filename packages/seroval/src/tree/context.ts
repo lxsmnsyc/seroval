@@ -1,6 +1,6 @@
-import { ALL_ENABLED } from './compat';
-import getIdentifier from './get-identifier';
-import type { SerovalObjectFlags } from './tree/types';
+import { ALL_ENABLED } from '../compat';
+import getIdentifier from '../get-identifier';
+import type { SerovalObjectFlags } from './types';
 
 interface IndexAssignment {
   t: 'index';

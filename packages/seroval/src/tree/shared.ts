@@ -1,5 +1,5 @@
 import { Feature } from '../compat';
-import type { ParserContext } from '../context';
+import type { ParserContext } from './context';
 import type {
   ErrorValue,
 } from '../types';

@@ -3,11 +3,11 @@ import { Feature } from '../compat';
 import type {
   SerializationContext,
   Assignment,
-} from '../context';
+} from './context';
 import {
   getRefParam,
   markRef,
-} from '../context';
+} from './context';
 import { serializeConstant } from './constants';
 import { GLOBAL_KEY } from './reference';
 import { isValidIdentifier } from './shared';

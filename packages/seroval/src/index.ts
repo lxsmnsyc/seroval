@@ -3,13 +3,13 @@ import { Feature } from './compat';
 import type {
   SerializationContext,
   Options,
-} from './context';
+} from './tree/context';
 import {
   getRefParam,
   createParserContext,
   createSerializationContext,
   getRootID,
-} from './context';
+} from './tree/context';
 import parseSync from './tree/sync';
 import parseAsync from './tree/async';
 import deserializeTree from './tree/deserialize';

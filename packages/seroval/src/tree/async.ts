@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import type { ParserContext } from '../context';
+import type { ParserContext } from './context';
 import {
   createIndexedValue,
-} from '../context';
+} from './context';
 import { serializeString } from '../string';
 import type {
   BigIntTypedArrayValue,

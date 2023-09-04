@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type {
   SerializationContext,
-} from '../context';
+} from './context';
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import { deserializeConstant } from './constants';
