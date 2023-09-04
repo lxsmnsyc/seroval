@@ -28,7 +28,7 @@ export function getReference<T>(id: string): T {
   return INV_REFERENCE.get(id) as T;
 }
 
-export const GLOBAL_KEY = '__SEROVAL__';
+export const GLOBAL_KEY = '__SEROVAL_REFS__';
 
 if (typeof globalThis !== undefined) {
   Object.defineProperty(globalThis, GLOBAL_KEY, {

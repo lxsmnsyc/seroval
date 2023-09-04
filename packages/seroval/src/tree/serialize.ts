@@ -11,7 +11,6 @@ import {
 import { serializeConstant } from './constants';
 import { GLOBAL_KEY } from '../reference';
 import { isValidIdentifier } from '../shared';
-import { SYMBOL_STRING } from '../symbols';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -42,11 +41,9 @@ import type {
   SerovalWKSymbolNode,
 } from './types';
 import {
-  SerovalObjectFlags,
-
-  SerovalNodeType,
   SerovalObjectRecordSpecialKey,
 } from './types';
+import { SerovalObjectFlags, SerovalNodeType, SYMBOL_STRING } from '../constants';
 
 function getAssignmentExpression(assignment: Assignment): string {
   switch (assignment.t) {

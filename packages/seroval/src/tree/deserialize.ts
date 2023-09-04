@@ -8,7 +8,6 @@ import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import { deserializeConstant } from './constants';
 import { getReference } from '../reference';
 import { getErrorConstructor, getTypedArrayConstructor } from '../shared';
-import { SYMBOL_REF } from '../symbols';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
@@ -37,10 +36,9 @@ import type {
   SerovalURLSearchParamsNode,
 } from './types';
 import {
-  SerovalObjectFlags,
-  SerovalNodeType,
   SerovalObjectRecordSpecialKey,
 } from './types';
+import { SYMBOL_REF, SerovalNodeType, SerovalObjectFlags } from '../constants';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
