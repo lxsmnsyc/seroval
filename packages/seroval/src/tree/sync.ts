@@ -29,13 +29,13 @@ import {
 } from './primitives';
 import {
   hasReferenceID,
-} from './reference';
+} from '../reference';
 import {
   getErrorConstructorName,
   getErrorOptions,
   getObjectFlag,
   isIterable,
-} from './shared';
+} from '../shared';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,

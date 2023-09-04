@@ -11,9 +11,7 @@ import {
   NAN_NODE,
   NEG_ZERO_NODE,
 } from './constants';
-import { getReferenceID, hasReferenceID } from './reference';
-import type { WellKnownSymbols } from '../symbols';
-import { INV_SYMBOL_REF } from '../symbols';
+import { getReferenceID, hasReferenceID } from '../reference';
 import type {
   SerovalBigIntNode,
   SerovalBigIntTypedArrayNode,
@@ -28,9 +26,8 @@ import type {
   SerovalDataViewNode,
   SerovalNode,
 } from './types';
-import {
-  SerovalNodeType,
-} from './types';
+import type { WellKnownSymbols } from '../constants';
+import { SerovalNodeType, INV_SYMBOL_REF } from '../constants';
 
 export function createNumberNode(value: number): SerovalNode {
   switch (value) {

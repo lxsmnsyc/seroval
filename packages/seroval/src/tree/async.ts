@@ -33,13 +33,13 @@ import {
   createSymbolNode,
   createFunctionNode,
 } from './primitives';
-import { hasReferenceID } from './reference';
+import { hasReferenceID } from '../reference';
 import {
   getErrorConstructorName,
   getErrorOptions,
   getObjectFlag,
   isIterable,
-} from './shared';
+} from '../shared';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,

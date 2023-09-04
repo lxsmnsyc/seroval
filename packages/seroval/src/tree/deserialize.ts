@@ -6,8 +6,8 @@ import type {
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import { deserializeConstant } from './constants';
-import { getReference } from './reference';
-import { getErrorConstructor, getTypedArrayConstructor } from './shared';
+import { getReference } from '../reference';
+import { getErrorConstructor, getTypedArrayConstructor } from '../shared';
 import { SYMBOL_REF } from '../symbols';
 import type {
   SerovalAggregateErrorNode,

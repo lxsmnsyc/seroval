@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import assert from '../assert';
+import assert from './assert';
 
 const REFERENCE = new Map<unknown, string>();
 const INV_REFERENCE = new Map<string, unknown>();

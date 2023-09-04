@@ -1,9 +1,9 @@
-import { Feature } from '../compat';
-import type { ParserContext } from './context';
+import { Feature } from './compat';
+import type { ParserContext } from './tree/context';
 import type {
   ErrorValue,
-} from '../types';
-import { SerovalObjectFlags } from '../constants';
+} from './types';
+import { SerovalObjectFlags } from './constants';
 
 export function getErrorConstructorName(error: ErrorValue): string {
   if (error instanceof EvalError) {

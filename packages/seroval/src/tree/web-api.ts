@@ -10,9 +10,7 @@ import type {
   SerovalURLNode,
   SerovalURLSearchParamsNode,
 } from './types';
-import {
-  SerovalNodeType,
-} from './types';
+import { SerovalNodeType } from '../constants';
 
 export function createURLNode(
   ctx: ParserContext,

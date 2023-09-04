@@ -152,4 +152,4 @@ export function fromJSON<T>(source: SerovalJSON): T {
 
 export default serialize;
 
-export { createReference } from './tree/reference';
+export { createReference } from './reference';
