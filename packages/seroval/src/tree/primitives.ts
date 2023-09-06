@@ -4,7 +4,7 @@ import type { ParserContext } from './context';
 import { createIndexedValue } from './context';
 import { serializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
-import UnsupportedTypeError from './UnsupportedTypeError';
+import UnsupportedTypeError from '../UnsupportedTypeError';
 import {
   INFINITY_NODE,
   NEG_INFINITY_NODE,

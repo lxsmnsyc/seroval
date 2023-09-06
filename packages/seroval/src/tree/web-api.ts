@@ -2,7 +2,7 @@ import assert from '../assert';
 import { Feature } from '../compat';
 import type { ParserContext } from './context';
 import { serializeString } from '../string';
-import UnsupportedTypeError from './UnsupportedTypeError';
+import UnsupportedTypeError from '../UnsupportedTypeError';
 import { serializeArrayBuffer } from './primitives';
 import type {
   SerovalBlobNode,

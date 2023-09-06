@@ -11,7 +11,7 @@ import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from '../types';
-import UnsupportedTypeError from './UnsupportedTypeError';
+import UnsupportedTypeError from '../UnsupportedTypeError';
 import {
   TRUE_NODE,
   FALSE_NODE,
