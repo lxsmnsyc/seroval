@@ -5,7 +5,6 @@ import type {
 } from './context';
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
-import { deserializeConstant } from './constants';
 import { getReference } from '../reference';
 import { getErrorConstructor, getTypedArrayConstructor } from '../shared';
 import type {
@@ -38,7 +37,12 @@ import type {
 import {
   SerovalObjectRecordSpecialKey,
 } from './types';
-import { SYMBOL_REF, SerovalNodeType, SerovalObjectFlags } from '../constants';
+import {
+  SYMBOL_REF,
+  SerovalNodeType,
+  SerovalObjectFlags,
+  deserializeConstant,
+} from '../constants';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {

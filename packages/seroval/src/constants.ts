@@ -1,3 +1,6 @@
+import type { SerovalCrossConstantNode } from './cross/types';
+import type { SerovalConstantNode } from './tree/types';
+
 export const enum SerovalConstant {
   Null = 0,
   Undefined = 1,
@@ -112,3 +115,49 @@ export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
   [Symbols.ToStringTag]: Symbol.toStringTag,
   [Symbols.Unscopables]: Symbol.unscopables,
 };
+
+export function serializeConstant(node: SerovalConstantNode | SerovalCrossConstantNode): string {
+  switch (node.s) {
+    case SerovalConstant.True:
+      return '!0';
+    case SerovalConstant.False:
+      return '!1';
+    case SerovalConstant.Undefined:
+      return 'void 0';
+    case SerovalConstant.Null:
+      return 'null';
+    case SerovalConstant.NegativeZero:
+      return '-0';
+    case SerovalConstant.Infinity:
+      return '1/0';
+    case SerovalConstant.NegativeInfinity:
+      return '-1/0';
+    case SerovalConstant.NaN:
+      return 'NaN';
+    default:
+      throw new Error('invariant');
+  }
+}
+
+export function deserializeConstant(node: SerovalConstantNode | SerovalCrossConstantNode): unknown {
+  switch (node.s) {
+    case SerovalConstant.True:
+      return true;
+    case SerovalConstant.False:
+      return false;
+    case SerovalConstant.Undefined:
+      return undefined;
+    case SerovalConstant.Null:
+      return null;
+    case SerovalConstant.NegativeZero:
+      return -0;
+    case SerovalConstant.Infinity:
+      return Infinity;
+    case SerovalConstant.NegativeInfinity:
+      return -Infinity;
+    case SerovalConstant.NaN:
+      return NaN;
+    default:
+      throw new Error('invariant');
+  }
+}

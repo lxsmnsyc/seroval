@@ -8,7 +8,6 @@ import {
   getRefParam,
   markRef,
 } from './context';
-import { serializeConstant } from './constants';
 import { GLOBAL_KEY } from '../reference';
 import { isValidIdentifier } from '../shared';
 import type {
@@ -43,7 +42,12 @@ import type {
 import {
   SerovalObjectRecordSpecialKey,
 } from './types';
-import { SerovalObjectFlags, SerovalNodeType, SYMBOL_STRING } from '../constants';
+import {
+  SerovalObjectFlags,
+  SerovalNodeType,
+  SYMBOL_STRING,
+  serializeConstant,
+} from '../constants';
 
 function getAssignmentExpression(assignment: Assignment): string {
   switch (assignment.t) {
