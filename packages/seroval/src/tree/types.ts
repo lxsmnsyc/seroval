@@ -323,8 +323,7 @@ export type SerovalSyncNode =
 export type SerovalAsyncNode =
   | SerovalPromiseNode
   | SerovalBlobNode
-  | SerovalFileNode
-  | SerovalFormDataNode;
+  | SerovalFileNode;
 
 export type SerovalNode =
   | SerovalSyncNode

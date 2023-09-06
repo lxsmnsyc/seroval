@@ -44,13 +44,13 @@ import type {
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
-  SerovalNode,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
   SerovalSetNode,
+  SerovalSyncNode,
 } from './types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -60,9 +60,9 @@ import { SerovalNodeType } from '../constants';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
-function generateNodeList(ctx: ParserContext, current: unknown[]): SerovalNode[] {
+function generateNodeList(ctx: ParserContext, current: unknown[]): SerovalSyncNode[] {
   const size = current.length;
-  const nodes = new Array<SerovalNode>(size);
+  const nodes = new Array<SerovalSyncNode>(size);
   const deferred = new Array<unknown>(size);
   let item: unknown;
   for (let i = 0; i < size; i++) {
@@ -110,8 +110,8 @@ function generateMapNode(
 ): SerovalMapNode {
   assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
-  const keyNodes = new Array<SerovalNode>(len);
-  const valueNodes = new Array<SerovalNode>(len);
+  const keyNodes = new Array<SerovalSyncNode>(len);
+  const valueNodes = new Array<SerovalSyncNode>(len);
   const deferredKey = new Array<unknown>(len);
   const deferredValue = new Array<unknown>(len);
   let deferredSize = 0;
@@ -154,7 +154,7 @@ function generateSetNode(
 ): SerovalSetNode {
   assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
-  const nodes = new Array<SerovalNode>(len);
+  const nodes = new Array<SerovalSyncNode>(len);
   const deferred = new Array<unknown>(len);
   let deferredSize = 0;
   let nodeSize = 0;
@@ -192,7 +192,7 @@ function generateProperties(
   const keys = Object.keys(properties);
   let size = keys.length;
   const keyNodes = new Array<SerovalObjectRecordKey>(size);
-  const valueNodes = new Array<SerovalNode>(size);
+  const valueNodes = new Array<SerovalSyncNode>(size);
   const deferredKeys = new Array<SerovalObjectRecordKey>(size);
   const deferredValues = new Array<unknown>(size);
   let deferredSize = 0;
@@ -239,7 +239,7 @@ function generatePlainProperties(
   const keys = Object.keys(properties);
   const size = keys.length;
   const keyNodes = new Array<string>(size);
-  const valueNodes = new Array<SerovalNode>(size);
+  const valueNodes = new Array<SerovalSyncNode>(size);
   const deferredKeys = new Array<string>(size);
   const deferredValues = new Array<unknown>(size);
   let deferredSize = 0;
@@ -414,7 +414,7 @@ function generateBoxedNode(
 function parseObject(
   ctx: ParserContext,
   current: object | null,
-): SerovalNode {
+): SerovalSyncNode {
   if (!current) {
     return NULL_NODE;
   }
@@ -526,7 +526,7 @@ function parseObject(
 export default function parseSync<T>(
   ctx: ParserContext,
   current: T,
-): SerovalNode {
+): SerovalSyncNode {
   switch (typeof current) {
     case 'boolean':
       return current ? TRUE_NODE : FALSE_NODE;
