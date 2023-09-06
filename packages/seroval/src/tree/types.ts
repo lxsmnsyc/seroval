@@ -296,7 +296,7 @@ export interface SerovalBoxedNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
-export type SerovalNode =
+export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
   | SerovalSemiPrimitiveNode
@@ -319,3 +319,13 @@ export type SerovalNode =
   | SerovalHeadersNode
   | SerovalFormDataNode
   | SerovalBoxedNode;
+
+export type SerovalAsyncNode =
+  | SerovalPromiseNode
+  | SerovalBlobNode
+  | SerovalFileNode
+  | SerovalFormDataNode;
+
+export type SerovalNode =
+  | SerovalSyncNode
+  | SerovalAsyncNode;
