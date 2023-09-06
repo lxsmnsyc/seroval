@@ -2,7 +2,7 @@
 const { toString } = Object.prototype;
 
 export default class UnsupportedTypeError extends Error {
-  constructor(value: unknown) {
+  constructor(public value: unknown) {
     super('Unsupported type "' + toString.call(value) + '"');
   }
 }
