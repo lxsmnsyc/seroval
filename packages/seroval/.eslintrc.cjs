@@ -19,6 +19,7 @@ module.exports = {
     "no-restricted-syntax": "off",
     "no-bitwise": "off",
     "prefer-template": "off",
-    "@typescript-eslint/restrict-plus-operands": "off"
+    "@typescript-eslint/restrict-plus-operands": "off",
+    "prefer-object-spread": "off"
   }
 };

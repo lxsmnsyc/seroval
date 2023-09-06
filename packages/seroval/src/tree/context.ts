@@ -72,17 +72,11 @@ export interface Options {
   disabledFeatures: number;
 }
 
-const DEFAULT_OPTIONS: Options = {
-  disabledFeatures: 0,
-};
-
 export function createParserContext(options: Partial<Options> = {}): ParserContext {
-  // eslint-disable-next-line prefer-object-spread
-  const result = Object.assign({}, DEFAULT_OPTIONS, options);
   return {
     markedRefs: new Set(),
     refs: new Map(),
-    features: ALL_ENABLED ^ result.disabledFeatures,
+    features: ALL_ENABLED ^ (options.disabledFeatures || 0),
   };
 }
 
