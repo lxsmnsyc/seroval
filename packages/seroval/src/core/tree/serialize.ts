@@ -641,6 +641,9 @@ function serializeError(
   return serializeDictionary(ctx, node.i, node.d, 'new ' + node.c + '("' + node.m + '")');
 }
 
+const PROMISE_RESOLVE = 'Promise.resolve';
+const PROMISE_REJECT = 'Promise.reject';
+
 function serializePromise(
   ctx: SerializationContext,
   node: SerovalPromiseNode,
@@ -649,6 +652,7 @@ function serializePromise(
   // Check if resolved value is a parent expression
   const fulfilled = node.f;
   const id = node.i;
+  const constructor = node.s ? PROMISE_RESOLVE : PROMISE_REJECT;
   if (isIndexedValueInStack(ctx, fulfilled)) {
     // A Promise trick, reference the value
     // inside the `then` expression so that
@@ -656,16 +660,22 @@ function serializePromise(
     // has initialized
     const ref = getRefParam(ctx, fulfilled.i);
     if (ctx.features & Feature.ArrowFunction) {
-      serialized = 'Promise.resolve().then(()=>' + ref + ')';
+      if (node.s) {
+        serialized = constructor + '().then(()=>' + ref + ')';
+      } else {
+        serialized = constructor + '().catch(()=>{throw ' + ref + '})';
+      }
+    } else if (node.s) {
+      serialized = constructor + '().then(function(){return ' + ref + '})';
     } else {
-      serialized = 'Promise.resolve().then(function(){return ' + ref + '})';
+      serialized = constructor + '().catch(function(){throw ' + ref + '})';
     }
   } else {
     ctx.stack.push(id);
     const result = serializeTree(ctx, fulfilled);
     ctx.stack.pop();
     // just inline the value/reference here
-    serialized = 'Promise.resolve(' + result + ')';
+    serialized = constructor + '(' + result + ')';
   }
   return assignIndexedValue(ctx, id, serialized);
 }

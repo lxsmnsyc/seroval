@@ -208,17 +208,23 @@ function deserializeError(
 
 interface Deferred {
   resolve(value: unknown): void;
+  reject(value: unknown): void;
   promise: Promise<unknown>;
 }
 
 function createDeferred(): Deferred {
-  let resolver: Deferred['resolve'];
+  let resolve: Deferred['resolve'];
+  let reject: Deferred['reject'];
   return {
     resolve(v): void {
-      resolver(v);
+      resolve(v);
     },
-    promise: new Promise((res) => {
-      resolver = res as Deferred['resolve'];
+    reject(v): void {
+      reject(v);
+    },
+    promise: new Promise((res, rej) => {
+      resolve = res as Deferred['resolve'];
+      reject = rej as Deferred['reject'];
     }),
   };
 }
@@ -229,7 +235,12 @@ async function deserializePromise(
 ): Promise<unknown> {
   const deferred = createDeferred();
   const result = assignIndexedValue(ctx, node.i, deferred.promise);
-  deferred.resolve(deserializeTree(ctx, node.f));
+  const deserialized = deserializeTree(ctx, node.f);
+  if (node.s) {
+    deferred.resolve(deserialized);
+  } else {
+    deferred.reject(deserialized);
+  }
   return result;
 }
 

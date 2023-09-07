@@ -68,6 +68,7 @@ import {
   createStringNode,
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
+import promiseToResult from '../promise-to-result';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -296,17 +297,18 @@ async function generatePromiseNode(
   current: Promise<unknown>,
 ): Promise<SerovalPromiseNode> {
   assert(ctx.features & Feature.Promise, new UnsupportedTypeError(current));
+  const [status, result] = await promiseToResult(current);
   return {
     t: SerovalNodeType.Promise,
     i: id,
-    s: undefined,
+    s: status,
     l: undefined,
     c: undefined,
     m: undefined,
     // Parse options first before the items
     d: undefined,
     a: undefined,
-    f: await crossParseAsync(ctx, await current),
+    f: await crossParseAsync(ctx, result),
     b: undefined,
     o: undefined,
   };
