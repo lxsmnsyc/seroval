@@ -1,56 +1,28 @@
 import { ALL_ENABLED } from '../compat';
-import type { SerovalObjectFlags } from '../constants';
-import type { BaseParserContext } from '../context';
+import type { BaseParserContext, BaseSerializerContext } from '../context';
 import getIdentifier from '../get-identifier';
-
-interface IndexAssignment {
-  t: 'index';
-  s: string;
-  k: undefined;
-  v: string;
-}
-
-interface SetAssignment {
-  t: 'set';
-  s: string;
-  k: string;
-  v: string;
-}
-
-interface AddAssignment {
-  t: 'add';
-  s: string;
-  k: undefined;
-  v: string;
-}
-
-interface AppendAssignment {
-  t: 'append';
-  s: string;
-  k: string;
-  v: string;
-}
-
-// Array of assignments to be done (used for recursion)
-export type Assignment =
-  | IndexAssignment
-  | AddAssignment
-  | SetAssignment
-  | AppendAssignment;
 
 export interface ParserReference {
   ids: Map<unknown, number>;
   marked: Set<number>;
 }
 
-export interface ParserContext {
+export interface ParserContext extends BaseParserContext {
   reference: ParserReference;
-  features: number;
 }
 
-export interface FlaggedObject {
-  type: SerovalObjectFlags;
-  value: string;
+export interface ParserOptions {
+  disabledFeatures: number;
+}
+
+export function createParserContext(options: Partial<ParserOptions> = {}): ParserContext {
+  return {
+    reference: {
+      ids: new Map(),
+      marked: new Set(),
+    },
+    features: ALL_ENABLED ^ (options.disabledFeatures || 0),
+  };
 }
 
 export interface SerializationReference {
@@ -61,33 +33,12 @@ export interface SerializationReference {
   marked: Set<number>;
 }
 
-export interface SerializationContext extends BaseParserContext {
+export interface SerializationContext extends BaseSerializerContext {
   reference: SerializationReference;
-
-  stack: number[];
   // Variables
   vars: (string | undefined)[];
-  // Array of assignments to be done (used for recursion)
-  assignments: Assignment[];
 
   valueMap: Map<number, unknown>;
-
-  // Object flags
-  flags: FlaggedObject[];
-}
-
-export interface Options {
-  disabledFeatures: number;
-}
-
-export function createParserContext(options: Partial<Options> = {}): ParserContext {
-  return {
-    reference: {
-      ids: new Map(),
-      marked: new Set(),
-    },
-    features: ALL_ENABLED ^ (options.disabledFeatures || 0),
-  };
 }
 
 export interface SerializationOptions {

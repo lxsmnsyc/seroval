@@ -2,13 +2,11 @@
 import { Feature } from '../compat';
 import type {
   SerializationContext,
-  Assignment,
 } from './context';
 import {
   getRefParam,
   markRef,
 } from './context';
-import { GLOBAL_KEY } from '../reference';
 import { isValidIdentifier } from '../shared';
 import type {
   SerovalAggregateErrorNode,
@@ -48,115 +46,9 @@ import {
   SYMBOL_STRING,
   serializeConstant,
 } from '../constants';
-
-function getAssignmentExpression(assignment: Assignment): string {
-  switch (assignment.t) {
-    case 'index':
-      return assignment.s + '=' + assignment.v;
-    case 'set':
-      return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
-    case 'add':
-      return assignment.s + '.add(' + assignment.v + ')';
-    case 'append':
-      return assignment.s + '.append(' + assignment.k + ',' + assignment.v + ')';
-    default:
-      return '';
-  }
-}
-
-const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = {
-  [SerovalObjectFlags.Frozen]: 'Object.freeze',
-  [SerovalObjectFlags.Sealed]: 'Object.seal',
-  [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
-  [SerovalObjectFlags.None]: undefined,
-};
-
-function mergeAssignments(assignments: Assignment[]): Assignment[] {
-  const newAssignments: Assignment[] = [];
-  let current = assignments[0];
-  let prev = current;
-  let item: Assignment;
-  for (let i = 1, len = assignments.length; i < len; i++) {
-    item = assignments[i];
-    if (item.t === prev.t) {
-      switch (item.t) {
-        case 'index':
-          if (item.v === prev.v) {
-            // Merge if the right-hand value is the same
-            // saves at least 2 chars
-            current = {
-              t: 'index',
-              s: item.s,
-              k: undefined,
-              v: getAssignmentExpression(current),
-            };
-          } else {
-            // Different assignment, push current
-            newAssignments.push(current);
-            current = item;
-          }
-          break;
-        case 'set':
-          if (item.s === prev.s) {
-            // Maps has chaining methods, merge if source is the same
-            current = {
-              t: 'set',
-              s: getAssignmentExpression(current),
-              k: item.k,
-              v: item.v,
-            };
-          } else {
-            // Different assignment, push current
-            newAssignments.push(current);
-            current = item;
-          }
-          break;
-        case 'add':
-          if (item.s === prev.s) {
-            // Sets has chaining methods too
-            current = {
-              t: 'add',
-              s: getAssignmentExpression(current),
-              k: undefined,
-              v: item.v,
-            };
-          } else {
-            // Different assignment, push current
-            newAssignments.push(current);
-            current = item;
-          }
-          break;
-        case 'append':
-          // Different assignment, push current
-          newAssignments.push(current);
-          current = item;
-          break;
-        default:
-          break;
-      }
-    } else {
-      newAssignments.push(current);
-      current = item;
-    }
-    prev = item;
-  }
-
-  newAssignments.push(current);
-
-  return newAssignments;
-}
-
-function resolveAssignments(assignments: Assignment[]): string | undefined {
-  if (assignments.length) {
-    let result = '';
-    const merged = mergeAssignments(assignments);
-    for (let i = 0, len = merged.length; i < len; i++) {
-      result += getAssignmentExpression(merged[i]) + ',';
-    }
-    return result;
-  }
-  return undefined;
-}
+import type { Assignment } from '../assignments';
+import { resolveAssignments, resolveFlags } from '../assignments';
+import { REFERENCES_KEY } from '../keys';
 
 function pushObjectFlag(ctx: SerializationContext, flag: SerovalObjectFlags, id: number): void {
   if (flag !== SerovalObjectFlags.None) {
@@ -168,18 +60,9 @@ function pushObjectFlag(ctx: SerializationContext, flag: SerovalObjectFlags, id:
   }
 }
 
-function resolveFlags(ctx: SerializationContext): string | undefined {
-  let result = '';
-  for (let i = 0, len = ctx.flags.length; i < len; i++) {
-    const flag = ctx.flags[i];
-    result += OBJECT_FLAG_CONSTRUCTOR[flag.type] + '(' + flag.value + '),';
-  }
-  return result;
-}
-
 export function resolvePatches(ctx: SerializationContext): string | undefined {
   const assignments = resolveAssignments(ctx.assignments);
-  const flags = resolveFlags(ctx);
+  const flags = resolveFlags(ctx.flags);
   if (assignments) {
     if (flags) {
       return assignments + flags;
@@ -744,7 +627,7 @@ function serializeReference(
   ctx: SerializationContext,
   node: SerovalReferenceNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, GLOBAL_KEY + '.get("' + node.s + '")');
+  return assignIndexedValue(ctx, node.i, REFERENCES_KEY + '.get("' + node.s + '")');
 }
 
 function serializeDataView(
