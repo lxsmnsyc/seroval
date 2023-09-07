@@ -2,10 +2,9 @@ import assert from '../assert';
 import { Feature } from '../compat';
 import type { ParserContext } from './context';
 import { createIndexedValue } from './context';
-import { serializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import UnsupportedTypeError from '../UnsupportedTypeError';
-import { getReferenceID, hasReferenceID } from '../reference';
+import { hasReferenceID } from '../reference';
 import type {
   SerovalBigIntTypedArrayNode,
   SerovalTypedArrayNode,
@@ -16,8 +15,13 @@ import type {
   SerovalIndexedValueNode,
 } from '../types';
 import type { WellKnownSymbols } from '../constants';
-import { SerovalNodeType, INV_SYMBOL_REF } from '../constants';
-import { createArrayBufferNode, createIndexedValueNode } from '../base-primitives';
+import { SerovalNodeType } from '../constants';
+import {
+  createArrayBufferNode,
+  createIndexedValueNode,
+  createReferenceNode,
+  createWKSymbolNode,
+} from '../base-primitives';
 
 export function serializeArrayBuffer(
   ctx: ParserContext,
@@ -73,47 +77,6 @@ export function createBigIntTypedArrayNode(
     a: undefined,
     f: serializeArrayBuffer(ctx, current.buffer),
     b: current.byteOffset,
-    o: undefined,
-  };
-}
-
-export function createWKSymbolNode(
-  ctx: ParserContext,
-  id: number,
-  current: WellKnownSymbols,
-): SerovalWKSymbolNode {
-  assert(ctx.features & Feature.Symbol, new UnsupportedTypeError(current));
-  assert(current in INV_SYMBOL_REF, new Error('Only well-known symbols are supported.'));
-  return {
-    t: SerovalNodeType.WKSymbol,
-    i: id,
-    s: INV_SYMBOL_REF[current],
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    d: undefined,
-    a: undefined,
-    f: undefined,
-    b: undefined,
-    o: undefined,
-  };
-}
-
-export function createReferenceNode<T>(
-  id: number,
-  ref: T,
-): SerovalReferenceNode {
-  return {
-    t: SerovalNodeType.Reference,
-    i: id,
-    s: serializeString(getReferenceID(ref)),
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    d: undefined,
-    a: undefined,
-    f: undefined,
-    b: undefined,
     o: undefined,
   };
 }

@@ -21,7 +21,6 @@ import {
 import {
   createBigIntTypedArrayNode,
   createTypedArrayNode,
-  createReferenceNode,
   createDataViewNode,
   createSymbolNode,
   createFunctionNode,
@@ -66,6 +65,7 @@ import {
   createDateNode,
   createIndexedValueNode,
   createNumberNode,
+  createReferenceNode,
   createRegExpNode,
   createStringNode,
 } from '../base-primitives';

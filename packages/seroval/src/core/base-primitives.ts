@@ -1,7 +1,8 @@
 import UnsupportedTypeError from './UnsupportedTypeError';
 import assert from './assert';
 import { Feature } from './compat';
-import { SerovalNodeType } from './constants';
+import type { WellKnownSymbols } from './constants';
+import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
 import type { BaseParserContext } from './context';
 import {
   INFINITY_NODE,
@@ -9,6 +10,7 @@ import {
   NAN_NODE,
   NEG_ZERO_NODE,
 } from './literals';
+import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
   SerovalArrayBufferNode,
@@ -17,8 +19,10 @@ import type {
   SerovalDateNode,
   SerovalIndexedValueNode,
   SerovalNumberNode,
+  SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalStringNode,
+  SerovalWKSymbolNode,
 } from './types';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
@@ -149,6 +153,47 @@ export function createArrayBufferNode(
     t: SerovalNodeType.ArrayBuffer,
     i: id,
     s: values,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createWKSymbolNode(
+  ctx: BaseParserContext,
+  id: number,
+  current: WellKnownSymbols,
+): SerovalWKSymbolNode {
+  assert(ctx.features & Feature.Symbol, new UnsupportedTypeError(current));
+  assert(current in INV_SYMBOL_REF, new Error('Only well-known symbols are supported.'));
+  return {
+    t: SerovalNodeType.WKSymbol,
+    i: id,
+    s: INV_SYMBOL_REF[current],
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createReferenceNode<T>(
+  id: number,
+  ref: T,
+): SerovalReferenceNode {
+  return {
+    t: SerovalNodeType.Reference,
+    i: id,
+    s: serializeString(getReferenceID(ref)),
     l: undefined,
     c: undefined,
     m: undefined,
