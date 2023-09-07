@@ -2,13 +2,14 @@
 import { Feature } from './core/compat';
 import type {
   SerializationContext,
-  Options,
+  ParserOptions,
 } from './core/tree/context';
 import {
   getRefParam,
   createParserContext,
   createSerializationContext,
   getRootID,
+  createDeserializationContext,
 } from './core/tree/context';
 import parseSync from './core/tree/sync';
 import parseAsync from './core/tree/async';
@@ -65,7 +66,7 @@ function finalize(
 
 export function serialize<T>(
   source: T,
-  options?: Partial<Options>,
+  options?: Partial<ParserOptions>,
 ): string {
   const ctx = createParserContext(options);
   const tree = parseSync(ctx, source);
@@ -84,7 +85,7 @@ export function serialize<T>(
 
 export async function serializeAsync<T>(
   source: T,
-  options?: Partial<Options>,
+  options?: Partial<ParserOptions>,
 ): Promise<string> {
   const ctx = createParserContext(options);
   const tree = await parseAsync(ctx, source);
@@ -115,7 +116,7 @@ export interface SerovalJSON {
 
 export function toJSON<T>(
   source: T,
-  options?: Partial<Options>,
+  options?: Partial<ParserOptions>,
 ): SerovalJSON {
   const ctx = createParserContext(options);
   return {
@@ -128,7 +129,7 @@ export function toJSON<T>(
 
 export async function toJSONAsync<T>(
   source: T,
-  options?: Partial<Options>,
+  options?: Partial<ParserOptions>,
 ): Promise<SerovalJSON> {
   const ctx = createParserContext(options);
   return {
@@ -149,8 +150,7 @@ export function compileJSON(source: SerovalJSON): string {
 }
 
 export function fromJSON<T>(source: SerovalJSON): T {
-  const serial = createSerializationContext({
-    features: source.f,
+  const serial = createDeserializationContext({
     markedRefs: source.m,
   });
   return deserializeTree(serial, source.t) as T;

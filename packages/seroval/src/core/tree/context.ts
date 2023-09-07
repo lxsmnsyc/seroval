@@ -37,8 +37,6 @@ export interface SerializationContext extends BaseSerializerContext {
   reference: SerializationReference;
   // Variables
   vars: (string | undefined)[];
-
-  valueMap: Map<number, unknown>;
 }
 
 export interface SerializationOptions {
@@ -57,7 +55,6 @@ export function createSerializationContext(options: SerializationOptions): Seria
       marked: new Set(options.markedRefs),
     },
     features: options.features,
-    valueMap: new Map(),
     flags: [],
   };
 }
@@ -118,4 +115,22 @@ export function createIndexedValue<T>(
   }
   markRef(ctx, ref);
   return ref;
+}
+
+export interface DeserializationContext {
+  values: Map<number, unknown>;
+  refs: Set<number>;
+}
+
+export interface DeserializationOptions {
+  markedRefs: number[] | Set<number>;
+}
+
+export function createDeserializationContext(
+  options: DeserializationOptions,
+): DeserializationContext {
+  return {
+    values: new Map(),
+    refs: new Set(options.markedRefs),
+  };
 }
