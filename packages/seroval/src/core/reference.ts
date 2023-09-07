@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import assert from './assert';
+import { REFERENCES_KEY } from './keys';
 
 const REFERENCE = new Map<unknown, string>();
 const INV_REFERENCE = new Map<string, unknown>();
@@ -28,31 +29,29 @@ export function getReference<T>(id: string): T {
   return INV_REFERENCE.get(id) as T;
 }
 
-export const GLOBAL_KEY = '__SEROVAL_REFS__';
-
 if (typeof globalThis !== undefined) {
-  Object.defineProperty(globalThis, GLOBAL_KEY, {
+  Object.defineProperty(globalThis, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,
     writable: false,
     enumerable: false,
   });
 } else if (typeof window !== undefined) {
-  Object.defineProperty(window, GLOBAL_KEY, {
+  Object.defineProperty(window, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,
     writable: false,
     enumerable: false,
   });
 } else if (typeof self !== undefined) {
-  Object.defineProperty(self, GLOBAL_KEY, {
+  Object.defineProperty(self, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,
     writable: false,
     enumerable: false,
   });
 } else if (typeof global !== undefined) {
-  Object.defineProperty(global, GLOBAL_KEY, {
+  Object.defineProperty(global, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,
     writable: false,
