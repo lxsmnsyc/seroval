@@ -53,7 +53,7 @@ export function createStreamingCrossParserContext(
   };
 }
 
-export interface CrossSerializationContext extends BaseParserContext {
+export interface CrossSerializerContext extends BaseParserContext {
   stack: number[];
   // Array of assignments to be done (used for recursion)
   assignments: Assignment[];
@@ -61,13 +61,13 @@ export interface CrossSerializationContext extends BaseParserContext {
   flags: FlaggedObject[];
 }
 
-export interface CrossSerializationOptions {
+export interface CrossSerializerOptions {
   features: number;
 }
 
-export function createCrossSerializationContext(
-  options: CrossSerializationOptions,
-): CrossSerializationContext {
+export function createCrossSerializerContext(
+  options: CrossSerializerOptions,
+): CrossSerializerContext {
   return {
     stack: [],
     assignments: [],

@@ -1,15 +1,15 @@
 /* eslint-disable no-await-in-loop */
 import { Feature } from './core/compat';
 import type {
-  SerializationContext,
+  SerializerContext,
   ParserOptions,
 } from './core/tree/context';
 import {
   getRefParam,
   createParserContext,
-  createSerializationContext,
+  createSerializerContext,
   getRootID,
-  createDeserializationContext,
+  createDeserializerContext,
 } from './core/tree/context';
 import parseSync from './core/tree/sync';
 import parseAsync from './core/tree/async';
@@ -29,7 +29,7 @@ export type {
 export { Feature } from './core/compat';
 
 function finalize(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   rootID: number,
   isObject: boolean,
   result: string,
@@ -70,7 +70,7 @@ export function serialize<T>(
 ): string {
   const ctx = createParserContext(options);
   const tree = parseSync(ctx, source);
-  const serial = createSerializationContext({
+  const serial = createSerializerContext({
     markedRefs: ctx.reference.marked,
     features: ctx.features,
   });
@@ -89,7 +89,7 @@ export async function serializeAsync<T>(
 ): Promise<string> {
   const ctx = createParserContext(options);
   const tree = await parseAsync(ctx, source);
-  const serial = createSerializationContext({
+  const serial = createSerializerContext({
     markedRefs: ctx.reference.marked,
     features: ctx.features,
   });
@@ -141,7 +141,7 @@ export async function toJSONAsync<T>(
 }
 
 export function compileJSON(source: SerovalJSON): string {
-  const serial = createSerializationContext({
+  const serial = createSerializerContext({
     features: source.f,
     markedRefs: source.m,
   });
@@ -150,7 +150,7 @@ export function compileJSON(source: SerovalJSON): string {
 }
 
 export function fromJSON<T>(source: SerovalJSON): T {
-  const serial = createDeserializationContext({
+  const serial = createDeserializerContext({
     markedRefs: source.m,
   });
   return deserializeTree(serial, source.t) as T;

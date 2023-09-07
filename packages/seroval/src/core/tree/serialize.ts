@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { Feature } from '../compat';
 import type {
-  SerializationContext,
+  SerializerContext,
 } from './context';
 import {
   getRefParam,
@@ -50,7 +50,7 @@ import type { Assignment } from '../assignments';
 import { resolveAssignments, resolveFlags } from '../assignments';
 import { REFERENCES_KEY } from '../keys';
 
-function pushObjectFlag(ctx: SerializationContext, flag: SerovalObjectFlags, id: number): void {
+function pushObjectFlag(ctx: SerializerContext, flag: SerovalObjectFlags, id: number): void {
   if (flag !== SerovalObjectFlags.None) {
     markRef(ctx, id);
     ctx.flags.push({
@@ -60,7 +60,7 @@ function pushObjectFlag(ctx: SerializationContext, flag: SerovalObjectFlags, id:
   }
 }
 
-export function resolvePatches(ctx: SerializationContext): string | undefined {
+export function resolvePatches(ctx: SerializerContext): string | undefined {
   const assignments = resolveAssignments(ctx.assignments);
   const flags = resolveFlags(ctx.flags);
   if (assignments) {
@@ -79,7 +79,7 @@ export function resolvePatches(ctx: SerializationContext): string | undefined {
  */
 
 function createAssignment(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   source: string,
   value: string,
 ): void {
@@ -92,7 +92,7 @@ function createAssignment(
 }
 
 function createAddAssignment(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   ref: number,
   value: string,
 ): void {
@@ -105,7 +105,7 @@ function createAddAssignment(
 }
 
 function createSetAssignment(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   ref: number,
   key: string,
   value: string,
@@ -119,7 +119,7 @@ function createSetAssignment(
 }
 
 function createAppendAssignment(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   ref: number,
   key: string,
   value: string,
@@ -133,7 +133,7 @@ function createAppendAssignment(
 }
 
 function createArrayAssign(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   ref: number,
   index: number | string,
   value: string,
@@ -142,7 +142,7 @@ function createArrayAssign(
 }
 
 function createObjectAssign(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   ref: number,
   key: string,
   value: string,
@@ -152,7 +152,7 @@ function createObjectAssign(
 }
 
 function assignIndexedValue(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   index: number,
   value: string,
 ): string {
@@ -163,14 +163,14 @@ function assignIndexedValue(
 }
 
 function isIndexedValueInStack(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalNode,
 ): node is SerovalIndexedValueNode {
   return node.t === SerovalNodeType.IndexedValue && ctx.stack.includes(node.i);
 }
 
 function serializeArray(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalArrayNode,
 ): string {
   const id = node.i;
@@ -208,14 +208,14 @@ function serializeArray(
   return assignIndexedValue(ctx, id, '[' + values + (isHoley ? ',]' : ']'));
 }
 
-function getIterableAccess(ctx: SerializationContext): string {
+function getIterableAccess(ctx: SerializerContext): string {
   return ctx.features & Feature.ArrayPrototypeValues
     ? '.values()'
     : '[Symbol.iterator]()';
 }
 
 function serializeIterable(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalNode,
 ): string {
   const parent = ctx.stack;
@@ -233,7 +233,7 @@ function serializeIterable(
 }
 
 function serializeProperties(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   sourceID: number,
   node: SerovalObjectRecordNode,
 ): string {
@@ -286,7 +286,7 @@ function serializeProperties(
 }
 
 function serializeWithObjectAssign(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   value: SerovalObjectRecordNode,
   id: number,
   serialized: string,
@@ -299,7 +299,7 @@ function serializeWithObjectAssign(
 }
 
 function serializeAssignments(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   sourceID: number,
   node: SerovalObjectRecordNode,
 ): string | undefined {
@@ -364,7 +364,7 @@ function serializeAssignments(
 }
 
 function serializeDictionary(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   i: number,
   d: SerovalObjectRecordNode | undefined,
   init: string,
@@ -386,7 +386,7 @@ function serializeDictionary(
 const NULL_CONSTRUCTOR = 'Object.create(null)';
 
 function serializeNullConstructor(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalNullConstructorNode,
 ): string {
   pushObjectFlag(ctx, node.o, node.i);
@@ -394,7 +394,7 @@ function serializeNullConstructor(
 }
 
 function serializeObject(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalObjectNode,
 ): string {
   pushObjectFlag(ctx, node.o, node.i);
@@ -402,7 +402,7 @@ function serializeObject(
 }
 
 function serializeSet(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalSetNode,
 ): string {
   let serialized = 'new Set';
@@ -434,7 +434,7 @@ function serializeSet(
 }
 
 function serializeMap(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalMapNode,
 ): string {
   let serialized = 'new Map';
@@ -503,7 +503,7 @@ function serializeMap(
 }
 
 function serializeAggregateError(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalAggregateErrorNode,
 ): string {
   // Serialize the required arguments
@@ -518,7 +518,7 @@ function serializeAggregateError(
 }
 
 function serializeError(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalErrorNode,
 ): string {
   return serializeDictionary(ctx, node.i, node.d, 'new ' + node.c + '("' + node.m + '")');
@@ -528,7 +528,7 @@ const PROMISE_RESOLVE = 'Promise.resolve';
 const PROMISE_REJECT = 'Promise.reject';
 
 function serializePromise(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalPromiseNode,
 ): string {
   let serialized: string;
@@ -564,7 +564,7 @@ function serializePromise(
 }
 
 function serializeArrayBuffer(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalArrayBufferNode,
 ): string {
   let result = 'new Uint8Array(';
@@ -581,7 +581,7 @@ function serializeArrayBuffer(
 }
 
 function serializeTypedArray(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ): string {
   return assignIndexedValue(
@@ -592,28 +592,28 @@ function serializeTypedArray(
 }
 
 function serializeDate(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalDateNode,
 ): string {
   return assignIndexedValue(ctx, node.i, 'new Date("' + node.s + '")');
 }
 
 function serializeRegExp(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalRegExpNode,
 ): string {
   return assignIndexedValue(ctx, node.i, '/' + node.c + '/' + node.m);
 }
 
 function serializeURL(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalURLNode,
 ): string {
   return assignIndexedValue(ctx, node.i, 'new URL("' + node.s + '")');
 }
 
 function serializeURLSearchParams(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalURLSearchParamsNode,
 ): string {
   return assignIndexedValue(
@@ -624,14 +624,14 @@ function serializeURLSearchParams(
 }
 
 function serializeReference(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalReferenceNode,
 ): string {
   return assignIndexedValue(ctx, node.i, REFERENCES_KEY + '.get("' + node.s + '")');
 }
 
 function serializeDataView(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalDataViewNode,
 ): string {
   return assignIndexedValue(
@@ -642,7 +642,7 @@ function serializeDataView(
 }
 
 function serializeBlob(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalBlobNode,
 ): string {
   return assignIndexedValue(
@@ -653,7 +653,7 @@ function serializeBlob(
 }
 
 function serializeFile(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalFileNode,
 ): string {
   return assignIndexedValue(
@@ -664,7 +664,7 @@ function serializeFile(
 }
 
 function serializeHeaders(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalHeadersNode,
 ): string {
   return assignIndexedValue(
@@ -675,7 +675,7 @@ function serializeHeaders(
 }
 
 function serializeFormDataEntries(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalFormDataNode,
 ): string | undefined {
   let value: string;
@@ -699,7 +699,7 @@ function serializeFormDataEntries(
 }
 
 function serializeFormData(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalFormDataNode,
 ): string {
   const size = node.d.s;
@@ -716,21 +716,21 @@ function serializeFormData(
 }
 
 function serializeBoxed(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalBoxedNode,
 ): string {
   return assignIndexedValue(ctx, node.i, 'Object(' + serializeTree(ctx, node.f) + ')');
 }
 
 function serializeWKSymbol(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalWKSymbolNode,
 ): string {
   return assignIndexedValue(ctx, node.i, SYMBOL_STRING[node.s]);
 }
 
 export default function serializeTree(
-  ctx: SerializationContext,
+  ctx: SerializerContext,
   node: SerovalNode,
 ): string {
   switch (node.t) {

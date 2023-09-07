@@ -25,7 +25,7 @@ export function createParserContext(options: Partial<ParserOptions> = {}): Parse
   };
 }
 
-export interface SerializationReference {
+export interface SerializerReference {
   size: number;
   // Map tree refs to actual refs
   valid: (number | undefined)[];
@@ -33,18 +33,18 @@ export interface SerializationReference {
   marked: Set<number>;
 }
 
-export interface SerializationContext extends BaseSerializerContext {
-  reference: SerializationReference;
+export interface SerializerContext extends BaseSerializerContext {
+  reference: SerializerReference;
   // Variables
   vars: (string | undefined)[];
 }
 
-export interface SerializationOptions {
+export interface SerializerOptions {
   markedRefs: number[] | Set<number>;
   features: number;
 }
 
-export function createSerializationContext(options: SerializationOptions): SerializationContext {
+export function createSerializerContext(options: SerializerOptions): SerializerContext {
   return {
     stack: [],
     vars: [],
@@ -63,7 +63,7 @@ export function createSerializationContext(options: SerializationOptions): Seria
  * Increments the number of references the referenced value has
  */
 export function markRef(
-  ctx: ParserContext | SerializationContext,
+  ctx: ParserContext | SerializerContext,
   current: number,
 ): void {
   ctx.reference.marked.add(current);
@@ -72,7 +72,7 @@ export function markRef(
  * Creates the reference param (identifier) from the given reference ID
  * Calling this function means the value has been referenced somewhere
  */
-export function getRefParam(ctx: SerializationContext, index: number): string {
+export function getRefParam(ctx: SerializerContext, index: number): string {
   /**
    * Creates a new reference ID from a given reference ID
    * This new reference ID means that the reference itself
@@ -117,18 +117,18 @@ export function createIndexedValue<T>(
   return ref;
 }
 
-export interface DeserializationContext {
+export interface DeserializerContext {
   values: Map<number, unknown>;
   refs: Set<number>;
 }
 
-export interface DeserializationOptions {
+export interface DeserializerOptions {
   markedRefs: number[] | Set<number>;
 }
 
-export function createDeserializationContext(
-  options: DeserializationOptions,
-): DeserializationContext {
+export function createDeserializerContext(
+  options: DeserializerOptions,
+): DeserializerContext {
   return {
     values: new Map(),
     refs: new Set(options.markedRefs),
