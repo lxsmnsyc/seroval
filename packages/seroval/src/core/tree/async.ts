@@ -55,8 +55,6 @@ import {
 import {
   createBlobNode,
   createFileNode,
-  createURLNode,
-  createURLSearchParamsNode,
 } from './web-api';
 import { SerovalNodeType } from '../constants';
 import {
@@ -69,6 +67,7 @@ import {
   createRegExpNode,
   createStringNode,
 } from '../base-primitives';
+import { createURLNode, createURLSearchParamsNode } from '../web-api';
 
 type ObjectLikeNode =
   | SerovalObjectNode

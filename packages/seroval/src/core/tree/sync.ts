@@ -47,7 +47,6 @@ import type {
 import {
   SerovalObjectRecordSpecialKey,
 } from '../types';
-import { createURLNode, createURLSearchParamsNode } from './web-api';
 import { SerovalNodeType } from '../constants';
 import {
   createArrayBufferNode,
@@ -59,6 +58,7 @@ import {
   createRegExpNode,
   createStringNode,
 } from '../base-primitives';
+import { createURLNode, createURLSearchParamsNode } from '../web-api';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
