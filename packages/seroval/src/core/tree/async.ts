@@ -461,7 +461,7 @@ async function parseObject(
   // Non-primitive values needs a reference ID
   // mostly because the values themselves are stateful
   const id = createIndexedValue(ctx, current);
-  if (ctx.markedRefs.has(id)) {
+  if (ctx.reference.marked.has(id)) {
     return createIndexedValueNode(id);
   }
   if (hasReferenceID(current)) {

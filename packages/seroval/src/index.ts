@@ -69,7 +69,10 @@ export function serialize<T>(
 ): string {
   const ctx = createParserContext(options);
   const tree = parseSync(ctx, source);
-  const serial = createSerializationContext(ctx);
+  const serial = createSerializationContext({
+    markedRefs: ctx.reference.marked,
+    features: ctx.features,
+  });
   const result = serializeTree(serial, tree);
   return finalize(
     serial,
@@ -85,7 +88,10 @@ export async function serializeAsync<T>(
 ): Promise<string> {
   const ctx = createParserContext(options);
   const tree = await parseAsync(ctx, source);
-  const serial = createSerializationContext(ctx);
+  const serial = createSerializationContext({
+    markedRefs: ctx.reference.marked,
+    features: ctx.features,
+  });
   const result = serializeTree(serial, tree);
   return finalize(
     serial,
@@ -116,7 +122,7 @@ export function toJSON<T>(
     t: parseSync(ctx, source),
     r: getRootID(ctx, source),
     f: ctx.features,
-    m: Array.from(ctx.markedRefs),
+    m: Array.from(ctx.reference.marked),
   };
 }
 
@@ -129,7 +135,7 @@ export async function toJSONAsync<T>(
     t: await parseAsync(ctx, source),
     r: getRootID(ctx, source),
     f: ctx.features,
-    m: Array.from(ctx.markedRefs),
+    m: Array.from(ctx.reference.marked),
   };
 }
 

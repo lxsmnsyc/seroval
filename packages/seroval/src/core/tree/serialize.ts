@@ -273,7 +273,7 @@ function assignIndexedValue(
   index: number,
   value: string,
 ): string {
-  if (ctx.markedRefs.has(index)) {
+  if (ctx.reference.marked.has(index)) {
     return getRefParam(ctx, index) + '=' + value;
   }
   return value;

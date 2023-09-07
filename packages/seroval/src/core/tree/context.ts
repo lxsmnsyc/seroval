@@ -38,9 +38,13 @@ export type Assignment =
   | SetAssignment
   | AppendAssignment;
 
+export interface ParserReference {
+  ids: Map<unknown, number>;
+  marked: Set<number>;
+}
+
 export interface ParserContext {
-  refs: Map<unknown, number>;
-  markedRefs: Set<number>;
+  reference: ParserReference;
   features: number;
 }
 
@@ -49,13 +53,18 @@ export interface FlaggedObject {
   value: string;
 }
 
-export interface SerializationContext extends BaseParserContext {
-  stack: number[];
+export interface SerializationReference {
+  size: number;
   // Map tree refs to actual refs
-  validRefs: (number | undefined)[];
-  refSize: number;
+  valid: (number | undefined)[];
   // Refs that are...referenced
-  markedRefs: Set<number>;
+  marked: Set<number>;
+}
+
+export interface SerializationContext extends BaseParserContext {
+  reference: SerializationReference;
+
+  stack: number[];
   // Variables
   vars: (string | undefined)[];
   // Array of assignments to be done (used for recursion)
@@ -73,8 +82,10 @@ export interface Options {
 
 export function createParserContext(options: Partial<Options> = {}): ParserContext {
   return {
-    markedRefs: new Set(),
-    refs: new Map(),
+    reference: {
+      ids: new Map(),
+      marked: new Set(),
+    },
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
   };
 }
@@ -89,10 +100,12 @@ export function createSerializationContext(options: SerializationOptions): Seria
     stack: [],
     vars: [],
     assignments: [],
-    validRefs: [],
-    refSize: 0,
+    reference: {
+      valid: [],
+      size: 0,
+      marked: new Set(options.markedRefs),
+    },
     features: options.features,
-    markedRefs: new Set(options.markedRefs),
     valueMap: new Map(),
     flags: [],
   };
@@ -105,7 +118,7 @@ export function markRef(
   ctx: ParserContext | SerializationContext,
   current: number,
 ): void {
-  ctx.markedRefs.add(current);
+  ctx.reference.marked.add(current);
 }
 /**
  * Creates the reference param (identifier) from the given reference ID
@@ -118,10 +131,10 @@ export function getRefParam(ctx: SerializationContext, index: number): string {
    * has been referenced at least once, and is used to generate
    * the variables
    */
-  let actualIndex = ctx.validRefs[index];
+  let actualIndex = ctx.reference.valid[index];
   if (actualIndex == null) {
-    actualIndex = ctx.refSize++;
-    ctx.validRefs[index] = actualIndex;
+    actualIndex = ctx.reference.size++;
+    ctx.reference.valid[index] = actualIndex;
   }
   let identifier = ctx.vars[actualIndex];
   if (identifier == null) {
@@ -135,9 +148,9 @@ export function getRootID<T>(
   ctx: ParserContext,
   current: T,
 ): number {
-  const ref = ctx.refs.get(current);
+  const ref = ctx.reference.ids.get(current);
   if (ref == null) {
-    return ctx.refs.size;
+    return ctx.reference.ids.size;
   }
   return ref;
 }
@@ -146,10 +159,10 @@ export function createIndexedValue<T>(
   ctx: ParserContext,
   current: T,
 ): number {
-  const ref = ctx.refs.get(current);
+  const ref = ctx.reference.ids.get(current);
   if (ref == null) {
-    const id = ctx.refs.size;
-    ctx.refs.set(current, id);
+    const id = ctx.reference.ids.size;
+    ctx.reference.ids.set(current, id);
     return id;
   }
   markRef(ctx, ref);

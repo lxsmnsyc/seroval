@@ -62,7 +62,7 @@ function assignIndexedValue<T>(
   index: number,
   value: T,
 ): T {
-  if (ctx.markedRefs.has(index)) {
+  if (ctx.reference.marked.has(index)) {
     ctx.valueMap.set(index, value);
   }
   return value;
