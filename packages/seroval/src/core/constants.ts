@@ -41,6 +41,7 @@ export const enum SerovalNodeType {
   FormData = 26,
   Boxed = 27,
   Resolver = 28,
+  Fulfilled = 29,
 }
 
 export const enum SerovalObjectFlags {

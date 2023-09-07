@@ -302,6 +302,14 @@ export interface SerovalResolverNode extends SerovalBaseNode {
   i: number;
 }
 
+export interface SerovalFulfilledNode extends SerovalBaseNode {
+  t: SerovalNodeType.Fulfilled;
+  // reference to the resolver
+  i: number;
+  s: 1 | 0;
+  f: SerovalNode;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -330,7 +338,8 @@ export type SerovalAsyncNode =
   | SerovalPromiseNode
   | SerovalBlobNode
   | SerovalFileNode
-  | SerovalResolverNode;
+  | SerovalResolverNode
+  | SerovalFulfilledNode;
 
 export type SerovalNode =
   | SerovalSyncNode
