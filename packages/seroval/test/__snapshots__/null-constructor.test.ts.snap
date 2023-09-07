@@ -81,7 +81,7 @@ exports[`null-constructor > toJSON > supports self-recursion 1`] = `
 
 exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"d\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":11,\\"i\\":1,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":11,\\"i\\":1,\\"d\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `
 {
@@ -123,7 +123,7 @@ exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `
           "l": undefined,
           "m": undefined,
           "o": undefined,
-          "s": undefined,
+          "s": 1,
           "t": 12,
         },
         {
@@ -148,7 +148,7 @@ exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `
           "l": undefined,
           "m": undefined,
           "o": undefined,
-          "s": undefined,
+          "s": 1,
           "t": 12,
         },
       ],

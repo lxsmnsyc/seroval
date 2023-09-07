@@ -23,6 +23,14 @@ describe('Promise', () => {
       }))
         .toMatchSnapshot();
     });
+    it('should use function expression instead of arrow functions', async () => {
+      const example: Record<string, Promise<unknown>> = {};
+      example.self = Promise.reject(example);
+      expect(await serializeAsync(example, {
+        disabledFeatures: Feature.ArrowFunction,
+      }))
+        .toMatchSnapshot();
+    });
   });
   describe('compat#toJSON', () => {
     it('should throw an error for unsupported target', async () => {

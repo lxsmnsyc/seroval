@@ -1,9 +1,9 @@
 export default async function promiseToResult(
   current: Promise<unknown>,
-): Promise<[boolean, unknown]> {
+): Promise<[0 | 1, unknown]> {
   try {
-    return [true, await current];
+    return [1, await current];
   } catch (e) {
-    return [false, e];
+    return [0, e];
   }
 }

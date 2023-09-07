@@ -193,7 +193,7 @@ export interface SerovalNullConstructorNode extends SerovalBaseNode {
 
 export interface SerovalPromiseNode extends SerovalBaseNode {
   t: SerovalNodeType.Promise;
-  s: boolean;
+  s: 0 | 1;
   // resolved value
   f: SerovalNode;
   i: number;

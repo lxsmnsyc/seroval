@@ -10,4 +10,4 @@ exports[`boxed bigint > serializeAsync > supports boxed bigint 1`] = `"Promise.r
 
 exports[`boxed bigint > toJSON > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;

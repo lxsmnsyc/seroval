@@ -6,4 +6,4 @@ exports[`URLSearchParams > serializeAsync > supports URLSearchParams 1`] = `"Pro
 
 exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":19,\\"i\\":0,\\"s\\":\\"hello=world&foo=bar\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"hello=world&foo=bar\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"hello=world&foo=bar\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
