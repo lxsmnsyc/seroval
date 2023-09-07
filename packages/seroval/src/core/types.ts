@@ -3,7 +3,7 @@ import type {
   SerovalObjectFlags,
   SerovalConstant,
   Symbols,
-} from '../constants';
+} from './constants';
 
 export interface SerovalBaseNode {
   // Type of the node
@@ -296,6 +296,11 @@ export interface SerovalBoxedNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
+export interface SerovalResolverNode extends SerovalBaseNode {
+  t: SerovalNodeType.Resolver;
+  i: number;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -323,7 +328,8 @@ export type SerovalSyncNode =
 export type SerovalAsyncNode =
   | SerovalPromiseNode
   | SerovalBlobNode
-  | SerovalFileNode;
+  | SerovalFileNode
+  | SerovalResolverNode;
 
 export type SerovalNode =
   | SerovalSyncNode

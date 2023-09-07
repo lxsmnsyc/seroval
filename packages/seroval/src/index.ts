@@ -1,21 +1,21 @@
 /* eslint-disable no-await-in-loop */
-import { Feature } from './compat';
+import { Feature } from './core/compat';
 import type {
   SerializationContext,
   Options,
-} from './tree/context';
+} from './core/tree/context';
 import {
   getRefParam,
   createParserContext,
   createSerializationContext,
   getRootID,
-} from './tree/context';
-import parseSync from './tree/sync';
-import parseAsync from './tree/async';
-import deserializeTree from './tree/deserialize';
-import serializeTree, { resolvePatches } from './tree/serialize';
-import type { SerovalNode } from './tree/types';
-import { SerovalNodeType } from './constants';
+} from './core/tree/context';
+import parseSync from './core/tree/sync';
+import parseAsync from './core/tree/async';
+import deserializeTree from './core/tree/deserialize';
+import serializeTree, { resolvePatches } from './core/tree/serialize';
+import type { SerovalNode } from './core/types';
+import { SerovalNodeType } from './core/constants';
 
 export type {
   AsyncServerValue,
@@ -25,7 +25,7 @@ export type {
   SemiPrimitiveValue,
   ErrorValue,
 } from './types';
-export { Feature } from './compat';
+export { Feature } from './core/compat';
 
 function finalize(
   ctx: SerializationContext,
@@ -152,4 +152,4 @@ export function fromJSON<T>(source: SerovalJSON): T {
 
 export default serialize;
 
-export { createReference } from './reference';
+export { createReference } from './core/reference';

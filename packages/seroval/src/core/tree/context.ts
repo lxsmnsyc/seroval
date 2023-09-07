@@ -1,5 +1,6 @@
 import { ALL_ENABLED } from '../compat';
 import type { SerovalObjectFlags } from '../constants';
+import type { BaseParserContext } from '../context';
 import getIdentifier from '../get-identifier';
 
 interface IndexAssignment {
@@ -48,7 +49,7 @@ export interface FlaggedObject {
   value: string;
 }
 
-export interface SerializationContext {
+export interface SerializationContext extends BaseParserContext {
   stack: number[];
   // Map tree refs to actual refs
   validRefs: (number | undefined)[];
@@ -59,8 +60,6 @@ export interface SerializationContext {
   vars: (string | undefined)[];
   // Array of assignments to be done (used for recursion)
   assignments: Assignment[];
-  // Supported features
-  features: number;
 
   valueMap: Map<number, unknown>;
 

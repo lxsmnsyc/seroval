@@ -4,7 +4,7 @@ import type {
   SerializationContext,
 } from './context';
 import { deserializeString } from '../string';
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import { getReference } from '../reference';
 import { getErrorConstructor, getTypedArrayConstructor } from '../shared';
 import type {
@@ -33,10 +33,10 @@ import type {
   SerovalTypedArrayNode,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
-} from './types';
+} from '../types';
 import {
   SerovalObjectRecordSpecialKey,
-} from './types';
+} from '../types';
 import {
   SYMBOL_REF,
   SerovalNodeType,

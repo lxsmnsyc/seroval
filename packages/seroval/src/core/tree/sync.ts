@@ -1,39 +1,28 @@
-/* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
 import type { ParserContext } from './context';
-import {
-  createIndexedValue,
-} from './context';
+import { createIndexedValue } from './context';
 import { serializeString } from '../string';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from '../types';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import UnsupportedTypeError from '../UnsupportedTypeError';
 import {
   TRUE_NODE,
   FALSE_NODE,
   UNDEFINED_NODE,
   NULL_NODE,
-} from './constants';
+} from '../literals';
 import {
-  createBigIntNode,
   createBigIntTypedArrayNode,
-  createDateNode,
-  createNumberNode,
-  createIndexedValueNode,
-  createRegExpNode,
-  createStringNode,
   createTypedArrayNode,
   createReferenceNode,
-  createArrayBufferNode,
   createDataViewNode,
   createSymbolNode,
   createFunctionNode,
 } from './primitives';
-import { hasReferenceID } from '../reference';
+import {
+  hasReferenceID,
+} from '../reference';
 import {
   getErrorConstructorName,
   getErrorOptions,
@@ -48,37 +37,34 @@ import type {
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
-  SerovalNode,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
-  SerovalPromiseNode,
   SerovalSetNode,
-} from './types';
+  SerovalSyncNode,
+} from '../types';
 import {
   SerovalObjectRecordSpecialKey,
-} from './types';
-import {
-  createBlobNode,
-  createFileNode,
-  createURLNode,
-  createURLSearchParamsNode,
-} from './web-api';
+} from '../types';
+import { createURLNode, createURLSearchParamsNode } from './web-api';
 import { SerovalNodeType } from '../constants';
+import {
+  createArrayBufferNode,
+  createBigIntNode,
+  createDateNode,
+  createIndexedValueNode,
+  createNumberNode,
+  createRegExpNode,
+  createStringNode,
+} from '../base-primitives';
 
-type ObjectLikeNode =
-  | SerovalObjectNode
-  | SerovalNullConstructorNode
-  | SerovalPromiseNode;
+type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
-async function generateNodeList(
-  ctx: ParserContext,
-  current: unknown[],
-): Promise<SerovalNode[]> {
+function generateNodeList(ctx: ParserContext, current: unknown[]): SerovalSyncNode[] {
   const size = current.length;
-  const nodes = new Array<SerovalNode>(size);
+  const nodes = new Array<SerovalSyncNode>(size);
   const deferred = new Array<unknown>(size);
   let item: unknown;
   for (let i = 0; i < size; i++) {
@@ -87,23 +73,23 @@ async function generateNodeList(
       if (isIterable(item)) {
         deferred[i] = item;
       } else {
-        nodes[i] = await parseAsync(ctx, item);
+        nodes[i] = parseSync(ctx, item);
       }
     }
   }
   for (let i = 0; i < size; i++) {
     if (i in deferred) {
-      nodes[i] = await parseAsync(ctx, deferred[i]);
+      nodes[i] = parseSync(ctx, deferred[i]);
     }
   }
   return nodes;
 }
 
-async function generateArrayNode(
+function generateArrayNode(
   ctx: ParserContext,
   id: number,
   current: unknown[],
-): Promise<SerovalArrayNode> {
+): SerovalArrayNode {
   return {
     t: SerovalNodeType.Array,
     i: id,
@@ -112,22 +98,22 @@ async function generateArrayNode(
     c: undefined,
     m: undefined,
     d: undefined,
-    a: await generateNodeList(ctx, current),
+    a: generateNodeList(ctx, current),
     f: undefined,
     b: undefined,
     o: getObjectFlag(current),
   };
 }
 
-async function generateMapNode(
+function generateMapNode(
   ctx: ParserContext,
   id: number,
   current: Map<unknown, unknown>,
-): Promise<SerovalMapNode> {
+): SerovalMapNode {
   assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
-  const keyNodes = new Array<SerovalNode>(len);
-  const valueNodes = new Array<SerovalNode>(len);
+  const keyNodes = new Array<SerovalSyncNode>(len);
+  const valueNodes = new Array<SerovalSyncNode>(len);
   const deferredKey = new Array<unknown>(len);
   const deferredValue = new Array<unknown>(len);
   let deferredSize = 0;
@@ -139,14 +125,14 @@ async function generateMapNode(
       deferredValue[deferredSize] = value;
       deferredSize++;
     } else {
-      keyNodes[nodeSize] = await parseAsync(ctx, key);
-      valueNodes[nodeSize] = await parseAsync(ctx, value);
+      keyNodes[nodeSize] = parseSync(ctx, key);
+      valueNodes[nodeSize] = parseSync(ctx, value);
       nodeSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
-    keyNodes[nodeSize + i] = await parseAsync(ctx, deferredKey[i]);
-    valueNodes[nodeSize + i] = await parseAsync(ctx, deferredValue[i]);
+    keyNodes[nodeSize + i] = parseSync(ctx, deferredKey[i]);
+    valueNodes[nodeSize + i] = parseSync(ctx, deferredValue[i]);
   }
   return {
     t: SerovalNodeType.Map,
@@ -163,14 +149,14 @@ async function generateMapNode(
   };
 }
 
-async function generateSetNode(
+function generateSetNode(
   ctx: ParserContext,
   id: number,
   current: Set<unknown>,
-): Promise<SerovalSetNode> {
+): SerovalSetNode {
   assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
-  const nodes = new Array<SerovalNode>(len);
+  const nodes = new Array<SerovalSyncNode>(len);
   const deferred = new Array<unknown>(len);
   let deferredSize = 0;
   let nodeSize = 0;
@@ -179,12 +165,12 @@ async function generateSetNode(
     if (isIterable(item)) {
       deferred[deferredSize++] = item;
     } else {
-      nodes[nodeSize++] = await parseAsync(ctx, item);
+      nodes[nodeSize++] = parseSync(ctx, item);
     }
   }
   // Parse deferred items
   for (let i = 0; i < deferredSize; i++) {
-    nodes[nodeSize + i] = await parseAsync(ctx, deferred[i]);
+    nodes[nodeSize + i] = parseSync(ctx, deferred[i]);
   }
   return {
     t: SerovalNodeType.Set,
@@ -201,14 +187,14 @@ async function generateSetNode(
   };
 }
 
-async function generateProperties(
+function generateProperties(
   ctx: ParserContext,
   properties: Record<string, unknown>,
-): Promise<SerovalObjectRecordNode> {
+): SerovalObjectRecordNode {
   const keys = Object.keys(properties);
   let size = keys.length;
   const keyNodes = new Array<SerovalObjectRecordKey>(size);
-  const valueNodes = new Array<SerovalNode>(size);
+  const valueNodes = new Array<SerovalSyncNode>(size);
   const deferredKeys = new Array<SerovalObjectRecordKey>(size);
   const deferredValues = new Array<unknown>(size);
   let deferredSize = 0;
@@ -224,23 +210,20 @@ async function generateProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = await parseAsync(ctx, item);
+      valueNodes[nodesSize] = parseSync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = await parseAsync(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = parseSync(ctx, deferredValues[i]);
   }
   if (ctx.features & Feature.Symbol) {
     if (Symbol.iterator in properties) {
       keyNodes[size] = SerovalObjectRecordSpecialKey.SymbolIterator;
       const items = Array.from(properties as Iterable<unknown>);
-      valueNodes[size] = await generateArrayNode(
-        ctx,
-        createIndexedValue(ctx, items),
-        items,
-      );
+      const id = createIndexedValue(ctx, items);
+      valueNodes[size] = generateArrayNode(ctx, id, items);
       size++;
     }
   }
@@ -251,14 +234,14 @@ async function generateProperties(
   };
 }
 
-async function generatePlainProperties(
+function generatePlainProperties(
   ctx: ParserContext,
   properties: Record<string, unknown>,
-): Promise<SerovalPlainRecordNode> {
+): SerovalPlainRecordNode {
   const keys = Object.keys(properties);
   const size = keys.length;
   const keyNodes = new Array<string>(size);
-  const valueNodes = new Array<SerovalNode>(size);
+  const valueNodes = new Array<SerovalSyncNode>(size);
   const deferredKeys = new Array<string>(size);
   const deferredValues = new Array<unknown>(size);
   let deferredSize = 0;
@@ -274,13 +257,13 @@ async function generatePlainProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = await parseAsync(ctx, item);
+      valueNodes[nodesSize] = parseSync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = await parseAsync(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = parseSync(ctx, deferredValues[i]);
   }
   return {
     k: keyNodes,
@@ -289,34 +272,12 @@ async function generatePlainProperties(
   };
 }
 
-async function generatePromiseNode(
-  ctx: ParserContext,
-  id: number,
-  current: Promise<unknown>,
-): Promise<SerovalPromiseNode> {
-  assert(ctx.features & Feature.Promise, new UnsupportedTypeError(current));
-  return {
-    t: SerovalNodeType.Promise,
-    i: id,
-    s: undefined,
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    // Parse options first before the items
-    d: undefined,
-    a: undefined,
-    f: await parseAsync(ctx, await current),
-    b: undefined,
-    o: undefined,
-  };
-}
-
-async function generateObjectNode(
+function generateObjectNode(
   ctx: ParserContext,
   id: number,
   current: Record<string, unknown>,
   empty: boolean,
-): Promise<ObjectLikeNode> {
+): ObjectLikeNode {
   return {
     t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
     i: id,
@@ -324,7 +285,7 @@ async function generateObjectNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: await generateProperties(ctx, current),
+    d: generateProperties(ctx, current),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -332,14 +293,14 @@ async function generateObjectNode(
   };
 }
 
-async function generateAggregateErrorNode(
+function generateAggregateErrorNode(
   ctx: ParserContext,
   id: number,
   current: AggregateError,
-): Promise<SerovalAggregateErrorNode> {
+): SerovalAggregateErrorNode {
   const options = getErrorOptions(ctx, current);
   const optionsNode = options
-    ? await generateProperties(ctx, options)
+    ? generateProperties(ctx, options)
     : undefined;
   return {
     t: SerovalNodeType.AggregateError,
@@ -356,14 +317,14 @@ async function generateAggregateErrorNode(
   };
 }
 
-async function generateErrorNode(
+function generateErrorNode(
   ctx: ParserContext,
   id: number,
   current: Error,
-): Promise<SerovalErrorNode> {
+): SerovalErrorNode {
   const options = getErrorOptions(ctx, current);
   const optionsNode = options
-    ? await generateProperties(ctx, options)
+    ? generateProperties(ctx, options)
     : undefined;
   return {
     t: SerovalNodeType.Error,
@@ -380,13 +341,14 @@ async function generateErrorNode(
   };
 }
 
-async function generateHeadersNode(
+function generateHeadersNode(
   ctx: ParserContext,
   id: number,
   current: Headers,
-): Promise<SerovalHeadersNode> {
+): SerovalHeadersNode {
   assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, string> = {};
+  // TS Headers not an Iterable
   current.forEach((value, key) => {
     items[key] = value;
   });
@@ -397,7 +359,7 @@ async function generateHeadersNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: await generatePlainProperties(ctx, items),
+    d: generatePlainProperties(ctx, items),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -405,13 +367,14 @@ async function generateHeadersNode(
   };
 }
 
-async function generateFormDataNode(
+function generateFormDataNode(
   ctx: ParserContext,
   id: number,
   current: FormData,
-): Promise<SerovalFormDataNode> {
+): SerovalFormDataNode {
   assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, FormDataEntryValue> = {};
+  // TS FormData isn't an Iterable sadly
   current.forEach((value, key) => {
     items[key] = value;
   });
@@ -422,7 +385,7 @@ async function generateFormDataNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: await generatePlainProperties(ctx, items),
+    d: generatePlainProperties(ctx, items),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -430,11 +393,11 @@ async function generateFormDataNode(
   };
 }
 
-async function generateBoxedNode(
+function generateBoxedNode(
   ctx: ParserContext,
   id: number,
   current: object,
-): Promise<SerovalBoxedNode> {
+): SerovalBoxedNode {
   return {
     t: SerovalNodeType.Boxed,
     i: id,
@@ -444,16 +407,16 @@ async function generateBoxedNode(
     m: undefined,
     d: undefined,
     a: undefined,
-    f: await parseAsync(ctx, current.valueOf()),
+    f: parseSync(ctx, current.valueOf()),
     b: undefined,
     o: undefined,
   };
 }
 
-async function parseObject(
+function parseObject(
   ctx: ParserContext,
   current: object | null,
-): Promise<SerovalNode> {
+): SerovalSyncNode {
   if (!current) {
     return NULL_NODE;
   }
@@ -466,9 +429,11 @@ async function parseObject(
   if (hasReferenceID(current)) {
     return createReferenceNode(id, current);
   }
+  // Well well well
   if (Array.isArray(current)) {
     return generateArrayNode(ctx, id, current);
   }
+  // Fast path
   switch (current.constructor) {
     case Number:
     case Boolean:
@@ -481,8 +446,6 @@ async function parseObject(
       return createDateNode(id, current as unknown as Date);
     case RegExp:
       return createRegExpNode(id, current as unknown as RegExp);
-    case Promise:
-      return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
     case ArrayBuffer:
       return createArrayBufferNode(id, current as unknown as ArrayBuffer);
     case Int8Array:
@@ -501,32 +464,25 @@ async function parseObject(
     case DataView:
       return createDataViewNode(ctx, id, current as unknown as DataView);
     case Map:
-      return generateMapNode(
-        ctx,
-        id,
-        current as unknown as Map<unknown, unknown>,
-      );
+      return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
     case Set:
-      return generateSetNode(
-        ctx,
-        id,
-        current as unknown as Set<unknown>,
-      );
+      return generateSetNode(ctx, id, current as unknown as Set<unknown>);
     case Object:
       return generateObjectNode(
         ctx,
         id,
-        current as Record<string, unknown>,
+        current as unknown as Record<string, unknown>,
         false,
       );
     case undefined:
       return generateObjectNode(
         ctx,
         id,
-        current as Record<string, unknown>,
+        current as unknown as Record<string, unknown>,
         true,
       );
     case AggregateError:
+      // Compile-down AggregateError to Error if disabled
       if (ctx.features & Feature.AggregateError) {
         return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
       }
@@ -543,10 +499,6 @@ async function parseObject(
       return createURLNode(ctx, id, current as unknown as URL);
     case URLSearchParams:
       return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
-    case Blob:
-      return createBlobNode(ctx, id, current as unknown as Blob);
-    case File:
-      return createFileNode(ctx, id, current as unknown as File);
     case Headers:
       return generateHeadersNode(ctx, id, current as unknown as Headers);
     case FormData:
@@ -554,6 +506,8 @@ async function parseObject(
     default:
       break;
   }
+  // Slow path. We only need to handle Errors and Iterators
+  // since they have very broad implementations.
   if (current instanceof AggregateError) {
     if (ctx.features & Feature.AggregateError) {
       return generateAggregateErrorNode(ctx, id, current);
@@ -563,20 +517,18 @@ async function parseObject(
   if (current instanceof Error) {
     return generateErrorNode(ctx, id, current);
   }
-  if (current instanceof Promise) {
-    return generatePromiseNode(ctx, id, current);
-  }
   // Generator functions don't have a global constructor
+  // despite existing
   if (Symbol.iterator in current) {
     return generateObjectNode(ctx, id, current, !!current.constructor);
   }
   throw new UnsupportedTypeError(current);
 }
 
-export default async function parseAsync<T>(
+export default function parseSync<T>(
   ctx: ParserContext,
   current: T,
-): Promise<SerovalNode> {
+): SerovalSyncNode {
   switch (typeof current) {
     case 'boolean':
       return current ? TRUE_NODE : FALSE_NODE;

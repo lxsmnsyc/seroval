@@ -1,5 +1,4 @@
-import type { SerovalCrossConstantNode } from './cross/types';
-import type { SerovalConstantNode } from './tree/types';
+import type { SerovalConstantNode } from './types';
 
 export const enum SerovalConstant {
   Null = 0,
@@ -41,6 +40,7 @@ export const enum SerovalNodeType {
   Headers = 25,
   FormData = 26,
   Boxed = 27,
+  Resolver = 28,
 }
 
 export const enum SerovalObjectFlags {
@@ -116,7 +116,7 @@ export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
   [Symbols.Unscopables]: Symbol.unscopables,
 };
 
-export function serializeConstant(node: SerovalConstantNode | SerovalCrossConstantNode): string {
+export function serializeConstant(node: SerovalConstantNode): string {
   switch (node.s) {
     case SerovalConstant.True:
       return '!0';
@@ -139,7 +139,7 @@ export function serializeConstant(node: SerovalConstantNode | SerovalCrossConsta
   }
 }
 
-export function deserializeConstant(node: SerovalConstantNode | SerovalCrossConstantNode): unknown {
+export function deserializeConstant(node: SerovalConstantNode): unknown {
   switch (node.s) {
     case SerovalConstant.True:
       return true;

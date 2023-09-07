@@ -9,7 +9,7 @@ import type {
   SerovalFileNode,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
-} from './types';
+} from '../types';
 import { SerovalNodeType } from '../constants';
 
 export function createURLNode(

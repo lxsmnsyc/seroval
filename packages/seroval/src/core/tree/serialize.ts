@@ -38,10 +38,10 @@ import type {
   SerovalObjectRecordKey,
   SerovalBoxedNode,
   SerovalWKSymbolNode,
-} from './types';
+} from '../types';
 import {
   SerovalObjectRecordSpecialKey,
-} from './types';
+} from '../types';
 import {
   SerovalObjectFlags,
   SerovalNodeType,

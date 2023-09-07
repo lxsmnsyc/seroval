@@ -2,7 +2,7 @@ import { Feature } from './compat';
 import type { ParserContext } from './tree/context';
 import type {
   ErrorValue,
-} from './types';
+} from '../types';
 import { SerovalObjectFlags } from './constants';
 
 export function getErrorConstructorName(error: ErrorValue): string {
