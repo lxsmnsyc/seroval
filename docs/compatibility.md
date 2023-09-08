@@ -36,23 +36,23 @@
 | `Float64Array` | ❓[^4] |
 | `BigInt64Array` | ❓[^1][^5] |
 | `BigUint64Array` | ❓[^1][^5] |
-| `Error` | ✅ |
-| `AggregateError` | ❓[^3] |
-| `EvalError` | ✅ |
-| `RangeError` | ✅ |
-| `ReferenceError` | ✅ |
-| `SyntaxError` | ✅ |
-| `TypeError` | ✅ |
-| `URIError` | ✅ |
+| `Error` | ✅[^6] |
+| `AggregateError` | ✅[^6][^7] |
+| `EvalError` | ✅[^6] |
+| `RangeError` | ✅[^6] |
+| `ReferenceError` | ✅[^6] |
+| `SyntaxError` | ✅[^6] |
+| `TypeError` | ✅[^6] |
+| `URIError` | ✅[^6] |
 | `Promise` | ❌ |
-| [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) | ❓[^6] |
-| [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) | ❓[^6] |
-| [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ❓[^7] |
-| [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ❓[^7] |
+| [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) | ❓[^8] |
+| [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) | ❓[^8] |
+| [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ❓[^9] |
+| [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ❓[^9] |
 | [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ |
 | [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ |
-| [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ❓[^7] |
-| [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ❓[^7] |
+| [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ❓[^9] |
+| [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ❓[^9] |
 | Cyclic references | ✅ |
 | Isomorphic references | ✅ |
 
@@ -60,6 +60,8 @@
 [^2]: `Feature.Map` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^3]: `Feature.Set` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^4]: `Feature.TypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^5]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
-[^6]: `Feature.Symbol` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^7]: `Feature.WebAPI` must be enabled, otherwise throws an `UnsupportedTypeError`.
+[^5]: `Feature.BigIntTypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
+[^6]: `Feature.ErrorPrototypeStack` must be enabled if serializing `Error.prototype.stack` is desired.
+[^7]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
+[^8]: `Feature.Symbol` must be enabled, otherwise throws an `UnsupportedTypeError`.
+[^9]: `Feature.WebAPI` must be enabled, otherwise throws an `UnsupportedTypeError`.
