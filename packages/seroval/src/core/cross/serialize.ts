@@ -32,8 +32,9 @@ import type {
   SerovalObjectRecordKey,
   SerovalBoxedNode,
   SerovalWKSymbolNode,
-  SerovalFulfilledNode,
-  SerovalResolverNode,
+  SerovalPromiseConstructorNode,
+  SerovalPromiseResolveNode,
+  SerovalPromiseRejectNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -713,16 +714,22 @@ function serializeWKSymbol(
   return assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
 }
 
-function serializeFulfilled(
+function serializePromiseResolve(
   ctx: CrossSerializerContext,
-  node: SerovalFulfilledNode,
+  node: SerovalPromiseResolveNode,
 ): string {
-  const callee = node.s ? GLOBAL_CONTEXT_RESOLVE : GLOBAL_CONTEXT_REJECT;
-  return GLOBAL_CONTEXT_REFERENCES + '[' + node.i + '].' + callee + '(' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_REFERENCES + '[' + node.i + '].' + GLOBAL_CONTEXT_RESOLVE + '(' + crossSerializeTree(ctx, node.f) + ')';
 }
 
-function serializeResolver(
-  node: SerovalResolverNode,
+function serializePromiseReject(
+  ctx: CrossSerializerContext,
+  node: SerovalPromiseRejectNode,
+): string {
+  return GLOBAL_CONTEXT_REFERENCES + '[' + node.i + '].' + GLOBAL_CONTEXT_REJECT + '(' + crossSerializeTree(ctx, node.f) + ')';
+}
+
+function serializePromiseConstructor(
+  node: SerovalPromiseConstructorNode,
 ): string {
   return assignIndexedValue(node.i, GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
 }
@@ -787,10 +794,12 @@ export default function crossSerializeTree(
       return serializeFormData(ctx, node);
     case SerovalNodeType.Boxed:
       return serializeBoxed(ctx, node);
-    case SerovalNodeType.Fulfilled:
-      return serializeFulfilled(ctx, node);
-    case SerovalNodeType.Resolver:
-      return serializeResolver(node);
+    case SerovalNodeType.PromiseResolve:
+      return serializePromiseResolve(ctx, node);
+    case SerovalNodeType.PromiseReject:
+      return serializePromiseReject(ctx, node);
+    case SerovalNodeType.PromiseConstructor:
+      return serializePromiseConstructor(node);
     default:
       throw new Error('invariant');
   }

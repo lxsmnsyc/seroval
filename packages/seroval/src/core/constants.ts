@@ -40,8 +40,12 @@ export const enum SerovalNodeType {
   Headers = 25,
   FormData = 26,
   Boxed = 27,
-  Resolver = 28,
-  Fulfilled = 29,
+  PromiseConstructor = 28,
+  PromiseResolve = 29,
+  PromiseReject = 30,
+  ReadableStreamConstructor = 31,
+  ReadableStreamEnqueue = 32,
+  ReadableStreamClose = 33,
 }
 
 export const enum SerovalObjectFlags {

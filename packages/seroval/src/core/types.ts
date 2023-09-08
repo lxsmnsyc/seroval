@@ -297,16 +297,22 @@ export interface SerovalBoxedNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
-export interface SerovalResolverNode extends SerovalBaseNode {
-  t: SerovalNodeType.Resolver;
+export interface SerovalPromiseConstructorNode extends SerovalBaseNode {
+  t: SerovalNodeType.PromiseConstructor;
   i: number;
 }
 
-export interface SerovalFulfilledNode extends SerovalBaseNode {
-  t: SerovalNodeType.Fulfilled;
+export interface SerovalPromiseResolveNode extends SerovalBaseNode {
+  t: SerovalNodeType.PromiseResolve;
   // reference to the resolver
   i: number;
-  s: 1 | 0;
+  f: SerovalNode;
+}
+
+export interface SerovalPromiseRejectNode extends SerovalBaseNode {
+  t: SerovalNodeType.PromiseReject;
+  // reference to the resolver
+  i: number;
   f: SerovalNode;
 }
 
@@ -338,8 +344,9 @@ export type SerovalAsyncNode =
   | SerovalPromiseNode
   | SerovalBlobNode
   | SerovalFileNode
-  | SerovalResolverNode
-  | SerovalFulfilledNode;
+  | SerovalPromiseConstructorNode
+  | SerovalPromiseResolveNode
+  | SerovalPromiseRejectNode;
 
 export type SerovalNode =
   | SerovalSyncNode

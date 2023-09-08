@@ -38,7 +38,6 @@ import type {
   SerovalBoxedNode,
   SerovalErrorNode,
   SerovalFormDataNode,
-  SerovalFulfilledNode,
   SerovalHeadersNode,
   SerovalMapNode,
   SerovalNode,
@@ -48,7 +47,7 @@ import type {
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
   SerovalPromiseNode,
-  SerovalResolverNode,
+  SerovalPromiseConstructorNode,
   SerovalSetNode,
 } from '../types';
 import {
@@ -292,48 +291,52 @@ function generatePlainProperties(
   };
 }
 
-function createFulfilledNode(
-  ctx: StreamingCrossParserContext,
-  id: number,
-  status: 1 | 0,
-  data: unknown,
-): SerovalFulfilledNode {
-  return {
-    t: SerovalNodeType.Fulfilled,
-    i: id,
-    s: status,
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    // Parse options first before the items
-    d: undefined,
-    a: undefined,
-    f: crossParseStream(ctx, data),
-    b: undefined,
-    o: undefined,
-  };
-}
-
 function generatePromiseNode(
   ctx: StreamingCrossParserContext,
   id: number,
   current: Promise<unknown>,
-): SerovalResolverNode {
+): SerovalPromiseConstructorNode {
   assert(ctx.features & Feature.Promise, new UnsupportedTypeError(current));
   current.then(
     (data) => {
       if (ctx.alive) {
-        ctx.onParse(createFulfilledNode(ctx, id, 1, data), false);
+        ctx.onParse({
+          t: SerovalNodeType.PromiseResolve,
+          i: id,
+          s: undefined,
+          l: undefined,
+          c: undefined,
+          m: undefined,
+          // Parse options first before the items
+          d: undefined,
+          a: undefined,
+          f: crossParseStream(ctx, data),
+          b: undefined,
+          o: undefined,
+        }, false);
       }
     },
     (data) => {
       if (ctx.alive) {
-        ctx.onParse(createFulfilledNode(ctx, id, 0, data), false);
+        ctx.onParse({
+          t: SerovalNodeType.PromiseReject,
+          i: id,
+          s: undefined,
+          l: undefined,
+          c: undefined,
+          m: undefined,
+          // Parse options first before the items
+          d: undefined,
+          a: undefined,
+          f: crossParseStream(ctx, data),
+          b: undefined,
+          o: undefined,
+        }, false);
       }
     },
   );
   return {
-    t: SerovalNodeType.Resolver,
+    t: SerovalNodeType.PromiseConstructor,
     i: id,
     s: undefined,
     l: undefined,
