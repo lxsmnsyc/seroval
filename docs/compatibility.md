@@ -2,6 +2,10 @@
 
 ## Supported Types
 
+- sync = `serialize`, `toJSON`, `crossSerialize`, `toCrossJSON`
+- async = `serializeAsync`, `toJSONAsync`, `crossSerializeAsync`, `toCrossJSONAsync`
+- streaming = `crossSerializeStream`, `toCrossStream`, `Serializer`
+
 | Type | sync | async | streaming |
 | --- | --- | --- | --- |
 | `NaN` | ✅ | ✅ | ✅ |
