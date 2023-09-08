@@ -11,7 +11,9 @@ export const GLOBAL_CONTEXT_REJECTERS = 'f';
 
 export const GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR = 'p';
 
-export const ROOT_REFERENCE = 'o';
+export const ROOT_REFERENCE = 't';
+
+export const GLOBAL_CONTEXT_PARAM = 'o';
 
 export const GLOBAL_CONTEXT_PROPERTIES = [
   GLOBAL_CONTEXT_REFERENCES,
@@ -19,7 +21,3 @@ export const GLOBAL_CONTEXT_PROPERTIES = [
   GLOBAL_CONTEXT_RESOLVERS,
   GLOBAL_CONTEXT_REJECTERS,
 ];
-
-export const CROSS_IIFE_PARAMS = GLOBAL_CONTEXT_PROPERTIES.join(',');
-
-export const CROSS_IIFE_ARGUMENTS = `(${GLOBAL_CONTEXT_PROPERTIES.map((item) => `${GLOBAL_CONTEXT_KEY}.${item}`).join(',')})`;

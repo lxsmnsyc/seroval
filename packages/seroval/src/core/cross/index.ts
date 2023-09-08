@@ -1,19 +1,22 @@
 import { Feature } from '../compat';
 import {
-  CROSS_IIFE_ARGUMENTS,
-  CROSS_IIFE_PARAMS,
+  GLOBAL_CONTEXT_KEY,
+  GLOBAL_CONTEXT_PARAM,
   ROOT_REFERENCE,
 } from '../keys';
 import type { SerovalNode } from '../types';
 import parseAsync from './async';
 import type {
-  CrossParserContextOptions, CrossSerializerContext,
+  CrossParserContextOptions,
+  CrossSerializerContext,
 } from './context';
 import {
   createCrossParserContext,
   createCrossSerializerContext,
+  createStreamingCrossParserContext,
 } from './context';
-import serializeTree, { getRefExpr, resolvePatches } from './serialize';
+import crossSerializeTree, { getRefExpr, resolvePatches } from './serialize';
+import crossParseStream from './stream';
 import parseSync from './sync';
 
 function finalize(
@@ -26,35 +29,35 @@ function finalize(
   if (ctx.features & Feature.ArrowFunction) {
     if (patches) {
       if (id == null) {
-        const params = '(' + CROSS_IIFE_PARAMS + ',' + ROOT_REFERENCE + ')';
+        const params = '(' + GLOBAL_CONTEXT_PARAM + ',' + ROOT_REFERENCE + ')';
         const body = ROOT_REFERENCE + '=' + result + ',' + patches + ROOT_REFERENCE;
         return '(' + params + '=>(' + body + '))';
       }
-      return '((' + CROSS_IIFE_PARAMS + ')=>(' + result + ',' + patches + getRefExpr(id) + '))' + CROSS_IIFE_ARGUMENTS;
+      return '((' + GLOBAL_CONTEXT_PARAM + ')=>(' + result + ',' + patches + getRefExpr(id) + '))(' + GLOBAL_CONTEXT_KEY + ')';
     }
-    return '((' + CROSS_IIFE_PARAMS + ')=>' + result + ')' + CROSS_IIFE_ARGUMENTS;
+    return '((' + GLOBAL_CONTEXT_PARAM + ')=>' + result + ')(' + GLOBAL_CONTEXT_KEY + ')';
   }
   if (patches) {
     if (id == null) {
-      const params = '(' + CROSS_IIFE_PARAMS + ',' + ROOT_REFERENCE + ')';
+      const params = '(' + GLOBAL_CONTEXT_PARAM + ',' + ROOT_REFERENCE + ')';
       const body = ROOT_REFERENCE + '=' + result + ',' + patches + ROOT_REFERENCE;
-      return '(function' + params + '{return ' + body + '})';
+      return '(function' + params + '{return ' + body + '})(' + GLOBAL_CONTEXT_KEY + ')';
     }
-    return '(function(' + CROSS_IIFE_PARAMS + '){return ' + result + ',' + patches + getRefExpr(id) + '})' + CROSS_IIFE_ARGUMENTS;
+    return '(function(' + GLOBAL_CONTEXT_PARAM + '){return ' + result + ',' + patches + getRefExpr(id) + '})(' + GLOBAL_CONTEXT_KEY + ')';
   }
-  return '(function(' + CROSS_IIFE_PARAMS + '){return ' + result + '})' + CROSS_IIFE_ARGUMENTS;
+  return '(function(' + GLOBAL_CONTEXT_PARAM + '){return ' + result + '})(' + GLOBAL_CONTEXT_KEY + ')';
 }
 
 export function crossSerialize<T>(
   source: T,
-  options?: Partial<CrossParserContextOptions>,
+  options?: CrossParserContextOptions,
 ): string {
   const ctx = createCrossParserContext(options);
   const tree = parseSync(ctx, source);
   const serial = createCrossSerializerContext({
     features: ctx.features,
   });
-  const result = serializeTree(serial, tree);
+  const result = crossSerializeTree(serial, tree);
   return finalize(
     serial,
     tree.i,
@@ -64,14 +67,14 @@ export function crossSerialize<T>(
 
 export async function crossSerializeAsync<T>(
   source: T,
-  options?: Partial<CrossParserContextOptions>,
+  options?: CrossParserContextOptions,
 ): Promise<string> {
   const ctx = createCrossParserContext(options);
   const tree = await parseAsync(ctx, source);
   const serial = createCrossSerializerContext({
     features: ctx.features,
   });
-  const result = serializeTree(serial, tree);
+  const result = crossSerializeTree(serial, tree);
   return finalize(
     serial,
     tree.i,
@@ -86,7 +89,7 @@ export interface SerovalCrossJSON {
 
 export function toCrossJSON<T>(
   source: T,
-  options?: Partial<CrossParserContextOptions>,
+  options?: CrossParserContextOptions,
 ): SerovalCrossJSON {
   const ctx = createCrossParserContext(options);
   return {
@@ -97,7 +100,7 @@ export function toCrossJSON<T>(
 
 export async function toCrossJSONAsync<T>(
   source: T,
-  options?: Partial<CrossParserContextOptions>,
+  options?: CrossParserContextOptions,
 ): Promise<SerovalCrossJSON> {
   const ctx = createCrossParserContext(options);
   return {
@@ -110,7 +113,7 @@ export function compileCrossJSON(source: SerovalCrossJSON): string {
   const serial = createCrossSerializerContext({
     features: source.f,
   });
-  const result = serializeTree(serial, source.t);
+  const result = crossSerializeTree(serial, source.t);
   return finalize(
     serial,
     source.t.i,
@@ -124,3 +127,36 @@ export function compileCrossJSON(source: SerovalCrossJSON): string {
 //   });
 //   return deserializeTree(serial, source.t) as T;
 // }
+
+export interface CrossSerializeStreamOptions extends CrossParserContextOptions {
+  onSerialize: (data: string) => void;
+}
+
+export function crossSerializeStream<T>(
+  source: T,
+  options: CrossSerializeStreamOptions,
+): () => void {
+  const ctx = createStreamingCrossParserContext({
+    refs: options.refs,
+    disabledFeatures: options.disabledFeatures,
+    onParse(node) {
+      const serial = createCrossSerializerContext({
+        features: ctx.features,
+      });
+
+      options.onSerialize(
+        finalize(
+          serial,
+          node.i,
+          crossSerializeTree(serial, node),
+        ),
+      );
+    },
+  });
+
+  ctx.onParse(crossParseStream(ctx, source));
+
+  return () => {
+    ctx.alive = false;
+  };
+}
