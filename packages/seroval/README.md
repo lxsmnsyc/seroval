@@ -82,6 +82,7 @@ Output (as a string):
 
 ## Docs
 
+- [Serialization](https://github.com/lxsmnsyc/seroval/blob/main/docs/serialization.md)
 - [Compatibility](https://github.com/lxsmnsyc/seroval/blob/main/docs/compatibility.md)
 - [Isomorphic References](https://github.com/lxsmnsyc/seroval/blob/main/docs/isomorphic-refs.md)
 
