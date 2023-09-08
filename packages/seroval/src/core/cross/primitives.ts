@@ -27,7 +27,7 @@ export function serializeArrayBuffer(
   current: ArrayBuffer,
 ): SerovalNode {
   const id = ctx.refs.get(current);
-  if (id) {
+  if (id != null) {
     return createIndexedValueNode(id);
   }
   const newID = ctx.refs.size;
@@ -107,7 +107,7 @@ export function createSymbolNode(
   current: symbol,
 ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalWKSymbolNode {
   const id = ctx.refs.get(current);
-  if (id) {
+  if (id != null) {
     return createIndexedValueNode(id);
   }
   const newID = ctx.refs.size;
@@ -125,7 +125,7 @@ export function createFunctionNode(
 ): SerovalIndexedValueNode | SerovalReferenceNode {
   assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
   const id = ctx.refs.get(current);
-  if (id) {
+  if (id != null) {
     return createIndexedValueNode(id);
   }
   const newID = ctx.refs.size;

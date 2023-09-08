@@ -421,7 +421,7 @@ function parseObject(
   // Non-primitive values needs a reference ID
   // mostly because the values themselves are stateful
   const registeredID = ctx.refs.get(current);
-  if (registeredID) {
+  if (registeredID != null) {
     return createIndexedValueNode(registeredID);
   }
   const id = ctx.refs.size;
