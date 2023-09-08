@@ -14,6 +14,8 @@ export { createReference } from './core/reference';
 export * from './core/tree';
 export * from './core/cross';
 
+export { getCrossReferenceHeader } from './core/keys';
+
 export { default as Serializer } from './core/Serializer';
 
 export default serialize;

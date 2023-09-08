@@ -47,16 +47,15 @@ import {
 import type { Assignment } from '../assignments';
 import { resolveAssignments, resolveFlags } from '../assignments';
 import {
-  GLOBAL_CONTEXT_PARAM,
   GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR,
   GLOBAL_CONTEXT_REFERENCES,
-  GLOBAL_CONTEXT_REJECTERS,
-  GLOBAL_CONTEXT_RESOLVERS,
+  GLOBAL_CONTEXT_REJECT,
+  GLOBAL_CONTEXT_RESOLVE,
   REFERENCES_KEY,
 } from '../keys';
 
 export function getRefExpr(id: number): string {
-  return GLOBAL_CONTEXT_PARAM + '.' + GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
+  return GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
 }
 
 function pushObjectFlag(
@@ -718,14 +717,14 @@ function serializeFulfilled(
   ctx: CrossSerializerContext,
   node: SerovalFulfilledNode,
 ): string {
-  const callee = node.s ? GLOBAL_CONTEXT_RESOLVERS : GLOBAL_CONTEXT_REJECTERS;
-  return GLOBAL_CONTEXT_PARAM + '.' + GLOBAL_CONTEXT_REFERENCES + '[' + node.i + '].' + callee + '(' + crossSerializeTree(ctx, node.f) + ')';
+  const callee = node.s ? GLOBAL_CONTEXT_RESOLVE : GLOBAL_CONTEXT_REJECT;
+  return GLOBAL_CONTEXT_REFERENCES + '[' + node.i + '].' + callee + '(' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializeResolver(
   node: SerovalResolverNode,
 ): string {
-  return assignIndexedValue(node.i, GLOBAL_CONTEXT_PARAM + '.' + GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
+  return assignIndexedValue(node.i, GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
 }
 
 export default function crossSerializeTree(

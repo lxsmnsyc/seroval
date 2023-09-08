@@ -1,4 +1,3 @@
-import { ALL_ENABLED } from './compat';
 import { crossSerializeStream } from './cross';
 import { getCrossReferenceHeader } from './keys';
 import { serializeString } from './string';
@@ -6,7 +5,6 @@ import { serializeString } from './string';
 export interface SerializerOptions {
   globalIdentifier: string;
   disabledFeatures?: number;
-  onHeader: (result: string) => void;
   onData: (result: string) => void;
 }
 
@@ -20,7 +18,10 @@ export default class Serializer {
   constructor(
     private options: SerializerOptions,
   ) {
-    options.onHeader(getCrossReferenceHeader(ALL_ENABLED ^ (options.disabledFeatures || 0)));
+  }
+
+  getHeader(): string {
+    return this.options.globalIdentifier + '={};' + getCrossReferenceHeader();
   }
 
   write(key: string, value: unknown): void {

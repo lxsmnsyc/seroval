@@ -1,9 +1,6 @@
 import { Feature } from '../compat';
 import {
-  GLOBAL_CONTEXT_KEY,
-  GLOBAL_CONTEXT_PARAM,
   ROOT_REFERENCE,
-  getCrossReferenceHeader,
 } from '../keys';
 import type { SerovalNode } from '../types';
 import parseAsync from './async';
@@ -26,27 +23,20 @@ function finalize(
   result: string,
 ): string {
   const patches = resolvePatches(ctx);
-
-  if (ctx.features & Feature.ArrowFunction) {
-    if (patches) {
-      if (id == null) {
-        const params = '(' + GLOBAL_CONTEXT_PARAM + ',' + ROOT_REFERENCE + ')';
-        const body = ROOT_REFERENCE + '=' + result + ',' + patches + ROOT_REFERENCE;
-        return '(' + params + '=>(' + body + '))';
-      }
-      return '((' + GLOBAL_CONTEXT_PARAM + ')=>(' + result + ',' + patches + getRefExpr(id) + '))(' + GLOBAL_CONTEXT_KEY + ')';
-    }
-    return '((' + GLOBAL_CONTEXT_PARAM + ')=>' + result + ')(' + GLOBAL_CONTEXT_KEY + ')';
-  }
   if (patches) {
     if (id == null) {
-      const params = '(' + GLOBAL_CONTEXT_PARAM + ',' + ROOT_REFERENCE + ')';
+      if (ctx.features & Feature.ArrowFunction) {
+        const params = '(' + ROOT_REFERENCE + ')';
+        const body = ROOT_REFERENCE + '=' + result + ',' + patches + ROOT_REFERENCE;
+        return '(' + params + '=>(' + body + '))()';
+      }
+      const params = '(' + ROOT_REFERENCE + ')';
       const body = ROOT_REFERENCE + '=' + result + ',' + patches + ROOT_REFERENCE;
-      return '(function' + params + '{return ' + body + '})(' + GLOBAL_CONTEXT_KEY + ')';
+      return '(function' + params + '{return ' + body + '})()';
     }
-    return '(function(' + GLOBAL_CONTEXT_PARAM + '){return ' + result + ',' + patches + getRefExpr(id) + '})(' + GLOBAL_CONTEXT_KEY + ')';
+    return '(' + result + ',' + patches + getRefExpr(id) + ')';
   }
-  return '(function(' + GLOBAL_CONTEXT_PARAM + '){return ' + result + '})(' + GLOBAL_CONTEXT_KEY + ')';
+  return result;
 }
 
 export function crossSerialize<T>(
@@ -130,7 +120,6 @@ export function compileCrossJSON(source: SerovalCrossJSON): string {
 // }
 
 export interface CrossSerializeStreamOptions extends CrossParserContextOptions {
-  onHeader?: (script: string) => void;
   onSerialize: (data: string, initial: boolean) => void;
 }
 
@@ -156,10 +145,6 @@ export function crossSerializeStream<T>(
       );
     },
   });
-
-  if (options.onHeader) {
-    options.onHeader(getCrossReferenceHeader(ctx.features));
-  }
 
   ctx.onParse(crossParseStream(ctx, source), true);
 
