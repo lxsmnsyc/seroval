@@ -12,5 +12,6 @@ export { Feature } from './core/compat';
 export { createReference } from './core/reference';
 
 export * from './core/tree';
+export * from './core/cross';
 
 export default serialize;
