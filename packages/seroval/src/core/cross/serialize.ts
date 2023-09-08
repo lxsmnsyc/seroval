@@ -54,7 +54,7 @@ import {
   REFERENCES_KEY,
 } from '../keys';
 
-function getRefExpr(id: number): string {
+export function getRefExpr(id: number): string {
   return GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
 }
 
@@ -162,7 +162,6 @@ function createObjectAssign(
 }
 
 function assignIndexedValue(
-  ctx: CrossSerializerContext,
   index: number,
   value: string,
 ): string {
@@ -211,7 +210,7 @@ function serializeArray(
   }
   ctx.stack.pop();
   pushObjectFlag(ctx, node.o, node.i);
-  return assignIndexedValue(ctx, id, '[' + values + (isHoley ? ',]' : ']'));
+  return assignIndexedValue(id, '[' + values + (isHoley ? ',]' : ']'));
 }
 
 function getIterableAccess(ctx: CrossSerializerContext): string {
@@ -380,11 +379,11 @@ function serializeDictionary(
     } else {
       const assignments = serializeAssignments(ctx, i, d);
       if (assignments) {
-        return '(' + assignIndexedValue(ctx, i, init) + ',' + assignments + getRefExpr(i) + ')';
+        return '(' + assignIndexedValue(i, init) + ',' + assignments + getRefExpr(i) + ')';
       }
     }
   }
-  return assignIndexedValue(ctx, i, init);
+  return assignIndexedValue(i, init);
 }
 
 const NULL_CONSTRUCTOR = 'Object.create(null)';
@@ -402,7 +401,7 @@ function serializeObject(
   node: SerovalObjectNode,
 ): string {
   pushObjectFlag(ctx, node.o, node.i);
-  return assignIndexedValue(ctx, node.i, serializeProperties(ctx, node.i, node.d));
+  return assignIndexedValue(node.i, serializeProperties(ctx, node.i, node.d));
 }
 
 function serializeSet(
@@ -433,7 +432,7 @@ function serializeSet(
       serialized += '([' + result + '])';
     }
   }
-  return assignIndexedValue(ctx, id, serialized);
+  return assignIndexedValue(id, serialized);
 }
 
 function serializeMap(
@@ -500,7 +499,7 @@ function serializeMap(
       serialized += '([' + result + '])';
     }
   }
-  return assignIndexedValue(ctx, id, serialized);
+  return assignIndexedValue(id, serialized);
 }
 
 function serializeAggregateError(
@@ -561,11 +560,10 @@ function serializePromise(
     // just inline the value/reference here
     serialized = constructor + '(' + result + ')';
   }
-  return assignIndexedValue(ctx, id, serialized);
+  return assignIndexedValue(id, serialized);
 }
 
 function serializeArrayBuffer(
-  ctx: CrossSerializerContext,
   node: SerovalArrayBufferNode,
 ): string {
   let result = 'new Uint8Array(';
@@ -578,7 +576,7 @@ function serializeArrayBuffer(
     }
     result += ']';
   }
-  return assignIndexedValue(ctx, node.i, result + ').buffer');
+  return assignIndexedValue(node.i, result + ').buffer');
 }
 
 function serializeTypedArray(
@@ -586,49 +584,42 @@ function serializeTypedArray(
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ): string {
   return assignIndexedValue(
-    ctx,
     node.i,
     'new ' + node.c + '(' + crossSerializeTree(ctx, node.f) + ',' + node.b + ',' + node.l + ')',
   );
 }
 
 function serializeDate(
-  ctx: CrossSerializerContext,
   node: SerovalDateNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, 'new Date("' + node.s + '")');
+  return assignIndexedValue(node.i, 'new Date("' + node.s + '")');
 }
 
 function serializeRegExp(
-  ctx: CrossSerializerContext,
   node: SerovalRegExpNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, '/' + node.c + '/' + node.m);
+  return assignIndexedValue(node.i, '/' + node.c + '/' + node.m);
 }
 
 function serializeURL(
-  ctx: CrossSerializerContext,
   node: SerovalURLNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, 'new URL("' + node.s + '")');
+  return assignIndexedValue(node.i, 'new URL("' + node.s + '")');
 }
 
 function serializeURLSearchParams(
-  ctx: CrossSerializerContext,
   node: SerovalURLSearchParamsNode,
 ): string {
   return assignIndexedValue(
-    ctx,
     node.i,
     node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams',
   );
 }
 
 function serializeReference(
-  ctx: CrossSerializerContext,
   node: SerovalReferenceNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, REFERENCES_KEY + '.get("' + node.s + '")');
+  return assignIndexedValue(node.i, REFERENCES_KEY + '.get("' + node.s + '")');
 }
 
 function serializeDataView(
@@ -636,7 +627,6 @@ function serializeDataView(
   node: SerovalDataViewNode,
 ): string {
   return assignIndexedValue(
-    ctx,
     node.i,
     'new DataView(' + crossSerializeTree(ctx, node.f) + ',' + node.b + ',' + node.l + ')',
   );
@@ -647,7 +637,6 @@ function serializeBlob(
   node: SerovalBlobNode,
 ): string {
   return assignIndexedValue(
-    ctx,
     node.i,
     'new Blob([' + crossSerializeTree(ctx, node.f) + '],{type:"' + node.c + '"})',
   );
@@ -658,7 +647,6 @@ function serializeFile(
   node: SerovalFileNode,
 ): string {
   return assignIndexedValue(
-    ctx,
     node.i,
     'new File([' + crossSerializeTree(ctx, node.f) + '],"' + node.m + '",{type:"' + node.c + '",lastModified:' + node.b + '})',
   );
@@ -669,7 +657,6 @@ function serializeHeaders(
   node: SerovalHeadersNode,
 ): string {
   return assignIndexedValue(
-    ctx,
     node.i,
     'new Headers(' + serializeProperties(ctx, node.i, node.d) + ')',
   );
@@ -705,7 +692,7 @@ function serializeFormData(
 ): string {
   const size = node.d.s;
   const id = node.i;
-  const result = assignIndexedValue(ctx, id, 'new FormData()');
+  const result = assignIndexedValue(id, 'new FormData()');
   if (size) {
     const entries = serializeFormDataEntries(ctx, node);
     return '(' + result + ',' + (entries == null ? '' : entries) + getRefExpr(id) + ')';
@@ -717,14 +704,13 @@ function serializeBoxed(
   ctx: CrossSerializerContext,
   node: SerovalBoxedNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, 'Object(' + crossSerializeTree(ctx, node.f) + ')');
+  return assignIndexedValue(node.i, 'Object(' + crossSerializeTree(ctx, node.f) + ')');
 }
 
 function serializeWKSymbol(
-  ctx: CrossSerializerContext,
   node: SerovalWKSymbolNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, SYMBOL_STRING[node.s]);
+  return assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
 }
 
 function serializeFulfilled(
@@ -736,10 +722,9 @@ function serializeFulfilled(
 }
 
 function serializeResolver(
-  ctx: CrossSerializerContext,
   node: SerovalResolverNode,
 ): string {
-  return assignIndexedValue(ctx, node.i, GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
+  return assignIndexedValue(node.i, GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
 }
 
 export default function crossSerializeTree(
@@ -764,15 +749,15 @@ export default function crossSerializeTree(
     case SerovalNodeType.NullConstructor:
       return serializeNullConstructor(ctx, node);
     case SerovalNodeType.Date:
-      return serializeDate(ctx, node);
+      return serializeDate(node);
     case SerovalNodeType.RegExp:
-      return serializeRegExp(ctx, node);
+      return serializeRegExp(node);
     case SerovalNodeType.Set:
       return serializeSet(ctx, node);
     case SerovalNodeType.Map:
       return serializeMap(ctx, node);
     case SerovalNodeType.ArrayBuffer:
-      return serializeArrayBuffer(ctx, node);
+      return serializeArrayBuffer(node);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
       return serializeTypedArray(ctx, node);
@@ -785,13 +770,13 @@ export default function crossSerializeTree(
     case SerovalNodeType.Promise:
       return serializePromise(ctx, node);
     case SerovalNodeType.WKSymbol:
-      return serializeWKSymbol(ctx, node);
+      return serializeWKSymbol(node);
     case SerovalNodeType.URL:
-      return serializeURL(ctx, node);
+      return serializeURL(node);
     case SerovalNodeType.URLSearchParams:
-      return serializeURLSearchParams(ctx, node);
+      return serializeURLSearchParams(node);
     case SerovalNodeType.Reference:
-      return serializeReference(ctx, node);
+      return serializeReference(node);
     case SerovalNodeType.Blob:
       return serializeBlob(ctx, node);
     case SerovalNodeType.File:
@@ -805,7 +790,7 @@ export default function crossSerializeTree(
     case SerovalNodeType.Fulfilled:
       return serializeFulfilled(ctx, node);
     case SerovalNodeType.Resolver:
-      return serializeResolver(ctx, node);
+      return serializeResolver(node);
     default:
       throw new Error('invariant');
   }

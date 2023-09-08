@@ -13,7 +13,9 @@ export interface CrossParserContext {
   features: number;
 }
 
-export function createCrossParserContext(options: CrossParserContextOptions): CrossParserContext {
+export function createCrossParserContext(
+  options: CrossParserContextOptions = {},
+): CrossParserContext {
   return {
     refs: options.refs || new Map<unknown, number>(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
