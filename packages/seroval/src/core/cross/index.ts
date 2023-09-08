@@ -2,7 +2,7 @@ import { Feature } from '../compat';
 import {
   ROOT_REFERENCE,
 } from '../keys';
-import type { SerovalNode } from '../types';
+// import type { SerovalNode } from '../types';
 import parseAsync from './async';
 import type {
   CrossParserContextOptions,
@@ -73,44 +73,44 @@ export async function crossSerializeAsync<T>(
   );
 }
 
-export interface SerovalCrossJSON {
-  t: SerovalNode;
-  f: number;
-}
+// export interface SerovalCrossJSON {
+//   t: SerovalNode;
+//   f: number;
+// }
 
-export function toCrossJSON<T>(
-  source: T,
-  options?: CrossParserContextOptions,
-): SerovalCrossJSON {
-  const ctx = createCrossParserContext(options);
-  return {
-    t: parseSync(ctx, source),
-    f: ctx.features,
-  };
-}
+// export function toCrossJSON<T>(
+//   source: T,
+//   options?: CrossParserContextOptions,
+// ): SerovalCrossJSON {
+//   const ctx = createCrossParserContext(options);
+//   return {
+//     t: parseSync(ctx, source),
+//     f: ctx.features,
+//   };
+// }
 
-export async function toCrossJSONAsync<T>(
-  source: T,
-  options?: CrossParserContextOptions,
-): Promise<SerovalCrossJSON> {
-  const ctx = createCrossParserContext(options);
-  return {
-    t: await parseAsync(ctx, source),
-    f: ctx.features,
-  };
-}
+// export async function toCrossJSONAsync<T>(
+//   source: T,
+//   options?: CrossParserContextOptions,
+// ): Promise<SerovalCrossJSON> {
+//   const ctx = createCrossParserContext(options);
+//   return {
+//     t: await parseAsync(ctx, source),
+//     f: ctx.features,
+//   };
+// }
 
-export function compileCrossJSON(source: SerovalCrossJSON): string {
-  const serial = createCrossSerializerContext({
-    features: source.f,
-  });
-  const result = crossSerializeTree(serial, source.t);
-  return finalize(
-    serial,
-    source.t.i,
-    result,
-  );
-}
+// export function compileCrossJSON(source: SerovalCrossJSON): string {
+//   const serial = createCrossSerializerContext({
+//     features: source.f,
+//   });
+//   const result = crossSerializeTree(serial, source.t);
+//   return finalize(
+//     serial,
+//     source.t.i,
+//     result,
+//   );
+// }
 
 // export function fromJSON<T>(source: SerovalJSON): T {
 //   const serial = createDeserializerContext({
