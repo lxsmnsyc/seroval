@@ -323,12 +323,12 @@ function generatePromiseNode(
   current.then(
     (data) => {
       if (ctx.alive) {
-        ctx.onParse(createFulfilledNode(ctx, id, 1, data));
+        ctx.onParse(createFulfilledNode(ctx, id, 1, data), false);
       }
     },
     (data) => {
       if (ctx.alive) {
-        ctx.onParse(createFulfilledNode(ctx, id, 0, data));
+        ctx.onParse(createFulfilledNode(ctx, id, 0, data), false);
       }
     },
   );

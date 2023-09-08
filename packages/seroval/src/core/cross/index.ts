@@ -3,6 +3,7 @@ import {
   GLOBAL_CONTEXT_KEY,
   GLOBAL_CONTEXT_PARAM,
   ROOT_REFERENCE,
+  getCrossReferenceHeader,
 } from '../keys';
 import type { SerovalNode } from '../types';
 import parseAsync from './async';
@@ -129,7 +130,8 @@ export function compileCrossJSON(source: SerovalCrossJSON): string {
 // }
 
 export interface CrossSerializeStreamOptions extends CrossParserContextOptions {
-  onSerialize: (data: string) => void;
+  onHeader?: (script: string) => void;
+  onSerialize: (data: string, initial: boolean) => void;
 }
 
 export function crossSerializeStream<T>(
@@ -139,7 +141,7 @@ export function crossSerializeStream<T>(
   const ctx = createStreamingCrossParserContext({
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
-    onParse(node) {
+    onParse(node, initial) {
       const serial = createCrossSerializerContext({
         features: ctx.features,
       });
@@ -150,11 +152,16 @@ export function crossSerializeStream<T>(
           node.i,
           crossSerializeTree(serial, node),
         ),
+        initial,
       );
     },
   });
 
-  ctx.onParse(crossParseStream(ctx, source));
+  if (options.onHeader) {
+    options.onHeader(getCrossReferenceHeader(ctx.features));
+  }
+
+  ctx.onParse(crossParseStream(ctx, source), true);
 
   return () => {
     ctx.alive = false;

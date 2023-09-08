@@ -36,12 +36,12 @@ export function createCrossIndexedValue<T>(
 }
 
 export interface StreamingCrossParserContextOptions extends CrossParserContextOptions {
-  onParse: (node: SerovalNode) => void;
+  onParse: (node: SerovalNode, initial: boolean) => void;
 }
 
 export interface StreamingCrossParserContext extends CrossParserContext {
   alive: boolean;
-  onParse(node: SerovalNode): void;
+  onParse(node: SerovalNode, initial: boolean): void;
 }
 
 export function createStreamingCrossParserContext(
