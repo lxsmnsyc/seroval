@@ -39,6 +39,4 @@ function ${GLOBAL_CONTEXT_STREAM_ERROR}(i,d){$R[i].${LOCAL_CONTEXT_STREAM_ERROR}
 function ${GLOBAL_CONTEXT_STREAM_CLOSE}(i){$R[i].${LOCAL_CONTEXT_STREAM_CLOSE}()}
 `;
 
-export function getCrossReferenceHeader(): string {
-  return `${GLOBAL_CONTEXT_REFERENCES}=[];${GLOBAL_HEADER}`;
-}
+export const CROSS_REFERENCE_HEADER = `${GLOBAL_CONTEXT_REFERENCES}=[];${GLOBAL_HEADER}`;
