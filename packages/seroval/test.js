@@ -4,11 +4,11 @@ import { Serializer } from './dist/esm/development/index.mjs';
 const serializer = new Serializer({
   globalIdentifier: '__SOLID__',
   onData(value) {
-    console.log([value]);
+    console.log(value);
   },
 });
 
-console.log('HEADER', [serializer.getHeader()]);
+console.log(serializer.getHeader());
 
 const source = new ReadableStream({
   start(controller) {
