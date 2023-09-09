@@ -90,6 +90,7 @@ By default, all feature flags are enabled. The following are the feature flags a
     - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
     - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
     - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
+    - [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
 
 ## Supported Types
 
@@ -148,6 +149,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ❓[^9] | ❌[^12] |
 | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ❓[^9] | ❓[^9] | ❓[^9] |
 | [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ❓[^9][^10] | ❓[^9] | ❓[^9][^10] |
+| [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ❌ | ❓[^9] |
 | Cyclic references | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Isomorphic references | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
