@@ -29,7 +29,7 @@ export const GLOBAL_CONTEXT_STREAM_ERROR = '$Se';
 
 export const ROOT_REFERENCE = 't';
 
-const GLOBAL_HEADER = `function ${GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR}(s,f,p){return p=(new Promise(function(a,b){s=a,f=b})),p.${LOCAL_CONTEXT_PROMISE_RESOLVE}=s,p.${LOCAL_CONTEXT_PROMISE_REJECT}=f,p}
+const GLOBAL_HEADER = `function ${GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR}(s,f,p){return (p=new Promise(function(a,b){s=a,f=b})).${LOCAL_CONTEXT_PROMISE_RESOLVE}=s,p.${LOCAL_CONTEXT_PROMISE_REJECT}=f,p}
 function $uP(p){delete p.${LOCAL_CONTEXT_PROMISE_RESOLVE};delete p.${LOCAL_CONTEXT_PROMISE_REJECT}}
 function ${GLOBAL_CONTEXT_PROMISE_RESOLVE}(i,d){$R[i].${LOCAL_CONTEXT_PROMISE_RESOLVE}(d);$uP($R[i])}
 function ${GLOBAL_CONTEXT_PROMISE_REJECT}(i,d){$R[i].${LOCAL_CONTEXT_PROMISE_REJECT}(d);$uP($R[i])}
