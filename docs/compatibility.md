@@ -94,9 +94,9 @@ By default, all feature flags are enabled. The following are the feature flags a
 
 ## Supported Types
 
-- sync = `serialize`, `toJSON`, `crossSerialize`, `toCrossJSON`
-- async = `serializeAsync`, `toJSONAsync`, `crossSerializeAsync`, `toCrossJSONAsync`
-- streaming = `crossSerializeStream`, `toCrossStream`, `Serializer`
+- sync = `serialize`, `toJSON`, `crossSerialize`
+- async = `serializeAsync`, `toJSONAsync`, `crossSerializeAsync`
+- streaming = `crossSerializeStream`, `Serializer`
 
 | Type | sync | async | streaming |
 | --- | --- | --- | --- |
