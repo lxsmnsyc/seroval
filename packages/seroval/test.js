@@ -10,14 +10,19 @@ const serializer = new Serializer({
 
 console.log('HEADER', [serializer.getHeader()]);
 
-const delay = (value, ms) => new Promise(r => setTimeout(r, ms, value));
+const source = new ReadableStream({
+  start(controller) {
+    let i = 0;
 
-const source = ({
-  a: delay('A', 300),
-  b: delay('B', 200),
-  c: delay('C', 100),
+    const interval = setInterval(() => {
+      if (i > 10) {
+        controller.close();
+        clearInterval(interval);
+      } else {
+        controller.enqueue('Count: ' + i++);
+      }
+    }, 1000);
+  },
 });
-
-source.d = delay(source, 400);
 
 serializer.write('1', source);

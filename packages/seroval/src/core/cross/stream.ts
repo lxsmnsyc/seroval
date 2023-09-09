@@ -49,6 +49,7 @@ import type {
   SerovalPromiseNode,
   SerovalPromiseConstructorNode,
   SerovalSetNode,
+  SerovalReadableStreamConstructorNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -490,6 +491,91 @@ function generateBoxedNode(
   };
 }
 
+function generateReadableStreamNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: ReadableStream<unknown>,
+): SerovalReadableStreamConstructorNode {
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
+  const reader = current.getReader();
+
+  function push(): void {
+    reader.read().then(
+      (data) => {
+        if (ctx.alive) {
+          if (data.done) {
+            ctx.onParse({
+              t: SerovalNodeType.ReadableStreamClose,
+              i: id,
+              s: undefined,
+              l: undefined,
+              c: undefined,
+              m: undefined,
+              // Parse options first before the items
+              d: undefined,
+              a: undefined,
+              f: undefined,
+              b: undefined,
+              o: undefined,
+            }, false);
+          } else {
+            ctx.onParse({
+              t: SerovalNodeType.ReadableStreamEnqueue,
+              i: id,
+              s: undefined,
+              l: undefined,
+              c: undefined,
+              m: undefined,
+              // Parse options first before the items
+              d: undefined,
+              a: undefined,
+              f: crossParseStream(ctx, data.value),
+              b: undefined,
+              o: undefined,
+            }, false);
+            push();
+          }
+        }
+      },
+      (value) => {
+        if (ctx.alive) {
+          ctx.onParse({
+            t: SerovalNodeType.ReadableStreamError,
+            i: id,
+            s: undefined,
+            l: undefined,
+            c: undefined,
+            m: undefined,
+            // Parse options first before the items
+            d: undefined,
+            a: undefined,
+            f: crossParseStream(ctx, value),
+            b: undefined,
+            o: undefined,
+          }, false);
+          push();
+        }
+      },
+    );
+  }
+
+  push();
+
+  return {
+    t: SerovalNodeType.ReadableStreamConstructor,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    d: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
 function parseObject(
   ctx: StreamingCrossParserContext,
   current: object | null,
@@ -593,6 +679,8 @@ function parseObject(
       return generateHeadersNode(ctx, id, current as unknown as Headers);
     case FormData:
       return generateFormDataNode(ctx, id, current as unknown as FormData);
+    case ReadableStream:
+      return generateReadableStreamNode(ctx, id, current as unknown as ReadableStream);
     default:
       break;
   }

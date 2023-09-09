@@ -1,6 +1,6 @@
 {
   "exclude": ["node_modules"],
-  "include": ["src", "types", "test"],
+  "include": ["src", "types", "test", "hehe.js"],
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],

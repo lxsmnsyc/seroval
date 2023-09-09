@@ -35,6 +35,10 @@ import type {
   SerovalPromiseConstructorNode,
   SerovalPromiseResolveNode,
   SerovalPromiseRejectNode,
+  SerovalReadableStreamCloseNode,
+  SerovalReadableStreamEnqueueNode,
+  SerovalReadableStreamErrorNode,
+  SerovalReadableStreamConstructorNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -48,11 +52,15 @@ import {
 import type { Assignment } from '../assignments';
 import { resolveAssignments, resolveFlags } from '../assignments';
 import {
+  GLOBAL_CONTEXT_PROMISE_REJECT,
+  GLOBAL_CONTEXT_PROMISE_RESOLVE,
   GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR,
   GLOBAL_CONTEXT_REFERENCES,
-  GLOBAL_CONTEXT_REJECT,
-  GLOBAL_CONTEXT_RESOLVE,
   REFERENCES_KEY,
+  GLOBAL_CONTEXT_STREAM_CLOSE,
+  GLOBAL_CONTEXT_STREAM_ENQUEUE,
+  GLOBAL_CONTEXT_STREAM_ERROR,
+  GLOBAL_CONTEXT_STREAM_CONSTRUCTOR,
 } from '../keys';
 
 export function getRefExpr(id: number): string {
@@ -718,20 +726,46 @@ function serializePromiseResolve(
   ctx: CrossSerializerContext,
   node: SerovalPromiseResolveNode,
 ): string {
-  return GLOBAL_CONTEXT_REFERENCES + '[' + node.i + '].' + GLOBAL_CONTEXT_RESOLVE + '(' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_PROMISE_RESOLVE + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializePromiseReject(
   ctx: CrossSerializerContext,
   node: SerovalPromiseRejectNode,
 ): string {
-  return GLOBAL_CONTEXT_REFERENCES + '[' + node.i + '].' + GLOBAL_CONTEXT_REJECT + '(' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_PROMISE_REJECT + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializePromiseConstructor(
   node: SerovalPromiseConstructorNode,
 ): string {
   return assignIndexedValue(node.i, GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
+}
+
+function serializeReadableStreamClose(
+  node: SerovalReadableStreamCloseNode,
+): string {
+  return GLOBAL_CONTEXT_STREAM_CLOSE + '(' + node.i + ')';
+}
+
+function serializeReadableStreamEnqueue(
+  ctx: CrossSerializerContext,
+  node: SerovalReadableStreamEnqueueNode,
+): string {
+  return GLOBAL_CONTEXT_STREAM_ENQUEUE + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
+}
+
+function serializeReadableStreamError(
+  ctx: CrossSerializerContext,
+  node: SerovalReadableStreamErrorNode,
+): string {
+  return GLOBAL_CONTEXT_STREAM_ERROR + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
+}
+
+function serializeReadableStreamConstructor(
+  node: SerovalReadableStreamConstructorNode,
+): string {
+  return assignIndexedValue(node.i, GLOBAL_CONTEXT_STREAM_CONSTRUCTOR + '()');
 }
 
 export default function crossSerializeTree(
@@ -800,6 +834,14 @@ export default function crossSerializeTree(
       return serializePromiseReject(ctx, node);
     case SerovalNodeType.PromiseConstructor:
       return serializePromiseConstructor(node);
+    case SerovalNodeType.ReadableStreamClose:
+      return serializeReadableStreamClose(node);
+    case SerovalNodeType.ReadableStreamConstructor:
+      return serializeReadableStreamConstructor(node);
+    case SerovalNodeType.ReadableStreamEnqueue:
+      return serializeReadableStreamEnqueue(ctx, node);
+    case SerovalNodeType.ReadableStreamError:
+      return serializeReadableStreamError(ctx, node);
     default:
       throw new Error('invariant');
   }

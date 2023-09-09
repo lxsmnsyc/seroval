@@ -316,6 +316,28 @@ export interface SerovalPromiseRejectNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
+export interface SerovalReadableStreamConstructorNode extends SerovalBaseNode {
+  t: SerovalNodeType.ReadableStreamConstructor;
+  i: number;
+}
+
+export interface SerovalReadableStreamEnqueueNode extends SerovalBaseNode {
+  t: SerovalNodeType.ReadableStreamEnqueue;
+  i: number;
+  f: SerovalNode;
+}
+
+export interface SerovalReadableStreamCloseNode extends SerovalBaseNode {
+  t: SerovalNodeType.ReadableStreamClose;
+  i: number;
+}
+
+export interface SerovalReadableStreamErrorNode extends SerovalBaseNode {
+  t: SerovalNodeType.ReadableStreamError;
+  i: number;
+  f: SerovalNode;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -346,7 +368,11 @@ export type SerovalAsyncNode =
   | SerovalFileNode
   | SerovalPromiseConstructorNode
   | SerovalPromiseResolveNode
-  | SerovalPromiseRejectNode;
+  | SerovalPromiseRejectNode
+  | SerovalReadableStreamConstructorNode
+  | SerovalReadableStreamEnqueueNode
+  | SerovalReadableStreamCloseNode
+  | SerovalReadableStreamErrorNode;
 
 export type SerovalNode =
   | SerovalSyncNode
