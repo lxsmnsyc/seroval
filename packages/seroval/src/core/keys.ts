@@ -28,6 +28,6 @@ function $uP(i,p){delete (p=${GLOBAL_CONTEXT_REFERENCES}[i]).${LOCAL_CONTEXT_PRO
 function ${GLOBAL_CONTEXT_PROMISE_RESOLVE}(i,d){${GLOBAL_CONTEXT_REFERENCES}[i].${LOCAL_CONTEXT_PROMISE_RESOLVE}(d),$uP(i)}
 function ${GLOBAL_CONTEXT_PROMISE_REJECT}(i,d){${GLOBAL_CONTEXT_REFERENCES}[i].${LOCAL_CONTEXT_PROMISE_REJECT}(d),$uP(i)}
 function $uS(s){delete s.${LOCAL_CONTEXT_STREAM_CONTROLLER}}
-function ${GLOBAL_CONTEXT_STREAM_EMIT}(i,t,d,s,c){switch(c=(s=$R[i]).${LOCAL_CONTEXT_STREAM_CONTROLLER},t){case 0:return c.enqueue(d);case 1:return(c.error(d),$uS(s));case 2:return(c.close(),$uS(s))}}
+function ${GLOBAL_CONTEXT_STREAM_EMIT}(i,t,d,s,c){switch(c=(s=${GLOBAL_CONTEXT_REFERENCES}[i]).${LOCAL_CONTEXT_STREAM_CONTROLLER},t){case 0:return c.enqueue(d);case 1:return(c.error(d),$uS(s));case 2:return(c.close(),$uS(s))}}
 function ${GLOBAL_CONTEXT_STREAM_CONSTRUCTOR}(s,c){return(s=new ReadableStream({start:function(t){c=t}})).c=c,s}
 `;

@@ -4,7 +4,7 @@
  */
 
 // Global references array. Global because we (ideally) want <script> elements to share it.
-$R = [];
+var $R = [];
 
 // Promise constructor, used to construct deferred Promises
 function $P(success, failure, promise) {
@@ -43,18 +43,17 @@ function $Se(referenceID, type, data, stream, controller) {
   controller = stream.c;
   switch (type) {
     case 0: return controller.enqueue(data);
-    case 1: return (controller.error(data),$uS(stream));
-    case 2: return (controller.close(),$uS(stream));
+    case 1:
+      $uS(stream);
+      return controller.error(data);
+    case 2:
+      $uS(stream);
+      return controller.close();
   }
 }
 
-
-// ReadableStream constructor. This is a special kind of stream because
-// it's basically a Transformer stream with a buffer, so that it records
-// past values, emits the recorded values on "subscription", and then
-// continues recording it.
+// ReadableStream constructor
 function $S(stream, controller) {
-
   stream = new ReadableStream({
     start: function (c) {
       controller = c;
