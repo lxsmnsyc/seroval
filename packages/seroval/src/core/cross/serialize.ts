@@ -377,14 +377,14 @@ function serializeAssignments(
 function serializeDictionary(
   ctx: CrossSerializerContext,
   i: number,
-  d: SerovalObjectRecordNode | undefined,
+  p: SerovalObjectRecordNode | undefined,
   init: string,
 ): string {
-  if (d) {
+  if (p) {
     if (ctx.features & Feature.ObjectAssign) {
-      init = serializeWithObjectAssign(ctx, d, i, init);
+      init = serializeWithObjectAssign(ctx, p, i, init);
     } else {
-      const assignments = serializeAssignments(ctx, i, d);
+      const assignments = serializeAssignments(ctx, i, p);
       if (assignments) {
         return '(' + assignIndexedValue(i, init) + ',' + assignments + getRefExpr(i) + ')';
       }
@@ -400,7 +400,7 @@ function serializeNullConstructor(
   node: SerovalNullConstructorNode,
 ): string {
   pushObjectFlag(ctx, node.o, node.i);
-  return serializeDictionary(ctx, node.i, node.d, NULL_CONSTRUCTOR);
+  return serializeDictionary(ctx, node.i, node.p, NULL_CONSTRUCTOR);
 }
 
 function serializeObject(
@@ -408,7 +408,7 @@ function serializeObject(
   node: SerovalObjectNode,
 ): string {
   pushObjectFlag(ctx, node.o, node.i);
-  return assignIndexedValue(node.i, serializeProperties(ctx, node.i, node.d));
+  return assignIndexedValue(node.i, serializeProperties(ctx, node.i, node.p));
 }
 
 function serializeSet(
@@ -447,7 +447,7 @@ function serializeMap(
   node: SerovalMapNode,
 ): string {
   let serialized = 'new Map';
-  const size = node.d.s;
+  const size = node.e.s;
   const id = node.i;
   if (size) {
     let result = '';
@@ -457,8 +457,8 @@ function serializeMap(
     let valueRef: string;
     let parent: number[];
     let hasPrev = false;
-    const keys = node.d.k;
-    const vals = node.d.v;
+    const keys = node.e.k;
+    const vals = node.e.v;
     ctx.stack.push(id);
     for (let i = 0; i < size; i++) {
       // Check if key is a parent
@@ -521,14 +521,14 @@ function serializeAggregateError(
   // `AggregateError` might've been extended
   // either through class or custom properties
   // Make sure to assign extra properties
-  return serializeDictionary(ctx, id, node.d, serialized);
+  return serializeDictionary(ctx, id, node.p, serialized);
 }
 
 function serializeError(
   ctx: CrossSerializerContext,
   node: SerovalErrorNode,
 ): string {
-  return serializeDictionary(ctx, node.i, node.d, 'new ' + node.c + '("' + node.m + '")');
+  return serializeDictionary(ctx, node.i, node.p, 'new ' + node.c + '("' + node.m + '")');
 }
 
 const PROMISE_RESOLVE = 'Promise.resolve';
@@ -665,7 +665,7 @@ function serializeHeaders(
 ): string {
   return assignIndexedValue(
     node.i,
-    'new Headers(' + serializeProperties(ctx, node.i, node.d) + ')',
+    'new Headers(' + serializeProperties(ctx, node.i, node.e) + ')',
   );
 }
 
@@ -675,13 +675,13 @@ function serializeFormDataEntries(
 ): string | undefined {
   let value: string;
   let key: string;
-  const keys = node.d.k;
-  const vals = node.d.v;
+  const keys = node.e.k;
+  const vals = node.e.v;
   const id = node.i;
   const mainAssignments: Assignment[] = [];
   let parentAssignment: Assignment[];
   ctx.stack.push(id);
-  for (let i = 0, len = node.d.s; i < len; i++) {
+  for (let i = 0, len = node.e.s; i < len; i++) {
     key = keys[i];
     value = crossSerializeTree(ctx, vals[i]);
     parentAssignment = ctx.assignments;
@@ -697,7 +697,7 @@ function serializeFormData(
   ctx: CrossSerializerContext,
   node: SerovalFormDataNode,
 ): string {
-  const size = node.d.s;
+  const size = node.e.s;
   const id = node.i;
   const result = assignIndexedValue(id, 'new FormData()');
   if (size) {

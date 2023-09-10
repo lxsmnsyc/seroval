@@ -129,7 +129,7 @@ function deserializeObject(
       ? {}
       : Object.create(null)) as Record<string, unknown>,
   );
-  deserializeProperties(ctx, node.d, result);
+  deserializeProperties(ctx, node.p, result);
   applyObjectFlag(result, node.o);
   return result;
 }
@@ -155,9 +155,9 @@ function deserializeMap(
     node.i,
     new Map<unknown, unknown>(),
   );
-  const keys = node.d.k;
-  const vals = node.d.v;
-  for (let i = 0, len = node.d.s; i < len; i++) {
+  const keys = node.e.k;
+  const vals = node.e.v;
+  for (let i = 0, len = node.e.s; i < len; i++) {
     result.set(
       deserializeTree(ctx, keys[i]),
       deserializeTree(ctx, vals[i]),
@@ -174,8 +174,8 @@ function deserializeDictionary<T extends AssignableValue>(
   node: AssignableNode,
   result: T,
 ): T {
-  if (node.d) {
-    const fields = deserializeProperties(ctx, node.d, {});
+  if (node.p) {
+    const fields = deserializeProperties(ctx, node.p, {});
     Object.assign(result, fields);
   }
   return result;
@@ -345,9 +345,9 @@ function deserializeHeaders(
   node: SerovalHeadersNode,
 ): Headers {
   const result = assignIndexedValue(ctx, node.i, new Headers());
-  const keys = node.d.k;
-  const vals = node.d.v;
-  for (let i = 0, len = node.d.s; i < len; i++) {
+  const keys = node.e.k;
+  const vals = node.e.v;
+  for (let i = 0, len = node.e.s; i < len; i++) {
     result.set(
       deserializeString(keys[i]),
       deserializeTree(ctx, vals[i]) as string,
@@ -361,9 +361,9 @@ function deserializeFormData(
   node: SerovalFormDataNode,
 ): FormData {
   const result = assignIndexedValue(ctx, node.i, new FormData());
-  const keys = node.d.k;
-  const vals = node.d.v;
-  for (let i = 0, len = node.d.s; i < len; i++) {
+  const keys = node.e.k;
+  const vals = node.e.v;
+  for (let i = 0, len = node.e.s; i < len; i++) {
     result.set(
       deserializeString(keys[i]),
       deserializeTree(ctx, vals[i]) as FormDataEntryValue,
