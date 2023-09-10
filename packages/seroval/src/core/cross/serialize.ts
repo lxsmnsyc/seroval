@@ -57,10 +57,8 @@ import {
   GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR,
   GLOBAL_CONTEXT_REFERENCES,
   REFERENCES_KEY,
-  GLOBAL_CONTEXT_STREAM_CLOSE,
-  GLOBAL_CONTEXT_STREAM_ENQUEUE,
-  GLOBAL_CONTEXT_STREAM_ERROR,
   GLOBAL_CONTEXT_STREAM_CONSTRUCTOR,
+  GLOBAL_CONTEXT_STREAM_EMIT,
 } from '../keys';
 
 export function getRefExpr(id: number): string {
@@ -745,21 +743,21 @@ function serializePromiseConstructor(
 function serializeReadableStreamClose(
   node: SerovalReadableStreamCloseNode,
 ): string {
-  return GLOBAL_CONTEXT_STREAM_CLOSE + '(' + node.i + ')';
+  return GLOBAL_CONTEXT_STREAM_EMIT + '(' + node.i + ',2)';
 }
 
 function serializeReadableStreamEnqueue(
   ctx: CrossSerializerContext,
   node: SerovalReadableStreamEnqueueNode,
 ): string {
-  return GLOBAL_CONTEXT_STREAM_ENQUEUE + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_STREAM_EMIT + '(' + node.i + ',0,' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializeReadableStreamError(
   ctx: CrossSerializerContext,
   node: SerovalReadableStreamErrorNode,
 ): string {
-  return GLOBAL_CONTEXT_STREAM_ERROR + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_STREAM_EMIT + '(' + node.i + ',1,' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializeReadableStreamConstructor(

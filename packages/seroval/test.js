@@ -15,14 +15,23 @@ const source = new ReadableStream({
     let i = 0;
 
     const interval = setInterval(() => {
+      controller.enqueue('Count: ' + i++);
       if (i > 10) {
         controller.close();
         clearInterval(interval);
-      } else {
-        controller.enqueue('Count: ' + i++);
       }
     }, 1000);
   },
 });
 
+
+// const source = new ReadableStream({
+//   start(controller) {
+//     controller.enqueue('Hello');
+//     controller.enqueue('World');
+//     controller.close();
+//   }
+// });
+
 serializer.write('1', source);
+// serializer.write('2', Promise.resolve('Hello world'));
