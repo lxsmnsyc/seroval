@@ -1,5 +1,4 @@
 import { crossSerializeStream } from './cross';
-import { CROSS_REFERENCE_HEADER } from './keys';
 import { serializeString } from './string';
 
 export interface SerializerOptions {
@@ -18,10 +17,6 @@ export default class Serializer {
   constructor(
     private options: SerializerOptions,
   ) {
-  }
-
-  getHeader(): string {
-    return this.options.globalIdentifier + '={};' + CROSS_REFERENCE_HEADER;
   }
 
   write(key: string, value: unknown): void {
