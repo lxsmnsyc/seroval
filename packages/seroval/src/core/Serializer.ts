@@ -21,7 +21,7 @@ export default class Serializer {
   }
 
   getHeader(): string {
-    return 'var ' + this.options.globalIdentifier + '={};' + CROSS_REFERENCE_HEADER;
+    return this.options.globalIdentifier + '={};' + CROSS_REFERENCE_HEADER;
   }
 
   write(key: string, value: unknown): void {
