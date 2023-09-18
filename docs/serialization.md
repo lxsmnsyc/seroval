@@ -9,17 +9,19 @@
 - `crossSerialize`
 - `crossSerializeAsync`
 - `crossSerializeStream`
-- `toCrossJSON`
-- `toCrossJSONAsync`
 
 ## Basic serialization
 
 `serialize` and `serializeAsync` offers the basic serialization, with the latter having support for serializing `Promise`, `Blob` and `File`.
 
-Both of these functions return a JS string that one can run in `eval`, or in the usual use-case, wrap in a `<script>` tag and insert in the HTML output.
-
 ```js
 import { serialize, serializeAsync } from 'seroval';
+```
+
+Both of these functions return a JS string that one can either run in `eval`, wrap in a `<script>` tag and insert in the HTML output, or use `deserialize`
+
+```js
+import { deserialize } from 'seroval';
 ```
 
 ## JSON serialization
@@ -53,6 +55,8 @@ import { crossSerialize, crossSerializeAsync } from 'seroval';
 ```
 
 ## Streaming serialization
+
+Async serialization allows `Promise` instances to be serialized by `await`-ing it, however, this results in a blocking process. With streaming serialization, `Promise` instances can be streamed later on, while the synchronous values can be emitted immediately.
 
 ```js
 import { crossSerializeStream, Serializer } from 'seroval';
