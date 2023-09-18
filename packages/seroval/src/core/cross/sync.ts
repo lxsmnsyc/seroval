@@ -1,41 +1,32 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import assert from '../assert';
 import { Feature } from '../compat';
-import type { ParserContext } from '../context';
-import { createIndexedValue } from '../context';
+import { createCrossIndexedValue, type CrossParserContext } from './context';
 import { serializeString } from '../string';
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
-import UnsupportedTypeError from './UnsupportedTypeError';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
+import UnsupportedTypeError from '../UnsupportedTypeError';
 import {
   TRUE_NODE,
   FALSE_NODE,
   UNDEFINED_NODE,
   NULL_NODE,
-} from './constants';
+} from '../literals';
 import {
-  createBigIntNode,
   createBigIntTypedArrayNode,
-  createDateNode,
-  createNumberNode,
-  createIndexedValueNode,
-  createRegExpNode,
-  createStringNode,
   createTypedArrayNode,
-  createReferenceNode,
-  createArrayBufferNode,
   createDataViewNode,
   createSymbolNode,
   createFunctionNode,
 } from './primitives';
 import {
   hasReferenceID,
-} from './reference';
+} from '../reference';
 import {
   getErrorConstructorName,
   getErrorOptions,
   getObjectFlag,
   isIterable,
-} from './shared';
+} from '../shared';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -44,25 +35,35 @@ import type {
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
-  SerovalNode,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
   SerovalSetNode,
-} from './types';
+  SerovalSyncNode,
+} from '../types';
 import {
-  SerovalNodeType,
   SerovalObjectRecordSpecialKey,
-} from './types';
-import { createURLNode, createURLSearchParamsNode } from './web-api';
+} from '../types';
+import { SerovalNodeType } from '../constants';
+import {
+  createArrayBufferNode,
+  createBigIntNode,
+  createDateNode,
+  createIndexedValueNode,
+  createNumberNode,
+  createReferenceNode,
+  createRegExpNode,
+  createStringNode,
+} from '../base-primitives';
+import { createURLNode, createURLSearchParamsNode } from '../web-api';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
-function generateNodeList(ctx: ParserContext, current: unknown[]): SerovalNode[] {
+function generateNodeList(ctx: CrossParserContext, current: unknown[]): SerovalSyncNode[] {
   const size = current.length;
-  const nodes = new Array<SerovalNode>(size);
+  const nodes = new Array<SerovalSyncNode>(size);
   const deferred = new Array<unknown>(size);
   let item: unknown;
   for (let i = 0; i < size; i++) {
@@ -71,20 +72,20 @@ function generateNodeList(ctx: ParserContext, current: unknown[]): SerovalNode[]
       if (isIterable(item)) {
         deferred[i] = item;
       } else {
-        nodes[i] = parseSync(ctx, item);
+        nodes[i] = crossParseSync(ctx, item);
       }
     }
   }
   for (let i = 0; i < size; i++) {
     if (i in deferred) {
-      nodes[i] = parseSync(ctx, deferred[i]);
+      nodes[i] = crossParseSync(ctx, deferred[i]);
     }
   }
   return nodes;
 }
 
 function generateArrayNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: unknown[],
 ): SerovalArrayNode {
@@ -95,7 +96,8 @@ function generateArrayNode(
     l: current.length,
     c: undefined,
     m: undefined,
-    d: undefined,
+    p: undefined,
+    e: undefined,
     a: generateNodeList(ctx, current),
     f: undefined,
     b: undefined,
@@ -104,14 +106,14 @@ function generateArrayNode(
 }
 
 function generateMapNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
   assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
-  const keyNodes = new Array<SerovalNode>(len);
-  const valueNodes = new Array<SerovalNode>(len);
+  const keyNodes = new Array<SerovalSyncNode>(len);
+  const valueNodes = new Array<SerovalSyncNode>(len);
   const deferredKey = new Array<unknown>(len);
   const deferredValue = new Array<unknown>(len);
   let deferredSize = 0;
@@ -123,14 +125,14 @@ function generateMapNode(
       deferredValue[deferredSize] = value;
       deferredSize++;
     } else {
-      keyNodes[nodeSize] = parseSync(ctx, key);
-      valueNodes[nodeSize] = parseSync(ctx, value);
+      keyNodes[nodeSize] = crossParseSync(ctx, key);
+      valueNodes[nodeSize] = crossParseSync(ctx, value);
       nodeSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
-    keyNodes[nodeSize + i] = parseSync(ctx, deferredKey[i]);
-    valueNodes[nodeSize + i] = parseSync(ctx, deferredValue[i]);
+    keyNodes[nodeSize + i] = crossParseSync(ctx, deferredKey[i]);
+    valueNodes[nodeSize + i] = crossParseSync(ctx, deferredValue[i]);
   }
   return {
     t: SerovalNodeType.Map,
@@ -139,7 +141,8 @@ function generateMapNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: { k: keyNodes, v: valueNodes, s: len },
+    p: undefined,
+    e: { k: keyNodes, v: valueNodes, s: len },
     a: undefined,
     f: undefined,
     b: undefined,
@@ -148,13 +151,13 @@ function generateMapNode(
 }
 
 function generateSetNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: Set<unknown>,
 ): SerovalSetNode {
   assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
-  const nodes = new Array<SerovalNode>(len);
+  const nodes = new Array<SerovalSyncNode>(len);
   const deferred = new Array<unknown>(len);
   let deferredSize = 0;
   let nodeSize = 0;
@@ -163,12 +166,12 @@ function generateSetNode(
     if (isIterable(item)) {
       deferred[deferredSize++] = item;
     } else {
-      nodes[nodeSize++] = parseSync(ctx, item);
+      nodes[nodeSize++] = crossParseSync(ctx, item);
     }
   }
   // Parse deferred items
   for (let i = 0; i < deferredSize; i++) {
-    nodes[nodeSize + i] = parseSync(ctx, deferred[i]);
+    nodes[nodeSize + i] = crossParseSync(ctx, deferred[i]);
   }
   return {
     t: SerovalNodeType.Set,
@@ -177,7 +180,8 @@ function generateSetNode(
     l: len,
     c: undefined,
     m: undefined,
-    d: undefined,
+    p: undefined,
+    e: undefined,
     a: nodes,
     f: undefined,
     b: undefined,
@@ -186,13 +190,13 @@ function generateSetNode(
 }
 
 function generateProperties(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   properties: Record<string, unknown>,
 ): SerovalObjectRecordNode {
   const keys = Object.keys(properties);
   let size = keys.length;
   const keyNodes = new Array<SerovalObjectRecordKey>(size);
-  const valueNodes = new Array<SerovalNode>(size);
+  const valueNodes = new Array<SerovalSyncNode>(size);
   const deferredKeys = new Array<SerovalObjectRecordKey>(size);
   const deferredValues = new Array<unknown>(size);
   let deferredSize = 0;
@@ -208,20 +212,19 @@ function generateProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = parseSync(ctx, item);
+      valueNodes[nodesSize] = crossParseSync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = parseSync(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = crossParseSync(ctx, deferredValues[i]);
   }
   if (ctx.features & Feature.Symbol) {
     if (Symbol.iterator in properties) {
       keyNodes[size] = SerovalObjectRecordSpecialKey.SymbolIterator;
       const items = Array.from(properties as Iterable<unknown>);
-      const id = createIndexedValue(ctx, items);
-      valueNodes[size] = generateArrayNode(ctx, id, items);
+      valueNodes[size] = generateArrayNode(ctx, createCrossIndexedValue(ctx, items), items);
       size++;
     }
   }
@@ -233,13 +236,13 @@ function generateProperties(
 }
 
 function generatePlainProperties(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   properties: Record<string, unknown>,
 ): SerovalPlainRecordNode {
   const keys = Object.keys(properties);
   const size = keys.length;
   const keyNodes = new Array<string>(size);
-  const valueNodes = new Array<SerovalNode>(size);
+  const valueNodes = new Array<SerovalSyncNode>(size);
   const deferredKeys = new Array<string>(size);
   const deferredValues = new Array<unknown>(size);
   let deferredSize = 0;
@@ -255,13 +258,13 @@ function generatePlainProperties(
       deferredSize++;
     } else {
       keyNodes[nodesSize] = escaped;
-      valueNodes[nodesSize] = parseSync(ctx, item);
+      valueNodes[nodesSize] = crossParseSync(ctx, item);
       nodesSize++;
     }
   }
   for (let i = 0; i < deferredSize; i++) {
     keyNodes[nodesSize + i] = deferredKeys[i];
-    valueNodes[nodesSize + i] = parseSync(ctx, deferredValues[i]);
+    valueNodes[nodesSize + i] = crossParseSync(ctx, deferredValues[i]);
   }
   return {
     k: keyNodes,
@@ -271,7 +274,7 @@ function generatePlainProperties(
 }
 
 function generateObjectNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: Record<string, unknown>,
   empty: boolean,
@@ -283,7 +286,8 @@ function generateObjectNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: generateProperties(ctx, current),
+    p: generateProperties(ctx, current),
+    e: undefined,
     a: undefined,
     f: undefined,
     b: undefined,
@@ -292,7 +296,7 @@ function generateObjectNode(
 }
 
 function generateAggregateErrorNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: AggregateError,
 ): SerovalAggregateErrorNode {
@@ -307,7 +311,8 @@ function generateAggregateErrorNode(
     l: undefined,
     c: undefined,
     m: serializeString(current.message),
-    d: optionsNode,
+    p: optionsNode,
+    e: undefined,
     a: undefined,
     f: undefined,
     b: undefined,
@@ -316,7 +321,7 @@ function generateAggregateErrorNode(
 }
 
 function generateErrorNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: Error,
 ): SerovalErrorNode {
@@ -331,7 +336,8 @@ function generateErrorNode(
     l: undefined,
     c: getErrorConstructorName(current),
     m: serializeString(current.message),
-    d: optionsNode,
+    p: optionsNode,
+    e: undefined,
     a: undefined,
     f: undefined,
     b: undefined,
@@ -340,7 +346,7 @@ function generateErrorNode(
 }
 
 function generateHeadersNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: Headers,
 ): SerovalHeadersNode {
@@ -357,7 +363,8 @@ function generateHeadersNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: generatePlainProperties(ctx, items),
+    p: undefined,
+    e: generatePlainProperties(ctx, items),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -366,7 +373,7 @@ function generateHeadersNode(
 }
 
 function generateFormDataNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: FormData,
 ): SerovalFormDataNode {
@@ -383,7 +390,8 @@ function generateFormDataNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: generatePlainProperties(ctx, items),
+    p: undefined,
+    e: generatePlainProperties(ctx, items),
     a: undefined,
     f: undefined,
     b: undefined,
@@ -392,7 +400,7 @@ function generateFormDataNode(
 }
 
 function generateBoxedNode(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   id: number,
   current: object,
 ): SerovalBoxedNode {
@@ -403,27 +411,30 @@ function generateBoxedNode(
     l: undefined,
     c: undefined,
     m: undefined,
-    d: undefined,
+    p: undefined,
+    e: undefined,
     a: undefined,
-    f: parseSync(ctx, current.valueOf()),
+    f: crossParseSync(ctx, current.valueOf()),
     b: undefined,
     o: undefined,
   };
 }
 
 function parseObject(
-  ctx: ParserContext,
+  ctx: CrossParserContext,
   current: object | null,
-): SerovalNode {
+): SerovalSyncNode {
   if (!current) {
     return NULL_NODE;
   }
   // Non-primitive values needs a reference ID
   // mostly because the values themselves are stateful
-  const id = createIndexedValue(ctx, current);
-  if (ctx.markedRefs.has(id)) {
-    return createIndexedValueNode(id);
+  const registeredID = ctx.refs.get(current);
+  if (registeredID != null) {
+    return createIndexedValueNode(registeredID);
   }
+  const id = ctx.refs.size;
+  ctx.refs.set(current, id);
   if (hasReferenceID(current)) {
     return createReferenceNode(id, current);
   }
@@ -523,10 +534,10 @@ function parseObject(
   throw new UnsupportedTypeError(current);
 }
 
-export default function parseSync<T>(
-  ctx: ParserContext,
+export default function crossParseSync<T>(
+  ctx: CrossParserContext,
   current: T,
-): SerovalNode {
+): SerovalSyncNode {
   switch (typeof current) {
     case 'boolean':
       return current ? TRUE_NODE : FALSE_NODE;

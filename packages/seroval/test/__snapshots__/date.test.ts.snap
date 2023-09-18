@@ -6,4 +6,4 @@ exports[`Date > serializeAsync > supports Date 1`] = `"Promise.resolve(new Date(
 
 exports[`Date > toJSON > supports Date 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Date > toJSONAsync > supports Date 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"f\\":{\\"t\\":5,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Date > toJSONAsync > supports Date 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":5,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;

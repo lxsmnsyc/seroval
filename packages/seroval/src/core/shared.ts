@@ -1,9 +1,9 @@
-import { Feature } from '../compat';
-import type { ParserContext } from '../context';
+import { Feature } from './compat';
 import type {
   ErrorValue,
 } from '../types';
-import { SerovalObjectFlags } from './types';
+import { SerovalObjectFlags } from './constants';
+import type { BaseParserContext } from './context';
 
 export function getErrorConstructorName(error: ErrorValue): string {
   if (error instanceof EvalError) {
@@ -51,7 +51,7 @@ export function getErrorConstructor(errorName: string): ErrorConstructors {
 }
 
 export function getErrorOptions(
-  ctx: ParserContext,
+  ctx: BaseParserContext,
   error: Error,
 ): Record<string, unknown> | undefined {
   let options: Record<string, unknown> | undefined;
