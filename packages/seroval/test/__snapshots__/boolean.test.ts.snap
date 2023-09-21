@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`boolean > crossSerialize > supports boolean 1`] = `"!0"`;
+
+exports[`boolean > crossSerialize > supports boolean 2`] = `"!1"`;
+
+exports[`boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Promise.resolve(!0)"`;
+
+exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Promise.resolve(!1)"`;
+
+exports[`boolean > crossSerializeAsync > supports false value 1`] = `"$R[0]=$P()"`;
+
+exports[`boolean > crossSerializeAsync > supports false value 2`] = `"$Ps(0,!1)"`;
+
+exports[`boolean > crossSerializeAsync > supports true value 1`] = `"$R[0]=$P()"`;
+
+exports[`boolean > crossSerializeAsync > supports true value 2`] = `"$Ps(0,!0)"`;
