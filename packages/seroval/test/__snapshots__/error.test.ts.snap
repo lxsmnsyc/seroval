@@ -1,5 +1,31 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Error > crossSerialize > supports Error.prototype.cause 1`] = `"$R[0]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[1]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"})})"`;
+
+exports[`Error > crossSerialize > supports Error.prototype.name 1`] = `"$R[0]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"})"`;
+
+exports[`Error > crossSerialize > supports other Error classes 1`] = `"$R[0]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"})"`;
+
+exports[`Error > crossSerializeAsync > supports Error.prototype.cause 1`] = `"$R[0]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[1]=Promise.resolve($R[2]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))})"`;
+
+exports[`Error > crossSerializeAsync > supports Error.prototype.name 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"}))"`;
+
+exports[`Error > crossSerializeAsync > supports other Error classes 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `"$R[0]=$P()"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `"$Ps(0,$R[1]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[2]=$P()}))"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"$Ps(2,$R[3]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `"$R[0]=$P()"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `"$Ps(0,$R[1]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"}))"`;
+
+exports[`Error > crossSerializeStream > supports other Error classes 1`] = `"$R[0]=$P()"`;
+
+exports[`Error > crossSerializeStream > supports other Error classes 2`] = `"$Ps(0,$R[1]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
+
 exports[`Error > serialize > supports Error.prototype.cause 1`] = `"Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:Object.assign(new Error(\\"A\\"),{stack:\\"\\"})})"`;
 
 exports[`Error > serialize > supports Error.prototype.name 1`] = `"Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"})"`;
