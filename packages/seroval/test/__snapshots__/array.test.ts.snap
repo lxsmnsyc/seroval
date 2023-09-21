@@ -8,6 +8,24 @@ exports[`array holes > toJSON > supports array holes 1`] = `"{\\"t\\":{\\"t\\":9
 
 exports[`array holes > toJSONAsync > supports array holes 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":9,\\"i\\":1,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null],\\"o\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
+exports[`arrays > crossSerialize > supports Arrays 1`] = `"$R[0]=[1,2,3]"`;
+
+exports[`arrays > crossSerialize > supports self recursion 1`] = `"($R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0])"`;
+
+exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[1,2,3])"`;
+
+exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]"`;
+
+exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=$P()"`;
+
+exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"$Ps(0,$R[1]=[1,2,3])"`;
+
+exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=$P(),$R[2]=$P()]"`;
+
+exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"$Ps(1,$R[0])"`;
+
+exports[`arrays > crossSerializeStream > supports self recursion 3`] = `"$Ps(2,$R[0])"`;
+
 exports[`arrays > serialize > supports Arrays 1`] = `"[1,2,3]"`;
 
 exports[`arrays > serialize > supports self recursion 1`] = `"(h=>(h=[,,],h[1]=h[0]=h,h))()"`;
