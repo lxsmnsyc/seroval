@@ -37,11 +37,14 @@ export function createCrossIndexedValue<T>(
 
 export interface StreamingCrossParserContextOptions extends CrossParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
+  onDone: () => void;
 }
 
 export interface StreamingCrossParserContext extends CrossParserContext {
   alive: boolean;
+  pending: number;
   onParse(node: SerovalNode, initial: boolean): void;
+  onDone(): void;
 }
 
 export function createStreamingCrossParserContext(
@@ -49,10 +52,22 @@ export function createStreamingCrossParserContext(
 ): StreamingCrossParserContext {
   return {
     alive: true,
+    pending: 0,
     refs: options.refs || new Map<unknown, number>(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     onParse: options.onParse,
+    onDone: options.onDone,
   };
+}
+
+export function pushPendingState(ctx: StreamingCrossParserContext): void {
+  ctx.pending++;
+}
+
+export function popPendingState(ctx: StreamingCrossParserContext): void {
+  if (--ctx.pending <= 0) {
+    ctx.onDone();
+  }
 }
 
 export interface CrossSerializerContext extends BaseParserContext {

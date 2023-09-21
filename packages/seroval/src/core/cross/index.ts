@@ -121,6 +121,7 @@ export async function crossSerializeAsync<T>(
 
 export interface CrossSerializeStreamOptions extends CrossParserContextOptions {
   onSerialize: (data: string, initial: boolean) => void;
+  onDone: () => void;
 }
 
 export function crossSerializeStream<T>(
@@ -144,9 +145,15 @@ export function crossSerializeStream<T>(
         initial,
       );
     },
+    onDone: options.onDone,
   });
 
   ctx.onParse(crossParseStream(ctx, source), true);
+
+  if (ctx.pending <= 0) {
+    ctx.onDone();
+    ctx.alive = false;
+  }
 
   return () => {
     ctx.alive = false;
