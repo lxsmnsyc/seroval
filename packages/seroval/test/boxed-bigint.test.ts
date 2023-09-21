@@ -50,7 +50,7 @@ describe('boxed bigint', () => {
       ).toMatchSnapshot();
     });
   });
-  describe('crossSerializeAsync', () => {
+  describe('crossSerializeStream', () => {
     it('supports boxed bigint', async () => new Promise<void>((done) => {
       crossSerializeStream(Promise.resolve(Object(9007199254740991n)), {
         onSerialize(data) {
