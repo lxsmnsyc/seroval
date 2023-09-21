@@ -1,8 +1,20 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Date > crossSerialize > supports Date 1`] = `"$R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
+
+exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+
+exports[`Date > crossSerializeStream > supports boxed bigint 1`] = `"$R[0]=$P()"`;
+
+exports[`Date > crossSerializeStream > supports boxed bigint 2`] = `"$Ps(0,$R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+
 exports[`Date > serialize > supports Date 1`] = `"new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
 
+exports[`Date > serialize > supports Date 2`] = `"new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
+
 exports[`Date > serializeAsync > supports Date 1`] = `"Promise.resolve(new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+
+exports[`Date > serializeAsync > supports Date 2`] = `"Promise.resolve(new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
 exports[`Date > toJSON > supports Date 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
