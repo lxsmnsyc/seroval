@@ -7,6 +7,9 @@ import {
   toJSONAsync,
   toJSON,
   Feature,
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
 } from '../src';
 
 describe('bigint', () => {
@@ -33,6 +36,28 @@ describe('bigint', () => {
         JSON.stringify(await toJSONAsync(Promise.resolve(9007199254740991n))),
       ).toMatchSnapshot();
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports bigint', () => {
+      expect(crossSerialize(9007199254740991n)).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports bigint', async () => {
+      expect(await crossSerializeAsync(Promise.resolve(9007199254740991n))).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports bigint', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(9007199254740991n), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
   describe('compat', () => {
     it('should throw an error for unsupported target', () => {
