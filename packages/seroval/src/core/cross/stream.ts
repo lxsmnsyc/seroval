@@ -4,7 +4,7 @@ import assert from '../assert';
 import { Feature } from '../compat';
 import type { StreamingCrossParserContext } from './context';
 import {
-  createCrossIndexedValue,
+  createCrossIndexedValue, popPendingState, pushPendingState,
 } from './context';
 import { serializeString } from '../string';
 import type {
@@ -318,6 +318,7 @@ function generatePromiseNode(
           b: undefined,
           o: undefined,
         }, false);
+        popPendingState(ctx);
       }
     },
     (data) => {
@@ -336,9 +337,11 @@ function generatePromiseNode(
           b: undefined,
           o: undefined,
         }, false);
+        popPendingState(ctx);
       }
     },
   );
+  pushPendingState(ctx);
   return {
     t: SerovalNodeType.PromiseConstructor,
     i: id,
@@ -507,6 +510,7 @@ function generateReadableStreamNode(
 ): SerovalReadableStreamConstructorNode {
   assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const reader = current.getReader();
+  pushPendingState(ctx);
 
   function push(): void {
     reader.read().then(
@@ -527,6 +531,7 @@ function generateReadableStreamNode(
               b: undefined,
               o: undefined,
             }, false);
+            popPendingState(ctx);
           } else {
             ctx.onParse({
               t: SerovalNodeType.ReadableStreamEnqueue,
@@ -562,7 +567,7 @@ function generateReadableStreamNode(
             b: undefined,
             o: undefined,
           }, false);
-          push();
+          popPendingState(ctx);
         }
       },
     );
