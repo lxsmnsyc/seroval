@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   fromJSON,
   serialize,
@@ -40,5 +43,39 @@ describe('boxed string', () => {
         JSON.stringify(await toJSONAsync(Promise.resolve(Object('<script></script>')))),
       ).toMatchSnapshot();
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports boxed strings', () => {
+      expect(crossSerialize(Object('"hello"'))).toMatchSnapshot();
+      expect(crossSerialize(Object('<script></script>'))).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports boxed strings', async () => {
+      expect(await crossSerializeAsync(Promise.resolve(Object('"hello"')))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object('<script></script>')))).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports boxed strings', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(Object('"hello"')), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed sanitized strings', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(Object('<script></script>')), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });
