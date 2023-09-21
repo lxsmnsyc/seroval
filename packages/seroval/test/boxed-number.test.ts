@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   serialize,
   serializeAsync,
   toJSON,
@@ -56,5 +59,78 @@ describe('boxed number', () => {
         JSON.stringify(await toJSONAsync(Promise.resolve(Object(-0)))),
       ).toMatchSnapshot();
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports boxed numbers', () => {
+      const value = 0xDEADBEEF;
+      expect(crossSerialize(Object(value))).toMatchSnapshot();
+      expect(crossSerialize(Object(NaN))).toMatchSnapshot();
+      expect(crossSerialize(Object(Infinity))).toMatchSnapshot();
+      expect(crossSerialize(Object(-Infinity))).toMatchSnapshot();
+      expect(crossSerialize(Object(-0))).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports boxed numbers', async () => {
+      const value = 0xDEADBEEF;
+      expect(await crossSerializeAsync(Promise.resolve(Object(value)))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object(NaN)))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object(Infinity)))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object(-Infinity)))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object(-0)))).toMatchSnapshot();
+    });
+  });
+
+  describe('crossSerializeStream', () => {
+    it('supports boxed numbers', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(Object(0xDEADBEEF)), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed NaN', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(Object(NaN)), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed Infinity', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(Object(Infinity)), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed -Infinity', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(Object(-Infinity)), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed -0', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve(Object(-0)), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });
