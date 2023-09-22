@@ -4,6 +4,26 @@ exports[`Set > compat > should throw an error for unsupported target 1`] = `"Uns
 
 exports[`Set > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Set]\\""`;
 
+exports[`Set > crossSerialize > supports Set 1`] = `"$R[0]=new Set([1,2,3])"`;
+
+exports[`Set > crossSerialize > supports self-recursion 1`] = `"($R[0]=new Set,$R[0].add($R[0]),$R[0])"`;
+
+exports[`Set > crossSerializeAsync > supports Set 1`] = `"$R[0]=Promise.resolve($R[1]=new Set([1,2,3]))"`;
+
+exports[`Set > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])])"`;
+
+exports[`Set > crossSerializeStream > supports Map 1`] = `"$R[0]=$P()"`;
+
+exports[`Set > crossSerializeStream > supports Map 2`] = `"$Ps(0,$R[1]=new Set([1,2,3]))"`;
+
+exports[`Set > crossSerializeStream > supports Set 1`] = `"$R[0]=$P()"`;
+
+exports[`Set > crossSerializeStream > supports Set 2`] = `"$Ps(0,$R[1]=new Set([1,2,3]))"`;
+
+exports[`Set > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=$P()])"`;
+
+exports[`Set > crossSerializeStream > supports self-recursion 2`] = `"$Ps(1,$R[0])"`;
+
 exports[`Set > serialize > supports Set 1`] = `"new Set([1,2,3])"`;
 
 exports[`Set > serialize > supports self-recursion 1`] = `"(h=>(h=new Set,h.add(h),h))()"`;

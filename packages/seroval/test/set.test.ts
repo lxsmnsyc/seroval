@@ -1,6 +1,9 @@
 /* eslint-disable no-await-in-loop */
 import { describe, it, expect } from 'vitest';
 import {
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   Feature,
   fromJSON,
@@ -94,6 +97,57 @@ describe('Set', () => {
         expect(await key).toBe(back);
       }
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports Set', () => {
+      const example = new Set([1, 2, 3]);
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+    it('supports self-recursion', () => {
+      const example: Set<unknown> = new Set();
+      example.add(example);
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports Set', async () => {
+      const example = new Set([1, 2, 3]);
+      const result = await crossSerializeAsync(Promise.resolve(example));
+      expect(result).toMatchSnapshot();
+    });
+    it('supports self-recursion', async () => {
+      const example: Set<Promise<unknown>> = new Set();
+      example.add(Promise.resolve(example));
+      const result = await crossSerializeAsync(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports Set', async () => new Promise<void>((done) => {
+      const example = new Set([1, 2, 3]);
+      crossSerializeStream(Promise.resolve(example), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports self-recursion', async () => new Promise<void>((done) => {
+      const example: Set<Promise<unknown>> = new Set();
+      example.add(Promise.resolve(example));
+      crossSerializeStream(example, {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
   describe('compat', () => {
     it('should throw an error for unsupported target', () => {
