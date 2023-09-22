@@ -37,7 +37,7 @@ export function createCrossIndexedValue<T>(
 
 export interface StreamingCrossParserContextOptions extends CrossParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
-  onDone: () => void;
+  onDone?: () => void;
 }
 
 export interface StreamingCrossParserContext extends CrossParserContext {
@@ -56,7 +56,11 @@ export function createStreamingCrossParserContext(
     refs: options.refs || new Map<unknown, number>(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     onParse: options.onParse,
-    onDone: options.onDone,
+    onDone(): void {
+      if (options.onDone) {
+        options.onDone();
+      }
+    },
   };
 }
 
