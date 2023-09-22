@@ -6,6 +6,9 @@ import {
   serializeAsync,
   toJSONAsync,
   toJSON,
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
 } from '../src';
 
 describe('sparse arrays', () => {
@@ -52,5 +55,32 @@ describe('sparse arrays', () => {
       expect(back[0]).toBe(undefined);
       expect(back.length).toBe(example.length);
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports sparse arrays', () => {
+      const example = new Array(10);
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports sparse arrays', async () => {
+      const example = new Array(10);
+      const result = await crossSerializeAsync(Promise.resolve(example));
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports sparse arrays', async () => new Promise<void>((done) => {
+      const example = new Array(10);
+      crossSerializeStream(Promise.resolve(example), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });

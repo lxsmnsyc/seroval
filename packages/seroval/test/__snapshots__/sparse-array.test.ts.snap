@@ -1,5 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`sparse arrays > crossSerialize > supports sparse arrays 1`] = `"$R[0]=[,,,,,,,,,,]"`;
+
+exports[`sparse arrays > crossSerializeAsync > supports sparse arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,])"`;
+
+exports[`sparse arrays > crossSerializeStream > supports sparse arrays 1`] = `"$R[0]=$P()"`;
+
+exports[`sparse arrays > crossSerializeStream > supports sparse arrays 2`] = `"$Ps(0,$R[1]=[,,,,,,,,,,])"`;
+
 exports[`sparse arrays > serialize > supports sparse arrays 1`] = `"[,,,,,,,,,,]"`;
 
 exports[`sparse arrays > serializeAsync > supports sparse arrays 1`] = `"Promise.resolve([,,,,,,,,,,])"`;
