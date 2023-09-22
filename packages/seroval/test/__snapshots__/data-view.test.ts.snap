@@ -4,6 +4,10 @@ exports[`DataView > crossSerialize > supports DataView 1`] = `"$R[0]=new DataVie
 
 exports[`DataView > crossSerializeAsync > supports DataView 1`] = `"$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
+exports[`DataView > crossSerializeStream > supports DataView 1`] = `"$R[0]=$P()"`;
+
+exports[`DataView > crossSerializeStream > supports DataView 2`] = `"$Ps(0,$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
+
 exports[`DataView > crossSerializeStream > supports boxed bigint 1`] = `"$R[0]=$P()"`;
 
 exports[`DataView > crossSerializeStream > supports boxed bigint 2`] = `"$Ps(0,$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;

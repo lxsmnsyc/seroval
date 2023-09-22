@@ -22,6 +22,10 @@ exports[`Iterable > crossSerialize > supports Iterables 1`] = `"$R[0]={title:\\"
 
 exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `"$R[0]=Promise.resolve($R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})"`;
 
+exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `"$R[0]=$P()"`;
+
+exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `"$Ps(0,$R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})"`;
+
 exports[`Iterable > crossSerializeStream > supports boxed bigint 1`] = `"$R[0]=$P()"`;
 
 exports[`Iterable > crossSerializeStream > supports boxed bigint 2`] = `"$Ps(0,$R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})"`;

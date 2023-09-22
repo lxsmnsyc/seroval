@@ -68,7 +68,7 @@ describe('Date', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports boxed bigint', async () => new Promise<void>((done) => {
+    it('supports Date', async () => new Promise<void>((done) => {
       const example = new Date('2023-03-14T11:16:24.879Z');
       crossSerializeStream(Promise.resolve(example), {
         onSerialize(data) {

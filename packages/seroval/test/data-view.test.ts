@@ -79,7 +79,7 @@ describe('DataView', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports boxed bigint', async () => new Promise<void>((done) => {
+    it('supports DataView', async () => new Promise<void>((done) => {
       const buffer = new ArrayBuffer(16);
       const example = new DataView(buffer, 0);
       example.setInt16(1, 42);

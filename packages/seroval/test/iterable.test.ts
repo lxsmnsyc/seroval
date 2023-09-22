@@ -127,7 +127,7 @@ describe('Iterable', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports boxed bigint', async () => new Promise<void>((done) => {
+    it('supports Iterables', async () => new Promise<void>((done) => {
       const example = Promise.resolve({
         title: 'Hello World',
         * [Symbol.iterator]() {
