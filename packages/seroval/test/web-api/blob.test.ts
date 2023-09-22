@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import 'node-fetch-native/polyfill';
 import {
+  crossSerializeAsync,
   deserialize,
   fromJSON,
   serializeAsync,
@@ -32,6 +33,15 @@ describe('Blob', () => {
       expect(back).toBeInstanceOf(Blob);
       expect(await back.text()).toBe(await example.text());
       expect(back.type).toBe(example.type);
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports Blob', async () => {
+      const example = new Blob(['Hello World'], {
+        type: 'text/plain',
+      });
+      const result = await crossSerializeAsync(Promise.resolve(example));
+      expect(result).toMatchSnapshot();
     });
   });
 });
