@@ -1,5 +1,45 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`number > crossSerialize > supports numbers 1`] = `"3735928559"`;
+
+exports[`number > crossSerialize > supports numbers 2`] = `"NaN"`;
+
+exports[`number > crossSerialize > supports numbers 3`] = `"1/0"`;
+
+exports[`number > crossSerialize > supports numbers 4`] = `"-1/0"`;
+
+exports[`number > crossSerialize > supports numbers 5`] = `"-0"`;
+
+exports[`number > crossSerializeAsync > supports numbers 1`] = `"$R[0]=Promise.resolve(3735928559)"`;
+
+exports[`number > crossSerializeAsync > supports numbers 2`] = `"$R[0]=Promise.resolve(NaN)"`;
+
+exports[`number > crossSerializeAsync > supports numbers 3`] = `"$R[0]=Promise.resolve(1/0)"`;
+
+exports[`number > crossSerializeAsync > supports numbers 4`] = `"$R[0]=Promise.resolve(-1/0)"`;
+
+exports[`number > crossSerializeAsync > supports numbers 5`] = `"$R[0]=Promise.resolve(-0)"`;
+
+exports[`number > crossSerializeStream > supports -0 1`] = `"$R[0]=$P()"`;
+
+exports[`number > crossSerializeStream > supports -0 2`] = `"$Ps(0,-0)"`;
+
+exports[`number > crossSerializeStream > supports -Infinity 1`] = `"$R[0]=$P()"`;
+
+exports[`number > crossSerializeStream > supports -Infinity 2`] = `"$Ps(0,-1/0)"`;
+
+exports[`number > crossSerializeStream > supports Infinity 1`] = `"$R[0]=$P()"`;
+
+exports[`number > crossSerializeStream > supports Infinity 2`] = `"$Ps(0,1/0)"`;
+
+exports[`number > crossSerializeStream > supports NaN 1`] = `"$R[0]=$P()"`;
+
+exports[`number > crossSerializeStream > supports NaN 2`] = `"$Ps(0,NaN)"`;
+
+exports[`number > crossSerializeStream > supports numbers 1`] = `"$R[0]=$P()"`;
+
+exports[`number > crossSerializeStream > supports numbers 2`] = `"$Ps(0,3735928559)"`;
+
 exports[`number > toJSON > supports numbers 1`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":3735928559},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`number > toJSON > supports numbers 2`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":7},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
