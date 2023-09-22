@@ -1,13 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`array holes > serialize > supports array holes 1`] = `"[,,,,,,,,,,]"`;
-
-exports[`array holes > serializeAsync > supports array holes 1`] = `"Promise.resolve([,,,,,,,,,,])"`;
-
-exports[`array holes > toJSON > supports array holes 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null],\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
-
-exports[`array holes > toJSONAsync > supports array holes 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":9,\\"i\\":1,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null],\\"o\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
-
 exports[`arrays > crossSerialize > supports Arrays 1`] = `"$R[0]=[1,2,3]"`;
 
 exports[`arrays > crossSerialize > supports self recursion 1`] = `"($R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0])"`;

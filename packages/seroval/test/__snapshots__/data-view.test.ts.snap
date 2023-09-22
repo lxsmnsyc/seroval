@@ -8,10 +8,6 @@ exports[`DataView > crossSerializeStream > supports DataView 1`] = `"$R[0]=$P()"
 
 exports[`DataView > crossSerializeStream > supports DataView 2`] = `"$Ps(0,$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
-exports[`DataView > crossSerializeStream > supports boxed bigint 1`] = `"$R[0]=$P()"`;
-
-exports[`DataView > crossSerializeStream > supports boxed bigint 2`] = `"$Ps(0,$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
-
 exports[`DataView > serialize > supports DataView 1`] = `"new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
 
 exports[`DataView > serializeAsync > supports DataView 1`] = `"Promise.resolve(new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;

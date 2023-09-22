@@ -14,11 +14,7 @@ exports[`bigint > crossSerializeStream > supports bigint 2`] = `"$Ps(0,900719925
 
 exports[`bigint > serialize > supports bigint 1`] = `"9007199254740991n"`;
 
-exports[`bigint > serialize > supports bigint 2`] = `"9007199254740991n"`;
-
 exports[`bigint > serializeAsync > supports bigint 1`] = `"Promise.resolve(9007199254740991n)"`;
-
-exports[`bigint > serializeAsync > supports bigint 2`] = `"Promise.resolve(9007199254740991n)"`;
 
 exports[`bigint > toJSON > supports bigint 1`] = `"{\\"t\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 
