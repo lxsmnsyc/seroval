@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `"$R[0]=$S()"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 2`] = `"$Se(0,0,\\"foo\\")"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 3`] = `"$Se(0,0,\\"bar\\")"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 4`] = `"$Se(0,0,\\"baz\\")"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `"$Se(0,2)"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `"$R[0]=$S()"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"$Se(0,1,$R[1]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"}))"`;
