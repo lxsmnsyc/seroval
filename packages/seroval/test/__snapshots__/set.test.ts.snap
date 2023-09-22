@@ -12,10 +12,6 @@ exports[`Set > crossSerializeAsync > supports Set 1`] = `"$R[0]=Promise.resolve(
 
 exports[`Set > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])])"`;
 
-exports[`Set > crossSerializeStream > supports Map 1`] = `"$R[0]=$P()"`;
-
-exports[`Set > crossSerializeStream > supports Map 2`] = `"$Ps(0,$R[1]=new Set([1,2,3]))"`;
-
 exports[`Set > crossSerializeStream > supports Set 1`] = `"$R[0]=$P()"`;
 
 exports[`Set > crossSerializeStream > supports Set 2`] = `"$Ps(0,$R[1]=new Set([1,2,3]))"`;
