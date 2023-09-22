@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   fromJSON,
   serialize,
@@ -48,5 +51,32 @@ describe('RegExp', () => {
       expect(back).toBeInstanceOf(RegExp);
       expect(String(back)).toBe(String(example));
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports RegExp', () => {
+      const example = /[a-z0-9]+/i;
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports RegExp', async () => {
+      const example = /[a-z0-9]+/i;
+      const result = await crossSerializeAsync(Promise.resolve(example));
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports RegExp', async () => new Promise<void>((done) => {
+      const example = /[a-z0-9]+/i;
+      crossSerializeStream(Promise.resolve(example), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });

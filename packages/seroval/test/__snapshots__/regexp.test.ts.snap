@@ -1,5 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`RegExp > crossSerialize > supports RegExp 1`] = `"$R[0]=/[a-z0-9]+/i"`;
+
+exports[`RegExp > crossSerializeAsync > supports RegExp 1`] = `"$R[0]=Promise.resolve($R[1]=/[a-z0-9]+/i)"`;
+
+exports[`RegExp > crossSerializeStream > supports RegExp 1`] = `"$R[0]=$P()"`;
+
+exports[`RegExp > crossSerializeStream > supports RegExp 2`] = `"$Ps(0,$R[1]=/[a-z0-9]+/i)"`;
+
 exports[`RegExp > serialize > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
 
 exports[`RegExp > serializeAsync > supports RegExp 1`] = `"Promise.resolve(/[a-z0-9]+/i)"`;
