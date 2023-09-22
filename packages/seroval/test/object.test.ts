@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   compileJSON,
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   Feature,
   fromJSON,
@@ -146,6 +149,99 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       expect([...back]).toMatchObject([1, 2, 3]);
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports Objects', () => {
+      const example = ({ hello: 'world' }) as { hello: string };
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+    it('supports self-recursion', () => {
+      const example = {} as Record<string, unknown>;
+      example.a = example;
+      example.b = example;
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+    it('supports Symbol.iterator', () => {
+      const example = ({
+        * [Symbol.iterator]() {
+          yield 1;
+          yield 2;
+          yield 3;
+        },
+      }) as Iterable<number>;
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports Objects', async () => {
+      const example = Promise.resolve({ hello: 'world' } as { hello: string });
+      const result = await crossSerializeAsync(example);
+      expect(result).toMatchSnapshot();
+    });
+    it('supports self-recursion', async () => {
+      const example = {} as Record<string, Promise<unknown>>;
+      example.a = Promise.resolve(example);
+      example.b = Promise.resolve(example);
+      const result = await crossSerializeAsync(example);
+      expect(result).toMatchSnapshot();
+    });
+    it('supports Symbol.iterator', async () => {
+      const example = Promise.resolve({
+        * [Symbol.iterator]() {
+          yield 1;
+          yield 2;
+          yield 3;
+        },
+      } as Iterable<number>);
+      const result = await crossSerializeAsync(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports Objects', async () => new Promise<void>((done) => {
+      const example = Promise.resolve({ hello: 'world' } as { hello: string });
+      crossSerializeStream(example, {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports self-recursion', async () => new Promise<void>((done) => {
+      const example = {} as Record<string, Promise<unknown>>;
+      example.a = Promise.resolve(example);
+      example.b = Promise.resolve(example);
+      crossSerializeStream(Promise.resolve(example), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.iterator', async () => new Promise<void>((done) => {
+      const example = Promise.resolve({
+        * [Symbol.iterator]() {
+          yield 1;
+          yield 2;
+          yield 3;
+        },
+      } as Iterable<number>);
+      crossSerializeStream(example, {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
   describe('compat', () => {
     it('should use manual assignment instead of Object.assign', () => {
