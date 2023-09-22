@@ -4,6 +4,24 @@ exports[`Map > compat > should throw an error for unsupported target 1`] = `"Uns
 
 exports[`Map > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
+exports[`Map > crossSerialize > supports Map 1`] = `"$R[0]=new Map([[1,2],[3,4]])"`;
+
+exports[`Map > crossSerialize > supports self-recursion 1`] = `"($R[0]=new Map,$R[0].set($R[0],$R[0]),$R[0])"`;
+
+exports[`Map > crossSerializeAsync > supports Map 1`] = `"$R[0]=Promise.resolve($R[1]=new Map([[1,2],[3,4]]))"`;
+
+exports[`Map > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]])"`;
+
+exports[`Map > crossSerializeStream > supports Map 1`] = `"$R[0]=$P()"`;
+
+exports[`Map > crossSerializeStream > supports Map 2`] = `"$Ps(0,$R[1]=new Map([[1,2],[3,4]]))"`;
+
+exports[`Map > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=new Map([[$R[1]=$P(),$R[2]=$P()]])"`;
+
+exports[`Map > crossSerializeStream > supports self-recursion 2`] = `"$Ps(1,$R[0])"`;
+
+exports[`Map > crossSerializeStream > supports self-recursion 3`] = `"$Ps(2,$R[0])"`;
+
 exports[`Map > serialize > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
 
 exports[`Map > serialize > supports self-recursion 1`] = `"(h=>(h=new Map,h.set(h,h),h))()"`;
