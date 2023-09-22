@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   fromJSON,
   serialize,
@@ -40,5 +43,39 @@ describe('string', () => {
         JSON.stringify(await toJSONAsync(Promise.resolve('<script></script>'))),
       ).toMatchSnapshot();
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports strings', () => {
+      expect(crossSerialize('"hello"')).toMatchSnapshot();
+      expect(crossSerialize('<script></script>')).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports strings', async () => {
+      expect(await crossSerializeAsync(Promise.resolve('"hello"'))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve('<script></script>'))).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports strings', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve('"hello"'), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports sanitized strings', async () => new Promise<void>((done) => {
+      crossSerializeStream(Promise.resolve('<script></script>'), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });
