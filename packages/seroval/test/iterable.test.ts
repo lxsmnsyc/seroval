@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   compileJSON,
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   Feature,
   fromJSON,
@@ -94,6 +97,54 @@ describe('Iterable', () => {
       expect(iterator.next().value).toBe(2);
       expect(iterator.next().value).toBe(3);
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports Iterables', () => {
+      const example = {
+        title: 'Hello World',
+        * [Symbol.iterator](): unknown {
+          yield 1;
+          yield 2;
+          yield 3;
+        },
+      };
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports Iterables', async () => {
+      const example = Promise.resolve({
+        title: 'Hello World',
+        * [Symbol.iterator]() {
+          yield 1;
+          yield 2;
+          yield 3;
+        },
+      });
+      const result = await crossSerializeAsync(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports boxed bigint', async () => new Promise<void>((done) => {
+      const example = Promise.resolve({
+        title: 'Hello World',
+        * [Symbol.iterator]() {
+          yield 1;
+          yield 2;
+          yield 3;
+        },
+      });
+      crossSerializeStream(example, {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
   describe('compat', () => {
     it('should use Symbol.iterator instead of Array.values.', () => {
