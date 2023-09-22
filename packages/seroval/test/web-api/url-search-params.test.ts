@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   fromJSON,
   serialize,
@@ -48,5 +51,32 @@ describe('URLSearchParams', () => {
       expect(back).toBeInstanceOf(URLSearchParams);
       expect(String(back)).toBe(String(example));
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports URLSearchParams', () => {
+      const example = new URLSearchParams('hello=world&foo=bar');
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports URLSearchParams', async () => {
+      const example = new URLSearchParams('hello=world&foo=bar');
+      const result = await crossSerializeAsync(Promise.resolve(example));
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports URLSearchParams', async () => new Promise<void>((done) => {
+      const example = new URLSearchParams('hello=world&foo=bar');
+      crossSerializeStream(Promise.resolve(example), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });
