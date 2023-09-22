@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import 'node-fetch-native/polyfill';
 import {
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   fromJSON,
   serialize,
@@ -61,5 +64,41 @@ describe('Headers', () => {
       expect(back).toBeInstanceOf(Headers);
       expect(String(back)).toBe(String(example));
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports Headers', () => {
+      const example = new Headers([
+        ['Content-Type', 'text/plain'],
+        ['Content-Encoding', 'gzip'],
+      ]);
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports Headers', async () => {
+      const example = new Headers([
+        ['Content-Type', 'text/plain'],
+        ['Content-Encoding', 'gzip'],
+      ]);
+      const result = await crossSerializeAsync(Promise.resolve(example));
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports Headers', async () => new Promise<void>((done) => {
+      const example = new Headers([
+        ['Content-Type', 'text/plain'],
+        ['Content-Encoding', 'gzip'],
+      ]);
+      crossSerializeStream(Promise.resolve(example), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });
