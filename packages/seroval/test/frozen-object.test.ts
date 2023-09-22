@@ -224,7 +224,7 @@ describe('frozen object', () => {
   describe('crossSerializeStream', () => {
     it('supports Objects', async () => new Promise<void>((done) => {
       const example = Promise.resolve(Object.freeze({ hello: 'world' }) as { hello: string });
-      crossSerializeStream(Promise.resolve(example), {
+      crossSerializeStream(example, {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -255,7 +255,7 @@ describe('frozen object', () => {
           yield 3;
         },
       }) as Iterable<number>);
-      crossSerializeStream(Promise.resolve(example), {
+      crossSerializeStream(example, {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
