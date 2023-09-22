@@ -1,5 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Reference > crossSerialize > supports Reference 1`] = `"$R[0]=__SEROVAL_REFS__.get(\\"example\\")"`;
+
+exports[`Reference > crossSerializeAsync > supports Reference 1`] = `"$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\"))"`;
+
+exports[`Reference > crossSerializeStream > supports Reference 1`] = `"$R[0]=$P()"`;
+
+exports[`Reference > crossSerializeStream > supports Reference 2`] = `"$Ps(0,$R[1]=__SEROVAL_REFS__.get(\\"example\\"))"`;
+
 exports[`Reference > serialize > supports Reference 1`] = `"__SEROVAL_REFS__.get(\\"example\\")"`;
 
 exports[`Reference > serializeAsync > supports Reference 1`] = `"Promise.resolve(__SEROVAL_REFS__.get(\\"example\\"))"`;

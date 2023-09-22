@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   createReference,
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
   deserialize,
   fromJSON,
   serialize,
@@ -45,5 +48,32 @@ describe('Reference', () => {
       const back = await fromJSON<Promise<typeof example>>(result);
       expect(back).toBe(example);
     });
+  });
+  describe('crossSerialize', () => {
+    it('supports Reference', () => {
+      const example = createReference('example', () => 'Hello World');
+      const result = crossSerialize(example);
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeAsync', () => {
+    it('supports Reference', async () => {
+      const example = createReference('example', () => 'Hello World');
+      const result = await crossSerializeAsync(Promise.resolve(example));
+      expect(result).toMatchSnapshot();
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports Reference', async () => new Promise<void>((done) => {
+      const example = createReference('example', () => 'Hello World');
+      crossSerializeStream(Promise.resolve(example), {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });
