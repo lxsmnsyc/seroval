@@ -156,6 +156,9 @@ export function crossSerializeStream<T>(
   }
 
   return () => {
-    ctx.alive = false;
+    if (ctx.alive) {
+      ctx.alive = false;
+      ctx.onDone();
+    }
   };
 }
