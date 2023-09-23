@@ -4,9 +4,9 @@ exports[`URL > crossSerialize > supports Headers 1`] = `"$R[0]=new URL(\\"https:
 
 exports[`URL > crossSerializeAsync > supports Headers 1`] = `"$R[0]=Promise.resolve($R[1]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))"`;
 
-exports[`URL > crossSerializeStream > supports Headers 1`] = `"$R[0]=$P()"`;
+exports[`URL > crossSerializeStream > supports Headers 1`] = `"$R[0]=_$.P()"`;
 
-exports[`URL > crossSerializeStream > supports Headers 2`] = `"$Ps(0,$R[1]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))"`;
+exports[`URL > crossSerializeStream > supports Headers 2`] = `"_$.Ps($R[0],$R[1]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))"`;
 
 exports[`URL > serialize > supports URL 1`] = `"new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\")"`;
 

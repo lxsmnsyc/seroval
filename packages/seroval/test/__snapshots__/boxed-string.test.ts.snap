@@ -8,13 +8,13 @@ exports[`boxed string > crossSerializeAsync > supports boxed strings 1`] = `"$R[
 
 exports[`boxed string > crossSerializeAsync > supports boxed strings 2`] = `"$R[0]=Promise.resolve($R[1]=Object(\\"\\\\x3Cscript>\\\\x3C/script>\\"))"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 1`] = `"$R[0]=$P()"`;
+exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `"$Ps(0,$R[1]=Object(\\"\\\\x3Cscript>\\\\x3C/script>\\"))"`;
+exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `"_$.Ps($R[0],$R[1]=Object(\\"\\\\x3Cscript>\\\\x3C/script>\\"))"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed strings 1`] = `"$R[0]=$P()"`;
+exports[`boxed string > crossSerializeStream > supports boxed strings 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `"$Ps(0,$R[1]=Object(\\"\\\\\\"hello\\\\\\"\\"))"`;
+exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `"_$.Ps($R[0],$R[1]=Object(\\"\\\\\\"hello\\\\\\"\\"))"`;
 
 exports[`boxed string > serialize > supports boxed strings 1`] = `"Object(\\"\\\\\\"hello\\\\\\"\\")"`;
 

@@ -52,57 +52,57 @@ exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 
 
 exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 13`] = `"$R[0]=Promise.resolve($R[1]=Symbol.unscopables)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"$Ps(0,$R[1]=Symbol.asyncIterator)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"_$.Ps($R[0],$R[1]=Symbol.asyncIterator)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 2`] = `"$Ps(0,$R[1]=Symbol.hasInstance)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 2`] = `"_$.Ps($R[0],$R[1]=Symbol.hasInstance)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 2`] = `"$Ps(0,$R[1]=Symbol.isConcatSpreadable)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 2`] = `"_$.Ps($R[0],$R[1]=Symbol.isConcatSpreadable)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 2`] = `"$Ps(0,$R[1]=Symbol.iterator)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 2`] = `"_$.Ps($R[0],$R[1]=Symbol.iterator)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.match 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.match 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.match 2`] = `"$Ps(0,$R[1]=Symbol.match)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.match 2`] = `"_$.Ps($R[0],$R[1]=Symbol.match)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 2`] = `"$Ps(0,$R[1]=Symbol.matchAll)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 2`] = `"_$.Ps($R[0],$R[1]=Symbol.matchAll)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 2`] = `"$Ps(0,$R[1]=Symbol.replace)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 2`] = `"_$.Ps($R[0],$R[1]=Symbol.replace)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.search 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.search 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.search 2`] = `"$Ps(0,$R[1]=Symbol.search)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.search 2`] = `"_$.Ps($R[0],$R[1]=Symbol.search)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.species 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.species 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.species 2`] = `"$Ps(0,$R[1]=Symbol.species)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.species 2`] = `"_$.Ps($R[0],$R[1]=Symbol.species)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.split 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.split 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.split 2`] = `"$Ps(0,$R[1]=Symbol.split)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.split 2`] = `"_$.Ps($R[0],$R[1]=Symbol.split)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 2`] = `"$Ps(0,$R[1]=Symbol.toPrimitive)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 2`] = `"_$.Ps($R[0],$R[1]=Symbol.toPrimitive)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 2`] = `"$Ps(0,$R[1]=Symbol.toStringTag)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 2`] = `"_$.Ps($R[0],$R[1]=Symbol.toStringTag)"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 1`] = `"$R[0]=$P()"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 1`] = `"$R[0]=_$.P()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 2`] = `"$Ps(0,$R[1]=Symbol.unscopables)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 2`] = `"_$.Ps($R[0],$R[1]=Symbol.unscopables)"`;
 
 exports[`well-known symbols > serialize > supports well-known symbols 1`] = `"Symbol.asyncIterator"`;
 

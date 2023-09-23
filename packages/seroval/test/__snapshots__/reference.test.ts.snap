@@ -4,9 +4,9 @@ exports[`Reference > crossSerialize > supports Reference 1`] = `"$R[0]=__SEROVAL
 
 exports[`Reference > crossSerializeAsync > supports Reference 1`] = `"$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\"))"`;
 
-exports[`Reference > crossSerializeStream > supports Reference 1`] = `"$R[0]=$P()"`;
+exports[`Reference > crossSerializeStream > supports Reference 1`] = `"$R[0]=_$.P()"`;
 
-exports[`Reference > crossSerializeStream > supports Reference 2`] = `"$Ps(0,$R[1]=__SEROVAL_REFS__.get(\\"example\\"))"`;
+exports[`Reference > crossSerializeStream > supports Reference 2`] = `"_$.Ps($R[0],$R[1]=__SEROVAL_REFS__.get(\\"example\\"))"`;
 
 exports[`Reference > serialize > supports Reference 1`] = `"__SEROVAL_REFS__.get(\\"example\\")"`;
 

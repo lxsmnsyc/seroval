@@ -20,25 +20,25 @@ exports[`boxed number > crossSerializeAsync > supports boxed numbers 4`] = `"$R[
 
 exports[`boxed number > crossSerializeAsync > supports boxed numbers 5`] = `"$R[0]=Promise.resolve($R[1]=Object(-0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -0 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > supports boxed -0 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -0 2`] = `"$Ps(0,$R[1]=Object(-0))"`;
+exports[`boxed number > crossSerializeStream > supports boxed -0 2`] = `"_$.Ps($R[0],$R[1]=Object(-0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -Infinity 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > supports boxed -Infinity 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -Infinity 2`] = `"$Ps(0,$R[1]=Object(-1/0))"`;
+exports[`boxed number > crossSerializeStream > supports boxed -Infinity 2`] = `"_$.Ps($R[0],$R[1]=Object(-1/0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed Infinity 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > supports boxed Infinity 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed Infinity 2`] = `"$Ps(0,$R[1]=Object(1/0))"`;
+exports[`boxed number > crossSerializeStream > supports boxed Infinity 2`] = `"_$.Ps($R[0],$R[1]=Object(1/0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed NaN 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > supports boxed NaN 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed NaN 2`] = `"$Ps(0,$R[1]=Object(NaN))"`;
+exports[`boxed number > crossSerializeStream > supports boxed NaN 2`] = `"_$.Ps($R[0],$R[1]=Object(NaN))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed numbers 2`] = `"$Ps(0,$R[1]=Object(3735928559))"`;
+exports[`boxed number > crossSerializeStream > supports boxed numbers 2`] = `"_$.Ps($R[0],$R[1]=Object(3735928559))"`;
 
 exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 

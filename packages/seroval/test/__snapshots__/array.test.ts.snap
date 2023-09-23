@@ -8,15 +8,15 @@ exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=Promise.re
 
 exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]"`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=$P()"`;
+exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=_$.P()"`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"$Ps(0,$R[1]=[1,2,3])"`;
+exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"_$.Ps($R[0],$R[1]=[1,2,3])"`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=$P(),$R[2]=$P()]"`;
+exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=_$.P(),$R[2]=_$.P()]"`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"$Ps(1,$R[0])"`;
+exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"_$.Ps($R[1],$R[0])"`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 3`] = `"$Ps(2,$R[0])"`;
+exports[`arrays > crossSerializeStream > supports self recursion 3`] = `"_$.Ps($R[2],$R[0])"`;
 
 exports[`arrays > serialize > supports Arrays 1`] = `"[1,2,3]"`;
 

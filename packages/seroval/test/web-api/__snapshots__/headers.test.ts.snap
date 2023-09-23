@@ -4,9 +4,9 @@ exports[`Headers > crossSerialize > supports Headers 1`] = `"$R[0]=new Headers({
 
 exports[`Headers > crossSerializeAsync > supports Headers 1`] = `"$R[0]=Promise.resolve($R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
 
-exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=$P()"`;
+exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=_$.P()"`;
 
-exports[`Headers > crossSerializeStream > supports Headers 2`] = `"$Ps(0,$R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
+exports[`Headers > crossSerializeStream > supports Headers 2`] = `"_$.Ps($R[0],$R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
 
 exports[`Headers > serialize > supports Headers 1`] = `"new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})"`;
 

@@ -12,23 +12,23 @@ exports[`mutual cyclic references > crossSerializeAsync > supports Arrays and Ob
 
 exports[`mutual cyclic references > crossSerializeAsync > supports Objects and Objects 1`] = `"$R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})},$R[3]]"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 1`] = `"$R[0]=[$R[1]=[$R[2]=$P()],$R[3]=[$R[4]=$P()]]"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 1`] = `"$R[0]=[$R[1]=[$R[2]=_$.P()],$R[3]=[$R[4]=_$.P()]]"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 2`] = `"$Ps(2,$R[3])"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 2`] = `"_$.Ps($R[2],$R[3])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 3`] = `"$Ps(4,$R[1])"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 3`] = `"_$.Ps($R[4],$R[1])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Objects 1`] = `"$R[0]=[$R[1]=[$R[2]=$P()],$R[3]={0:$R[4]=$P()}]"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Objects 1`] = `"$R[0]=[$R[1]=[$R[2]=_$.P()],$R[3]={0:$R[4]=_$.P()}]"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Objects 2`] = `"$Ps(2,$R[3])"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Objects 2`] = `"_$.Ps($R[2],$R[3])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Objects 3`] = `"$Ps(4,$R[1])"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Objects 3`] = `"_$.Ps($R[4],$R[1])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Objects and Objects 1`] = `"$R[0]=[$R[1]={0:$R[2]=$P()},$R[3]={0:$R[4]=$P()}]"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Objects and Objects 1`] = `"$R[0]=[$R[1]={0:$R[2]=_$.P()},$R[3]={0:$R[4]=_$.P()}]"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Objects and Objects 2`] = `"$Ps(2,$R[3])"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Objects and Objects 2`] = `"_$.Ps($R[2],$R[3])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > supports Objects and Objects 3`] = `"$Ps(4,$R[1])"`;
+exports[`mutual cyclic references > crossSerializeStream > supports Objects and Objects 3`] = `"_$.Ps($R[4],$R[1])"`;
 
 exports[`mutual cyclic references > serialize > supports Arrays and Arrays 1`] = `"((h,j,k)=>(k=[h=[j=[,]],j],j[0]=h,k))()"`;
 

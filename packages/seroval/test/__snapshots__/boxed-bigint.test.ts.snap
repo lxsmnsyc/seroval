@@ -8,9 +8,9 @@ exports[`boxed bigint > crossSerialize > supports boxed bigint 1`] = `"$R[0]=Obj
 
 exports[`boxed bigint > crossSerializeAsync > supports boxed bigint 1`] = `"$R[0]=Promise.resolve($R[1]=Object(9007199254740991n))"`;
 
-exports[`boxed bigint > crossSerializeStream > supports boxed bigint 1`] = `"$R[0]=$P()"`;
+exports[`boxed bigint > crossSerializeStream > supports boxed bigint 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed bigint > crossSerializeStream > supports boxed bigint 2`] = `"$Ps(0,$R[1]=Object(9007199254740991n))"`;
+exports[`boxed bigint > crossSerializeStream > supports boxed bigint 2`] = `"_$.Ps($R[0],$R[1]=Object(9007199254740991n))"`;
 
 exports[`boxed bigint > serialize > supports boxed bigint 1`] = `"Object(9007199254740991n)"`;
 

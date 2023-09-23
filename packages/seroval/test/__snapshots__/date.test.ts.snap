@@ -4,9 +4,9 @@ exports[`Date > crossSerialize > supports Date 1`] = `"$R[0]=new Date(\\"2023-03
 
 exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
-exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=$P()"`;
+exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=_$.P()"`;
 
-exports[`Date > crossSerializeStream > supports Date 2`] = `"$Ps(0,$R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+exports[`Date > crossSerializeStream > supports Date 2`] = `"_$.Ps($R[0],$R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
 exports[`Date > serialize > supports Date 1`] = `"new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
 

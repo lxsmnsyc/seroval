@@ -12,21 +12,21 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.iterator 1`] = `"
 
 exports[`frozen object > crossSerializeAsync > supports self-recursion 1`] = `"($R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])},Object.freeze($R[0]),$R[0])"`;
 
-exports[`frozen object > crossSerializeStream > supports Objects 1`] = `"$R[0]=$P()"`;
+exports[`frozen object > crossSerializeStream > supports Objects 1`] = `"$R[0]=_$.P()"`;
 
-exports[`frozen object > crossSerializeStream > supports Objects 2`] = `"($Ps(0,$R[1]={hello:\\"world\\"}),Object.freeze($R[1]),$R[0])"`;
+exports[`frozen object > crossSerializeStream > supports Objects 2`] = `"(_$.Ps($R[0],$R[1]={hello:\\"world\\"}),Object.freeze($R[1]),$R[0])"`;
 
-exports[`frozen object > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=$P()"`;
+exports[`frozen object > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=_$.P()"`;
 
-exports[`frozen object > crossSerializeStream > supports Symbol.iterator 2`] = `"($Ps(0,$R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}),Object.freeze($R[1]),$R[0])"`;
+exports[`frozen object > crossSerializeStream > supports Symbol.iterator 2`] = `"(_$.Ps($R[0],$R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}),Object.freeze($R[1]),$R[0])"`;
 
-exports[`frozen object > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=$P()"`;
+exports[`frozen object > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=_$.P()"`;
 
-exports[`frozen object > crossSerializeStream > supports self-recursion 2`] = `"($Ps(0,$R[1]={a:$R[2]=$P(),b:$R[3]=$P()}),Object.freeze($R[1]),$R[0])"`;
+exports[`frozen object > crossSerializeStream > supports self-recursion 2`] = `"(_$.Ps($R[0],$R[1]={a:$R[2]=_$.P(),b:$R[3]=_$.P()}),Object.freeze($R[1]),$R[0])"`;
 
-exports[`frozen object > crossSerializeStream > supports self-recursion 3`] = `"$Ps(2,$R[1])"`;
+exports[`frozen object > crossSerializeStream > supports self-recursion 3`] = `"_$.Ps($R[2],$R[1])"`;
 
-exports[`frozen object > crossSerializeStream > supports self-recursion 4`] = `"$Ps(3,$R[1])"`;
+exports[`frozen object > crossSerializeStream > supports self-recursion 4`] = `"_$.Ps($R[3],$R[1])"`;
 
 exports[`frozen object > serialize > supports Objects 1`] = `"(h=>(h={hello:\\"world\\"},Object.freeze(h),h))()"`;
 

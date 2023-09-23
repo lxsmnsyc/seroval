@@ -8,13 +8,13 @@ exports[`string > crossSerializeAsync > supports strings 1`] = `"$R[0]=Promise.r
 
 exports[`string > crossSerializeAsync > supports strings 2`] = `"$R[0]=Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
 
-exports[`string > crossSerializeStream > supports sanitized strings 1`] = `"$R[0]=$P()"`;
+exports[`string > crossSerializeStream > supports sanitized strings 1`] = `"$R[0]=_$.P()"`;
 
-exports[`string > crossSerializeStream > supports sanitized strings 2`] = `"$Ps(0,\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
+exports[`string > crossSerializeStream > supports sanitized strings 2`] = `"_$.Ps($R[0],\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
 
-exports[`string > crossSerializeStream > supports strings 1`] = `"$R[0]=$P()"`;
+exports[`string > crossSerializeStream > supports strings 1`] = `"$R[0]=_$.P()"`;
 
-exports[`string > crossSerializeStream > supports strings 2`] = `"$Ps(0,\\"\\\\\\"hello\\\\\\"\\")"`;
+exports[`string > crossSerializeStream > supports strings 2`] = `"_$.Ps($R[0],\\"\\\\\\"hello\\\\\\"\\")"`;
 
 exports[`string > serialize > supports strings 1`] = `"\\"\\\\\\"hello\\\\\\"\\""`;
 

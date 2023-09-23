@@ -20,25 +20,25 @@ exports[`number > crossSerializeAsync > supports numbers 4`] = `"$R[0]=Promise.r
 
 exports[`number > crossSerializeAsync > supports numbers 5`] = `"$R[0]=Promise.resolve(-0)"`;
 
-exports[`number > crossSerializeStream > supports -0 1`] = `"$R[0]=$P()"`;
+exports[`number > crossSerializeStream > supports -0 1`] = `"$R[0]=_$.P()"`;
 
-exports[`number > crossSerializeStream > supports -0 2`] = `"$Ps(0,-0)"`;
+exports[`number > crossSerializeStream > supports -0 2`] = `"_$.Ps($R[0],-0)"`;
 
-exports[`number > crossSerializeStream > supports -Infinity 1`] = `"$R[0]=$P()"`;
+exports[`number > crossSerializeStream > supports -Infinity 1`] = `"$R[0]=_$.P()"`;
 
-exports[`number > crossSerializeStream > supports -Infinity 2`] = `"$Ps(0,-1/0)"`;
+exports[`number > crossSerializeStream > supports -Infinity 2`] = `"_$.Ps($R[0],-1/0)"`;
 
-exports[`number > crossSerializeStream > supports Infinity 1`] = `"$R[0]=$P()"`;
+exports[`number > crossSerializeStream > supports Infinity 1`] = `"$R[0]=_$.P()"`;
 
-exports[`number > crossSerializeStream > supports Infinity 2`] = `"$Ps(0,1/0)"`;
+exports[`number > crossSerializeStream > supports Infinity 2`] = `"_$.Ps($R[0],1/0)"`;
 
-exports[`number > crossSerializeStream > supports NaN 1`] = `"$R[0]=$P()"`;
+exports[`number > crossSerializeStream > supports NaN 1`] = `"$R[0]=_$.P()"`;
 
-exports[`number > crossSerializeStream > supports NaN 2`] = `"$Ps(0,NaN)"`;
+exports[`number > crossSerializeStream > supports NaN 2`] = `"_$.Ps($R[0],NaN)"`;
 
-exports[`number > crossSerializeStream > supports numbers 1`] = `"$R[0]=$P()"`;
+exports[`number > crossSerializeStream > supports numbers 1`] = `"$R[0]=_$.P()"`;
 
-exports[`number > crossSerializeStream > supports numbers 2`] = `"$Ps(0,3735928559)"`;
+exports[`number > crossSerializeStream > supports numbers 2`] = `"_$.Ps($R[0],3735928559)"`;
 
 exports[`number > toJSON > supports numbers 1`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":3735928559},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
 

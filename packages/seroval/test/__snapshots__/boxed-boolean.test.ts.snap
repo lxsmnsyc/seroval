@@ -8,10 +8,10 @@ exports[`boxed boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Ob
 
 exports[`boxed boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Object(!1)"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed false 1`] = `"$R[0]=$P()"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed false 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed false 2`] = `"$Ps(0,$R[1]=Object(!1))"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed false 2`] = `"_$.Ps($R[0],$R[1]=Object(!1))"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed true 1`] = `"$R[0]=$P()"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed true 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed true 2`] = `"$Ps(0,$R[1]=Object(!0))"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed true 2`] = `"_$.Ps($R[0],$R[1]=Object(!0))"`;
