@@ -10,6 +10,7 @@ const source = new ReadableStream({
 })
 
 crossSerializeStream(source, {
+  scopeId: 'example',
   onSerialize(data) {
     console.log([data]);
   }

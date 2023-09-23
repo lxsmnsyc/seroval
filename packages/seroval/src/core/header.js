@@ -4,62 +4,58 @@
  */
 
 // Global references array. Global because we (ideally) want <script> elements to share it.
-var $R = [];
-
-// Promise constructor, used to construct deferred Promises
-function $P(success, failure, promise) {
-  promise = new Promise(function (resolve, reject) {
-    success = resolve;
-    failure = reject;
-  });
-
-  promise.s = success;
-  promise.f = failure;
-
-  return promise;
-}
-
-// This unsets the custom properties of the Promise instance
-function $uP(promise) {
-  delete promise.s;
-  delete promise.f;
-}
-
-function $Ps(referenceID, data) {
-  $R[referenceID].s(data);
-}
-
-function $Pf(referenceID, data) {
-  $R[referenceID].f(data);
-}
-
-// Unset stream
-function $uS(stream) {
-  delete stream.c;
-}
-
-function $Se(referenceID, type, data, stream, controller) {
-  stream = $R[referenceID];
-  controller = stream.c;
-  switch (type) {
-    case 0: return controller.enqueue(data);
-    case 1:
-      $uS(stream);
-      return controller.error(data);
-    case 2:
-      $uS(stream);
-      return controller.close();
-  }
-}
-
-// ReadableStream constructor
-function $S(stream, controller) {
-  stream = new ReadableStream({
-    start: function (c) {
-      controller = c;
+self._$ = self._$ || {
+  // Promise constructor, used to construct deferred Promises
+  P(success, failure, promise) {
+    promise = new Promise(function (resolve, reject) {
+      success = resolve;
+      failure = reject;
+    });
+  
+    promise.s = success;
+    promise.f = failure;
+  
+    return promise;
+  },
+  // This unsets the custom properties of the Promise instance
+  uP(promise) {
+    delete promise.s;
+    delete promise.f;
+  },
+  // Promise resolution
+  Ps(promise, data) {
+    promise.s(data);
+    promise.value = data;
+    this.uP(promise);
+  },
+  Pf(promise, data) {
+    promise.f(data);
+    this.uP(promise);
+  },
+  // Unset stream
+  uS(stream) {
+    delete stream.c;
+  },
+  Se(stream, type, data, controller) {
+    controller = stream.c;
+    switch (type) {
+      case 0: return controller.enqueue(data);
+      case 1:
+        this.uS(stream);
+        return controller.error(data);
+      case 2:
+        this.uS(stream);
+        return controller.close();
     }
-  });
-  stream.c = controller;
-
-  return stream;
-}
+  },
+  // ReadableStream constructor
+  S(stream, controller) {
+    stream = new ReadableStream({
+      start: function (c) {
+        controller = c;
+      }
+    });
+    stream.c = controller;
+    return stream;
+  },
+};

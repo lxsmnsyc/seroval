@@ -1,7 +1,6 @@
 import { Feature } from '../compat';
-import {
-  ROOT_REFERENCE,
-} from '../keys';
+import { GLOBAL_CONTEXT_REFERENCES, ROOT_REFERENCE } from '../keys';
+import { serializeString } from '../string';
 // import type { SerovalNode } from '../types';
 import parseAsync from './async';
 import type {
@@ -17,26 +16,45 @@ import crossSerializeTree, { getRefExpr, resolvePatches } from './serialize';
 import crossParseStream from './stream';
 import parseSync from './sync';
 
+function getParams(
+  scopeId: string | undefined,
+  id: number | undefined,
+  ref: string | undefined,
+): string {
+  let params = '';
+  if (scopeId != null) {
+    params += GLOBAL_CONTEXT_REFERENCES;
+  }
+  if (id == null && !ref) {
+    if (params !== '') {
+      params += ',';
+    }
+    params += ROOT_REFERENCE;
+  }
+  return '(' + params + ')';
+}
+
 function finalize(
   ctx: CrossSerializerContext,
+  scopeId: string | undefined,
   id: number | undefined,
   result: string,
 ): string {
   const patches = resolvePatches(ctx);
-  if (patches) {
-    if (id == null) {
-      if (ctx.features & Feature.ArrowFunction) {
-        const params = '(' + ROOT_REFERENCE + ')';
-        const body = ROOT_REFERENCE + '=' + result + ',' + patches + ROOT_REFERENCE;
-        return '(' + params + '=>(' + body + '))()';
-      }
-      const params = '(' + ROOT_REFERENCE + ')';
-      const body = ROOT_REFERENCE + '=' + result + ',' + patches + ROOT_REFERENCE;
-      return '(function' + params + '{return ' + body + '})()';
-    }
-    return '(' + result + ',' + patches + getRefExpr(id) + ')';
+  const ref = id == null ? '' : getRefExpr(id);
+  const params = patches ? getParams(scopeId, id, ref) : '()';
+  const mainBody = patches ? result + ',' + patches + ref : result;
+  if (params === '()') {
+    return patches ? '(' + mainBody + ')' : mainBody;
   }
-  return result;
+  const tail = ref || ROOT_REFERENCE;
+  const header = id == null ? ROOT_REFERENCE + '=' : '';
+  const args = scopeId == null ? '()' : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(scopeId) + '"])';
+  const body = header + mainBody + (patches ? tail : '');
+  if (ctx.features & Feature.ArrowFunction) {
+    return '(' + params + '=>(' + body + '))' + args;
+  }
+  return '(function' + params + '{return ' + body + '})' + args;
 }
 
 export function crossSerialize<T>(
@@ -51,6 +69,7 @@ export function crossSerialize<T>(
   const result = crossSerializeTree(serial, tree);
   return finalize(
     serial,
+    ctx.scopeId,
     tree.i,
     result,
   );
@@ -68,6 +87,7 @@ export async function crossSerializeAsync<T>(
   const result = crossSerializeTree(serial, tree);
   return finalize(
     serial,
+    ctx.scopeId,
     tree.i,
     result,
   );
@@ -121,7 +141,7 @@ export async function crossSerializeAsync<T>(
 
 export interface CrossSerializeStreamOptions extends CrossParserContextOptions {
   onSerialize: (data: string, initial: boolean) => void;
-  onDone: () => void;
+  onDone?: () => void;
 }
 
 export function crossSerializeStream<T>(
@@ -129,6 +149,7 @@ export function crossSerializeStream<T>(
   options: CrossSerializeStreamOptions,
 ): () => void {
   const ctx = createStreamingCrossParserContext({
+    scopeId: options.scopeId,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial) {
@@ -139,6 +160,7 @@ export function crossSerializeStream<T>(
       options.onSerialize(
         finalize(
           serial,
+          ctx.scopeId,
           node.i,
           crossSerializeTree(serial, node),
         ),
