@@ -74,6 +74,16 @@ describe('Headers', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports Headers', () => {
+        const example = new Headers([
+          ['Content-Type', 'text/plain'],
+          ['Content-Encoding', 'gzip'],
+        ]);
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports Headers', async () => {
@@ -83,6 +93,16 @@ describe('Headers', () => {
       ]);
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports Headers', async () => {
+        const example = new Headers([
+          ['Content-Type', 'text/plain'],
+          ['Content-Encoding', 'gzip'],
+        ]);
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -100,5 +120,22 @@ describe('Headers', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports Headers', async () => new Promise<void>((done) => {
+        const example = new Headers([
+          ['Content-Type', 'text/plain'],
+          ['Content-Encoding', 'gzip'],
+        ]);
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });
