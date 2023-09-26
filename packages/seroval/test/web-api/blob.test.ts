@@ -43,5 +43,14 @@ describe('Blob', () => {
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports Blob', async () => {
+        const example = new Blob(['Hello World'], {
+          type: 'text/plain',
+        });
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
 });
