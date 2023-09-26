@@ -122,6 +122,23 @@ describe('well-known symbols', () => {
       expect(crossSerialize(Symbol.toStringTag)).toMatchSnapshot();
       expect(crossSerialize(Symbol.unscopables)).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports well-known symbols', () => {
+        expect(crossSerialize(Symbol.asyncIterator, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.hasInstance, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.isConcatSpreadable, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.iterator, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.match, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.matchAll, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.replace, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.search, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.species, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.split, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.toPrimitive, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.toStringTag, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.unscopables, { scopeId: 'example' })).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports well-known symbols', async () => {
@@ -139,6 +156,24 @@ describe('well-known symbols', () => {
       expect(await crossSerializeAsync(Promise.resolve(Symbol.toPrimitive))).toMatchSnapshot();
       expect(await crossSerializeAsync(Promise.resolve(Symbol.toStringTag))).toMatchSnapshot();
       expect(await crossSerializeAsync(Promise.resolve(Symbol.unscopables))).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports well-known symbols', async () => {
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.asyncIterator), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.hasInstance), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.isConcatSpreadable), { scopeId: 'example' }))
+          .toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.iterator), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.match), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.matchAll), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.replace), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.search), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.species), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.split), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.toPrimitive), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.toStringTag), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Symbol.unscopables), { scopeId: 'example' })).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -272,5 +307,150 @@ describe('well-known symbols', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports Symbol.asyncIterator', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.asyncIterator), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.hasInstance', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.hasInstance), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.isConcatSpreadable), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.iterator', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.iterator), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.match', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.match), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.matchAll', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.matchAll), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.replace', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.replace), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.search', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.search), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.species', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.species), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.split', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.split), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.toPrimitive', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.toPrimitive), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.toStringTag', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.toStringTag), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.unscopables', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Symbol.unscopables), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });
