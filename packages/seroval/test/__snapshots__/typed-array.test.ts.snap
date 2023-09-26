@@ -1,8 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`typed arrays > crossSerialize > scoped > supports typed arrays 1`] = `"($R=>($R[0]=new Uint32Array($R[1]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)))($R[\\"example\\"])"`;
+
 exports[`typed arrays > crossSerialize > supports typed arrays 1`] = `"$R[0]=new Uint32Array($R[1]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)"`;
 
+exports[`typed arrays > crossSerializeAsync > scoped > supports typed arrays 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))))($R[\\"example\\"])"`;
+
 exports[`typed arrays > crossSerializeAsync > supports typed arrays 1`] = `"$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))"`;
+
+exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))))($R[\\"example\\"])"`;
 
 exports[`typed arrays > crossSerializeStream > supports typed arrays 1`] = `"$R[0]=_$.P()"`;
 
