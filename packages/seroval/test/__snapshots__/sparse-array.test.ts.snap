@@ -12,6 +12,6 @@ exports[`sparse arrays > serialize > supports sparse arrays 1`] = `"[,,,,,,,,,,]
 
 exports[`sparse arrays > serializeAsync > supports sparse arrays 1`] = `"Promise.resolve([,,,,,,,,,,])"`;
 
-exports[`sparse arrays > toJSON > supports sparse arrays 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null],\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`sparse arrays > toJSON > supports sparse arrays 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null],\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`sparse arrays > toJSONAsync > supports sparse arrays 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":9,\\"i\\":1,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null],\\"o\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`sparse arrays > toJSONAsync > supports sparse arrays 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":9,\\"i\\":1,\\"l\\":10,\\"a\\":[null,null,null,null,null,null,null,null,null,null],\\"o\\":0}},\\"f\\":16383,\\"m\\":[]}"`;

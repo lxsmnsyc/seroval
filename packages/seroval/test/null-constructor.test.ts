@@ -96,7 +96,7 @@ describe('null-constructor', () => {
       example.a = example;
       example.b = example;
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, unknown>>(result);
       expect(back.a).toBe(back);
       expect(back.b).toBe(back);
@@ -130,7 +130,7 @@ describe('null-constructor', () => {
       example.a = Promise.resolve(example);
       example.b = Promise.resolve(example);
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, Promise<unknown>>>(result);
       expect(await back.a).toBe(back);
       expect(await back.b).toBe(back);

@@ -2,7 +2,7 @@
 
 exports[`null-constructor > compat > should use manual assignment instead of Object.assign 1`] = `"(h=>((h=Object.create(null),h.hello=\\"world\\",h)))()"`;
 
-exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16255,\\"m\\":[]}"`;
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"f\\":16255,\\"m\\":[]}"`;
 
 exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"(h=>((h=Object.create(null),h.hello=\\"world\\",h)))()"`;
 
@@ -46,156 +46,14 @@ exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `"Pr
 
 exports[`null-constructor > serializeAsync > supports self-recursion 1`] = `"(h=>(h=Object.assign(Object.create(null),{a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)})))()"`;
 
-exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSON > supports self-recursion 1`] = `
-{
-  "f": 16383,
-  "m": [
-    0,
-  ],
-  "r": 0,
-  "t": {
-    "a": undefined,
-    "b": undefined,
-    "c": undefined,
-    "e": undefined,
-    "f": undefined,
-    "i": 0,
-    "l": undefined,
-    "m": undefined,
-    "o": 0,
-    "p": {
-      "k": [
-        "a",
-        "b",
-      ],
-      "s": 2,
-      "v": [
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": undefined,
-          "i": 0,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": undefined,
-          "t": 4,
-        },
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": undefined,
-          "i": 0,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": undefined,
-          "t": 4,
-        },
-      ],
-    },
-    "s": undefined,
-    "t": 11,
-  },
-}
-`;
+exports[`null-constructor > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":4,\\"i\\":0}],\\"s\\":2},\\"o\\":0},\\"f\\":16383,\\"m\\":[0]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":11,\\"i\\":1,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":11,\\"i\\":1,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `
-{
-  "f": 16383,
-  "m": [
-    0,
-  ],
-  "r": 0,
-  "t": {
-    "a": undefined,
-    "b": undefined,
-    "c": undefined,
-    "e": undefined,
-    "f": undefined,
-    "i": 0,
-    "l": undefined,
-    "m": undefined,
-    "o": 0,
-    "p": {
-      "k": [
-        "a",
-        "b",
-      ],
-      "s": 2,
-      "v": [
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": {
-            "a": undefined,
-            "b": undefined,
-            "c": undefined,
-            "e": undefined,
-            "f": undefined,
-            "i": 0,
-            "l": undefined,
-            "m": undefined,
-            "o": undefined,
-            "p": undefined,
-            "s": undefined,
-            "t": 4,
-          },
-          "i": 1,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": 1,
-          "t": 12,
-        },
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": {
-            "a": undefined,
-            "b": undefined,
-            "c": undefined,
-            "e": undefined,
-            "f": undefined,
-            "i": 0,
-            "l": undefined,
-            "m": undefined,
-            "o": undefined,
-            "p": undefined,
-            "s": undefined,
-            "t": 4,
-          },
-          "i": 2,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": 1,
-          "t": 12,
-        },
-      ],
-    },
-    "s": undefined,
-    "t": 11,
-  },
-}
-`;
+exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}},{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":2},\\"o\\":0},\\"f\\":16383,\\"m\\":[0]}"`;
