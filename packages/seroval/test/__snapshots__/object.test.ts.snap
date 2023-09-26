@@ -6,17 +6,45 @@ exports[`objects > compat#toJSON > should use manual assignment instead of Objec
 
 exports[`objects > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"{hello:\\"world\\"}"`;
 
+exports[`objects > crossSerialize > scoped > supports Objects 1`] = `"($R=>($R[0]={hello:\\"world\\"}))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerialize > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]={[Symbol.iterator]:()=>$R[1]=[1,2,3].values()}))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>($R[0]={},$R[0].b=$R[0].a=$R[0],$R[0]))($R[\\"example\\"])"`;
+
 exports[`objects > crossSerialize > supports Objects 1`] = `"$R[0]={hello:\\"world\\"}"`;
 
 exports[`objects > crossSerialize > supports Symbol.iterator 1`] = `"$R[0]={[Symbol.iterator]:()=>$R[1]=[1,2,3].values()}"`;
 
 exports[`objects > crossSerialize > supports self-recursion 1`] = `"($R[0]={},$R[0].b=$R[0].a=$R[0],$R[0])"`;
 
+exports[`objects > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>($R[0]=Promise.resolve($R[1]={hello:\\"world\\"})))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Promise.resolve($R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>($R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])}))($R[\\"example\\"])"`;
+
 exports[`objects > crossSerializeAsync > supports Objects 1`] = `"$R[0]=Promise.resolve($R[1]={hello:\\"world\\"})"`;
 
 exports[`objects > crossSerializeAsync > supports Symbol.iterator 1`] = `"$R[0]=Promise.resolve($R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})"`;
 
 exports[`objects > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])}"`;
+
+exports[`objects > crossSerializeStream > scoped > supports Objects 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeStream > scoped > supports Objects 2`] = `"($R=>(_$.Ps($R[0],$R[1]={hello:\\"world\\"})))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>(_$.Ps($R[0],$R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>(_$.Ps($R[0],$R[1]={a:$R[2]=_$.P(),b:$R[3]=_$.P()})))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>(_$.Ps($R[2],$R[1])))($R[\\"example\\"])"`;
+
+exports[`objects > crossSerializeStream > scoped > supports self-recursion 4`] = `"($R=>(_$.Ps($R[3],$R[1])))($R[\\"example\\"])"`;
 
 exports[`objects > crossSerializeStream > supports Objects 1`] = `"$R[0]=_$.P()"`;
 
