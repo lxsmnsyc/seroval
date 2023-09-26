@@ -59,12 +59,26 @@ describe('Date', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports Date', () => {
+        const example = new Date('2023-03-14T11:16:24.879Z');
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports Date', async () => {
       const example = new Date('2023-03-14T11:16:24.879Z');
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports Date', async () => {
+        const example = new Date('2023-03-14T11:16:24.879Z');
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -79,5 +93,19 @@ describe('Date', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports Date', async () => new Promise<void>((done) => {
+        const example = new Date('2023-03-14T11:16:24.879Z');
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

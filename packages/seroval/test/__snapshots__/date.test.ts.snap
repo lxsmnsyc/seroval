@@ -1,8 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Date > crossSerialize > scoped > supports Date 1`] = `"($R=>($R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\")))($R[\\"example\\"])"`;
+
 exports[`Date > crossSerialize > supports Date 1`] = `"$R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
 
+exports[`Date > crossSerializeAsync > scoped > supports Date 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))))($R[\\"example\\"])"`;
+
 exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+
+exports[`Date > crossSerializeStream > scoped > supports Date 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`Date > crossSerializeStream > scoped > supports Date 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))))($R[\\"example\\"])"`;
 
 exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=_$.P()"`;
 
