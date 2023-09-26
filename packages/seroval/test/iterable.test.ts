@@ -111,6 +111,20 @@ describe('Iterable', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports Iterables', () => {
+        const example = {
+          title: 'Hello World',
+          * [Symbol.iterator](): unknown {
+            yield 1;
+            yield 2;
+            yield 3;
+          },
+        };
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports Iterables', async () => {
@@ -124,6 +138,20 @@ describe('Iterable', () => {
       });
       const result = await crossSerializeAsync(example);
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports Iterables', async () => {
+        const example = Promise.resolve({
+          title: 'Hello World',
+          * [Symbol.iterator]() {
+            yield 1;
+            yield 2;
+            yield 3;
+          },
+        });
+        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -145,6 +173,27 @@ describe('Iterable', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports Iterables', async () => new Promise<void>((done) => {
+        const example = Promise.resolve({
+          title: 'Hello World',
+          * [Symbol.iterator]() {
+            yield 1;
+            yield 2;
+            yield 3;
+          },
+        });
+        crossSerializeStream(example, {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
   describe('compat', () => {
     it('should use Symbol.iterator instead of Array.values.', () => {

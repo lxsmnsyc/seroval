@@ -78,6 +78,15 @@ describe('FormData', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports FormData', () => {
+        const example = new FormData();
+        example.set('hello', 'world');
+        example.set('foo', 'bar');
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports FormData', async () => {
@@ -92,6 +101,21 @@ describe('FormData', () => {
       }));
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports FormData', async () => {
+        const example = new FormData();
+        example.set('hello-world', new File(['Hello World'], 'hello.txt', {
+          type: 'text/plain',
+          lastModified: 1681027542680,
+        }));
+        example.set('foo-bar', new File(['Foo Bar'], 'foo-bar.txt', {
+          type: 'text/plain',
+          lastModified: 1681027542680,
+        }));
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -108,5 +132,21 @@ describe('FormData', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports FormData', async () => new Promise<void>((done) => {
+        const example = new FormData();
+        example.set('hello', 'world');
+        example.set('foo', 'bar');
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

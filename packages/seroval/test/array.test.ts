@@ -113,6 +113,20 @@ describe('arrays', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports Arrays', () => {
+        const example = [1, 2, 3];
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports self recursion', () => {
+        const example: unknown[] = [];
+        example[0] = example;
+        example[1] = example;
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports Arrays', async () => {
@@ -126,6 +140,20 @@ describe('arrays', () => {
       example[1] = Promise.resolve(example);
       const result = await crossSerializeAsync(example);
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports Arrays', async () => {
+        const example = [1, 2, 3];
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports self recursion', async () => {
+        const example: Promise<unknown>[] = [];
+        example[0] = Promise.resolve(example);
+        example[1] = Promise.resolve(example);
+        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -153,5 +181,33 @@ describe('arrays', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports Arrays', async () => new Promise<void>((done) => {
+        const example = [1, 2, 3];
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports self recursion', async () => new Promise<void>((done) => {
+        const example: Promise<unknown>[] = [];
+        example[0] = Promise.resolve(example);
+        example[1] = Promise.resolve(example);
+        crossSerializeStream(example, {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

@@ -3,6 +3,7 @@ import { serializeString } from './string';
 
 export interface SerializerOptions {
   globalIdentifier: string;
+  scopeId?: string;
   disabledFeatures?: number;
   onData: (result: string) => void;
 }
@@ -22,6 +23,7 @@ export default class Serializer {
   write(key: string, value: unknown): void {
     if (this.alive) {
       this.cleanups.push(crossSerializeStream(value, {
+        scopeId: this.options.scopeId,
         refs: this.refs,
         disabledFeatures: this.options.disabledFeatures,
         onSerialize: (data, initial) => {

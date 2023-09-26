@@ -1,17 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Headers > crossSerialize > scoped > supports Headers 1`] = `"($R=>($R[0]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})))($R[\\"example\\"])"`;
+
 exports[`Headers > crossSerialize > supports Headers 1`] = `"$R[0]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})"`;
+
+exports[`Headers > crossSerializeAsync > scoped > supports Headers 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))))($R[\\"example\\"])"`;
 
 exports[`Headers > crossSerializeAsync > supports Headers 1`] = `"$R[0]=Promise.resolve($R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
 
-exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=$P()"`;
+exports[`Headers > crossSerializeStream > scoped > supports Headers 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`Headers > crossSerializeStream > supports Headers 2`] = `"$Ps(0,$R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
+exports[`Headers > crossSerializeStream > scoped > supports Headers 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))))($R[\\"example\\"])"`;
+
+exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=_$.P()"`;
+
+exports[`Headers > crossSerializeStream > supports Headers 2`] = `"_$.Ps($R[0],$R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
 
 exports[`Headers > serialize > supports Headers 1`] = `"new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})"`;
 
 exports[`Headers > serializeAsync > supports Headers 1`] = `"Promise.resolve(new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
 
-exports[`Headers > toJSON > supports Headers 1`] = `"{\\"t\\":{\\"t\\":25,\\"i\\":0,\\"e\\":{\\"k\\":[\\"content-encoding\\",\\"content-type\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"gzip\\"},{\\"t\\":1,\\"s\\":\\"text/plain\\"}],\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Headers > toJSON > supports Headers 1`] = `"{\\"t\\":{\\"t\\":25,\\"i\\":0,\\"e\\":{\\"k\\":[\\"content-encoding\\",\\"content-type\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"gzip\\"},{\\"t\\":1,\\"s\\":\\"text/plain\\"}],\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Headers > toJSONAsync > supports Headers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":25,\\"i\\":1,\\"e\\":{\\"k\\":[\\"content-encoding\\",\\"content-type\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"gzip\\"},{\\"t\\":1,\\"s\\":\\"text/plain\\"}],\\"s\\":2}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Headers > toJSONAsync > supports Headers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":25,\\"i\\":1,\\"e\\":{\\"k\\":[\\"content-encoding\\",\\"content-type\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"gzip\\"},{\\"t\\":1,\\"s\\":\\"text/plain\\"}],\\"s\\":2}}},\\"f\\":16383,\\"m\\":[]}"`;

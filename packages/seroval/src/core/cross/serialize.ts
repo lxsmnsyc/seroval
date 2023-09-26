@@ -59,6 +59,7 @@ import {
   REFERENCES_KEY,
   GLOBAL_CONTEXT_STREAM_CONSTRUCTOR,
   GLOBAL_CONTEXT_STREAM_EMIT,
+  GLOBAL_CONTEXT_API,
 } from '../keys';
 
 export function getRefExpr(id: number): string {
@@ -724,46 +725,46 @@ function serializePromiseResolve(
   ctx: CrossSerializerContext,
   node: SerovalPromiseResolveNode,
 ): string {
-  return GLOBAL_CONTEXT_PROMISE_RESOLVE + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_RESOLVE + '(' + getRefExpr(node.i) + ',' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializePromiseReject(
   ctx: CrossSerializerContext,
   node: SerovalPromiseRejectNode,
 ): string {
-  return GLOBAL_CONTEXT_PROMISE_REJECT + '(' + node.i + ',' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_REJECT + '(' + getRefExpr(node.i) + ',' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializePromiseConstructor(
   node: SerovalPromiseConstructorNode,
 ): string {
-  return assignIndexedValue(node.i, GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
+  return assignIndexedValue(node.i, GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
 }
 
 function serializeReadableStreamClose(
   node: SerovalReadableStreamCloseNode,
 ): string {
-  return GLOBAL_CONTEXT_STREAM_EMIT + '(' + node.i + ',2)';
+  return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + getRefExpr(node.i) + ',2)';
 }
 
 function serializeReadableStreamEnqueue(
   ctx: CrossSerializerContext,
   node: SerovalReadableStreamEnqueueNode,
 ): string {
-  return GLOBAL_CONTEXT_STREAM_EMIT + '(' + node.i + ',0,' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + getRefExpr(node.i) + ',0,' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializeReadableStreamError(
   ctx: CrossSerializerContext,
   node: SerovalReadableStreamErrorNode,
 ): string {
-  return GLOBAL_CONTEXT_STREAM_EMIT + '(' + node.i + ',1,' + crossSerializeTree(ctx, node.f) + ')';
+  return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + getRefExpr(node.i) + ',1,' + crossSerializeTree(ctx, node.f) + ')';
 }
 
 function serializeReadableStreamConstructor(
   node: SerovalReadableStreamConstructorNode,
 ): string {
-  return assignIndexedValue(node.i, GLOBAL_CONTEXT_STREAM_CONSTRUCTOR + '()');
+  return assignIndexedValue(node.i, GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CONSTRUCTOR + '()');
 }
 
 export default function crossSerializeTree(

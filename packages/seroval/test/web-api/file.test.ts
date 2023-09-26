@@ -46,5 +46,15 @@ describe('File', () => {
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports File', async () => {
+        const example = new File(['Hello World'], 'hello.txt', {
+          type: 'text/plain',
+          lastModified: 1681027542680,
+        });
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
 });

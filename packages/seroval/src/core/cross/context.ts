@@ -4,11 +4,13 @@ import type { BaseParserContext } from '../context';
 import type { SerovalNode } from '../types';
 
 export interface CrossParserContextOptions {
+  scopeId?: string;
   refs?: Map<unknown, number>;
   disabledFeatures?: number;
 }
 
 export interface CrossParserContext {
+  scopeId?: string;
   refs: Map<unknown, number>;
   features: number;
 }
@@ -17,6 +19,7 @@ export function createCrossParserContext(
   options: CrossParserContextOptions = {},
 ): CrossParserContext {
   return {
+    scopeId: options.scopeId,
     refs: options.refs || new Map<unknown, number>(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
   };
@@ -61,6 +64,7 @@ export function createStreamingCrossParserContext(
         options.onDone();
       }
     },
+    scopeId: options.scopeId,
   };
 }
 

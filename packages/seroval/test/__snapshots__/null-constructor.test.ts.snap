@@ -2,9 +2,15 @@
 
 exports[`null-constructor > compat > should use manual assignment instead of Object.assign 1`] = `"(h=>((h=Object.create(null),h.hello=\\"world\\",h)))()"`;
 
-exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16255,\\"m\\":[]}"`;
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"f\\":16255,\\"m\\":[]}"`;
 
 exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"(h=>((h=Object.create(null),h.hello=\\"world\\",h)))()"`;
+
+exports[`null-constructor > crossSerialize > scoped > supports Objects 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{hello:\\"world\\"})))($R[\\"example\\"])"`;
+
+exports[`null-constructor > crossSerialize > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[1]=[1,2,3].values()})))($R[\\"example\\"])"`;
+
+exports[`null-constructor > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>($R[0]=Object.create(null),$R[0].b=$R[0].a=$R[0],$R[0]))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerialize > supports Objects 1`] = `"$R[0]=Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
@@ -12,27 +18,49 @@ exports[`null-constructor > crossSerialize > supports Symbol.iterator 1`] = `"$R
 
 exports[`null-constructor > crossSerialize > supports self-recursion 1`] = `"($R[0]=Object.create(null),$R[0].b=$R[0].a=$R[0],$R[0])"`;
 
+exports[`null-constructor > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))))($R[\\"example\\"])"`;
+
+exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))))($R[\\"example\\"])"`;
+
+exports[`null-constructor > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])})))($R[\\"example\\"])"`;
+
 exports[`null-constructor > crossSerializeAsync > supports Objects 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
 
 exports[`null-constructor > crossSerializeAsync > supports Symbol.iterator 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))"`;
 
 exports[`null-constructor > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=Object.assign(Object.create(null),{a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])})"`;
 
-exports[`null-constructor > crossSerializeStream > supports Objects 1`] = `"$R[0]=$P()"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Objects 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports Objects 2`] = `"$Ps(0,$R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Objects 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=$P()"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `"$Ps(0,$R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=$P()"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports self-recursion 2`] = `"$Ps(0,$R[1]=Object.assign(Object.create(null),{a:$R[2]=$P(),b:$R[3]=$P()}))"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{a:$R[2]=_$.P(),b:$R[3]=_$.P()}))))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports self-recursion 3`] = `"$Ps(2,$R[1])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>(_$.Ps($R[2],$R[1])))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports self-recursion 4`] = `"$Ps(3,$R[1])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 4`] = `"($R=>(_$.Ps($R[3],$R[1])))($R[\\"example\\"])"`;
+
+exports[`null-constructor > crossSerializeStream > supports Objects 1`] = `"$R[0]=_$.P()"`;
+
+exports[`null-constructor > crossSerializeStream > supports Objects 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
+
+exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=_$.P()"`;
+
+exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))"`;
+
+exports[`null-constructor > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=_$.P()"`;
+
+exports[`null-constructor > crossSerializeStream > supports self-recursion 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{a:$R[2]=_$.P(),b:$R[3]=_$.P()}))"`;
+
+exports[`null-constructor > crossSerializeStream > supports self-recursion 3`] = `"_$.Ps($R[2],$R[1])"`;
+
+exports[`null-constructor > crossSerializeStream > supports self-recursion 4`] = `"_$.Ps($R[3],$R[1])"`;
 
 exports[`null-constructor > serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
@@ -46,156 +74,14 @@ exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `"Pr
 
 exports[`null-constructor > serializeAsync > supports self-recursion 1`] = `"(h=>(h=Object.assign(Object.create(null),{a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)})))()"`;
 
-exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSON > supports self-recursion 1`] = `
-{
-  "f": 16383,
-  "m": [
-    0,
-  ],
-  "r": 0,
-  "t": {
-    "a": undefined,
-    "b": undefined,
-    "c": undefined,
-    "e": undefined,
-    "f": undefined,
-    "i": 0,
-    "l": undefined,
-    "m": undefined,
-    "o": 0,
-    "p": {
-      "k": [
-        "a",
-        "b",
-      ],
-      "s": 2,
-      "v": [
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": undefined,
-          "i": 0,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": undefined,
-          "t": 4,
-        },
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": undefined,
-          "i": 0,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": undefined,
-          "t": 4,
-        },
-      ],
-    },
-    "s": undefined,
-    "t": 11,
-  },
-}
-`;
+exports[`null-constructor > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":4,\\"i\\":0}],\\"s\\":2},\\"o\\":0},\\"f\\":16383,\\"m\\":[0]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":11,\\"i\\":1,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":11,\\"i\\":1,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":0}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `
-{
-  "f": 16383,
-  "m": [
-    0,
-  ],
-  "r": 0,
-  "t": {
-    "a": undefined,
-    "b": undefined,
-    "c": undefined,
-    "e": undefined,
-    "f": undefined,
-    "i": 0,
-    "l": undefined,
-    "m": undefined,
-    "o": 0,
-    "p": {
-      "k": [
-        "a",
-        "b",
-      ],
-      "s": 2,
-      "v": [
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": {
-            "a": undefined,
-            "b": undefined,
-            "c": undefined,
-            "e": undefined,
-            "f": undefined,
-            "i": 0,
-            "l": undefined,
-            "m": undefined,
-            "o": undefined,
-            "p": undefined,
-            "s": undefined,
-            "t": 4,
-          },
-          "i": 1,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": 1,
-          "t": 12,
-        },
-        {
-          "a": undefined,
-          "b": undefined,
-          "c": undefined,
-          "e": undefined,
-          "f": {
-            "a": undefined,
-            "b": undefined,
-            "c": undefined,
-            "e": undefined,
-            "f": undefined,
-            "i": 0,
-            "l": undefined,
-            "m": undefined,
-            "o": undefined,
-            "p": undefined,
-            "s": undefined,
-            "t": 4,
-          },
-          "i": 2,
-          "l": undefined,
-          "m": undefined,
-          "o": undefined,
-          "p": undefined,
-          "s": 1,
-          "t": 12,
-        },
-      ],
-    },
-    "s": undefined,
-    "t": 11,
-  },
-}
-`;
+exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}},{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":2},\\"o\\":0},\\"f\\":16383,\\"m\\":[0]}"`;

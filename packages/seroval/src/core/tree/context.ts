@@ -92,17 +92,6 @@ export function getRefParam(ctx: SerializerContext, index: number): string {
   return identifier;
 }
 
-export function getRootID<T>(
-  ctx: ParserContext,
-  current: T,
-): number {
-  const ref = ctx.reference.ids.get(current);
-  if (ref == null) {
-    return ctx.reference.ids.size;
-  }
-  return ref;
-}
-
 export function createIndexedValue<T>(
   ctx: ParserContext,
   current: T,

@@ -96,7 +96,7 @@ describe('null-constructor', () => {
       example.a = example;
       example.b = example;
       const result = toJSON(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, unknown>>(result);
       expect(back.a).toBe(back);
       expect(back.b).toBe(back);
@@ -130,7 +130,7 @@ describe('null-constructor', () => {
       example.a = Promise.resolve(example);
       example.b = Promise.resolve(example);
       const result = await toJSONAsync(example);
-      expect(result).toMatchSnapshot();
+      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Record<string, Promise<unknown>>>(result);
       expect(await back.a).toBe(back);
       expect(await back.b).toBe(back);
@@ -174,6 +174,31 @@ describe('null-constructor', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports Objects', () => {
+        const example = Object.assign(Object.create(null), { hello: 'world' }) as { hello: string };
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports self-recursion', () => {
+        const example = Object.create(null) as Record<string, unknown>;
+        example.a = example;
+        example.b = example;
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports Symbol.iterator', () => {
+        const example = Object.assign(Object.create(null), {
+          * [Symbol.iterator]() {
+            yield 1;
+            yield 2;
+            yield 3;
+          },
+        }) as Iterable<number>;
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports Objects', async () => {
@@ -198,6 +223,31 @@ describe('null-constructor', () => {
       }) as Iterable<number>);
       const result = await crossSerializeAsync(example);
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports Objects', async () => {
+        const example = Promise.resolve(Object.assign(Object.create(null), { hello: 'world' }) as { hello: string });
+        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports self-recursion', async () => {
+        const example = Object.create(null) as Record<string, Promise<unknown>>;
+        example.a = Promise.resolve(example);
+        example.b = Promise.resolve(example);
+        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports Symbol.iterator', async () => {
+        const example = Promise.resolve(Object.assign(Object.create(null), {
+          * [Symbol.iterator]() {
+            yield 1;
+            yield 2;
+            yield 3;
+          },
+        }) as Iterable<number>);
+        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -242,6 +292,52 @@ describe('null-constructor', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports Objects', async () => new Promise<void>((done) => {
+        const example = Promise.resolve(Object.assign(Object.create(null), { hello: 'world' }) as { hello: string });
+        crossSerializeStream(example, {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports self-recursion', async () => new Promise<void>((done) => {
+        const example = Object.create(null) as Record<string, Promise<unknown>>;
+        example.a = Promise.resolve(example);
+        example.b = Promise.resolve(example);
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.iterator', async () => new Promise<void>((done) => {
+        const example = Promise.resolve(Object.assign(Object.create(null), {
+          * [Symbol.iterator]() {
+            yield 1;
+            yield 2;
+            yield 3;
+          },
+        }) as Iterable<number>);
+        crossSerializeStream(example, {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
   describe('compat', () => {
     it('should use manual assignment instead of Object.assign', () => {

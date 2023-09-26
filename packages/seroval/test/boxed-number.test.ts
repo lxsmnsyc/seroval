@@ -69,6 +69,16 @@ describe('boxed number', () => {
       expect(crossSerialize(Object(-Infinity))).toMatchSnapshot();
       expect(crossSerialize(Object(-0))).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports boxed numbers', () => {
+        const value = 0xDEADBEEF;
+        expect(crossSerialize(Object(value), { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Object(NaN), { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Object(Infinity), { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Object(-Infinity), { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Object(-0), { scopeId: 'example' })).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports boxed numbers', async () => {
@@ -78,6 +88,16 @@ describe('boxed number', () => {
       expect(await crossSerializeAsync(Promise.resolve(Object(Infinity)))).toMatchSnapshot();
       expect(await crossSerializeAsync(Promise.resolve(Object(-Infinity)))).toMatchSnapshot();
       expect(await crossSerializeAsync(Promise.resolve(Object(-0)))).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports boxed numbers', async () => {
+        const value = 0xDEADBEEF;
+        expect(await crossSerializeAsync(Promise.resolve(Object(value)), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Object(NaN)), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Object(Infinity)), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Object(-Infinity)), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Object(-0)), { scopeId: 'example' })).toMatchSnapshot();
+      });
     });
   });
 
@@ -132,5 +152,62 @@ describe('boxed number', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports boxed numbers', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object(0xDEADBEEF)), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports boxed NaN', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object(NaN)), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports boxed Infinity', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object(Infinity)), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports boxed -Infinity', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object(-Infinity)), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports boxed -0', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object(-0)), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

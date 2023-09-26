@@ -1,15 +1,29 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `"$R[0]=$S()"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `"($R=>($R[0]=_$.S()))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream 2`] = `"$Se(0,0,\\"foo\\")"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 2`] = `"($R=>(_$.Se($R[0],0,\\"foo\\")))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream 3`] = `"$Se(0,0,\\"bar\\")"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 3`] = `"($R=>(_$.Se($R[0],0,\\"bar\\")))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream 4`] = `"$Se(0,0,\\"baz\\")"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 4`] = `"($R=>(_$.Se($R[0],0,\\"baz\\")))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `"$Se(0,2)"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 5`] = `"($R=>(_$.Se($R[0],2)))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `"$R[0]=$S()"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 1`] = `"($R=>($R[0]=_$.S()))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"$Se(0,1,$R[1]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"}))"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 2`] = `"($R=>(_$.Se($R[0],1,$R[1]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"}))))($R[\\"example\\"])"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `"$R[0]=_$.S()"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 2`] = `"_$.Se($R[0],0,\\"foo\\")"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 3`] = `"_$.Se($R[0],0,\\"bar\\")"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 4`] = `"_$.Se($R[0],0,\\"baz\\")"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `"_$.Se($R[0],2)"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `"$R[0]=_$.S()"`;
+
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"_$.Se($R[0],1,$R[1]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"}))"`;
