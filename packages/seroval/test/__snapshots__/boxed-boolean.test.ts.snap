@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`boxed boolean > crossSerialize > scoped > supports boolean 1`] = `"(($R)=>($R[0]=Object(!0)))($R[\\"example\\"])"`;
+exports[`boxed boolean > crossSerialize > scoped > supports boolean 1`] = `"($R=>($R[0]=Object(!0)))($R[\\"example\\"])"`;
 
-exports[`boxed boolean > crossSerialize > scoped > supports boolean 2`] = `"(($R)=>($R[0]=Object(!1)))($R[\\"example\\"])"`;
+exports[`boxed boolean > crossSerialize > scoped > supports boolean 2`] = `"($R=>($R[0]=Object(!1)))($R[\\"example\\"])"`;
 
 exports[`boxed boolean > crossSerialize > supports boolean 1`] = `"$R[0]=Object(!0)"`;
 
 exports[`boxed boolean > crossSerialize > supports boolean 2`] = `"$R[0]=Object(!1)"`;
 
-exports[`boxed boolean > crossSerializeAsync > scoped > supports boolean 1`] = `"(($R)=>($R[0]=Object(!0)))($R[\\"example\\"])"`;
+exports[`boxed boolean > crossSerializeAsync > scoped > supports boolean 1`] = `"($R=>($R[0]=Object(!0)))($R[\\"example\\"])"`;
 
-exports[`boxed boolean > crossSerializeAsync > scoped > supports boolean 2`] = `"(($R)=>($R[0]=Object(!1)))($R[\\"example\\"])"`;
+exports[`boxed boolean > crossSerializeAsync > scoped > supports boolean 2`] = `"($R=>($R[0]=Object(!1)))($R[\\"example\\"])"`;
 
 exports[`boxed boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Object(!0)"`;
 
@@ -24,10 +24,10 @@ exports[`boxed boolean > crossSerializeStream > supports boxed true 1`] = `"$R[0
 
 exports[`boxed boolean > crossSerializeStream > supports boxed true 2`] = `"_$.Ps($R[0],$R[1]=Object(!0))"`;
 
-exports[`boxed boolean > scoped > supports boxed false 1`] = `"(($R)=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`boxed boolean > scoped > supports boxed false 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed boolean > scoped > supports boxed false 2`] = `"(($R)=>(_$.Ps($R[0],$R[1]=Object(!1))))($R[\\"example\\"])"`;
+exports[`boxed boolean > scoped > supports boxed false 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(!1))))($R[\\"example\\"])"`;
 
-exports[`boxed boolean > scoped > supports boxed true 1`] = `"(($R)=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`boxed boolean > scoped > supports boxed true 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed boolean > scoped > supports boxed true 2`] = `"(($R)=>(_$.Ps($R[0],$R[1]=Object(!0))))($R[\\"example\\"])"`;
+exports[`boxed boolean > scoped > supports boxed true 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(!0))))($R[\\"example\\"])"`;

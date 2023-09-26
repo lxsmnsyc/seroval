@@ -23,8 +23,6 @@ export const GLOBAL_CONTEXT_STREAM_CONSTRUCTOR = 'S';
 
 export const GLOBAL_CONTEXT_STREAM_EMIT = 'Se';
 
-export const ROOT_REFERENCE = 't';
-
 export const GLOBAL_CONTEXT_API_SCRIPT = `self.${GLOBAL_CONTEXT_API}=self.${GLOBAL_CONTEXT_API}||{`
   + `${GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR}:function(s,f,p){return(p=new Promise(function(a,b){s=a,f=b})).${LOCAL_CONTEXT_PROMISE_RESOLVE}=s,p.${LOCAL_CONTEXT_PROMISE_REJECT}=f,p},`
   + `uP:function(p){delete p.${LOCAL_CONTEXT_PROMISE_RESOLVE};delete p.${LOCAL_CONTEXT_PROMISE_REJECT}},`

@@ -1,5 +1,5 @@
 import { Feature } from '../compat';
-import { GLOBAL_CONTEXT_REFERENCES, ROOT_REFERENCE } from '../keys';
+import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import { serializeString } from '../string';
 // import type { SerovalNode } from '../types';
 import parseAsync from './async';
@@ -22,28 +22,20 @@ function finalize(
   id: number | undefined,
   result: string,
 ): string {
+  if (id == null) {
+    return result;
+  }
   const patches = resolvePatches(ctx);
-  const ref = id == null ? '' : getRefExpr(id);
-  let params = '';
-  if (scopeId != null) {
-    params += GLOBAL_CONTEXT_REFERENCES;
-  }
-  if (id == null && !ref && patches) {
-    if (params !== '') {
-      params += ',';
-    }
-    params += ROOT_REFERENCE;
-  }
+  const ref = getRefExpr(id);
+  const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   const mainBody = patches ? result + ',' + patches : result;
   if (params === '') {
     return patches ? '(' + mainBody + ref + ')' : mainBody;
   }
-  const tail = id == null ? ROOT_REFERENCE : ref;
-  const header = id == null ? ROOT_REFERENCE + '=' : '';
   const args = scopeId == null ? '()' : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(scopeId) + '"])';
-  const body = header + mainBody + (patches ? tail : '');
+  const body = mainBody + (patches ? ref : '');
   if (ctx.features & Feature.ArrowFunction) {
-    return '((' + params + ')=>(' + body + '))' + args;
+    return '(' + params + '=>(' + body + '))' + args;
   }
   return '(function(' + params + '){return ' + body + '})' + args;
 }
