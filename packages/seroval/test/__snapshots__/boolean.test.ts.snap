@@ -8,18 +8,18 @@ exports[`boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Promise.
 
 exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Promise.resolve(!1)"`;
 
-exports[`boolean > crossSerializeAsync > supports false value 1`] = `"$R[0]=$P()"`;
+exports[`boolean > crossSerializeAsync > supports false value 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boolean > crossSerializeAsync > supports false value 2`] = `"$Ps(0,!1)"`;
+exports[`boolean > crossSerializeAsync > supports false value 2`] = `"_$.Ps($R[0],!1)"`;
 
-exports[`boolean > crossSerializeAsync > supports true value 1`] = `"$R[0]=$P()"`;
+exports[`boolean > crossSerializeAsync > supports true value 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boolean > crossSerializeAsync > supports true value 2`] = `"$Ps(0,!0)"`;
+exports[`boolean > crossSerializeAsync > supports true value 2`] = `"_$.Ps($R[0],!0)"`;
 
-exports[`boolean > serializeAsync > supports boolean 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > serializeAsync > supports boolean 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`boolean > serializeAsync > supports boolean 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":3}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > serializeAsync > supports boolean 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":3}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`boolean > toJSON > supports boolean 1`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":2},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > toJSON > supports boolean 1`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":2},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`boolean > toJSON > supports boolean 2`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":3},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > toJSON > supports boolean 2`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":3},\\"f\\":16383,\\"m\\":[]}"`;

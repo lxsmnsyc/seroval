@@ -58,12 +58,26 @@ describe('URLSearchParams', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports URLSearchParams', () => {
+        const example = new URLSearchParams('hello=world&foo=bar');
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports URLSearchParams', async () => {
       const example = new URLSearchParams('hello=world&foo=bar');
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports URLSearchParams', async () => {
+        const example = new URLSearchParams('hello=world&foo=bar');
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -78,5 +92,19 @@ describe('URLSearchParams', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports URLSearchParams', async () => new Promise<void>((done) => {
+        const example = new URLSearchParams('hello=world&foo=bar');
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

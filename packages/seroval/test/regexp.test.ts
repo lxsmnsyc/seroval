@@ -58,12 +58,26 @@ describe('RegExp', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports RegExp', () => {
+        const example = /[a-z0-9]+/i;
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports RegExp', async () => {
       const example = /[a-z0-9]+/i;
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports RegExp', async () => {
+        const example = /[a-z0-9]+/i;
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -78,5 +92,19 @@ describe('RegExp', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports RegExp', async () => new Promise<void>((done) => {
+        const example = /[a-z0-9]+/i;
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

@@ -1,17 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`RegExp > crossSerialize > scoped > supports RegExp 1`] = `"($R=>($R[0]=/[a-z0-9]+/i))($R[\\"example\\"])"`;
+
 exports[`RegExp > crossSerialize > supports RegExp 1`] = `"$R[0]=/[a-z0-9]+/i"`;
+
+exports[`RegExp > crossSerializeAsync > scoped > supports RegExp 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=/[a-z0-9]+/i)))($R[\\"example\\"])"`;
 
 exports[`RegExp > crossSerializeAsync > supports RegExp 1`] = `"$R[0]=Promise.resolve($R[1]=/[a-z0-9]+/i)"`;
 
-exports[`RegExp > crossSerializeStream > supports RegExp 1`] = `"$R[0]=$P()"`;
+exports[`RegExp > crossSerializeStream > scoped > supports RegExp 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`RegExp > crossSerializeStream > supports RegExp 2`] = `"$Ps(0,$R[1]=/[a-z0-9]+/i)"`;
+exports[`RegExp > crossSerializeStream > scoped > supports RegExp 2`] = `"($R=>(_$.Ps($R[0],$R[1]=/[a-z0-9]+/i)))($R[\\"example\\"])"`;
+
+exports[`RegExp > crossSerializeStream > supports RegExp 1`] = `"$R[0]=_$.P()"`;
+
+exports[`RegExp > crossSerializeStream > supports RegExp 2`] = `"_$.Ps($R[0],$R[1]=/[a-z0-9]+/i)"`;
 
 exports[`RegExp > serialize > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
 
 exports[`RegExp > serializeAsync > supports RegExp 1`] = `"Promise.resolve(/[a-z0-9]+/i)"`;
 
-exports[`RegExp > toJSON > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`RegExp > toJSON > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":6,\\"i\\":1,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":6,\\"i\\":1,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"}},\\"f\\":16383,\\"m\\":[]}"`;

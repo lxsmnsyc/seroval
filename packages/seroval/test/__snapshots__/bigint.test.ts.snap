@@ -8,14 +8,14 @@ exports[`bigint > crossSerialize > supports bigint 1`] = `"9007199254740991n"`;
 
 exports[`bigint > crossSerializeAsync > supports bigint 1`] = `"$R[0]=Promise.resolve(9007199254740991n)"`;
 
-exports[`bigint > crossSerializeStream > supports bigint 1`] = `"$R[0]=$P()"`;
+exports[`bigint > crossSerializeStream > supports bigint 1`] = `"$R[0]=_$.P()"`;
 
-exports[`bigint > crossSerializeStream > supports bigint 2`] = `"$Ps(0,9007199254740991n)"`;
+exports[`bigint > crossSerializeStream > supports bigint 2`] = `"_$.Ps($R[0],9007199254740991n)"`;
 
 exports[`bigint > serialize > supports bigint 1`] = `"9007199254740991n"`;
 
 exports[`bigint > serializeAsync > supports bigint 1`] = `"Promise.resolve(9007199254740991n)"`;
 
-exports[`bigint > toJSON > supports bigint 1`] = `"{\\"t\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`bigint > toJSON > supports bigint 1`] = `"{\\"t\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`bigint > toJSONAsync > supports bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`bigint > toJSONAsync > supports bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}},\\"f\\":16383,\\"m\\":[]}"`;

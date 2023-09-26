@@ -11,7 +11,6 @@ import {
   createParserContext,
   createSerializerContext,
   getRefParam,
-  getRootID,
 } from './context';
 import deserializeTree from './deserialize';
 import serializeTree, { resolvePatches } from './serialize';
@@ -19,12 +18,12 @@ import parseSync from './sync';
 
 function finalize(
   ctx: SerializerContext,
-  rootID: number,
+  rootID: number | undefined,
   isObject: boolean,
   result: string,
 ): string {
   // Shared references detected
-  if (ctx.vars.length) {
+  if (rootID != null && ctx.vars.length) {
     const patches = resolvePatches(ctx);
     let body = result;
     if (patches) {
@@ -66,7 +65,7 @@ export function serialize<T>(
   const result = serializeTree(serial, tree);
   return finalize(
     serial,
-    getRootID(ctx, source),
+    tree.i,
     tree.t === SerovalNodeType.Object,
     result,
   );
@@ -85,7 +84,7 @@ export async function serializeAsync<T>(
   const result = serializeTree(serial, tree);
   return finalize(
     serial,
-    getRootID(ctx, source),
+    tree.i,
     tree.t === SerovalNodeType.Object,
     result,
   );
@@ -98,7 +97,6 @@ export function deserialize<T>(source: string): T {
 
 export interface SerovalJSON {
   t: SerovalNode;
-  r: number;
   f: number;
   m: number[];
 }
@@ -110,7 +108,6 @@ export function toJSON<T>(
   const ctx = createParserContext(options);
   return {
     t: parseSync(ctx, source),
-    r: getRootID(ctx, source),
     f: ctx.features,
     m: Array.from(ctx.reference.marked),
   };
@@ -123,7 +120,6 @@ export async function toJSONAsync<T>(
   const ctx = createParserContext(options);
   return {
     t: await parseAsync(ctx, source),
-    r: getRootID(ctx, source),
     f: ctx.features,
     m: Array.from(ctx.reference.marked),
   };
@@ -135,7 +131,7 @@ export function compileJSON(source: SerovalJSON): string {
     markedRefs: source.m,
   });
   const result = serializeTree(serial, source.t);
-  return finalize(serial, source.r, source.t.i === SerovalNodeType.Object, result);
+  return finalize(serial, source.t.i, source.t.i === SerovalNodeType.Object, result);
 }
 
 export function fromJSON<T>(source: SerovalJSON): T {

@@ -62,12 +62,26 @@ describe('sparse arrays', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports sparse arrays', () => {
+        const example = new Array(10);
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports sparse arrays', async () => {
       const example = new Array(10);
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports sparse arrays', async () => {
+        const example = new Array(10);
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -82,5 +96,19 @@ describe('sparse arrays', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports sparse arrays', async () => new Promise<void>((done) => {
+        const example = new Array(10);
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

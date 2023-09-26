@@ -8,13 +8,13 @@ exports[`string > crossSerializeAsync > supports strings 1`] = `"$R[0]=Promise.r
 
 exports[`string > crossSerializeAsync > supports strings 2`] = `"$R[0]=Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
 
-exports[`string > crossSerializeStream > supports sanitized strings 1`] = `"$R[0]=$P()"`;
+exports[`string > crossSerializeStream > supports sanitized strings 1`] = `"$R[0]=_$.P()"`;
 
-exports[`string > crossSerializeStream > supports sanitized strings 2`] = `"$Ps(0,\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
+exports[`string > crossSerializeStream > supports sanitized strings 2`] = `"_$.Ps($R[0],\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
 
-exports[`string > crossSerializeStream > supports strings 1`] = `"$R[0]=$P()"`;
+exports[`string > crossSerializeStream > supports strings 1`] = `"$R[0]=_$.P()"`;
 
-exports[`string > crossSerializeStream > supports strings 2`] = `"$Ps(0,\\"\\\\\\"hello\\\\\\"\\")"`;
+exports[`string > crossSerializeStream > supports strings 2`] = `"_$.Ps($R[0],\\"\\\\\\"hello\\\\\\"\\")"`;
 
 exports[`string > serialize > supports strings 1`] = `"\\"\\\\\\"hello\\\\\\"\\""`;
 
@@ -24,10 +24,10 @@ exports[`string > serializeAsync > supports strings 1`] = `"Promise.resolve(\\"\
 
 exports[`string > serializeAsync > supports strings 2`] = `"Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
 
-exports[`string > toJSON > supports strings 1`] = `"{\\"t\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`string > toJSON > supports strings 1`] = `"{\\"t\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`string > toJSON > supports strings 2`] = `"{\\"t\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`string > toJSON > supports strings 2`] = `"{\\"t\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`string > toJSONAsync > supports strings 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`string > toJSONAsync > supports strings 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}},\\"f\\":16383,\\"m\\":[]}"`;

@@ -1,5 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`boxed number > crossSerialize > scoped > supports boxed numbers 1`] = `"($R=>($R[0]=Object(3735928559)))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerialize > scoped > supports boxed numbers 2`] = `"($R=>($R[0]=Object(NaN)))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerialize > scoped > supports boxed numbers 3`] = `"($R=>($R[0]=Object(1/0)))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerialize > scoped > supports boxed numbers 4`] = `"($R=>($R[0]=Object(-1/0)))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerialize > scoped > supports boxed numbers 5`] = `"($R=>($R[0]=Object(-0)))($R[\\"example\\"])"`;
+
 exports[`boxed number > crossSerialize > supports boxed numbers 1`] = `"$R[0]=Object(3735928559)"`;
 
 exports[`boxed number > crossSerialize > supports boxed numbers 2`] = `"$R[0]=Object(NaN)"`;
@@ -9,6 +19,16 @@ exports[`boxed number > crossSerialize > supports boxed numbers 3`] = `"$R[0]=Ob
 exports[`boxed number > crossSerialize > supports boxed numbers 4`] = `"$R[0]=Object(-1/0)"`;
 
 exports[`boxed number > crossSerialize > supports boxed numbers 5`] = `"$R[0]=Object(-0)"`;
+
+exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(3735928559))))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 2`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(NaN))))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 3`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(1/0))))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 4`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(-1/0))))($R[\\"example\\"])"`;
+
+exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 5`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(-0))))($R[\\"example\\"])"`;
 
 exports[`boxed number > crossSerializeAsync > supports boxed numbers 1`] = `"$R[0]=Promise.resolve($R[1]=Object(3735928559))"`;
 
@@ -20,42 +40,62 @@ exports[`boxed number > crossSerializeAsync > supports boxed numbers 4`] = `"$R[
 
 exports[`boxed number > crossSerializeAsync > supports boxed numbers 5`] = `"$R[0]=Promise.resolve($R[1]=Object(-0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -0 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed -0 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -0 2`] = `"$Ps(0,$R[1]=Object(-0))"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed -0 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(-0))))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -Infinity 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed -Infinity 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -Infinity 2`] = `"$Ps(0,$R[1]=Object(-1/0))"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed -Infinity 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(-1/0))))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed Infinity 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Infinity 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed Infinity 2`] = `"$Ps(0,$R[1]=Object(1/0))"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Infinity 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(1/0))))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed NaN 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed NaN 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed NaN 2`] = `"$Ps(0,$R[1]=Object(NaN))"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed NaN 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(NaN))))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `"$R[0]=$P()"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed numbers 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed numbers 2`] = `"$Ps(0,$R[1]=Object(3735928559))"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed numbers 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(3735928559))))($R[\\"example\\"])"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed -0 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":7}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed -0 2`] = `"_$.Ps($R[0],$R[1]=Object(-0))"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":5}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed -Infinity 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":6}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed -Infinity 2`] = `"_$.Ps($R[0],$R[1]=Object(-1/0))"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":4}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed Infinity 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed Infinity 2`] = `"_$.Ps($R[0],$R[1]=Object(1/0))"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":7}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed NaN 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":5}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed NaN 2`] = `"_$.Ps($R[0],$R[1]=Object(NaN))"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":6}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":4}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > crossSerializeStream > supports boxed numbers 2`] = `"_$.Ps($R[0],$R[1]=Object(3735928559))"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":7}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":5}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":6}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSON > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":4}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":7}}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":5}}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":6}}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`boxed number > toJSONAsync > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":4}}},\\"f\\":16383,\\"m\\":[]}"`;

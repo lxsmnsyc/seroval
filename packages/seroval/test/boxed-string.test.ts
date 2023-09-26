@@ -49,11 +49,23 @@ describe('boxed string', () => {
       expect(crossSerialize(Object('"hello"'))).toMatchSnapshot();
       expect(crossSerialize(Object('<script></script>'))).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports boxed strings', () => {
+        expect(crossSerialize(Object('"hello"'), { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Object('<script></script>'), { scopeId: 'example' })).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports boxed strings', async () => {
       expect(await crossSerializeAsync(Promise.resolve(Object('"hello"')))).toMatchSnapshot();
       expect(await crossSerializeAsync(Promise.resolve(Object('<script></script>')))).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports boxed strings', async () => {
+        expect(await crossSerializeAsync(Promise.resolve(Object('"hello"')), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Promise.resolve(Object('<script></script>')), { scopeId: 'example' })).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -77,5 +89,29 @@ describe('boxed string', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports boxed strings', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object('"hello"')), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports boxed sanitized strings', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object('<script></script>')), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

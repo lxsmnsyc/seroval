@@ -95,6 +95,18 @@ describe('typed arrays', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports typed arrays', () => {
+        const example = new Uint32Array([
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+        ]);
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports typed arrays', async () => {
@@ -106,6 +118,18 @@ describe('typed arrays', () => {
       ]);
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports typed arrays', async () => {
+        const example = new Uint32Array([
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+        ]);
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -125,5 +149,24 @@ describe('typed arrays', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports typed arrays', async () => new Promise<void>((done) => {
+        const example = new Uint32Array([
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+          0xFFFFFFFF,
+        ]);
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });

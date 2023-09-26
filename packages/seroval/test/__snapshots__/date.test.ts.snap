@@ -1,17 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Date > crossSerialize > scoped > supports Date 1`] = `"($R=>($R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\")))($R[\\"example\\"])"`;
+
 exports[`Date > crossSerialize > supports Date 1`] = `"$R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
+
+exports[`Date > crossSerializeAsync > scoped > supports Date 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))))($R[\\"example\\"])"`;
 
 exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
-exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=$P()"`;
+exports[`Date > crossSerializeStream > scoped > supports Date 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`Date > crossSerializeStream > supports Date 2`] = `"$Ps(0,$R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+exports[`Date > crossSerializeStream > scoped > supports Date 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))))($R[\\"example\\"])"`;
+
+exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=_$.P()"`;
+
+exports[`Date > crossSerializeStream > supports Date 2`] = `"_$.Ps($R[0],$R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
 exports[`Date > serialize > supports Date 1`] = `"new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
 
 exports[`Date > serializeAsync > supports Date 1`] = `"Promise.resolve(new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
-exports[`Date > toJSON > supports Date 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Date > toJSON > supports Date 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Date > toJSONAsync > supports Date 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":5,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Date > toJSONAsync > supports Date 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":5,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}},\\"f\\":16383,\\"m\\":[]}"`;

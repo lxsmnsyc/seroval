@@ -1,10 +1,22 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`sealed object > crossSerialize > scoped > supports Objects 1`] = `"($R=>($R[0]={hello:\\"world\\"},Object.seal($R[0]),$R[0]))($R[\\"example\\"])"`;
+
+exports[`sealed object > crossSerialize > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]={[Symbol.iterator]:()=>$R[1]=[1,2,3].values()},Object.seal($R[0]),$R[0]))($R[\\"example\\"])"`;
+
+exports[`sealed object > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>($R[0]={},$R[0].b=$R[0].a=$R[0],Object.seal($R[0]),$R[0]))($R[\\"example\\"])"`;
+
 exports[`sealed object > crossSerialize > supports Objects 1`] = `"($R[0]={hello:\\"world\\"},Object.seal($R[0]),$R[0])"`;
 
 exports[`sealed object > crossSerialize > supports Symbol.iterator 1`] = `"($R[0]={[Symbol.iterator]:()=>$R[1]=[1,2,3].values()},Object.seal($R[0]),$R[0])"`;
 
 exports[`sealed object > crossSerialize > supports self-recursion 1`] = `"($R[0]={},$R[0].b=$R[0].a=$R[0],Object.seal($R[0]),$R[0])"`;
+
+exports[`sealed object > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>($R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0]))($R[\\"example\\"])"`;
+
+exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Promise.resolve($R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}),Object.seal($R[1]),$R[0]))($R[\\"example\\"])"`;
+
+exports[`sealed object > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>($R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])},Object.seal($R[0]),$R[0]))($R[\\"example\\"])"`;
 
 exports[`sealed object > crossSerializeAsync > supports Objects 1`] = `"($R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0])"`;
 
@@ -12,21 +24,37 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.iterator 1`] = `"
 
 exports[`sealed object > crossSerializeAsync > supports self-recursion 1`] = `"($R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])},Object.seal($R[0]),$R[0])"`;
 
-exports[`sealed object > crossSerializeStream > supports Objects 1`] = `"$R[0]=$P()"`;
+exports[`sealed object > crossSerializeStream > scoped > supports Objects 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports Objects 2`] = `"($Ps(0,$R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports Objects 2`] = `"($R=>(_$.Ps($R[0],$R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0]))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=$P()"`;
+exports[`sealed object > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports Symbol.iterator 2`] = `"($Ps(0,$R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}),Object.seal($R[1]),$R[0])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>(_$.Ps($R[0],$R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}),Object.seal($R[1]),$R[0]))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=$P()"`;
+exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports self-recursion 2`] = `"($Ps(0,$R[1]={a:$R[2]=$P(),b:$R[3]=$P()}),Object.seal($R[1]),$R[0])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>(_$.Ps($R[0],$R[1]={a:$R[2]=_$.P(),b:$R[3]=_$.P()}),Object.seal($R[1]),$R[0]))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports self-recursion 3`] = `"$Ps(2,$R[1])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>(_$.Ps($R[2],$R[1])))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports self-recursion 4`] = `"$Ps(3,$R[1])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 4`] = `"($R=>(_$.Ps($R[3],$R[1])))($R[\\"example\\"])"`;
+
+exports[`sealed object > crossSerializeStream > supports Objects 1`] = `"$R[0]=_$.P()"`;
+
+exports[`sealed object > crossSerializeStream > supports Objects 2`] = `"(_$.Ps($R[0],$R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0])"`;
+
+exports[`sealed object > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=_$.P()"`;
+
+exports[`sealed object > crossSerializeStream > supports Symbol.iterator 2`] = `"(_$.Ps($R[0],$R[1]={[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}),Object.seal($R[1]),$R[0])"`;
+
+exports[`sealed object > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=_$.P()"`;
+
+exports[`sealed object > crossSerializeStream > supports self-recursion 2`] = `"(_$.Ps($R[0],$R[1]={a:$R[2]=_$.P(),b:$R[3]=_$.P()}),Object.seal($R[1]),$R[0])"`;
+
+exports[`sealed object > crossSerializeStream > supports self-recursion 3`] = `"_$.Ps($R[2],$R[1])"`;
+
+exports[`sealed object > crossSerializeStream > supports self-recursion 4`] = `"_$.Ps($R[3],$R[1])"`;
 
 exports[`sealed object > serialize > supports Objects 1`] = `"(h=>(h={hello:\\"world\\"},Object.seal(h),h))()"`;
 
@@ -40,14 +68,14 @@ exports[`sealed object > serializeAsync > supports Symbol.iterator 1`] = `"((h,j
 
 exports[`sealed object > serializeAsync > supports self-recursion 1`] = `"(h=>(h={a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)},Object.seal(h),h))()"`;
 
-exports[`sealed object > toJSON > supports Objects 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":2},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`sealed object > toJSON > supports Objects 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":2},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`sealed object > toJSON > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":2},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`sealed object > toJSON > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":2},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`sealed object > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":4,\\"i\\":0}],\\"s\\":2},\\"o\\":2},\\"r\\":0,\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`sealed object > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":4,\\"i\\":0}],\\"s\\":2},\\"o\\":2},\\"f\\":16383,\\"m\\":[0]}"`;
 
-exports[`sealed object > toJSONAsync > supports Objects 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`sealed object > toJSONAsync > supports Objects 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`sealed object > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`sealed object > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":1},\\"o\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`sealed object > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}},{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":2},\\"o\\":2},\\"r\\":0,\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`sealed object > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"a\\",\\"b\\"],\\"v\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}},{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":2},\\"o\\":2},\\"f\\":16383,\\"m\\":[0]}"`;

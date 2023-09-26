@@ -1,10 +1,22 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Error > crossSerialize > scoped > supports Error.prototype.cause 1`] = `"($R=>($R[0]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[1]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"})})))($R[\\"example\\"])"`;
+
+exports[`Error > crossSerialize > scoped > supports Error.prototype.name 1`] = `"($R=>($R[0]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"})))($R[\\"example\\"])"`;
+
+exports[`Error > crossSerialize > scoped > supports other Error classes 1`] = `"($R=>($R[0]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"})))($R[\\"example\\"])"`;
+
 exports[`Error > crossSerialize > supports Error.prototype.cause 1`] = `"$R[0]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[1]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"})})"`;
 
 exports[`Error > crossSerialize > supports Error.prototype.name 1`] = `"$R[0]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"})"`;
 
 exports[`Error > crossSerialize > supports other Error classes 1`] = `"$R[0]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"})"`;
+
+exports[`Error > crossSerializeAsync > scoped > supports Error.prototype.cause 1`] = `"($R=>($R[0]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[1]=Promise.resolve($R[2]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))})))($R[\\"example\\"])"`;
+
+exports[`Error > crossSerializeAsync > scoped > supports Error.prototype.name 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"}))))($R[\\"example\\"])"`;
+
+exports[`Error > crossSerializeAsync > scoped > supports other Error classes 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))))($R[\\"example\\"])"`;
 
 exports[`Error > crossSerializeAsync > supports Error.prototype.cause 1`] = `"$R[0]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[1]=Promise.resolve($R[2]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))})"`;
 
@@ -12,19 +24,33 @@ exports[`Error > crossSerializeAsync > supports Error.prototype.name 1`] = `"$R[
 
 exports[`Error > crossSerializeAsync > supports other Error classes 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `"$R[0]=$P()"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `"$Ps(0,$R[1]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[2]=$P()}))"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[2]=_$.P()}))))($R[\\"example\\"])"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"$Ps(2,$R[3]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 3`] = `"($R=>(_$.Ps($R[2],$R[3]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))))($R[\\"example\\"])"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `"$R[0]=$P()"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `"$Ps(0,$R[1]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"}))"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"}))))($R[\\"example\\"])"`;
 
-exports[`Error > crossSerializeStream > supports other Error classes 1`] = `"$R[0]=$P()"`;
+exports[`Error > crossSerializeStream > scoped > supports other Error classes 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`Error > crossSerializeStream > supports other Error classes 2`] = `"$Ps(0,$R[1]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
+exports[`Error > crossSerializeStream > scoped > supports other Error classes 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))))($R[\\"example\\"])"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `"$R[0]=_$.P()"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[2]=_$.P()}))"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"_$.Ps($R[2],$R[3]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `"$R[0]=_$.P()"`;
+
+exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(new Error(\\"A\\"),{name:\\"ExampleError\\",stack:\\"\\"}))"`;
+
+exports[`Error > crossSerializeStream > supports other Error classes 1`] = `"$R[0]=_$.P()"`;
+
+exports[`Error > crossSerializeStream > supports other Error classes 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
 
 exports[`Error > serialize > supports Error.prototype.cause 1`] = `"Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:Object.assign(new Error(\\"A\\"),{stack:\\"\\"})})"`;
 
@@ -38,14 +64,14 @@ exports[`Error > serializeAsync > supports Error.prototype.name 1`] = `"Promise.
 
 exports[`Error > serializeAsync > supports other Error classes 1`] = `"Promise.resolve(Object.assign(new ReferenceError(\\"A\\"),{stack:\\"\\"}))"`;
 
-exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"Error\\",\\"m\\":\\"B\\",\\"p\\":{\\"k\\":[\\"stack\\",\\"cause\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"},{\\"t\\":13,\\"i\\":1,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}],\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"Error\\",\\"m\\":\\"B\\",\\"p\\":{\\"k\\":[\\"stack\\",\\"cause\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"},{\\"t\\":13,\\"i\\":1,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}],\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Error > toJSON > supports Error.prototype.name 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"name\\",\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"ExampleError\\"},{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Error > toJSON > supports Error.prototype.name 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"name\\",\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"ExampleError\\"},{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Error > toJSON > supports other Error classes 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"ReferenceError\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Error > toJSON > supports other Error classes 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"ReferenceError\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"Error\\",\\"m\\":\\"B\\",\\"p\\":{\\"k\\":[\\"stack\\",\\"cause\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"},{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":13,\\"i\\":2,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}}],\\"s\\":2}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"{\\"t\\":{\\"t\\":13,\\"i\\":0,\\"c\\":\\"Error\\",\\"m\\":\\"B\\",\\"p\\":{\\"k\\":[\\"stack\\",\\"cause\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"},{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":13,\\"i\\":2,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}}],\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":13,\\"i\\":1,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"name\\",\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"ExampleError\\"},{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":2}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":13,\\"i\\":1,\\"c\\":\\"Error\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"name\\",\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"ExampleError\\"},{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":2}}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`Error > toJSONAsync > supports other Error classes 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":13,\\"i\\":1,\\"c\\":\\"ReferenceError\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}},\\"r\\":0,\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Error > toJSONAsync > supports other Error classes 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":13,\\"i\\":1,\\"c\\":\\"ReferenceError\\",\\"m\\":\\"A\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}},\\"f\\":16383,\\"m\\":[]}"`;
