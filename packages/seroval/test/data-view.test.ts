@@ -68,6 +68,15 @@ describe('DataView', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports DataView', () => {
+        const buffer = new ArrayBuffer(16);
+        const example = new DataView(buffer, 0);
+        example.setInt16(1, 42);
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports DataView', async () => {
@@ -76,6 +85,15 @@ describe('DataView', () => {
       example.setInt16(1, 42);
       const result = await crossSerializeAsync(Promise.resolve(example));
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports DataView', async () => {
+        const buffer = new ArrayBuffer(16);
+        const example = new DataView(buffer, 0);
+        example.setInt16(1, 42);
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -92,5 +110,21 @@ describe('DataView', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports DataView', async () => new Promise<void>((done) => {
+        const buffer = new ArrayBuffer(16);
+        const example = new DataView(buffer, 0);
+        example.setInt16(1, 42);
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
 });
