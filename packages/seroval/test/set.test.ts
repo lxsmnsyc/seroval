@@ -110,6 +110,19 @@ describe('Set', () => {
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports Set', () => {
+        const example = new Set([1, 2, 3]);
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports self-recursion', () => {
+        const example: Set<unknown> = new Set();
+        example.add(example);
+        const result = crossSerialize(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports Set', async () => {
@@ -122,6 +135,19 @@ describe('Set', () => {
       example.add(Promise.resolve(example));
       const result = await crossSerializeAsync(example);
       expect(result).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports Set', async () => {
+        const example = new Set([1, 2, 3]);
+        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports self-recursion', async () => {
+        const example: Set<Promise<unknown>> = new Set();
+        example.add(Promise.resolve(example));
+        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -148,6 +174,33 @@ describe('Set', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports Set', async () => new Promise<void>((done) => {
+        const example = new Set([1, 2, 3]);
+        crossSerializeStream(Promise.resolve(example), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports self-recursion', async () => new Promise<void>((done) => {
+        const example: Set<Promise<unknown>> = new Set();
+        example.add(Promise.resolve(example));
+        crossSerializeStream(example, {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
   describe('compat', () => {
     it('should throw an error for unsupported target', () => {
