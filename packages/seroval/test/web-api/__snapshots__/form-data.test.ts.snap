@@ -1,8 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`FormData > crossSerialize > scoped > supports FormData 1`] = `"($R=>(($R[0]=new FormData(),$R[0].append(\\"hello\\",\\"world\\"),$R[0].append(\\"foo\\",\\"bar\\"),$R[0])))($R[\\"example\\"])"`;
+
 exports[`FormData > crossSerialize > supports FormData 1`] = `"($R[0]=new FormData(),$R[0].append(\\"hello\\",\\"world\\"),$R[0].append(\\"foo\\",\\"bar\\"),$R[0])"`;
 
+exports[`FormData > crossSerializeAsync > scoped > supports FormData 1`] = `"($R=>($R[0]=Promise.resolve(($R[1]=new FormData(),$R[1].append(\\"hello-world\\",$R[2]=new File([$R[3]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),$R[1].append(\\"foo-bar\\",$R[4]=new File([$R[5]=new Uint8Array([70,111,111,32,66,97,114]).buffer],\\"foo-bar.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),$R[1]))))($R[\\"example\\"])"`;
+
 exports[`FormData > crossSerializeAsync > supports FormData 1`] = `"$R[0]=Promise.resolve(($R[1]=new FormData(),$R[1].append(\\"hello-world\\",$R[2]=new File([$R[3]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),$R[1].append(\\"foo-bar\\",$R[4]=new File([$R[5]=new Uint8Array([70,111,111,32,66,97,114]).buffer],\\"foo-bar.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})),$R[1]))"`;
+
+exports[`FormData > crossSerializeStream > scoped > supports FormData 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`FormData > crossSerializeStream > scoped > supports FormData 2`] = `"($R=>(_$.Ps($R[0],($R[1]=new FormData(),$R[1].append(\\"hello\\",\\"world\\"),$R[1].append(\\"foo\\",\\"bar\\"),$R[1]))))($R[\\"example\\"])"`;
 
 exports[`FormData > crossSerializeStream > supports FormData 1`] = `"$R[0]=_$.P()"`;
 
