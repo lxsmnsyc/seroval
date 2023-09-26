@@ -42,12 +42,24 @@ describe('boxed bigint', () => {
     it('supports boxed bigint', () => {
       expect(crossSerialize(Object(9007199254740991n))).toMatchSnapshot();
     });
+    describe('scoped', () => {
+      it('supports boxed bigint', () => {
+        expect(crossSerialize(Object(9007199254740991n), { scopeId: 'example' })).toMatchSnapshot();
+      });
+    });
   });
   describe('crossSerializeAsync', () => {
     it('supports boxed bigint', async () => {
       expect(
         await crossSerializeAsync(Promise.resolve(Object(9007199254740991n))),
       ).toMatchSnapshot();
+    });
+    describe('scoped', () => {
+      it('supports boxed bigint', async () => {
+        expect(
+          await crossSerializeAsync(Promise.resolve(Object(9007199254740991n)), { scopeId: 'example' }),
+        ).toMatchSnapshot();
+      });
     });
   });
   describe('crossSerializeStream', () => {
@@ -61,6 +73,19 @@ describe('boxed bigint', () => {
         },
       });
     }));
+    describe('scoped', () => {
+      it('supports boxed bigint', async () => new Promise<void>((done) => {
+        crossSerializeStream(Promise.resolve(Object(9007199254740991n)), {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+    });
   });
   describe('compat', () => {
     it('should throw an error for unsupported target', () => {
