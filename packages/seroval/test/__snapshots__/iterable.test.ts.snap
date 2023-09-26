@@ -18,9 +18,17 @@ exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow
 
 exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 2`] = `"(function(h){return h={[Symbol.iterator](){return [h].values()}}})()"`;
 
+exports[`Iterable > crossSerialize > scoped > supports Iterables 1`] = `"($R=>($R[0]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[1]=[1,2,3].values()}))($R[\\"example\\"])"`;
+
 exports[`Iterable > crossSerialize > supports Iterables 1`] = `"$R[0]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[1]=[1,2,3].values()}"`;
 
+exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `"($R=>($R[0]=Promise.resolve($R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})))($R[\\"example\\"])"`;
+
 exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `"$R[0]=Promise.resolve($R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})"`;
+
+exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `"($R=>(_$.Ps($R[0],$R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})))($R[\\"example\\"])"`;
 
 exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `"$R[0]=_$.P()"`;
 
