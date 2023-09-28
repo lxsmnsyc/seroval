@@ -11,8 +11,7 @@ jobs:
         with:
           version: 7
           run_install: |
-            - recursive: true
-              args: [--frozen-lockfile]
+            - args: [--frozen-lockfile]
 
       - uses: actions/setup-node@v3
         with:
