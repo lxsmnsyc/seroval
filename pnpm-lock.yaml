@@ -87,9 +87,6 @@ importers:
       eslint-config-lxsmnsyc:
         specifier: ^0.6.5
         version: 0.6.5(eslint@8.51.0)(typescript@5.2.2)
-      node-fetch-native:
-        specifier: ^1.4.0
-        version: 1.4.0
       pridepack:
         specifier: 2.5.0
         version: 2.5.0(eslint@8.51.0)(tslib@2.6.2)(typescript@5.2.2)
@@ -5349,10 +5346,6 @@ packages:
 
   /node-addon-api@3.2.1:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
-    dev: true
-
-  /node-fetch-native@1.4.0:
-    resolution: {integrity: sha512-F5kfEj95kX8tkDhUCYdV8dg3/8Olx/94zB8+ZNthFs6Bz31UpUi8Xh40TN3thLwXgrwXry1pEg9lJ++tLWTcqA==}
     dev: true
 
   /node-fetch@2.6.7:
