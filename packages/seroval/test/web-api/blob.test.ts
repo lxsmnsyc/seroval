@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import 'node-fetch-native/polyfill';
 import {
   crossSerializeAsync,
   deserialize,
