@@ -564,8 +564,8 @@ function parseObject(
   }
   // Generator functions don't have a global constructor
   // despite existing
-  if (ctx.features & Feature.Symbol && Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, !!current.constructor);
+  if ((ctx.features & Feature.Symbol) && Symbol.iterator in current) {
+    return generateObjectNode(ctx, id, current, !!currentClass);
   }
   throw new UnsupportedTypeError(current);
 }

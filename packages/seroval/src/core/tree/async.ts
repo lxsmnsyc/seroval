@@ -619,14 +619,14 @@ async function parseObject(
     }
   }
   // ES Collection
-  if (ctx.features & Feature.Map && current.constructor === Map) {
+  if (ctx.features & Feature.Map && currentClass === Map) {
     return generateMapNode(
       ctx,
       id,
       current as unknown as Map<unknown, unknown>,
     );
   }
-  if (ctx.features & Feature.Set && current.constructor === Set) {
+  if (ctx.features & Feature.Set && currentClass === Set) {
     return generateSetNode(
       ctx,
       id,
@@ -660,16 +660,16 @@ async function parseObject(
   }
   if (
     (ctx.features & Feature.AggregateError)
-    && (current.constructor === AggregateError || current instanceof AggregateError)
+    && (currentClass === AggregateError || current instanceof AggregateError)
   ) {
     return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
   }
   // Promises
   if (
     (ctx.features & Feature.Promise)
-    && (current.constructor === Promise || current instanceof Promise)
+    && (currentClass === Promise || current instanceof Promise)
   ) {
-    return generatePromiseNode(ctx, id, current);
+    return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
@@ -679,7 +679,7 @@ async function parseObject(
   // Generator functions don't have a global constructor
   // despite existing
   if (ctx.features & Feature.Symbol && Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, !!current.constructor);
+    return generateObjectNode(ctx, id, current, !!currentClass);
   }
   throw new UnsupportedTypeError(current);
 }

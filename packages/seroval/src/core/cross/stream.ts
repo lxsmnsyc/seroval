@@ -791,9 +791,9 @@ function parseObject(
   }
   if (
     (ctx.features & Feature.Promise)
-    && (current.constructor === Promise || current instanceof Promise)
+    && (currentClass === Promise || current instanceof Promise)
   ) {
-    return generatePromiseNode(ctx, id, current);
+    return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
@@ -803,7 +803,7 @@ function parseObject(
   // Generator functions don't have a global constructor
   // despite existing
   if (ctx.features & Feature.Symbol && Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, !!current.constructor);
+    return generateObjectNode(ctx, id, current, !!currentClass);
   }
   throw new UnsupportedTypeError(current);
 }
