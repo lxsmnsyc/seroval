@@ -41,6 +41,7 @@ import type {
   SerovalReadableStreamConstructorNode,
   SerovalRequestNode,
   SerovalResponseNode,
+  SerovalEventNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -786,6 +787,16 @@ function serializeResponse(
   );
 }
 
+function serializeEvent(
+  ctx: CrossSerializerContext,
+  node: SerovalEventNode,
+): string {
+  return assignIndexedValue(
+    node.i,
+    'new Event("' + node.s + '",' + crossSerializeTree(ctx, node.f) + ')',
+  );
+}
+
 export default function crossSerializeTree(
   ctx: CrossSerializerContext,
   node: SerovalNode,
@@ -864,6 +875,8 @@ export default function crossSerializeTree(
       return serializeRequest(ctx, node);
     case SerovalNodeType.Response:
       return serializeResponse(ctx, node);
+    case SerovalNodeType.Event:
+      return serializeEvent(ctx, node);
     default:
       throw new Error('invariant');
   }

@@ -33,6 +33,7 @@ import type {
   SerovalArrayNode,
   SerovalBoxedNode,
   SerovalErrorNode,
+  SerovalEventNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
@@ -59,6 +60,7 @@ import {
   createStringNode,
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
+import { createEventOptions } from '../constructors';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
@@ -422,6 +424,24 @@ function generateBoxedNode(
   };
 }
 
+function generateEventNode(ctx: ParserContext, id: number, current: Event): SerovalEventNode {
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
+  return {
+    t: SerovalNodeType.Event,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parseObject(ctx, createEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 function parseObject(
   ctx: ParserContext,
   current: object | null,
@@ -512,6 +532,8 @@ function parseObject(
       return generateHeadersNode(ctx, id, current as unknown as Headers);
     case FormData:
       return generateFormDataNode(ctx, id, current as unknown as FormData);
+    case Event:
+      return generateEventNode(ctx, id, current as unknown as Event);
     default:
       break;
   }

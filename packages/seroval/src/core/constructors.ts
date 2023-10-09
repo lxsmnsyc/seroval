@@ -26,3 +26,13 @@ export function createResponseOptions(
     statusText: current.statusText,
   };
 }
+
+export function createEventOptions(
+  current: Event,
+): EventInit {
+  return {
+    bubbles: current.bubbles,
+    cancelable: current.cancelable,
+    composed: current.composed,
+  };
+}

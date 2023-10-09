@@ -38,6 +38,7 @@ import type {
   SerovalArrayNode,
   SerovalBoxedNode,
   SerovalErrorNode,
+  SerovalEventNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
@@ -72,7 +73,7 @@ import {
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
 import promiseToResult from '../promise-to-result';
-import { createRequestOptions, createResponseOptions } from '../constructors';
+import { createEventOptions, createRequestOptions, createResponseOptions } from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -517,6 +518,28 @@ async function generateResponseNode(
   };
 }
 
+async function generateEventNode(
+  ctx: CrossParserContext,
+  id: number,
+  current: Event,
+): Promise<SerovalEventNode> {
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
+  return {
+    t: SerovalNodeType.Event,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: await parseObject(ctx, createEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 async function parseObject(
   ctx: CrossParserContext,
   current: object | null,
@@ -624,6 +647,8 @@ async function parseObject(
       return generateRequestNode(ctx, id, current as unknown as Request);
     case Response:
       return generateResponseNode(ctx, id, current as unknown as Response);
+    case Event:
+      return generateEventNode(ctx, id, current as unknown as Event);
     default:
       break;
   }

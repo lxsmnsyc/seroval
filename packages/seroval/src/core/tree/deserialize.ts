@@ -17,6 +17,7 @@ import type {
   SerovalDataViewNode,
   SerovalDateNode,
   SerovalErrorNode,
+  SerovalEventNode,
   SerovalFileNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
@@ -410,6 +411,20 @@ function deserializeResponse(
   );
 }
 
+function deserializeEvent(
+  ctx: DeserializerContext,
+  node: SerovalEventNode,
+): Event {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new Event(
+      deserializeString(node.s),
+      deserializeTree(ctx, node.f) as EventInit,
+    ),
+  );
+}
+
 export default function deserializeTree(
   ctx: DeserializerContext,
   node: SerovalNode,
@@ -473,6 +488,8 @@ export default function deserializeTree(
       return deserializeRequest(ctx, node);
     case SerovalNodeType.Response:
       return deserializeResponse(ctx, node);
+    case SerovalNodeType.Event:
+      return deserializeEvent(ctx, node);
     default:
       throw new Error('invariant');
   }
