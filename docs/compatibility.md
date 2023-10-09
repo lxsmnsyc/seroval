@@ -119,8 +119,8 @@ By default, all feature flags are enabled. The following are the feature flags a
 | `Map` | ❓[^2] | ❓[^2] | ❓[^2] |
 | `Set` | ❓[^3] | ❓[^3] | ❓[^3] |
 | `Object.create(null)` | ✅ | ✅ | ✅ |
-| `ArrayBuffer` | ✅ | ✅ | ✅ |
-| `DataView` | ✅ | ✅ | ✅ |
+| `ArrayBuffer` | ❓[^4] | ❓[^4] | ❓[^4] |
+| `DataView` | ❓[^4] | ❓[^4] | ❓[^4] |
 | `Int8Array` | ❓[^4] | ❓[^4] | ❓[^4] |
 | `Int16Array` | ❓[^4] | ❓[^4] | ❓[^4] |
 | `Int32Array` | ❓[^4] | ❓[^4] | ❓[^4] |
@@ -152,18 +152,19 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ❌ | ❓[^9] |
 | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ❓[^9] | ❓[^9] |
 | [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ❓[^9] | ❓[^9] |
+| [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ❓[^9] | ❓[^9] | ❓[^9] |
 | Cyclic references | ✅ | ✅ | ✅ |
 | Isomorphic references | ✅ | ✅ | ✅ |
 
 [^1]: `Feature.BigInt` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^2]: `Feature.Map` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^3]: `Feature.Set` must be enabled, otherwise throws an `UnsupportedTypeError`.
+[^2]: `Feature.Map` must be enabled, otherwise falls back to `Symbol.iterator` (if `Feature.Symbol` is enabled).
+[^3]: `Feature.Set` must be enabled, otherwise falls back to `Symbol.iterator` (if `Feature.Symbol` is enabled).
 [^4]: `Feature.TypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^5]: `Feature.BigIntTypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^6]: `Feature.ErrorPrototypeStack` must be enabled if serializing `Error.prototype.stack` is desired.
 [^7]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
 [^8]: `Feature.Symbol` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^9]: `Feature.WebAPI` must be enabled, otherwise throws an `UnsupportedTypeError`.
+[^9]: `Feature.WebAPI` must be enabled, otherwise throws an `UnsupportedTypeError` (except for `Iterable ` instances, whereas `Feature.Symbol` must be enabled).
 [^10]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
 [^11]: `Feature.Promise` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^12]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data), it cannot be represented in a way that the type is consistent to its original declaration.
