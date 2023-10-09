@@ -47,6 +47,7 @@ export const enum SerovalNodeType {
   ReadableStreamEnqueue = 32,
   ReadableStreamClose = 33,
   ReadableStreamError = 34,
+  Request = 35,
 }
 
 export const enum SerovalObjectFlags {

@@ -47,6 +47,7 @@ import type {
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
   SerovalPromiseNode,
+  SerovalRequestNode,
   SerovalSetNode,
 } from '../types';
 import {
@@ -69,6 +70,7 @@ import {
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
 import promiseToResult from '../promise-to-result';
+import { createRequestOptions } from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -462,6 +464,31 @@ async function generateBoxedNode(
   };
 }
 
+async function generateRequestNode(
+  ctx: CrossParserContext,
+  id: number,
+  current: Request,
+): Promise<SerovalRequestNode> {
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
+  return {
+    t: SerovalNodeType.Request,
+    i: id,
+    s: serializeString(current.url),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    f: await parseObject(
+      ctx,
+      createRequestOptions(current, current.body ? await current.clone().arrayBuffer() : null),
+    ),
+    a: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
 async function parseObject(
   ctx: CrossParserContext,
   current: object | null,
@@ -565,6 +592,8 @@ async function parseObject(
       return generateHeadersNode(ctx, id, current as unknown as Headers);
     case FormData:
       return generateFormDataNode(ctx, id, current as unknown as FormData);
+    case Request:
+      return generateRequestNode(ctx, id, current as unknown as Request);
     default:
       break;
   }

@@ -36,6 +36,7 @@ import type {
   SerovalObjectRecordKey,
   SerovalBoxedNode,
   SerovalWKSymbolNode,
+  SerovalRequestNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -729,6 +730,13 @@ function serializeWKSymbol(
   return assignIndexedValue(ctx, node.i, SYMBOL_STRING[node.s]);
 }
 
+function serializeRequest(
+  ctx: SerializerContext,
+  node: SerovalRequestNode,
+): string {
+  return assignIndexedValue(ctx, node.i, 'new Request("' + node.s + '",' + serializeTree(ctx, node.f) + ')');
+}
+
 export default function serializeTree(
   ctx: SerializerContext,
   node: SerovalNode,
@@ -789,6 +797,8 @@ export default function serializeTree(
       return serializeFormData(ctx, node);
     case SerovalNodeType.Boxed:
       return serializeBoxed(ctx, node);
+    case SerovalNodeType.Request:
+      return serializeRequest(ctx, node);
     default:
       throw new Error('invariant');
   }
