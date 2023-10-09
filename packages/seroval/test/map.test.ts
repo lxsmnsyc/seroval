@@ -203,16 +203,26 @@ describe('Map', () => {
     });
   });
   describe('compat', () => {
+    it('should fallback to Symbol.iterator', () => {
+      expect(serialize(new Map(), {
+        disabledFeatures: Feature.Map,
+      })).toMatchSnapshot();
+    });
     it('should throw an error for unsupported target', () => {
       expect(() => serialize(new Map(), {
-        disabledFeatures: Feature.Map,
+        disabledFeatures: Feature.Map | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
   });
   describe('compat#toJSON', () => {
+    it('should fallback to Symbol.iterator', () => {
+      expect(JSON.stringify(toJSON(new Map(), {
+        disabledFeatures: Feature.Map,
+      }))).toMatchSnapshot();
+    });
     it('should throw an error for unsupported target', () => {
       expect(() => toJSON(new Map(), {
-        disabledFeatures: Feature.Map,
+        disabledFeatures: Feature.Map | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
   });

@@ -203,16 +203,26 @@ describe('Set', () => {
     });
   });
   describe('compat', () => {
+    it('should fallback to Symbol.iterator', () => {
+      expect(serialize(new Set([1, 2, 3]), {
+        disabledFeatures: Feature.Set,
+      })).toMatchSnapshot();
+    });
     it('should throw an error for unsupported target', () => {
       expect(() => serialize(new Set([1, 2, 3]), {
-        disabledFeatures: Feature.Set,
+        disabledFeatures: Feature.Set | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
   });
   describe('compat#toJSON', () => {
+    it('should fallback to Symbol.iterator', () => {
+      expect(JSON.stringify(toJSON(new Set([1, 2, 3]), {
+        disabledFeatures: Feature.Set,
+      }))).toMatchSnapshot();
+    });
     it('should throw an error for unsupported target', () => {
       expect(() => toJSON(new Set([1, 2, 3]), {
-        disabledFeatures: Feature.Set,
+        disabledFeatures: Feature.Set | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
   });
