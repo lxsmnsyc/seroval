@@ -51,6 +51,7 @@ import type {
   SerovalSetNode,
   SerovalReadableStreamConstructorNode,
   SerovalRequestNode,
+  SerovalResponseNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -71,7 +72,7 @@ import {
   createStringNode,
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
-import { createRequestOptions } from '../constructors';
+import { createRequestOptions, createResponseOptions } from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -618,6 +619,33 @@ function generateRequestNode(
   };
 }
 
+function generateResponseNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: Response,
+): SerovalResponseNode {
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
+  return {
+    t: SerovalNodeType.Response,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    f: undefined,
+    a: [
+      current.body
+        ? parseObject(ctx, current.clone().body)
+        : NULL_NODE,
+      parseObject(ctx, createResponseOptions(current)),
+    ],
+    b: undefined,
+    o: undefined,
+  };
+}
+
 function parseObject(
   ctx: StreamingCrossParserContext,
   current: object | null,
@@ -725,6 +753,8 @@ function parseObject(
       return generateReadableStreamNode(ctx, id, current as unknown as ReadableStream);
     case Request:
       return generateRequestNode(ctx, id, current as unknown as Request);
+    case Response:
+      return generateResponseNode(ctx, id, current as unknown as Response);
     default:
       break;
   }

@@ -24,6 +24,7 @@ import {
   createDataViewNode,
   createSymbolNode,
   createFunctionNode,
+  serializeArrayBuffer,
 } from './primitives';
 import { hasReferenceID } from '../reference';
 import {
@@ -48,6 +49,7 @@ import type {
   SerovalPlainRecordNode,
   SerovalPromiseNode,
   SerovalRequestNode,
+  SerovalResponseNode,
   SerovalSetNode,
 } from '../types';
 import {
@@ -70,7 +72,7 @@ import {
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
 import promiseToResult from '../promise-to-result';
-import { createRequestOptions } from '../constructors';
+import { createRequestOptions, createResponseOptions } from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -489,6 +491,33 @@ async function generateRequestNode(
   };
 }
 
+async function generateResponseNode(
+  ctx: ParserContext,
+  id: number,
+  current: Response,
+): Promise<SerovalResponseNode> {
+  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
+  return {
+    t: SerovalNodeType.Response,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    f: undefined,
+    a: [
+      current.body
+        ? serializeArrayBuffer(ctx, await current.clone().arrayBuffer())
+        : NULL_NODE,
+      await parseObject(ctx, createResponseOptions(current)),
+    ],
+    b: undefined,
+    o: undefined,
+  };
+}
+
 async function parseObject(
   ctx: ParserContext,
   current: object | null,
@@ -592,6 +621,8 @@ async function parseObject(
       return generateFormDataNode(ctx, id, current as unknown as FormData);
     case Request:
       return generateRequestNode(ctx, id, current as unknown as Request);
+    case Response:
+      return generateResponseNode(ctx, id, current as unknown as Response);
     default:
       break;
   }

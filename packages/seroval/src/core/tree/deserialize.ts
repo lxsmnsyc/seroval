@@ -30,6 +30,7 @@ import type {
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalRequestNode,
+  SerovalResponseNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
   SerovalURLNode,
@@ -395,6 +396,20 @@ function deserializeRequest(
   );
 }
 
+function deserializeResponse(
+  ctx: DeserializerContext,
+  node: SerovalResponseNode,
+): Response {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new Response(
+      deserializeTree(ctx, node.a[0]) as BodyInit,
+      deserializeTree(ctx, node.a[1]) as RequestInit,
+    ),
+  );
+}
+
 export default function deserializeTree(
   ctx: DeserializerContext,
   node: SerovalNode,
@@ -456,6 +471,8 @@ export default function deserializeTree(
       return deserializeBoxed(ctx, node);
     case SerovalNodeType.Request:
       return deserializeRequest(ctx, node);
+    case SerovalNodeType.Response:
+      return deserializeResponse(ctx, node);
     default:
       throw new Error('invariant');
   }

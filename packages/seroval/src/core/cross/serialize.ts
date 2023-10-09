@@ -40,6 +40,7 @@ import type {
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamConstructorNode,
   SerovalRequestNode,
+  SerovalResponseNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -775,6 +776,16 @@ function serializeRequest(
   return assignIndexedValue(node.i, 'new Request("' + node.s + '",' + crossSerializeTree(ctx, node.f) + ')');
 }
 
+function serializeResponse(
+  ctx: CrossSerializerContext,
+  node: SerovalResponseNode,
+): string {
+  return assignIndexedValue(
+    node.i,
+    'new Response(' + crossSerializeTree(ctx, node.a[0]) + ',' + crossSerializeTree(ctx, node.a[1]) + ')',
+  );
+}
+
 export default function crossSerializeTree(
   ctx: CrossSerializerContext,
   node: SerovalNode,
@@ -851,8 +862,9 @@ export default function crossSerializeTree(
       return serializeReadableStreamError(ctx, node);
     case SerovalNodeType.Request:
       return serializeRequest(ctx, node);
+    case SerovalNodeType.Response:
+      return serializeResponse(ctx, node);
     default:
-      console.log(node);
       throw new Error('invariant');
   }
 }
