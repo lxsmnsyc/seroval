@@ -145,13 +145,13 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) | ❓[^8] | ❓[^8] | ❓[^8] |
 | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ❓[^9] | ❓[^9] | ❓[^9] |
 | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ❓[^9] | ❓[^9] | ❓[^9] |
-| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ❓[^9] | ❌[^12] |
-| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ❓[^9] | ❌[^12] |
+| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ❓[^9][^13] | ❌[^12] |
+| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ❓[^9][^13] | ❌[^12] |
 | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ❓[^9] | ❓[^9] | ❓[^9] |
 | [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ❓[^9][^10] | ❓[^9] | ❓[^9][^10] |
 | [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ❌ | ❓[^9] |
-| [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ❓[^9] | ❓[^9] |
-| [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ❓[^9] | ❓[^9] |
+| [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ❓[^9][^13] | ❓[^9][^13] |
+| [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ❓[^9][^13] | ❓[^9][^13] |
 | [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ❓[^9] | ❓[^9] | ❓[^9] |
 | Cyclic references | ✅ | ✅ | ✅ |
 | Isomorphic references | ✅ | ✅ | ✅ |
@@ -168,3 +168,4 @@ By default, all feature flags are enabled. The following are the feature flags a
 [^10]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
 [^11]: `Feature.Promise` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^12]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data), it cannot be represented in a way that the type is consistent to its original declaration.
+[^13]: Indirectly affected by the `Feature.TypedArray` flag.
