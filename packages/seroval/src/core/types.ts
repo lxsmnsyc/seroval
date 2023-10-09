@@ -365,6 +365,14 @@ export interface SerovalEventNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
+export interface SerovalCustomEventNode extends SerovalBaseNode {
+  t: SerovalNodeType.CustomEvent;
+  i: number;
+  // Event type
+  s: string;
+  f: SerovalNode;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -388,7 +396,8 @@ export type SerovalSyncNode =
   | SerovalHeadersNode
   | SerovalFormDataNode
   | SerovalBoxedNode
-  | SerovalEventNode;
+  | SerovalEventNode
+  | SerovalCustomEventNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode

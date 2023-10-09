@@ -30,6 +30,7 @@ import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBoxedNode,
+  SerovalCustomEventNode,
   SerovalErrorNode,
   SerovalEventNode,
   SerovalFormDataNode,
@@ -58,7 +59,7 @@ import {
   createStringNode,
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
-import { createEventOptions } from '../constructors';
+import { createCustomEventOptions, createEventOptions } from '../constructors';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
@@ -434,6 +435,27 @@ function generateEventNode(ctx: CrossParserContext, id: number, current: Event):
   };
 }
 
+function generateCustomEventNode(
+  ctx: CrossParserContext,
+  id: number,
+  current: CustomEvent,
+): SerovalCustomEventNode {
+  return {
+    t: SerovalNodeType.CustomEvent,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parseObject(ctx, createCustomEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 function parseObject(
   ctx: CrossParserContext,
   current: object | null,
@@ -544,6 +566,8 @@ function parseObject(
         return generateFormDataNode(ctx, id, current as unknown as FormData);
       case Event:
         return generateEventNode(ctx, id, current as unknown as Event);
+      case CustomEvent:
+        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
       default:
         break;
     }

@@ -52,6 +52,7 @@ import type {
   SerovalRequestNode,
   SerovalResponseNode,
   SerovalEventNode,
+  SerovalCustomEventNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -72,7 +73,12 @@ import {
   createStringNode,
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
-import { createEventOptions, createRequestOptions, createResponseOptions } from '../constructors';
+import {
+  createCustomEventOptions,
+  createEventOptions,
+  createRequestOptions,
+  createResponseOptions,
+} from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -659,6 +665,27 @@ function generateEventNode(
   };
 }
 
+function generateCustomEventNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: CustomEvent,
+): SerovalCustomEventNode {
+  return {
+    t: SerovalNodeType.CustomEvent,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parseObject(ctx, createCustomEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 function parseObject(
   ctx: StreamingCrossParserContext,
   current: object | null,
@@ -776,6 +803,8 @@ function parseObject(
         return generateResponseNode(ctx, id, current as unknown as Response);
       case Event:
         return generateEventNode(ctx, id, current as unknown as Event);
+      case CustomEvent:
+        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
       default:
         break;
     }

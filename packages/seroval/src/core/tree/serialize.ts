@@ -39,6 +39,7 @@ import type {
   SerovalRequestNode,
   SerovalResponseNode,
   SerovalEventNode,
+  SerovalCustomEventNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -757,6 +758,17 @@ function serializeEvent(
   );
 }
 
+function serializeCustomEvent(
+  ctx: SerializerContext,
+  node: SerovalCustomEventNode,
+): string {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    'new CustomEvent("' + node.s + '",' + serializeTree(ctx, node.f) + ')',
+  );
+}
+
 export default function serializeTree(
   ctx: SerializerContext,
   node: SerovalNode,
@@ -823,6 +835,8 @@ export default function serializeTree(
       return serializeResponse(ctx, node);
     case SerovalNodeType.Event:
       return serializeEvent(ctx, node);
+    case SerovalNodeType.CustomEvent:
+      return serializeCustomEvent(ctx, node);
     default:
       throw new Error('invariant');
   }

@@ -36,6 +36,7 @@ import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBoxedNode,
+  SerovalCustomEventNode,
   SerovalErrorNode,
   SerovalEventNode,
   SerovalFormDataNode,
@@ -72,7 +73,12 @@ import {
 } from '../base-primitives';
 import { createURLNode, createURLSearchParamsNode } from '../web-api';
 import promiseToResult from '../promise-to-result';
-import { createEventOptions, createRequestOptions, createResponseOptions } from '../constructors';
+import {
+  createCustomEventOptions,
+  createEventOptions,
+  createRequestOptions,
+  createResponseOptions,
+} from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -531,6 +537,27 @@ async function generateEventNode(
   };
 }
 
+async function generateCustomEventNode(
+  ctx: CrossParserContext,
+  id: number,
+  current: CustomEvent,
+): Promise<SerovalCustomEventNode> {
+  return {
+    t: SerovalNodeType.CustomEvent,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: await parseObject(ctx, createCustomEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 async function parseObject(
   ctx: CrossParserContext,
   current: object | null,
@@ -655,6 +682,8 @@ async function parseObject(
         return generateResponseNode(ctx, id, current as unknown as Response);
       case Event:
         return generateEventNode(ctx, id, current as unknown as Event);
+      case CustomEvent:
+        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
       default:
         break;
     }

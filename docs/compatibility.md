@@ -153,6 +153,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ❓[^9][^13] | ❓[^9][^13] |
 | [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ❓[^9][^13] | ❓[^9][^13] |
 | [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ❓[^9] | ❓[^9] | ❓[^9] |
+| [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ❓[^9] | ❓[^9] | ❓[^9] |
 | Cyclic references | ✅ | ✅ | ✅ |
 | Isomorphic references | ✅ | ✅ | ✅ |
 
