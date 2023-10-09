@@ -150,8 +150,10 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ❓[^9] | ❓[^9] | ❓[^9] |
 | [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ❓[^9][^10] | ❓[^9] | ❓[^9][^10] |
 | [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ❌ | ❓[^9] |
-| Cyclic references | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Isomorphic references | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ❓[^9] | ❓[^9] |
+| [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ❓[^9] | ❓[^9] |
+| Cyclic references | ✅ | ✅ | ✅ |
+| Isomorphic references | ✅ | ✅ | ✅ |
 
 [^1]: `Feature.BigInt` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^2]: `Feature.Map` must be enabled, otherwise throws an `UnsupportedTypeError`.
