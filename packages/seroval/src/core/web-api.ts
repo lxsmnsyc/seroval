@@ -1,17 +1,11 @@
-import UnsupportedTypeError from './UnsupportedTypeError';
-import assert from './assert';
-import { Feature } from './compat';
 import { SerovalNodeType } from './constants';
-import type { BaseParserContext } from './context';
 import { serializeString } from './string';
 import type { SerovalURLNode, SerovalURLSearchParamsNode } from './types';
 
 export function createURLNode(
-  ctx: BaseParserContext,
   id: number,
   current: URL,
 ): SerovalURLNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.URL,
     i: id,
@@ -29,11 +23,9 @@ export function createURLNode(
 }
 
 export function createURLSearchParamsNode(
-  ctx: BaseParserContext,
   id: number,
   current: URLSearchParams,
 ): SerovalURLSearchParamsNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.URLSearchParams,
     i: id,

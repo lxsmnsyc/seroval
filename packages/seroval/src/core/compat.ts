@@ -22,3 +22,5 @@ export const enum Feature {
 }
 
 export const ALL_ENABLED = 0x3FFF;
+
+export const BIGINT_FLAG = Feature.BigIntTypedArray | Feature.BigInt;
