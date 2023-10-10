@@ -1,6 +1,6 @@
 /**
  * References
- * - https://kangax.github.io/compat-table/es6/
+ * - https://compat-table.github.io/compat-table/es6/
  * - MDN
  */
 
