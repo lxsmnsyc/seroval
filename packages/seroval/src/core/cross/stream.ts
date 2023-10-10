@@ -72,7 +72,7 @@ import {
   createRegExpNode,
   createStringNode,
 } from '../base-primitives';
-import { createURLNode, createURLSearchParamsNode } from '../web-api';
+import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
 import {
   createCustomEventOptions,
   createEventOptions,
@@ -805,6 +805,8 @@ function parseObject(
         return generateEventNode(ctx, id, current as unknown as Event);
       case CustomEvent:
         return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
+      case DOMException:
+        return createDOMExceptionNode(id, current as unknown as DOMException);
       default:
         break;
     }

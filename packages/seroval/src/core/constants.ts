@@ -51,6 +51,7 @@ export const enum SerovalNodeType {
   Response = 36,
   Event = 37,
   CustomEvent = 38,
+  DOMException = 39,
 }
 
 export const enum SerovalObjectFlags {

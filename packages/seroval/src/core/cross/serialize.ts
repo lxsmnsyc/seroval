@@ -43,6 +43,7 @@ import type {
   SerovalResponseNode,
   SerovalEventNode,
   SerovalCustomEventNode,
+  SerovalDOMExceptionNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -808,6 +809,15 @@ function serializeCustomEvent(
   );
 }
 
+function serializeDOMException(
+  node: SerovalDOMExceptionNode,
+): string {
+  return assignIndexedValue(
+    node.i,
+    'new DOMException("' + node.s + '","' + node.c + '")',
+  );
+}
+
 export default function crossSerializeTree(
   ctx: CrossSerializerContext,
   node: SerovalNode,
@@ -890,6 +900,8 @@ export default function crossSerializeTree(
       return serializeEvent(ctx, node);
     case SerovalNodeType.CustomEvent:
       return serializeCustomEvent(ctx, node);
+    case SerovalNodeType.DOMException:
+      return serializeDOMException(node);
     default:
       throw new Error('invariant');
   }

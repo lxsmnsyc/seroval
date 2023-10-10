@@ -15,6 +15,7 @@ import type {
   SerovalBlobNode,
   SerovalBoxedNode,
   SerovalCustomEventNode,
+  SerovalDOMExceptionNode,
   SerovalDataViewNode,
   SerovalDateNode,
   SerovalErrorNode,
@@ -440,6 +441,20 @@ function deserializeCustomEvent(
   );
 }
 
+function deserializeDOMException(
+  ctx: DeserializerContext,
+  node: SerovalDOMExceptionNode,
+): DOMException {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new DOMException(
+      deserializeString(node.s),
+      deserializeString(node.c),
+    ),
+  );
+}
+
 export default function deserializeTree(
   ctx: DeserializerContext,
   node: SerovalNode,
@@ -507,6 +522,8 @@ export default function deserializeTree(
       return deserializeEvent(ctx, node);
     case SerovalNodeType.CustomEvent:
       return deserializeCustomEvent(ctx, node);
+    case SerovalNodeType.DOMException:
+      return deserializeDOMException(ctx, node);
     default:
       throw new Error('invariant');
   }

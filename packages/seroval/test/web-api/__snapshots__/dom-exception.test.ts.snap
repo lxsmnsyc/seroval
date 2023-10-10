@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DOMException > crossSerialize > scoped > supports DOMException 1`] = `"($R=>($R[0]=new DOMException(\\"This is an example message.\\",\\"Example\\")))($R[\\"example\\"])"`;
+
+exports[`DOMException > crossSerialize > supports DOMException 1`] = `"$R[0]=new DOMException(\\"This is an example message.\\",\\"Example\\")"`;
+
+exports[`DOMException > crossSerializeAsync > scoped > supports DOMException 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new DOMException(\\"This is an example message.\\",\\"Example\\"))))($R[\\"example\\"])"`;
+
+exports[`DOMException > crossSerializeAsync > supports DOMException 1`] = `"$R[0]=Promise.resolve($R[1]=new DOMException(\\"This is an example message.\\",\\"Example\\"))"`;
+
+exports[`DOMException > crossSerializeStream > scoped > supports DOMException 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+
+exports[`DOMException > crossSerializeStream > scoped > supports DOMException 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new DOMException(\\"This is an example message.\\",\\"Example\\"))))($R[\\"example\\"])"`;
+
+exports[`DOMException > crossSerializeStream > supports DOMException 1`] = `"$R[0]=_$.P()"`;
+
+exports[`DOMException > crossSerializeStream > supports DOMException 2`] = `"_$.Ps($R[0],$R[1]=new DOMException(\\"This is an example message.\\",\\"Example\\"))"`;
+
+exports[`DOMException > serialize > supports DOMException 1`] = `"new DOMException(\\"This is an example message.\\",\\"Example\\")"`;
+
+exports[`DOMException > serializeAsync > supports DOMException 1`] = `"Promise.resolve(new DOMException(\\"This is an example message.\\",\\"Example\\"))"`;
+
+exports[`DOMException > toJSON > supports DOMException 1`] = `"{\\"t\\":{\\"t\\":39,\\"i\\":0,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`DOMException > toJSONAsync > supports DOMException 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":39,\\"i\\":1,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}},\\"f\\":16383,\\"m\\":[]}"`;
