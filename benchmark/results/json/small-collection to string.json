@@ -1,67 +1,67 @@
 {
   "name": "small-collection to string",
-  "date": "2023-10-08T06:03:18.003Z",
+  "date": "2023-10-10T07:38:16.193Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 267265,
-      "margin": 0.19,
-      "percentSlower": 71.16
+      "ops": 268751,
+      "margin": 0.2,
+      "percentSlower": 71.02
     },
     {
       "name": "flatted",
-      "ops": 168872,
-      "margin": 0.18,
-      "percentSlower": 81.78
+      "ops": 164207,
+      "margin": 0.05,
+      "percentSlower": 82.3
     },
     {
       "name": "JSON",
-      "ops": 926703,
-      "margin": 0.45,
+      "ops": 927463,
+      "margin": 0.13,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 185381,
-      "margin": 0.75,
-      "percentSlower": 80
+      "ops": 188345,
+      "margin": 0.67,
+      "percentSlower": 79.69
     },
     {
       "name": "o-son",
-      "ops": 302768,
-      "margin": 0.1,
-      "percentSlower": 67.33
+      "ops": 299787,
+      "margin": 0.05,
+      "percentSlower": 67.68
     },
     {
       "name": "serialize-javascript",
-      "ops": 462554,
+      "ops": 466696,
       "margin": 0.06,
-      "percentSlower": 50.09
+      "percentSlower": 49.68
     },
     {
       "name": "seroval",
-      "ops": 333885,
-      "margin": 0.19,
-      "percentSlower": 63.97
+      "ops": 333460,
+      "margin": 0.14,
+      "percentSlower": 64.05
     },
     {
       "name": "superjson",
-      "ops": 118876,
-      "margin": 0.99,
-      "percentSlower": 87.17
+      "ops": 120011,
+      "margin": 0.06,
+      "percentSlower": 87.06
     },
     {
       "name": "tosource",
-      "ops": 318846,
-      "margin": 0.13,
-      "percentSlower": 65.59
+      "ops": 315175,
+      "margin": 0.05,
+      "percentSlower": 66.02
     },
     {
       "name": "warp10",
-      "ops": 617353,
-      "margin": 0.42,
-      "percentSlower": 33.38
+      "ops": 630310,
+      "margin": 0.23,
+      "percentSlower": 32.04
     }
   ],
   "fastest": {
