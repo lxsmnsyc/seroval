@@ -54,6 +54,8 @@ import { compileJSON } from 'seroval';
 import { crossSerialize, crossSerializeAsync } from 'seroval';
 ```
 
+Cross-reference serialization provides a different JS output, and so requires prepending a header script provided by `GLOBAL_CONTEXT_API_SCRIPT` and `getCrossReferenceHeader`.
+
 ## Streaming serialization
 
 Async serialization allows `Promise` instances to be serialized by `await`-ing it, however, this results in a blocking process. With streaming serialization, `Promise` instances can be streamed later on, while the synchronous values can be emitted immediately.
@@ -61,3 +63,29 @@ Async serialization allows `Promise` instances to be serialized by `await`-ing i
 ```js
 import { crossSerializeStream, Serializer } from 'seroval';
 ```
+
+### `crossSerializeStream`
+
+`crossSerializeStream` is a push-once streaming, cross-reference serialization method. `crossSerializeStream` receives a value, and streams the rest of the deferred values over time. Deferred values may come from various sources, which includes `Promise` values and `ReadableStream`.
+
+```js
+import { crossSerializeStream } from 'seroval';
+
+const stop = crossSerializeStream(data, {
+  onSerialize(data, isInitial) {
+    // data - the serialized data
+    // isInitial - if data is the first data sent.
+  },
+  onDone() {
+    // Called when there's no more data to send
+    // or when the stream is stopped.
+  },
+});
+```
+
+Like other cross-reference serialization:
+
+- you can define `refs` for mapping cross-referenced values.
+- `crossSerializeStream` would require both `GLOBAL_CONTEXT_API_SCRIPT` and `getCrossReferenceHeader`.
+
+### `Serializer`
