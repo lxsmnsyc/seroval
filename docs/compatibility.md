@@ -166,5 +166,5 @@ By default, all feature flags are enabled. The following are the feature flags a
 [^9]: `Feature.WebAPI` must be enabled, otherwise throws an `UnsupportedTypeError` (except for `Iterable ` instances, whereas `Feature.Symbol` must be enabled).
 [^10]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
 [^11]: `Feature.Promise` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^12]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data), it cannot be represented in a way that the type is consistent to its original declaration.
+[^12]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data) while having a sync constructor, it cannot be represented in a way that the type is consistent to its original declaration.
 [^13]: Indirectly affected by the `Feature.TypedArray` flag.
