@@ -52,13 +52,11 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Uses function expressions for top-level and for deferred `Promise` values
   - method shorthands (if `MethodShortand` is not set) or function expressions for `Iterable`.
 - [`BigInt`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
-  - Throws when attempted to use, includes `BigIntTypedArray`
-  - Disables use of `BigInt`, `BigInt64Array` and `BigUint64Array`
+  - Disables serialization of `BigInt`, `BigInt64Array` and `BigUint64Array`
 - [`ErrorPrototypeStack`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack)
   - Skipped when detected.
   - Affects both `Error` and `AggregateError`
 - [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
-  - Throws when attempted to use.
   - Disables serialization of `Map`
 - [`MethodShorthand`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions)
   - Uses function expressions instead.
@@ -67,23 +65,17 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Uses manual object assignments instead.
   - Affects `Iterable`, `Error`, `AggregateError` and `Object.create(null)`
 - [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
-  - Throws when attempted to use in `serializeAsync` and `toJSONAsync`.
   - Disables serialization of `Promise`
 - [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
-  - Throws when attempted to use.
   - Disables serialization of `Set`
 - [`Symbol`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
-  - Throws when attempted to use.
-  - This disables serialization of well-known symbols and `Iterable`.
+  - Disables serialization of well-known symbols and `Iterable`.
 - [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
-  - Throws when attempted to use.
   - Disables serialization of `TypedArray`
 - [`BigIntTypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array)
-  - Throws when attempted to use
-  - Also throws if `BigInt` is disabled.
   - Disables serialization of `BigInt64Array` and `BigUint64Array`
 - `WebAPI`
-  - Throws and disables the following usage:
+  - Disables serialization for the following:
     - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
     - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
     - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
@@ -91,6 +83,11 @@ By default, all feature flags are enabled. The following are the feature flags a
     - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
     - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
     - [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
+    - [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)
+    - [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+    - [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
+    - [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
+    - [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException)
 
 ## Supported Types
 
