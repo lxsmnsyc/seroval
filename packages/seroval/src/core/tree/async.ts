@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import assert from '../assert';
-import { Feature } from '../compat';
+import { BIGINT_FLAG, Feature } from '../compat';
 import type { ParserContext } from './context';
 import {
   createIndexedValue,
@@ -24,6 +23,7 @@ import {
   createDataViewNode,
   createSymbolNode,
   createFunctionNode,
+  serializeArrayBuffer,
 } from './primitives';
 import { hasReferenceID } from '../reference';
 import {
@@ -36,7 +36,9 @@ import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBoxedNode,
+  SerovalCustomEventNode,
   SerovalErrorNode,
+  SerovalEventNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
@@ -47,6 +49,8 @@ import type {
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
   SerovalPromiseNode,
+  SerovalRequestNode,
+  SerovalResponseNode,
   SerovalSetNode,
 } from '../types';
 import {
@@ -67,8 +71,14 @@ import {
   createRegExpNode,
   createStringNode,
 } from '../base-primitives';
-import { createURLNode, createURLSearchParamsNode } from '../web-api';
+import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
 import promiseToResult from '../promise-to-result';
+import {
+  createCustomEventOptions,
+  createEventOptions,
+  createRequestOptions,
+  createResponseOptions,
+} from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -127,7 +137,6 @@ async function generateMapNode(
   id: number,
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
-  assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
   const keyNodes = new Array<SerovalNode>(len);
   const valueNodes = new Array<SerovalNode>(len);
@@ -172,7 +181,6 @@ async function generateSetNode(
   id: number,
   current: Set<unknown>,
 ): Promise<SerovalSetNode> {
-  assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
   const nodes = new Array<SerovalNode>(len);
   const deferred = new Array<unknown>(len);
@@ -299,7 +307,6 @@ async function generatePromiseNode(
   id: number,
   current: Promise<unknown>,
 ): Promise<SerovalPromiseNode> {
-  assert(ctx.features & Feature.Promise, new UnsupportedTypeError(current));
   const [status, result] = await promiseToResult(current);
   return {
     t: SerovalNodeType.Promise,
@@ -394,7 +401,6 @@ async function generateHeadersNode(
   id: number,
   current: Headers,
 ): Promise<SerovalHeadersNode> {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, string> = {};
   current.forEach((value, key) => {
     items[key] = value;
@@ -420,7 +426,6 @@ async function generateFormDataNode(
   id: number,
   current: FormData,
 ): Promise<SerovalFormDataNode> {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, FormDataEntryValue> = {};
   current.forEach((value, key) => {
     items[key] = value;
@@ -462,6 +467,98 @@ async function generateBoxedNode(
   };
 }
 
+async function generateRequestNode(
+  ctx: ParserContext,
+  id: number,
+  current: Request,
+): Promise<SerovalRequestNode> {
+  return {
+    t: SerovalNodeType.Request,
+    i: id,
+    s: serializeString(current.url),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    f: await parseObject(
+      ctx,
+      createRequestOptions(current, current.body ? await current.clone().arrayBuffer() : null),
+    ),
+    a: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+async function generateResponseNode(
+  ctx: ParserContext,
+  id: number,
+  current: Response,
+): Promise<SerovalResponseNode> {
+  return {
+    t: SerovalNodeType.Response,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    f: undefined,
+    a: [
+      current.body
+        ? serializeArrayBuffer(ctx, await current.clone().arrayBuffer())
+        : NULL_NODE,
+      await parseObject(ctx, createResponseOptions(current)),
+    ],
+    b: undefined,
+    o: undefined,
+  };
+}
+
+async function generateEventNode(
+  ctx: ParserContext,
+  id: number,
+  current: Event,
+): Promise<SerovalEventNode> {
+  return {
+    t: SerovalNodeType.Event,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: await parseObject(ctx, createEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
+async function generateCustomEventNode(
+  ctx: ParserContext,
+  id: number,
+  current: CustomEvent,
+): Promise<SerovalCustomEventNode> {
+  return {
+    t: SerovalNodeType.CustomEvent,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: await parseObject(ctx, createCustomEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 async function parseObject(
   ctx: ParserContext,
   current: object | null,
@@ -481,49 +578,17 @@ async function parseObject(
   if (Array.isArray(current)) {
     return generateArrayNode(ctx, id, current);
   }
-  switch (current.constructor) {
+  const currentClass = current.constructor;
+  switch (currentClass) {
     case Number:
     case Boolean:
     case String:
     case BigInt:
-    case Function:
-    case Symbol:
       return generateBoxedNode(ctx, id, current);
     case Date:
       return createDateNode(id, current as unknown as Date);
     case RegExp:
       return createRegExpNode(id, current as unknown as RegExp);
-    case Promise:
-      return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
-    case ArrayBuffer:
-      return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
-      return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
-    case BigInt64Array:
-    case BigUint64Array:
-      return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
-    case DataView:
-      return createDataViewNode(ctx, id, current as unknown as DataView);
-    case Map:
-      return generateMapNode(
-        ctx,
-        id,
-        current as unknown as Map<unknown, unknown>,
-      );
-    case Set:
-      return generateSetNode(
-        ctx,
-        id,
-        current as unknown as Set<unknown>,
-      );
     case Object:
       return generateObjectNode(
         ctx,
@@ -538,11 +603,6 @@ async function parseObject(
         current as Record<string, unknown>,
         true,
       );
-    case AggregateError:
-      if (ctx.features & Feature.AggregateError) {
-        return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
-      }
-      return generateErrorNode(ctx, id, current as unknown as AggregateError);
     case Error:
     case EvalError:
     case RangeError:
@@ -551,36 +611,106 @@ async function parseObject(
     case TypeError:
     case URIError:
       return generateErrorNode(ctx, id, current as unknown as Error);
-    case URL:
-      return createURLNode(ctx, id, current as unknown as URL);
-    case URLSearchParams:
-      return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
-    case Blob:
-      return createBlobNode(ctx, id, current as unknown as Blob);
-    case File:
-      return createFileNode(ctx, id, current as unknown as File);
-    case Headers:
-      return generateHeadersNode(ctx, id, current as unknown as Headers);
-    case FormData:
-      return generateFormDataNode(ctx, id, current as unknown as FormData);
     default:
       break;
   }
-  if (current instanceof AggregateError) {
-    if (ctx.features & Feature.AggregateError) {
-      return generateAggregateErrorNode(ctx, id, current);
+  // Typed Arrays
+  if (ctx.features & Feature.TypedArray) {
+    switch (currentClass) {
+      case ArrayBuffer:
+        return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+      case Int8Array:
+      case Int16Array:
+      case Int32Array:
+      case Uint8Array:
+      case Uint16Array:
+      case Uint32Array:
+      case Uint8ClampedArray:
+      case Float32Array:
+      case Float64Array:
+        return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
+      case DataView:
+        return createDataViewNode(ctx, id, current as unknown as DataView);
+      default:
+        break;
     }
-    return generateErrorNode(ctx, id, current);
   }
+  // BigInt Typed Arrays
+  if ((ctx.features & BIGINT_FLAG) === BIGINT_FLAG) {
+    switch (currentClass) {
+      case BigInt64Array:
+      case BigUint64Array:
+        return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
+      default:
+        break;
+    }
+  }
+  // ES Collection
+  if (ctx.features & Feature.Map && currentClass === Map) {
+    return generateMapNode(
+      ctx,
+      id,
+      current as unknown as Map<unknown, unknown>,
+    );
+  }
+  if (ctx.features & Feature.Set && currentClass === Set) {
+    return generateSetNode(
+      ctx,
+      id,
+      current as unknown as Set<unknown>,
+    );
+  }
+  // Web APIs
+  if (ctx.features & Feature.WebAPI) {
+    switch (currentClass) {
+      case URL:
+        return createURLNode(id, current as unknown as URL);
+      case URLSearchParams:
+        return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
+      case Blob:
+        return createBlobNode(ctx, id, current as unknown as Blob);
+      case File:
+        return createFileNode(ctx, id, current as unknown as File);
+      case Headers:
+        return generateHeadersNode(ctx, id, current as unknown as Headers);
+      case FormData:
+        return generateFormDataNode(ctx, id, current as unknown as FormData);
+      case Request:
+        return generateRequestNode(ctx, id, current as unknown as Request);
+      case Response:
+        return generateResponseNode(ctx, id, current as unknown as Response);
+      case Event:
+        return generateEventNode(ctx, id, current as unknown as Event);
+      case CustomEvent:
+        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
+      case DOMException:
+        return createDOMExceptionNode(id, current as unknown as DOMException);
+      default:
+        break;
+    }
+  }
+  if (
+    (ctx.features & Feature.AggregateError)
+    && (currentClass === AggregateError || current instanceof AggregateError)
+  ) {
+    return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
+  }
+  // Promises
+  if (
+    (ctx.features & Feature.Promise)
+    && (currentClass === Promise || current instanceof Promise)
+  ) {
+    return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
+  }
+  // Slow path. We only need to handle Errors and Iterators
+  // since they have very broad implementations.
   if (current instanceof Error) {
     return generateErrorNode(ctx, id, current);
   }
-  if (current instanceof Promise) {
-    return generatePromiseNode(ctx, id, current);
-  }
   // Generator functions don't have a global constructor
-  if (Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, !!current.constructor);
+  // despite existing
+  if (ctx.features & Feature.Symbol && Symbol.iterator in current) {
+    return generateObjectNode(ctx, id, current, !!currentClass);
   }
   throw new UnsupportedTypeError(current);
 }
@@ -589,23 +719,26 @@ export default async function parseAsync<T>(
   ctx: ParserContext,
   current: T,
 ): Promise<SerovalNode> {
-  switch (typeof current) {
+  const t = typeof current;
+  if (ctx.features & Feature.BigInt && t === 'bigint') {
+    return createBigIntNode(ctx, current as bigint);
+  }
+  switch (t) {
     case 'boolean':
       return current ? TRUE_NODE : FALSE_NODE;
     case 'undefined':
       return UNDEFINED_NODE;
     case 'string':
-      return createStringNode(current);
+      return createStringNode(current as string);
     case 'number':
-      return createNumberNode(current);
-    case 'bigint':
-      return createBigIntNode(ctx, current);
+      return createNumberNode(current as number);
     case 'object':
-      return parseObject(ctx, current);
+      return parseObject(ctx, current as object);
     case 'symbol':
-      return createSymbolNode(ctx, current);
+      return createSymbolNode(ctx, current as symbol);
     case 'function':
-      return createFunctionNode(ctx, current);
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      return createFunctionNode(ctx, current as Function);
     default:
       throw new UnsupportedTypeError(current);
   }

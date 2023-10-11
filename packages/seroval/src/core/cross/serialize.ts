@@ -39,6 +39,11 @@ import type {
   SerovalReadableStreamEnqueueNode,
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamConstructorNode,
+  SerovalRequestNode,
+  SerovalResponseNode,
+  SerovalEventNode,
+  SerovalCustomEventNode,
+  SerovalDOMExceptionNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -767,6 +772,52 @@ function serializeReadableStreamConstructor(
   return assignIndexedValue(node.i, GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CONSTRUCTOR + '()');
 }
 
+function serializeRequest(
+  ctx: CrossSerializerContext,
+  node: SerovalRequestNode,
+): string {
+  return assignIndexedValue(node.i, 'new Request("' + node.s + '",' + crossSerializeTree(ctx, node.f) + ')');
+}
+
+function serializeResponse(
+  ctx: CrossSerializerContext,
+  node: SerovalResponseNode,
+): string {
+  return assignIndexedValue(
+    node.i,
+    'new Response(' + crossSerializeTree(ctx, node.a[0]) + ',' + crossSerializeTree(ctx, node.a[1]) + ')',
+  );
+}
+
+function serializeEvent(
+  ctx: CrossSerializerContext,
+  node: SerovalEventNode,
+): string {
+  return assignIndexedValue(
+    node.i,
+    'new Event("' + node.s + '",' + crossSerializeTree(ctx, node.f) + ')',
+  );
+}
+
+function serializeCustomEvent(
+  ctx: CrossSerializerContext,
+  node: SerovalCustomEventNode,
+): string {
+  return assignIndexedValue(
+    node.i,
+    'new CustomEvent("' + node.s + '",' + crossSerializeTree(ctx, node.f) + ')',
+  );
+}
+
+function serializeDOMException(
+  node: SerovalDOMExceptionNode,
+): string {
+  return assignIndexedValue(
+    node.i,
+    'new DOMException("' + node.s + '","' + node.c + '")',
+  );
+}
+
 export default function crossSerializeTree(
   ctx: CrossSerializerContext,
   node: SerovalNode,
@@ -841,6 +892,16 @@ export default function crossSerializeTree(
       return serializeReadableStreamEnqueue(ctx, node);
     case SerovalNodeType.ReadableStreamError:
       return serializeReadableStreamError(ctx, node);
+    case SerovalNodeType.Request:
+      return serializeRequest(ctx, node);
+    case SerovalNodeType.Response:
+      return serializeResponse(ctx, node);
+    case SerovalNodeType.Event:
+      return serializeEvent(ctx, node);
+    case SerovalNodeType.CustomEvent:
+      return serializeCustomEvent(ctx, node);
+    case SerovalNodeType.DOMException:
+      return serializeDOMException(node);
     default:
       throw new Error('invariant');
   }

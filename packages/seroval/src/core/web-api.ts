@@ -1,17 +1,11 @@
-import UnsupportedTypeError from './UnsupportedTypeError';
-import assert from './assert';
-import { Feature } from './compat';
 import { SerovalNodeType } from './constants';
-import type { BaseParserContext } from './context';
 import { serializeString } from './string';
-import type { SerovalURLNode, SerovalURLSearchParamsNode } from './types';
+import type { SerovalDOMExceptionNode, SerovalURLNode, SerovalURLSearchParamsNode } from './types';
 
 export function createURLNode(
-  ctx: BaseParserContext,
   id: number,
   current: URL,
 ): SerovalURLNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.URL,
     i: id,
@@ -29,11 +23,9 @@ export function createURLNode(
 }
 
 export function createURLSearchParamsNode(
-  ctx: BaseParserContext,
   id: number,
   current: URLSearchParams,
 ): SerovalURLSearchParamsNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.URLSearchParams,
     i: id,
@@ -45,6 +37,26 @@ export function createURLSearchParamsNode(
     e: undefined,
     f: undefined,
     a: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createDOMExceptionNode(
+  id: number,
+  current: DOMException,
+): SerovalDOMExceptionNode {
+  return {
+    t: SerovalNodeType.DOMException,
+    i: id,
+    s: serializeString(current.message),
+    l: undefined,
+    c: serializeString(current.name),
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: undefined,
     b: undefined,
     o: undefined,
   };

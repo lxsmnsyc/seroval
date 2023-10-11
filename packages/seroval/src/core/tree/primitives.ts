@@ -1,9 +1,7 @@
 import assert from '../assert';
-import { Feature } from '../compat';
 import type { ParserContext } from './context';
 import { createIndexedValue } from './context';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
-import UnsupportedTypeError from '../UnsupportedTypeError';
 import { hasReferenceID } from '../reference';
 import type {
   SerovalBigIntTypedArrayNode,
@@ -39,7 +37,6 @@ export function createTypedArrayNode(
   id: number,
   current: TypedArrayValue,
 ): SerovalTypedArrayNode {
-  assert(ctx.features & Feature.TypedArray, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.TypedArray,
     i: id,
@@ -56,17 +53,11 @@ export function createTypedArrayNode(
   };
 }
 
-const BIGINT_FLAG = Feature.BigIntTypedArray | Feature.BigInt;
-
 export function createBigIntTypedArrayNode(
   ctx: ParserContext,
   id: number,
   current: BigIntTypedArrayValue,
 ): SerovalBigIntTypedArrayNode {
-  assert(
-    (ctx.features & BIGINT_FLAG) === BIGINT_FLAG,
-    new UnsupportedTypeError(current),
-  );
   return {
     t: SerovalNodeType.BigIntTypedArray,
     i: id,

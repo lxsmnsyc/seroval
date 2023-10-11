@@ -14,9 +14,12 @@ import type {
   SerovalBigIntTypedArrayNode,
   SerovalBlobNode,
   SerovalBoxedNode,
+  SerovalCustomEventNode,
+  SerovalDOMExceptionNode,
   SerovalDataViewNode,
   SerovalDateNode,
   SerovalErrorNode,
+  SerovalEventNode,
   SerovalFileNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
@@ -29,6 +32,8 @@ import type {
   SerovalPromiseNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
+  SerovalRequestNode,
+  SerovalResponseNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
   SerovalURLNode,
@@ -383,6 +388,73 @@ function deserializeBoxed(
   );
 }
 
+function deserializeRequest(
+  ctx: DeserializerContext,
+  node: SerovalRequestNode,
+): Request {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new Request(deserializeString(node.s), deserializeTree(ctx, node.f) as RequestInit),
+  );
+}
+
+function deserializeResponse(
+  ctx: DeserializerContext,
+  node: SerovalResponseNode,
+): Response {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new Response(
+      deserializeTree(ctx, node.a[0]) as BodyInit,
+      deserializeTree(ctx, node.a[1]) as RequestInit,
+    ),
+  );
+}
+
+function deserializeEvent(
+  ctx: DeserializerContext,
+  node: SerovalEventNode,
+): Event {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new Event(
+      deserializeString(node.s),
+      deserializeTree(ctx, node.f) as EventInit,
+    ),
+  );
+}
+
+function deserializeCustomEvent(
+  ctx: DeserializerContext,
+  node: SerovalCustomEventNode,
+): CustomEvent {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new CustomEvent(
+      deserializeString(node.s),
+      deserializeTree(ctx, node.f) as CustomEventInit,
+    ),
+  );
+}
+
+function deserializeDOMException(
+  ctx: DeserializerContext,
+  node: SerovalDOMExceptionNode,
+): DOMException {
+  return assignIndexedValue(
+    ctx,
+    node.i,
+    new DOMException(
+      deserializeString(node.s),
+      deserializeString(node.c),
+    ),
+  );
+}
+
 export default function deserializeTree(
   ctx: DeserializerContext,
   node: SerovalNode,
@@ -442,6 +514,16 @@ export default function deserializeTree(
       return deserializeFormData(ctx, node);
     case SerovalNodeType.Boxed:
       return deserializeBoxed(ctx, node);
+    case SerovalNodeType.Request:
+      return deserializeRequest(ctx, node);
+    case SerovalNodeType.Response:
+      return deserializeResponse(ctx, node);
+    case SerovalNodeType.Event:
+      return deserializeEvent(ctx, node);
+    case SerovalNodeType.CustomEvent:
+      return deserializeCustomEvent(ctx, node);
+    case SerovalNodeType.DOMException:
+      return deserializeDOMException(ctx, node);
     default:
       throw new Error('invariant');
   }

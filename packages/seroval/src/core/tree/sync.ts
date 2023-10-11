@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import assert from '../assert';
-import { Feature } from '../compat';
+import { BIGINT_FLAG, Feature } from '../compat';
 import type { ParserContext } from './context';
 import { createIndexedValue } from './context';
 import { serializeString } from '../string';
@@ -32,7 +31,9 @@ import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBoxedNode,
+  SerovalCustomEventNode,
   SerovalErrorNode,
+  SerovalEventNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
@@ -58,7 +59,8 @@ import {
   createRegExpNode,
   createStringNode,
 } from '../base-primitives';
-import { createURLNode, createURLSearchParamsNode } from '../web-api';
+import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
+import { createCustomEventOptions, createEventOptions } from '../constructors';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
@@ -111,7 +113,6 @@ function generateMapNode(
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
-  assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
   const keyNodes = new Array<SerovalSyncNode>(len);
   const valueNodes = new Array<SerovalSyncNode>(len);
@@ -156,7 +157,6 @@ function generateSetNode(
   id: number,
   current: Set<unknown>,
 ): SerovalSetNode {
-  assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
   const nodes = new Array<SerovalSyncNode>(len);
   const deferred = new Array<unknown>(len);
@@ -352,7 +352,6 @@ function generateHeadersNode(
   id: number,
   current: Headers,
 ): SerovalHeadersNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, string> = {};
   // TS Headers not an Iterable
   current.forEach((value, key) => {
@@ -379,7 +378,6 @@ function generateFormDataNode(
   id: number,
   current: FormData,
 ): SerovalFormDataNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, FormDataEntryValue> = {};
   // TS FormData isn't an Iterable sadly
   current.forEach((value, key) => {
@@ -422,6 +420,44 @@ function generateBoxedNode(
   };
 }
 
+function generateEventNode(ctx: ParserContext, id: number, current: Event): SerovalEventNode {
+  return {
+    t: SerovalNodeType.Event,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parseObject(ctx, createEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
+function generateCustomEventNode(
+  ctx: ParserContext,
+  id: number,
+  current: CustomEvent,
+): SerovalCustomEventNode {
+  return {
+    t: SerovalNodeType.CustomEvent,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parseObject(ctx, createCustomEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 function parseObject(
   ctx: ParserContext,
   current: object | null,
@@ -442,40 +478,18 @@ function parseObject(
   if (Array.isArray(current)) {
     return generateArrayNode(ctx, id, current);
   }
+  const currentClass = current.constructor;
   // Fast path
-  switch (current.constructor) {
+  switch (currentClass) {
     case Number:
     case Boolean:
     case String:
     case BigInt:
-    case Function:
-    case Symbol:
       return generateBoxedNode(ctx, id, current);
     case Date:
       return createDateNode(id, current as unknown as Date);
     case RegExp:
       return createRegExpNode(id, current as unknown as RegExp);
-    case ArrayBuffer:
-      return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
-      return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
-    case BigInt64Array:
-    case BigUint64Array:
-      return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
-    case DataView:
-      return createDataViewNode(ctx, id, current as unknown as DataView);
-    case Map:
-      return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
-    case Set:
-      return generateSetNode(ctx, id, current as unknown as Set<unknown>);
     case Object:
       return generateObjectNode(
         ctx,
@@ -490,12 +504,6 @@ function parseObject(
         current as unknown as Record<string, unknown>,
         true,
       );
-    case AggregateError:
-      // Compile-down AggregateError to Error if disabled
-      if (ctx.features & Feature.AggregateError) {
-        return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
-      }
-      return generateErrorNode(ctx, id, current as unknown as AggregateError);
     case Error:
     case EvalError:
     case RangeError:
@@ -504,32 +512,86 @@ function parseObject(
     case TypeError:
     case URIError:
       return generateErrorNode(ctx, id, current as unknown as Error);
-    case URL:
-      return createURLNode(ctx, id, current as unknown as URL);
-    case URLSearchParams:
-      return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
-    case Headers:
-      return generateHeadersNode(ctx, id, current as unknown as Headers);
-    case FormData:
-      return generateFormDataNode(ctx, id, current as unknown as FormData);
     default:
       break;
   }
+  // Typed Arrays
+  if (ctx.features & Feature.TypedArray) {
+    switch (currentClass) {
+      case ArrayBuffer:
+        return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+      case Int8Array:
+      case Int16Array:
+      case Int32Array:
+      case Uint8Array:
+      case Uint16Array:
+      case Uint32Array:
+      case Uint8ClampedArray:
+      case Float32Array:
+      case Float64Array:
+        return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
+      case DataView:
+        return createDataViewNode(ctx, id, current as unknown as DataView);
+      default:
+        break;
+    }
+  }
+  // BigInt Typed Arrays
+  if ((ctx.features & BIGINT_FLAG) === BIGINT_FLAG) {
+    switch (currentClass) {
+      case BigInt64Array:
+      case BigUint64Array:
+        return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
+      default:
+        break;
+    }
+  }
+  // ES Collection
+  if (ctx.features & Feature.Map && currentClass === Map) {
+    return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
+  }
+  if (ctx.features & Feature.Set && currentClass === Set) {
+    return generateSetNode(ctx, id, current as unknown as Set<unknown>);
+  }
+  // Web APIs
+  if (ctx.features & Feature.WebAPI) {
+    switch (currentClass) {
+      case URL:
+        return createURLNode(id, current as unknown as URL);
+      case URLSearchParams:
+        return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
+      case Headers:
+        return generateHeadersNode(ctx, id, current as unknown as Headers);
+      case FormData:
+        return generateFormDataNode(ctx, id, current as unknown as FormData);
+      case Event:
+        return generateEventNode(ctx, id, current as unknown as Event);
+      case CustomEvent:
+        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
+      case DOMException:
+        return createDOMExceptionNode(id, current as unknown as DOMException);
+      default:
+        break;
+    }
+  }
+  if (
+    (ctx.features & Feature.AggregateError)
+    && (
+      currentClass === AggregateError
+      || current instanceof AggregateError
+    )
+  ) {
+    return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
+  }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
-  if (current instanceof AggregateError) {
-    if (ctx.features & Feature.AggregateError) {
-      return generateAggregateErrorNode(ctx, id, current);
-    }
-    return generateErrorNode(ctx, id, current);
-  }
   if (current instanceof Error) {
     return generateErrorNode(ctx, id, current);
   }
   // Generator functions don't have a global constructor
   // despite existing
-  if (Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, !!current.constructor);
+  if ((ctx.features & Feature.Symbol) && Symbol.iterator in current) {
+    return generateObjectNode(ctx, id, current, !!currentClass);
   }
   throw new UnsupportedTypeError(current);
 }
@@ -538,23 +600,26 @@ export default function parseSync<T>(
   ctx: ParserContext,
   current: T,
 ): SerovalSyncNode {
-  switch (typeof current) {
+  const t = typeof current;
+  if (ctx.features & Feature.BigInt && t === 'bigint') {
+    return createBigIntNode(ctx, current as bigint);
+  }
+  switch (t) {
     case 'boolean':
       return current ? TRUE_NODE : FALSE_NODE;
     case 'undefined':
       return UNDEFINED_NODE;
     case 'string':
-      return createStringNode(current);
+      return createStringNode(current as string);
     case 'number':
-      return createNumberNode(current);
-    case 'bigint':
-      return createBigIntNode(ctx, current);
+      return createNumberNode(current as number);
     case 'object':
-      return parseObject(ctx, current);
+      return parseObject(ctx, current as object);
     case 'symbol':
-      return createSymbolNode(ctx, current);
+      return createSymbolNode(ctx, current as symbol);
     case 'function':
-      return createFunctionNode(ctx, current);
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      return createFunctionNode(ctx, current as Function);
     default:
       throw new UnsupportedTypeError(current);
   }

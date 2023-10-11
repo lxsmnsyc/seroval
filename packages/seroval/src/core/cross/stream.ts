@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import assert from '../assert';
-import { Feature } from '../compat';
+import { BIGINT_FLAG, Feature } from '../compat';
 import type { StreamingCrossParserContext } from './context';
 import {
   createCrossIndexedValue, popPendingState, pushPendingState,
@@ -50,6 +49,10 @@ import type {
   SerovalPromiseConstructorNode,
   SerovalSetNode,
   SerovalReadableStreamConstructorNode,
+  SerovalRequestNode,
+  SerovalResponseNode,
+  SerovalEventNode,
+  SerovalCustomEventNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -69,7 +72,13 @@ import {
   createRegExpNode,
   createStringNode,
 } from '../base-primitives';
-import { createURLNode, createURLSearchParamsNode } from '../web-api';
+import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
+import {
+  createCustomEventOptions,
+  createEventOptions,
+  createRequestOptions,
+  createResponseOptions,
+} from '../constructors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -128,7 +137,6 @@ function generateMapNode(
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
-  assert(ctx.features & Feature.Map, new UnsupportedTypeError(current));
   const len = current.size;
   const keyNodes = new Array<SerovalNode>(len);
   const valueNodes = new Array<SerovalNode>(len);
@@ -173,7 +181,6 @@ function generateSetNode(
   id: number,
   current: Set<unknown>,
 ): SerovalSetNode {
-  assert(ctx.features & Feature.Set, new UnsupportedTypeError(current));
   const len = current.size;
   const nodes = new Array<SerovalNode>(len);
   const deferred = new Array<unknown>(len);
@@ -300,7 +307,6 @@ function generatePromiseNode(
   id: number,
   current: Promise<unknown>,
 ): SerovalPromiseConstructorNode {
-  assert(ctx.features & Feature.Promise, new UnsupportedTypeError(current));
   current.then(
     (data) => {
       if (ctx.alive) {
@@ -435,7 +441,6 @@ function generateHeadersNode(
   id: number,
   current: Headers,
 ): SerovalHeadersNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, string> = {};
   current.forEach((value, key) => {
     items[key] = value;
@@ -461,7 +466,6 @@ function generateFormDataNode(
   id: number,
   current: FormData,
 ): SerovalFormDataNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const items: Record<string, FormDataEntryValue> = {};
   current.forEach((value, key) => {
     items[key] = value;
@@ -508,7 +512,6 @@ function generateReadableStreamNode(
   id: number,
   current: ReadableStream<unknown>,
 ): SerovalReadableStreamConstructorNode {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   const reader = current.getReader();
   pushPendingState(ctx);
 
@@ -591,6 +594,98 @@ function generateReadableStreamNode(
   };
 }
 
+function generateRequestNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: Request,
+): SerovalRequestNode {
+  return {
+    t: SerovalNodeType.Request,
+    i: id,
+    s: serializeString(current.url),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    f: parseObject(
+      ctx,
+      createRequestOptions(current, current.clone().body),
+    ),
+    a: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+function generateResponseNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: Response,
+): SerovalResponseNode {
+  return {
+    t: SerovalNodeType.Response,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    f: undefined,
+    a: [
+      current.body
+        ? parseObject(ctx, current.clone().body)
+        : NULL_NODE,
+      parseObject(ctx, createResponseOptions(current)),
+    ],
+    b: undefined,
+    o: undefined,
+  };
+}
+
+function generateEventNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: Event,
+): SerovalEventNode {
+  return {
+    t: SerovalNodeType.Event,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parseObject(ctx, createEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
+function generateCustomEventNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: CustomEvent,
+): SerovalCustomEventNode {
+  return {
+    t: SerovalNodeType.CustomEvent,
+    i: id,
+    s: serializeString(current.type),
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parseObject(ctx, createCustomEventOptions(current)),
+    b: undefined,
+    o: undefined,
+  };
+}
+
 function parseObject(
   ctx: StreamingCrossParserContext,
   current: object | null,
@@ -612,7 +707,9 @@ function parseObject(
   if (Array.isArray(current)) {
     return generateArrayNode(ctx, id, current);
   }
-  switch (current.constructor) {
+  const currentClass = current.constructor;
+  // Fast path
+  switch (currentClass) {
     case Number:
     case Boolean:
     case String:
@@ -624,56 +721,20 @@ function parseObject(
       return createDateNode(id, current as unknown as Date);
     case RegExp:
       return createRegExpNode(id, current as unknown as RegExp);
-    case Promise:
-      return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
-    case ArrayBuffer:
-      return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
-      return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
-    case BigInt64Array:
-    case BigUint64Array:
-      return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
-    case DataView:
-      return createDataViewNode(ctx, id, current as unknown as DataView);
-    case Map:
-      return generateMapNode(
-        ctx,
-        id,
-        current as unknown as Map<unknown, unknown>,
-      );
-    case Set:
-      return generateSetNode(
-        ctx,
-        id,
-        current as unknown as Set<unknown>,
-      );
     case Object:
       return generateObjectNode(
         ctx,
         id,
-        current as Record<string, unknown>,
+        current as unknown as Record<string, unknown>,
         false,
       );
     case undefined:
       return generateObjectNode(
         ctx,
         id,
-        current as Record<string, unknown>,
+        current as unknown as Record<string, unknown>,
         true,
       );
-    case AggregateError:
-      if (ctx.features & Feature.AggregateError) {
-        return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
-      }
-      return generateErrorNode(ctx, id, current as unknown as AggregateError);
     case Error:
     case EvalError:
     case RangeError:
@@ -682,38 +743,98 @@ function parseObject(
     case TypeError:
     case URIError:
       return generateErrorNode(ctx, id, current as unknown as Error);
-    case URL:
-      return createURLNode(ctx, id, current as unknown as URL);
-    case URLSearchParams:
-      return createURLSearchParamsNode(ctx, id, current as unknown as URLSearchParams);
-    // case Blob:
-    //   return createBlobNode(ctx, id, current as unknown as Blob);
-    // case File:
-    //   return createFileNode(ctx, id, current as unknown as File);
-    case Headers:
-      return generateHeadersNode(ctx, id, current as unknown as Headers);
-    case FormData:
-      return generateFormDataNode(ctx, id, current as unknown as FormData);
-    case ReadableStream:
-      return generateReadableStreamNode(ctx, id, current as unknown as ReadableStream);
     default:
       break;
   }
-  if (current instanceof AggregateError) {
-    if (ctx.features & Feature.AggregateError) {
-      return generateAggregateErrorNode(ctx, id, current);
+  // Typed Arrays
+  if (ctx.features & Feature.TypedArray) {
+    switch (currentClass) {
+      case ArrayBuffer:
+        return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+      case Int8Array:
+      case Int16Array:
+      case Int32Array:
+      case Uint8Array:
+      case Uint16Array:
+      case Uint32Array:
+      case Uint8ClampedArray:
+      case Float32Array:
+      case Float64Array:
+        return createTypedArrayNode(ctx, id, current as unknown as TypedArrayValue);
+      case DataView:
+        return createDataViewNode(ctx, id, current as unknown as DataView);
+      default:
+        break;
     }
-    return generateErrorNode(ctx, id, current);
   }
+  // BigInt Typed Arrays
+  if ((ctx.features & BIGINT_FLAG) === BIGINT_FLAG) {
+    switch (currentClass) {
+      case BigInt64Array:
+      case BigUint64Array:
+        return createBigIntTypedArrayNode(ctx, id, current as unknown as BigIntTypedArrayValue);
+      default:
+        break;
+    }
+  }
+  // ES Collection
+  if (ctx.features & Feature.Map && currentClass === Map) {
+    return generateMapNode(ctx, id, current as unknown as Map<unknown, unknown>);
+  }
+  if (ctx.features & Feature.Set && currentClass === Set) {
+    return generateSetNode(ctx, id, current as unknown as Set<unknown>);
+  }
+  // Web APIs
+  if (ctx.features & Feature.WebAPI) {
+    switch (currentClass) {
+      case URL:
+        return createURLNode(id, current as unknown as URL);
+      case URLSearchParams:
+        return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
+      case Headers:
+        return generateHeadersNode(ctx, id, current as unknown as Headers);
+      case FormData:
+        return generateFormDataNode(ctx, id, current as unknown as FormData);
+      case ReadableStream:
+        return generateReadableStreamNode(ctx, id, current as unknown as ReadableStream);
+      case Request:
+        return generateRequestNode(ctx, id, current as unknown as Request);
+      case Response:
+        return generateResponseNode(ctx, id, current as unknown as Response);
+      case Event:
+        return generateEventNode(ctx, id, current as unknown as Event);
+      case CustomEvent:
+        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
+      case DOMException:
+        return createDOMExceptionNode(id, current as unknown as DOMException);
+      default:
+        break;
+    }
+  }
+  if (
+    (ctx.features & Feature.AggregateError)
+    && (
+      currentClass === AggregateError
+      || current instanceof AggregateError
+    )
+  ) {
+    return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
+  }
+  if (
+    (ctx.features & Feature.Promise)
+    && (currentClass === Promise || current instanceof Promise)
+  ) {
+    return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
+  }
+  // Slow path. We only need to handle Errors and Iterators
+  // since they have very broad implementations.
   if (current instanceof Error) {
     return generateErrorNode(ctx, id, current);
   }
-  if (current instanceof Promise) {
-    return generatePromiseNode(ctx, id, current);
-  }
   // Generator functions don't have a global constructor
-  if (Symbol.iterator in current) {
-    return generateObjectNode(ctx, id, current, !!current.constructor);
+  // despite existing
+  if (ctx.features & Feature.Symbol && Symbol.iterator in current) {
+    return generateObjectNode(ctx, id, current, !!currentClass);
   }
   throw new UnsupportedTypeError(current);
 }
@@ -722,23 +843,26 @@ export default function crossParseStream<T>(
   ctx: StreamingCrossParserContext,
   current: T,
 ): SerovalNode {
-  switch (typeof current) {
+  const t = typeof current;
+  if (ctx.features & Feature.BigInt && t === 'bigint') {
+    return createBigIntNode(ctx, current as bigint);
+  }
+  switch (t) {
     case 'boolean':
       return current ? TRUE_NODE : FALSE_NODE;
     case 'undefined':
       return UNDEFINED_NODE;
     case 'string':
-      return createStringNode(current);
+      return createStringNode(current as string);
     case 'number':
-      return createNumberNode(current);
-    case 'bigint':
-      return createBigIntNode(ctx, current);
+      return createNumberNode(current as number);
     case 'object':
-      return parseObject(ctx, current);
+      return parseObject(ctx, current as object);
     case 'symbol':
-      return createSymbolNode(ctx, current);
+      return createSymbolNode(ctx, current as symbol);
     case 'function':
-      return createFunctionNode(ctx, current);
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      return createFunctionNode(ctx, current as Function);
     default:
       throw new UnsupportedTypeError(current);
   }

@@ -1,6 +1,6 @@
 /**
  * References
- * - https://kangax.github.io/compat-table/es6/
+ * - https://compat-table.github.io/compat-table/es6/
  * - MDN
  */
 
@@ -22,3 +22,5 @@ export const enum Feature {
 }
 
 export const ALL_ENABLED = 0x3FFF;
+
+export const BIGINT_FLAG = Feature.BigIntTypedArray | Feature.BigInt;

@@ -340,6 +340,48 @@ export interface SerovalReadableStreamErrorNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
+export interface SerovalRequestNode extends SerovalBaseNode {
+  t: SerovalNodeType.Request;
+  i: number;
+  // Request URL
+  s: string;
+  // This is just a shortcut for serializing the option fields
+  f: SerovalNode;
+}
+
+export interface SerovalResponseNode extends SerovalBaseNode {
+  t: SerovalNodeType.Response;
+  i: number;
+  // This is just a shortcut for serializing the option fields
+  a: [body: SerovalNode, options: SerovalNode];
+}
+
+export interface SerovalEventNode extends SerovalBaseNode {
+  t: SerovalNodeType.Event;
+  i: number;
+  // Event type
+  s: string;
+  // Event options
+  f: SerovalNode;
+}
+
+export interface SerovalCustomEventNode extends SerovalBaseNode {
+  t: SerovalNodeType.CustomEvent;
+  i: number;
+  // Event type
+  s: string;
+  f: SerovalNode;
+}
+
+export interface SerovalDOMExceptionNode extends SerovalBaseNode {
+  t: SerovalNodeType.DOMException;
+  i: number;
+  // Message
+  s: string;
+  // name
+  c: string;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -362,7 +404,10 @@ export type SerovalSyncNode =
   | SerovalFileNode
   | SerovalHeadersNode
   | SerovalFormDataNode
-  | SerovalBoxedNode;
+  | SerovalBoxedNode
+  | SerovalEventNode
+  | SerovalCustomEventNode
+  | SerovalDOMExceptionNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode
@@ -374,7 +419,9 @@ export type SerovalAsyncNode =
   | SerovalReadableStreamConstructorNode
   | SerovalReadableStreamEnqueueNode
   | SerovalReadableStreamCloseNode
-  | SerovalReadableStreamErrorNode;
+  | SerovalReadableStreamErrorNode
+  | SerovalRequestNode
+  | SerovalResponseNode;
 
 export type SerovalNode =
   | SerovalSyncNode
