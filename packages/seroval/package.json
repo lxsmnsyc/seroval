@@ -18,7 +18,7 @@
     "@vitest/ui": "^0.34.4",
     "eslint": "^8.51.0",
     "eslint-config-lxsmnsyc": "^0.6.5",
-    "pridepack": "2.5.0",
+    "pridepack": "2.5.1",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"

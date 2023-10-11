@@ -1,6 +1,6 @@
 {
   "exclude": ["node_modules"],
-  "include": ["src", "types", "test", "hehe.js"],
+  "include": ["src", "types", "test", "assets/global-header.js"],
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
@@ -13,7 +13,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "jsx": "react",
     "esModuleInterop": true,
     "target": "ESNext"
