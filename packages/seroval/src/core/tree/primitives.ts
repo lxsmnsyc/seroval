@@ -106,7 +106,7 @@ export function createSymbolNode(
   if (hasReferenceID(current)) {
     return createReferenceNode(id, current);
   }
-  return createWKSymbolNode(ctx, id, current as WellKnownSymbols);
+  return createWKSymbolNode(id, current as WellKnownSymbols);
 }
 
 export function createFunctionNode(

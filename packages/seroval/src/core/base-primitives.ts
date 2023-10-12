@@ -1,9 +1,6 @@
-import UnsupportedTypeError from './UnsupportedTypeError';
 import assert from './assert';
-import { Feature } from './compat';
 import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
-import type { BaseParserContext } from './context';
 import {
   INFINITY_NODE,
   NEG_INFINITY_NODE,
@@ -74,10 +71,8 @@ export function createStringNode(value: string): SerovalStringNode {
 }
 
 export function createBigIntNode(
-  ctx: BaseParserContext,
   current: bigint,
 ): SerovalBigIntNode {
-  assert(ctx.features & Feature.BigInt, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.BigInt,
     i: undefined,
@@ -172,11 +167,9 @@ export function createArrayBufferNode(
 }
 
 export function createWKSymbolNode(
-  ctx: BaseParserContext,
   id: number,
   current: WellKnownSymbols,
 ): SerovalWKSymbolNode {
-  assert(ctx.features & Feature.Symbol, new UnsupportedTypeError(current));
   assert(current in INV_SYMBOL_REF, new Error('Only well-known symbols are supported.'));
   return {
     t: SerovalNodeType.WKSymbol,

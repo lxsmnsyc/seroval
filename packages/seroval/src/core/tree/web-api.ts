@@ -1,8 +1,5 @@
-import assert from '../assert';
-import { Feature } from '../compat';
 import type { ParserContext } from './context';
 import { serializeString } from '../string';
-import UnsupportedTypeError from '../UnsupportedTypeError';
 import { serializeArrayBuffer } from './primitives';
 import type {
   SerovalBlobNode,
@@ -15,7 +12,6 @@ export async function createBlobNode(
   id: number,
   current: Blob,
 ): Promise<SerovalBlobNode> {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.Blob,
     i: id,
@@ -37,7 +33,6 @@ export async function createFileNode(
   id: number,
   current: File,
 ): Promise<SerovalFileNode> {
-  assert(ctx.features & Feature.WebAPI, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.File,
     i: id,

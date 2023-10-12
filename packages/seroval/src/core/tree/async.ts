@@ -721,7 +721,7 @@ export default async function parseAsync<T>(
 ): Promise<SerovalNode> {
   const t = typeof current;
   if (ctx.features & Feature.BigInt && t === 'bigint') {
-    return createBigIntNode(ctx, current as bigint);
+    return createBigIntNode(current as bigint);
   }
   switch (t) {
     case 'boolean':

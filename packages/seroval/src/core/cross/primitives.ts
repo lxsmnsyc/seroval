@@ -40,7 +40,6 @@ export function createTypedArrayNode(
   id: number,
   current: TypedArrayValue,
 ): SerovalTypedArrayNode {
-  assert(ctx.features & Feature.TypedArray, new UnsupportedTypeError(current));
   return {
     t: SerovalNodeType.TypedArray,
     i: id,
@@ -118,7 +117,7 @@ export function createSymbolNode(
   if (hasReferenceID(current)) {
     return createReferenceNode(newID, current);
   }
-  return createWKSymbolNode(ctx, newID, current as WellKnownSymbols);
+  return createWKSymbolNode(newID, current as WellKnownSymbols);
 }
 
 export function createFunctionNode(

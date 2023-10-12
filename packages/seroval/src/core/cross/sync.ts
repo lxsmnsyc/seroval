@@ -602,7 +602,7 @@ export default function crossParseSync<T>(
 ): SerovalSyncNode {
   const t = typeof current;
   if (ctx.features & Feature.BigInt && t === 'bigint') {
-    return createBigIntNode(ctx, current as bigint);
+    return createBigIntNode(current as bigint);
   }
   switch (t) {
     case 'boolean':
