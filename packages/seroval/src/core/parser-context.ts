@@ -8,7 +8,7 @@ export interface ParserReference {
 }
 
 export interface BaseParserContextOptions {
-  disabledFeatures: number;
+  disabledFeatures?: number;
 }
 
 export class BaseParserContext {
