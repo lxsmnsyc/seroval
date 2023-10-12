@@ -3,32 +3,27 @@ import { SerovalNodeType } from '../constants';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
 import AsyncParserContext from './async';
-import type {
-  SerializerContext,
-} from './context';
 import {
   createDeserializerContext,
-  createSerializerContext,
-  getRefParam,
 } from './context';
 import deserializeTree from './deserialize';
-import serializeTree, { resolvePatches } from './serialize';
+import VanillaSerializerContext from './serialize';
 import type { SyncParserContextOptions } from './sync';
 import SyncParserContext from './sync';
 
 function finalize(
-  ctx: SerializerContext,
+  ctx: VanillaSerializerContext,
   rootID: number | undefined,
   isObject: boolean,
   result: string,
 ): string {
   // Shared references detected
   if (rootID != null && ctx.vars.length) {
-    const patches = resolvePatches(ctx);
+    const patches = ctx.resolvePatches();
     let body = result;
     if (patches) {
       // Get (or create) a ref from the source
-      const index = getRefParam(ctx, rootID);
+      const index = ctx.getRefParam(rootID);
       body = result + ',' + patches + index;
       if (!result.startsWith(index + '=')) {
         body = index + '=' + body;
@@ -58,11 +53,11 @@ export function serialize<T>(
 ): string {
   const ctx = new SyncParserContext(options);
   const tree = ctx.parse(source);
-  const serial = createSerializerContext({
+  const serial = new VanillaSerializerContext({
     markedRefs: ctx.marked,
     features: ctx.features,
   });
-  const result = serializeTree(serial, tree);
+  const result = serial.serialize(tree);
   return finalize(
     serial,
     tree.i,
@@ -77,11 +72,11 @@ export async function serializeAsync<T>(
 ): Promise<string> {
   const ctx = new AsyncParserContext(options);
   const tree = await ctx.parse(source);
-  const serial = createSerializerContext({
+  const serial = new VanillaSerializerContext({
     markedRefs: ctx.marked,
     features: ctx.features,
   });
-  const result = serializeTree(serial, tree);
+  const result = serial.serialize(tree);
   return finalize(
     serial,
     tree.i,
@@ -126,11 +121,11 @@ export async function toJSONAsync<T>(
 }
 
 export function compileJSON(source: SerovalJSON): string {
-  const serial = createSerializerContext({
+  const serial = new VanillaSerializerContext({
     features: source.f,
     markedRefs: source.m,
   });
-  const result = serializeTree(serial, source.t);
+  const result = serial.serialize(source.t);
   return finalize(serial, source.t.i, source.t.i === SerovalNodeType.Object, result);
 }
 

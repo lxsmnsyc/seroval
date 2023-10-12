@@ -14,7 +14,7 @@ import {
 } from '../literals';
 import { hasReferenceID } from '../reference';
 import {
-  getErrorConstructorName,
+  getErrorConstructor,
   getObjectFlag,
   isIterable,
 } from '../shared';
@@ -180,7 +180,7 @@ export default class AsyncParserContext extends VanillaParserContext {
         keyNodes[size] = SerovalObjectRecordSpecialKey.SymbolIterator;
         const items = Array.from(properties as Iterable<unknown>);
         valueNodes[size] = await this.parseArray(
-          this.refs.createIndexedValue(items),
+          this.createIndexedValue(items),
           items,
         );
         size++;
@@ -225,9 +225,9 @@ export default class AsyncParserContext extends VanillaParserContext {
     return {
       t: SerovalNodeType.Error,
       i: id,
-      s: undefined,
+      s: getErrorConstructor(current),
       l: undefined,
-      c: getErrorConstructorName(current),
+      c: undefined,
       m: serializeString(current.message),
       p: optionsNode,
       e: undefined,
@@ -583,8 +583,8 @@ export default class AsyncParserContext extends VanillaParserContext {
     }
     // Non-primitive values needs a reference ID
     // mostly because the values themselves are stateful
-    const id = this.refs.createIndexedValue(current);
-    if (this.refs.marked.has(id)) {
+    const id = this.createIndexedValue(current);
+    if (this.marked.has(id)) {
       return createIndexedValueNode(id);
     }
     if (hasReferenceID(current)) {

@@ -1,6 +1,6 @@
-import type { Assignment, FlaggedObject } from './assignments';
 import { ALL_ENABLED, Feature } from './compat';
-import { getErrorConstructorName } from './shared';
+import { ERROR_CONSTRUCTOR_STRING } from './constants';
+import { getErrorConstructor } from './shared';
 
 export interface ParserReference {
   ids: Map<unknown, number>;
@@ -22,7 +22,7 @@ export class BaseParserContext {
     error: Error,
   ): Record<string, unknown> | undefined {
     let options: Record<string, unknown> | undefined;
-    const constructor = getErrorConstructorName(error);
+    const constructor = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
     // Name has been modified
     if (error.name !== constructor) {
       options = { name: error.name };
@@ -47,14 +47,4 @@ export class BaseParserContext {
     }
     return options;
   }
-}
-
-export interface BaseSerializerContext {
-  features: number;
-  // To check if an object is synchronously referencing itself
-  stack: number[];
-  // Array of object mutations
-  flags: FlaggedObject[];
-  // Array of assignments to be done (used for recursion)
-  assignments: Assignment[];
 }

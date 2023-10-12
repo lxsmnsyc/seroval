@@ -3,6 +3,7 @@ import type {
   SerovalObjectFlags,
   SerovalConstant,
   Symbols,
+  ErrorConstructorTag,
 } from './constants';
 
 export interface SerovalBaseNode {
@@ -204,7 +205,7 @@ export interface SerovalPromiseNode extends SerovalBaseNode {
 export interface SerovalErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.Error;
   // constructor name
-  c: string;
+  s: ErrorConstructorTag;
   // message
   m: string;
   // other properties

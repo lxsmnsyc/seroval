@@ -1,51 +1,28 @@
 import type {
   ErrorValue,
 } from '../types';
-import { SerovalObjectFlags } from './constants';
+import { ErrorConstructorTag, SerovalObjectFlags } from './constants';
 
-export function getErrorConstructorName(error: ErrorValue): string {
+export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   if (error instanceof EvalError) {
-    return 'EvalError';
+    return ErrorConstructorTag.EvalError;
   }
   if (error instanceof RangeError) {
-    return 'RangeError';
+    return ErrorConstructorTag.RangeError;
   }
   if (error instanceof ReferenceError) {
-    return 'ReferenceError';
+    return ErrorConstructorTag.ReferenceError;
   }
   if (error instanceof SyntaxError) {
-    return 'SyntaxError';
+    return ErrorConstructorTag.SyntaxError;
   }
   if (error instanceof TypeError) {
-    return 'TypeError';
+    return ErrorConstructorTag.TypeError;
   }
   if (error instanceof URIError) {
-    return 'URIError';
+    return ErrorConstructorTag.URIError;
   }
-  return 'Error';
-}
-
-type ErrorConstructors =
-  | ErrorConstructor
-  | EvalErrorConstructor
-  | RangeErrorConstructor
-  | ReferenceErrorConstructor
-  | SyntaxErrorConstructor
-  | TypeErrorConstructor
-  | URIErrorConstructor;
-
-export function getErrorConstructor(errorName: string): ErrorConstructors {
-  switch (errorName) {
-    case 'Error': return Error;
-    case 'EvalError': return EvalError;
-    case 'RangeError': return RangeError;
-    case 'ReferenceError': return ReferenceError;
-    case 'SyntaxError': return SyntaxError;
-    case 'TypeError': return TypeError;
-    case 'URIError': return URIError;
-    default:
-      throw new Error(`Unknown Error constructor "${errorName}"`);
-  }
+  return ErrorConstructorTag.Error;
 }
 
 export function isIterable(

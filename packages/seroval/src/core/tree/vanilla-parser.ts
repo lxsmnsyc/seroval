@@ -7,8 +7,8 @@ import {
   createWKSymbolNode,
 } from '../base-primitives';
 import { SerovalNodeType, type WellKnownSymbols } from '../constants';
-import type { BaseParserContextOptions } from '../context';
-import { BaseParserContext } from '../context';
+import type { BaseParserContextOptions } from '../parser-context';
+import { BaseParserContext } from '../parser-context';
 import { hasReferenceID } from '../reference';
 import type {
   SerovalArrayBufferNode,

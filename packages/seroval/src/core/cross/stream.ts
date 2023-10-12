@@ -14,7 +14,7 @@ import {
 } from '../literals';
 import { hasReferenceID } from '../reference';
 import {
-  getErrorConstructorName,
+  getErrorConstructor,
   getObjectFlag,
   isIterable,
 } from '../shared';
@@ -255,9 +255,9 @@ export default class StreamCrossParserContext extends CrossParserContext {
     return {
       t: SerovalNodeType.Error,
       i: id,
-      s: undefined,
+      s: getErrorConstructor(current),
       l: undefined,
-      c: getErrorConstructorName(current),
+      c: undefined,
       m: serializeString(current.message),
       p: optionsNode,
       e: undefined,

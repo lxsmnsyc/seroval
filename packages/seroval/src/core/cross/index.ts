@@ -3,14 +3,8 @@ import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import { serializeString } from '../string';
 import type { AsyncCrossParserContextOptions } from './async';
 import AsyncCrossParserContext from './async';
+import CrossSerializerContext, { getRefExpr } from './serialize';
 // import type { SerovalNode } from '../types';
-import type {
-  CrossSerializerContext,
-} from './context';
-import {
-  createCrossSerializerContext,
-} from './context';
-import crossSerializeTree, { getRefExpr, resolvePatches } from './serialize';
 import type { StreamCrossParserContextOptions } from './stream';
 import StreamCrossParserContext from './stream';
 import type { SyncCrossParserContextOptions } from './sync';
@@ -25,7 +19,7 @@ function finalize(
   if (id == null) {
     return result;
   }
-  const patches = resolvePatches(ctx);
+  const patches = ctx.resolvePatches();
   const ref = getRefExpr(id);
   const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   const mainBody = patches ? result + ',' + patches : result;
@@ -46,10 +40,10 @@ export function crossSerialize<T>(
 ): string {
   const ctx = new SyncCrossParserContext(options);
   const tree = ctx.parse(source);
-  const serial = createCrossSerializerContext({
+  const serial = new CrossSerializerContext({
     features: ctx.features,
   });
-  const result = crossSerializeTree(serial, tree);
+  const result = serial.serialize(tree);
   return finalize(
     serial,
     ctx.scopeId,
@@ -64,10 +58,10 @@ export async function crossSerializeAsync<T>(
 ): Promise<string> {
   const ctx = new AsyncCrossParserContext(options);
   const tree = await ctx.parse(source);
-  const serial = createCrossSerializerContext({
+  const serial = new CrossSerializerContext({
     features: ctx.features,
   });
-  const result = crossSerializeTree(serial, tree);
+  const result = serial.serialize(tree);
   return finalize(
     serial,
     ctx.scopeId,
@@ -135,7 +129,7 @@ export function crossSerializeStream<T>(
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial): void {
-      const serial = createCrossSerializerContext({
+      const serial = new CrossSerializerContext({
         features: ctx.features,
       });
 
@@ -144,7 +138,7 @@ export function crossSerializeStream<T>(
           serial,
           ctx.scopeId,
           node.i,
-          crossSerializeTree(serial, node),
+          serial.serialize(node),
         ),
         initial,
       );

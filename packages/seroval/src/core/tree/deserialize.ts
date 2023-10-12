@@ -6,7 +6,7 @@ import type {
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import { getReference } from '../reference';
-import { getErrorConstructor, getTypedArrayConstructor } from '../shared';
+import { getTypedArrayConstructor } from '../shared';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
@@ -43,6 +43,7 @@ import {
   SerovalObjectRecordSpecialKey,
 } from '../types';
 import {
+  ERROR_CONSTRUCTOR,
   SYMBOL_REF,
   SerovalNodeType,
   SerovalObjectFlags,
@@ -206,7 +207,7 @@ function deserializeError(
   ctx: DeserializerContext,
   node: SerovalErrorNode,
 ): Error {
-  const ErrorConstructor = getErrorConstructor(node.c);
+  const ErrorConstructor = ERROR_CONSTRUCTOR[node.s];
   const result = assignIndexedValue(ctx, node.i, new ErrorConstructor(deserializeString(node.m)));
   return deserializeDictionary(ctx, node, result);
 }

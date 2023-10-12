@@ -172,3 +172,42 @@ export function deserializeConstant(node: SerovalConstantNode): unknown {
       throw new Error('invariant');
   }
 }
+
+export const enum ErrorConstructorTag {
+  Error = 0,
+  EvalError = 1,
+  RangeError = 2,
+  ReferenceError = 3,
+  SyntaxError = 4,
+  TypeError = 5,
+  URIError = 6,
+}
+
+export const ERROR_CONSTRUCTOR_STRING: Record<ErrorConstructorTag, string> = {
+  [ErrorConstructorTag.Error]: 'Error',
+  [ErrorConstructorTag.EvalError]: 'EvalError',
+  [ErrorConstructorTag.RangeError]: 'RangeError',
+  [ErrorConstructorTag.ReferenceError]: 'ReferenceError',
+  [ErrorConstructorTag.SyntaxError]: 'SyntaxError',
+  [ErrorConstructorTag.TypeError]: 'TypeError',
+  [ErrorConstructorTag.URIError]: 'URIError',
+};
+
+type ErrorConstructors =
+  | ErrorConstructor
+  | EvalErrorConstructor
+  | RangeErrorConstructor
+  | ReferenceErrorConstructor
+  | SyntaxErrorConstructor
+  | TypeErrorConstructor
+  | URIErrorConstructor;
+
+export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> = {
+  [ErrorConstructorTag.Error]: Error,
+  [ErrorConstructorTag.EvalError]: EvalError,
+  [ErrorConstructorTag.RangeError]: RangeError,
+  [ErrorConstructorTag.ReferenceError]: ReferenceError,
+  [ErrorConstructorTag.SyntaxError]: SyntaxError,
+  [ErrorConstructorTag.TypeError]: TypeError,
+  [ErrorConstructorTag.URIError]: URIError,
+};
