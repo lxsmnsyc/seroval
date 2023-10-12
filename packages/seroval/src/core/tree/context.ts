@@ -1,29 +1,5 @@
-import { ALL_ENABLED } from '../compat';
-import type { BaseParserContext, BaseSerializerContext } from '../context';
+import type { BaseSerializerContext } from '../context';
 import getIdentifier from '../get-identifier';
-
-export interface ParserReference {
-  ids: Map<unknown, number>;
-  marked: Set<number>;
-}
-
-export interface ParserContext extends BaseParserContext {
-  reference: ParserReference;
-}
-
-export interface ParserOptions {
-  disabledFeatures: number;
-}
-
-export function createParserContext(options: Partial<ParserOptions> = {}): ParserContext {
-  return {
-    reference: {
-      ids: new Map(),
-      marked: new Set(),
-    },
-    features: ALL_ENABLED ^ (options.disabledFeatures || 0),
-  };
-}
 
 export interface SerializerReference {
   size: number;
@@ -63,7 +39,7 @@ export function createSerializerContext(options: SerializerOptions): SerializerC
  * Increments the number of references the referenced value has
  */
 export function markRef(
-  ctx: ParserContext | SerializerContext,
+  ctx: SerializerContext,
   current: number,
 ): void {
   ctx.reference.marked.add(current);
@@ -90,20 +66,6 @@ export function getRefParam(ctx: SerializerContext, index: number): string {
     ctx.vars[actualIndex] = identifier;
   }
   return identifier;
-}
-
-export function createIndexedValue<T>(
-  ctx: ParserContext,
-  current: T,
-): number {
-  const ref = ctx.reference.ids.get(current);
-  if (ref == null) {
-    const id = ctx.reference.ids.size;
-    ctx.reference.ids.set(current, id);
-    return id;
-  }
-  markRef(ctx, ref);
-  return ref;
 }
 
 export interface DeserializerContext {

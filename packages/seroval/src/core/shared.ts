@@ -1,9 +1,7 @@
-import { Feature } from './compat';
 import type {
   ErrorValue,
 } from '../types';
 import { SerovalObjectFlags } from './constants';
-import type { BaseParserContext } from './context';
 
 export function getErrorConstructorName(error: ErrorValue): string {
   if (error instanceof EvalError) {
@@ -48,37 +46,6 @@ export function getErrorConstructor(errorName: string): ErrorConstructors {
     default:
       throw new Error(`Unknown Error constructor "${errorName}"`);
   }
-}
-
-export function getErrorOptions(
-  ctx: BaseParserContext,
-  error: Error,
-): Record<string, unknown> | undefined {
-  let options: Record<string, unknown> | undefined;
-  const constructor = getErrorConstructorName(error);
-  // Name has been modified
-  if (error.name !== constructor) {
-    options = { name: error.name };
-  } else if (error.constructor.name !== constructor) {
-    // Otherwise, name is overriden because
-    // the Error class is extended
-    options = { name: error.constructor.name };
-  }
-  const names = Object.getOwnPropertyNames(error);
-  for (const name of names) {
-    if (name !== 'name' && name !== 'message') {
-      if (name === 'stack') {
-        if (ctx.features & Feature.ErrorPrototypeStack) {
-          options = options || {};
-          options[name] = error[name as keyof Error];
-        }
-      } else {
-        options = options || {};
-        options[name] = error[name as keyof Error];
-      }
-    }
-  }
-  return options;
 }
 
 export function isIterable(

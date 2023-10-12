@@ -1,20 +1,20 @@
 import { Feature } from '../compat';
 import { SerovalNodeType } from '../constants';
 import type { SerovalNode } from '../types';
-import parseAsync from './async';
+import type { AsyncParserContextOptions } from './async';
+import AsyncParserContext from './async';
 import type {
-  ParserOptions,
   SerializerContext,
 } from './context';
 import {
   createDeserializerContext,
-  createParserContext,
   createSerializerContext,
   getRefParam,
 } from './context';
 import deserializeTree from './deserialize';
 import serializeTree, { resolvePatches } from './serialize';
-import parseSync from './sync';
+import type { SyncParserContextOptions } from './sync';
+import SyncParserContext from './sync';
 
 function finalize(
   ctx: SerializerContext,
@@ -54,12 +54,12 @@ function finalize(
 
 export function serialize<T>(
   source: T,
-  options?: Partial<ParserOptions>,
+  options?: Partial<SyncParserContextOptions>,
 ): string {
-  const ctx = createParserContext(options);
-  const tree = parseSync(ctx, source);
+  const ctx = new SyncParserContext(options);
+  const tree = ctx.parse(source);
   const serial = createSerializerContext({
-    markedRefs: ctx.reference.marked,
+    markedRefs: ctx.marked,
     features: ctx.features,
   });
   const result = serializeTree(serial, tree);
@@ -73,12 +73,12 @@ export function serialize<T>(
 
 export async function serializeAsync<T>(
   source: T,
-  options?: Partial<ParserOptions>,
+  options?: Partial<AsyncParserContextOptions>,
 ): Promise<string> {
-  const ctx = createParserContext(options);
-  const tree = await parseAsync(ctx, source);
+  const ctx = new AsyncParserContext(options);
+  const tree = await ctx.parse(source);
   const serial = createSerializerContext({
-    markedRefs: ctx.reference.marked,
+    markedRefs: ctx.marked,
     features: ctx.features,
   });
   const result = serializeTree(serial, tree);
@@ -103,25 +103,25 @@ export interface SerovalJSON {
 
 export function toJSON<T>(
   source: T,
-  options?: Partial<ParserOptions>,
+  options?: Partial<SyncParserContextOptions>,
 ): SerovalJSON {
-  const ctx = createParserContext(options);
+  const ctx = new SyncParserContext(options);
   return {
-    t: parseSync(ctx, source),
+    t: ctx.parse(source),
     f: ctx.features,
-    m: Array.from(ctx.reference.marked),
+    m: Array.from(ctx.marked),
   };
 }
 
 export async function toJSONAsync<T>(
   source: T,
-  options?: Partial<ParserOptions>,
+  options?: Partial<AsyncParserContextOptions>,
 ): Promise<SerovalJSON> {
-  const ctx = createParserContext(options);
+  const ctx = new AsyncParserContext(options);
   return {
-    t: await parseAsync(ctx, source),
+    t: await ctx.parse(source),
     f: ctx.features,
-    m: Array.from(ctx.reference.marked),
+    m: Array.from(ctx.marked),
   };
 }
 

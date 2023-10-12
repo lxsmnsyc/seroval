@@ -1,20 +1,20 @@
 import { Feature } from '../compat';
 import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import { serializeString } from '../string';
+import type { AsyncCrossParserContextOptions } from './async';
+import AsyncCrossParserContext from './async';
 // import type { SerovalNode } from '../types';
-import parseAsync from './async';
 import type {
-  CrossParserContextOptions,
   CrossSerializerContext,
 } from './context';
 import {
-  createCrossParserContext,
   createCrossSerializerContext,
-  createStreamingCrossParserContext,
 } from './context';
 import crossSerializeTree, { getRefExpr, resolvePatches } from './serialize';
-import crossParseStream from './stream';
-import parseSync from './sync';
+import type { StreamCrossParserContextOptions } from './stream';
+import StreamCrossParserContext from './stream';
+import type { SyncCrossParserContextOptions } from './sync';
+import SyncCrossParserContext from './sync';
 
 function finalize(
   ctx: CrossSerializerContext,
@@ -42,10 +42,10 @@ function finalize(
 
 export function crossSerialize<T>(
   source: T,
-  options?: CrossParserContextOptions,
+  options?: SyncCrossParserContextOptions,
 ): string {
-  const ctx = createCrossParserContext(options);
-  const tree = parseSync(ctx, source);
+  const ctx = new SyncCrossParserContext(options);
+  const tree = ctx.parse(source);
   const serial = createCrossSerializerContext({
     features: ctx.features,
   });
@@ -60,10 +60,10 @@ export function crossSerialize<T>(
 
 export async function crossSerializeAsync<T>(
   source: T,
-  options?: CrossParserContextOptions,
+  options?: AsyncCrossParserContextOptions,
 ): Promise<string> {
-  const ctx = createCrossParserContext(options);
-  const tree = await parseAsync(ctx, source);
+  const ctx = new AsyncCrossParserContext(options);
+  const tree = await ctx.parse(source);
   const serial = createCrossSerializerContext({
     features: ctx.features,
   });
@@ -122,20 +122,19 @@ export async function crossSerializeAsync<T>(
 //   return deserializeTree(serial, source.t) as T;
 // }
 
-export interface CrossSerializeStreamOptions extends CrossParserContextOptions {
+export interface CrossSerializeStreamOptions extends Omit<StreamCrossParserContextOptions, 'onParse'> {
   onSerialize: (data: string, initial: boolean) => void;
-  onDone?: () => void;
 }
 
 export function crossSerializeStream<T>(
   source: T,
   options: CrossSerializeStreamOptions,
 ): () => void {
-  const ctx = createStreamingCrossParserContext({
+  const ctx = new StreamCrossParserContext({
     scopeId: options.scopeId,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
-    onParse(node, initial) {
+    onParse(node, initial): void {
       const serial = createCrossSerializerContext({
         features: ctx.features,
       });
@@ -153,7 +152,7 @@ export function crossSerializeStream<T>(
     onDone: options.onDone,
   });
 
-  ctx.onParse(crossParseStream(ctx, source), true);
+  ctx.onParse(ctx.parse(source), true);
 
   if (ctx.pending <= 0) {
     ctx.onDone();
