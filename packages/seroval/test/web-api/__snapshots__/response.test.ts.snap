@@ -1,21 +1,21 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Response > crossSerializeAsync > scoped > supports Blob 1`] = `"($R=>($R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={status:200,statusText:\\"\\",headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"})})))($R[\\"example\\"])"`;
+exports[`Response > crossSerializeAsync > scoped > supports Blob 1`] = `"($R=>($R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"})))($R[\\"example\\"])"`;
 
-exports[`Response > crossSerializeAsync > supports Blob 1`] = `"$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={status:200,statusText:\\"\\",headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"})})"`;
+exports[`Response > crossSerializeAsync > supports Blob 1`] = `"$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"})"`;
 
-exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `"($R=>($R[0]=new Response($R[1]=_$.S(),$R[2]={status:200,statusText:\\"\\",headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"})})))($R[\\"example\\"])"`;
+exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `"($R=>($R[0]=new Response($R[1]=_$.S(),$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"})))($R[\\"example\\"])"`;
 
 exports[`Response > crossSerializeStream > scoped > supports Response 2`] = `"($R=>(_$.Se($R[1],0,$R[4]=new Uint8Array($R[5]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,0,12))))($R[\\"example\\"])"`;
 
 exports[`Response > crossSerializeStream > scoped > supports Response 3`] = `"($R=>(_$.Se($R[1],2)))($R[\\"example\\"])"`;
 
-exports[`Response > crossSerializeStream > supports Response 1`] = `"$R[0]=new Response($R[1]=_$.S(),$R[2]={status:200,statusText:\\"\\",headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"})})"`;
+exports[`Response > crossSerializeStream > supports Response 1`] = `"$R[0]=new Response($R[1]=_$.S(),$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"})"`;
 
 exports[`Response > crossSerializeStream > supports Response 2`] = `"_$.Se($R[1],0,$R[4]=new Uint8Array($R[5]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,0,12))"`;
 
 exports[`Response > crossSerializeStream > supports Response 3`] = `"_$.Se($R[1],2)"`;
 
-exports[`Response > serializeAsync > supports Response 1`] = `"new Response(new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,{status:200,statusText:\\"\\",headers:new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"})})"`;
+exports[`Response > serializeAsync > supports Response 1`] = `"new Response(new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,{headers:new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"})"`;
 
-exports[`Response > toJSONAsync > supports Response 1`] = `"{\\"t\\":{\\"t\\":36,\\"i\\":0,\\"a\\":[{\\"t\\":21,\\"i\\":1,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100,33]},{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"status\\",\\"statusText\\",\\"headers\\"],\\"v\\":[{\\"t\\":0,\\"s\\":200},{\\"t\\":1,\\"s\\":\\"\\"},{\\"t\\":25,\\"i\\":3,\\"e\\":{\\"k\\":[\\"content-type\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"text/plain;charset=UTF-8\\"}],\\"s\\":1}}],\\"s\\":3},\\"o\\":0}]},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Response > toJSONAsync > supports Response 1`] = `"{\\"t\\":{\\"t\\":36,\\"i\\":0,\\"a\\":[{\\"t\\":21,\\"i\\":1,\\"s\\":[72,101,108,108,111,32,87,111,114,108,100,33]},{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"headers\\",\\"status\\",\\"statusText\\"],\\"v\\":[{\\"t\\":25,\\"i\\":3,\\"e\\":{\\"k\\":[\\"content-type\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"text/plain;charset=UTF-8\\"}],\\"s\\":1}},{\\"t\\":0,\\"s\\":200},{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":3},\\"o\\":0}]},\\"f\\":16383,\\"m\\":[]}"`;
