@@ -16,6 +16,7 @@
     "moduleResolution": "bundler",
     "jsx": "react",
     "esModuleInterop": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "useDefineForClassFields": false
   }
 }
