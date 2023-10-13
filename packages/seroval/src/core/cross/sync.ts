@@ -479,15 +479,6 @@ export default class SyncCrossParserContext extends CrossParserContext {
     }
     const currentClass = current.constructor;
     switch (currentClass) {
-      case Number:
-      case Boolean:
-      case String:
-      case BigInt:
-        return this.parseBoxed(id, current);
-      case Date:
-        return createDateNode(id, current as unknown as Date);
-      case RegExp:
-        return createRegExpNode(id, current as unknown as RegExp);
       case Object:
         return this.parsePlainObject(
           id,
@@ -500,6 +491,10 @@ export default class SyncCrossParserContext extends CrossParserContext {
           current as Record<string, unknown>,
           true,
         );
+      case Date:
+        return createDateNode(id, current as unknown as Date);
+      case RegExp:
+        return createRegExpNode(id, current as unknown as RegExp);
       case Error:
       case EvalError:
       case RangeError:
@@ -508,6 +503,11 @@ export default class SyncCrossParserContext extends CrossParserContext {
       case TypeError:
       case URIError:
         return this.parseError(id, current as unknown as Error);
+      case Number:
+      case Boolean:
+      case String:
+      case BigInt:
+        return this.parseBoxed(id, current);
       default:
         break;
     }
