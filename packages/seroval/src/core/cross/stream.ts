@@ -507,57 +507,17 @@ function generateBoxedNode(
   };
 }
 
-function generateReadableStreamNode(
+function pushReadableStreamState(
   ctx: StreamingCrossParserContext,
   id: number,
-  current: ReadableStream<unknown>,
-): SerovalReadableStreamConstructorNode {
-  const reader = current.getReader();
-  pushPendingState(ctx);
-
-  function push(): void {
-    reader.read().then(
-      (data) => {
-        if (ctx.alive) {
-          if (data.done) {
-            ctx.onParse({
-              t: SerovalNodeType.ReadableStreamClose,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: undefined,
-              f: undefined,
-              b: undefined,
-              o: undefined,
-            }, false);
-            popPendingState(ctx);
-          } else {
-            ctx.onParse({
-              t: SerovalNodeType.ReadableStreamEnqueue,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: undefined,
-              f: crossParseStream(ctx, data.value),
-              b: undefined,
-              o: undefined,
-            }, false);
-            push();
-          }
-        }
-      },
-      (value) => {
-        if (ctx.alive) {
+  reader: ReadableStreamDefaultReader,
+): void {
+  reader.read().then(
+    (data) => {
+      if (ctx.alive) {
+        if (data.done) {
           ctx.onParse({
-            t: SerovalNodeType.ReadableStreamError,
+            t: SerovalNodeType.ReadableStreamClose,
             i: id,
             s: undefined,
             l: undefined,
@@ -566,17 +526,59 @@ function generateReadableStreamNode(
             p: undefined,
             e: undefined,
             a: undefined,
-            f: crossParseStream(ctx, value),
+            f: undefined,
             b: undefined,
             o: undefined,
           }, false);
           popPendingState(ctx);
+        } else {
+          ctx.onParse({
+            t: SerovalNodeType.ReadableStreamEnqueue,
+            i: id,
+            s: undefined,
+            l: undefined,
+            c: undefined,
+            m: undefined,
+            p: undefined,
+            e: undefined,
+            a: undefined,
+            f: crossParseStream(ctx, data.value),
+            b: undefined,
+            o: undefined,
+          }, false);
+          pushReadableStreamState(ctx, id, reader);
         }
-      },
-    );
-  }
+      }
+    },
+    (value) => {
+      if (ctx.alive) {
+        ctx.onParse({
+          t: SerovalNodeType.ReadableStreamError,
+          i: id,
+          s: undefined,
+          l: undefined,
+          c: undefined,
+          m: undefined,
+          p: undefined,
+          e: undefined,
+          a: undefined,
+          f: crossParseStream(ctx, value),
+          b: undefined,
+          o: undefined,
+        }, false);
+        popPendingState(ctx);
+      }
+    },
+  );
+}
 
-  push();
+function generateReadableStreamNode(
+  ctx: StreamingCrossParserContext,
+  id: number,
+  current: ReadableStream<unknown>,
+): SerovalReadableStreamConstructorNode {
+  pushPendingState(ctx);
+  pushReadableStreamState(ctx, id, current.getReader());
 
   return {
     t: SerovalNodeType.ReadableStreamConstructor,
