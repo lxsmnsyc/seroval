@@ -3,10 +3,7 @@ import { SerovalNodeType } from '../constants';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
 import AsyncParserContext from './async';
-import {
-  createDeserializerContext,
-} from './context';
-import deserializeTree from './deserialize';
+import VanillaDeserializerContext from './deserialize';
 import VanillaSerializerContext from './serialize';
 import type { SyncParserContextOptions } from './sync';
 import SyncParserContext from './sync';
@@ -121,17 +118,17 @@ export async function toJSONAsync<T>(
 }
 
 export function compileJSON(source: SerovalJSON): string {
-  const serial = new VanillaSerializerContext({
+  const ctx = new VanillaSerializerContext({
     features: source.f,
     markedRefs: source.m,
   });
-  const result = serial.serialize(source.t);
-  return finalize(serial, source.t.i, source.t.i === SerovalNodeType.Object, result);
+  const result = ctx.serialize(source.t);
+  return finalize(ctx, source.t.i, source.t.i === SerovalNodeType.Object, result);
 }
 
 export function fromJSON<T>(source: SerovalJSON): T {
-  const serial = createDeserializerContext({
+  const ctx = new VanillaDeserializerContext({
     markedRefs: source.m,
   });
-  return deserializeTree(serial, source.t) as T;
+  return ctx.deserialize(source.t) as T;
 }
