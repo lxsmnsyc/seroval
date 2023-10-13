@@ -3,7 +3,7 @@ import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import { serializeString } from '../string';
 import type { AsyncCrossParserContextOptions } from './async';
 import AsyncCrossParserContext from './async';
-import CrossSerializerContext, { getRefExpr } from './serialize';
+import CrossSerializerContext from './serialize';
 // import type { SerovalNode } from '../types';
 import type { StreamCrossParserContextOptions } from './stream';
 import StreamCrossParserContext from './stream';
@@ -20,7 +20,7 @@ function finalize(
     return result;
   }
   const patches = ctx.resolvePatches();
-  const ref = getRefExpr(id);
+  const ref = ctx.getRefParam(id);
   const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   const mainBody = patches ? result + ',' + patches : result;
   if (params === '') {
@@ -146,17 +146,9 @@ export function crossSerializeStream<T>(
     onDone: options.onDone,
   });
 
-  ctx.onParse(ctx.parse(source), true);
-
-  if (ctx.pending <= 0) {
-    ctx.onDone();
-    ctx.alive = false;
-  }
+  ctx.start(source);
 
   return () => {
-    if (ctx.alive) {
-      ctx.alive = false;
-      ctx.onDone();
-    }
+    ctx.destroy();
   };
 }
