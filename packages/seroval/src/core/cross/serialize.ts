@@ -49,8 +49,8 @@ import {
   SerovalObjectFlags,
   SerovalNodeType,
   SYMBOL_STRING,
-  serializeConstant,
   ERROR_CONSTRUCTOR_STRING,
+  CONSTANT_STRING,
 } from '../constants';
 import type { Assignment } from '../assignments';
 import { resolveAssignments, resolveFlags } from '../assignments';
@@ -765,12 +765,12 @@ export default class CrossSerializerContext extends BaseSerializerContext {
 
   serialize(node: SerovalNode): string {
     switch (node.t) {
+      case SerovalNodeType.Constant:
+        return CONSTANT_STRING[node.s];
       case SerovalNodeType.Number:
         return '' + node.s;
       case SerovalNodeType.String:
         return '"' + node.s + '"';
-      case SerovalNodeType.Constant:
-        return serializeConstant(node);
       case SerovalNodeType.BigInt:
         return node.s + 'n';
       case SerovalNodeType.IndexedValue:

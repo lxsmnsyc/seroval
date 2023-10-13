@@ -43,11 +43,11 @@ import {
   SerovalObjectRecordSpecialKey,
 } from '../types';
 import {
+  CONSTANT_VAL,
   ERROR_CONSTRUCTOR,
   SYMBOL_REF,
   SerovalNodeType,
   SerovalObjectFlags,
-  deserializeConstant,
 } from '../constants';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
@@ -462,7 +462,7 @@ export default function deserializeTree(
 ): unknown {
   switch (node.t) {
     case SerovalNodeType.Constant:
-      return deserializeConstant(node);
+      return CONSTANT_VAL[node.s];
     case SerovalNodeType.Number:
       return node.s;
     case SerovalNodeType.String:

@@ -1,5 +1,3 @@
-import type { SerovalConstantNode } from './types';
-
 export const enum SerovalConstant {
   Null = 0,
   Undefined = 1,
@@ -127,51 +125,27 @@ export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
   [Symbols.Unscopables]: Symbol.unscopables,
 };
 
-export function serializeConstant(node: SerovalConstantNode): string {
-  switch (node.s) {
-    case SerovalConstant.True:
-      return '!0';
-    case SerovalConstant.False:
-      return '!1';
-    case SerovalConstant.Undefined:
-      return 'void 0';
-    case SerovalConstant.Null:
-      return 'null';
-    case SerovalConstant.NegativeZero:
-      return '-0';
-    case SerovalConstant.Infinity:
-      return '1/0';
-    case SerovalConstant.NegativeInfinity:
-      return '-1/0';
-    case SerovalConstant.NaN:
-      return 'NaN';
-    default:
-      throw new Error('invariant');
-  }
-}
+export const CONSTANT_STRING: Record<SerovalConstant, string> = {
+  [SerovalConstant.True]: '!0',
+  [SerovalConstant.False]: '!1',
+  [SerovalConstant.Undefined]: 'void 0',
+  [SerovalConstant.Null]: 'null',
+  [SerovalConstant.NegativeZero]: '-0',
+  [SerovalConstant.Infinity]: '1/0',
+  [SerovalConstant.NegativeInfinity]: '-1/0',
+  [SerovalConstant.NaN]: 'NaN',
+};
 
-export function deserializeConstant(node: SerovalConstantNode): unknown {
-  switch (node.s) {
-    case SerovalConstant.True:
-      return true;
-    case SerovalConstant.False:
-      return false;
-    case SerovalConstant.Undefined:
-      return undefined;
-    case SerovalConstant.Null:
-      return null;
-    case SerovalConstant.NegativeZero:
-      return -0;
-    case SerovalConstant.Infinity:
-      return Infinity;
-    case SerovalConstant.NegativeInfinity:
-      return -Infinity;
-    case SerovalConstant.NaN:
-      return NaN;
-    default:
-      throw new Error('invariant');
-  }
-}
+export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
+  [SerovalConstant.True]: true,
+  [SerovalConstant.False]: false,
+  [SerovalConstant.Undefined]: undefined,
+  [SerovalConstant.Null]: null,
+  [SerovalConstant.NegativeZero]: -0,
+  [SerovalConstant.Infinity]: Infinity,
+  [SerovalConstant.NegativeInfinity]: -Infinity,
+  [SerovalConstant.NaN]: NaN,
+};
 
 export const enum ErrorConstructorTag {
   Error = 0,
