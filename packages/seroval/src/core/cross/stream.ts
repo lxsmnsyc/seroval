@@ -843,7 +843,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     throw new UnsupportedTypeError(current);
   }
 
-  private parse<T>(current: T): SerovalNode {
+  parse<T>(current: T): SerovalNode {
     const t = typeof current;
     if (this.features & Feature.BigInt && t === 'bigint') {
       return createBigIntNode(current as bigint);
@@ -865,6 +865,25 @@ export default class StreamCrossParserContext extends CrossParserContext {
         return this.parseFunction(current);
       default:
         throw new UnsupportedTypeError(current);
+    }
+  }
+
+  start<T>(current: T): void {
+    this.onParse(
+      this.parse(current),
+      true,
+    );
+
+    // Check if there's any pending pushes
+    if (this.pending <= 0) {
+      this.destroy();
+    }
+  }
+
+  destroy(): void {
+    if (this.alive) {
+      this.onDone();
+      this.alive = false;
     }
   }
 }
