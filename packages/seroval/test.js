@@ -1,4 +1,8 @@
 
-import { GLOBAL_CONTEXT_API_SCRIPT } from './dist/esm/development/index.mjs';
+import { serialize } from './dist/esm/development/index.mjs';
 
-console.log(GLOBAL_CONTEXT_API_SCRIPT);
+for (let i = 0; i < 1000; i++) {
+  serialize({
+    simple: true,
+  })
+}
