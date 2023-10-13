@@ -100,6 +100,9 @@ export class BaseParserContext {
           break;
       }
     }
-    return Symbol.iterator in value;
+    if (this.features & Feature.Symbol) {
+      return Symbol.iterator in value;
+    }
+    return false;
   }
 }
