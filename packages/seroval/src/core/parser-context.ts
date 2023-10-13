@@ -1,4 +1,4 @@
-import { ALL_ENABLED, Feature } from './compat';
+import { ALL_ENABLED, BIGINT_FLAG, Feature } from './compat';
 import { ERROR_CONSTRUCTOR_STRING } from './constants';
 import { getErrorConstructor } from './shared';
 
@@ -46,5 +46,60 @@ export class BaseParserContext {
       }
     }
     return options;
+  }
+
+  protected isIterable(
+    value: unknown,
+  ): value is Iterable<unknown> {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+    if (Array.isArray(value)) {
+      return false;
+    }
+    const currentClass = value.constructor;
+    if (this.features & Feature.TypedArray) {
+      switch (currentClass) {
+        case Int8Array:
+        case Int16Array:
+        case Int32Array:
+        case Uint8Array:
+        case Uint16Array:
+        case Uint32Array:
+        case Uint8ClampedArray:
+        case Float32Array:
+        case Float64Array:
+          return false;
+        default:
+          break;
+      }
+    }
+    // BigInt Typed Arrays
+    if ((this.features & BIGINT_FLAG) === BIGINT_FLAG) {
+      switch (currentClass) {
+        case BigInt64Array:
+        case BigUint64Array:
+          return false;
+        default:
+          break;
+      }
+    }
+    // ES Collection
+    if (this.features & Feature.Map && currentClass === Map) {
+      return false;
+    }
+    if (this.features & Feature.Set && currentClass === Set) {
+      return false;
+    }
+    if (this.features & Feature.WebAPI) {
+      switch (currentClass) {
+        case Headers:
+        case File:
+          return false;
+        default:
+          break;
+      }
+    }
+    return Symbol.iterator in value;
   }
 }

@@ -16,7 +16,6 @@ import { hasReferenceID } from '../reference';
 import {
   getErrorConstructor,
   getObjectFlag,
-  isIterable,
 } from '../shared';
 import type {
   SerovalAggregateErrorNode,
@@ -90,7 +89,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     for (let i = 0; i < size; i++) {
       if (i in current) {
         item = current[i];
-        if (isIterable(item)) {
+        if (this.isIterable(item)) {
           deferred[i] = item;
         } else {
           nodes[i] = await this.parse(item);
@@ -161,7 +160,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     for (const key of keys) {
       item = properties[key];
       escaped = serializeString(key);
-      if (isIterable(item)) {
+      if (this.isIterable(item)) {
         deferredKeys[deferredSize] = escaped;
         deferredValues[deferredSize] = item;
         deferredSize++;
@@ -251,7 +250,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     let nodeSize = 0;
     for (const [key, value] of current.entries()) {
       // Either key or value might be an iterable
-      if (isIterable(key) || isIterable(value)) {
+      if (this.isIterable(key) || this.isIterable(value)) {
         deferredKey[deferredSize] = key;
         deferredValue[deferredSize] = value;
         deferredSize++;
@@ -292,7 +291,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     let nodeSize = 0;
     for (const item of current.keys()) {
       // Iterables are lazy, so the evaluation must be deferred
-      if (isIterable(item)) {
+      if (this.isIterable(item)) {
         deferred[deferredSize++] = item;
       } else {
         nodes[nodeSize++] = await this.parse(item);
@@ -374,7 +373,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     for (const key of keys) {
       item = properties[key];
       escaped = serializeString(key);
-      if (isIterable(item)) {
+      if (this.isIterable(item)) {
         deferredKeys[deferredSize] = escaped;
         deferredValues[deferredSize] = item;
         deferredSize++;

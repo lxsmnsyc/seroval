@@ -25,36 +25,6 @@ export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   return ErrorConstructorTag.Error;
 }
 
-export function isIterable(
-  value: unknown,
-): value is Iterable<unknown> {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  if (Array.isArray(value)) {
-    return false;
-  }
-  switch (value.constructor) {
-    case Map:
-    case Set:
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
-    case BigInt64Array:
-    case BigUint64Array:
-      return false;
-    default:
-      break;
-  }
-  return Symbol.iterator in value;
-}
-
 type TypedArrayConstructor =
   | Int8ArrayConstructor
   | Int16ArrayConstructor
