@@ -134,7 +134,10 @@ export function isIterable(
         break;
     }
   }
-  return Symbol.iterator in value;
+  if (ctx.features & Feature.Symbol) {
+    return Symbol.iterator in value;
+  }
+  return false;
 }
 
 type TypedArrayConstructor =
