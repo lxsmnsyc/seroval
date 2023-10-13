@@ -21,19 +21,11 @@ interface AddAssignment {
   v: string;
 }
 
-interface AppendAssignment {
-  t: 'append';
-  s: string;
-  k: string;
-  v: string;
-}
-
 // Array of assignments to be done (used for recursion)
 export type Assignment =
   | IndexAssignment
   | AddAssignment
-  | SetAssignment
-  | AppendAssignment;
+  | SetAssignment;
 
 export interface FlaggedObject {
   type: SerovalObjectFlags;
@@ -48,8 +40,6 @@ function getAssignmentExpression(assignment: Assignment): string {
       return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
     case 'add':
       return assignment.s + '.add(' + assignment.v + ')';
-    case 'append':
-      return assignment.s + '.append(' + assignment.k + ',' + assignment.v + ')';
     default:
       return '';
   }
@@ -116,11 +106,6 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
             newAssignments.push(current);
             current = item;
           }
-          break;
-        case 'append':
-          // Different assignment, push current
-          newAssignments.push(current);
-          current = item;
           break;
         default:
           break;

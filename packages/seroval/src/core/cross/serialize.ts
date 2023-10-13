@@ -642,7 +642,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
 
   private serializeFormDataEntries(
     node: SerovalFormDataNode,
-  ): string | undefined {
+  ): string {
     let value: string;
     let key: string;
     const keys = node.e.k;
@@ -668,7 +668,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     const result = this.assignIndexedValue(id, 'new FormData()');
     if (size) {
       const entries = this.serializeFormDataEntries(node);
-      return '(' + result + ',' + (entries == null ? '' : entries) + this.getRefParam(id) + ')';
+      return '(' + result + ',' + (entries ? entries + ',' : '') + this.getRefParam(id) + ')';
     }
     return result;
   }
