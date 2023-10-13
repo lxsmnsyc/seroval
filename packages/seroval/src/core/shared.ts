@@ -1,4 +1,4 @@
-import { Feature } from './compat';
+import { BIGINT_FLAG, Feature } from './compat';
 import type {
   ErrorValue,
 } from '../types';
@@ -82,6 +82,7 @@ export function getErrorOptions(
 }
 
 export function isIterable(
+  ctx: BaseParserContext,
   value: unknown,
 ): value is Iterable<unknown> {
   if (!value || typeof value !== 'object') {
@@ -90,23 +91,48 @@ export function isIterable(
   if (Array.isArray(value)) {
     return false;
   }
-  switch (value.constructor) {
-    case Map:
-    case Set:
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
-    case BigInt64Array:
-    case BigUint64Array:
-      return false;
-    default:
-      break;
+  const currentClass = value.constructor;
+  if (ctx.features & Feature.TypedArray) {
+    switch (currentClass) {
+      case Int8Array:
+      case Int16Array:
+      case Int32Array:
+      case Uint8Array:
+      case Uint16Array:
+      case Uint32Array:
+      case Uint8ClampedArray:
+      case Float32Array:
+      case Float64Array:
+        return false;
+      default:
+        break;
+    }
+  }
+  // BigInt Typed Arrays
+  if ((ctx.features & BIGINT_FLAG) === BIGINT_FLAG) {
+    switch (currentClass) {
+      case BigInt64Array:
+      case BigUint64Array:
+        return false;
+      default:
+        break;
+    }
+  }
+  // ES Collection
+  if (ctx.features & Feature.Map && currentClass === Map) {
+    return false;
+  }
+  if (ctx.features & Feature.Set && currentClass === Set) {
+    return false;
+  }
+  if (ctx.features & Feature.WebAPI) {
+    switch (currentClass) {
+      case Headers:
+      case File:
+        return false;
+      default:
+        break;
+    }
   }
   return Symbol.iterator in value;
 }

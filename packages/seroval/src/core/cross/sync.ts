@@ -71,7 +71,7 @@ function generateNodeList(ctx: CrossParserContext, current: unknown[]): SerovalS
   for (let i = 0; i < size; i++) {
     if (i in current) {
       item = current[i];
-      if (isIterable(item)) {
+      if (isIterable(ctx, item)) {
         deferred[i] = item;
       } else {
         nodes[i] = crossParseSync(ctx, item);
@@ -121,7 +121,7 @@ function generateMapNode(
   let nodeSize = 0;
   for (const [key, value] of current.entries()) {
     // Either key or value might be an iterable
-    if (isIterable(key) || isIterable(value)) {
+    if (isIterable(ctx, key) || isIterable(ctx, value)) {
       deferredKey[deferredSize] = key;
       deferredValue[deferredSize] = value;
       deferredSize++;
@@ -163,7 +163,7 @@ function generateSetNode(
   let nodeSize = 0;
   for (const item of current.keys()) {
     // Iterables are lazy, so the evaluation must be deferred
-    if (isIterable(item)) {
+    if (isIterable(ctx, item)) {
       deferred[deferredSize++] = item;
     } else {
       nodes[nodeSize++] = crossParseSync(ctx, item);
@@ -206,7 +206,7 @@ function generateProperties(
   for (const key of keys) {
     item = properties[key];
     escaped = serializeString(key);
-    if (isIterable(item)) {
+    if (isIterable(ctx, item)) {
       deferredKeys[deferredSize] = escaped;
       deferredValues[deferredSize] = item;
       deferredSize++;
@@ -252,7 +252,7 @@ function generatePlainProperties(
   for (const key of keys) {
     item = properties[key];
     escaped = serializeString(key);
-    if (isIterable(item)) {
+    if (isIterable(ctx, item)) {
       deferredKeys[deferredSize] = escaped;
       deferredValues[deferredSize] = item;
       deferredSize++;
