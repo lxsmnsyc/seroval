@@ -66,99 +66,6 @@ import {
 } from '../keys';
 import { BaseSerializerContext } from '../serializer-context';
 
-export function getRefExpr(id: number): string {
-  return GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
-}
-
-function assignIndexedValue(
-  index: number,
-  value: string,
-): string {
-  return getRefExpr(index) + '=' + value;
-}
-
-function serializeArrayBuffer(
-  node: SerovalArrayBufferNode,
-): string {
-  let result = 'new Uint8Array(';
-  const buffer = node.s;
-  const len = buffer.length;
-  if (len) {
-    result += '[';
-    for (let i = 0; i < len; i++) {
-      result += ((i > 0) ? ',' : '') + buffer[i];
-    }
-    result += ']';
-  }
-  return assignIndexedValue(node.i, result + ').buffer');
-}
-
-function serializeDate(
-  node: SerovalDateNode,
-): string {
-  return assignIndexedValue(node.i, 'new Date("' + node.s + '")');
-}
-
-function serializeRegExp(
-  node: SerovalRegExpNode,
-): string {
-  return assignIndexedValue(node.i, '/' + node.c + '/' + node.m);
-}
-
-function serializeURL(
-  node: SerovalURLNode,
-): string {
-  return assignIndexedValue(node.i, 'new URL("' + node.s + '")');
-}
-
-function serializeURLSearchParams(
-  node: SerovalURLSearchParamsNode,
-): string {
-  return assignIndexedValue(
-    node.i,
-    node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams',
-  );
-}
-
-function serializeReference(
-  node: SerovalReferenceNode,
-): string {
-  return assignIndexedValue(node.i, REFERENCES_KEY + '.get("' + node.s + '")');
-}
-
-function serializeWKSymbol(
-  node: SerovalWKSymbolNode,
-): string {
-  return assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
-}
-
-function serializePromiseConstructor(
-  node: SerovalPromiseConstructorNode,
-): string {
-  return assignIndexedValue(node.i, GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
-}
-
-function serializeReadableStreamClose(
-  node: SerovalReadableStreamCloseNode,
-): string {
-  return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + getRefExpr(node.i) + ',2)';
-}
-
-function serializeReadableStreamConstructor(
-  node: SerovalReadableStreamConstructorNode,
-): string {
-  return assignIndexedValue(node.i, GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CONSTRUCTOR + '()');
-}
-
-function serializeDOMException(
-  node: SerovalDOMExceptionNode,
-): string {
-  return assignIndexedValue(
-    node.i,
-    'new DOMException("' + node.s + '","' + node.c + '")',
-  );
-}
-
 const NULL_CONSTRUCTOR = 'Object.create(null)';
 
 const PROMISE_RESOLVE = 'Promise.resolve';
@@ -172,7 +79,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     if (flag !== SerovalObjectFlags.None) {
       this.flags.push({
         type: flag,
-        value: getRefExpr(id),
+        value: this.getRefParam(id),
       });
     }
   }
@@ -187,6 +94,10 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       return assignments;
     }
     return flags;
+  }
+
+  getRefParam(id: number): string {
+    return GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
   }
 
   /**
@@ -212,7 +123,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   ): void {
     this.assignments.push({
       t: 'add',
-      s: getRefExpr(ref),
+      s: this.getRefParam(ref),
       k: undefined,
       v: value,
     });
@@ -225,20 +136,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   ): void {
     this.assignments.push({
       t: 'set',
-      s: getRefExpr(ref),
-      k: key,
-      v: value,
-    });
-  }
-
-  createAppendAssignment(
-    ref: number,
-    key: string,
-    value: string,
-  ): void {
-    this.assignments.push({
-      t: 'append',
-      s: getRefExpr(ref),
+      s: this.getRefParam(ref),
       k: key,
       v: value,
     });
@@ -249,7 +147,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     index: number | string,
     value: string,
   ): void {
-    this.createAssignment(getRefExpr(ref) + '[' + index + ']', value);
+    this.createAssignment(this.getRefParam(ref) + '[' + index + ']', value);
   }
 
   private createObjectAssign(
@@ -257,13 +155,26 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     key: string,
     value: string,
   ): void {
-    this.createAssignment(getRefExpr(ref) + '.' + key, value);
+    this.createAssignment(this.getRefParam(ref) + '.' + key, value);
   }
 
   isIndexedValueInStack(
     node: SerovalNode,
   ): node is SerovalIndexedValueNode {
     return node.t === SerovalNodeType.IndexedValue && this.stack.includes(node.i);
+  }
+
+  private assignIndexedValue(
+    index: number,
+    value: string,
+  ): string {
+    return this.getRefParam(index) + '=' + value;
+  }
+
+  private serializeReference(
+    node: SerovalReferenceNode,
+  ): string {
+    return this.assignIndexedValue(node.i, REFERENCES_KEY + '.get("' + node.s + '")');
   }
 
   private serializeArray(
@@ -288,7 +199,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       if (item) {
       // Check if item is a parent
         if (this.isIndexedValueInStack(item)) {
-          this.createArrayAssign(id, i, getRefExpr(item.i));
+          this.createArrayAssign(id, i, this.getRefParam(item.i));
           isHoley = true;
         } else {
           values += this.serialize(item);
@@ -300,7 +211,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     }
     this.stack.pop();
     this.pushObjectFlag(node.o, node.i);
-    return assignIndexedValue(id, '[' + values + (isHoley ? ',]' : ']'));
+    return this.assignIndexedValue(id, '[' + values + (isHoley ? ',]' : ']'));
   }
 
   private getIterableAccess(): string {
@@ -358,7 +269,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
           // so that we don't have to serialize the key and wrap with brackets
           isIdentifier = check >= 0 || isValidIdentifier(key);
           if (this.isIndexedValueInStack(val)) {
-            refParam = getRefExpr(val.i);
+            refParam = this.getRefParam(val.i);
             if (isIdentifier && Number.isNaN(check)) {
               this.createObjectAssign(sourceID, key, refParam);
             } else {
@@ -463,11 +374,11 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       } else {
         const assignments = this.serializeAssignments(i, p);
         if (assignments) {
-          return '(' + assignIndexedValue(i, init) + ',' + assignments + getRefExpr(i) + ')';
+          return '(' + this.assignIndexedValue(i, init) + ',' + assignments + this.getRefParam(i) + ')';
         }
       }
     }
-    return assignIndexedValue(i, init);
+    return this.assignIndexedValue(i, init);
   }
 
   private serializeNullConstructor(
@@ -481,7 +392,19 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     node: SerovalObjectNode,
   ): string {
     this.pushObjectFlag(node.o, node.i);
-    return assignIndexedValue(node.i, this.serializeProperties(node.i, node.p));
+    return this.assignIndexedValue(node.i, this.serializeProperties(node.i, node.p));
+  }
+
+  private serializeDate(
+    node: SerovalDateNode,
+  ): string {
+    return this.assignIndexedValue(node.i, 'new Date("' + node.s + '")');
+  }
+
+  private serializeRegExp(
+    node: SerovalRegExpNode,
+  ): string {
+    return this.assignIndexedValue(node.i, '/' + node.c + '/' + node.m);
   }
 
   private serializeSet(
@@ -499,7 +422,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       for (let i = 0; i < size; i++) {
         item = items[i];
         if (this.isIndexedValueInStack(item)) {
-          this.createAddAssignment(id, getRefExpr(item.i));
+          this.createAddAssignment(id, this.getRefParam(item.i));
         } else {
         // Push directly
           result += (hasPrev ? ',' : '') + this.serialize(item);
@@ -511,7 +434,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
         serialized += '([' + result + '])';
       }
     }
-    return assignIndexedValue(id, serialized);
+    return this.assignIndexedValue(id, serialized);
   }
 
   private serializeMap(
@@ -537,10 +460,10 @@ export default class CrossSerializerContext extends BaseSerializerContext {
         val = vals[i];
         if (this.isIndexedValueInStack(key)) {
         // Create reference for the map instance
-          keyRef = getRefExpr(id);
+          keyRef = this.getRefParam(id);
           // Check if value is a parent
           if (this.isIndexedValueInStack(val)) {
-            valueRef = getRefExpr(val.i);
+            valueRef = this.getRefParam(val.i);
             // Register an assignment since
             // both key and value are a parent of this
             // Map instance
@@ -558,7 +481,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
           }
         } else if (this.isIndexedValueInStack(val)) {
         // Create ref for the Map instance
-          valueRef = getRefExpr(val.i);
+          valueRef = this.getRefParam(val.i);
           // Reset stack for the key serialization
           parent = this.stack;
           this.stack = [];
@@ -577,7 +500,41 @@ export default class CrossSerializerContext extends BaseSerializerContext {
         serialized += '([' + result + '])';
       }
     }
-    return assignIndexedValue(id, serialized);
+    return this.assignIndexedValue(id, serialized);
+  }
+
+  private serializeArrayBuffer(
+    node: SerovalArrayBufferNode,
+  ): string {
+    let result = 'new Uint8Array(';
+    const buffer = node.s;
+    const len = buffer.length;
+    if (len) {
+      result += '[';
+      for (let i = 0; i < len; i++) {
+        result += ((i > 0) ? ',' : '') + buffer[i];
+      }
+      result += ']';
+    }
+    return this.assignIndexedValue(node.i, result + ').buffer');
+  }
+
+  private serializeTypedArray(
+    node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
+  ): string {
+    return this.assignIndexedValue(
+      node.i,
+      'new ' + node.c + '(' + this.serialize(node.f) + ',' + node.b + ',' + node.l + ')',
+    );
+  }
+
+  private serializeDataView(
+    node: SerovalDataViewNode,
+  ): string {
+    return this.assignIndexedValue(
+      node.i,
+      'new DataView(' + this.serialize(node.f) + ',' + node.b + ',' + node.l + ')',
+    );
   }
 
   private serializeAggregateError(
@@ -613,7 +570,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     // inside the `then` expression so that
     // the Promise evaluates after the parent
     // has initialized
-      const ref = getRefExpr(fulfilled.i);
+      const ref = this.getRefParam(fulfilled.i);
       if (this.features & Feature.ArrowFunction) {
         if (node.s) {
           serialized = constructor + '().then(()=>' + ref + ')';
@@ -632,31 +589,34 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       // just inline the value/reference here
       serialized = constructor + '(' + result + ')';
     }
-    return assignIndexedValue(id, serialized);
+    return this.assignIndexedValue(id, serialized);
   }
 
-  private serializeTypedArray(
-    node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
+  private serializeWKSymbol(
+    node: SerovalWKSymbolNode,
   ): string {
-    return assignIndexedValue(
-      node.i,
-      'new ' + node.c + '(' + this.serialize(node.f) + ',' + node.b + ',' + node.l + ')',
-    );
+    return this.assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
   }
 
-  private serializeDataView(
-    node: SerovalDataViewNode,
+  private serializeURL(
+    node: SerovalURLNode,
   ): string {
-    return assignIndexedValue(
+    return this.assignIndexedValue(node.i, 'new URL("' + node.s + '")');
+  }
+
+  private serializeURLSearchParams(
+    node: SerovalURLSearchParamsNode,
+  ): string {
+    return this.assignIndexedValue(
       node.i,
-      'new DataView(' + this.serialize(node.f) + ',' + node.b + ',' + node.l + ')',
+      node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams',
     );
   }
 
   private serializeBlob(
     node: SerovalBlobNode,
   ): string {
-    return assignIndexedValue(
+    return this.assignIndexedValue(
       node.i,
       'new Blob([' + this.serialize(node.f) + '],{type:"' + node.c + '"})',
     );
@@ -665,7 +625,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   private serializeFile(
     node: SerovalFileNode,
   ): string {
-    return assignIndexedValue(
+    return this.assignIndexedValue(
       node.i,
       'new File([' + this.serialize(node.f) + '],"' + node.m + '",{type:"' + node.c + '",lastModified:' + node.b + '})',
     );
@@ -674,7 +634,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   private serializeHeaders(
     node: SerovalHeadersNode,
   ): string {
-    return assignIndexedValue(
+    return this.assignIndexedValue(
       node.i,
       'new Headers(' + this.serializeProperties(node.i, node.e) + ')',
     );
@@ -688,19 +648,16 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     const keys = node.e.k;
     const vals = node.e.v;
     const id = node.i;
-    const mainAssignments: Assignment[] = [];
-    let parentAssignment: Assignment[];
-    this.stack.push(id);
+    let result = '';
     for (let i = 0, len = node.e.s; i < len; i++) {
+      if (i !== 0) {
+        result += ',';
+      }
       key = keys[i];
       value = this.serialize(vals[i]);
-      parentAssignment = this.assignments;
-      this.assignments = mainAssignments;
-      this.createAppendAssignment(id, '"' + key + '"', value);
-      this.assignments = parentAssignment;
+      result += this.getRefParam(id) + '.append("' + key + '",' + value + ')';
     }
-    this.stack.pop();
-    return resolveAssignments(mainAssignments);
+    return result;
   }
 
   private serializeFormData(
@@ -708,10 +665,10 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   ): string {
     const size = node.e.s;
     const id = node.i;
-    const result = assignIndexedValue(id, 'new FormData()');
+    const result = this.assignIndexedValue(id, 'new FormData()');
     if (size) {
       const entries = this.serializeFormDataEntries(node);
-      return '(' + result + ',' + (entries == null ? '' : entries) + getRefExpr(id) + ')';
+      return '(' + result + ',' + (entries == null ? '' : entries) + this.getRefParam(id) + ')';
     }
     return result;
   }
@@ -719,43 +676,61 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   private serializeBoxed(
     node: SerovalBoxedNode,
   ): string {
-    return assignIndexedValue(node.i, 'Object(' + this.serialize(node.f) + ')');
+    return this.assignIndexedValue(node.i, 'Object(' + this.serialize(node.f) + ')');
+  }
+
+  private serializePromiseConstructor(
+    node: SerovalPromiseConstructorNode,
+  ): string {
+    return this.assignIndexedValue(node.i, GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR + '()');
   }
 
   private serializePromiseResolve(
     node: SerovalPromiseResolveNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_RESOLVE + '(' + getRefExpr(node.i) + ',' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_RESOLVE + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.f) + ')';
   }
 
   private serializePromiseReject(
     node: SerovalPromiseRejectNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_REJECT + '(' + getRefExpr(node.i) + ',' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_PROMISE_REJECT + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.f) + ')';
+  }
+
+  private serializeReadableStreamConstructor(
+    node: SerovalReadableStreamConstructorNode,
+  ): string {
+    return this.assignIndexedValue(node.i, GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CONSTRUCTOR + '()');
   }
 
   private serializeReadableStreamEnqueue(
     node: SerovalReadableStreamEnqueueNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + getRefExpr(node.i) + ',0,' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',0,' + this.serialize(node.f) + ')';
   }
 
   private serializeReadableStreamError(
     node: SerovalReadableStreamErrorNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + getRefExpr(node.i) + ',1,' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',1,' + this.serialize(node.f) + ')';
+  }
+
+  private serializeReadableStreamClose(
+    node: SerovalReadableStreamCloseNode,
+  ): string {
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',2)';
   }
 
   private serializeRequest(
     node: SerovalRequestNode,
   ): string {
-    return assignIndexedValue(node.i, 'new Request("' + node.s + '",' + this.serialize(node.f) + ')');
+    return this.assignIndexedValue(node.i, 'new Request("' + node.s + '",' + this.serialize(node.f) + ')');
   }
 
   private serializeResponse(
     node: SerovalResponseNode,
   ): string {
-    return assignIndexedValue(
+    return this.assignIndexedValue(
       node.i,
       'new Response(' + this.serialize(node.a[0]) + ',' + this.serialize(node.a[1]) + ')',
     );
@@ -764,7 +739,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   private serializeEvent(
     node: SerovalEventNode,
   ): string {
-    return assignIndexedValue(
+    return this.assignIndexedValue(
       node.i,
       'new Event("' + node.s + '",' + this.serialize(node.f) + ')',
     );
@@ -773,13 +748,22 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   private serializeCustomEvent(
     node: SerovalCustomEventNode,
   ): string {
-    return assignIndexedValue(
+    return this.assignIndexedValue(
       node.i,
       'new CustomEvent("' + node.s + '",' + this.serialize(node.f) + ')',
     );
   }
 
-  private serialize(node: SerovalNode): string {
+  private serializeDOMException(
+    node: SerovalDOMExceptionNode,
+  ): string {
+    return this.assignIndexedValue(
+      node.i,
+      'new DOMException("' + node.s + '","' + node.c + '")',
+    );
+  }
+
+  serialize(node: SerovalNode): string {
     switch (node.t) {
       case SerovalNodeType.Number:
         return '' + node.s;
@@ -790,7 +774,9 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       case SerovalNodeType.BigInt:
         return node.s + 'n';
       case SerovalNodeType.IndexedValue:
-        return getRefExpr(node.i);
+        return this.getRefParam(node.i);
+      case SerovalNodeType.Reference:
+        return this.serializeReference(node);
       case SerovalNodeType.Array:
         return this.serializeArray(node);
       case SerovalNodeType.Object:
@@ -798,15 +784,15 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       case SerovalNodeType.NullConstructor:
         return this.serializeNullConstructor(node);
       case SerovalNodeType.Date:
-        return serializeDate(node);
+        return this.serializeDate(node);
       case SerovalNodeType.RegExp:
-        return serializeRegExp(node);
+        return this.serializeRegExp(node);
       case SerovalNodeType.Set:
         return this.serializeSet(node);
       case SerovalNodeType.Map:
         return this.serializeMap(node);
       case SerovalNodeType.ArrayBuffer:
-        return serializeArrayBuffer(node);
+        return this.serializeArrayBuffer(node);
       case SerovalNodeType.BigIntTypedArray:
       case SerovalNodeType.TypedArray:
         return this.serializeTypedArray(node);
@@ -819,13 +805,11 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       case SerovalNodeType.Promise:
         return this.serializePromise(node);
       case SerovalNodeType.WKSymbol:
-        return serializeWKSymbol(node);
+        return this.serializeWKSymbol(node);
       case SerovalNodeType.URL:
-        return serializeURL(node);
+        return this.serializeURL(node);
       case SerovalNodeType.URLSearchParams:
-        return serializeURLSearchParams(node);
-      case SerovalNodeType.Reference:
-        return serializeReference(node);
+        return this.serializeURLSearchParams(node);
       case SerovalNodeType.Blob:
         return this.serializeBlob(node);
       case SerovalNodeType.File:
@@ -836,20 +820,20 @@ export default class CrossSerializerContext extends BaseSerializerContext {
         return this.serializeFormData(node);
       case SerovalNodeType.Boxed:
         return this.serializeBoxed(node);
+      case SerovalNodeType.PromiseConstructor:
+        return this.serializePromiseConstructor(node);
       case SerovalNodeType.PromiseResolve:
         return this.serializePromiseResolve(node);
       case SerovalNodeType.PromiseReject:
         return this.serializePromiseReject(node);
-      case SerovalNodeType.PromiseConstructor:
-        return serializePromiseConstructor(node);
-      case SerovalNodeType.ReadableStreamClose:
-        return serializeReadableStreamClose(node);
       case SerovalNodeType.ReadableStreamConstructor:
-        return serializeReadableStreamConstructor(node);
+        return this.serializeReadableStreamConstructor(node);
       case SerovalNodeType.ReadableStreamEnqueue:
         return this.serializeReadableStreamEnqueue(node);
       case SerovalNodeType.ReadableStreamError:
         return this.serializeReadableStreamError(node);
+      case SerovalNodeType.ReadableStreamClose:
+        return this.serializeReadableStreamClose(node);
       case SerovalNodeType.Request:
         return this.serializeRequest(node);
       case SerovalNodeType.Response:
@@ -859,7 +843,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       case SerovalNodeType.CustomEvent:
         return this.serializeCustomEvent(node);
       case SerovalNodeType.DOMException:
-        return serializeDOMException(node);
+        return this.serializeDOMException(node);
       default:
         throw new Error('invariant');
     }

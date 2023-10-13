@@ -176,19 +176,6 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     });
   }
 
-  createAppendAssignment(
-    ref: number,
-    key: string,
-    value: string,
-  ): void {
-    this.assignments.push({
-      t: 'append',
-      s: this.getRefParam(ref),
-      k: key,
-      v: value,
-    });
-  }
-
   private createArrayAssign(
     ref: number,
     index: number | string,
@@ -705,19 +692,16 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     const keys = node.e.k;
     const vals = node.e.v;
     const id = node.i;
-    const mainAssignments: Assignment[] = [];
-    let parentAssignment: Assignment[];
-    this.stack.push(id);
+    let result = '';
     for (let i = 0, len = node.e.s; i < len; i++) {
+      if (i !== 0) {
+        result += ',';
+      }
       key = keys[i];
       value = this.serialize(vals[i]);
-      parentAssignment = this.assignments;
-      this.assignments = mainAssignments;
-      this.createAppendAssignment(id, '"' + key + '"', value);
-      this.assignments = parentAssignment;
+      result += this.getRefParam(id) + '.append("' + key + '",' + value + ')';
     }
-    this.stack.pop();
-    return resolveAssignments(mainAssignments);
+    return result;
   }
 
   private serializeFormData(
