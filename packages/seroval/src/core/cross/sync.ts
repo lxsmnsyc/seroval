@@ -70,7 +70,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     super(options);
   }
 
-  parseItems(
+  private parseItems(
     current: unknown[],
   ): SerovalNode[] {
     const size = current.length;
@@ -95,7 +95,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     return nodes;
   }
 
-  parseArray(
+  private parseArray(
     id: number,
     current: unknown[],
   ): SerovalArrayNode {
@@ -115,7 +115,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseBoxed(
+  private parseBoxed(
     id: number,
     current: object,
   ): SerovalBoxedNode {
@@ -135,7 +135,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseProperties(
+  private parseProperties(
     properties: Record<string, unknown>,
   ): SerovalObjectRecordNode {
     const keys = Object.keys(properties);
@@ -183,7 +183,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parsePlainObject(
+  private parsePlainObject(
     id: number,
     current: Record<string, unknown>,
     empty: boolean,
@@ -204,7 +204,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseError(
+  private parseError(
     id: number,
     current: Error,
   ): SerovalErrorNode {
@@ -228,7 +228,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseMap(
+  private parseMap(
     id: number,
     current: Map<unknown, unknown>,
   ): SerovalMapNode {
@@ -271,7 +271,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseSet(
+  private parseSet(
     id: number,
     current: Set<unknown>,
   ): SerovalSetNode {
@@ -308,7 +308,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parsePlainProperties(
+  private parsePlainProperties(
     properties: Record<string, unknown>,
   ): SerovalPlainRecordNode {
     const keys = Object.keys(properties);
@@ -345,7 +345,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseHeaders(
+  private parseHeaders(
     id: number,
     current: Headers,
   ): SerovalHeadersNode {
@@ -369,7 +369,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseFormData(
+  private parseFormData(
     id: number,
     current: FormData,
   ): SerovalFormDataNode {
@@ -393,7 +393,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseEvent(
+  private parseEvent(
     id: number,
     current: Event,
   ): SerovalEventNode {
@@ -413,7 +413,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseCustomEvent(
+  private parseCustomEvent(
     id: number,
     current: CustomEvent,
   ): SerovalCustomEventNode {
@@ -433,7 +433,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseAggregateError(
+  private parseAggregateError(
     id: number,
     current: AggregateError,
   ): SerovalAggregateErrorNode {
@@ -457,7 +457,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseObject(
+  private parseObject(
     current: object | null,
   ): SerovalSyncNode {
     if (!current) {

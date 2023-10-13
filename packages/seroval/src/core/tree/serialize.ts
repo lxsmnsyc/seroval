@@ -112,7 +112,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return identifier;
   }
 
-  pushObjectFlag(flag: SerovalObjectFlags, id: number): void {
+  private pushObjectFlag(flag: SerovalObjectFlags, id: number): void {
     if (flag !== SerovalObjectFlags.None) {
       this.markRef(id);
       this.flags.push({
@@ -189,7 +189,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     });
   }
 
-  createArrayAssign(
+  private createArrayAssign(
     ref: number,
     index: number | string,
     value: string,
@@ -197,7 +197,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     this.createAssignment(this.getRefParam(ref) + '[' + index + ']', value);
   }
 
-  createObjectAssign(
+  private createObjectAssign(
     ref: number,
     key: string,
     value: string,
@@ -206,7 +206,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     this.createAssignment(this.getRefParam(ref) + '.' + key, value);
   }
 
-  assignIndexedValue(
+  private assignIndexedValue(
     index: number,
     value: string,
   ): string {
@@ -222,13 +222,13 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return node.t === SerovalNodeType.IndexedValue && this.stack.includes(node.i);
   }
 
-  serializeReference(
+  private serializeReference(
     node: SerovalReferenceNode,
   ): string {
     return this.assignIndexedValue(node.i, REFERENCES_KEY + '.get("' + node.s + '")');
   }
 
-  serializeArray(
+  private serializeArray(
     node: SerovalArrayNode,
   ): string {
     const id = node.i;
@@ -272,7 +272,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
       : '[Symbol.iterator]()';
   }
 
-  serializeIterable(
+  private serializeIterable(
     node: SerovalNode,
   ): string {
     const parent = this.stack;
@@ -289,7 +289,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return serialized;
   }
 
-  serializeProperties(
+  private serializeProperties(
     sourceID: number,
     node: SerovalObjectRecordNode,
   ): string {
@@ -341,14 +341,14 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return '{' + result + '}';
   }
 
-  serializeObject(
+  private serializeObject(
     node: SerovalObjectNode,
   ): string {
     this.pushObjectFlag(node.o, node.i);
     return this.assignIndexedValue(node.i, this.serializeProperties(node.i, node.p));
   }
 
-  serializeWithObjectAssign(
+  private serializeWithObjectAssign(
     value: SerovalObjectRecordNode,
     id: number,
     serialized: string,
@@ -360,7 +360,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return serialized;
   }
 
-  serializeAssignments(
+  private serializeAssignments(
     sourceID: number,
     node: SerovalObjectRecordNode,
   ): string | undefined {
@@ -423,7 +423,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return resolveAssignments(mainAssignments);
   }
 
-  serializeDictionary(
+  private serializeDictionary(
     i: number,
     p: SerovalObjectRecordNode | undefined,
     init: string,
@@ -442,26 +442,26 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return this.assignIndexedValue(i, init);
   }
 
-  serializeNullConstructor(
+  private serializeNullConstructor(
     node: SerovalNullConstructorNode,
   ): string {
     this.pushObjectFlag(node.o, node.i);
     return this.serializeDictionary(node.i, node.p, NULL_CONSTRUCTOR);
   }
 
-  serializeDate(
+  private serializeDate(
     node: SerovalDateNode,
   ): string {
     return this.assignIndexedValue(node.i, 'new Date("' + node.s + '")');
   }
 
-  serializeRegExp(
+  private serializeRegExp(
     node: SerovalRegExpNode,
   ): string {
     return this.assignIndexedValue(node.i, '/' + node.c + '/' + node.m);
   }
 
-  serializeSet(
+  private serializeSet(
     node: SerovalSetNode,
   ): string {
     let serialized = 'new Set';
@@ -492,7 +492,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return this.assignIndexedValue(id, serialized);
   }
 
-  serializeMap(
+  private serializeMap(
     node: SerovalMapNode,
   ): string {
     let serialized = 'new Map';
@@ -560,7 +560,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return this.assignIndexedValue(id, serialized);
   }
 
-  serializeArrayBuffer(
+  private serializeArrayBuffer(
     node: SerovalArrayBufferNode,
   ): string {
     let result = 'new Uint8Array(';
@@ -576,7 +576,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return this.assignIndexedValue(node.i, result + ').buffer');
   }
 
-  serializeTypedArray(
+  private serializeTypedArray(
     node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
   ): string {
     return this.assignIndexedValue(
@@ -585,7 +585,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeDataView(
+  private serializeDataView(
     node: SerovalDataViewNode,
   ): string {
     return this.assignIndexedValue(
@@ -594,7 +594,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeAggregateError(
+  private serializeAggregateError(
     node: SerovalAggregateErrorNode,
   ): string {
     // Serialize the required arguments
@@ -608,13 +608,13 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return this.serializeDictionary(id, node.p, serialized);
   }
 
-  serializeError(
+  private serializeError(
     node: SerovalErrorNode,
   ): string {
     return this.serializeDictionary(node.i, node.p, 'new ' + ERROR_CONSTRUCTOR_STRING[node.s] + '("' + node.m + '")');
   }
 
-  serializePromise(
+  private serializePromise(
     node: SerovalPromiseNode,
   ): string {
     let serialized: string;
@@ -649,19 +649,19 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return this.assignIndexedValue(id, serialized);
   }
 
-  serializeWKSymbol(
+  private serializeWKSymbol(
     node: SerovalWKSymbolNode,
   ): string {
     return this.assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
   }
 
-  serializeURL(
+  private serializeURL(
     node: SerovalURLNode,
   ): string {
     return this.assignIndexedValue(node.i, 'new URL("' + node.s + '")');
   }
 
-  serializeURLSearchParams(
+  private serializeURLSearchParams(
     node: SerovalURLSearchParamsNode,
   ): string {
     return this.assignIndexedValue(
@@ -670,7 +670,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeBlob(
+  private serializeBlob(
     node: SerovalBlobNode,
   ): string {
     return this.assignIndexedValue(
@@ -679,7 +679,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeFile(
+  private serializeFile(
     node: SerovalFileNode,
   ): string {
     return this.assignIndexedValue(
@@ -688,7 +688,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeHeaders(
+  private serializeHeaders(
     node: SerovalHeadersNode,
   ): string {
     return this.assignIndexedValue(
@@ -697,7 +697,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeFormDataEntries(
+  private serializeFormDataEntries(
     node: SerovalFormDataNode,
   ): string | undefined {
     let value: string;
@@ -720,7 +720,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return resolveAssignments(mainAssignments);
   }
 
-  serializeFormData(
+  private serializeFormData(
     node: SerovalFormDataNode,
   ): string {
     const size = node.e.s;
@@ -736,19 +736,19 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return result;
   }
 
-  serializeBoxed(
+  private serializeBoxed(
     node: SerovalBoxedNode,
   ): string {
     return this.assignIndexedValue(node.i, 'Object(' + this.serialize(node.f) + ')');
   }
 
-  serializeRequest(
+  private serializeRequest(
     node: SerovalRequestNode,
   ): string {
     return this.assignIndexedValue(node.i, 'new Request("' + node.s + '",' + this.serialize(node.f) + ')');
   }
 
-  serializeResponse(
+  private serializeResponse(
     node: SerovalResponseNode,
   ): string {
     return this.assignIndexedValue(
@@ -757,7 +757,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeEvent(
+  private serializeEvent(
     node: SerovalEventNode,
   ): string {
     return this.assignIndexedValue(
@@ -766,7 +766,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeCustomEvent(
+  private serializeCustomEvent(
     node: SerovalCustomEventNode,
   ): string {
     return this.assignIndexedValue(
@@ -775,7 +775,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     );
   }
 
-  serializeDOMException(
+  private serializeDOMException(
     node: SerovalDOMExceptionNode,
   ): string {
     return this.assignIndexedValue(

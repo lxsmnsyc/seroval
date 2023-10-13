@@ -80,7 +80,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     super(options);
   }
 
-  async parseItems(
+  private async parseItems(
     current: unknown[],
   ): Promise<SerovalNode[]> {
     const size = current.length;
@@ -105,7 +105,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     return nodes;
   }
 
-  async parseArray(
+  private async parseArray(
     id: number,
     current: unknown[],
   ): Promise<SerovalArrayNode> {
@@ -125,7 +125,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseBoxed(
+  private async parseBoxed(
     id: number,
     current: object,
   ): Promise<SerovalBoxedNode> {
@@ -145,7 +145,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseProperties(
+  private async parseProperties(
     properties: Record<string, unknown>,
   ): Promise<SerovalObjectRecordNode> {
     const keys = Object.keys(properties);
@@ -193,7 +193,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parsePlainObject(
+  private async parsePlainObject(
     id: number,
     current: Record<string, unknown>,
     empty: boolean,
@@ -214,7 +214,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseError(
+  private async parseError(
     id: number,
     current: Error,
   ): Promise<SerovalErrorNode> {
@@ -238,7 +238,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseMap(
+  private async parseMap(
     id: number,
     current: Map<unknown, unknown>,
   ): Promise<SerovalMapNode> {
@@ -281,7 +281,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseSet(
+  private async parseSet(
     id: number,
     current: Set<unknown>,
   ): Promise<SerovalSetNode> {
@@ -318,7 +318,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseBlob(
+  private async parseBlob(
     id: number,
     current: Blob,
   ): Promise<SerovalBlobNode> {
@@ -338,7 +338,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseFile(
+  private async parseFile(
     id: number,
     current: File,
   ): Promise<SerovalFileNode> {
@@ -358,7 +358,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parsePlainProperties(
+  private async parsePlainProperties(
     properties: Record<string, unknown>,
   ): Promise<SerovalPlainRecordNode> {
     const keys = Object.keys(properties);
@@ -395,7 +395,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseHeaders(
+  private async parseHeaders(
     id: number,
     current: Headers,
   ): Promise<SerovalHeadersNode> {
@@ -419,7 +419,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseFormData(
+  private async parseFormData(
     id: number,
     current: FormData,
   ): Promise<SerovalFormDataNode> {
@@ -443,7 +443,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseRequest(
+  private async parseRequest(
     id: number,
     current: Request,
   ): Promise<SerovalRequestNode> {
@@ -465,7 +465,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseResponse(
+  private async parseResponse(
     id: number,
     current: Response,
   ): Promise<SerovalResponseNode> {
@@ -490,7 +490,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseEvent(
+  private async parseEvent(
     id: number,
     current: Event,
   ): Promise<SerovalEventNode> {
@@ -510,7 +510,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseCustomEvent(
+  private async parseCustomEvent(
     id: number,
     current: CustomEvent,
   ): Promise<SerovalCustomEventNode> {
@@ -530,7 +530,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseAggregateError(
+  private async parseAggregateError(
     id: number,
     current: AggregateError,
   ): Promise<SerovalAggregateErrorNode> {
@@ -554,7 +554,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parsePromise(
+  private async parsePromise(
     id: number,
     current: Promise<unknown>,
   ): Promise<SerovalPromiseNode> {
@@ -575,7 +575,7 @@ export default class AsyncParserContext extends VanillaParserContext {
     };
   }
 
-  async parseObject(
+  private async parseObject(
     current: object | null,
   ): Promise<SerovalNode> {
     if (!current) {

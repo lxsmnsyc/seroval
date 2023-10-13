@@ -36,7 +36,7 @@ export default class CrossParserContext extends BaseParserContext {
     this.refs = options.refs || new Map<unknown, number>();
   }
 
-  createIndexedValue<T>(current: T): number {
+  protected createIndexedValue<T>(current: T): number {
     const ref = this.refs.get(current);
     if (ref == null) {
       const id = this.refs.size;
@@ -46,7 +46,7 @@ export default class CrossParserContext extends BaseParserContext {
     return ref;
   }
 
-  parseArrayBuffer(
+  protected parseArrayBuffer(
     current: ArrayBuffer,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalArrayBufferNode {
     const id = this.refs.get(current);
@@ -61,7 +61,7 @@ export default class CrossParserContext extends BaseParserContext {
     return createArrayBufferNode(newID, current);
   }
 
-  parseTypedArray(
+  protected parseTypedArray(
     id: number,
     current: TypedArrayValue,
   ): SerovalTypedArrayNode {
@@ -81,7 +81,7 @@ export default class CrossParserContext extends BaseParserContext {
     };
   }
 
-  parseBigIntTypedArray(
+  protected parseBigIntTypedArray(
     id: number,
     current: BigIntTypedArrayValue,
   ): SerovalBigIntTypedArrayNode {
@@ -101,7 +101,7 @@ export default class CrossParserContext extends BaseParserContext {
     };
   }
 
-  parseDataView(
+  protected parseDataView(
     id: number,
     current: DataView,
   ): SerovalDataViewNode {
@@ -121,7 +121,7 @@ export default class CrossParserContext extends BaseParserContext {
     };
   }
 
-  parseSymbol(
+  protected parseSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalWKSymbolNode {
     const id = this.refs.get(current);
@@ -136,7 +136,7 @@ export default class CrossParserContext extends BaseParserContext {
     return createWKSymbolNode(newID, current as WellKnownSymbols);
   }
 
-  parseFunction<T>(
+  protected parseFunction<T>(
     current: T,
   ): SerovalIndexedValueNode | SerovalReferenceNode {
     assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));

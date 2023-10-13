@@ -42,7 +42,7 @@ export default class VanillaParserContext extends BaseParserContext {
     return ref;
   }
 
-  parseArrayBuffer(
+  protected parseArrayBuffer(
     current: ArrayBuffer,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalArrayBufferNode {
     const id = this.createIndexedValue(current);
@@ -55,7 +55,7 @@ export default class VanillaParserContext extends BaseParserContext {
     return createArrayBufferNode(id, current);
   }
 
-  parseTypedArray(
+  protected parseTypedArray(
     id: number,
     current: TypedArrayValue,
   ): SerovalTypedArrayNode {
@@ -75,7 +75,7 @@ export default class VanillaParserContext extends BaseParserContext {
     };
   }
 
-  parseBigIntTypedArray(
+  protected parseBigIntTypedArray(
     id: number,
     current: BigIntTypedArrayValue,
   ): SerovalBigIntTypedArrayNode {
@@ -95,7 +95,7 @@ export default class VanillaParserContext extends BaseParserContext {
     };
   }
 
-  parseDataView(
+  protected parseDataView(
     id: number,
     current: DataView,
   ): SerovalDataViewNode {
@@ -115,7 +115,7 @@ export default class VanillaParserContext extends BaseParserContext {
     };
   }
 
-  parseSymbol(
+  protected parseSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalWKSymbolNode {
     const id = this.createIndexedValue(current);
@@ -128,7 +128,7 @@ export default class VanillaParserContext extends BaseParserContext {
     return createWKSymbolNode(id, current as WellKnownSymbols);
   }
 
-  parseFunction<T>(
+  protected parseFunction<T>(
     current: T,
   ): SerovalIndexedValueNode | SerovalReferenceNode {
     assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));

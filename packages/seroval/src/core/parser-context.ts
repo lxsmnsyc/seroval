@@ -18,7 +18,7 @@ export class BaseParserContext {
     this.features = ALL_ENABLED ^ (options.disabledFeatures || 0);
   }
 
-  getErrorOptions(
+  protected getErrorOptions(
     error: Error,
   ): Record<string, unknown> | undefined {
     let options: Record<string, unknown> | undefined;

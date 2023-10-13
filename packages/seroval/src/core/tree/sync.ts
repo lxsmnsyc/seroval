@@ -72,7 +72,7 @@ export default class SyncParserContext extends VanillaParserContext {
     super(options);
   }
 
-  parseItems(
+  private parseItems(
     current: unknown[],
   ): SerovalNode[] {
     const size = current.length;
@@ -97,7 +97,7 @@ export default class SyncParserContext extends VanillaParserContext {
     return nodes;
   }
 
-  parseArray(
+  private parseArray(
     id: number,
     current: unknown[],
   ): SerovalArrayNode {
@@ -117,7 +117,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseBoxed(
+  private parseBoxed(
     id: number,
     current: object,
   ): SerovalBoxedNode {
@@ -137,7 +137,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseProperties(
+  private parseProperties(
     properties: Record<string, unknown>,
   ): SerovalObjectRecordNode {
     const keys = Object.keys(properties);
@@ -185,7 +185,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parsePlainObject(
+  private parsePlainObject(
     id: number,
     current: Record<string, unknown>,
     empty: boolean,
@@ -206,7 +206,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseError(
+  private parseError(
     id: number,
     current: Error,
   ): SerovalErrorNode {
@@ -230,7 +230,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseMap(
+  private parseMap(
     id: number,
     current: Map<unknown, unknown>,
   ): SerovalMapNode {
@@ -273,7 +273,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseSet(
+  private parseSet(
     id: number,
     current: Set<unknown>,
   ): SerovalSetNode {
@@ -310,7 +310,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parsePlainProperties(
+  private parsePlainProperties(
     properties: Record<string, unknown>,
   ): SerovalPlainRecordNode {
     const keys = Object.keys(properties);
@@ -347,7 +347,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseHeaders(
+  private parseHeaders(
     id: number,
     current: Headers,
   ): SerovalHeadersNode {
@@ -371,7 +371,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseFormData(
+  private parseFormData(
     id: number,
     current: FormData,
   ): SerovalFormDataNode {
@@ -395,7 +395,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseEvent(
+  private parseEvent(
     id: number,
     current: Event,
   ): SerovalEventNode {
@@ -415,7 +415,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseCustomEvent(
+  private parseCustomEvent(
     id: number,
     current: CustomEvent,
   ): SerovalCustomEventNode {
@@ -435,7 +435,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseAggregateError(
+  private parseAggregateError(
     id: number,
     current: AggregateError,
   ): SerovalAggregateErrorNode {
@@ -459,7 +459,7 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
-  parseObject(
+  private parseObject(
     current: object | null,
   ): SerovalSyncNode {
     if (!current) {

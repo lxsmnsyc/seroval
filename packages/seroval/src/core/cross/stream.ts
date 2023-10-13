@@ -110,7 +110,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     }
   }
 
-  parseItems(
+  private parseItems(
     current: unknown[],
   ): SerovalNode[] {
     const size = current.length;
@@ -135,7 +135,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     return nodes;
   }
 
-  parseArray(
+  private parseArray(
     id: number,
     current: unknown[],
   ): SerovalArrayNode {
@@ -155,7 +155,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseBoxed(
+  private parseBoxed(
     id: number,
     current: object,
   ): SerovalBoxedNode {
@@ -175,7 +175,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseProperties(
+  private parseProperties(
     properties: Record<string, unknown>,
   ): SerovalObjectRecordNode {
     const keys = Object.keys(properties);
@@ -223,7 +223,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parsePlainObject(
+  private parsePlainObject(
     id: number,
     current: Record<string, unknown>,
     empty: boolean,
@@ -244,7 +244,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseError(
+  private parseError(
     id: number,
     current: Error,
   ): SerovalErrorNode {
@@ -268,7 +268,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseMap(
+  private parseMap(
     id: number,
     current: Map<unknown, unknown>,
   ): SerovalMapNode {
@@ -311,7 +311,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseSet(
+  private parseSet(
     id: number,
     current: Set<unknown>,
   ): SerovalSetNode {
@@ -348,7 +348,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parsePlainProperties(
+  private parsePlainProperties(
     properties: Record<string, unknown>,
   ): SerovalPlainRecordNode {
     const keys = Object.keys(properties);
@@ -385,7 +385,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseHeaders(
+  private parseHeaders(
     id: number,
     current: Headers,
   ): SerovalHeadersNode {
@@ -409,7 +409,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseFormData(
+  private parseFormData(
     id: number,
     current: FormData,
   ): SerovalFormDataNode {
@@ -433,7 +433,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  pushReadableStreamReader(
+  private pushReadableStreamReader(
     id: number,
     reader: ReadableStreamDefaultReader,
   ): void {
@@ -497,7 +497,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     );
   }
 
-  parseReadableStream(
+  private parseReadableStream(
     id: number,
     current: ReadableStream<unknown>,
   ): SerovalReadableStreamConstructorNode {
@@ -521,7 +521,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseRequest(
+  private parseRequest(
     id: number,
     current: Request,
   ): SerovalRequestNode {
@@ -543,7 +543,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseResponse(
+  private parseResponse(
     id: number,
     current: Response,
   ): SerovalResponseNode {
@@ -568,7 +568,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseEvent(
+  private parseEvent(
     id: number,
     current: Event,
   ): SerovalEventNode {
@@ -588,7 +588,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseCustomEvent(
+  private parseCustomEvent(
     id: number,
     current: CustomEvent,
   ): SerovalCustomEventNode {
@@ -608,7 +608,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseAggregateError(
+  private parseAggregateError(
     id: number,
     current: AggregateError,
   ): SerovalAggregateErrorNode {
@@ -632,7 +632,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parsePromise(
+  private parsePromise(
     id: number,
     current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
@@ -693,7 +693,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
-  parseObject(
+  private parseObject(
     current: object | null,
   ): SerovalNode {
     if (!current) {
@@ -843,7 +843,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
     throw new UnsupportedTypeError(current);
   }
 
-  parse<T>(current: T): SerovalNode {
+  private parse<T>(current: T): SerovalNode {
     const t = typeof current;
     if (this.features & Feature.BigInt && t === 'bigint') {
       return createBigIntNode(current as bigint);
