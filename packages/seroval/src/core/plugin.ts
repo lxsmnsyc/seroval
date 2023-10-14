@@ -1,8 +1,7 @@
+import type BaseAsyncParserContext from './base-async-parser';
 import type BaseSyncParserContext from './base-sync-parser';
-import type AsyncCrossParserContext from './cross/async';
 import type CrossSerializerContext from './cross/serialize';
 import type StreamCrossParserContext from './cross/stream';
-import type AsyncParserContext from './tree/async';
 import type VanillaDeserializerContext from './tree/deserialize';
 import type VanillaSerializerContext from './tree/serialize';
 
@@ -22,7 +21,7 @@ export interface Plugin<Value, Node> {
     ) => Node;
     async?: (
       value: Value,
-      ctx: AsyncParserContext | AsyncCrossParserContext,
+      ctx: BaseAsyncParserContext,
       data: PluginData,
     ) => Promise<Node>;
     stream?: (
