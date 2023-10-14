@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { SerovalNode } from '../src';
 import {
   createPlugin,
   serialize,
@@ -12,19 +13,21 @@ import {
   crossSerializeStream,
 } from '../src';
 
-const BufferPlugin = createPlugin<Buffer, unknown>({
+const BufferPlugin = createPlugin<Buffer, SerovalNode>({
   tag: 'Buffer',
   test(value) {
     return value instanceof Buffer;
   },
-  sync(value, ctx) {
-    return ctx.parse(value.toString('base64'));
-  },
-  async async(value, ctx) {
-    return ctx.parse(value.toString('base64'));
-  },
-  stream(value, ctx) {
-    return ctx.parse(value.toString('base64'));
+  parse: {
+    sync(value, ctx) {
+      return ctx.parse(value.toString('base64'));
+    },
+    async async(value, ctx) {
+      return ctx.parse(value.toString('base64'));
+    },
+    stream(value, ctx) {
+      return ctx.parse(value.toString('base64'));
+    },
   },
   serialize(value, ctx) {
     return `Buffer.from(${ctx.serialize(value)}, "base64")`;

@@ -10,24 +10,26 @@ import type SyncParserContext from './tree/sync';
 export interface Plugin<Value, Node> {
   tag: string;
   test(value: unknown): boolean;
-  sync?: (
-    value: Value,
-    ctx: SyncParserContext | SyncCrossParserContext,
-    id: number,
-    isCross: boolean,
-  ) => Node;
-  async?: (
-    value: Value,
-    ctx: AsyncParserContext | AsyncCrossParserContext,
-    id: number,
-    isCross: boolean,
-  ) => Promise<Node>;
-  stream?: (
-    value: Value,
-    ctx: StreamCrossParserContext,
-    id: number,
-    isCross: boolean,
-  ) => Node;
+  parse: {
+    sync?: (
+      value: Value,
+      ctx: SyncParserContext | SyncCrossParserContext,
+      id: number,
+      isCross: boolean,
+    ) => Node;
+    async?: (
+      value: Value,
+      ctx: AsyncParserContext | AsyncCrossParserContext,
+      id: number,
+      isCross: boolean,
+    ) => Promise<Node>;
+    stream?: (
+      value: Value,
+      ctx: StreamCrossParserContext,
+      id: number,
+      isCross: boolean,
+    ) => Node;
+  };
   serialize(
     node: Node,
     ctx: VanillaSerializerContext | CrossSerializerContext,
