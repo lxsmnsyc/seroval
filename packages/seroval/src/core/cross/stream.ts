@@ -708,11 +708,11 @@ export default class StreamCrossParserContext extends CrossParserContext {
     if (this.plugins) {
       for (let i = 0, len = this.plugins.length; i < len; i++) {
         const plugin = this.plugins[i];
-        if (plugin.stream && plugin.test(current)) {
+        if (plugin.parse.stream && plugin.test(current)) {
           return createPluginNode(
             id,
             plugin.tag,
-            plugin.stream(current, this, id, true),
+            plugin.parse.stream(current, this, id, true),
           );
         }
       }

@@ -461,11 +461,11 @@ export default class SyncParserContext extends VanillaParserContext {
     if (this.plugins) {
       for (let i = 0, len = this.plugins.length; i < len; i++) {
         const plugin = this.plugins[i];
-        if (plugin.sync && plugin.test(current)) {
+        if (plugin.parse.sync && plugin.test(current)) {
           return createPluginNode(
             id,
             plugin.tag,
-            plugin.sync(current, this, id, false),
+            plugin.parse.sync(current, this, id, false),
           );
         }
       }
