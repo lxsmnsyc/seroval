@@ -59,7 +59,7 @@ export class PluginAccess {
    */
   plugins?: Plugin<any, any>[];
 
-  constructor(options?: PluginAccessOptions) {
-    this.plugins = options?.plugins;
+  constructor(options: PluginAccessOptions) {
+    this.plugins = options.plugins;
   }
 }
