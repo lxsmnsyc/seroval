@@ -1,7 +1,6 @@
 import { ALL_ENABLED, BIGINT_FLAG, Feature } from './compat';
 import { ERROR_CONSTRUCTOR_STRING } from './constants';
-import type { PluginAccessOptions } from './plugin';
-import { PluginAccess } from './plugin';
+import type { Plugin, PluginAccessOptions } from './plugin';
 import { getErrorConstructor } from './shared';
 
 export interface ParserReference {
@@ -13,11 +12,13 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
 }
 
-export class BaseParserContext extends PluginAccess {
+export class BaseParserContext implements PluginAccessOptions {
   features: number;
 
+  plugins?: Plugin<any, any>[] | undefined;
+
   constructor(options: BaseParserContextOptions) {
-    super(options);
+    this.plugins = options.plugins;
     this.features = ALL_ENABLED ^ (options.disabledFeatures || 0);
   }
 

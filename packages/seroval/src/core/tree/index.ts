@@ -1,6 +1,6 @@
 import { Feature } from '../compat';
 import { SerovalNodeType } from '../constants';
-import type { PluginAccess } from '../plugin';
+import type { PluginAccessOptions } from '../plugin';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
 import AsyncParserContext from './async';
@@ -52,9 +52,9 @@ export function serialize<T>(
   const ctx = new SyncParserContext(options);
   const tree = ctx.parse(source);
   const serial = new VanillaSerializerContext({
-    markedRefs: ctx.marked,
-    features: ctx.features,
     plugins: options.plugins,
+    features: ctx.features,
+    markedRefs: ctx.marked,
   });
   const result = serial.serialize(tree);
   return finalize(
@@ -72,9 +72,9 @@ export async function serializeAsync<T>(
   const ctx = new AsyncParserContext(options);
   const tree = await ctx.parse(source);
   const serial = new VanillaSerializerContext({
-    markedRefs: ctx.marked,
-    features: ctx.features,
     plugins: options.plugins,
+    features: ctx.features,
+    markedRefs: ctx.marked,
   });
   const result = serial.serialize(tree);
   return finalize(
@@ -120,20 +120,20 @@ export async function toJSONAsync<T>(
   };
 }
 
-export function compileJSON(source: SerovalJSON, options: PluginAccess = {}): string {
+export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = {}): string {
   const ctx = new VanillaSerializerContext({
+    plugins: options.plugins,
     features: source.f,
     markedRefs: source.m,
-    plugins: options.plugins,
   });
   const result = ctx.serialize(source.t);
   return finalize(ctx, source.t.i, source.t.i === SerovalNodeType.Object, result);
 }
 
-export function fromJSON<T>(source: SerovalJSON, options: PluginAccess = {}): T {
+export function fromJSON<T>(source: SerovalJSON, options: PluginAccessOptions = {}): T {
   const ctx = new VanillaDeserializerContext({
-    markedRefs: source.m,
     plugins: options.plugins,
+    markedRefs: source.m,
   });
   return ctx.deserialize(source.t) as T;
 }

@@ -52,14 +52,3 @@ export function createPlugin<Value, Node>(
 export interface PluginAccessOptions {
   plugins?: Plugin<any, any>[];
 }
-
-export class PluginAccess {
-  /**
-   * @private
-   */
-  plugins?: Plugin<any, any>[];
-
-  constructor(options: PluginAccessOptions) {
-    this.plugins = options.plugins;
-  }
-}

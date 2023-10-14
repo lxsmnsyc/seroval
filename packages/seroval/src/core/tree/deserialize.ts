@@ -46,8 +46,7 @@ import {
   SerovalNodeType,
   SerovalObjectFlags,
 } from '../constants';
-import type { PluginAccessOptions } from '../plugin';
-import { PluginAccess } from '../plugin';
+import type { Plugin, PluginAccessOptions } from '../plugin';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
@@ -92,7 +91,7 @@ export interface DeserializerOptions extends PluginAccessOptions {
   markedRefs: number[] | Set<number>;
 }
 
-export default class VanillaDeserializerContext extends PluginAccess {
+export default class VanillaDeserializerContext implements PluginAccessOptions {
   /**
    * Mapping ids to values
    * @private
@@ -105,8 +104,10 @@ export default class VanillaDeserializerContext extends PluginAccess {
    */
   refs: Set<number>;
 
+  plugins?: Plugin<any, any>[] | undefined;
+
   constructor(options: DeserializerOptions) {
-    super(options);
+    this.plugins = options.plugins;
     this.refs = new Set(options.markedRefs);
   }
 
