@@ -1,5 +1,5 @@
 import { createIndexedValueNode, createReferenceNode } from '../base-primitives';
-import BaseSyncParserContext from '../base-sync-parser';
+import BaseSyncParserContext from '../base/sync';
 import type { BaseParserContextOptions } from '../parser-context';
 import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';

@@ -1,4 +1,4 @@
-import BaseAsyncParserContext from '../base-async-parser';
+import BaseAsyncParserContext from '../base/async';
 import { createIndexedValueNode, createReferenceNode } from '../base-primitives';
 import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';

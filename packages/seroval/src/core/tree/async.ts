@@ -1,4 +1,4 @@
-import BaseAsyncParserContext from '../base-async-parser';
+import BaseAsyncParserContext from '../base/async';
 import { createIndexedValueNode, createReferenceNode } from '../base-primitives';
 import type { BaseParserContextOptions } from '../parser-context';
 import { hasReferenceID } from '../reference';

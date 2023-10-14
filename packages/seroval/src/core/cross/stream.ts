@@ -7,8 +7,8 @@ import {
   createIndexedValueNode,
   createReferenceNode,
 } from '../base-primitives';
-import type { BaseStreamParserContextOptions } from '../base-stream-parser';
-import BaseStreamParserContext from '../base-stream-parser';
+import type { BaseStreamParserContextOptions } from '../base/stream';
+import BaseStreamParserContext from '../base/stream';
 
 export interface CrossStreamParserContextOptions extends BaseStreamParserContextOptions {
   scopeId?: string;
