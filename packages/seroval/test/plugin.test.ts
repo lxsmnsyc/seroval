@@ -29,11 +29,11 @@ const BufferPlugin = createPlugin<Buffer, SerovalNode>({
       return ctx.parse(value.toString('base64'));
     },
   },
-  serialize(value, ctx) {
-    return `Buffer.from(${ctx.serialize(value)}, "base64")`;
+  serialize(node, ctx) {
+    return `Buffer.from(${ctx.serialize(node)}, "base64")`;
   },
-  deserialize(value, ctx) {
-    return Buffer.from(ctx.deserialize(value) as string, 'base64');
+  deserialize(node, ctx) {
+    return Buffer.from(ctx.deserialize(node) as string, 'base64');
   },
 });
 
