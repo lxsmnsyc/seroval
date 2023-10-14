@@ -17,6 +17,7 @@
     "jsx": "react",
     "esModuleInterop": true,
     "target": "ESNext",
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "declarationMap": true
   }
 }
