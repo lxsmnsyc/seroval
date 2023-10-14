@@ -1,5 +1,4 @@
 /* eslint-disable prefer-spread */
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import { getReference } from '../reference';

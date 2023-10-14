@@ -47,7 +47,6 @@ import type {
   SerovalHeadersNode,
   SerovalPlainRecordNode,
   SerovalFormDataNode,
-  SerovalSyncNode,
   SerovalTypedArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
@@ -69,7 +68,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     current: T,
   ): number | SerovalIndexedValueNode | SerovalReferenceNode;
 
-  private parseItems(
+  protected parseItems(
     current: unknown[],
   ): SerovalNode[] {
     const size = current.length;
@@ -94,7 +93,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return nodes;
   }
 
-  private parseArray(
+  protected parseArray(
     id: number,
     current: unknown[],
   ): SerovalArrayNode {
@@ -114,7 +113,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseProperties(
+  protected parseProperties(
     properties: Record<string, unknown>,
   ): SerovalObjectRecordNode {
     const keys = Object.keys(properties);
@@ -159,7 +158,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parsePlainObject(
+  protected parsePlainObject(
     id: number,
     current: Record<string, unknown>,
     empty: boolean,
@@ -180,7 +179,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseBoxed(
+  protected parseBoxed(
     id: number,
     current: object,
   ): SerovalBoxedNode {
@@ -200,7 +199,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseTypedArray(
+  protected parseTypedArray(
     id: number,
     current: TypedArrayValue,
   ): SerovalTypedArrayNode {
@@ -220,7 +219,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseBigIntTypedArray(
+  protected parseBigIntTypedArray(
     id: number,
     current: BigIntTypedArrayValue,
   ): SerovalBigIntTypedArrayNode {
@@ -240,7 +239,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseDataView(
+  protected parseDataView(
     id: number,
     current: DataView,
   ): SerovalDataViewNode {
@@ -260,7 +259,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseError(
+  protected parseError(
     id: number,
     current: Error,
   ): SerovalErrorNode {
@@ -284,7 +283,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseMap(
+  protected parseMap(
     id: number,
     current: Map<unknown, unknown>,
   ): SerovalMapNode {
@@ -327,7 +326,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseSet(
+  protected parseSet(
     id: number,
     current: Set<unknown>,
   ): SerovalSetNode {
@@ -364,7 +363,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parsePlainProperties(
+  protected parsePlainProperties(
     properties: Record<string, unknown>,
   ): SerovalPlainRecordNode {
     const keys = Object.keys(properties);
@@ -401,7 +400,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseHeaders(
+  protected parseHeaders(
     id: number,
     current: Headers,
   ): SerovalHeadersNode {
@@ -425,7 +424,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseFormData(
+  protected parseFormData(
     id: number,
     current: FormData,
   ): SerovalFormDataNode {
@@ -449,7 +448,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseEvent(
+  protected parseEvent(
     id: number,
     current: Event,
   ): SerovalEventNode {
@@ -469,7 +468,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseCustomEvent(
+  protected parseCustomEvent(
     id: number,
     current: CustomEvent,
   ): SerovalCustomEventNode {
@@ -489,7 +488,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parseAggregateError(
+  protected parseAggregateError(
     id: number,
     current: AggregateError,
   ): SerovalAggregateErrorNode {
@@ -513,7 +512,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  private parsePlugin(
+  protected parsePlugin(
     id: number,
     current: unknown,
   ): SerovalPluginNode | undefined {
@@ -535,10 +534,10 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return undefined;
   }
 
-  private parseObject(
+  protected parseObject(
     id: number,
     current: object,
-  ): SerovalSyncNode {
+  ): SerovalNode {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
     }
@@ -664,11 +663,11 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     throw new UnsupportedTypeError(current);
   }
 
-  private parseInternal(
+  protected parseInternal(
     // eslint-disable-next-line @typescript-eslint/ban-types
     current: object | Function | symbol,
     mode: 'object' | 'function' | 'symbol',
-  ): SerovalSyncNode {
+  ): SerovalNode {
     if (mode === 'function') {
       assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
     }
@@ -688,7 +687,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
   }
 
-  parse<T>(current: T): SerovalSyncNode {
+  parse<T>(current: T): SerovalNode {
     const t = typeof current;
     if (this.features & Feature.BigInt && t === 'bigint') {
       return createBigIntNode(current as bigint);
