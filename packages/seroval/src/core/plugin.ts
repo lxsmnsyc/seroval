@@ -1,11 +1,10 @@
+import type BaseSyncParserContext from './base-sync-parser';
 import type AsyncCrossParserContext from './cross/async';
 import type CrossSerializerContext from './cross/serialize';
 import type StreamCrossParserContext from './cross/stream';
-import type SyncCrossParserContext from './cross/sync';
 import type AsyncParserContext from './tree/async';
 import type VanillaDeserializerContext from './tree/deserialize';
 import type VanillaSerializerContext from './tree/serialize';
-import type SyncParserContext from './tree/sync';
 
 export interface PluginData {
   id: number;
@@ -18,7 +17,7 @@ export interface Plugin<Value, Node> {
   parse: {
     sync?: (
       value: Value,
-      ctx: SyncParserContext | SyncCrossParserContext,
+      ctx: BaseSyncParserContext,
       data: PluginData,
     ) => Node;
     async?: (
