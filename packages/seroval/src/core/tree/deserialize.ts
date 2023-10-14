@@ -446,7 +446,10 @@ export default class VanillaDeserializerContext extends PluginAccess {
       for (let i = 0, len = this.plugins.length; i < len; i++) {
         const plugin = this.plugins[i];
         if (plugin.tag === node.c) {
-          return plugin.deserialize(node.s, this, node.i, false);
+          return plugin.deserialize(node.s, this, {
+            id: node.i,
+            isCross: false,
+          });
         }
       }
     }

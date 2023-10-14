@@ -581,7 +581,10 @@ export default class AsyncParserContext extends VanillaParserContext {
           return createPluginNode(
             id,
             plugin.tag,
-            await plugin.parse.async(current, this, id, false),
+            await plugin.parse.async(current, this, {
+              id,
+              isCross: false,
+            }),
           );
         }
       }

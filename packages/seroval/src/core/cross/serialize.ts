@@ -774,7 +774,10 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       for (let i = 0, len = this.plugins.length; i < len; i++) {
         const plugin = this.plugins[i];
         if (plugin.tag === node.c) {
-          return plugin.serialize(node.s, this, node.i, true);
+          return plugin.serialize(node.s, this, {
+            id: node.i,
+            isCross: true,
+          });
         }
       }
     }

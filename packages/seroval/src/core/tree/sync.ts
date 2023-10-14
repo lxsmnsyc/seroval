@@ -465,7 +465,10 @@ export default class SyncParserContext extends VanillaParserContext {
           return createPluginNode(
             id,
             plugin.tag,
-            plugin.parse.sync(current, this, id, false),
+            plugin.parse.sync(current, this, {
+              id,
+              isCross: false,
+            }),
           );
         }
       }

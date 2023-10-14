@@ -581,7 +581,10 @@ export default class AsyncCrossParserContext extends CrossParserContext {
           return createPluginNode(
             id,
             plugin.tag,
-            await plugin.parse.async(current, this, id, true),
+            await plugin.parse.async(current, this, {
+              id,
+              isCross: true,
+            }),
           );
         }
       }

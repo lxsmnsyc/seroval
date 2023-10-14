@@ -7,6 +7,11 @@ import type VanillaDeserializerContext from './tree/deserialize';
 import type VanillaSerializerContext from './tree/serialize';
 import type SyncParserContext from './tree/sync';
 
+export interface PluginData {
+  id: number;
+  isCross: boolean;
+}
+
 export interface Plugin<Value, Node> {
   tag: string;
   test(value: unknown): boolean;
@@ -14,33 +19,28 @@ export interface Plugin<Value, Node> {
     sync?: (
       value: Value,
       ctx: SyncParserContext | SyncCrossParserContext,
-      id: number,
-      isCross: boolean,
+      data: PluginData,
     ) => Node;
     async?: (
       value: Value,
       ctx: AsyncParserContext | AsyncCrossParserContext,
-      id: number,
-      isCross: boolean,
+      data: PluginData,
     ) => Promise<Node>;
     stream?: (
       value: Value,
       ctx: StreamCrossParserContext,
-      id: number,
-      isCross: boolean,
+      data: PluginData,
     ) => Node;
   };
   serialize(
     node: Node,
     ctx: VanillaSerializerContext | CrossSerializerContext,
-    id: number,
-    isCross: boolean,
+    data: PluginData,
   ): string;
   deserialize(
     node: Node,
     ctx: VanillaDeserializerContext,
-    id: number,
-    isCross: boolean,
+    data: PluginData,
   ): Value;
   isIterable?: (value: Value) => boolean;
 }
