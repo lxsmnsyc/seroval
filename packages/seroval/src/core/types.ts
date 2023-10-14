@@ -386,9 +386,9 @@ export interface SerovalDOMExceptionNode extends SerovalBaseNode {
 export interface SerovalPluginNode extends SerovalBaseNode {
   t: SerovalNodeType.Plugin;
   i: number;
-  // tag name
+  // value
   s: unknown;
-  // node
+  // tag name
   c: string;
 }
 

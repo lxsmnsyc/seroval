@@ -95,11 +95,13 @@ export interface DeserializerOptions extends PluginAccessOptions {
 
 export default class VanillaDeserializerContext extends PluginAccess {
   /**
+   * Mapping ids to values
    * @private
    */
   values: Map<number, unknown> = new Map();
 
   /**
+   * Which refs are pre-marked
    * @private
    */
   refs: Set<number>;

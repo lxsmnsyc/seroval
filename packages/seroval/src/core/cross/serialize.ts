@@ -109,7 +109,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
    * This is different from the assignments array as this one
    * signifies creation rather than mutation
    */
-  createAssignment(
+  private createAssignment(
     source: string,
     value: string,
   ): void {
@@ -121,7 +121,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     });
   }
 
-  createAddAssignment(
+  private createAddAssignment(
     ref: number,
     value: string,
   ): void {
@@ -133,7 +133,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     });
   }
 
-  createSetAssignment(
+  private createSetAssignment(
     ref: number,
     key: string,
     value: string,
