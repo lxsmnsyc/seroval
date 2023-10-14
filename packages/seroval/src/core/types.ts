@@ -5,7 +5,6 @@ import type {
   Symbols,
   ErrorConstructorTag,
 } from './constants';
-import type { SerializableNode } from './plugin';
 
 export interface SerovalBaseNode {
   // Type of the node
@@ -388,7 +387,7 @@ export interface SerovalPluginNode extends SerovalBaseNode {
   t: SerovalNodeType.Plugin;
   i: number;
   // tag name
-  s: SerializableNode;
+  s: unknown;
   // node
   c: string;
 }

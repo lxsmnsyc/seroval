@@ -465,7 +465,7 @@ export default class SyncCrossParserContext extends CrossParserContext {
           return createPluginNode(
             id,
             plugin.tag,
-            plugin.sync(current, id, this, true),
+            plugin.sync(current, this, id, true),
           );
         }
       }

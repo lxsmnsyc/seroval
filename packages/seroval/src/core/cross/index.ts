@@ -42,6 +42,7 @@ export function crossSerialize<T>(
   const tree = ctx.parse(source);
   const serial = new CrossSerializerContext({
     features: ctx.features,
+    plugins: options.plugins,
   });
   const result = serial.serialize(tree);
   return finalize(
@@ -60,6 +61,7 @@ export async function crossSerializeAsync<T>(
   const tree = await ctx.parse(source);
   const serial = new CrossSerializerContext({
     features: ctx.features,
+    plugins: options.plugins,
   });
   const result = serial.serialize(tree);
   return finalize(

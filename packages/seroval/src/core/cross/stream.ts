@@ -712,7 +712,7 @@ export default class StreamCrossParserContext extends CrossParserContext {
           return createPluginNode(
             id,
             plugin.tag,
-            plugin.stream(current, id, this, true),
+            plugin.stream(current, this, id, true),
           );
         }
       }

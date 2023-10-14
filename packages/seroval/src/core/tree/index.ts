@@ -54,7 +54,7 @@ export function serialize<T>(
   const serial = new VanillaSerializerContext({
     markedRefs: ctx.marked,
     features: ctx.features,
-    plugins: options?.plugins,
+    plugins: options.plugins,
   });
   const result = serial.serialize(tree);
   return finalize(
@@ -74,7 +74,7 @@ export async function serializeAsync<T>(
   const serial = new VanillaSerializerContext({
     markedRefs: ctx.marked,
     features: ctx.features,
-    plugins: options?.plugins,
+    plugins: options.plugins,
   });
   const result = serial.serialize(tree);
   return finalize(
@@ -120,20 +120,20 @@ export async function toJSONAsync<T>(
   };
 }
 
-export function compileJSON(source: SerovalJSON, options?: PluginAccess): string {
+export function compileJSON(source: SerovalJSON, options: PluginAccess = {}): string {
   const ctx = new VanillaSerializerContext({
     features: source.f,
     markedRefs: source.m,
-    plugins: options?.plugins,
+    plugins: options.plugins,
   });
   const result = ctx.serialize(source.t);
   return finalize(ctx, source.t.i, source.t.i === SerovalNodeType.Object, result);
 }
 
-export function fromJSON<T>(source: SerovalJSON, options?: PluginAccess): T {
+export function fromJSON<T>(source: SerovalJSON, options: PluginAccess = {}): T {
   const ctx = new VanillaDeserializerContext({
     markedRefs: source.m,
-    plugins: options?.plugins,
+    plugins: options.plugins,
   });
   return ctx.deserialize(source.t) as T;
 }

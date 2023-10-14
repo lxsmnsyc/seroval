@@ -465,7 +465,7 @@ export default class SyncParserContext extends VanillaParserContext {
           return createPluginNode(
             id,
             plugin.tag,
-            plugin.sync(current, id, this, false),
+            plugin.sync(current, this, id, false),
           );
         }
       }

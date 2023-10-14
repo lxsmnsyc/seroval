@@ -7,7 +7,6 @@ import {
   NAN_NODE,
   NEG_ZERO_NODE,
 } from './literals';
-import type { SerializableNode } from './plugin';
 import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
@@ -212,7 +211,7 @@ export function createReferenceNode<T>(
 export function createPluginNode(
   id: number,
   tag: string,
-  value: SerializableNode,
+  value: unknown,
 ): SerovalPluginNode {
   return {
     t: SerovalNodeType.Plugin,
