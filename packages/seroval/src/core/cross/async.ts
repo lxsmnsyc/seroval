@@ -4,14 +4,14 @@ import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';
 import type { CrossParserContextOptions } from './cross-parser';
 
-export type CrossSyncParserContextOptions = CrossParserContextOptions
+export type CrossAsyncParserContextOptions = CrossParserContextOptions
 
 export default class CrossAsyncParserContext extends BaseAsyncParserContext {
   scopeId?: string;
 
   refs: Map<unknown, number>;
 
-  constructor(options: CrossSyncParserContextOptions) {
+  constructor(options: CrossAsyncParserContextOptions) {
     super(options);
     this.scopeId = options.scopeId;
     this.refs = options.refs || new Map<unknown, number>();

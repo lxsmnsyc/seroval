@@ -1,13 +1,12 @@
 import { Feature } from '../compat';
 import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import { serializeString } from '../string';
-import type { AsyncCrossParserContextOptions } from './async';
+import type { CrossAsyncParserContextOptions } from './async';
 import AsyncCrossParserContext from './async';
 import CrossSerializerContext from './serialize';
-// import type { SerovalNode } from '../types';
-import type { StreamCrossParserContextOptions } from './stream';
+import type { CrossStreamParserContextOptions } from './stream';
 import StreamCrossParserContext from './stream';
-import type { SyncCrossParserContextOptions } from './sync';
+import type { CrossSyncParserContextOptions } from './sync';
 import SyncCrossParserContext from './sync';
 
 function finalize(
@@ -36,7 +35,7 @@ function finalize(
 
 export function crossSerialize<T>(
   source: T,
-  options: SyncCrossParserContextOptions = {},
+  options: CrossSyncParserContextOptions = {},
 ): string {
   const ctx = new SyncCrossParserContext(options);
   const tree = ctx.parse(source);
@@ -55,7 +54,7 @@ export function crossSerialize<T>(
 
 export async function crossSerializeAsync<T>(
   source: T,
-  options: AsyncCrossParserContextOptions = {},
+  options: CrossAsyncParserContextOptions = {},
 ): Promise<string> {
   const ctx = new AsyncCrossParserContext(options);
   const tree = await ctx.parse(source);
@@ -118,7 +117,7 @@ export async function crossSerializeAsync<T>(
 //   return deserializeTree(serial, source.t) as T;
 // }
 
-export interface CrossSerializeStreamOptions extends Omit<StreamCrossParserContextOptions, 'onParse'> {
+export interface CrossSerializeStreamOptions extends Omit<CrossStreamParserContextOptions, 'onParse'> {
   onSerialize: (data: string, initial: boolean) => void;
 }
 
