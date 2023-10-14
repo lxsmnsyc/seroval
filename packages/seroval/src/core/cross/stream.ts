@@ -25,19 +25,6 @@ export default class CrossStreamParserContext extends BaseStreamParserContext {
     this.refs = options.refs || new Map<unknown, number>();
   }
 
-  /**
-   * @private
-   */
-  protected createIndexedValue<T>(current: T): number {
-    const ref = this.refs.get(current);
-    if (ref == null) {
-      const id = this.refs.size;
-      this.refs.set(current, id);
-      return id;
-    }
-    return ref;
-  }
-
   protected getReference<T>(current: T): number | SerovalIndexedValueNode | SerovalReferenceNode {
     const registeredID = this.refs.get(current);
     if (registeredID != null) {
