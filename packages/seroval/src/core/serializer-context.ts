@@ -1,10 +1,12 @@
 import type { Assignment, FlaggedObject } from './assignments';
+import type { PluginAccessOptions } from './plugin';
+import { PluginAccess } from './plugin';
 
-export interface BaseSerializerContextOptions {
+export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
 }
 
-export class BaseSerializerContext {
+export class BaseSerializerContext extends PluginAccess {
   /**
    * @private
    */
@@ -29,6 +31,7 @@ export class BaseSerializerContext {
   assignments: Assignment[] = [];
 
   constructor(options: BaseSerializerContextOptions) {
+    super(options);
     this.features = options.features;
   }
 }

@@ -36,7 +36,7 @@ function finalize(
 
 export function crossSerialize<T>(
   source: T,
-  options?: SyncCrossParserContextOptions,
+  options: SyncCrossParserContextOptions = {},
 ): string {
   const ctx = new SyncCrossParserContext(options);
   const tree = ctx.parse(source);
@@ -54,7 +54,7 @@ export function crossSerialize<T>(
 
 export async function crossSerializeAsync<T>(
   source: T,
-  options?: AsyncCrossParserContextOptions,
+  options: AsyncCrossParserContextOptions = {},
 ): Promise<string> {
   const ctx = new AsyncCrossParserContext(options);
   const tree = await ctx.parse(source);

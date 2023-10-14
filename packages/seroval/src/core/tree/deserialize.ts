@@ -26,6 +26,7 @@ import type {
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
+  SerovalPluginNode,
   SerovalPromiseNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
@@ -46,6 +47,8 @@ import {
   SerovalNodeType,
   SerovalObjectFlags,
 } from '../constants';
+import type { PluginAccessOptions } from '../plugin';
+import { PluginAccess } from '../plugin';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
@@ -86,11 +89,11 @@ function createDeferred(): Deferred {
   };
 }
 
-export interface DeserializerOptions {
+export interface DeserializerOptions extends PluginAccessOptions {
   markedRefs: number[] | Set<number>;
 }
 
-export default class VanillaDeserializerContext {
+export default class VanillaDeserializerContext extends PluginAccess {
   /**
    * @private
    */
@@ -102,6 +105,7 @@ export default class VanillaDeserializerContext {
   refs: Set<number>;
 
   constructor(options: DeserializerOptions) {
+    super(options);
     this.refs = new Set(options.markedRefs);
   }
 
@@ -437,6 +441,18 @@ export default class VanillaDeserializerContext {
     );
   }
 
+  private deserializePlugin(node: SerovalPluginNode): unknown {
+    if (this.plugins) {
+      for (let i = 0, len = this.plugins.length; i < len; i++) {
+        const plugin = this.plugins[i];
+        if (plugin.tag === node.c) {
+          return plugin.deserialize(node.s, node.i, this, false);
+        }
+      }
+    }
+    throw new Error('Missing plugin for tag "' + node.c + '".');
+  }
+
   deserialize(node: SerovalNode): unknown {
     switch (node.t) {
       case SerovalNodeType.Constant:
@@ -503,6 +519,8 @@ export default class VanillaDeserializerContext {
         return this.deserializeCustomEvent(node);
       case SerovalNodeType.DOMException:
         return this.deserializeDOMException(node);
+      case SerovalNodeType.Plugin:
+        return this.deserializePlugin(node);
       default:
         throw new Error('invariant');
     }

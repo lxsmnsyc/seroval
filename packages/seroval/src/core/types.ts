@@ -5,6 +5,7 @@ import type {
   Symbols,
   ErrorConstructorTag,
 } from './constants';
+import type { SerializableNode } from './plugin';
 
 export interface SerovalBaseNode {
   // Type of the node
@@ -383,6 +384,15 @@ export interface SerovalDOMExceptionNode extends SerovalBaseNode {
   c: string;
 }
 
+export interface SerovalPluginNode extends SerovalBaseNode {
+  t: SerovalNodeType.Plugin;
+  i: number;
+  // tag name
+  s: SerializableNode;
+  // node
+  c: string;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -408,7 +418,8 @@ export type SerovalSyncNode =
   | SerovalBoxedNode
   | SerovalEventNode
   | SerovalCustomEventNode
-  | SerovalDOMExceptionNode;
+  | SerovalDOMExceptionNode
+  | SerovalPluginNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode

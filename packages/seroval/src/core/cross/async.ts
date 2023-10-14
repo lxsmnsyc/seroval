@@ -35,6 +35,7 @@ import type {
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
+  SerovalPluginNode,
   SerovalPromiseNode,
   SerovalRequestNode,
   SerovalResponseNode,
@@ -50,6 +51,7 @@ import {
   createDateNode,
   createIndexedValueNode,
   createNumberNode,
+  createPluginNode,
   createReferenceNode,
   createRegExpNode,
   createStringNode,
@@ -70,15 +72,9 @@ type ObjectLikeNode =
   | SerovalNullConstructorNode
   | SerovalPromiseNode;
 
-export interface AsyncCrossParserContextOptions extends CrossParserContextOptions {
-  // TODO any options?
-}
+export type AsyncCrossParserContextOptions = CrossParserContextOptions
 
 export default class AsyncCrossParserContext extends CrossParserContext {
-  constructor(options: Partial<AsyncCrossParserContextOptions> = {}) {
-    super(options);
-  }
-
   private async parseItems(
     current: unknown[],
   ): Promise<SerovalNode[]> {
@@ -574,6 +570,25 @@ export default class AsyncCrossParserContext extends CrossParserContext {
     };
   }
 
+  private async parsePlugin(
+    id: number,
+    current: unknown,
+  ): Promise<SerovalPluginNode | undefined> {
+    if (this.plugins) {
+      for (let i = 0, len = this.plugins.length; i < len; i++) {
+        const plugin = this.plugins[i];
+        if (plugin.async && plugin.test(current)) {
+          return createPluginNode(
+            id,
+            plugin.tag,
+            await plugin.async(current, id, this, true),
+          );
+        }
+      }
+    }
+    return undefined;
+  }
+
   private async parseObject(
     current: object | null,
   ): Promise<SerovalNode> {
@@ -700,6 +715,10 @@ export default class AsyncCrossParserContext extends CrossParserContext {
         default:
           break;
       }
+    }
+    const parsed = await this.parsePlugin(id, current);
+    if (parsed) {
+      return parsed;
     }
     if (
       (this.features & Feature.AggregateError)

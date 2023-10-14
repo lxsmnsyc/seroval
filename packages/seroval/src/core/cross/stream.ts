@@ -33,6 +33,7 @@ import type {
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
+  SerovalPluginNode,
   SerovalPromiseConstructorNode,
   SerovalReadableStreamConstructorNode,
   SerovalRequestNode,
@@ -49,6 +50,7 @@ import {
   createDateNode,
   createIndexedValueNode,
   createNumberNode,
+  createPluginNode,
   createReferenceNode,
   createRegExpNode,
   createStringNode,
@@ -699,6 +701,25 @@ export default class StreamCrossParserContext extends CrossParserContext {
     };
   }
 
+  private parsePlugin(
+    id: number,
+    current: unknown,
+  ): SerovalPluginNode | undefined {
+    if (this.plugins) {
+      for (let i = 0, len = this.plugins.length; i < len; i++) {
+        const plugin = this.plugins[i];
+        if (plugin.stream && plugin.test(current)) {
+          return createPluginNode(
+            id,
+            plugin.tag,
+            plugin.stream(current, id, this, true),
+          );
+        }
+      }
+    }
+    return undefined;
+  }
+
   private parseObject(
     current: object | null,
   ): SerovalNode {
@@ -823,6 +844,10 @@ export default class StreamCrossParserContext extends CrossParserContext {
         default:
           break;
       }
+    }
+    const parsed = this.parsePlugin(id, current);
+    if (parsed) {
+      return parsed;
     }
     if (
       (this.features & Feature.AggregateError)

@@ -33,6 +33,7 @@ import type {
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
+  SerovalPluginNode,
   SerovalSetNode,
   SerovalSyncNode,
 } from '../types';
@@ -46,6 +47,7 @@ import {
   createDateNode,
   createIndexedValueNode,
   createNumberNode,
+  createPluginNode,
   createReferenceNode,
   createRegExpNode,
   createStringNode,
@@ -65,10 +67,6 @@ type ObjectLikeNode =
 export type SyncCrossParserContextOptions = CrossParserContextOptions
 
 export default class SyncCrossParserContext extends CrossParserContext {
-  constructor(options: Partial<SyncCrossParserContextOptions> = {}) {
-    super(options);
-  }
-
   private parseItems(
     current: unknown[],
   ): SerovalNode[] {
@@ -456,6 +454,25 @@ export default class SyncCrossParserContext extends CrossParserContext {
     };
   }
 
+  private parsePlugin(
+    id: number,
+    current: unknown,
+  ): SerovalPluginNode | undefined {
+    if (this.plugins) {
+      for (let i = 0, len = this.plugins.length; i < len; i++) {
+        const plugin = this.plugins[i];
+        if (plugin.sync && plugin.test(current)) {
+          return createPluginNode(
+            id,
+            plugin.tag,
+            plugin.sync(current, id, this, true),
+          );
+        }
+      }
+    }
+    return undefined;
+  }
+
   private parseObject(
     current: object | null,
   ): SerovalSyncNode {
@@ -574,6 +591,10 @@ export default class SyncCrossParserContext extends CrossParserContext {
         default:
           break;
       }
+    }
+    const parsed = this.parsePlugin(id, current);
+    if (parsed) {
+      return parsed;
     }
     if (
       (this.features & Feature.AggregateError)

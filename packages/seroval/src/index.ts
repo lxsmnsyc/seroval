@@ -17,5 +17,6 @@ export * from './core/cross';
 export { GLOBAL_CONTEXT_API_SCRIPT, getCrossReferenceHeader } from './core/keys';
 
 export { default as Serializer } from './core/Serializer';
+export * from './core/plugin';
 
 export default serialize;

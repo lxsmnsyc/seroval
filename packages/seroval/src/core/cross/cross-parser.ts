@@ -30,7 +30,7 @@ export default class CrossParserContext extends BaseParserContext {
 
   refs: Map<unknown, number>;
 
-  constructor(options: Partial<CrossParserContextOptions> = {}) {
+  constructor(options: CrossParserContextOptions) {
     super(options);
     this.scopeId = options.scopeId;
     this.refs = options.refs || new Map<unknown, number>();

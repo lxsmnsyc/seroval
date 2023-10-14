@@ -33,10 +33,6 @@ export default class VanillaParserContext extends BaseParserContext {
    */
   marked: Set<number> = new Set();
 
-  constructor(options: Partial<VanillaParserContextOptions> = {}) {
-    super(options);
-  }
-
   /**
    * @private
    */

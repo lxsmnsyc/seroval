@@ -33,6 +33,7 @@ import type {
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPlainRecordNode,
+  SerovalPluginNode,
   SerovalSetNode,
   SerovalSyncNode,
 } from '../types';
@@ -46,6 +47,7 @@ import {
   createDateNode,
   createIndexedValueNode,
   createNumberNode,
+  createPluginNode,
   createReferenceNode,
   createRegExpNode,
   createStringNode,
@@ -62,15 +64,9 @@ type ObjectLikeNode =
   | SerovalObjectNode
   | SerovalNullConstructorNode;
 
-export interface SyncParserContextOptions extends VanillaParserContextOptions {
-  // TODO any options?
-}
+export type SyncParserContextOptions = VanillaParserContextOptions
 
 export default class SyncParserContext extends VanillaParserContext {
-  constructor(options: Partial<SyncParserContextOptions> = {}) {
-    super(options);
-  }
-
   private parseItems(
     current: unknown[],
   ): SerovalNode[] {
@@ -458,6 +454,25 @@ export default class SyncParserContext extends VanillaParserContext {
     };
   }
 
+  private parsePlugin(
+    id: number,
+    current: unknown,
+  ): SerovalPluginNode | undefined {
+    if (this.plugins) {
+      for (let i = 0, len = this.plugins.length; i < len; i++) {
+        const plugin = this.plugins[i];
+        if (plugin.sync && plugin.test(current)) {
+          return createPluginNode(
+            id,
+            plugin.tag,
+            plugin.sync(current, id, this, false),
+          );
+        }
+      }
+    }
+    return undefined;
+  }
+
   private parseObject(
     current: object | null,
   ): SerovalSyncNode {
@@ -574,6 +589,10 @@ export default class SyncParserContext extends VanillaParserContext {
         default:
           break;
       }
+    }
+    const parsed = this.parsePlugin(id, current);
+    if (parsed) {
+      return parsed;
     }
     if (
       (this.features & Feature.AggregateError)

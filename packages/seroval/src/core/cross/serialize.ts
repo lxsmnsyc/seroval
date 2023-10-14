@@ -41,6 +41,7 @@ import type {
   SerovalEventNode,
   SerovalCustomEventNode,
   SerovalDOMExceptionNode,
+  SerovalPluginNode,
 } from '../types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -766,6 +767,20 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     );
   }
 
+  private serializePlugin(
+    node: SerovalPluginNode,
+  ): string {
+    if (this.plugins) {
+      for (let i = 0, len = this.plugins.length; i < len; i++) {
+        const plugin = this.plugins[i];
+        if (plugin.tag === node.c) {
+          return plugin.serialize(node.s, node.i, this, true);
+        }
+      }
+    }
+    throw new Error('Missing plugin for tag "' + node.c + '".');
+  }
+
   serialize(node: SerovalNode): string {
     switch (node.t) {
       case SerovalNodeType.Constant:
@@ -847,6 +862,8 @@ export default class CrossSerializerContext extends BaseSerializerContext {
         return this.serializeCustomEvent(node);
       case SerovalNodeType.DOMException:
         return this.serializeDOMException(node);
+      case SerovalNodeType.Plugin:
+        return this.serializePlugin(node);
       default:
         throw new Error('invariant');
     }
