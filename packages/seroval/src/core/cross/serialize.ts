@@ -84,6 +84,9 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     }
   }
 
+  /**
+   * @private
+   */
   resolvePatches(): string | undefined {
     const assignments = resolveAssignments(this.assignments);
     const flags = resolveFlags(this.flags);

@@ -91,8 +91,14 @@ export interface DeserializerOptions {
 }
 
 export default class VanillaDeserializerContext {
+  /**
+   * @private
+   */
   values: Map<number, unknown> = new Map();
 
+  /**
+   * @private
+   */
   refs: Set<number>;
 
   constructor(options: DeserializerOptions) {

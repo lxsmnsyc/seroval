@@ -18,6 +18,9 @@ export class BaseParserContext {
     this.features = ALL_ENABLED ^ (options.disabledFeatures || 0);
   }
 
+  /**
+   * @private
+   */
   protected getErrorOptions(
     error: Error,
   ): Record<string, unknown> | undefined {
@@ -48,6 +51,9 @@ export class BaseParserContext {
     return options;
   }
 
+  /**
+   * @private
+   */
   protected isIterable(
     value: unknown,
   ): value is Iterable<unknown> {

@@ -62,16 +62,28 @@ export interface VanillaSerializerContextOptions extends BaseSerializerContextOp
 }
 
 export default class VanillaSerializerContext extends BaseSerializerContext {
-  // Amount of refs
+  /**
+   * Amount of refs
+   * @private
+   */
   size = 0;
 
-  // Map tree refs to actual refs
+  /**
+   * Map tree refs to actual refs
+   * @private
+   */
   valid: (number | undefined)[] = [];
 
-  // Refs that are...referenced
+  /**
+   * Refs that are...referenced
+   * @private
+   */
   marked: Set<number>;
 
-  // Variables
+  /**
+   * Variables
+   * @private
+   */
   vars: (string | undefined)[] = [];
 
   constructor(options: VanillaSerializerContextOptions) {

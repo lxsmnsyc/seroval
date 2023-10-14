@@ -74,14 +74,14 @@ export interface StreamCrossParserContextOptions extends CrossParserContextOptio
 
 export default class StreamCrossParserContext extends CrossParserContext {
   // Life
-  alive = true;
+  private alive = true;
 
   // Amount of pending promises/streams
-  pending = 0;
+  private pending = 0;
 
-  onParseCallback: (node: SerovalNode, initial: boolean) => void;
+  private onParseCallback: (node: SerovalNode, initial: boolean) => void;
 
-  onDoneCallback?: () => void;
+  private onDoneCallback?: () => void;
 
   constructor(options: StreamCrossParserContextOptions) {
     super(options);
@@ -89,14 +89,21 @@ export default class StreamCrossParserContext extends CrossParserContext {
     this.onDoneCallback = options.onDone;
   }
 
-  onParse(node: SerovalNode, initial: boolean): void {
+  private onParse(node: SerovalNode, initial: boolean): void {
     this.onParseCallback(node, initial);
   }
 
-  onDone(): void {
+  private onDone(): void {
     if (this.onDoneCallback) {
       this.onDoneCallback();
     }
+  }
+
+  push<T>(value: T): void {
+    this.onParse(
+      this.parse(value),
+      false,
+    );
   }
 
   pushPendingState(): void {
@@ -867,6 +874,9 @@ export default class StreamCrossParserContext extends CrossParserContext {
     }
   }
 
+  /**
+   * @private
+   */
   start<T>(current: T): void {
     this.onParse(
       this.parse(current),
@@ -879,10 +889,17 @@ export default class StreamCrossParserContext extends CrossParserContext {
     }
   }
 
+  /**
+   * @private
+   */
   destroy(): void {
     if (this.alive) {
       this.onDone();
       this.alive = false;
     }
+  }
+
+  isAlive(): boolean {
+    return this.alive;
   }
 }

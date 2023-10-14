@@ -5,15 +5,27 @@ export interface BaseSerializerContextOptions {
 }
 
 export class BaseSerializerContext {
+  /**
+   * @private
+   */
   features: number;
 
-  // To check if an object is synchronously referencing itself
+  /**
+   * To check if an object is synchronously referencing itself
+   * @private
+   */
   stack: number[] = [];
 
-  // Array of object mutations
+  /**
+   * Array of object mutations
+   * @private
+   */
   flags: FlaggedObject[] = [];
 
-  // Array of assignments to be done (used for recursion)
+  /**
+   * Array of assignments to be done (used for recursion)
+   * @private
+   */
   assignments: Assignment[] = [];
 
   constructor(options: BaseSerializerContextOptions) {

@@ -36,6 +36,9 @@ export default class CrossParserContext extends BaseParserContext {
     this.refs = options.refs || new Map<unknown, number>();
   }
 
+  /**
+   * @private
+   */
   protected createIndexedValue<T>(current: T): number {
     const ref = this.refs.get(current);
     if (ref == null) {
@@ -46,6 +49,9 @@ export default class CrossParserContext extends BaseParserContext {
     return ref;
   }
 
+  /**
+   * @private
+   */
   protected parseArrayBuffer(
     current: ArrayBuffer,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalArrayBufferNode {
@@ -61,6 +67,9 @@ export default class CrossParserContext extends BaseParserContext {
     return createArrayBufferNode(newID, current);
   }
 
+  /**
+   * @private
+   */
   protected parseTypedArray(
     id: number,
     current: TypedArrayValue,
@@ -81,6 +90,9 @@ export default class CrossParserContext extends BaseParserContext {
     };
   }
 
+  /**
+   * @private
+   */
   protected parseBigIntTypedArray(
     id: number,
     current: BigIntTypedArrayValue,
@@ -101,6 +113,9 @@ export default class CrossParserContext extends BaseParserContext {
     };
   }
 
+  /**
+   * @private
+   */
   protected parseDataView(
     id: number,
     current: DataView,
@@ -121,6 +136,9 @@ export default class CrossParserContext extends BaseParserContext {
     };
   }
 
+  /**
+   * @private
+   */
   protected parseSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalWKSymbolNode {
@@ -136,6 +154,9 @@ export default class CrossParserContext extends BaseParserContext {
     return createWKSymbolNode(newID, current as WellKnownSymbols);
   }
 
+  /**
+   * @private
+   */
   protected parseFunction<T>(
     current: T,
   ): SerovalIndexedValueNode | SerovalReferenceNode {

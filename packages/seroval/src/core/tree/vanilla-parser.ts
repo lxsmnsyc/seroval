@@ -23,15 +23,24 @@ import type {
 export type VanillaParserContextOptions = BaseParserContextOptions;
 
 export default class VanillaParserContext extends BaseParserContext {
+  /**
+   * @private
+   */
   ids: Map<unknown, number> = new Map();
 
+  /**
+   * @private
+   */
   marked: Set<number> = new Set();
 
   constructor(options: Partial<VanillaParserContextOptions> = {}) {
     super(options);
   }
 
-  createIndexedValue<T>(current: T): number {
+  /**
+   * @private
+   */
+  protected createIndexedValue<T>(current: T): number {
     const ref = this.ids.get(current);
     if (ref == null) {
       const id = this.ids.size;
@@ -42,6 +51,9 @@ export default class VanillaParserContext extends BaseParserContext {
     return ref;
   }
 
+  /**
+   * @private
+   */
   protected parseArrayBuffer(
     current: ArrayBuffer,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalArrayBufferNode {
@@ -55,6 +67,9 @@ export default class VanillaParserContext extends BaseParserContext {
     return createArrayBufferNode(id, current);
   }
 
+  /**
+   * @private
+   */
   protected parseTypedArray(
     id: number,
     current: TypedArrayValue,
@@ -75,6 +90,9 @@ export default class VanillaParserContext extends BaseParserContext {
     };
   }
 
+  /**
+   * @private
+   */
   protected parseBigIntTypedArray(
     id: number,
     current: BigIntTypedArrayValue,
@@ -95,6 +113,9 @@ export default class VanillaParserContext extends BaseParserContext {
     };
   }
 
+  /**
+   * @private
+   */
   protected parseDataView(
     id: number,
     current: DataView,
@@ -115,6 +136,9 @@ export default class VanillaParserContext extends BaseParserContext {
     };
   }
 
+  /**
+   * @private
+   */
   protected parseSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalWKSymbolNode {
@@ -128,6 +152,9 @@ export default class VanillaParserContext extends BaseParserContext {
     return createWKSymbolNode(id, current as WellKnownSymbols);
   }
 
+  /**
+   * @private
+   */
   protected parseFunction<T>(
     current: T,
   ): SerovalIndexedValueNode | SerovalReferenceNode {
