@@ -1,4 +1,4 @@
-import { createPlugin, SerovalNode } from '.';
+import { createPlugin, type SerovalNode } from '..';
 
 const BufferPlugin = createPlugin<Buffer, SerovalNode>({
   tag: 'Buffer',
@@ -10,7 +10,6 @@ const BufferPlugin = createPlugin<Buffer, SerovalNode>({
       return ctx.parse(value.toString('base64'));
     },
     async async(value, ctx) {
-      ctx
       return ctx.parse(value.toString('base64'));
     },
     stream(value, ctx) {
@@ -22,5 +21,8 @@ const BufferPlugin = createPlugin<Buffer, SerovalNode>({
   },
   deserialize(node, ctx) {
     return Buffer.from(ctx.deserialize(node) as string, 'base64');
+  },
+  isIterable() {
+    return true;
   },
 });

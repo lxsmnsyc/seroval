@@ -110,6 +110,14 @@ export class BaseParserContext implements PluginAccessOptions {
           break;
       }
     }
+    if (this.plugins) {
+      for (let i = 0, len = this.plugins.length; i < len; i++) {
+        const plugin = this.plugins[i];
+        if (plugin.test(value) && plugin.isIterable && plugin.isIterable(value)) {
+          return false;
+        }
+      }
+    }
     if (this.features & Feature.Symbol) {
       return Symbol.iterator in value;
     }
