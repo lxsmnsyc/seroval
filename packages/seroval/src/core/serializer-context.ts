@@ -245,38 +245,37 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     node: SerovalArrayNode,
   ): string {
     const id = node.i;
-    this.stack.push(id);
-    // This is different than Map and Set
-    // because we also need to serialize
-    // the holes of the Array
-    let values = '';
-    let item: SerovalNode | undefined;
-    let isHoley = false;
-    const list = node.a;
-    for (let i = 0, len = node.l; i < len; i++) {
-      if (i !== 0) {
-        // Add an empty item
-        values += ',';
-      }
-      item = list[i];
-      // Check if index is a hole
-      if (item) {
-        // Check if item is a parent
-        if (this.isIndexedValueInStack(item)) {
-          this.markRef(id);
-          this.createArrayAssign(id, i, this.getRefParam(item.i));
-          isHoley = true;
-        } else {
-          values += this.serialize(item);
-          isHoley = false;
+    if (node.l) {
+      this.stack.push(id);
+      // This is different than Map and Set
+      // because we also need to serialize
+      // the holes of the Array
+      const serializeItem = (item: SerovalNode | undefined, i: number): string => {
+        // Check if index is a hole
+        if (item) {
+          // Check if item is a parent
+          if (this.isIndexedValueInStack(item)) {
+            this.markRef(id);
+            this.createArrayAssign(id, i, this.getRefParam(item.i));
+            return '';
+          }
+          return this.serialize(item);
         }
-      } else {
-        isHoley = true;
+        return '';
+      };
+      const list = node.a;
+      let values = serializeItem(list[0], 0);
+      let isHoley = values === '';
+      for (let i = 1, len = node.l, item: string; i < len; i++) {
+        item = serializeItem(list[i], i);
+        values += ',' + item;
+        isHoley = item === '';
       }
+      this.stack.pop();
+      this.pushObjectFlag(node.o, node.i);
+      return this.assignIndexedValue(id, '[' + values + (isHoley ? ',]' : ']'));
     }
-    this.stack.pop();
-    this.pushObjectFlag(node.o, node.i);
-    return this.assignIndexedValue(id, '[' + values + (isHoley ? ',]' : ']'));
+    return this.assignIndexedValue(id, '[]');
   }
 
   protected serializeProperties(
@@ -687,22 +686,20 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     );
   }
 
+  protected serializeFormDataEntry(id: number, key: string, value: SerovalNode): string {
+    return this.getRefParam(id) + '.append("' + key + '",' + this.serialize(value) + ')';
+  }
+
   protected serializeFormDataEntries(
     node: SerovalFormDataNode,
+    size: number,
   ): string {
-    let value: string;
-    let key: string;
     const keys = node.e.k;
     const vals = node.e.v;
     const id = node.i;
-    let result = '';
-    for (let i = 0, len = node.e.s; i < len; i++) {
-      if (i !== 0) {
-        result += ',';
-      }
-      key = keys[i];
-      value = this.serialize(vals[i]);
-      result += this.getRefParam(id) + '.append("' + key + '",' + value + ')';
+    let result = this.serializeFormDataEntry(id, keys[0], vals[0]);
+    for (let i = 1; i < size; i++) {
+      result += ',' + this.serializeFormDataEntry(id, keys[i], vals[i]);
     }
     return result;
   }
@@ -717,7 +714,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     }
     const result = this.assignIndexedValue(id, 'new FormData()');
     if (size) {
-      const entries = this.serializeFormDataEntries(node);
+      const entries = this.serializeFormDataEntries(node, size);
       return '(' + result + ',' + (entries ? entries + ',' : '') + this.getRefParam(id) + ')';
     }
     return result;
