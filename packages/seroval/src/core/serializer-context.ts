@@ -278,6 +278,34 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(id, '[]');
   }
 
+  protected serializeProperty(
+    id: number,
+    key: SerovalObjectRecordKey,
+    val: SerovalNode,
+  ): string {
+    switch (key) {
+      case SerovalObjectRecordSpecialKey.SymbolIterator:
+        return this.serializeIterable(val);
+      default: {
+        const check = Number(key);
+        // Test if key is a valid number or JS identifier
+        // so that we don't have to serialize the key and wrap with brackets
+        const isIdentifier = check >= 0 || isValidIdentifier(key);
+        if (this.isIndexedValueInStack(val)) {
+          const refParam = this.getRefParam(val.i);
+          this.markRef(id);
+          if (isIdentifier && Number.isNaN(check)) {
+            this.createObjectAssign(id, key, refParam);
+          } else {
+            this.createArrayAssign(id, isIdentifier ? key : ('"' + key + '"'), refParam);
+          }
+          return '';
+        }
+        return (isIdentifier ? key : ('"' + key + '"')) + ':' + this.serialize(val);
+      }
+    }
+  }
+
   protected serializeProperties(
     sourceID: number,
     node: SerovalObjectRecordNode,
@@ -288,43 +316,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     }
     let result = '';
     this.stack.push(sourceID);
-    let key: SerovalObjectRecordKey;
-    let val: SerovalNode;
-    let check: number;
-    let isIdentifier: boolean;
-    let refParam: string;
-    let hasPrev = false;
     const keys = node.k;
     const values = node.v;
-    for (let i = 0; i < len; i++) {
-      key = keys[i];
-      val = values[i];
-      switch (key) {
-        case SerovalObjectRecordSpecialKey.SymbolIterator:
-          result += (hasPrev ? ',' : '') + this.serializeIterable(val);
-          hasPrev = true;
-          break;
-        default:
-          check = Number(key);
-          // Test if key is a valid number or JS identifier
-          // so that we don't have to serialize the key and wrap with brackets
-          isIdentifier = check >= 0 || isValidIdentifier(key);
-          if (this.isIndexedValueInStack(val)) {
-            refParam = this.getRefParam(val.i);
-            this.markRef(sourceID);
-            if (isIdentifier && Number.isNaN(check)) {
-              this.createObjectAssign(sourceID, key, refParam);
-            } else {
-              this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), refParam);
-            }
-          } else {
-            result += (hasPrev ? ',' : '')
-              + (isIdentifier ? key : ('"' + key + '"'))
-              + ':' + this.serialize(val);
-            hasPrev = true;
-          }
-          break;
-      }
+    result = this.serializeProperty(sourceID, keys[0], values[0]);
+    for (let i = 1, item: string; i < len; i++) {
+      item = this.serializeProperty(sourceID, keys[i], values[i]);
+      result += (item && ',') + item;
     }
     this.stack.pop();
     return '{' + result + '}';
