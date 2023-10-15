@@ -241,6 +241,24 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return serialized;
   }
 
+  protected serializeArrayItem(
+    id: number,
+    item: SerovalNode | undefined,
+    index: number,
+  ): string {
+    // Check if index is a hole
+    if (item) {
+      // Check if item is a parent
+      if (this.isIndexedValueInStack(item)) {
+        this.markRef(id);
+        this.createArrayAssign(id, index, this.getRefParam(item.i));
+        return '';
+      }
+      return this.serialize(item);
+    }
+    return '';
+  }
+
   protected serializeArray(
     node: SerovalArrayNode,
   ): string {
@@ -250,24 +268,11 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // This is different than Map and Set
       // because we also need to serialize
       // the holes of the Array
-      const serializeItem = (item: SerovalNode | undefined, i: number): string => {
-        // Check if index is a hole
-        if (item) {
-          // Check if item is a parent
-          if (this.isIndexedValueInStack(item)) {
-            this.markRef(id);
-            this.createArrayAssign(id, i, this.getRefParam(item.i));
-            return '';
-          }
-          return this.serialize(item);
-        }
-        return '';
-      };
       const list = node.a;
-      let values = serializeItem(list[0], 0);
+      let values = this.serializeArrayItem(id, list[0], 0);
       let isHoley = values === '';
       for (let i = 1, len = node.l, item: string; i < len; i++) {
-        item = serializeItem(list[i], i);
+        item = this.serializeArrayItem(id, list[i], i);
         values += ',' + item;
         isHoley = item === '';
       }
