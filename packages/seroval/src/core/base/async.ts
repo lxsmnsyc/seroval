@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable no-await-in-loop */
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import UnsupportedTypeError from '../UnsupportedTypeError';
@@ -206,8 +207,8 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   private async parseProperties(
     properties: Record<string, unknown>,
   ): Promise<SerovalObjectRecordNode> {
-    const keys = Object.keys(properties);
-    let size = keys.length;
+    const entries = Object.entries(properties);
+    let size = entries.length;
     const keyNodes = new Array<SerovalObjectRecordKey>(size);
     const valueNodes = new Array<SerovalNode>(size);
     const deferredKeys = new Array<SerovalObjectRecordKey>(size);
@@ -216,8 +217,10 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     let nodesSize = 0;
     let item: unknown;
     let escaped: SerovalObjectRecordKey;
-    for (const key of keys) {
-      item = properties[key];
+    let key: string;
+    for (let i = 0; i < size; i++) {
+      key = entries[i][0];
+      item = entries[i][1];
       escaped = serializeString(key);
       if (this.isIterable(item)) {
         deferredKeys[deferredSize] = escaped;
