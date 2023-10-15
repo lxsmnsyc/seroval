@@ -316,20 +316,19 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     node: SerovalObjectRecordNode,
   ): string {
     const len = node.s;
-    if (len === 0) {
-      return '{}';
+    if (len) {
+      let result = '';
+      this.stack.push(sourceID);
+      const keys = node.k;
+      const values = node.v;
+      result = this.serializeProperty(sourceID, keys[0], values[0]);
+      for (let i = 1, item = result; i < len; i++) {
+        result += (item && ',') + (item = this.serializeProperty(sourceID, keys[i], values[i]));
+      }
+      this.stack.pop();
+      return '{' + result + '}';
     }
-    let result = '';
-    this.stack.push(sourceID);
-    const keys = node.k;
-    const values = node.v;
-    result = this.serializeProperty(sourceID, keys[0], values[0]);
-    for (let i = 1, item: string; i < len; i++) {
-      item = this.serializeProperty(sourceID, keys[i], values[i]);
-      result += (item && ',') + item;
-    }
-    this.stack.pop();
-    return '{' + result + '}';
+    return '{}';
   }
 
   protected serializeObject(
@@ -351,67 +350,75 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return serialized;
   }
 
+  protected serializeAssignment(
+    sourceID: number,
+    mainAssignments: Assignment[],
+    key: SerovalObjectRecordKey,
+    value: SerovalNode,
+  ): void {
+    switch (key) {
+      case SerovalObjectRecordSpecialKey.SymbolIterator: {
+        const parent = this.stack;
+        this.stack = [];
+        const serialized = this.serialize(value) + this.getIterableAccess();
+        this.stack = parent;
+        const parentAssignment = this.assignments;
+        this.assignments = mainAssignments;
+        this.createArrayAssign(
+          sourceID,
+          'Symbol.iterator',
+          this.features & Feature.ArrowFunction
+            ? '()=>' + serialized
+            : 'function(){return ' + serialized + '}',
+        );
+        this.assignments = parentAssignment;
+      }
+        break;
+      default: {
+        const serialized = this.serialize(value);
+        const check = Number(key);
+        const isIdentifier = check >= 0 || isValidIdentifier(key);
+        if (this.isIndexedValueInStack(value)) {
+          // Test if key is a valid number or JS identifier
+          // so that we don't have to serialize the key and wrap with brackets
+          if (isIdentifier && Number.isNaN(check)) {
+            this.createObjectAssign(sourceID, key, serialized);
+          } else {
+            this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          }
+        } else {
+          // Test if key is a valid number or JS identifier
+          // so that we don't have to serialize the key and wrap with brackets
+          const parentAssignment = this.assignments;
+          this.assignments = mainAssignments;
+          if (isIdentifier && Number.isNaN(check)) {
+            this.createObjectAssign(sourceID, key, serialized);
+          } else {
+            this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
+          }
+          this.assignments = parentAssignment;
+        }
+      }
+    }
+  }
+
   protected serializeAssignments(
     sourceID: number,
     node: SerovalObjectRecordNode,
   ): string | undefined {
-    this.stack.push(sourceID);
-    const mainAssignments: Assignment[] = [];
-    let key: SerovalObjectRecordKey;
-    let value: SerovalNode;
-    let parentAssignment: Assignment[];
-    const keys = node.k;
-    const values = node.v;
-    for (let i = 0, len = node.s; i < len; i++) {
-      key = keys[i];
-      value = values[i];
-      switch (key) {
-        case SerovalObjectRecordSpecialKey.SymbolIterator: {
-          const parent = this.stack;
-          this.stack = [];
-          const serialized = this.serialize(value) + this.getIterableAccess();
-          this.stack = parent;
-          parentAssignment = this.assignments;
-          this.assignments = mainAssignments;
-          this.createArrayAssign(
-            sourceID,
-            'Symbol.iterator',
-            this.features & Feature.ArrowFunction
-              ? '()=>' + serialized
-              : 'function(){return ' + serialized + '}',
-          );
-          this.assignments = parentAssignment;
-        }
-          break;
-        default: {
-          const serialized = this.serialize(value);
-          const check = Number(key);
-          const isIdentifier = check >= 0 || isValidIdentifier(key);
-          if (this.isIndexedValueInStack(value)) {
-            // Test if key is a valid number or JS identifier
-            // so that we don't have to serialize the key and wrap with brackets
-            if (isIdentifier && Number.isNaN(check)) {
-              this.createObjectAssign(sourceID, key, serialized);
-            } else {
-              this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
-            }
-          } else {
-            // Test if key is a valid number or JS identifier
-            // so that we don't have to serialize the key and wrap with brackets
-            parentAssignment = this.assignments;
-            this.assignments = mainAssignments;
-            if (isIdentifier && Number.isNaN(check)) {
-              this.createObjectAssign(sourceID, key, serialized);
-            } else {
-              this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
-            }
-            this.assignments = parentAssignment;
-          }
-        }
+    const len = node.s;
+    if (len) {
+      this.stack.push(sourceID);
+      const mainAssignments: Assignment[] = [];
+      const keys = node.k;
+      const values = node.v;
+      for (let i = 0; i < len; i++) {
+        this.serializeAssignment(sourceID, mainAssignments, keys[i], values[i]);
       }
+      this.stack.pop();
+      return resolveAssignments(mainAssignments);
     }
-    this.stack.pop();
-    return resolveAssignments(mainAssignments);
+    return undefined;
   }
 
   protected serializeDictionary(
@@ -452,6 +459,18 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(node.i, '/' + node.c + '/' + node.m);
   }
 
+  protected serializeSetItem(
+    id: number,
+    item: SerovalNode,
+  ): string {
+    if (this.isIndexedValueInStack(item)) {
+      this.markRef(id);
+      this.createAddAssignment(id, this.getRefParam(item.i));
+      return '';
+    }
+    return this.serialize(item);
+  }
+
   protected serializeSet(
     node: SerovalSetNode,
   ): string {
@@ -459,21 +478,11 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     const size = node.l;
     const id = node.i;
     if (size) {
-      let result = '';
-      let item: SerovalNode;
-      let hasPrev = false;
       const items = node.a;
       this.stack.push(id);
-      for (let i = 0; i < size; i++) {
-        item = items[i];
-        if (this.isIndexedValueInStack(item)) {
-          this.markRef(id);
-          this.createAddAssignment(id, this.getRefParam(item.i));
-        } else {
-          // Push directly
-          result += (hasPrev ? ',' : '') + this.serialize(item);
-          hasPrev = true;
-        }
+      let result = this.serializeSetItem(id, items[0]);
+      for (let i = 1, item = result; i < size; i++) {
+        result += (item && ',') + (item = this.serializeSetItem(id, items[i]));
       }
       this.stack.pop();
       if (result) {
