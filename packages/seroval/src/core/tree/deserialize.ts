@@ -450,7 +450,6 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
         if (plugin.tag === node.c) {
           return plugin.deserialize(node.s, this, {
             id: node.i,
-            isCross: false,
           });
         }
       }
