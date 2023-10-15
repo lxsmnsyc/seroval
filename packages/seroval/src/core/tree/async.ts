@@ -3,10 +3,13 @@ import { createIndexedValueNode, createReferenceNode } from '../base-primitives'
 import type { BaseParserContextOptions } from '../parser-context';
 import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';
+import type { SerovalMode } from '../plugin';
 
 export type AsyncParserContextOptions = BaseParserContextOptions
 
 export default class AsyncParserContext extends BaseAsyncParserContext {
+  readonly mode: SerovalMode = 'vanilla';
+
   /**
    * @private
    */

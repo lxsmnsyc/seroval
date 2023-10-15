@@ -1,6 +1,6 @@
 import { ALL_ENABLED, BIGINT_FLAG, Feature } from './compat';
 import { ERROR_CONSTRUCTOR_STRING } from './constants';
-import type { Plugin, PluginAccessOptions } from './plugin';
+import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { getErrorConstructor } from './shared';
 
 export interface ParserReference {
@@ -12,7 +12,9 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
 }
 
-export class BaseParserContext implements PluginAccessOptions {
+export abstract class BaseParserContext implements PluginAccessOptions {
+  abstract readonly mode: SerovalMode;
+
   features: number;
 
   plugins?: Plugin<any, any>[] | undefined;

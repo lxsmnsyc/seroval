@@ -3,10 +3,13 @@ import { createIndexedValueNode, createReferenceNode } from '../base-primitives'
 import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';
 import type { CrossParserContextOptions } from './cross-parser';
+import type { SerovalMode } from '../plugin';
 
 export type CrossAsyncParserContextOptions = CrossParserContextOptions
 
 export default class CrossAsyncParserContext extends BaseAsyncParserContext {
+  readonly mode: SerovalMode = 'cross';
+
   scopeId?: string;
 
   refs: Map<unknown, number>;

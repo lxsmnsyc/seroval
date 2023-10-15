@@ -1,5 +1,6 @@
 import { createIndexedValueNode, createReferenceNode } from '../base-primitives';
 import BaseSyncParserContext from '../base/sync';
+import type { SerovalMode } from '../plugin';
 import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';
 import type { CrossParserContextOptions } from './cross-parser';
@@ -7,6 +8,8 @@ import type { CrossParserContextOptions } from './cross-parser';
 export type CrossSyncParserContextOptions = CrossParserContextOptions
 
 export default class CrossSyncParserContext extends BaseSyncParserContext {
+  readonly mode: SerovalMode = 'cross';
+
   scopeId?: string;
 
   refs: Map<unknown, number>;

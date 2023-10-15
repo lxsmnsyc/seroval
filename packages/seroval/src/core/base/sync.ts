@@ -525,7 +525,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
             plugin.tag,
             plugin.parse.sync(current, this, {
               id,
-              isCross: false,
             }),
           );
         }

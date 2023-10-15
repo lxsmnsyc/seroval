@@ -9,12 +9,15 @@ import {
 } from '../base-primitives';
 import type { BaseStreamParserContextOptions } from '../base/stream';
 import BaseStreamParserContext from '../base/stream';
+import type { SerovalMode } from '../plugin';
 
 export interface CrossStreamParserContextOptions extends BaseStreamParserContextOptions {
   scopeId?: string;
 }
 
 export default class CrossStreamParserContext extends BaseStreamParserContext {
+  readonly mode: SerovalMode = 'cross';
+
   scopeId?: string;
 
   refs: Map<unknown, number>;

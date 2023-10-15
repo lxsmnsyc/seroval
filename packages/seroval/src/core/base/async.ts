@@ -639,7 +639,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
             plugin.tag,
             await plugin.parse.async(current, this, {
               id,
-              isCross: false,
             }),
           );
         }

@@ -281,7 +281,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             plugin.tag,
             plugin.parse.stream(current, this, {
               id,
-              isCross: true,
             }),
           );
         }
