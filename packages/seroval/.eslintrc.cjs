@@ -20,6 +20,7 @@ module.exports = {
     "no-bitwise": "off",
     "prefer-template": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
-    "prefer-object-spread": "off"
+    "prefer-object-spread": "off",
+    "class-methods-use-this": "off"
   }
 };

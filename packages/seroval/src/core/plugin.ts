@@ -1,13 +1,13 @@
 import type BaseAsyncParserContext from './base/async';
 import type BaseStreamParserContext from './base/stream';
 import type BaseSyncParserContext from './base/sync';
-import type CrossSerializerContext from './cross/serialize';
+import type BaseSerializerContext from './serializer-context';
 import type VanillaDeserializerContext from './tree/deserialize';
-import type VanillaSerializerContext from './tree/serialize';
+
+export type SerovalMode = 'vanilla' | 'cross';
 
 export interface PluginData {
   id: number;
-  isCross: boolean;
 }
 
 export interface Plugin<Value, Node> {
@@ -32,7 +32,7 @@ export interface Plugin<Value, Node> {
   };
   serialize(
     node: Node,
-    ctx: VanillaSerializerContext | CrossSerializerContext,
+    ctx: BaseSerializerContext,
     data: PluginData,
   ): string;
   deserialize(
