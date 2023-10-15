@@ -1,15 +1,11 @@
-import { hasReferenceID } from '../reference';
 import type {
   SerovalIndexedValueNode,
   SerovalReferenceNode,
 } from '../types';
-import {
-  createIndexedValueNode,
-  createReferenceNode,
-} from '../base-primitives';
 import type { BaseStreamParserContextOptions } from '../base/stream';
 import BaseStreamParserContext from '../base/stream';
 import type { SerovalMode } from '../plugin';
+import { getCrossReference, getStrictCrossReference } from './cross-parser';
 
 export interface CrossStreamParserContextOptions extends BaseStreamParserContextOptions {
   scopeId?: string;
@@ -29,15 +25,10 @@ export default class CrossStreamParserContext extends BaseStreamParserContext {
   }
 
   protected getReference<T>(current: T): number | SerovalIndexedValueNode | SerovalReferenceNode {
-    const registeredID = this.refs.get(current);
-    if (registeredID != null) {
-      return createIndexedValueNode(registeredID);
-    }
-    const id = this.refs.size;
-    this.refs.set(current, id);
-    if (hasReferenceID(current)) {
-      return createReferenceNode(id, current);
-    }
-    return id;
+    return getCrossReference(this.refs, current);
+  }
+
+  protected getStrictReference<T>(current: T): SerovalIndexedValueNode | SerovalReferenceNode {
+    return getStrictCrossReference(this.refs, current);
   }
 }

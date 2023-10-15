@@ -1,8 +1,7 @@
 import BaseAsyncParserContext from '../base/async';
-import { createIndexedValueNode, createReferenceNode } from '../base-primitives';
-import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';
 import type { CrossParserContextOptions } from './cross-parser';
+import { getCrossReference, getStrictCrossReference } from './cross-parser';
 import type { SerovalMode } from '../plugin';
 
 export type CrossAsyncParserContextOptions = CrossParserContextOptions
@@ -21,15 +20,10 @@ export default class CrossAsyncParserContext extends BaseAsyncParserContext {
   }
 
   protected getReference<T>(current: T): number | SerovalIndexedValueNode | SerovalReferenceNode {
-    const registeredID = this.refs.get(current);
-    if (registeredID != null) {
-      return createIndexedValueNode(registeredID);
-    }
-    const id = this.refs.size;
-    this.refs.set(current, id);
-    if (hasReferenceID(current)) {
-      return createReferenceNode(id, current);
-    }
-    return id;
+    return getCrossReference(this.refs, current);
+  }
+
+  protected getStrictReference<T>(current: T): SerovalIndexedValueNode | SerovalReferenceNode {
+    return getStrictCrossReference(this.refs, current);
   }
 }

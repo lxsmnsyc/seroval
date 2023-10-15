@@ -68,6 +68,10 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     current: T,
   ): number | SerovalIndexedValueNode | SerovalReferenceNode;
 
+  protected abstract getStrictReference<T>(
+    current: T,
+  ): SerovalIndexedValueNode | SerovalReferenceNode;
+
   protected parseItems(
     current: unknown[],
   ): SerovalNode[] {
@@ -662,51 +666,31 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     throw new UnsupportedTypeError(current);
   }
 
-  protected parseInternal(
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    current: object | Function | symbol,
-    mode: 'object' | 'function' | 'symbol',
-  ): SerovalNode {
-    if (mode === 'function') {
-      assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
-    }
-    // Non-primitive values needs a reference ID
-    // mostly because the values themselves are stateful
-    const id = this.getReference(current);
-    if (typeof id !== 'number') {
-      return id;
-    }
-    switch (mode) {
-      case 'symbol':
-        return createWKSymbolNode(id, current as WellKnownSymbols);
-      case 'object':
-        return this.parseObject(id, current as object);
-      default:
-        throw new UnsupportedTypeError(current);
-    }
-  }
-
   parse<T>(current: T): SerovalNode {
-    const t = typeof current;
-    if (this.features & Feature.BigInt && t === 'bigint') {
-      return createBigIntNode(current as bigint);
+    switch (current) {
+      case true: return TRUE_NODE;
+      case false: return FALSE_NODE;
+      case undefined: return UNDEFINED_NODE;
+      case null: return NULL_NODE;
+      default: break;
     }
-    switch (t) {
-      case 'boolean':
-        return current ? TRUE_NODE : FALSE_NODE;
-      case 'undefined':
-        return UNDEFINED_NODE;
-      case 'string':
-        return createStringNode(current as string);
-      case 'number':
-        return createNumberNode(current as number);
-      case 'object':
-      case 'symbol':
+    switch (typeof current) {
+      case 'string': return createStringNode(current as string);
+      case 'number': return createNumberNode(current as number);
+      case 'bigint':
+        assert(this.features & Feature.BigInt, new UnsupportedTypeError(current));
+        return createBigIntNode(current as bigint);
+      case 'object': {
+        const id = this.getReference(current);
+        return typeof id === 'number' ? this.parseObject(id, current as object) : id;
+      }
+      case 'symbol': {
+        const id = this.getReference(current);
+        return typeof id === 'number' ? createWKSymbolNode(id, current as WellKnownSymbols) : id;
+      }
       case 'function':
-        if (!current) {
-          return NULL_NODE;
-        }
-        return this.parseInternal(current as unknown as object, t);
+        assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
+        return this.getStrictReference(current);
       default:
         throw new UnsupportedTypeError(current);
     }
