@@ -308,7 +308,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         valueNodes.push(this.parse(value));
       }
     }
-    for (let i = 0; i < deferredKey.length; i++) {
+    for (let i = 0, len = deferredKey.length; i < len; i++) {
       keyNodes.push(this.parse(deferredKey[i]));
       valueNodes.push(this.parse(deferredValue[i]));
     }
