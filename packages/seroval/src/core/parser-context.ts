@@ -1,6 +1,5 @@
 import { ALL_ENABLED, BIGINT_FLAG, Feature } from './compat';
 import { ERROR_CONSTRUCTOR_STRING } from './constants';
-import { getConstructor } from './object';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { getErrorConstructor } from './shared';
 
@@ -36,13 +35,10 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     // Name has been modified
     if (error.name !== constructor) {
       options = { name: error.name };
-    } else {
-      const currentName = getConstructor(error).name;
-      if (currentName !== constructor) {
-        // Otherwise, name is overriden because
-        // the Error class is extended
-        options = { name: currentName };
-      }
+    } else if (error.constructor.name !== constructor) {
+      // Otherwise, name is overriden because
+      // the Error class is extended
+      options = { name: error.constructor.name };
     }
     const names = Object.getOwnPropertyNames(error);
     for (let i = 0, len = names.length, name: string; i < len; i++) {
@@ -74,7 +70,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     if (Array.isArray(value)) {
       return false;
     }
-    const currentClass = getConstructor(value);
+    const currentClass = value.constructor;
     if (this.features & Feature.TypedArray) {
       switch (currentClass) {
         case Int8Array:
