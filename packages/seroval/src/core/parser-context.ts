@@ -41,7 +41,8 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       options = { name: error.constructor.name };
     }
     const names = Object.getOwnPropertyNames(error);
-    for (const name of names) {
+    for (let i = 0, len = names.length, name: string; i < len; i++) {
+      name = names[i];
       if (name !== 'name' && name !== 'message') {
         if (name === 'stack') {
           if (this.features & Feature.ErrorPrototypeStack) {
