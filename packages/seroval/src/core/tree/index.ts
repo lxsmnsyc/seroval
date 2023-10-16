@@ -127,7 +127,7 @@ export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = 
     markedRefs: source.m,
   });
   const result = ctx.serialize(source.t);
-  return finalize(ctx, source.t.i, source.t.i === SerovalNodeType.Object, result);
+  return finalize(ctx, source.t.i, source.t.t === SerovalNodeType.Object, result);
 }
 
 export function fromJSON<T>(source: SerovalJSON, options: PluginAccessOptions = {}): T {
