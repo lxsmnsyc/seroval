@@ -406,32 +406,25 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   ): Promise<SerovalPlainRecordNode> {
     const entries = Object.entries(properties);
     const size = entries.length;
-    const keyNodes = [];
-    const valueNodes = [];
-    const deferredKeys = [];
-    const deferredValues = [];
-    let deferredSize = 0;
-    let nodesSize = 0;
-    let item: unknown;
-    let escaped: string;
-    let key: string;
-    for (let i = 0; i < size; i++) {
+    const keyNodes: string[] = [];
+    const valueNodes: SerovalNode[] = [];
+    const deferredKeys: string[] = [];
+    const deferredValues: unknown[] = [];
+    for (let i = 0, key: string, escaped: string, item: unknown; i < size; i++) {
       key = entries[i][0];
       item = entries[i][1];
       escaped = serializeString(key);
       if (this.isIterable(item)) {
-        deferredKeys[deferredSize] = escaped;
-        deferredValues[deferredSize] = item;
-        deferredSize++;
+        deferredKeys.push(escaped);
+        deferredValues.push(item);
       } else {
-        keyNodes[nodesSize] = escaped;
-        valueNodes[nodesSize] = await this.parse(item);
-        nodesSize++;
+        keyNodes.push(escaped);
+        valueNodes.push(await this.parse(item));
       }
     }
-    for (let i = 0; i < deferredSize; i++) {
-      keyNodes[nodesSize + i] = deferredKeys[i];
-      valueNodes[nodesSize + i] = await this.parse(deferredValues[i]);
+    for (let i = 0, len = deferredKeys.length; i < len; i++) {
+      keyNodes.push(deferredKeys[i]);
+      valueNodes.push(await this.parse(deferredValues[i]));
     }
     return {
       k: keyNodes,
