@@ -2,7 +2,7 @@
 import { serialize } from './dist/esm/development/index.mjs';
 
 function example() {
-  return [
+  return new Set([
     {
       id: 1,
       first_name: 'Jimmy',
@@ -27,7 +27,7 @@ function example() {
       gender: 'Female',
       ip_address: '158.159.200.150',
     },
-  ];
+  ]);
 }
 
 for (let i = 0; i < 10000; i++) {
