@@ -27,7 +27,7 @@ function example() {
       gender: 'Female',
       ip_address: '158.159.200.150',
     },
-  ]
+  ];
 }
 
 for (let i = 0; i < 10000; i++) {
