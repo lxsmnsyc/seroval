@@ -338,28 +338,25 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Set<unknown>,
   ): Promise<SerovalSetNode> {
-    const len = current.size;
-    const nodes = [];
-    const deferred = [];
-    let deferredSize = 0;
-    let nodeSize = 0;
+    const nodes: SerovalNode[] = [];
+    const deferred: unknown[] = [];
     for (const item of current.keys()) {
       // Iterables are lazy, so the evaluation must be deferred
       if (this.isIterable(item)) {
-        deferred[deferredSize++] = item;
+        deferred.push(item);
       } else {
-        nodes[nodeSize++] = await this.parse(item);
+        nodes.push(await this.parse(item));
       }
     }
     // Parse deferred items
-    for (let i = 0; i < deferredSize; i++) {
-      nodes[nodeSize + i] = await this.parse(deferred[i]);
+    for (let i = 0, len = deferred.length; i < len; i++) {
+      nodes.push(await this.parse(deferred[i]));
     }
     return {
       t: SerovalNodeType.Set,
       i: id,
       s: undefined,
-      l: len,
+      l: current.size,
       c: undefined,
       m: undefined,
       p: undefined,
