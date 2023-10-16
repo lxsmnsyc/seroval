@@ -126,7 +126,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     }
   }
 
-  resolvePatches(): string | undefined {
+  protected resolvePatches(): string | undefined {
     const assignments = resolveAssignments(this.assignments);
     const flags = resolveFlags(this.flags);
     if (assignments) {

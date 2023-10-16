@@ -4,8 +4,11 @@ import { hasReferenceID } from '../reference';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from '../types';
 
 export interface CrossParserContextOptions extends BaseParserContextOptions {
-  scopeId?: string;
   refs?: Map<unknown, number>;
+}
+
+export interface CrossContextOptions {
+  scopeId?: string;
 }
 
 export function getCrossReference<T>(

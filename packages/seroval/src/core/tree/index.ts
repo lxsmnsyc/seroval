@@ -1,5 +1,3 @@
-import { Feature } from '../compat';
-import { SerovalNodeType } from '../constants';
 import type { PluginAccessOptions } from '../plugin';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
@@ -8,42 +6,6 @@ import VanillaDeserializerContext from './deserialize';
 import VanillaSerializerContext from './serialize';
 import type { SyncParserContextOptions } from './sync';
 import SyncParserContext from './sync';
-
-function finalize(
-  ctx: VanillaSerializerContext,
-  rootID: number | undefined,
-  isObject: boolean,
-  result: string,
-): string {
-  // Shared references detected
-  if (rootID != null && ctx.vars.length) {
-    const patches = ctx.resolvePatches();
-    let body = result;
-    if (patches) {
-      // Get (or create) a ref from the source
-      const index = ctx.getRefParam(rootID);
-      body = result + ',' + patches + index;
-      if (!result.startsWith(index + '=')) {
-        body = index + '=' + body;
-      }
-    }
-    let params = ctx.vars.length > 1
-      ? ctx.vars.join(',')
-      : ctx.vars[0];
-    // Source is probably already assigned
-    if (ctx.features & Feature.ArrowFunction) {
-      params = ctx.vars.length > 1 || ctx.vars.length === 0
-        ? '(' + params + ')'
-        : params;
-      return '(' + params + '=>(' + body + '))()';
-    }
-    return '(function(' + params + '){return ' + body + '})()';
-  }
-  if (isObject) {
-    return '(' + result + ')';
-  }
-  return result;
-}
 
 export function serialize<T>(
   source: T,
@@ -56,13 +18,7 @@ export function serialize<T>(
     features: ctx.features,
     markedRefs: ctx.marked,
   });
-  const result = serial.serialize(tree);
-  return finalize(
-    serial,
-    tree.i,
-    tree.t === SerovalNodeType.Object,
-    result,
-  );
+  return serial.serializeTop(tree);
 }
 
 export async function serializeAsync<T>(
@@ -76,13 +32,7 @@ export async function serializeAsync<T>(
     features: ctx.features,
     markedRefs: ctx.marked,
   });
-  const result = serial.serialize(tree);
-  return finalize(
-    serial,
-    tree.i,
-    tree.t === SerovalNodeType.Object,
-    result,
-  );
+  return serial.serializeTop(tree);
 }
 
 export function deserialize<T>(source: string): T {
@@ -126,8 +76,7 @@ export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = 
     features: source.f,
     markedRefs: source.m,
   });
-  const result = ctx.serialize(source.t);
-  return finalize(ctx, source.t.i, source.t.t === SerovalNodeType.Object, result);
+  return ctx.serializeTop(source.t);
 }
 
 export function fromJSON<T>(source: SerovalJSON, options: PluginAccessOptions = {}): T {

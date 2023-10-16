@@ -1,41 +1,19 @@
-import { Feature } from '../compat';
-import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
-import { serializeString } from '../string';
 import type { CrossAsyncParserContextOptions } from './async';
 import AsyncCrossParserContext from './async';
+import type { CrossContextOptions } from './cross-parser';
 import CrossSerializerContext from './serialize';
 import type { CrossStreamParserContextOptions } from './stream';
 import StreamCrossParserContext from './stream';
 import type { CrossSyncParserContextOptions } from './sync';
 import SyncCrossParserContext from './sync';
 
-function finalize(
-  ctx: CrossSerializerContext,
-  scopeId: string | undefined,
-  id: number | undefined,
-  result: string,
-): string {
-  if (id == null) {
-    return result;
-  }
-  const patches = ctx.resolvePatches();
-  const ref = ctx.getRefParam(id);
-  const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
-  const mainBody = patches ? result + ',' + patches : result;
-  if (params === '') {
-    return patches ? '(' + mainBody + ref + ')' : mainBody;
-  }
-  const args = scopeId == null ? '()' : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(scopeId) + '"])';
-  const body = mainBody + (patches ? ref : '');
-  if (ctx.features & Feature.ArrowFunction) {
-    return '(' + params + '=>(' + body + '))' + args;
-  }
-  return '(function(' + params + '){return ' + body + '})' + args;
+export interface CrossSerializeOptions
+  extends CrossSyncParserContextOptions, CrossContextOptions {
 }
 
 export function crossSerialize<T>(
   source: T,
-  options: CrossSyncParserContextOptions = {},
+  options: CrossSerializeOptions = {},
 ): string {
   const ctx = new SyncCrossParserContext(options);
   const tree = ctx.parse(source);
@@ -43,18 +21,16 @@ export function crossSerialize<T>(
     plugins: options.plugins,
     features: ctx.features,
   });
-  const result = serial.serialize(tree);
-  return finalize(
-    serial,
-    ctx.scopeId,
-    tree.i,
-    result,
-  );
+  return serial.serializeTop(tree);
+}
+
+export interface CrossSerializeAsyncOptions
+  extends CrossAsyncParserContextOptions, CrossContextOptions {
 }
 
 export async function crossSerializeAsync<T>(
   source: T,
-  options: CrossAsyncParserContextOptions = {},
+  options: CrossSerializeAsyncOptions = {},
 ): Promise<string> {
   const ctx = new AsyncCrossParserContext(options);
   const tree = await ctx.parse(source);
@@ -62,13 +38,7 @@ export async function crossSerializeAsync<T>(
     plugins: options.plugins,
     features: ctx.features,
   });
-  const result = serial.serialize(tree);
-  return finalize(
-    serial,
-    ctx.scopeId,
-    tree.i,
-    result,
-  );
+  return serial.serializeTop(tree);
 }
 
 // export interface SerovalCrossJSON {
@@ -117,7 +87,8 @@ export async function crossSerializeAsync<T>(
 //   return deserializeTree(serial, source.t) as T;
 // }
 
-export interface CrossSerializeStreamOptions extends Omit<CrossStreamParserContextOptions, 'onParse'> {
+export interface CrossSerializeStreamOptions
+  extends Omit<CrossStreamParserContextOptions, 'onParse'>, CrossContextOptions {
   onSerialize: (data: string, initial: boolean) => void;
 }
 
@@ -126,21 +97,16 @@ export function crossSerializeStream<T>(
   options: CrossSerializeStreamOptions,
 ): () => void {
   const ctx = new StreamCrossParserContext({
-    scopeId: options.scopeId,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial): void {
       const serial = new CrossSerializerContext({
+        scopeId: options.scopeId,
         features: ctx.features,
       });
 
       options.onSerialize(
-        finalize(
-          serial,
-          ctx.scopeId,
-          node.i,
-          serial.serialize(node),
-        ),
+        serial.serializeTop(node),
         initial,
       );
     },

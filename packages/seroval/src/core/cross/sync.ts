@@ -8,13 +8,10 @@ export type CrossSyncParserContextOptions = CrossParserContextOptions
 export default class CrossSyncParserContext extends BaseSyncParserContext {
   readonly mode: SerovalMode = 'cross';
 
-  scopeId?: string;
-
   refs: Map<unknown, number>;
 
   constructor(options: CrossSyncParserContextOptions) {
     super(options);
-    this.scopeId = options.scopeId;
     this.refs = options.refs || new Map<unknown, number>();
   }
 

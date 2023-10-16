@@ -9,13 +9,10 @@ export type CrossAsyncParserContextOptions = CrossParserContextOptions
 export default class CrossAsyncParserContext extends BaseAsyncParserContext {
   readonly mode: SerovalMode = 'cross';
 
-  scopeId?: string;
-
   refs: Map<unknown, number>;
 
   constructor(options: CrossAsyncParserContextOptions) {
     super(options);
-    this.scopeId = options.scopeId;
     this.refs = options.refs || new Map<unknown, number>();
   }
 
