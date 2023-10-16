@@ -294,28 +294,23 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: Map<unknown, unknown>,
   ): SerovalMapNode {
-    const len = current.size;
-    const keyNodes = [];
-    const valueNodes = [];
-    const deferredKey = [];
-    const deferredValue = [];
-    let deferredSize = 0;
-    let nodeSize = 0;
+    const keyNodes: SerovalNode[] = [];
+    const valueNodes: SerovalNode[] = [];
+    const deferredKey: unknown[] = [];
+    const deferredValue: unknown[] = [];
     for (const [key, value] of current.entries()) {
       // Either key or value might be an iterable
       if (this.isIterable(key) || this.isIterable(value)) {
-        deferredKey[deferredSize] = key;
-        deferredValue[deferredSize] = value;
-        deferredSize++;
+        deferredKey.push(key);
+        deferredValue.push(value);
       } else {
-        keyNodes[nodeSize] = this.parse(key);
-        valueNodes[nodeSize] = this.parse(value);
-        nodeSize++;
+        keyNodes.push(this.parse(key));
+        valueNodes.push(this.parse(value));
       }
     }
-    for (let i = 0; i < deferredSize; i++) {
-      keyNodes[nodeSize + i] = this.parse(deferredKey[i]);
-      valueNodes[nodeSize + i] = this.parse(deferredValue[i]);
+    for (let i = 0; i < deferredKey.length; i++) {
+      keyNodes.push(this.parse(deferredKey[i]));
+      valueNodes.push(this.parse(deferredValue[i]));
     }
     return {
       t: SerovalNodeType.Map,
@@ -325,7 +320,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       c: undefined,
       m: undefined,
       p: undefined,
-      e: { k: keyNodes, v: valueNodes, s: len },
+      e: { k: keyNodes, v: valueNodes, s: current.size },
       a: undefined,
       f: undefined,
       b: undefined,
