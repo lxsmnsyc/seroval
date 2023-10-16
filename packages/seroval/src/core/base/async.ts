@@ -208,46 +208,39 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     properties: Record<string, unknown>,
   ): Promise<SerovalObjectRecordNode> {
     const entries = Object.entries(properties);
-    let size = entries.length;
-    const keyNodes = [];
-    const valueNodes = [];
-    const deferredKeys = [];
-    const deferredValues = [];
-    let deferredSize = 0;
-    let nodesSize = 0;
+    const keyNodes: (string | number)[] = [];
+    const valueNodes: SerovalNode[] = [];
+    const deferredKeys: string[] = [];
+    const deferredValues: unknown[] = [];
     let item: unknown;
     let escaped: SerovalObjectRecordKey;
     let key: string;
-    for (let i = 0; i < size; i++) {
+    for (let i = 0, len = entries.length; i < len; i++) {
       key = entries[i][0];
       item = entries[i][1];
       escaped = serializeString(key);
       if (this.isIterable(item)) {
-        deferredKeys[deferredSize] = escaped;
-        deferredValues[deferredSize] = item;
-        deferredSize++;
+        deferredKeys.push(escaped);
+        deferredValues.push(item);
       } else {
-        keyNodes[nodesSize] = escaped;
-        valueNodes[nodesSize] = await this.parse(item);
-        nodesSize++;
+        keyNodes.push(escaped);
+        valueNodes.push(await this.parse(item));
       }
     }
-    for (let i = 0; i < deferredSize; i++) {
-      keyNodes[nodesSize + i] = deferredKeys[i];
-      valueNodes[nodesSize + i] = await this.parse(deferredValues[i]);
+    for (let i = 0, len = deferredKeys.length; i < len; i++) {
+      keyNodes.push(deferredKeys[i]);
+      valueNodes.push(await this.parse(deferredValues[i]));
     }
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
-        keyNodes[size] = SerovalObjectRecordSpecialKey.SymbolIterator;
-        const items = Array.from(properties as Iterable<unknown>);
-        valueNodes[size] = await this.parse(items);
-        size++;
+        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
+        valueNodes.push(await this.parse(Array.from(properties as Iterable<unknown>)));
       }
     }
     return {
       k: keyNodes,
       v: valueNodes,
-      s: size,
+      s: keyNodes.length,
     };
   }
 
