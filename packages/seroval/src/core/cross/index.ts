@@ -20,6 +20,7 @@ export function crossSerialize<T>(
   const serial = new CrossSerializerContext({
     plugins: options.plugins,
     features: ctx.features,
+    scopeId: options.scopeId,
   });
   return serial.serializeTop(tree);
 }
@@ -37,6 +38,7 @@ export async function crossSerializeAsync<T>(
   const serial = new CrossSerializerContext({
     plugins: options.plugins,
     features: ctx.features,
+    scopeId: options.scopeId,
   });
   return serial.serializeTop(tree);
 }
@@ -101,8 +103,9 @@ export function crossSerializeStream<T>(
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial): void {
       const serial = new CrossSerializerContext({
-        scopeId: options.scopeId,
+        plugins: options.plugins,
         features: ctx.features,
+        scopeId: options.scopeId,
       });
 
       options.onSerialize(
