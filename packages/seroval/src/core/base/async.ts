@@ -28,6 +28,7 @@ import {
   FALSE_NODE,
   UNDEFINED_NODE,
 } from '../literals';
+import { getConstructor } from '../object';
 import { BaseParserContext } from '../parser-context';
 import promiseToResult from '../promise-to-result';
 import { hasReferenceID } from '../reference';
@@ -152,7 +153,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       i: id,
       s: undefined,
       l: current.length,
-      c: current.constructor.name,
+      c: getConstructor(current).name,
       m: undefined,
       p: undefined,
       e: undefined,
@@ -172,7 +173,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       i: id,
       s: undefined,
       l: current.length,
-      c: current.constructor.name,
+      c: getConstructor(current).name,
       m: undefined,
       p: undefined,
       e: undefined,
@@ -641,7 +642,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
     }
-    const currentClass = current.constructor;
+    const currentClass = getConstructor(current);
     switch (currentClass) {
       case Object:
         return this.parsePlainObject(

@@ -22,6 +22,7 @@ import type {
   SerovalResponseNode,
 } from '../types';
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
+import { getConstructor } from '../object';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
@@ -296,7 +297,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
     }
-    const currentClass = current.constructor;
+    const currentClass = getConstructor(current);
     switch (currentClass) {
       case Object:
         return this.parsePlainObject(

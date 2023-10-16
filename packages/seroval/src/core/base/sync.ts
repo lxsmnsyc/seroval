@@ -24,6 +24,7 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
 } from '../literals';
+import { getConstructor } from '../object';
 import type { BaseParserContextOptions } from '../parser-context';
 import { BaseParserContext } from '../parser-context';
 import { hasReferenceID } from '../reference';
@@ -208,7 +209,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       i: id,
       s: undefined,
       l: current.length,
-      c: current.constructor.name,
+      c: getConstructor(current).name,
       m: undefined,
       p: undefined,
       e: undefined,
@@ -228,7 +229,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       i: id,
       s: undefined,
       l: current.length,
-      c: current.constructor.name,
+      c: getConstructor(current).name,
       m: undefined,
       p: undefined,
       e: undefined,
@@ -527,7 +528,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
     }
-    const currentClass = current.constructor;
+    const currentClass = getConstructor(current);
     switch (currentClass) {
       case Object:
         return this.parsePlainObject(
