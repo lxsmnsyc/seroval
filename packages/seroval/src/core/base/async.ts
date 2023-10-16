@@ -85,8 +85,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     const size = current.length;
     const nodes = [];
     const deferred = [];
-    let item: unknown;
-    for (let i = 0; i < size; i++) {
+    for (let i = 0, item: unknown; i < size; i++) {
       if (i in current) {
         item = current[i];
         if (this.isIterable(item)) {
@@ -212,10 +211,11 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     const valueNodes: SerovalNode[] = [];
     const deferredKeys: string[] = [];
     const deferredValues: unknown[] = [];
-    let item: unknown;
-    let escaped: SerovalObjectRecordKey;
-    let key: string;
-    for (let i = 0, len = entries.length; i < len; i++) {
+    for (
+      let i = 0, len = entries.length, key: string, item: unknown, escaped: SerovalObjectRecordKey;
+      i < len;
+      i++
+    ) {
       key = entries[i][0];
       item = entries[i][1];
       escaped = serializeString(key);

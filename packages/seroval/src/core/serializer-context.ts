@@ -317,11 +317,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): string {
     const len = node.s;
     if (len) {
-      let result = '';
       this.stack.push(sourceID);
       const keys = node.k;
       const values = node.v;
-      result = this.serializeProperty(sourceID, keys[0], values[0]);
+      let result = this.serializeProperty(sourceID, keys[0], values[0]);
       for (let i = 1, item = result; i < len; i++) {
         result += (item && ',') + (item = this.serializeProperty(sourceID, keys[i], values[i]));
       }
