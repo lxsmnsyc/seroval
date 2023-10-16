@@ -197,13 +197,19 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     this.createAssignment(this.getRefParam(ref) + '.' + key, value);
   }
 
+  deferred = new Map<number, string>();
+
+  defer(id: number, value: string): void {
+    this.deferred.set(id, value);
+  }
+
   /**
    * Checks if the value is in the stack. Stack here is a reference
    * structure to know if a object is to be accessed in a TDZ.
    */
   isIndexedValueInStack(
     node: SerovalNode,
-  ): node is SerovalIndexedValueNode {
+  ): boolean {
     return node.t === SerovalNodeType.IndexedValue && this.stack.includes(node.i);
   }
 
@@ -251,7 +257,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // Check if item is a parent
       if (this.isIndexedValueInStack(item)) {
         this.markRef(id);
-        this.createArrayAssign(id, index, this.getRefParam(item.i));
+        this.createArrayAssign(id, index, this.getRefParam((item as SerovalIndexedValueNode).i));
         return '';
       }
       return this.serialize(item);
@@ -288,6 +294,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     key: SerovalObjectRecordKey,
     val: SerovalNode,
   ): string {
+    // Only reason this is a switch is so that
+    // in the future, maybe other Symbols are going
+    // to be introduced and/or has merit to be added
+    // E.g. Symbol.asyncIterator
     switch (key) {
       case SerovalObjectRecordSpecialKey.SymbolIterator:
         return this.serializeIterable(val);
@@ -295,11 +305,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         const check = Number(key);
         // Test if key is a valid number or JS identifier
         // so that we don't have to serialize the key and wrap with brackets
-        const isIdentifier = check >= 0 || isValidIdentifier(key);
+        // eslint-disable-next-line no-self-compare
+        const isIdentifier = check >= 0 || check !== check || isValidIdentifier(key);
         if (this.isIndexedValueInStack(val)) {
-          const refParam = this.getRefParam(val.i);
+          const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
           this.markRef(id);
-          if (isIdentifier && Number.isNaN(check)) {
+          if (isIdentifier) {
             this.createObjectAssign(id, key, refParam);
           } else {
             this.createArrayAssign(id, isIdentifier ? key : ('"' + key + '"'), refParam);
@@ -376,21 +387,20 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       default: {
         const serialized = this.serialize(value);
         const check = Number(key);
-        const isIdentifier = check >= 0 || isValidIdentifier(key);
+        // Test if key is a valid number or JS identifier
+        // so that we don't have to serialize the key and wrap with brackets
+        // eslint-disable-next-line no-self-compare
+        const isIdentifier = check >= 0 || check !== check || isValidIdentifier(key);
         if (this.isIndexedValueInStack(value)) {
-          // Test if key is a valid number or JS identifier
-          // so that we don't have to serialize the key and wrap with brackets
-          if (isIdentifier && Number.isNaN(check)) {
+          if (isIdentifier) {
             this.createObjectAssign(sourceID, key, serialized);
           } else {
             this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
           }
         } else {
-          // Test if key is a valid number or JS identifier
-          // so that we don't have to serialize the key and wrap with brackets
           const parentAssignment = this.assignments;
           this.assignments = mainAssignments;
-          if (isIdentifier && Number.isNaN(check)) {
+          if (isIdentifier) {
             this.createObjectAssign(sourceID, key, serialized);
           } else {
             this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
@@ -464,7 +474,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): string {
     if (this.isIndexedValueInStack(item)) {
       this.markRef(id);
-      this.createAddAssignment(id, this.getRefParam(item.i));
+      this.createAddAssignment(id, this.getRefParam((item as SerovalIndexedValueNode).i));
       return '';
     }
     return this.serialize(item);
@@ -502,7 +512,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       this.markRef(id);
       // Check if value is a parent
       if (this.isIndexedValueInStack(val)) {
-        const valueRef = this.getRefParam(val.i);
+        const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
         // Register an assignment since
         // both key and value are a parent of this
         // Map instance
@@ -516,18 +526,28 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // assignment
       const parent = this.stack;
       this.stack = [];
-      this.createSetAssignment(id, keyRef, this.serialize(val));
+      if (val.t !== SerovalNodeType.IndexedValue && val.i != null) {
+        this.defer(val.i, this.serialize(val));
+        this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
+      } else {
+        this.createSetAssignment(id, keyRef, this.serialize(val));
+      }
       this.stack = parent;
       return '';
     }
     if (this.isIndexedValueInStack(val)) {
       // Create ref for the Map instance
-      const valueRef = this.getRefParam(val.i);
+      const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
       this.markRef(id);
       // Reset stack for the key serialization
       const parent = this.stack;
       this.stack = [];
-      this.createSetAssignment(id, this.serialize(key), valueRef);
+      if (val.t !== SerovalNodeType.IndexedValue && val.i != null) {
+        this.defer(val.i, this.serialize(val));
+        this.createSetAssignment(id, this.getRefParam(val.i), valueRef);
+      } else {
+        this.createSetAssignment(id, this.serialize(key), valueRef);
+      }
       this.stack = parent;
       return '';
     }
@@ -627,7 +647,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // inside the `then` expression so that
       // the Promise evaluates after the parent
       // has initialized
-      const ref = this.getRefParam(fulfilled.i);
+      const ref = this.getRefParam((fulfilled as SerovalIndexedValueNode).i);
       if (this.features & Feature.ArrowFunction) {
         if (node.s) {
           serialized = constructor + '().then(()=>' + ref + ')';
@@ -834,6 +854,11 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalNodeType.BigInt:
         return node.s + 'n';
       case SerovalNodeType.IndexedValue:
+        if (this.deferred.has(node.i)) {
+          const result = this.deferred.get(node.i) || '';
+          this.deferred.delete(node.i);
+          return result;
+        }
         return this.getRefParam(node.i);
       case SerovalNodeType.Reference:
         return this.serializeReference(node);
