@@ -492,6 +492,50 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(id, serialized);
   }
 
+  protected serializeMapEntry(
+    id: number,
+    key: SerovalNode,
+    val: SerovalNode,
+  ): string {
+    if (this.isIndexedValueInStack(key)) {
+      // Create reference for the map instance
+      const keyRef = this.getRefParam(id);
+      this.markRef(id);
+      // Check if value is a parent
+      if (this.isIndexedValueInStack(val)) {
+        const valueRef = this.getRefParam(val.i);
+        // Register an assignment since
+        // both key and value are a parent of this
+        // Map instance
+        this.createSetAssignment(id, keyRef, valueRef);
+        return '';
+      }
+      // Reset the stack
+      // This is required because the serialized
+      // value is no longer part of the expression
+      // tree and has been moved to the deferred
+      // assignment
+      const parent = this.stack;
+      this.stack = [];
+      this.createSetAssignment(id, keyRef, this.serialize(val));
+      this.stack = parent;
+      return '';
+    }
+    if (this.isIndexedValueInStack(val)) {
+      // Create ref for the Map instance
+      const valueRef = this.getRefParam(val.i);
+      this.markRef(id);
+      // Reset stack for the key serialization
+      const parent = this.stack;
+      this.stack = [];
+      this.createSetAssignment(id, this.serialize(key), valueRef);
+      this.stack = parent;
+      return '';
+    }
+
+    return '[' + this.serialize(key) + ',' + this.serialize(val) + ']';
+  }
+
   protected serializeMap(
     node: SerovalMapNode,
   ): string {
@@ -499,55 +543,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     const size = node.e.s;
     const id = node.i;
     if (size) {
-      let result = '';
-      let key: SerovalNode;
-      let val: SerovalNode;
-      let keyRef: string;
-      let valueRef: string;
-      let parent: number[];
-      let hasPrev = false;
       const keys = node.e.k;
       const vals = node.e.v;
       this.stack.push(id);
-      for (let i = 0; i < size; i++) {
-        // Check if key is a parent
-        key = keys[i];
-        val = vals[i];
-        if (this.isIndexedValueInStack(key)) {
-          // Create reference for the map instance
-          keyRef = this.getRefParam(id);
-          this.markRef(id);
-          // Check if value is a parent
-          if (this.isIndexedValueInStack(val)) {
-            valueRef = this.getRefParam(val.i);
-            // Register an assignment since
-            // both key and value are a parent of this
-            // Map instance
-            this.createSetAssignment(id, keyRef, valueRef);
-          } else {
-            // Reset the stack
-            // This is required because the serialized
-            // value is no longer part of the expression
-            // tree and has been moved to the deferred
-            // assignment
-            parent = this.stack;
-            this.stack = [];
-            this.createSetAssignment(id, keyRef, this.serialize(val));
-            this.stack = parent;
-          }
-        } else if (this.isIndexedValueInStack(val)) {
-          // Create ref for the Map instance
-          valueRef = this.getRefParam(val.i);
-          this.markRef(id);
-          // Reset stack for the key serialization
-          parent = this.stack;
-          this.stack = [];
-          this.createSetAssignment(id, this.serialize(key), valueRef);
-          this.stack = parent;
-        } else {
-          result += (hasPrev ? ',[' : '[') + this.serialize(key) + ',' + this.serialize(val) + ']';
-          hasPrev = true;
-        }
+      let result = this.serializeMapEntry(id, keys[0], vals[0]);
+      for (let i = 1, item = result; i < size; i++) {
+        result += (item && ',') + (item = this.serializeMapEntry(id, keys[i], vals[i]));
       }
       this.stack.pop();
       // Check if there are any values
