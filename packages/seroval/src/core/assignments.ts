@@ -65,9 +65,7 @@ const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = 
 function mergeAssignments(assignments: Assignment[]): Assignment[] {
   const newAssignments: Assignment[] = [];
   let current = assignments[0];
-  let prev = current;
-  let item: Assignment;
-  for (let i = 1, len = assignments.length; i < len; i++) {
+  for (let i = 1, len = assignments.length, item: Assignment, prev = current; i < len; i++) {
     item = assignments[i];
     switch (item.t) {
       case 'index':
