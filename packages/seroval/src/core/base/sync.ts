@@ -122,6 +122,8 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     ) {
       key = serializeString(entries[i][0]);
       item = entries[i][1];
+      // Defer iterables since iterables have lazy evaluation.
+      // Of course this doesn't include types seroval supports.
       if (this.isIterable(item)) {
         deferredKeys.push(key);
         deferredValues.push(item);
@@ -134,6 +136,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       keyNodes.push(deferredKeys[i]);
       valueNodes.push(this.parse(deferredValues[i]));
     }
+    // Check special properties, symbols in this case
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
         keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
