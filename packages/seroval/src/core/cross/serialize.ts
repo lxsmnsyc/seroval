@@ -17,8 +17,8 @@ import {
   GLOBAL_CONTEXT_STREAM_EMIT,
   GLOBAL_CONTEXT_API,
 } from '../keys';
-import type { BaseSerializerContextOptions } from '../serializer-context';
-import BaseSerializerContext from '../serializer-context';
+import type { BaseSerializerContextOptions } from '../serializer-context.old';
+import BaseSerializerContext from '../serializer-context.old';
 import type { SerovalMode } from '../plugin';
 import { Feature } from '../compat';
 import { serializeString } from '../string';

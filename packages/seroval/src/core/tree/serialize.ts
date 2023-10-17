@@ -8,8 +8,8 @@ import type {
   SerovalReadableStreamEnqueueNode,
   SerovalReadableStreamErrorNode,
 } from '../types';
-import type { BaseSerializerContextOptions } from '../serializer-context';
-import BaseSerializerContext from '../serializer-context';
+import type { BaseSerializerContextOptions } from '../serializer-context.old';
+import BaseSerializerContext from '../serializer-context.old';
 import getIdentifier from '../get-identifier';
 import type { SerovalMode } from '../plugin';
 import { Feature } from '../compat';
