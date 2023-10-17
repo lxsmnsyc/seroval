@@ -39,6 +39,9 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   }
 
   getRefParam(id: number | string): string {
+    if (typeof id === 'string') {
+      return GLOBAL_CONTEXT_REFERENCES + '.' + id;
+    }
     return GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
   }
 

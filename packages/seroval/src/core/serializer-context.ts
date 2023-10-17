@@ -147,7 +147,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * but by the script.
    */
   protected getSpecialReference(ref: SpecialReference): string {
-    const param = this.getRefParam('$' + ref);
+    const param = this.getRefParam('_' + ref);
     if (this.specials.has(ref)) {
       return param;
     }
