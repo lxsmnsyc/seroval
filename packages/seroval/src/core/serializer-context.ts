@@ -343,7 +343,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         // Test if key is a valid number or JS identifier
         // so that we don't have to serialize the key and wrap with brackets
         // eslint-disable-next-line no-self-compare
-        const isIdentifier = check >= 0 || check !== check || isValidIdentifier(key);
+        const isIdentifier = check >= 0 || isValidIdentifier(key);
         if (this.isIndexedValueInStack(val)) {
           const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
           this.markRef(id);
@@ -427,7 +427,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         // Test if key is a valid number or JS identifier
         // so that we don't have to serialize the key and wrap with brackets
         // eslint-disable-next-line no-self-compare
-        const isIdentifier = check >= 0 || check !== check || isValidIdentifier(key);
+        const isIdentifier = check >= 0 || isValidIdentifier(key);
         if (this.isIndexedValueInStack(value)) {
           if (isIdentifier) {
             this.createObjectAssign(sourceID, key, serialized);
