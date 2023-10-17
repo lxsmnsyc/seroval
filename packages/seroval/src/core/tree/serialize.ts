@@ -15,9 +15,7 @@ import type { SerovalMode } from '../plugin';
 import { Feature } from '../compat';
 import { SerovalNodeType } from '../constants';
 
-export interface VanillaSerializerContextOptions extends BaseSerializerContextOptions {
-  markedRefs: number[] | Set<number>;
-}
+export type VanillaSerializerContextOptions = BaseSerializerContextOptions
 
 export default class VanillaSerializerContext extends BaseSerializerContext {
   readonly mode: SerovalMode = 'cross';
@@ -35,21 +33,10 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
   valid: (number | undefined)[] = [];
 
   /**
-   * Refs that are...referenced
-   * @private
-   */
-  marked: Set<number>;
-
-  /**
    * Variables
    * @private
    */
   vars: (string | undefined)[] = [];
-
-  constructor(options: VanillaSerializerContextOptions) {
-    super(options);
-    this.marked = new Set(options.markedRefs);
-  }
 
   /**
    * Increments the number of references the referenced value has
@@ -88,7 +75,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     index: number,
     value: string,
   ): string {
-    if (this.marked.has(index)) {
+    if (this.isMarked(index)) {
       return this.getRefParam(index) + '=' + value;
     }
     return value;

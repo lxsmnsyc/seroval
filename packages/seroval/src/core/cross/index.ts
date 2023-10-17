@@ -15,12 +15,17 @@ export function crossSerialize<T>(
   source: T,
   options: CrossSerializeOptions = {},
 ): string {
-  const ctx = new SyncCrossParserContext(options);
+  const ctx = new SyncCrossParserContext({
+    plugins: options.plugins,
+    disabledFeatures: options.disabledFeatures,
+    refs: options.refs,
+  });
   const tree = ctx.parse(source);
   const serial = new CrossSerializerContext({
     plugins: options.plugins,
     features: ctx.features,
     scopeId: options.scopeId,
+    markedRefs: ctx.marked,
   });
   return serial.serializeTop(tree);
 }
@@ -33,12 +38,17 @@ export async function crossSerializeAsync<T>(
   source: T,
   options: CrossSerializeAsyncOptions = {},
 ): Promise<string> {
-  const ctx = new AsyncCrossParserContext(options);
+  const ctx = new AsyncCrossParserContext({
+    plugins: options.plugins,
+    disabledFeatures: options.disabledFeatures,
+    refs: options.refs,
+  });
   const tree = await ctx.parse(source);
   const serial = new CrossSerializerContext({
     plugins: options.plugins,
     features: ctx.features,
     scopeId: options.scopeId,
+    markedRefs: ctx.marked,
   });
   return serial.serializeTop(tree);
 }
@@ -106,6 +116,7 @@ export function crossSerializeStream<T>(
         plugins: options.plugins,
         features: ctx.features,
         scopeId: options.scopeId,
+        markedRefs: ctx.marked,
       });
 
       options.onSerialize(

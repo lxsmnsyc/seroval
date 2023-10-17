@@ -11,7 +11,10 @@ export function serialize<T>(
   source: T,
   options: SyncParserContextOptions = {},
 ): string {
-  const ctx = new SyncParserContext(options);
+  const ctx = new SyncParserContext({
+    plugins: options.plugins,
+    disabledFeatures: options.disabledFeatures,
+  });
   const tree = ctx.parse(source);
   const serial = new VanillaSerializerContext({
     plugins: options.plugins,
@@ -25,7 +28,10 @@ export async function serializeAsync<T>(
   source: T,
   options: AsyncParserContextOptions = {},
 ): Promise<string> {
-  const ctx = new AsyncParserContext(options);
+  const ctx = new AsyncParserContext({
+    plugins: options.plugins,
+    disabledFeatures: options.disabledFeatures,
+  });
   const tree = await ctx.parse(source);
   const serial = new VanillaSerializerContext({
     plugins: options.plugins,
@@ -50,7 +56,10 @@ export function toJSON<T>(
   source: T,
   options: SyncParserContextOptions = {},
 ): SerovalJSON {
-  const ctx = new SyncParserContext(options);
+  const ctx = new SyncParserContext({
+    plugins: options.plugins,
+    disabledFeatures: options.disabledFeatures,
+  });
   return {
     t: ctx.parse(source),
     f: ctx.features,
@@ -62,7 +71,10 @@ export async function toJSONAsync<T>(
   source: T,
   options: AsyncParserContextOptions = {},
 ): Promise<SerovalJSON> {
-  const ctx = new AsyncParserContext(options);
+  const ctx = new AsyncParserContext({
+    plugins: options.plugins,
+    disabledFeatures: options.disabledFeatures,
+  });
   return {
     t: await ctx.parse(source),
     f: ctx.features,

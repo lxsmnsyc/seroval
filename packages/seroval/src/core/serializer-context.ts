@@ -66,6 +66,7 @@ const PROMISE_REJECT = 'Promise.reject';
 
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
+  markedRefs: number[] | Set<number>;
 }
 
 export default abstract class BaseSerializerContext implements PluginAccessOptions {
@@ -94,9 +95,16 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
 
   plugins?: Plugin<any, any>[] | undefined;
 
+  /**
+   * Refs that are...referenced
+   * @private
+   */
+  marked: Set<number>;
+
   constructor(options: BaseSerializerContextOptions) {
     this.plugins = options.plugins;
     this.features = options.features;
+    this.marked = new Set(options.markedRefs);
   }
 
   abstract readonly mode: SerovalMode;
@@ -107,7 +115,13 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * deciding whether or not we should generate
    * an identifier for the object
    */
-  abstract markRef(id: number): void;
+  protected markRef(id: number): void {
+    this.marked.add(id);
+  }
+
+  protected isMarked(id: number): boolean {
+    return this.marked.has(id);
+  }
 
   /**
    * Converts the ID of a reference into a identifier string
@@ -197,6 +211,29 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     this.createAssignment(this.getRefParam(ref) + '.' + key, value);
   }
 
+  /**
+   * Seroval dedupes references by keeping only one of the reference,
+   * and the rest reusing the id of the original.
+   *
+   * Normally, since serialization is depth-first process,
+   * it should always be able to serialize the original before
+   * the other references.
+   *
+   * However, Seroval also has another mechanism called "assignments" which
+   * defers serialization when a reference is made inside a temporal
+   * dead zone or when a recursion is detected. Most of the time, assignments
+   * will only use the reference not the original, the only exception
+   * here is Map which has a key-value pair, so there's a case where
+   * only one of the two has the original, the other being a reference
+   * that can cause an assignment to occur.
+   *
+   * `defer` will help us here by serializing the item without assigning
+   * it the position it's supposed to be assigned. The next reference
+   * will be replaced with the original.
+   *
+   * Take note that this only matters if the object in question has more than
+   * one deduped reference in the entire tree.
+   */
   deferred = new Map<number, string>();
 
   defer(id: number, value: string): void {
@@ -526,7 +563,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // assignment
       const parent = this.stack;
       this.stack = [];
-      if (val.t !== SerovalNodeType.IndexedValue && val.i != null) {
+      if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
         this.defer(val.i, this.serialize(val));
         this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
       } else {
@@ -542,7 +579,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // Reset stack for the key serialization
       const parent = this.stack;
       this.stack = [];
-      if (val.t !== SerovalNodeType.IndexedValue && val.i != null) {
+      if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
         this.defer(val.i, this.serialize(val));
         this.createSetAssignment(id, this.getRefParam(val.i), valueRef);
       } else {

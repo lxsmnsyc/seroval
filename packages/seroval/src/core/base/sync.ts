@@ -51,8 +51,6 @@ import type {
   SerovalTypedArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
-  SerovalIndexedValueNode,
-  SerovalReferenceNode,
 } from '../types';
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
 
@@ -65,14 +63,6 @@ export interface BaseSyncParserContextOptions extends BaseParserContextOptions {
 }
 
 export default abstract class BaseSyncParserContext extends BaseParserContext {
-  protected abstract getReference<T>(
-    current: T,
-  ): number | SerovalIndexedValueNode | SerovalReferenceNode;
-
-  protected abstract getStrictReference<T>(
-    current: T,
-  ): SerovalIndexedValueNode | SerovalReferenceNode;
-
   protected parseItems(
     current: unknown[],
   ): SerovalNode[] {

@@ -60,8 +60,6 @@ import type {
   SerovalResponseNode,
   SerovalSetNode,
   SerovalDataViewNode,
-  SerovalIndexedValueNode,
-  SerovalReferenceNode,
 } from '../types';
 import { createURLNode, createURLSearchParamsNode, createDOMExceptionNode } from '../web-api';
 
@@ -71,14 +69,6 @@ type ObjectLikeNode =
   | SerovalPromiseNode;
 
 export default abstract class BaseAsyncParserContext extends BaseParserContext {
-  protected abstract getReference<T>(
-    current: T,
-  ): number | SerovalIndexedValueNode | SerovalReferenceNode;
-
-  protected abstract getStrictReference<T>(
-    current: T,
-  ): SerovalIndexedValueNode | SerovalReferenceNode;
-
   private async parseItems(
     current: unknown[],
   ): Promise<SerovalNode[]> {
