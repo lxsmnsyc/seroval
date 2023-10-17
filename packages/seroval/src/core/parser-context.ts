@@ -108,7 +108,8 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       return false;
     }
     const currentClass = value.constructor;
-    if (this.features & Feature.TypedArray) {
+    const currentFeatures = this.features;
+    if (currentFeatures & Feature.TypedArray) {
       switch (currentClass) {
         case Int8Array:
         case Int16Array:
@@ -125,7 +126,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       }
     }
     // BigInt Typed Arrays
-    if ((this.features & BIGINT_FLAG) === BIGINT_FLAG) {
+    if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
       switch (currentClass) {
         case BigInt64Array:
         case BigUint64Array:
@@ -135,13 +136,13 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       }
     }
     // ES Collection
-    if (this.features & Feature.Map && currentClass === Map) {
+    if (currentFeatures & Feature.Map && currentClass === Map) {
       return false;
     }
-    if (this.features & Feature.Set && currentClass === Set) {
+    if (currentFeatures & Feature.Set && currentClass === Set) {
       return false;
     }
-    if (this.features & Feature.WebAPI) {
+    if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
         case Headers:
         case File:
@@ -150,15 +151,16 @@ export abstract class BaseParserContext implements PluginAccessOptions {
           break;
       }
     }
-    if (this.plugins) {
-      for (let i = 0, len = this.plugins.length; i < len; i++) {
-        const plugin = this.plugins[i];
+    const currentPlugins = this.plugins;
+    if (currentPlugins) {
+      for (let i = 0, len = currentPlugins.length; i < len; i++) {
+        const plugin = currentPlugins[i];
         if (plugin.test(value) && plugin.isIterable && plugin.isIterable(value)) {
           return false;
         }
       }
     }
-    if (this.features & Feature.Symbol) {
+    if (currentFeatures & Feature.Symbol) {
       return Symbol.iterator in value;
     }
     return false;

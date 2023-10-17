@@ -444,9 +444,10 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
   }
 
   private deserializePlugin(node: SerovalPluginNode): unknown {
-    if (this.plugins) {
-      for (let i = 0, len = this.plugins.length; i < len; i++) {
-        const plugin = this.plugins[i];
+    const currentPlugins = this.plugins;
+    if (currentPlugins) {
+      for (let i = 0, len = currentPlugins.length; i < len; i++) {
+        const plugin = currentPlugins[i];
         if (plugin.tag === node.c) {
           return plugin.deserialize(node.s, this, {
             id: node.i,

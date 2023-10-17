@@ -286,9 +286,10 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     id: number,
     current: unknown,
   ): SerovalPluginNode | undefined {
-    if (this.plugins) {
-      for (let i = 0, len = this.plugins.length; i < len; i++) {
-        const plugin = this.plugins[i];
+    const currentPlugins = this.plugins;
+    if (currentPlugins) {
+      for (let i = 0, len = currentPlugins.length; i < len; i++) {
+        const plugin = currentPlugins[i];
         if (plugin.parse.stream && plugin.test(current)) {
           return createPluginNode(
             id,
@@ -344,8 +345,9 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       default:
         break;
     }
+    const currentFeatures = this.features;
     // Typed Arrays
-    if (this.features & Feature.TypedArray) {
+    if (currentFeatures & Feature.TypedArray) {
       switch (currentClass) {
         case ArrayBuffer:
           return createArrayBufferNode(id, current as unknown as ArrayBuffer);
@@ -366,7 +368,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       }
     }
     // BigInt Typed Arrays
-    if ((this.features & BIGINT_FLAG) === BIGINT_FLAG) {
+    if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
       switch (currentClass) {
         case BigInt64Array:
         case BigUint64Array:
@@ -376,20 +378,20 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       }
     }
     // ES Collection
-    if (this.features & Feature.Map && currentClass === Map) {
+    if (currentFeatures & Feature.Map && currentClass === Map) {
       return this.parseMap(
         id,
         current as unknown as Map<unknown, unknown>,
       );
     }
-    if (this.features & Feature.Set && currentClass === Set) {
+    if (currentFeatures & Feature.Set && currentClass === Set) {
       return this.parseSet(
         id,
         current as unknown as Set<unknown>,
       );
     }
     // Web APIs
-    if (this.features & Feature.WebAPI) {
+    if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
         case URL:
           return createURLNode(id, current as unknown as URL);
@@ -420,13 +422,13 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       return parsed;
     }
     if (
-      (this.features & Feature.AggregateError)
+      (currentFeatures & Feature.AggregateError)
       && (currentClass === AggregateError || current instanceof AggregateError)
     ) {
       return this.parseAggregateError(id, current as unknown as AggregateError);
     }
     if (
-      (this.features & Feature.Promise)
+      (currentFeatures & Feature.Promise)
       && (currentClass === Promise || current instanceof Promise)
     ) {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
@@ -438,7 +440,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (this.features & Feature.Symbol && Symbol.iterator in current) {
+    if (currentFeatures & Feature.Symbol && Symbol.iterator in current) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);

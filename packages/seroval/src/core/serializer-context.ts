@@ -234,6 +234,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return node.t === SerovalNodeType.IndexedValue && this.stack.includes(node.i);
   }
 
+  /**
+   * Produces an assignment expression. `id` generates a reference
+   * parameter (through `getRefParam`) and has the option to
+   * return the reference parameter directly or assign a value to
+   * it.
+   */
   protected abstract assignIndexedValue(
     id: number,
     value: string,
@@ -850,9 +856,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected serializePlugin(
     node: SerovalPluginNode,
   ): string {
-    if (this.plugins) {
-      for (let i = 0, len = this.plugins.length; i < len; i++) {
-        const plugin = this.plugins[i];
+    const currentPlugins = this.plugins;
+    if (currentPlugins) {
+      for (let i = 0, len = currentPlugins.length; i < len; i++) {
+        const plugin = currentPlugins[i];
         if (plugin.tag === node.c) {
           return plugin.serialize(node.s, this, {
             id: node.i,
