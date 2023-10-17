@@ -234,9 +234,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * Take note that this only matters if the object in question has more than
    * one deduped reference in the entire tree.
    */
-  deferred = new Map<number, string>();
+  deferred = new Map<number, SerovalNode>();
 
-  defer(id: number, value: string): void {
+  defer(id: number, value: SerovalNode): void {
     this.deferred.set(id, value);
   }
 
@@ -564,7 +564,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // tree and has been moved to the deferred
       // assignment
       if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
-        this.defer(val.i, this.serialize(val));
+        this.defer(val.i, val);
         this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
       } else {
         const parent = this.stack;
@@ -579,7 +579,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
       this.markRef(id);
       if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
-        this.defer(val.i, this.serialize(val));
+        this.defer(val.i, val);
         this.createSetAssignment(id, this.getRefParam(val.i), valueRef);
       } else {
         // Reset stack for the key serialization
@@ -895,7 +895,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return node.s + 'n';
       case SerovalNodeType.IndexedValue:
         if (this.deferred.has(node.i)) {
-          const result = this.deferred.get(node.i) || '';
+          const result = this.serialize(this.deferred.get(node.i)!);
           this.deferred.delete(node.i);
           return result;
         }
