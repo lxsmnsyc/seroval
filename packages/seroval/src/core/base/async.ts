@@ -197,23 +197,22 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     properties: Record<string, unknown>,
   ): Promise<SerovalObjectRecordNode> {
     const entries = Object.entries(properties);
-    const keyNodes: (string | number)[] = [];
+    const keyNodes: SerovalObjectRecordKey[] = [];
     const valueNodes: SerovalNode[] = [];
     const deferredKeys: string[] = [];
     const deferredValues: unknown[] = [];
     for (
-      let i = 0, len = entries.length, key: string, item: unknown, escaped: SerovalObjectRecordKey;
+      let i = 0, len = entries.length, key: string, item: unknown;
       i < len;
       i++
     ) {
-      key = entries[i][0];
+      key = serializeString(entries[i][0]);
       item = entries[i][1];
-      escaped = serializeString(key);
       if (this.isIterable(item)) {
-        deferredKeys.push(escaped);
+        deferredKeys.push(key);
         deferredValues.push(item);
       } else {
-        keyNodes.push(escaped);
+        keyNodes.push(key);
         valueNodes.push(await this.parse(item));
       }
     }
@@ -400,15 +399,14 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     const valueNodes: SerovalNode[] = [];
     const deferredKeys: string[] = [];
     const deferredValues: unknown[] = [];
-    for (let i = 0, key: string, escaped: string, item: unknown; i < size; i++) {
-      key = entries[i][0];
+    for (let i = 0, key: string, item: unknown; i < size; i++) {
+      key = serializeString(entries[i][0]);
       item = entries[i][1];
-      escaped = serializeString(key);
       if (this.isIterable(item)) {
-        deferredKeys.push(escaped);
+        deferredKeys.push(key);
         deferredValues.push(item);
       } else {
-        keyNodes.push(escaped);
+        keyNodes.push(key);
         valueNodes.push(await this.parse(item));
       }
     }

@@ -116,18 +116,17 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     const deferredKeys: string[] = [];
     const deferredValues: unknown[] = [];
     for (
-      let i = 0, len = entries.length, key: string, item: unknown, escaped: SerovalObjectRecordKey;
+      let i = 0, len = entries.length, key: string, item: unknown;
       i < len;
       i++
     ) {
-      key = entries[i][0];
+      key = serializeString(entries[i][0]);
       item = entries[i][1];
-      escaped = serializeString(key);
       if (this.isIterable(item)) {
-        deferredKeys.push(escaped);
+        deferredKeys.push(key);
         deferredValues.push(item);
       } else {
-        keyNodes.push(escaped);
+        keyNodes.push(key);
         valueNodes.push(this.parse(item));
       }
     }
@@ -346,23 +345,21 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
   }
 
   protected parsePlainProperties(
-    properties: Record<string, unknown>,
+    entries: [key: string, value: unknown][],
   ): SerovalPlainRecordNode {
-    const entries = Object.entries(properties);
     const size = entries.length;
     const keyNodes: string[] = [];
     const valueNodes: SerovalNode[] = [];
     const deferredKeys: string[] = [];
     const deferredValues: unknown[] = [];
-    for (let i = 0, key: string, escaped: string, item: unknown; i < size; i++) {
-      key = entries[i][0];
+    for (let i = 0, key: string, item: unknown; i < size; i++) {
+      key = serializeString(entries[i][0]);
       item = entries[i][1];
-      escaped = serializeString(key);
       if (this.isIterable(item)) {
-        deferredKeys.push(escaped);
+        deferredKeys.push(key);
         deferredValues.push(item);
       } else {
-        keyNodes.push(escaped);
+        keyNodes.push(key);
         valueNodes.push(this.parse(item));
       }
     }
@@ -381,9 +378,9 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: Headers,
   ): SerovalHeadersNode {
-    const items: Record<string, string> = {};
+    const items: [key: string, value: unknown][] = [];
     current.forEach((value, key) => {
-      items[key] = value;
+      items.push([key, value]);
     });
     return {
       t: SerovalNodeType.Headers,
@@ -405,9 +402,9 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: FormData,
   ): SerovalFormDataNode {
-    const items: Record<string, FormDataEntryValue> = {};
+    const items: [key: string, value: unknown][] = [];
     current.forEach((value, key) => {
-      items[key] = value;
+      items.push([key, value]);
     });
     return {
       t: SerovalNodeType.FormData,
