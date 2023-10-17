@@ -1,5 +1,3 @@
-import type { Assignment, FlaggedObject } from './assignments';
-import { resolveAssignments, resolveFlags } from './assignments';
 import { Feature } from './compat';
 import {
   CONSTANT_STRING,
@@ -57,6 +55,151 @@ import {
   SerovalObjectRecordSpecialKey,
 } from './types';
 
+interface IndexAssignment {
+  t: 'index';
+  s: string;
+  k: undefined;
+  v: string;
+}
+
+interface SetAssignment {
+  t: 'set';
+  s: string;
+  k: string;
+  v: string;
+}
+
+interface AddAssignment {
+  t: 'add';
+  s: string;
+  k: undefined;
+  v: string;
+}
+
+interface DeleteAssignment {
+  t: 'delete';
+  s: string;
+  k: string;
+  v: undefined;
+}
+
+// Array of assignments to be done (used for recursion)
+type Assignment =
+  | IndexAssignment
+  | AddAssignment
+  | SetAssignment
+  | DeleteAssignment;
+
+export interface FlaggedObject {
+  type: SerovalObjectFlags;
+  value: string;
+}
+
+function getAssignmentExpression(assignment: Assignment): string {
+  switch (assignment.t) {
+    case 'index':
+      return assignment.s + '=' + assignment.v;
+    case 'set':
+      return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
+    case 'add':
+      return assignment.s + '.add(' + assignment.v + ')';
+    case 'delete':
+      return assignment.s + '.delete(' + assignment.k + ')';
+    default:
+      return '';
+  }
+}
+
+function mergeAssignments(assignments: Assignment[]): Assignment[] {
+  const newAssignments: Assignment[] = [];
+  let current = assignments[0];
+  for (let i = 1, len = assignments.length, item: Assignment, prev = current; i < len; i++) {
+    item = assignments[i];
+    switch (item.t) {
+      case 'index':
+        if (item.v === prev.v) {
+          // Merge if the right-hand value is the same
+          // saves at least 2 chars
+          current = {
+            t: 'index',
+            s: item.s,
+            k: undefined,
+            v: getAssignmentExpression(current),
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      case 'set':
+        if (item.s === prev.s) {
+          // Maps has chaining methods, merge if source is the same
+          current = {
+            t: 'set',
+            s: getAssignmentExpression(current),
+            k: item.k,
+            v: item.v,
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      case 'add':
+        if (item.s === prev.s) {
+          // Sets has chaining methods too
+          current = {
+            t: 'add',
+            s: getAssignmentExpression(current),
+            k: undefined,
+            v: item.v,
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      case 'delete':
+        if (item.s === prev.s) {
+          // Maps has chaining methods, merge if source is the same
+          current = {
+            t: 'delete',
+            s: getAssignmentExpression(current),
+            k: item.k,
+            v: undefined,
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      default:
+        break;
+    }
+    prev = item;
+  }
+
+  newAssignments.push(current);
+
+  return newAssignments;
+}
+
+function resolveAssignments(assignments: Assignment[]): string | undefined {
+  if (assignments.length) {
+    let result = '';
+    const merged = mergeAssignments(assignments);
+    for (let i = 0, len = merged.length; i < len; i++) {
+      result += getAssignmentExpression(merged[i]) + ',';
+    }
+    return result;
+  }
+  return undefined;
+}
+
 const NULL_CONSTRUCTOR = 'Object.create(null)';
 const SET_CONSTRUCTOR = 'new Set';
 const MAP_CONSTRUCTOR = 'new Map';
@@ -67,11 +210,24 @@ const PROMISE_REJECT = 'Promise.reject';
 const enum SpecialReference {
   Sentinel = 0,
   SymbolIterator = 1,
+  ObjectFreeze = 2,
+  ObjectSeal = 3,
+  ObjectPreventExtensions = 4,
 }
 
 const SPECIAL_REFERENCE_VALUE: Record<SpecialReference, string> = {
   [SpecialReference.Sentinel]: '[]',
   [SpecialReference.SymbolIterator]: 'Symbol.iterator',
+  [SpecialReference.ObjectFreeze]: 'Object.freeze',
+  [SpecialReference.ObjectSeal]: 'Object.seal',
+  [SpecialReference.ObjectPreventExtensions]: 'Object.preventExtensions',
+};
+
+const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, SpecialReference | undefined> = {
+  [SerovalObjectFlags.Frozen]: SpecialReference.ObjectFreeze,
+  [SerovalObjectFlags.Sealed]: SpecialReference.ObjectSeal,
+  [SerovalObjectFlags.NonExtensible]: SpecialReference.ObjectPreventExtensions,
+  [SerovalObjectFlags.None]: undefined,
 };
 
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
@@ -165,9 +321,22 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     }
   }
 
+  private resolveFlags(): string | undefined {
+    let result = '';
+    for (let i = 0, current = this.flags, len = current.length; i < len; i++) {
+      const flag = current[i];
+      const constructor = OBJECT_FLAG_CONSTRUCTOR[flag.type];
+      if (constructor) {
+        const ref = this.getSpecialReference(constructor);
+        result += (ref.includes('=') ? '(' + ref + ')' : ref) + '(' + flag.value + '),';
+      }
+    }
+    return result;
+  }
+
   protected resolvePatches(): string | undefined {
     const assignments = resolveAssignments(this.assignments);
-    const flags = resolveFlags(this.flags);
+    const flags = this.resolveFlags();
     if (assignments) {
       if (flags) {
         return assignments + flags;
