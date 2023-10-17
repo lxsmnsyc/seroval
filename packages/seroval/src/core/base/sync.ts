@@ -111,7 +111,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     properties: Record<string, unknown>,
   ): SerovalObjectRecordNode {
     const entries = Object.entries(properties);
-    const keyNodes: (string | number)[] = [];
+    const keyNodes: SerovalObjectRecordKey[] = [];
     const valueNodes: SerovalNode[] = [];
     const deferredKeys: string[] = [];
     const deferredValues: unknown[] = [];
