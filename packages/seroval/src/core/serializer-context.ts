@@ -636,9 +636,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     const buffer = node.s;
     const len = buffer.length;
     if (len) {
-      result += '[';
-      for (let i = 0; i < len; i++) {
-        result += ((i > 0) ? ',' : '') + buffer[i];
+      result += '[' + buffer[0];
+      for (let i = 1; i < len; i++) {
+        result += ',' + buffer[i];
       }
       result += ']';
     }
