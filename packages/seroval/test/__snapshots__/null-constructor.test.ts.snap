@@ -8,25 +8,25 @@ exports[`null-constructor > compat#toJSON > should use manual assignment instead
 
 exports[`null-constructor > crossSerialize > scoped > supports Objects 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{hello:\\"world\\"})))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerialize > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[1]=[1,2,3].values()})))($R[\\"example\\"])"`;
+exports[`null-constructor > crossSerialize > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{[$R._1=Symbol.iterator]:()=>$R[1]=[1,2,3].values()})))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>($R[0]=Object.create(null),$R[0].b=$R[0].a=$R[0],$R[0]))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerialize > supports Objects 1`] = `"$R[0]=Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
-exports[`null-constructor > crossSerialize > supports Symbol.iterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[1]=[1,2,3].values()})"`;
+exports[`null-constructor > crossSerialize > supports Symbol.iterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R._1=Symbol.iterator]:()=>$R[1]=[1,2,3].values()})"`;
 
 exports[`null-constructor > crossSerialize > supports self-recursion 1`] = `"($R[0]=Object.create(null),$R[0].b=$R[0].a=$R[0],$R[0])"`;
 
 exports[`null-constructor > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))))($R[\\"example\\"])"`;
+exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R._1=Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])})))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerializeAsync > supports Objects 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
 
-exports[`null-constructor > crossSerializeAsync > supports Symbol.iterator 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))"`;
+exports[`null-constructor > crossSerializeAsync > supports Symbol.iterator 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R._1=Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))"`;
 
 exports[`null-constructor > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=Object.assign(Object.create(null),{a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])})"`;
 
@@ -36,7 +36,7 @@ exports[`null-constructor > crossSerializeStream > scoped > supports Objects 2`]
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))))($R[\\"example\\"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{[$R._1=Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
@@ -52,7 +52,7 @@ exports[`null-constructor > crossSerializeStream > supports Objects 2`] = `"_$.P
 
 exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=_$.P()"`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{[Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))"`;
+exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{[$R._1=Symbol.iterator]:()=>$R[2]=[1,2,3].values()}))"`;
 
 exports[`null-constructor > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=_$.P()"`;
 
@@ -64,13 +64,13 @@ exports[`null-constructor > crossSerializeStream > supports self-recursion 4`] =
 
 exports[`null-constructor > serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{hello:\\"world\\"})"`;
 
-exports[`null-constructor > serialize > supports Symbol.iterator 1`] = `"Object.assign(Object.create(null),{[Symbol.iterator]:()=>[1,2,3].values()})"`;
+exports[`null-constructor > serialize > supports Symbol.iterator 1`] = `"(h=>(Object.assign(Object.create(null),{[h=Symbol.iterator]:()=>[1,2,3].values()})))()"`;
 
 exports[`null-constructor > serialize > supports self-recursion 1`] = `"(h=>(h=Object.create(null),h.b=h.a=h,h))()"`;
 
 exports[`null-constructor > serializeAsync > supports Object.create(null) 1`] = `"Promise.resolve(Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
 
-exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `"Promise.resolve(Object.assign(Object.create(null),{[Symbol.iterator]:()=>[1,2,3].values()}))"`;
+exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `"(h=>(Promise.resolve(Object.assign(Object.create(null),{[h=Symbol.iterator]:()=>[1,2,3].values()}))))()"`;
 
 exports[`null-constructor > serializeAsync > supports self-recursion 1`] = `"(h=>(h=Object.assign(Object.create(null),{a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)})))()"`;
 

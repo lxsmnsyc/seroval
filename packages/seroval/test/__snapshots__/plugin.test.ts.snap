@@ -8,9 +8,9 @@ exports[`Plugin > crossSerializeAsync > scoped > supports Plugin 1`] = `"($R=>($
 
 exports[`Plugin > crossSerializeAsync > supports Plugin 1`] = `"$R[0]=Promise.resolve(Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\"))"`;
 
-exports[`Plugin > crossSerializeStream > scoped > supports Plugin 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[Symbol.iterator]:()=>$R[1]=[72,101,108,108,111,44,32,87,111,114,108,100,33].values()})))($R[\\"example\\"])"`;
+exports[`Plugin > crossSerializeStream > scoped > supports Plugin 1`] = `"($R=>($R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[$R._1=Symbol.iterator]:()=>$R[1]=[72,101,108,108,111,44,32,87,111,114,108,100,33].values()})))($R[\\"example\\"])"`;
 
-exports[`Plugin > crossSerializeStream > supports Plugin 1`] = `"$R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[Symbol.iterator]:()=>$R[1]=[72,101,108,108,111,44,32,87,111,114,108,100,33].values()})"`;
+exports[`Plugin > crossSerializeStream > supports Plugin 1`] = `"$R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[$R._1=Symbol.iterator]:()=>$R[1]=[72,101,108,108,111,44,32,87,111,114,108,100,33].values()})"`;
 
 exports[`Plugin > serialize > supports Plugin 1`] = `"Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\")"`;
 
