@@ -561,31 +561,31 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // value is no longer part of the expression
       // tree and has been moved to the deferred
       // assignment
-      const parent = this.stack;
-      this.stack = [];
       if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
         this.defer(val.i, this.serialize(val));
         this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
       } else {
+        const parent = this.stack;
+        this.stack = [];
         this.createSetAssignment(id, keyRef, this.serialize(val));
+        this.stack = parent;
       }
-      this.stack = parent;
       return '';
     }
     if (this.isIndexedValueInStack(val)) {
       // Create ref for the Map instance
       const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
       this.markRef(id);
-      // Reset stack for the key serialization
-      const parent = this.stack;
-      this.stack = [];
       if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
         this.defer(val.i, this.serialize(val));
         this.createSetAssignment(id, this.getRefParam(val.i), valueRef);
       } else {
+        // Reset stack for the key serialization
+        const parent = this.stack;
+        this.stack = [];
         this.createSetAssignment(id, this.serialize(key), valueRef);
+        this.stack = parent;
       }
-      this.stack = parent;
       return '';
     }
 
