@@ -25,6 +25,7 @@ import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
+  onError?: (error: unknown) => void;
   onDone?: () => void;
 }
 
@@ -37,16 +38,25 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
 
   private onParseCallback: (node: SerovalNode, initial: boolean) => void;
 
+  private onErrorCallback?: (error: unknown) => void;
+
   private onDoneCallback?: () => void;
 
   constructor(options: BaseStreamParserContextOptions) {
     super(options);
     this.onParseCallback = options.onParse;
+    this.onErrorCallback = options.onError;
     this.onDoneCallback = options.onDone;
   }
 
   private onParse(node: SerovalNode, initial: boolean): void {
     this.onParseCallback(node, initial);
+  }
+
+  private onError(error: unknown): void {
+    if (this.onErrorCallback) {
+      this.onErrorCallback(error);
+    }
   }
 
   private onDone(): void {
@@ -96,21 +106,25 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             }, false);
             this.popPendingState();
           } else {
-            this.onParse({
-              t: SerovalNodeType.ReadableStreamEnqueue,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: undefined,
-              f: this.parse(data.value),
-              b: undefined,
-              o: undefined,
-            }, false);
-            this.pushReadableStreamReader(id, reader);
+            try {
+              this.onParse({
+                t: SerovalNodeType.ReadableStreamEnqueue,
+                i: id,
+                s: undefined,
+                l: undefined,
+                c: undefined,
+                m: undefined,
+                p: undefined,
+                e: undefined,
+                a: undefined,
+                f: this.parse(data.value),
+                b: undefined,
+                o: undefined,
+              }, false);
+              this.pushReadableStreamReader(id, reader);
+            } catch (err) {
+              this.onError(err);
+            }
           }
         }
       },
@@ -434,8 +448,16 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
    * @private
    */
   start<T>(current: T): void {
+    let result: SerovalNode;
+    try {
+      result = this.parse(current);
+    } catch (err) {
+      this.onError(err);
+      return;
+    }
+
     this.onParse(
-      this.parse(current),
+      result,
       true,
     );
 

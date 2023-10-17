@@ -119,11 +119,23 @@ export function crossSerializeStream<T>(
         markedRefs: ctx.marked,
       });
 
+      let serialized: string;
+
+      try {
+        serialized = serial.serializeTop(node);
+      } catch (err) {
+        if (options.onError) {
+          options.onError(err);
+        }
+        return;
+      }
+
       options.onSerialize(
-        serial.serializeTop(node),
+        serialized,
         initial,
       );
     },
+    onError: options.onError,
     onDone: options.onDone,
   });
 
