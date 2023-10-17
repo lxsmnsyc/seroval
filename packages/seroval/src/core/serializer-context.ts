@@ -221,7 +221,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     key: string,
     value: string,
   ): void {
-    this.markRef(ref);
     this.createAssignment(this.getRefParam(ref) + '.' + key, value);
   }
 
