@@ -21,11 +21,19 @@ interface AddAssignment {
   v: string;
 }
 
+interface DeleteAssignment {
+  t: 'delete';
+  s: string;
+  k: string;
+  v: undefined;
+}
+
 // Array of assignments to be done (used for recursion)
 export type Assignment =
   | IndexAssignment
   | AddAssignment
-  | SetAssignment;
+  | SetAssignment
+  | DeleteAssignment;
 
 export interface FlaggedObject {
   type: SerovalObjectFlags;
@@ -40,6 +48,8 @@ function getAssignmentExpression(assignment: Assignment): string {
       return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
     case 'add':
       return assignment.s + '.add(' + assignment.v + ')';
+    case 'delete':
+      return assignment.s + '.delete(' + assignment.k + ')';
     default:
       return '';
   }
@@ -59,60 +69,70 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
   let item: Assignment;
   for (let i = 1, len = assignments.length; i < len; i++) {
     item = assignments[i];
-    if (item.t === prev.t) {
-      switch (item.t) {
-        case 'index':
-          if (item.v === prev.v) {
-            // Merge if the right-hand value is the same
-            // saves at least 2 chars
-            current = {
-              t: 'index',
-              s: item.s,
-              k: undefined,
-              v: getAssignmentExpression(current),
-            };
-          } else {
-            // Different assignment, push current
-            newAssignments.push(current);
-            current = item;
-          }
-          break;
-        case 'set':
-          if (item.s === prev.s) {
-            // Maps has chaining methods, merge if source is the same
-            current = {
-              t: 'set',
-              s: getAssignmentExpression(current),
-              k: item.k,
-              v: item.v,
-            };
-          } else {
-            // Different assignment, push current
-            newAssignments.push(current);
-            current = item;
-          }
-          break;
-        case 'add':
-          if (item.s === prev.s) {
-            // Sets has chaining methods too
-            current = {
-              t: 'add',
-              s: getAssignmentExpression(current),
-              k: undefined,
-              v: item.v,
-            };
-          } else {
-            // Different assignment, push current
-            newAssignments.push(current);
-            current = item;
-          }
-          break;
-        default:
-          break;
-      }
-    } else {
-      newAssignments.push(current);
-      current = item;
+    switch (item.t) {
+      case 'index':
+        if (item.v === prev.v) {
+          // Merge if the right-hand value is the same
+          // saves at least 2 chars
+          current = {
+            t: 'index',
+            s: item.s,
+            k: undefined,
+            v: getAssignmentExpression(current),
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      case 'set':
+        if (item.s === prev.s) {
+          // Maps has chaining methods, merge if source is the same
+          current = {
+            t: 'set',
+            s: getAssignmentExpression(current),
+            k: item.k,
+            v: item.v,
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      case 'add':
+        if (item.s === prev.s) {
+          // Sets has chaining methods too
+          current = {
+            t: 'add',
+            s: getAssignmentExpression(current),
+            k: undefined,
+            v: item.v,
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      case 'delete':
+        if (item.s === prev.s) {
+          // Maps has chaining methods, merge if source is the same
+          current = {
+            t: 'delete',
+            s: getAssignmentExpression(current),
+            k: item.k,
+            v: undefined,
+          };
+        } else {
+          // Different assignment, push current
+          newAssignments.push(current);
+          current = item;
+        }
+        break;
+      default:
+        break;
     }
     prev = item;
   }

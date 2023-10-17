@@ -64,6 +64,8 @@ const MAP_CONSTRUCTOR = 'new Map';
 const PROMISE_RESOLVE = 'Promise.resolve';
 const PROMISE_REJECT = 'Promise.reject';
 
+const SENTINEL_ID = Number.MAX_SAFE_INTEGER;
+
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
   markedRefs: number[] | Set<number>;
@@ -194,6 +196,18 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     });
   }
 
+  protected createDeleteAssignment(
+    ref: number,
+    key: string,
+  ): void {
+    this.assignments.push({
+      t: 'delete',
+      s: this.getRefParam(ref),
+      k: key,
+      v: undefined,
+    });
+  }
+
   protected createArrayAssign(
     ref: number,
     index: number | string,
@@ -209,35 +223,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): void {
     this.markRef(ref);
     this.createAssignment(this.getRefParam(ref) + '.' + key, value);
-  }
-
-  /**
-   * Seroval dedupes references by keeping only one of the reference,
-   * and the rest reusing the id of the original.
-   *
-   * Normally, since serialization is depth-first process,
-   * it should always be able to serialize the original before
-   * the other references.
-   *
-   * However, Seroval also has another mechanism called "assignments" which
-   * defers serialization when a reference is made inside a temporal
-   * dead zone or when a recursion is detected. Most of the time, assignments
-   * will only use the reference not the original, the only exception
-   * here is Map which has a key-value pair, so there's a case where
-   * only one of the two has the original, the other being a reference
-   * that can cause an assignment to occur.
-   *
-   * `defer` will help us here by serializing the item without assigning
-   * it the position it's supposed to be assigned. The next reference
-   * will be replaced with the original.
-   *
-   * Take note that this only matters if the object in question has more than
-   * one deduped reference in the entire tree.
-   */
-  deferred = new Map<number, SerovalNode>();
-
-  defer(id: number, value: SerovalNode): void {
-    this.deferred.set(id, value);
   }
 
   /**
@@ -540,6 +525,24 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(id, serialized);
   }
 
+  private isSentinelInitialized = false;
+
+  /**
+   * This special method creates a Symbol (but we use an array construct here).
+   * This Symbol behaves as a placeholder reference for deferred assignments,
+   * which allows us to serialize the original reference in place without actually
+   * assigning it to its position in the tree (since deferred assignment moves the
+   * expression somewhere after).
+   */
+  protected getSentinel(): string {
+    const param = this.getRefParam(SENTINEL_ID);
+    if (this.isSentinelInitialized) {
+      return param;
+    }
+    this.isSentinelInitialized = true;
+    return param + '=[]';
+  }
+
   protected serializeMapEntry(
     id: number,
     key: SerovalNode,
@@ -547,7 +550,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): string {
     if (this.isIndexedValueInStack(key)) {
       // Create reference for the map instance
-      const keyRef = this.getRefParam(id);
+      const keyRef = this.getRefParam((key as SerovalIndexedValueNode).i);
       this.markRef(id);
       // Check if value is a parent
       if (this.isIndexedValueInStack(val)) {
@@ -564,30 +567,36 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // tree and has been moved to the deferred
       // assignment
       if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
-        this.defer(val.i, val);
+        // We use a trick here using sequence (or comma) expressions
+        // basically we serialize the intended object in place WITHOUT
+        // actually returning it, this is by returning a placeholder
+        // value that we will remove sometime after.
+        const serialized = '(' + this.serialize(val) + ',[' + this.getSentinel() + ',' + this.getSentinel() + '])';
         this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
-      } else {
-        const parent = this.stack;
-        this.stack = [];
-        this.createSetAssignment(id, keyRef, this.serialize(val));
-        this.stack = parent;
+        this.createDeleteAssignment(id, this.getSentinel());
+        return serialized;
       }
+      const parent = this.stack;
+      this.stack = [];
+      this.createSetAssignment(id, keyRef, this.serialize(val));
+      this.stack = parent;
       return '';
     }
     if (this.isIndexedValueInStack(val)) {
       // Create ref for the Map instance
       const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
       this.markRef(id);
-      if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
-        this.defer(val.i, val);
-        this.createSetAssignment(id, this.getRefParam(val.i), valueRef);
-      } else {
-        // Reset stack for the key serialization
-        const parent = this.stack;
-        this.stack = [];
-        this.createSetAssignment(id, this.serialize(key), valueRef);
-        this.stack = parent;
+      if (key.t !== SerovalNodeType.IndexedValue && key.i != null && this.isMarked(key.i)) {
+        const serialized = '(' + this.serialize(key) + ',[' + this.getSentinel() + ',' + this.getSentinel() + '])';
+        this.createSetAssignment(id, this.getRefParam(key.i), valueRef);
+        this.createDeleteAssignment(id, this.getSentinel());
+        return serialized;
       }
+      // Reset stack for the key serialization
+      const parent = this.stack;
+      this.stack = [];
+      this.createSetAssignment(id, this.serialize(key), valueRef);
+      this.stack = parent;
       return '';
     }
 
@@ -894,11 +903,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalNodeType.BigInt:
         return node.s + 'n';
       case SerovalNodeType.IndexedValue:
-        if (this.deferred.has(node.i)) {
-          const result = this.serialize(this.deferred.get(node.i)!);
-          this.deferred.delete(node.i);
-          return result;
-        }
         return this.getRefParam(node.i);
       case SerovalNodeType.Reference:
         return this.serializeReference(node);

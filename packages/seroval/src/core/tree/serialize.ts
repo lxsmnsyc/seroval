@@ -18,19 +18,13 @@ import { SerovalNodeType } from '../constants';
 export type VanillaSerializerContextOptions = BaseSerializerContextOptions
 
 export default class VanillaSerializerContext extends BaseSerializerContext {
-  readonly mode: SerovalMode = 'cross';
-
-  /**
-   * Amount of refs
-   * @private
-   */
-  size = 0;
+  readonly mode: SerovalMode = 'vanilla';
 
   /**
    * Map tree refs to actual refs
    * @private
    */
-  valid: (number | undefined)[] = [];
+  valid = new Map<number, number>();
 
   /**
    * Variables
@@ -58,10 +52,10 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
      * has been referenced at least once, and is used to generate
      * the variables
      */
-    let actualIndex = this.valid[index];
+    let actualIndex = this.valid.get(index);
     if (actualIndex == null) {
-      actualIndex = this.size++;
-      this.valid[index] = actualIndex;
+      actualIndex = this.valid.size;
+      this.valid.set(index, actualIndex);
     }
     let identifier = this.vars[actualIndex];
     if (identifier == null) {
