@@ -207,26 +207,20 @@ const MAP_CONSTRUCTOR = 'new Map';
 const PROMISE_RESOLVE = 'Promise.resolve';
 const PROMISE_REJECT = 'Promise.reject';
 
+const SYMBOL_ITERATOR = 'Symbol.iterator';
+
 const enum SpecialReference {
   Sentinel = 0,
-  SymbolIterator = 1,
-  ObjectFreeze = 2,
-  ObjectSeal = 3,
-  ObjectPreventExtensions = 4,
 }
 
 const SPECIAL_REFERENCE_VALUE: Record<SpecialReference, string> = {
   [SpecialReference.Sentinel]: '[]',
-  [SpecialReference.SymbolIterator]: 'Symbol.iterator',
-  [SpecialReference.ObjectFreeze]: 'Object.freeze',
-  [SpecialReference.ObjectSeal]: 'Object.seal',
-  [SpecialReference.ObjectPreventExtensions]: 'Object.preventExtensions',
 };
 
-const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, SpecialReference | undefined> = {
-  [SerovalObjectFlags.Frozen]: SpecialReference.ObjectFreeze,
-  [SerovalObjectFlags.Sealed]: SpecialReference.ObjectSeal,
-  [SerovalObjectFlags.NonExtensible]: SpecialReference.ObjectPreventExtensions,
+const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = {
+  [SerovalObjectFlags.Frozen]: 'Object.freeze',
+  [SerovalObjectFlags.Sealed]: 'Object.seal',
+  [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
   [SerovalObjectFlags.None]: undefined,
 };
 
@@ -325,11 +319,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     let result = '';
     for (let i = 0, current = this.flags, len = current.length; i < len; i++) {
       const flag = current[i];
-      const constructor = OBJECT_FLAG_CONSTRUCTOR[flag.type];
-      if (constructor) {
-        const ref = this.getSpecialReference(constructor);
-        result += (ref.includes('=') ? '(' + ref + ')' : ref) + '(' + flag.value + '),';
-      }
+      result += OBJECT_FLAG_CONSTRUCTOR[flag.type] + '(' + flag.value + '),';
     }
     return result;
   }
@@ -446,13 +436,13 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected getIterableAccess(): string {
     return this.features & Feature.ArrayPrototypeValues
       ? '.values()'
-      : '[' + this.getSpecialReference(SpecialReference.SymbolIterator) + ']()';
+      : '[' + SYMBOL_ITERATOR + ']()';
   }
 
   protected serializeIterable(
     node: SerovalNode,
   ): string {
-    const key = '[' + this.getSpecialReference(SpecialReference.SymbolIterator) + ']';
+    const key = '[' + SYMBOL_ITERATOR + ']';
     const parent = this.stack;
     this.stack = [];
     let serialized = this.serialize(node) + this.getIterableAccess();
