@@ -64,7 +64,15 @@ const MAP_CONSTRUCTOR = 'new Map';
 const PROMISE_RESOLVE = 'Promise.resolve';
 const PROMISE_REJECT = 'Promise.reject';
 
-const SENTINEL_ID = Number.MAX_SAFE_INTEGER;
+const enum SpecialReference {
+  Sentinel = 0,
+  SymbolIterator = 1,
+}
+
+const SPECIAL_REFERENCE_VALUE: Record<SpecialReference, string> = {
+  [SpecialReference.Sentinel]: '[]',
+  [SpecialReference.SymbolIterator]: 'Symbol.iterator',
+};
 
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
@@ -130,7 +138,22 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * that is used to refer to the object instance in the
    * generated script.
    */
-  abstract getRefParam(id: number): string;
+  abstract getRefParam(id: number | string): string;
+
+  private specials = new Set<SpecialReference>();
+
+  /**
+   * Generates special references that isn't provided by the user
+   * but by the script.
+   */
+  protected getSpecialReference(ref: SpecialReference): string {
+    const param = this.getRefParam('$' + ref);
+    if (this.specials.has(ref)) {
+      return param;
+    }
+    this.specials.add(ref);
+    return param + '=' + SPECIAL_REFERENCE_VALUE[ref];
+  }
 
   protected pushObjectFlag(flag: SerovalObjectFlags, id: number): void {
     if (flag !== SerovalObjectFlags.None) {
@@ -254,24 +277,25 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected getIterableAccess(): string {
     return this.features & Feature.ArrayPrototypeValues
       ? '.values()'
-      : '[Symbol.iterator]()';
+      : '[' + this.getSpecialReference(SpecialReference.SymbolIterator) + ']()';
   }
 
   protected serializeIterable(
     node: SerovalNode,
   ): string {
+    const key = '[' + this.getSpecialReference(SpecialReference.SymbolIterator) + ']';
     const parent = this.stack;
     this.stack = [];
     let serialized = this.serialize(node) + this.getIterableAccess();
     this.stack = parent;
     if (this.features & Feature.ArrowFunction) {
-      serialized = '[Symbol.iterator]:()=>' + serialized;
+      serialized = ':()=>' + serialized;
     } else if (this.features & Feature.MethodShorthand) {
-      serialized = '[Symbol.iterator](){return ' + serialized + '}';
+      serialized = '(){return ' + serialized + '}';
     } else {
-      serialized = '[Symbol.iterator]:function(){return ' + serialized + '}';
+      serialized = ':function(){return ' + serialized + '}';
     }
-    return serialized;
+    return key + serialized;
   }
 
   protected serializeArrayItem(
@@ -404,7 +428,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         this.assignments = mainAssignments;
         this.createArrayAssign(
           sourceID,
-          'Symbol.iterator',
+          this.getSpecialReference(SpecialReference.Sentinel),
           this.features & Feature.ArrowFunction
             ? '()=>' + serialized
             : 'function(){return ' + serialized + '}',
@@ -530,24 +554,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(id, serialized);
   }
 
-  private isSentinelInitialized = false;
-
-  /**
-   * This special method creates a Symbol (but we use an array construct here).
-   * This Symbol behaves as a placeholder reference for deferred assignments,
-   * which allows us to serialize the original reference in place without actually
-   * assigning it to its position in the tree (since deferred assignment moves the
-   * expression somewhere after).
-   */
-  protected getSentinel(): string {
-    const param = this.getRefParam(SENTINEL_ID);
-    if (this.isSentinelInitialized) {
-      return param;
-    }
-    this.isSentinelInitialized = true;
-    return param + '=[]';
-  }
-
   protected serializeMapEntry(
     id: number,
     key: SerovalNode,
@@ -576,9 +582,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         // basically we serialize the intended object in place WITHOUT
         // actually returning it, this is by returning a placeholder
         // value that we will remove sometime after.
-        const serialized = '(' + this.serialize(val) + ',[' + this.getSentinel() + ',' + this.getSentinel() + '])';
+        const serialized = '(' + this.serialize(val) + ',[' + this.getSpecialReference(SpecialReference.Sentinel) + ',' + this.getSpecialReference(SpecialReference.Sentinel) + '])';
         this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
-        this.createDeleteAssignment(id, this.getSentinel());
+        this.createDeleteAssignment(id, this.getSpecialReference(SpecialReference.Sentinel));
         return serialized;
       }
       const parent = this.stack;
@@ -592,9 +598,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
       this.markRef(id);
       if (key.t !== SerovalNodeType.IndexedValue && key.i != null && this.isMarked(key.i)) {
-        const serialized = '(' + this.serialize(key) + ',[' + this.getSentinel() + ',' + this.getSentinel() + '])';
+        const serialized = '(' + this.serialize(key) + ',[' + this.getSpecialReference(SpecialReference.Sentinel) + ',' + this.getSpecialReference(SpecialReference.Sentinel) + '])';
         this.createSetAssignment(id, this.getRefParam(key.i), valueRef);
-        this.createDeleteAssignment(id, this.getSentinel());
+        this.createDeleteAssignment(id, this.getSpecialReference(SpecialReference.Sentinel));
         return serialized;
       }
       // Reset stack for the key serialization

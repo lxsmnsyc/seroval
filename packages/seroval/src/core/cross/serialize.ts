@@ -38,7 +38,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     this.scopeId = options.scopeId;
   }
 
-  getRefParam(id: number): string {
+  getRefParam(id: number | string): string {
     return GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
   }
 

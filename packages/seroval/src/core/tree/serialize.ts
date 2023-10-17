@@ -24,7 +24,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
    * Map tree refs to actual refs
    * @private
    */
-  valid = new Map<number, number>();
+  valid = new Map<number | string, number>();
 
   /**
    * Variables
@@ -45,7 +45,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
    * Creates the reference param (identifier) from the given reference ID
    * Calling this function means the value has been referenced somewhere
    */
-  getRefParam(index: number): string {
+  getRefParam(index: number | string): string {
     /**
      * Creates a new reference ID from a given reference ID
      * This new reference ID means that the reference itself
