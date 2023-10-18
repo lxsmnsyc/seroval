@@ -106,7 +106,8 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             }, false);
             this.popPendingState();
           } else {
-            try {
+            const parsed = this.parseWithError(data.value);
+            if (parsed) {
               this.onParse({
                 t: SerovalNodeType.ReadableStreamEnqueue,
                 i: id,
@@ -117,34 +118,35 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
                 p: undefined,
                 e: undefined,
                 a: undefined,
-                f: this.parse(data.value),
+                f: parsed,
                 b: undefined,
                 o: undefined,
               }, false);
               this.pushReadableStreamReader(id, reader);
-            } catch (err) {
-              this.onError(err);
             }
           }
         }
       },
       (value) => {
         if (this.alive) {
-          this.onParse({
-            t: SerovalNodeType.ReadableStreamError,
-            i: id,
-            s: undefined,
-            l: undefined,
-            c: undefined,
-            m: undefined,
-            p: undefined,
-            e: undefined,
-            a: undefined,
-            f: this.parse(value),
-            b: undefined,
-            o: undefined,
-          }, false);
-          this.popPendingState();
+          const parsed = this.parseWithError(value);
+          if (parsed) {
+            this.onParse({
+              t: SerovalNodeType.ReadableStreamError,
+              i: id,
+              s: undefined,
+              l: undefined,
+              c: undefined,
+              m: undefined,
+              p: undefined,
+              e: undefined,
+              a: undefined,
+              f: parsed,
+              b: undefined,
+              o: undefined,
+            }, false);
+            this.popPendingState();
+          }
         }
       },
     );
@@ -227,7 +229,8 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
   ): SerovalPromiseConstructorNode {
     current.then(
       (data) => {
-        if (this.alive) {
+        const parsed = this.parseWithError(data);
+        if (parsed) {
           this.onParse({
             t: SerovalNodeType.PromiseResolve,
             i: id,
@@ -247,21 +250,24 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       },
       (data) => {
         if (this.alive) {
-          this.onParse({
-            t: SerovalNodeType.PromiseReject,
-            i: id,
-            s: undefined,
-            l: undefined,
-            c: undefined,
-            m: undefined,
-            p: undefined,
-            e: undefined,
-            a: undefined,
-            f: this.parse(data),
-            b: undefined,
-            o: undefined,
-          }, false);
-          this.popPendingState();
+          const parsed = this.parseWithError(data);
+          if (parsed) {
+            this.onParse({
+              t: SerovalNodeType.PromiseReject,
+              i: id,
+              s: undefined,
+              l: undefined,
+              c: undefined,
+              m: undefined,
+              p: undefined,
+              e: undefined,
+              a: undefined,
+              f: this.parse(data),
+              b: undefined,
+              o: undefined,
+            }, false);
+            this.popPendingState();
+          }
         }
       },
     );
@@ -448,26 +454,27 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     throw new UnsupportedTypeError(current);
   }
 
+  private parseWithError<T>(current: T): SerovalNode | undefined {
+    try {
+      return this.parse(current);
+    } catch (err) {
+      this.onError(err);
+      return undefined;
+    }
+  }
+
   /**
    * @private
    */
   start<T>(current: T): void {
-    let result: SerovalNode;
-    try {
-      result = this.parse(current);
-    } catch (err) {
-      this.onError(err);
-      return;
-    }
+    const parsed = this.parseWithError(current);
+    if (parsed) {
+      this.onParse(parsed, true);
 
-    this.onParse(
-      result,
-      true,
-    );
-
-    // Check if there's any pending pushes
-    if (this.pending <= 0) {
-      this.destroy();
+      // Check if there's any pending pushes
+      if (this.pending <= 0) {
+        this.destroy();
+      }
     }
   }
 
