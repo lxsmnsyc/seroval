@@ -15,7 +15,7 @@ import {
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import type { WellKnownSymbols } from '../constants';
-import { SerovalNodeType } from '../constants';
+import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../constants';
 import {
   createRequestOptions,
   createResponseOptions,
@@ -722,27 +722,27 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case URL:
+        case (typeof URL !== 'undefined' ? URL : UNIVERSAL_SENTINEL):
           return createURLNode(id, current as unknown as URL);
-        case URLSearchParams:
+        case (typeof URLSearchParams !== 'undefined' ? URLSearchParams : UNIVERSAL_SENTINEL):
           return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
-        case Blob:
+        case (typeof Blob !== 'undefined' ? Blob : UNIVERSAL_SENTINEL):
           return this.parseBlob(id, current as unknown as Blob);
-        case File:
+        case (typeof File !== 'undefined' ? File : UNIVERSAL_SENTINEL):
           return this.parseFile(id, current as unknown as File);
-        case Headers:
+        case (typeof Headers !== 'undefined' ? Headers : UNIVERSAL_SENTINEL):
           return this.parseHeaders(id, current as unknown as Headers);
-        case FormData:
+        case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):
           return this.parseFormData(id, current as unknown as FormData);
-        case Request:
+        case (typeof Request !== 'undefined' ? Request : UNIVERSAL_SENTINEL):
           return this.parseRequest(id, current as unknown as Request);
-        case Response:
+        case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
           return this.parseResponse(id, current as unknown as Response);
-        case Event:
+        case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):
           return this.parseEvent(id, current as unknown as Event);
-        case CustomEvent:
+        case (typeof CustomEvent !== 'undefined' ? CustomEvent : UNIVERSAL_SENTINEL):
           return this.parseCustomEvent(id, current as unknown as CustomEvent);
-        case DOMException:
+        case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
         default:
           break;

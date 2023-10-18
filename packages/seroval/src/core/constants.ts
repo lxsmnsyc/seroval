@@ -186,3 +186,5 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
   [ErrorConstructorTag.TypeError]: TypeError,
   [ErrorConstructorTag.URIError]: URIError,
 };
+
+export const UNIVERSAL_SENTINEL = Symbol('why');

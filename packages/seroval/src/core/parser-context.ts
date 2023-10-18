@@ -143,12 +143,11 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       return false;
     }
     if (currentFeatures & Feature.WebAPI) {
-      switch (currentClass) {
-        case Headers:
-        case File:
-          return false;
-        default:
-          break;
+      if (typeof Headers !== 'undefined' && currentClass === Headers) {
+        return false;
+      }
+      if (typeof File !== 'undefined' && currentClass === File) {
+        return false;
       }
     }
     const currentPlugins = this.plugins;
