@@ -661,6 +661,13 @@ async function parseObject(
       current as unknown as Set<unknown>,
     );
   }
+  // Promises
+  if (
+    (ctx.features & Feature.Promise)
+    && (currentClass === Promise || current instanceof Promise)
+  ) {
+    return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
+  }
   // Web APIs
   if (ctx.features & Feature.WebAPI) {
     switch (currentClass) {
@@ -695,13 +702,6 @@ async function parseObject(
     && (currentClass === AggregateError || current instanceof AggregateError)
   ) {
     return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
-  }
-  // Promises
-  if (
-    (ctx.features & Feature.Promise)
-    && (currentClass === Promise || current instanceof Promise)
-  ) {
-    return generatePromiseNode(ctx, id, current as unknown as Promise<unknown>);
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
