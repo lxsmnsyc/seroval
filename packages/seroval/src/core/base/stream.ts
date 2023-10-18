@@ -243,7 +243,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             p: undefined,
             e: undefined,
             a: undefined,
-            f: this.parse(data),
+            f: parsed,
             b: undefined,
             o: undefined,
           }, false);
@@ -264,7 +264,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               p: undefined,
               e: undefined,
               a: undefined,
-              f: this.parse(data),
+              f: parsed,
               b: undefined,
               o: undefined,
             }, false);
