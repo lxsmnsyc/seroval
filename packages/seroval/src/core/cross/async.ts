@@ -670,35 +670,43 @@ async function parseObject(
   }
   // Web APIs
   if (ctx.features & Feature.WebAPI) {
-    switch (currentClass) {
-      case URL:
-        return createURLNode(id, current as unknown as URL);
-      case URLSearchParams:
-        return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
-      case Blob:
-        return createBlobNode(ctx, id, current as unknown as Blob);
-      case File:
-        return createFileNode(ctx, id, current as unknown as File);
-      case Headers:
-        return generateHeadersNode(ctx, id, current as unknown as Headers);
-      case FormData:
-        return generateFormDataNode(ctx, id, current as unknown as FormData);
-      case Request:
-        return generateRequestNode(ctx, id, current as unknown as Request);
-      case Response:
-        return generateResponseNode(ctx, id, current as unknown as Response);
-      case Event:
-        return generateEventNode(ctx, id, current as unknown as Event);
-      case CustomEvent:
-        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
-      case DOMException:
-        return createDOMExceptionNode(id, current as unknown as DOMException);
-      default:
-        break;
+    if (typeof URL !== 'undefined' && currentClass === URL) {
+      return createURLNode(id, current as unknown as URL);
+    }
+    if (typeof URLSearchParams !== 'undefined' && currentClass === URLSearchParams) {
+      return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
+    }
+    if (typeof Blob !== 'undefined' && currentClass === Blob) {
+      return createBlobNode(ctx, id, current as unknown as Blob);
+    }
+    if (typeof File !== 'undefined' && currentClass === File) {
+      return createFileNode(ctx, id, current as unknown as File);
+    }
+    if (typeof Headers !== 'undefined' && currentClass === Headers) {
+      return generateHeadersNode(ctx, id, current as unknown as Headers);
+    }
+    if (typeof FormData !== 'undefined' && currentClass === FormData) {
+      return generateFormDataNode(ctx, id, current as unknown as FormData);
+    }
+    if (typeof Request !== 'undefined' && currentClass === Request) {
+      return generateRequestNode(ctx, id, current as unknown as Request);
+    }
+    if (typeof Response !== 'undefined' && currentClass === Response) {
+      return generateResponseNode(ctx, id, current as unknown as Response);
+    }
+    if (typeof Event !== 'undefined' && currentClass === Event) {
+      return generateEventNode(ctx, id, current as unknown as Event);
+    }
+    if (typeof CustomEvent !== 'undefined' && currentClass === CustomEvent) {
+      return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
+    }
+    if (typeof DOMException !== 'undefined' && currentClass === DOMException) {
+      return createDOMExceptionNode(id, current as unknown as DOMException);
     }
   }
   if (
     (ctx.features & Feature.AggregateError)
+    && typeof AggregateError !== 'undefined'
     && (currentClass === AggregateError || current instanceof AggregateError)
   ) {
     return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);

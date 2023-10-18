@@ -126,12 +126,11 @@ export function isIterable(
     return false;
   }
   if (ctx.features & Feature.WebAPI) {
-    switch (currentClass) {
-      case Headers:
-      case File:
-        return false;
-      default:
-        break;
+    if (typeof Headers !== 'undefined' && currentClass === Headers) {
+      return false;
+    }
+    if (typeof File !== 'undefined' && currentClass === File) {
+      return false;
     }
   }
   if (ctx.features & Feature.Symbol) {

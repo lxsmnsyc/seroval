@@ -555,31 +555,32 @@ function parseObject(
   }
   // Web APIs
   if (ctx.features & Feature.WebAPI) {
-    switch (currentClass) {
-      case URL:
-        return createURLNode(id, current as unknown as URL);
-      case URLSearchParams:
-        return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
-      case Headers:
-        return generateHeadersNode(ctx, id, current as unknown as Headers);
-      case FormData:
-        return generateFormDataNode(ctx, id, current as unknown as FormData);
-      case Event:
-        return generateEventNode(ctx, id, current as unknown as Event);
-      case CustomEvent:
-        return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
-      case DOMException:
-        return createDOMExceptionNode(id, current as unknown as DOMException);
-      default:
-        break;
+    if (typeof URL !== 'undefined' && currentClass === URL) {
+      return createURLNode(id, current as unknown as URL);
+    }
+    if (typeof URLSearchParams !== 'undefined' && currentClass === URLSearchParams) {
+      return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
+    }
+    if (typeof Headers !== 'undefined' && currentClass === Headers) {
+      return generateHeadersNode(ctx, id, current as unknown as Headers);
+    }
+    if (typeof FormData !== 'undefined' && currentClass === FormData) {
+      return generateFormDataNode(ctx, id, current as unknown as FormData);
+    }
+    if (typeof Event !== 'undefined' && currentClass === Event) {
+      return generateEventNode(ctx, id, current as unknown as Event);
+    }
+    if (typeof CustomEvent !== 'undefined' && currentClass === CustomEvent) {
+      return generateCustomEventNode(ctx, id, current as unknown as CustomEvent);
+    }
+    if (typeof DOMException !== 'undefined' && currentClass === DOMException) {
+      return createDOMExceptionNode(id, current as unknown as DOMException);
     }
   }
   if (
     (ctx.features & Feature.AggregateError)
-    && (
-      currentClass === AggregateError
-      || current instanceof AggregateError
-    )
+    && typeof AggregateError !== 'undefined'
+    && (currentClass === AggregateError || current instanceof AggregateError)
   ) {
     return generateAggregateErrorNode(ctx, id, current as unknown as AggregateError);
   }
