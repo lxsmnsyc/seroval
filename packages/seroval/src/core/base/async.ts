@@ -393,10 +393,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     };
   }
 
-  private async parsePlainProperties(
-    properties: Record<string, unknown>,
+  protected async parsePlainProperties(
+    entries: [key: string, value: unknown][],
   ): Promise<SerovalPlainRecordNode> {
-    const entries = Object.entries(properties);
     const size = entries.length;
     const keyNodes: string[] = [];
     const valueNodes: SerovalNode[] = [];
@@ -428,9 +427,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Headers,
   ): Promise<SerovalHeadersNode> {
-    const items: Record<string, string> = {};
+    const items: [key: string, value: unknown][] = [];
     current.forEach((value, key) => {
-      items[key] = value;
+      items.push([key, value]);
     });
     return {
       t: SerovalNodeType.Headers,
@@ -452,9 +451,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: FormData,
   ): Promise<SerovalFormDataNode> {
-    const items: Record<string, FormDataEntryValue> = {};
+    const items: [key: string, value: FormDataEntryValue][] = [];
     current.forEach((value, key) => {
-      items[key] = value;
+      items.push([key, value]);
     });
     return {
       t: SerovalNodeType.FormData,
