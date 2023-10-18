@@ -56,6 +56,8 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
   private onError(error: unknown): void {
     if (this.onErrorCallback) {
       this.onErrorCallback(error);
+    } else {
+      throw error;
     }
   }
 
