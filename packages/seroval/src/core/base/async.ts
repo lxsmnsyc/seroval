@@ -668,6 +668,13 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         break;
     }
     const currentFeatures = this.features;
+    // Promises
+    if (
+      (currentFeatures & Feature.Promise)
+      && (currentClass === Promise || current instanceof Promise)
+    ) {
+      return this.parsePromise(id, current as unknown as Promise<unknown>);
+    }
     // Typed Arrays
     if (currentFeatures & Feature.TypedArray) {
       switch (currentClass) {
@@ -750,13 +757,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       && (currentClass === AggregateError || current instanceof AggregateError)
     ) {
       return this.parseAggregateError(id, current as unknown as AggregateError);
-    }
-    // Promises
-    if (
-      (currentFeatures & Feature.Promise)
-      && (currentClass === Promise || current instanceof Promise)
-    ) {
-      return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
     // Slow path. We only need to handle Errors and Iterators
     // since they have very broad implementations.
