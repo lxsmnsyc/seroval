@@ -624,6 +624,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     if (
       (currentFeatures & Feature.AggregateError)
+      && typeof AggregateError !== 'undefined'
       && (currentClass === AggregateError || current instanceof AggregateError)
     ) {
       return this.parseAggregateError(id, current as unknown as AggregateError);

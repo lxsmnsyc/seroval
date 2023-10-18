@@ -430,6 +430,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
     if (
       (currentFeatures & Feature.AggregateError)
+      && typeof AggregateError !== 'undefined'
       && (currentClass === AggregateError || current instanceof AggregateError)
     ) {
       return this.parseAggregateError(id, current as unknown as AggregateError);
