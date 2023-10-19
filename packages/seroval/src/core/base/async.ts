@@ -790,6 +790,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         return typeof id === 'number' ? this.parseObject(id, current as object) : id;
       }
       case 'symbol': {
+        assert(this.features & Feature.Symbol, new UnsupportedTypeError(current));
         const id = this.getReference(current);
         return typeof id === 'number' ? createWKSymbolNode(id, current as WellKnownSymbols) : id;
       }
