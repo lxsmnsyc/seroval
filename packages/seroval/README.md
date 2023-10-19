@@ -62,22 +62,35 @@ Output (as a string):
 ((h,j,k,m)=>(m={number:[0.28952097444015235,-0,NaN,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,j=new Map([["hello","world"],["mutual",k=new Set(["hello","world"])]])],regexp:/[a-z0-9]+/i,date:new Date("2023-03-22T02:53:41.129Z"),map:j,set:k},h[3]=h,j.set("self",j),k.add(k).add(h),m.self=m,m))()
 
 // Formatted for readability
-((h, j, k, m) => (m = {
-  number: [0.28952097444015235, -0, NaN, 1 / 0, -1 / 0],
-  string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
-  boolean: [!0, !1],
-  null: null,
-  undefined: void 0,
-  bigint: 9007199254740991n,
-  array: h = [, , , , j = new Map([
-    ["hello", "world"],
-    ["mutual", k = new Set(["hello", "world"])]
-  ])],
-  regexp: /[a-z0-9]+/i,
-  date: new Date("2023-03-22T02:53:41.129Z"),
-  map: j,
-  set: k
-}, h[3] = h, j.set("self", j), k.add(k).add(h), m.self = m, m))()
+((h, j, k, m) => (
+  (m = {
+    number: [0.7499861043679861, -0, 0 / 0, 1 / 0, -1 / 0],
+    string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
+    boolean: [!0, !1],
+    null: null,
+    undefined: void 0,
+    bigint: 9007199254740991n,
+    array: (h = [
+      ,
+      ,
+      ,
+      ,
+      (j = new Map([
+        ["hello", "world"],
+        ["mutual", (k = new Set(["hello", "world"]))],
+      ])),
+    ]),
+    regexp: /[a-z0-9]+/i,
+    date: new Date("2023-10-19T05:11:59.516Z"),
+    map: j,
+    set: k,
+  }),
+  (h[3] = h),
+  j.set("self", j),
+  k.add(k).add(h),
+  (m.self = m),
+  m
+))();
 ```
 
 ## Docs
