@@ -542,9 +542,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       const keys = node.k;
       const values = node.v;
       let result = this.serializeProperty(sourceID, keys[0], values[0]);
-      for (let i = 1, item = result, current: string; i < len; i++) {
-        current = this.serializeProperty(sourceID, keys[i], values[i]);
-        result += (item && current && ',') + (item = current);
+      for (let i = 1, item = result; i < len; i++) {
+        item = this.serializeProperty(sourceID, keys[i], values[i]);
+        result += (item && result && ',') + item;
       }
       this.stack.pop();
       return '{' + result + '}';
@@ -701,9 +701,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       const items = node.a;
       this.stack.push(id);
       let result = this.serializeSetItem(id, items[0]);
-      for (let i = 1, item = result, current: string; i < size; i++) {
-        current = this.serializeSetItem(id, items[i]);
-        result += (item && current && ',') + (item = current);
+      for (let i = 1, item = result; i < size; i++) {
+        item = this.serializeSetItem(id, items[i]);
+        result += (item && result && ',') + item;
       }
       this.stack.pop();
       if (result) {
@@ -784,9 +784,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       const vals = node.e.v;
       this.stack.push(id);
       let result = this.serializeMapEntry(id, keys[0], vals[0]);
-      for (let i = 1, item = result, current: string; i < size; i++) {
-        current = this.serializeMapEntry(id, keys[i], vals[i]);
-        result += (item && current && ',') + (item = current);
+      for (let i = 1, item = result; i < size; i++) {
+        item = this.serializeMapEntry(id, keys[i], vals[i]);
+        result += (item && result && ',') + item;
       }
       this.stack.pop();
       // Check if there are any values
