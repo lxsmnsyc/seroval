@@ -1,9 +1,7 @@
 import { createIndexedValueNode, createReferenceNode } from './base-primitives';
 import { ALL_ENABLED, BIGINT_FLAG, Feature } from './compat';
-import { ERROR_CONSTRUCTOR_STRING } from './constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { hasReferenceID } from './reference';
-import { getErrorConstructor } from './shared';
 import type { SerovalIndexedValueNode, SerovalReferenceNode } from './types';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
@@ -59,40 +57,6 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     const id = this.refs.size;
     this.refs.set(current, id);
     return createReferenceNode(id, current);
-  }
-
-  /**
-   * @private
-   */
-  protected getErrorOptions(
-    error: Error,
-  ): Record<string, unknown> | undefined {
-    let options: Record<string, unknown> | undefined;
-    const constructor = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
-    // Name has been modified
-    if (error.name !== constructor) {
-      options = { name: error.name };
-    } else if (error.constructor.name !== constructor) {
-      // Otherwise, name is overriden because
-      // the Error class is extended
-      options = { name: error.constructor.name };
-    }
-    const names = Object.getOwnPropertyNames(error);
-    for (let i = 0, len = names.length, name: string; i < len; i++) {
-      name = names[i];
-      if (name !== 'name' && name !== 'message') {
-        if (name === 'stack') {
-          if (this.features & Feature.ErrorPrototypeStack) {
-            options = options || {};
-            options[name] = error[name as keyof Error];
-          }
-        } else {
-          options = options || {};
-          options[name] = error[name as keyof Error];
-        }
-      }
-    }
-    return options;
   }
 
   /**

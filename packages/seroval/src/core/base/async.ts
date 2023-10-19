@@ -31,7 +31,7 @@ import {
 import { BaseParserContext } from '../parser-context';
 import promiseToResult from '../promise-to-result';
 import { hasReferenceID } from '../reference';
-import { getErrorConstructor, getObjectFlag } from '../shared';
+import { getErrorConstructor, getErrorOptions, getObjectFlag } from '../shared';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {
@@ -261,7 +261,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Error,
   ): Promise<SerovalErrorNode> {
-    const options = this.getErrorOptions(current);
+    const options = getErrorOptions(current, this.features);
     const optionsNode = options
       ? await this.parseProperties(options)
       : undefined;
@@ -562,7 +562,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: AggregateError,
   ): Promise<SerovalAggregateErrorNode> {
-    const options = this.getErrorOptions(current);
+    const options = getErrorOptions(current, this.features);
     const optionsNode = options
       ? await this.parseProperties(options)
       : undefined;

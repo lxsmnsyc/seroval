@@ -27,7 +27,7 @@ import {
 import type { BaseParserContextOptions } from '../parser-context';
 import { BaseParserContext } from '../parser-context';
 import { hasReferenceID } from '../reference';
-import { getErrorConstructor, getObjectFlag } from '../shared';
+import { getErrorConstructor, getErrorOptions, getObjectFlag } from '../shared';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {
@@ -255,7 +255,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: Error,
   ): SerovalErrorNode {
-    const options = this.getErrorOptions(current);
+    const options = getErrorOptions(current, this.features);
     const optionsNode = options
       ? this.parseProperties(options)
       : undefined;
@@ -469,7 +469,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: AggregateError,
   ): SerovalAggregateErrorNode {
-    const options = this.getErrorOptions(current);
+    const options = getErrorOptions(current, this.features);
     const optionsNode = options
       ? this.parseProperties(options)
       : undefined;
