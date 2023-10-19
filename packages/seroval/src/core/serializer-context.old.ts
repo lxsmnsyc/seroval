@@ -115,70 +115,43 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
   let current = assignments[0];
   for (let i = 1, len = assignments.length, item: Assignment, prev = current; i < len; i++) {
     item = assignments[i];
-    switch (item.t) {
-      case 'index':
-        if (item.v === prev.v) {
-          // Merge if the right-hand value is the same
-          // saves at least 2 chars
-          current = {
-            t: 'index',
-            s: item.s,
-            k: undefined,
-            v: getAssignmentExpression(current),
-          };
-        } else {
-          // Different assignment, push current
-          newAssignments.push(current);
-          current = item;
-        }
-        break;
-      case 'set':
-        if (item.s === prev.s) {
-          // Maps has chaining methods, merge if source is the same
-          current = {
-            t: 'set',
-            s: getAssignmentExpression(current),
-            k: item.k,
-            v: item.v,
-          };
-        } else {
-          // Different assignment, push current
-          newAssignments.push(current);
-          current = item;
-        }
-        break;
-      case 'add':
-        if (item.s === prev.s) {
-          // Sets has chaining methods too
-          current = {
-            t: 'add',
-            s: getAssignmentExpression(current),
-            k: undefined,
-            v: item.v,
-          };
-        } else {
-          // Different assignment, push current
-          newAssignments.push(current);
-          current = item;
-        }
-        break;
-      case 'delete':
-        if (item.s === prev.s) {
-          // Maps has chaining methods, merge if source is the same
-          current = {
-            t: 'delete',
-            s: getAssignmentExpression(current),
-            k: item.k,
-            v: undefined,
-          };
-        } else {
-          // Different assignment, push current
-          newAssignments.push(current);
-          current = item;
-        }
-        break;
-      default:
-        break;
+    if (item.t === 'index' && item.v === prev.v) {
+      // Merge if the right-hand value is the same
+      // saves at least 2 chars
+      current = {
+        t: 'index',
+        s: item.s,
+        k: undefined,
+        v: getAssignmentExpression(current),
+      } as IndexAssignment;
+    } else if (item.t === 'set' && item.s === prev.s) {
+      // Maps has chaining methods, merge if source is the same
+      current = {
+        t: 'set',
+        s: getAssignmentExpression(current),
+        k: item.k,
+        v: item.v,
+      } as SetAssignment;
+    } else if (item.t === 'add' && item.s === prev.s) {
+      // Sets has chaining methods too
+      current = {
+        t: 'add',
+        s: getAssignmentExpression(current),
+        k: undefined,
+        v: item.v,
+      } as AddAssignment;
+    } else if (item.t === 'delete' && item.s === prev.s) {
+      // Maps has chaining methods, merge if source is the same
+      current = {
+        t: 'delete',
+        s: getAssignmentExpression(current),
+        k: item.k,
+        v: undefined,
+      } as DeleteAssignment;
+    } else {
+      // Different assignment, push current
+      newAssignments.push(current);
+      current = item;
     }
     prev = item;
   }
