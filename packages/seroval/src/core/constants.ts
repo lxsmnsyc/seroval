@@ -134,7 +134,7 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.NegativeZero]: '-0',
   [SerovalConstant.Infinity]: '1/0',
   [SerovalConstant.NegativeInfinity]: '-1/0',
-  [SerovalConstant.NaN]: 'NaN',
+  [SerovalConstant.NaN]: '0/0',
 };
 
 export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {

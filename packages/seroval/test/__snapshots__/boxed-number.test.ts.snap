@@ -2,7 +2,7 @@
 
 exports[`boxed number > crossSerialize > scoped > supports boxed numbers 1`] = `"($R=>($R[0]=Object(3735928559)))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerialize > scoped > supports boxed numbers 2`] = `"($R=>($R[0]=Object(NaN)))($R[\\"example\\"])"`;
+exports[`boxed number > crossSerialize > scoped > supports boxed numbers 2`] = `"($R=>($R[0]=Object(0/0)))($R[\\"example\\"])"`;
 
 exports[`boxed number > crossSerialize > scoped > supports boxed numbers 3`] = `"($R=>($R[0]=Object(1/0)))($R[\\"example\\"])"`;
 
@@ -12,7 +12,7 @@ exports[`boxed number > crossSerialize > scoped > supports boxed numbers 5`] = `
 
 exports[`boxed number > crossSerialize > supports boxed numbers 1`] = `"$R[0]=Object(3735928559)"`;
 
-exports[`boxed number > crossSerialize > supports boxed numbers 2`] = `"$R[0]=Object(NaN)"`;
+exports[`boxed number > crossSerialize > supports boxed numbers 2`] = `"$R[0]=Object(0/0)"`;
 
 exports[`boxed number > crossSerialize > supports boxed numbers 3`] = `"$R[0]=Object(1/0)"`;
 
@@ -22,7 +22,7 @@ exports[`boxed number > crossSerialize > supports boxed numbers 5`] = `"$R[0]=Ob
 
 exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(3735928559))))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 2`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(NaN))))($R[\\"example\\"])"`;
+exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 2`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(0/0))))($R[\\"example\\"])"`;
 
 exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 3`] = `"($R=>($R[0]=Promise.resolve($R[1]=Object(1/0))))($R[\\"example\\"])"`;
 
@@ -32,7 +32,7 @@ exports[`boxed number > crossSerializeAsync > scoped > supports boxed numbers 5`
 
 exports[`boxed number > crossSerializeAsync > supports boxed numbers 1`] = `"$R[0]=Promise.resolve($R[1]=Object(3735928559))"`;
 
-exports[`boxed number > crossSerializeAsync > supports boxed numbers 2`] = `"$R[0]=Promise.resolve($R[1]=Object(NaN))"`;
+exports[`boxed number > crossSerializeAsync > supports boxed numbers 2`] = `"$R[0]=Promise.resolve($R[1]=Object(0/0))"`;
 
 exports[`boxed number > crossSerializeAsync > supports boxed numbers 3`] = `"$R[0]=Promise.resolve($R[1]=Object(1/0))"`;
 
@@ -54,7 +54,7 @@ exports[`boxed number > crossSerializeStream > scoped > supports boxed Infinity 
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed NaN 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
-exports[`boxed number > crossSerializeStream > scoped > supports boxed NaN 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(NaN))))($R[\\"example\\"])"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed NaN 2`] = `"($R=>(_$.Ps($R[0],$R[1]=Object(0/0))))($R[\\"example\\"])"`;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed numbers 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
 
@@ -74,7 +74,7 @@ exports[`boxed number > crossSerializeStream > supports boxed Infinity 2`] = `"_
 
 exports[`boxed number > crossSerializeStream > supports boxed NaN 1`] = `"$R[0]=_$.P()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed NaN 2`] = `"_$.Ps($R[0],$R[1]=Object(NaN))"`;
+exports[`boxed number > crossSerializeStream > supports boxed NaN 2`] = `"_$.Ps($R[0],$R[1]=Object(0/0))"`;
 
 exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `"$R[0]=_$.P()"`;
 
