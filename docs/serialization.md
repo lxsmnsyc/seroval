@@ -89,3 +89,36 @@ Like other cross-reference serialization:
 - `crossSerializeStream` would require both `GLOBAL_CONTEXT_API_SCRIPT` and `getCrossReferenceHeader`.
 
 ### `Serializer`
+
+## Plugins
+
+```ts
+import { createPlugin, type SerovalNode } from 'seroval';
+
+const BufferPlugin = createPlugin<Buffer, SerovalNode>({
+  tag: 'Buffer',
+  test(value) {
+    return value instanceof Buffer;
+  },
+  parse: {
+    sync(value, ctx) {
+      return ctx.parse(value.toString('base64'));
+    },
+    async async(value, ctx) {
+      return ctx.parse(value.toString('base64'));
+    },
+    stream(value, ctx) {
+      return ctx.parse(value.toString('base64'));
+    },
+  },
+  serialize(node, ctx) {
+    return `Buffer.from(${ctx.serialize(node)}, "base64")`;
+  },
+  deserialize(node, ctx) {
+    return Buffer.from(ctx.deserialize(node) as string, 'base64');
+  },
+  isIterable() {
+    return true;
+  },
+});
+```
