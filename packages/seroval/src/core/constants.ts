@@ -1,5 +1,3 @@
-import type { SerovalConstantNode } from './types';
-
 export const enum SerovalConstant {
   Null = 0,
   Undefined = 1,
@@ -52,6 +50,7 @@ export const enum SerovalNodeType {
   Event = 37,
   CustomEvent = 38,
   DOMException = 39,
+  Plugin = 40,
 }
 
 export const enum SerovalObjectFlags {
@@ -127,48 +126,65 @@ export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
   [Symbols.Unscopables]: Symbol.unscopables,
 };
 
-export function serializeConstant(node: SerovalConstantNode): string {
-  switch (node.s) {
-    case SerovalConstant.True:
-      return '!0';
-    case SerovalConstant.False:
-      return '!1';
-    case SerovalConstant.Undefined:
-      return 'void 0';
-    case SerovalConstant.Null:
-      return 'null';
-    case SerovalConstant.NegativeZero:
-      return '-0';
-    case SerovalConstant.Infinity:
-      return '1/0';
-    case SerovalConstant.NegativeInfinity:
-      return '-1/0';
-    case SerovalConstant.NaN:
-      return 'NaN';
-    default:
-      throw new Error('invariant');
-  }
+export const CONSTANT_STRING: Record<SerovalConstant, string> = {
+  [SerovalConstant.True]: '!0',
+  [SerovalConstant.False]: '!1',
+  [SerovalConstant.Undefined]: 'void 0',
+  [SerovalConstant.Null]: 'null',
+  [SerovalConstant.NegativeZero]: '-0',
+  [SerovalConstant.Infinity]: '1/0',
+  [SerovalConstant.NegativeInfinity]: '-1/0',
+  [SerovalConstant.NaN]: '0/0',
+};
+
+export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
+  [SerovalConstant.True]: true,
+  [SerovalConstant.False]: false,
+  [SerovalConstant.Undefined]: undefined,
+  [SerovalConstant.Null]: null,
+  [SerovalConstant.NegativeZero]: -0,
+  [SerovalConstant.Infinity]: Infinity,
+  [SerovalConstant.NegativeInfinity]: -Infinity,
+  [SerovalConstant.NaN]: NaN,
+};
+
+export const enum ErrorConstructorTag {
+  Error = 0,
+  EvalError = 1,
+  RangeError = 2,
+  ReferenceError = 3,
+  SyntaxError = 4,
+  TypeError = 5,
+  URIError = 6,
 }
 
-export function deserializeConstant(node: SerovalConstantNode): unknown {
-  switch (node.s) {
-    case SerovalConstant.True:
-      return true;
-    case SerovalConstant.False:
-      return false;
-    case SerovalConstant.Undefined:
-      return undefined;
-    case SerovalConstant.Null:
-      return null;
-    case SerovalConstant.NegativeZero:
-      return -0;
-    case SerovalConstant.Infinity:
-      return Infinity;
-    case SerovalConstant.NegativeInfinity:
-      return -Infinity;
-    case SerovalConstant.NaN:
-      return NaN;
-    default:
-      throw new Error('invariant');
-  }
-}
+export const ERROR_CONSTRUCTOR_STRING: Record<ErrorConstructorTag, string> = {
+  [ErrorConstructorTag.Error]: 'Error',
+  [ErrorConstructorTag.EvalError]: 'EvalError',
+  [ErrorConstructorTag.RangeError]: 'RangeError',
+  [ErrorConstructorTag.ReferenceError]: 'ReferenceError',
+  [ErrorConstructorTag.SyntaxError]: 'SyntaxError',
+  [ErrorConstructorTag.TypeError]: 'TypeError',
+  [ErrorConstructorTag.URIError]: 'URIError',
+};
+
+type ErrorConstructors =
+  | ErrorConstructor
+  | EvalErrorConstructor
+  | RangeErrorConstructor
+  | ReferenceErrorConstructor
+  | SyntaxErrorConstructor
+  | TypeErrorConstructor
+  | URIErrorConstructor;
+
+export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> = {
+  [ErrorConstructorTag.Error]: Error,
+  [ErrorConstructorTag.EvalError]: EvalError,
+  [ErrorConstructorTag.RangeError]: RangeError,
+  [ErrorConstructorTag.ReferenceError]: ReferenceError,
+  [ErrorConstructorTag.SyntaxError]: SyntaxError,
+  [ErrorConstructorTag.TypeError]: TypeError,
+  [ErrorConstructorTag.URIError]: URIError,
+};
+
+export const UNIVERSAL_SENTINEL = Symbol('why');

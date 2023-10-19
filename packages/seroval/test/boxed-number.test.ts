@@ -14,7 +14,7 @@ describe('boxed number', () => {
     it('supports boxed numbers', () => {
       const value = 0xDEADBEEF;
       expect(serialize(Object(value))).toBe(`Object(${value})`);
-      expect(serialize(Object(NaN))).toBe('Object(NaN)');
+      expect(serialize(Object(NaN))).toBe('Object(0/0)');
       expect(serialize(Object(Infinity))).toBe('Object(1/0)');
       expect(serialize(Object(-Infinity))).toBe('Object(-1/0)');
       expect(serialize(Object(-0))).toBe('Object(-0)');
@@ -24,7 +24,7 @@ describe('boxed number', () => {
     it('supports boxed numbers', async () => {
       const value = 0xDEADBEEF;
       expect(await serializeAsync(Promise.resolve(Object(value)))).toBe(`Promise.resolve(Object(${value}))`);
-      expect(await serializeAsync(Promise.resolve(Object(NaN)))).toBe('Promise.resolve(Object(NaN))');
+      expect(await serializeAsync(Promise.resolve(Object(NaN)))).toBe('Promise.resolve(Object(0/0))');
       expect(await serializeAsync(Promise.resolve(Object(Infinity)))).toBe('Promise.resolve(Object(1/0))');
       expect(await serializeAsync(Promise.resolve(Object(-Infinity)))).toBe('Promise.resolve(Object(-1/0))');
       expect(await serializeAsync(Promise.resolve(Object(-0)))).toBe('Promise.resolve(Object(-0))');

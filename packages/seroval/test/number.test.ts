@@ -14,7 +14,7 @@ describe('number', () => {
     it('supports numbers', () => {
       const value = 0xDEADBEEF;
       expect(serialize(value)).toBe(`${value}`);
-      expect(serialize(NaN)).toBe('NaN');
+      expect(serialize(NaN)).toBe('0/0');
       expect(serialize(Infinity)).toBe('1/0');
       expect(serialize(-Infinity)).toBe('-1/0');
       expect(serialize(-0)).toBe('-0');
@@ -24,7 +24,7 @@ describe('number', () => {
     it('supports numbers', async () => {
       const value = 0xDEADBEEF;
       expect(await serializeAsync(Promise.resolve(value))).toBe(`Promise.resolve(${value})`);
-      expect(await serializeAsync(Promise.resolve(NaN))).toBe('Promise.resolve(NaN)');
+      expect(await serializeAsync(Promise.resolve(NaN))).toBe('Promise.resolve(0/0)');
       expect(await serializeAsync(Promise.resolve(Infinity))).toBe('Promise.resolve(1/0)');
       expect(await serializeAsync(Promise.resolve(-Infinity))).toBe('Promise.resolve(-1/0)');
       expect(await serializeAsync(Promise.resolve(-0))).toBe('Promise.resolve(-0)');

@@ -4,7 +4,7 @@ exports[`objects > compat > should use manual assignment instead of Object.assig
 
 exports[`objects > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0},\\"f\\":16255,\\"m\\":[]}"`;
 
-exports[`objects > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"{hello:\\"world\\"}"`;
+exports[`objects > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"({hello:\\"world\\"})"`;
 
 exports[`objects > crossSerialize > scoped > supports Objects 1`] = `"($R=>($R[0]={hello:\\"world\\"}))($R[\\"example\\"])"`;
 

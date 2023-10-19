@@ -1,142 +1,33 @@
-import { BIGINT_FLAG, Feature } from './compat';
 import type {
   ErrorValue,
 } from '../types';
-import { SerovalObjectFlags } from './constants';
-import type { BaseParserContext } from './context';
+import { Feature } from './compat';
+import {
+  ERROR_CONSTRUCTOR_STRING,
+  ErrorConstructorTag,
+  SerovalObjectFlags,
+} from './constants';
 
-export function getErrorConstructorName(error: ErrorValue): string {
+export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   if (error instanceof EvalError) {
-    return 'EvalError';
+    return ErrorConstructorTag.EvalError;
   }
   if (error instanceof RangeError) {
-    return 'RangeError';
+    return ErrorConstructorTag.RangeError;
   }
   if (error instanceof ReferenceError) {
-    return 'ReferenceError';
+    return ErrorConstructorTag.ReferenceError;
   }
   if (error instanceof SyntaxError) {
-    return 'SyntaxError';
+    return ErrorConstructorTag.SyntaxError;
   }
   if (error instanceof TypeError) {
-    return 'TypeError';
+    return ErrorConstructorTag.TypeError;
   }
   if (error instanceof URIError) {
-    return 'URIError';
+    return ErrorConstructorTag.URIError;
   }
-  return 'Error';
-}
-
-type ErrorConstructors =
-  | ErrorConstructor
-  | EvalErrorConstructor
-  | RangeErrorConstructor
-  | ReferenceErrorConstructor
-  | SyntaxErrorConstructor
-  | TypeErrorConstructor
-  | URIErrorConstructor;
-
-export function getErrorConstructor(errorName: string): ErrorConstructors {
-  switch (errorName) {
-    case 'Error': return Error;
-    case 'EvalError': return EvalError;
-    case 'RangeError': return RangeError;
-    case 'ReferenceError': return ReferenceError;
-    case 'SyntaxError': return SyntaxError;
-    case 'TypeError': return TypeError;
-    case 'URIError': return URIError;
-    default:
-      throw new Error(`Unknown Error constructor "${errorName}"`);
-  }
-}
-
-export function getErrorOptions(
-  ctx: BaseParserContext,
-  error: Error,
-): Record<string, unknown> | undefined {
-  let options: Record<string, unknown> | undefined;
-  const constructor = getErrorConstructorName(error);
-  // Name has been modified
-  if (error.name !== constructor) {
-    options = { name: error.name };
-  } else if (error.constructor.name !== constructor) {
-    // Otherwise, name is overriden because
-    // the Error class is extended
-    options = { name: error.constructor.name };
-  }
-  const names = Object.getOwnPropertyNames(error);
-  for (const name of names) {
-    if (name !== 'name' && name !== 'message') {
-      if (name === 'stack') {
-        if (ctx.features & Feature.ErrorPrototypeStack) {
-          options = options || {};
-          options[name] = error[name as keyof Error];
-        }
-      } else {
-        options = options || {};
-        options[name] = error[name as keyof Error];
-      }
-    }
-  }
-  return options;
-}
-
-export function isIterable(
-  ctx: BaseParserContext,
-  value: unknown,
-): value is Iterable<unknown> {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  if (Array.isArray(value)) {
-    return false;
-  }
-  const currentClass = value.constructor;
-  if (ctx.features & Feature.TypedArray) {
-    switch (currentClass) {
-      case Int8Array:
-      case Int16Array:
-      case Int32Array:
-      case Uint8Array:
-      case Uint16Array:
-      case Uint32Array:
-      case Uint8ClampedArray:
-      case Float32Array:
-      case Float64Array:
-        return false;
-      default:
-        break;
-    }
-  }
-  // BigInt Typed Arrays
-  if ((ctx.features & BIGINT_FLAG) === BIGINT_FLAG) {
-    switch (currentClass) {
-      case BigInt64Array:
-      case BigUint64Array:
-        return false;
-      default:
-        break;
-    }
-  }
-  // ES Collection
-  if (ctx.features & Feature.Map && currentClass === Map) {
-    return false;
-  }
-  if (ctx.features & Feature.Set && currentClass === Set) {
-    return false;
-  }
-  if (ctx.features & Feature.WebAPI) {
-    if (typeof Headers !== 'undefined' && currentClass === Headers) {
-      return false;
-    }
-    if (typeof File !== 'undefined' && currentClass === File) {
-      return false;
-    }
-  }
-  if (ctx.features & Feature.Symbol) {
-    return Symbol.iterator in value;
-  }
-  return false;
+  return ErrorConstructorTag.Error;
 }
 
 type TypedArrayConstructor =
@@ -193,4 +84,36 @@ export function getObjectFlag(obj: unknown): SerovalObjectFlags {
     return SerovalObjectFlags.None;
   }
   return SerovalObjectFlags.NonExtensible;
+}
+
+export function getErrorOptions(
+  error: Error,
+  features: number,
+): Record<string, unknown> | undefined {
+  let options: Record<string, unknown> | undefined;
+  const constructor = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
+  // Name has been modified
+  if (error.name !== constructor) {
+    options = { name: error.name };
+  } else if (error.constructor.name !== constructor) {
+    // Otherwise, name is overriden because
+    // the Error class is extended
+    options = { name: error.constructor.name };
+  }
+  const names = Object.getOwnPropertyNames(error);
+  for (let i = 0, len = names.length, name: string; i < len; i++) {
+    name = names[i];
+    if (name !== 'name' && name !== 'message') {
+      if (name === 'stack') {
+        if (features & Feature.ErrorPrototypeStack) {
+          options = options || {};
+          options[name] = error[name as keyof Error];
+        }
+      } else {
+        options = options || {};
+        options[name] = error[name as keyof Error];
+      }
+    }
+  }
+  return options;
 }

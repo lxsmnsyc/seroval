@@ -6,6 +6,7 @@ export interface SerializerOptions {
   scopeId?: string;
   disabledFeatures?: number;
   onData: (result: string) => void;
+  onError: (error: unknown) => void;
   onDone?: () => void;
 }
 
@@ -34,6 +35,7 @@ export default class Serializer {
         scopeId: this.options.scopeId,
         refs: this.refs,
         disabledFeatures: this.options.disabledFeatures,
+        onError: this.options.onError,
         onSerialize: (data, initial) => {
           if (this.alive) {
             this.options.onData(

@@ -3,6 +3,7 @@ import type {
   SerovalObjectFlags,
   SerovalConstant,
   Symbols,
+  ErrorConstructorTag,
 } from './constants';
 
 export interface SerovalBaseNode {
@@ -204,7 +205,7 @@ export interface SerovalPromiseNode extends SerovalBaseNode {
 export interface SerovalErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.Error;
   // constructor name
-  c: string;
+  s: ErrorConstructorTag;
   // message
   m: string;
   // other properties
@@ -382,6 +383,15 @@ export interface SerovalDOMExceptionNode extends SerovalBaseNode {
   c: string;
 }
 
+export interface SerovalPluginNode extends SerovalBaseNode {
+  t: SerovalNodeType.Plugin;
+  i: number;
+  // value
+  s: unknown;
+  // tag name
+  c: string;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -407,7 +417,8 @@ export type SerovalSyncNode =
   | SerovalBoxedNode
   | SerovalEventNode
   | SerovalCustomEventNode
-  | SerovalDOMExceptionNode;
+  | SerovalDOMExceptionNode
+  | SerovalPluginNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode

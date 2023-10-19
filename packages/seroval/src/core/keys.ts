@@ -37,5 +37,5 @@ export function getCrossReferenceHeader(id?: string): string {
   if (id == null) {
     return `self.${GLOBAL_CONTEXT_REFERENCES}=self.${GLOBAL_CONTEXT_REFERENCES}||[];`;
   }
-  return `(self.${GLOBAL_CONTEXT_REFERENCES}=self.${GLOBAL_CONTEXT_REFERENCES}||{})["${serializeString(id)}"]=[]`;
+  return `(self.${GLOBAL_CONTEXT_REFERENCES}=self.${GLOBAL_CONTEXT_REFERENCES}||{})["${serializeString(id)}"]=[];`;
 }

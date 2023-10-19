@@ -16,6 +16,7 @@ import type {
   SerovalDateNode,
   SerovalIndexedValueNode,
   SerovalNumberNode,
+  SerovalPluginNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalStringNode,
@@ -197,6 +198,27 @@ export function createReferenceNode<T>(
     s: serializeString(getReferenceID(ref)),
     l: undefined,
     c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createPluginNode(
+  id: number,
+  tag: string,
+  value: unknown,
+): SerovalPluginNode {
+  return {
+    t: SerovalNodeType.Plugin,
+    i: id,
+    s: value,
+    l: undefined,
+    c: serializeString(tag),
     m: undefined,
     p: undefined,
     e: undefined,

@@ -1,67 +1,67 @@
 {
   "name": "small-collection to string",
-  "date": "2023-10-10T07:38:16.193Z",
+  "date": "2023-10-15T11:42:53.574Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 268751,
-      "margin": 0.2,
-      "percentSlower": 71.02
+      "ops": 264511,
+      "margin": 0.71,
+      "percentSlower": 71.61
     },
     {
       "name": "flatted",
-      "ops": 164207,
-      "margin": 0.05,
-      "percentSlower": 82.3
+      "ops": 163913,
+      "margin": 0.35,
+      "percentSlower": 82.41
     },
     {
       "name": "JSON",
-      "ops": 927463,
-      "margin": 0.13,
+      "ops": 931649,
+      "margin": 0.17,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 188345,
-      "margin": 0.67,
-      "percentSlower": 79.69
+      "ops": 238159,
+      "margin": 0.76,
+      "percentSlower": 74.44
     },
     {
       "name": "o-son",
-      "ops": 299787,
-      "margin": 0.05,
-      "percentSlower": 67.68
+      "ops": 302214,
+      "margin": 0.25,
+      "percentSlower": 67.56
     },
     {
       "name": "serialize-javascript",
-      "ops": 466696,
-      "margin": 0.06,
-      "percentSlower": 49.68
+      "ops": 463702,
+      "margin": 0.28,
+      "percentSlower": 50.23
     },
     {
       "name": "seroval",
-      "ops": 333460,
-      "margin": 0.14,
-      "percentSlower": 64.05
+      "ops": 339857,
+      "margin": 0.15,
+      "percentSlower": 63.52
     },
     {
       "name": "superjson",
-      "ops": 120011,
-      "margin": 0.06,
-      "percentSlower": 87.06
+      "ops": 123960,
+      "margin": 0.16,
+      "percentSlower": 86.69
     },
     {
       "name": "tosource",
-      "ops": 315175,
-      "margin": 0.05,
-      "percentSlower": 66.02
+      "ops": 321329,
+      "margin": 0.33,
+      "percentSlower": 65.51
     },
     {
       "name": "warp10",
-      "ops": 630310,
-      "margin": 0.23,
-      "percentSlower": 32.04
+      "ops": 683172,
+      "margin": 1.13,
+      "percentSlower": 26.67
     }
   ],
   "fastest": {

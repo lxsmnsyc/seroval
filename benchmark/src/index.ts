@@ -43,15 +43,15 @@ const tools = [
 ];
 
 const fixtures = {
-  'circular-dedupe': circularDedupe,
-  'circular-simple': circularSimple,
-  'dedupe-object': dedupeObject,
-  'large-circular-collection': largeCircularCollection,
-  'large-complex-collection': largeComplexCollection,
-  'large-dedupe-collection': largeDedupeCollection,
-  'large-invalid-keys-collection': largeInvalidKeysCollection,
-  'large-simple-collection': largeSimpleCollection,
-  'simple-object': simpleObject,
+  // 'circular-dedupe': circularDedupe,
+  // 'circular-simple': circularSimple,
+  // 'dedupe-object': dedupeObject,
+  // 'large-circular-collection': largeCircularCollection,
+  // 'large-complex-collection': largeComplexCollection,
+  // 'large-dedupe-collection': largeDedupeCollection,
+  // 'large-invalid-keys-collection': largeInvalidKeysCollection,
+  // 'large-simple-collection': largeSimpleCollection,
+  // 'simple-object': simpleObject,
   'small-collection': smallCollection,
 };
 
