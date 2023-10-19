@@ -41,6 +41,7 @@ export interface Plugin<Value, Node> {
     data: PluginData,
   ): Value;
   isIterable?: (value: Value) => boolean;
+  // isSerializable?: (value: Value) => boolean;
 }
 
 export function createPlugin<Value, Node>(
