@@ -23,7 +23,9 @@ export const GLOBAL_CONTEXT_STREAM_CONSTRUCTOR = 'S';
 
 export const GLOBAL_CONTEXT_STREAM_EMIT = 'Se';
 
-export const GLOBAL_CONTEXT_API_SCRIPT = `self.${GLOBAL_CONTEXT_API}=self.${GLOBAL_CONTEXT_API}||{`
+const GLOBAL_CONTEXT_API_REF = `self.${GLOBAL_CONTEXT_API}`;
+
+export const GLOBAL_CONTEXT_API_SCRIPT = `${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CONTEXT_API_REF}||{`
   + `${GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR}:function(s,f,p){return(p=new Promise(function(a,b){s=a,f=b})).${LOCAL_CONTEXT_PROMISE_RESOLVE}=s,p.${LOCAL_CONTEXT_PROMISE_REJECT}=f,p},`
   + `uP:function(p){delete p.${LOCAL_CONTEXT_PROMISE_RESOLVE};delete p.${LOCAL_CONTEXT_PROMISE_REJECT}},`
   + `${GLOBAL_CONTEXT_PROMISE_RESOLVE}:function(p,d){p.${LOCAL_CONTEXT_PROMISE_RESOLVE}(d),p.status="success",p.value=d,this.uP(p)},`
@@ -35,7 +37,7 @@ export const GLOBAL_CONTEXT_API_SCRIPT = `self.${GLOBAL_CONTEXT_API}=self.${GLOB
 
 export function getCrossReferenceHeader(id?: string): string {
   if (id == null) {
-    return `self.${GLOBAL_CONTEXT_REFERENCES}=self.${GLOBAL_CONTEXT_REFERENCES}||[];`;
+    return `${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CONTEXT_API_REF}||[];`;
   }
-  return `(self.${GLOBAL_CONTEXT_REFERENCES}=self.${GLOBAL_CONTEXT_REFERENCES}||{})["${serializeString(id)}"]=[];`;
+  return `(${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CONTEXT_API_REF}||{})["${serializeString(id)}"]=[];`;
 }
