@@ -37,7 +37,7 @@ export const GLOBAL_CONTEXT_API_SCRIPT = `${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CON
 
 export function getCrossReferenceHeader(id?: string): string {
   if (id == null) {
-    return `${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CONTEXT_API_REF}||[];`;
+    return `self.${GLOBAL_CONTEXT_REFERENCES}=self.${GLOBAL_CONTEXT_REFERENCES}||[];`;
   }
   return `(${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CONTEXT_API_REF}||{})["${serializeString(id)}"]=[];`;
 }
