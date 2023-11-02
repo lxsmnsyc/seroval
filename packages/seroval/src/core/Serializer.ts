@@ -28,9 +28,12 @@ export default class Serializer {
   ) {
   }
 
+  keys = new Set<string>();
+
   write(key: string, value: unknown): void {
     if (this.alive && !this.flushed) {
       this.pending++;
+      this.keys.add(key);
       this.cleanups.push(crossSerializeStream(value, {
         scopeId: this.options.scopeId,
         refs: this.refs,
@@ -56,6 +59,21 @@ export default class Serializer {
         },
       }));
     }
+  }
+
+  ids = 0;
+
+  private getNextID(): string {
+    while (this.keys.has('' + this.ids)) {
+      this.ids++;
+    }
+    return '' + this.ids;
+  }
+
+  push(value: unknown): string {
+    const newID = this.getNextID();
+    this.write(newID, value);
+    return newID;
   }
 
   flush(): void {
