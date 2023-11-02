@@ -35,9 +35,11 @@ export const GLOBAL_CONTEXT_API_SCRIPT = `${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CON
   + `${GLOBAL_CONTEXT_STREAM_CONSTRUCTOR}:function(s,c){return(s=new ReadableStream({start:function(x){c=x}})).${LOCAL_CONTEXT_STREAM_CONTROLLER}=c,s}`
   + '}';
 
+const GLOBAL_CONTEXT_R = `self.${GLOBAL_CONTEXT_REFERENCES}`;
+
 export function getCrossReferenceHeader(id?: string): string {
   if (id == null) {
-    return `self.${GLOBAL_CONTEXT_REFERENCES}=self.${GLOBAL_CONTEXT_REFERENCES}||[];`;
+    return `${GLOBAL_CONTEXT_R}=${GLOBAL_CONTEXT_R}||[];`;
   }
-  return `(${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CONTEXT_API_REF}||{})["${serializeString(id)}"]=[];`;
+  return `(${GLOBAL_CONTEXT_R}=${GLOBAL_CONTEXT_R}||{})["${serializeString(id)}"]=[];`;
 }
