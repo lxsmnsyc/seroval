@@ -15,7 +15,11 @@ import {
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import type { WellKnownSymbols } from '../constants';
-import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../constants';
+import {
+  SerovalNodeType,
+  SpecialReference,
+  UNIVERSAL_SENTINEL,
+} from '../constants';
 import {
   createRequestOptions,
   createResponseOptions,
@@ -73,22 +77,10 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   private async parseItems(
     current: unknown[],
   ): Promise<SerovalNode[]> {
-    const size = current.length;
     const nodes = [];
-    const deferred = [];
-    for (let i = 0, item: unknown; i < size; i++) {
+    for (let i = 0, len = current.length; i < len; i++) {
       if (i in current) {
-        item = current[i];
-        if (this.isIterable(item)) {
-          deferred[i] = item;
-        } else {
-          nodes[i] = await this.parse(item);
-        }
-      }
-    }
-    for (let i = 0; i < size; i++) {
-      if (i in deferred) {
-        nodes[i] = await this.parse(deferred[i]);
+        nodes[i] = await this.parse(current[i]);
       }
     }
     return nodes;
@@ -200,32 +192,23 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     const entries = Object.entries(properties);
     const keyNodes: SerovalObjectRecordKey[] = [];
     const valueNodes: SerovalNode[] = [];
-    const deferredKeys: string[] = [];
-    const deferredValues: unknown[] = [];
     for (
-      let i = 0, len = entries.length, key: string, item: unknown;
+      let i = 0, len = entries.length;
       i < len;
       i++
     ) {
-      key = serializeString(entries[i][0]);
-      item = entries[i][1];
-      // Defer iterables since iterables have lazy evaluation.
-      // Of course this doesn't include types seroval supports.
-      if (this.isIterable(item)) {
-        deferredKeys.push(key);
-        deferredValues.push(item);
-      } else {
-        keyNodes.push(key);
-        valueNodes.push(await this.parse(item));
-      }
-    }
-    for (let i = 0, len = deferredKeys.length; i < len; i++) {
-      keyNodes.push(deferredKeys[i]);
-      valueNodes.push(await this.parse(deferredValues[i]));
+      keyNodes.push(serializeString(entries[i][0]));
+      valueNodes.push(await this.parse(entries[i][1]));
     }
     // Check special properties
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
+        const specialRef = SpecialReference.SymbolIteratorFactory;
+        if (this.hasSpecial[specialRef]) {
+          this.markRef(-(specialRef + 1));
+        } else {
+          this.hasSpecial[specialRef] = true;
+        }
         keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
         valueNodes.push(await this.parse(iteratorToSequence(properties as Iterable<unknown>)));
       }
@@ -286,23 +269,12 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Map<unknown, unknown>,
   ): Promise<SerovalMapNode> {
+    this.markRef(-(SpecialReference.Sentinel + 1));
     const keyNodes: SerovalNode[] = [];
     const valueNodes: SerovalNode[] = [];
-    const deferredKey: unknown[] = [];
-    const deferredValue: unknown[] = [];
     for (const [key, value] of current.entries()) {
-      // Either key or value might be an iterable
-      if (this.isIterable(key) || this.isIterable(value)) {
-        deferredKey.push(key);
-        deferredValue.push(value);
-      } else {
-        keyNodes.push(await this.parse(key));
-        valueNodes.push(await this.parse(value));
-      }
-    }
-    for (let i = 0, len = deferredKey.length; i < len; i++) {
-      keyNodes.push(await this.parse(deferredKey[i]));
-      valueNodes.push(await this.parse(deferredValue[i]));
+      keyNodes.push(await this.parse(key));
+      valueNodes.push(await this.parse(value));
     }
     return {
       t: SerovalNodeType.Map,
@@ -325,18 +297,8 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     current: Set<unknown>,
   ): Promise<SerovalSetNode> {
     const nodes: SerovalNode[] = [];
-    const deferred: unknown[] = [];
     for (const item of current.keys()) {
-      // Iterables are lazy, so the evaluation must be deferred
-      if (this.isIterable(item)) {
-        deferred.push(item);
-      } else {
-        nodes.push(await this.parse(item));
-      }
-    }
-    // Parse deferred items
-    for (let i = 0, len = deferred.length; i < len; i++) {
-      nodes.push(await this.parse(deferred[i]));
+      nodes.push(await this.parse(item));
     }
     return {
       t: SerovalNodeType.Set,
@@ -400,22 +362,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     const size = entries.length;
     const keyNodes: string[] = [];
     const valueNodes: SerovalNode[] = [];
-    const deferredKeys: string[] = [];
-    const deferredValues: unknown[] = [];
-    for (let i = 0, key: string, item: unknown; i < size; i++) {
-      key = serializeString(entries[i][0]);
-      item = entries[i][1];
-      if (this.isIterable(item)) {
-        deferredKeys.push(key);
-        deferredValues.push(item);
-      } else {
-        keyNodes.push(key);
-        valueNodes.push(await this.parse(item));
-      }
-    }
-    for (let i = 0, len = deferredKeys.length; i < len; i++) {
-      keyNodes.push(deferredKeys[i]);
-      valueNodes.push(await this.parse(deferredValues[i]));
+    for (let i = 0; i < size; i++) {
+      keyNodes.push(serializeString(entries[i][0]));
+      valueNodes.push(await this.parse(entries[i][1]));
     }
     return {
       k: keyNodes,

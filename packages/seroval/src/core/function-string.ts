@@ -14,7 +14,7 @@ export function createFunction(
   return 'function(' + parameters.join(',') + '){return' + body + '}';
 }
 
-export function createEffectulFunction(
+export function createEffectfulFunction(
   features: number,
   parameters: string[],
   body: string,

@@ -40,7 +40,7 @@ export interface Plugin<Value, Node> {
     ctx: VanillaDeserializerContext,
     data: PluginData,
   ): Value;
-  isIterable?: (value: Value) => boolean;
+  // isIterable?: (value: Value) => boolean;
   // isSerializable?: (value: Value) => boolean;
 }
 

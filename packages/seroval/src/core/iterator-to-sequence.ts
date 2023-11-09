@@ -1,11 +1,13 @@
 export interface Sequence {
   v: unknown[];
   t: number;
+  d: number;
 }
 
 export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
   const values: unknown[] = [];
   let throwsAt = -1;
+  let doneAt = -1;
 
   const iterator = source[Symbol.iterator]();
 
@@ -14,6 +16,7 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
       const value = iterator.next();
       values.push(value.value);
       if (value.done) {
+        doneAt = values.length - 1;
         break;
       }
     } catch (error) {
@@ -25,6 +28,7 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
   return {
     v: values,
     t: throwsAt,
+    d: doneAt,
   };
 }
 
@@ -39,7 +43,7 @@ export function sequenceToIterator<T>(sequence: Sequence): Iterator<T> {
         throw currentItem;
       }
       return {
-        done: currentIndex === sequence.v.length - 1,
+        done: currentIndex === sequence.d,
         value: currentItem as T,
       };
     },

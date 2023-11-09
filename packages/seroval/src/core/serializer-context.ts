@@ -5,8 +5,9 @@ import {
   SYMBOL_STRING,
   SerovalNodeType,
   SerovalObjectFlags,
+  SpecialReference,
 } from './constants';
-import { createEffectulFunction, createFunction } from './function-string';
+import { createEffectfulFunction, createFunction } from './function-string';
 import { REFERENCES_KEY } from './keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { isValidIdentifier } from './shared';
@@ -183,11 +184,6 @@ const PROMISE_REJECT = 'Promise.reject';
 
 const SYMBOL_ITERATOR = 'Symbol.iterator';
 
-const enum SpecialReference {
-  Sentinel = 0,
-  SymbolIteratorFactory = 1,
-}
-
 const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = {
   [SerovalObjectFlags.Frozen]: 'Object.freeze',
   [SerovalObjectFlags.Sealed]: 'Object.seal',
@@ -261,8 +257,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    */
   abstract getRefParam(id: number | string): string;
 
-  private specials = new Set<SpecialReference>();
-
   private getSpecialReferenceValue(ref: SpecialReference): string {
     switch (ref) {
       case SpecialReference.Sentinel:
@@ -270,11 +264,11 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SpecialReference.SymbolIteratorFactory:
         return createFunction(
           this.features,
-          ['f', 'i', 's', 'c', 'd'],
+          ['s'],
           '(' + createFunction(
             this.features,
-            [],
-            '(s=f(),i=0,{next:' + createEffectulFunction(this.features, [], 'c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.v.length-1,value:d}') + '})',
+            ['i', 'c', 'd'],
+            '(i=0,{next:' + createEffectfulFunction(this.features, [], 'c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
           ) + ')',
         );
       default:
@@ -282,17 +276,21 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     }
   }
 
+  private hasSpecial = new Set<SpecialReference>();
+
   /**
    * Generates special references that isn't provided by the user
    * but by the script.
    */
   protected getSpecialReference(ref: SpecialReference): string {
-    const param = this.getRefParam('_' + ref);
-    if (this.specials.has(ref)) {
-      return param;
+    if (this.hasSpecial.has(ref)) {
+      return this.getRefParam(-(ref + 1));
     }
-    this.specials.add(ref);
-    return '(' + param + '=' + this.getSpecialReferenceValue(ref) + ')';
+    this.hasSpecial.add(ref);
+    return this.assignIndexedValue(
+      -(ref + 1),
+      this.getSpecialReferenceValue(ref),
+    );
   }
 
   protected pushObjectFlag(flag: SerovalObjectFlags, id: number): void {
@@ -431,9 +429,8 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     this.stack = [];
     const serialized = this.serialize(node);
     this.stack = parent;
-    const param = createFunction(this.features, [], '(' + serialized + ')');
     const constructor = this.getSpecialReference(SpecialReference.SymbolIteratorFactory);
-    return key + constructor + '(' + param + ')';
+    return key + '(' + constructor + ')(' + serialized + ')';
   }
 
   protected serializeArrayItem(
@@ -564,12 +561,11 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         this.stack = parent;
         const parentAssignment = this.assignments;
         this.assignments = mainAssignments;
-        const param = createFunction(this.features, [], '(' + serialized + ')');
         const constructor = this.getSpecialReference(SpecialReference.SymbolIteratorFactory);
         this.createArrayAssign(
           sourceID,
           this.getSpecialReference(SpecialReference.Sentinel),
-          constructor + '(' + param + ')',
+          '(' + constructor + ')(' + serialized + ')',
         );
         this.assignments = parentAssignment;
       }
@@ -849,7 +845,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       serialized = constructor + (
         node.s
           ? '().then(' + createFunction(this.features, [], ref) + ')'
-          : '().catch(' + createEffectulFunction(this.features, [], 'throw ' + ref) + ')'
+          : '().catch(' + createEffectfulFunction(this.features, [], 'throw ' + ref) + ')'
       );
     } else {
       this.stack.push(id);
