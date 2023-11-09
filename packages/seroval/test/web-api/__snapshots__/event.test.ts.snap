@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Event > crossSerialize > scoped > supports Event 1`] = `"($R=>($R[0]=new Event(\\"example\\",$R[1]={bubbles:!1,cancelable:!1,composed:!1})))($R[\\"example\\"])"`;
+exports[`Event > crossSerialize > scoped > supports Event 1`] = `"($R=>$R[0]=new Event(\\"example\\",$R[1]={bubbles:!1,cancelable:!1,composed:!1}))($R[\\"example\\"])"`;
 
 exports[`Event > crossSerialize > supports Event 1`] = `"$R[0]=new Event(\\"example\\",$R[1]={bubbles:!1,cancelable:!1,composed:!1})"`;
 
-exports[`Event > crossSerializeAsync > scoped > supports Event 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1}))))($R[\\"example\\"])"`;
+exports[`Event > crossSerializeAsync > scoped > supports Event 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1})))($R[\\"example\\"])"`;
 
 exports[`Event > crossSerializeAsync > supports Event 1`] = `"$R[0]=Promise.resolve($R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1}))"`;
 
-exports[`Event > crossSerializeStream > scoped > supports Event 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`Event > crossSerializeStream > scoped > supports Event 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`Event > crossSerializeStream > scoped > supports Event 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1}))))($R[\\"example\\"])"`;
+exports[`Event > crossSerializeStream > scoped > supports Event 2`] = `"($R=>_$.Ps($R[0],$R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1})))($R[\\"example\\"])"`;
 
 exports[`Event > crossSerializeStream > supports Event 1`] = `"$R[0]=_$.P()"`;
 

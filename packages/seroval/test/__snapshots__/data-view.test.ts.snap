@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`DataView > crossSerialize > scoped > supports DataView 1`] = `"($R=>($R[0]=new DataView($R[1]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R[\\"example\\"])"`;
+exports[`DataView > crossSerialize > scoped > supports DataView 1`] = `"($R=>$R[0]=new DataView($R[1]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))($R[\\"example\\"])"`;
 
 exports[`DataView > crossSerialize > supports DataView 1`] = `"$R[0]=new DataView($R[1]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
 
-exports[`DataView > crossSerializeAsync > scoped > supports DataView 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))))($R[\\"example\\"])"`;
+exports[`DataView > crossSerializeAsync > scoped > supports DataView 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R[\\"example\\"])"`;
 
 exports[`DataView > crossSerializeAsync > supports DataView 1`] = `"$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
-exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`DataView > crossSerializeStream > scoped > supports DataView 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))))($R[\\"example\\"])"`;
+exports[`DataView > crossSerializeStream > scoped > supports DataView 2`] = `"($R=>_$.Ps($R[0],$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R[\\"example\\"])"`;
 
 exports[`DataView > crossSerializeStream > supports DataView 1`] = `"$R[0]=_$.P()"`;
 

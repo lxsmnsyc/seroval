@@ -24,6 +24,7 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
 } from '../literals';
+import { iteratorToSequence } from '../iterator-to-sequence';
 import type { BaseParserContextOptions } from '../parser-context';
 import { BaseParserContext } from '../parser-context';
 import { hasReferenceID } from '../reference';
@@ -140,7 +141,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
         keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
-        valueNodes.push(this.parse(Array.from(properties as Iterable<unknown>)));
+        valueNodes.push(this.parse(iteratorToSequence(properties as Iterable<unknown>)));
       }
     }
     return {

@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CustomEvent > crossSerialize > scoped > supports CustomEvent 1`] = `"($R=>($R[0]=new CustomEvent(\\"example\\",$R[1]={detail:$R[2]={},bubbles:!1,cancelable:!1,composed:!1}),$R[2].self=$R[2],$R[0]))($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerialize > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=new CustomEvent(\\"example\\",$R[1]={detail:$R[2]={},bubbles:!1,cancelable:!1,composed:!1}),$R[2].self=$R[2],$R[0])($R[\\"example\\"])"`;
 
 exports[`CustomEvent > crossSerialize > supports CustomEvent 1`] = `"($R[0]=new CustomEvent(\\"example\\",$R[1]={detail:$R[2]={},bubbles:!1,cancelable:!1,composed:!1}),$R[2].self=$R[2],$R[0])"`;
 
-exports[`CustomEvent > crossSerializeAsync > scoped > supports CustomEvent 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new CustomEvent(\\"example\\",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0]))($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerializeAsync > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new CustomEvent(\\"example\\",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])($R[\\"example\\"])"`;
 
 exports[`CustomEvent > crossSerializeAsync > supports CustomEvent 1`] = `"($R[0]=Promise.resolve($R[1]=new CustomEvent(\\"example\\",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])"`;
 
-exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new CustomEvent(\\"example\\",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0]))($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 2`] = `"($R=>_$.Ps($R[0],$R[1]=new CustomEvent(\\"example\\",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])($R[\\"example\\"])"`;
 
 exports[`CustomEvent > crossSerializeStream > supports CustomEvent 1`] = `"$R[0]=_$.P()"`;
 

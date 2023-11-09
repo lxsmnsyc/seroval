@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`File > crossSerializeAsync > scoped > supports File 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new File([$R[2]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680}))))($R[\\"example\\"])"`;
+exports[`File > crossSerializeAsync > scoped > supports File 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new File([$R[2]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680})))($R[\\"example\\"])"`;
 
 exports[`File > crossSerializeAsync > supports File 1`] = `"$R[0]=Promise.resolve($R[1]=new File([$R[2]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],\\"hello.txt\\",{type:\\"text/plain\\",lastModified:1681027542680}))"`;
 

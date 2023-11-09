@@ -1,30 +1,30 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`arrays > crossSerialize > scoped > supports Arrays 1`] = `"($R=>($R[0]=[1,2,3]))($R[\\"example\\"])"`;
+exports[`arrays > crossSerialize > scoped > supports Arrays 1`] = `"($R=>$R[0]=[1,2,3])($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerialize > scoped > supports self recursion 1`] = `"($R=>($R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0]))($R[\\"example\\"])"`;
+exports[`arrays > crossSerialize > scoped > supports self recursion 1`] = `"($R=>$R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0])($R[\\"example\\"])"`;
 
 exports[`arrays > crossSerialize > supports Arrays 1`] = `"$R[0]=[1,2,3]"`;
 
 exports[`arrays > crossSerialize > supports self recursion 1`] = `"($R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0])"`;
 
-exports[`arrays > crossSerializeAsync > scoped > supports Arrays 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=[1,2,3])))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeAsync > scoped > supports Arrays 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=[1,2,3]))($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeAsync > scoped > supports self recursion 1`] = `"($R=>($R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeAsync > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])])($R[\\"example\\"])"`;
 
 exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[1,2,3])"`;
 
 exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `"($R=>(_$.Ps($R[0],$R[1]=[1,2,3])))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `"($R=>_$.Ps($R[0],$R[1]=[1,2,3]))($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>($R[0]=[$R[1]=_$.P(),$R[2]=_$.P()]))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=_$.P(),$R[2]=_$.P()])($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `"($R=>(_$.Ps($R[1],$R[0])))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `"($R=>_$.Ps($R[1],$R[0]))($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 3`] = `"($R=>(_$.Ps($R[2],$R[0])))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 3`] = `"($R=>_$.Ps($R[2],$R[0]))($R[\\"example\\"])"`;
 
 exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=_$.P()"`;
 

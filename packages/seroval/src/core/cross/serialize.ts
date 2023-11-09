@@ -17,12 +17,12 @@ import {
   GLOBAL_CONTEXT_STREAM_EMIT,
   GLOBAL_CONTEXT_API,
 } from '../keys';
-import type { BaseSerializerContextOptions } from '../serializer-context.old';
-import BaseSerializerContext from '../serializer-context.old';
+import type { BaseSerializerContextOptions } from '../serializer-context';
+import BaseSerializerContext from '../serializer-context';
 import type { SerovalMode } from '../plugin';
-import { Feature } from '../compat';
 import { serializeString } from '../string';
 import type { CrossContextOptions } from './cross-parser';
+import { createFunction } from '../function-string';
 
 export interface CrossSerializerContextOptions
   extends BaseSerializerContextOptions, CrossContextOptions {
@@ -109,9 +109,6 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     }
     const args = this.scopeId == null ? '()' : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(this.scopeId) + '"])';
     const body = mainBody + (patches ? ref : '');
-    if (this.features & Feature.ArrowFunction) {
-      return '(' + params + '=>(' + body + '))' + args;
-    }
-    return '(function(' + params + '){return ' + body + '})' + args;
+    return '(' + createFunction(this.features, [params], body) + ')' + args;
   }
 }

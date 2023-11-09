@@ -1,38 +1,38 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Map > compat > should fallback to Symbol.iterator 1`] = `"Object.assign(Object.create(null),{[Symbol.iterator]:()=>[].values()})"`;
+exports[`Map > compat > should fallback to Symbol.iterator 1`] = `"(h=>(Object.assign(Object.create(null),{[Symbol.iterator]:(h=(f,i,s,c,d)=>(()=>(s=f(),i=0,{next:()=>{c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.v.length-1,value:d}}})))(()=>({v:[void 0],t:-1}))})))()"`;
 
 exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
-exports[`Map > compat#toJSON > should fallback to Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":0,\\"a\\":[],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16351,\\"m\\":[]}"`;
+exports[`Map > compat#toJSON > should fallback to Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\"],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":1,\\"a\\":[{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1}],\\"s\\":2},\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16351,\\"m\\":[]}"`;
 
 exports[`Map > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
-exports[`Map > crossSerialize > scoped > supports Map 1`] = `"($R=>($R[0]=new Map([[1,2],[3,4]])))($R[\\"example\\"])"`;
+exports[`Map > crossSerialize > scoped > supports Map 1`] = `"($R=>$R[0]=new Map([[1,2],[3,4]]))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>($R[0]=new Map,$R[0].set($R[0],$R[0]),$R[0]))($R[\\"example\\"])"`;
+exports[`Map > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Map,$R[0].set($R[0],$R[0]),$R[0])($R[\\"example\\"])"`;
 
 exports[`Map > crossSerialize > supports Map 1`] = `"$R[0]=new Map([[1,2],[3,4]])"`;
 
 exports[`Map > crossSerialize > supports self-recursion 1`] = `"($R[0]=new Map,$R[0].set($R[0],$R[0]),$R[0])"`;
 
-exports[`Map > crossSerializeAsync > scoped > supports Map 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new Map([[1,2],[3,4]]))))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeAsync > scoped > supports Map 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Map([[1,2],[3,4]])))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>($R[0]=new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]]))($R[\\"example\\"])"`;
 
 exports[`Map > crossSerializeAsync > supports Map 1`] = `"$R[0]=Promise.resolve($R[1]=new Map([[1,2],[3,4]]))"`;
 
 exports[`Map > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports Map 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports Map 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports Map 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new Map([[1,2],[3,4]]))))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports Map 2`] = `"($R=>_$.Ps($R[0],$R[1]=new Map([[1,2],[3,4]])))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>($R[0]=new Map([[$R[1]=_$.P(),$R[2]=_$.P()]])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Map([[$R[1]=_$.P(),$R[2]=_$.P()]]))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>(_$.Ps($R[1],$R[0])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>_$.Ps($R[1],$R[0]))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>(_$.Ps($R[2],$R[0])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>_$.Ps($R[2],$R[0]))($R[\\"example\\"])"`;
 
 exports[`Map > crossSerializeStream > supports Map 1`] = `"$R[0]=_$.P()"`;
 
