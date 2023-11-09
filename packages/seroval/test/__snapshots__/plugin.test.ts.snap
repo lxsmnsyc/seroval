@@ -16,6 +16,6 @@ exports[`Plugin > serialize > supports Plugin 1`] = `"Buffer.from(\\"SGVsbG8sIFd
 
 exports[`Plugin > serializeAsync > supports Plugin 1`] = `"Promise.resolve(Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\"))"`;
 
-exports[`Plugin > serializeAsync > supports Plugin 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":40,\\"i\\":1,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Plugin > serializeAsync > supports Plugin 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":40,\\"i\\":1,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`Plugin > toJSON > supports Plugin 1`] = `"{\\"t\\":{\\"t\\":40,\\"i\\":0,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Plugin > toJSON > supports Plugin 1`] = `"{\\"t\\":{\\"t\\":40,\\"i\\":0,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;

@@ -80,22 +80,22 @@ exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `"$R
 
 exports[`boxed number > crossSerializeStream > supports boxed numbers 2`] = `"_$.Ps($R[0],$R[1]=Object(3735928559))"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":7}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":7}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":5}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":5}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":6}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":6}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":4}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":2,\\"s\\":4}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":7}}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":7}}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":5}}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":5}}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":6}}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":6}}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":4}}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":2,\\"s\\":4}}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;

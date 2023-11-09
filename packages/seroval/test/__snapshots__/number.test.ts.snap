@@ -40,22 +40,22 @@ exports[`number > crossSerializeStream > supports numbers 1`] = `"$R[0]=_$.P()"`
 
 exports[`number > crossSerializeStream > supports numbers 2`] = `"_$.Ps($R[0],3735928559)"`;
 
-exports[`number > toJSON > supports numbers 1`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":3735928559},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSON > supports numbers 1`] = `"{\\"t\\":{\\"t\\":0,\\"s\\":3735928559},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSON > supports numbers 2`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":7},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSON > supports numbers 2`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":7},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSON > supports numbers 3`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":5},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSON > supports numbers 3`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":5},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSON > supports numbers 4`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":6},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSON > supports numbers 4`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":6},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSON > supports numbers 5`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":4},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSON > supports numbers 5`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":4},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSONAsync > supports numbers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSONAsync > supports numbers 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":0,\\"s\\":3735928559}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSONAsync > supports numbers 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":7}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSONAsync > supports numbers 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":7}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSONAsync > supports numbers 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":5}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSONAsync > supports numbers 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":5}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSONAsync > supports numbers 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":6}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSONAsync > supports numbers 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":6}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
 
-exports[`number > toJSONAsync > supports numbers 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":4}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`number > toJSONAsync > supports numbers 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":4}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;

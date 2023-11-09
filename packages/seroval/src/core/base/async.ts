@@ -17,7 +17,6 @@ import { BIGINT_FLAG, Feature } from '../compat';
 import type { WellKnownSymbols } from '../constants';
 import {
   SerovalNodeType,
-  SpecialReference,
   UNIVERSAL_SENTINEL,
 } from '../constants';
 import {
@@ -67,6 +66,7 @@ import type {
   SerovalDataViewNode,
 } from '../types';
 import { createURLNode, createURLSearchParamsNode, createDOMExceptionNode } from '../web-api';
+import { SpecialReference } from '../special-reference';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -204,10 +204,10 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
         const specialRef = SpecialReference.SymbolIteratorFactory;
-        if (this.hasSpecial[specialRef]) {
+        if (this.specials[specialRef]) {
           this.markRef(-(specialRef + 1));
         } else {
-          this.hasSpecial[specialRef] = true;
+          this.specials[specialRef] = 1;
         }
         keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
         valueNodes.push(await this.parse(iteratorToSequence(properties as Iterable<unknown>)));

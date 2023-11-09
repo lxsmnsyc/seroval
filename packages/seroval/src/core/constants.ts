@@ -188,15 +188,3 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
 };
 
 export const UNIVERSAL_SENTINEL = Symbol('why');
-
-// These represents special references that are not provided
-// by the user but are accessed by the serial output
-export const enum SpecialReference {
-  // A sentinel ref is used to allow recursive Map
-  // assignments to be serialized in their original
-  // sequence. The sentinel ref is used as a placeholder
-  // value
-  Sentinel = 0,
-  // A factory for creating iterators
-  SymbolIteratorFactory = 1,
-}

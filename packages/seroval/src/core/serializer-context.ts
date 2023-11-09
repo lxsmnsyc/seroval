@@ -5,12 +5,13 @@ import {
   SYMBOL_STRING,
   SerovalNodeType,
   SerovalObjectFlags,
-  SpecialReference,
 } from './constants';
 import { createEffectfulFunction, createFunction } from './function-string';
 import { REFERENCES_KEY } from './keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { isValidIdentifier } from './shared';
+import type { SpecialReferenceState } from './special-reference';
+import { SpecialReference, getSpecialReferenceValue } from './special-reference';
 import type {
   SerovalArrayNode,
   SerovalIndexedValueNode,
@@ -194,6 +195,7 @@ const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = 
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
   markedRefs: number[] | Set<number>;
+  specials: SpecialReferenceState;
 }
 
 export default abstract class BaseSerializerContext implements PluginAccessOptions {
@@ -228,10 +230,13 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    */
   marked: Set<number>;
 
+  specials: SpecialReferenceState;
+
   constructor(options: BaseSerializerContextOptions) {
     this.plugins = options.plugins;
     this.features = options.features;
     this.marked = new Set(options.markedRefs);
+    this.specials = options.specials;
   }
 
   abstract readonly mode: SerovalMode;
@@ -257,39 +262,18 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    */
   abstract getRefParam(id: number | string): string;
 
-  private getSpecialReferenceValue(ref: SpecialReference): string {
-    switch (ref) {
-      case SpecialReference.Sentinel:
-        return '[]';
-      case SpecialReference.SymbolIteratorFactory:
-        return createFunction(
-          this.features,
-          ['s'],
-          '(' + createFunction(
-            this.features,
-            ['i', 'c', 'd'],
-            '(i=0,{next:' + createEffectfulFunction(this.features, [], 'c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
-          ) + ')',
-        );
-      default:
-        return '';
-    }
-  }
-
-  private hasSpecial = new Set<SpecialReference>();
-
   /**
    * Generates special references that isn't provided by the user
    * but by the script.
    */
   protected getSpecialReference(ref: SpecialReference): string {
-    if (this.hasSpecial.has(ref)) {
+    if (this.specials[ref] === 2) {
       return this.getRefParam(-(ref + 1));
     }
-    this.hasSpecial.add(ref);
+    this.specials[ref] = 2;
     return this.assignIndexedValue(
       -(ref + 1),
-      this.getSpecialReferenceValue(ref),
+      getSpecialReferenceValue(this.features, ref),
     );
   }
 

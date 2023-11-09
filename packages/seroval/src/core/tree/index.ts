@@ -1,4 +1,5 @@
 import type { PluginAccessOptions } from '../plugin';
+import type { SpecialReferenceState } from '../special-reference';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
 import AsyncParserContext from './async';
@@ -20,6 +21,7 @@ export function serialize<T>(
     plugins: options.plugins,
     features: ctx.features,
     markedRefs: ctx.marked,
+    specials: ctx.specials,
   });
   return serial.serializeTop(tree);
 }
@@ -37,6 +39,7 @@ export async function serializeAsync<T>(
     plugins: options.plugins,
     features: ctx.features,
     markedRefs: ctx.marked,
+    specials: ctx.specials,
   });
   return serial.serializeTop(tree);
 }
@@ -50,6 +53,7 @@ export interface SerovalJSON {
   t: SerovalNode;
   f: number;
   m: number[];
+  s: SpecialReferenceState;
 }
 
 export function toJSON<T>(
@@ -64,6 +68,7 @@ export function toJSON<T>(
     t: ctx.parse(source),
     f: ctx.features,
     m: Array.from(ctx.marked),
+    s: ctx.specials,
   };
 }
 
@@ -79,6 +84,7 @@ export async function toJSONAsync<T>(
     t: await ctx.parse(source),
     f: ctx.features,
     m: Array.from(ctx.marked),
+    s: ctx.specials,
   };
 }
 
@@ -87,6 +93,7 @@ export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = 
     plugins: options.plugins,
     features: source.f,
     markedRefs: source.m,
+    specials: source.s,
   });
   return ctx.serializeTop(source.t);
 }
