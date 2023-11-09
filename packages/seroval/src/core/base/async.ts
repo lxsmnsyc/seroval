@@ -103,6 +103,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: getObjectFlag(current),
+      x: undefined,
     };
   }
 
@@ -123,6 +124,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(current.valueOf()),
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -143,6 +145,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(current.buffer),
       b: current.byteOffset,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -163,6 +166,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(current.buffer),
       b: current.byteOffset,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -183,6 +187,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(current.buffer),
       b: current.byteOffset,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -203,12 +208,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Check special properties
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
-        const specialRef = SpecialReference.SymbolIteratorFactory;
-        if (this.specials[specialRef]) {
-          this.markRef(-(specialRef + 1));
-        } else {
-          this.specials[specialRef] = 1;
-        }
         keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
         valueNodes.push(await this.parse(iteratorToSequence(properties as Iterable<unknown>)));
       }
@@ -238,6 +237,20 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: getObjectFlag(current),
+      x: {
+        [SpecialReference.SymbolIterator]: (
+          this.features & Feature.Symbol && Symbol.iterator in current
+            ? await this.parse(Symbol.iterator)
+            : undefined
+        ),
+        [SpecialReference.Iterator]: (
+          this.features & Feature.Symbol && Symbol.iterator in current
+            ? this.parseSpecialReference(
+              SpecialReference.Iterator,
+            )
+            : undefined
+        ),
+      },
     };
   }
 
@@ -262,6 +275,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -269,7 +283,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Map<unknown, unknown>,
   ): Promise<SerovalMapNode> {
-    this.markRef(-(SpecialReference.Sentinel + 1));
     const keyNodes: SerovalNode[] = [];
     const valueNodes: SerovalNode[] = [];
     for (const [key, value] of current.entries()) {
@@ -289,6 +302,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
+      x: {
+        [SpecialReference.Sentinel]: this.parseSpecialReference(SpecialReference.Sentinel),
+      },
     };
   }
 
@@ -313,6 +329,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -333,6 +350,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       a: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -353,6 +371,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       a: undefined,
       b: current.lastModified,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -394,6 +413,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -418,6 +438,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -440,6 +461,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       a: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -465,6 +487,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       ],
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -485,6 +508,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(createEventOptions(current)),
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -505,6 +529,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(createCustomEventOptions(current)),
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -529,6 +554,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -550,6 +576,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(result),
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 

@@ -5,6 +5,7 @@ import type {
   Symbols,
   ErrorConstructorTag,
 } from './constants';
+import type { SpecialReference } from './special-reference';
 
 export interface SerovalBaseNode {
   // Type of the node
@@ -31,6 +32,8 @@ export interface SerovalBaseNode {
   b: number | undefined;
   // object flag
   o: SerovalObjectFlags | undefined;
+  // x
+  x: Partial<Record<SpecialReference, SerovalNode>> | undefined;
 }
 
 export const enum SerovalObjectRecordSpecialKey {
@@ -166,6 +169,9 @@ export interface SerovalMapNode extends SerovalBaseNode {
   i: number;
   // key/value pairs
   e: SerovalMapRecordNode;
+  x: {
+    [SpecialReference.Sentinel]: SerovalNodeWithID;
+  };
 }
 
 export interface SerovalArrayNode extends SerovalBaseNode {
@@ -184,6 +190,10 @@ export interface SerovalObjectNode extends SerovalBaseNode {
   p: SerovalObjectRecordNode;
   i: number;
   o: SerovalObjectFlags;
+  x: {
+    [SpecialReference.SymbolIterator]: SerovalNode | undefined;
+    [SpecialReference.Iterator]: SerovalNode | undefined;
+  };
 }
 
 export interface SerovalNullConstructorNode extends SerovalBaseNode {
@@ -192,6 +202,10 @@ export interface SerovalNullConstructorNode extends SerovalBaseNode {
   p: SerovalObjectRecordNode;
   i: number;
   o: SerovalObjectFlags;
+  x: {
+    [SpecialReference.SymbolIterator]: SerovalNode | undefined;
+    [SpecialReference.Iterator]: SerovalNode | undefined;
+  };
 }
 
 export interface SerovalPromiseNode extends SerovalBaseNode {
@@ -392,6 +406,12 @@ export interface SerovalPluginNode extends SerovalBaseNode {
   c: string;
 }
 
+export interface SerovalSpecialReferenceNode extends SerovalBaseNode {
+  t: SerovalNodeType.SpecialReference;
+  i: number;
+  s: SpecialReference;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -418,7 +438,8 @@ export type SerovalSyncNode =
   | SerovalEventNode
   | SerovalCustomEventNode
   | SerovalDOMExceptionNode
-  | SerovalPluginNode;
+  | SerovalPluginNode
+  | SerovalSpecialReferenceNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode
@@ -437,3 +458,5 @@ export type SerovalAsyncNode =
 export type SerovalNode =
   | SerovalSyncNode
   | SerovalAsyncNode;
+
+export type SerovalNodeWithID = Extract<SerovalNode, { i: number }>;

@@ -19,6 +19,7 @@ export function createURLNode(
     a: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -39,6 +40,7 @@ export function createURLSearchParamsNode(
     a: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -59,5 +61,6 @@ export function createDOMExceptionNode(
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }

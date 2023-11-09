@@ -19,7 +19,6 @@ export function crossSerialize<T>(
     plugins: options.plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
-    specials: options.specials,
   });
   const tree = ctx.parse(source);
   const serial = new CrossSerializerContext({
@@ -27,7 +26,6 @@ export function crossSerialize<T>(
     features: ctx.features,
     scopeId: options.scopeId,
     markedRefs: ctx.marked,
-    specials: ctx.specials,
   });
   return serial.serializeTop(tree);
 }
@@ -44,7 +42,6 @@ export async function crossSerializeAsync<T>(
     plugins: options.plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
-    specials: options.specials,
   });
   const tree = await ctx.parse(source);
   const serial = new CrossSerializerContext({
@@ -52,7 +49,6 @@ export async function crossSerializeAsync<T>(
     features: ctx.features,
     scopeId: options.scopeId,
     markedRefs: ctx.marked,
-    specials: ctx.specials,
   });
   return serial.serializeTop(tree);
 }
@@ -114,7 +110,6 @@ export function crossSerializeStream<T>(
 ): () => void {
   const ctx = new StreamCrossParserContext({
     refs: options.refs,
-    specials: options.specials,
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial): void {
       const serial = new CrossSerializerContext({
@@ -122,7 +117,6 @@ export function crossSerializeStream<T>(
         features: ctx.features,
         scopeId: options.scopeId,
         markedRefs: ctx.marked,
-        specials: ctx.specials,
       });
 
       let serialized: string;

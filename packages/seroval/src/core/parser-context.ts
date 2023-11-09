@@ -1,15 +1,17 @@
 import { createIndexedValueNode, createReferenceNode } from './base-primitives';
 import { ALL_ENABLED } from './compat';
+import { SerovalNodeType } from './constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { hasReferenceID } from './reference';
-import type { SpecialReferenceState } from './special-reference';
-import { createSpecialReferenceState } from './special-reference';
-import type { SerovalIndexedValueNode, SerovalReferenceNode } from './types';
+import type { SpecialReference } from './special-reference';
+import { SPECIAL_REF_SYMBOL } from './special-reference';
+import type {
+  SerovalIndexedValueNode, SerovalReferenceNode, SerovalSpecialReferenceNode,
+} from './types';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
   refs?: Map<unknown, number>;
-  specials?: SpecialReferenceState;
 }
 
 export abstract class BaseParserContext implements PluginAccessOptions {
@@ -23,13 +25,10 @@ export abstract class BaseParserContext implements PluginAccessOptions {
 
   plugins?: Plugin<any, any>[] | undefined;
 
-  specials: SpecialReferenceState;
-
   constructor(options: BaseParserContextOptions) {
     this.plugins = options.plugins;
     this.features = ALL_ENABLED ^ (options.disabledFeatures || 0);
     this.refs = options.refs || new Map<unknown, number>();
-    this.specials = options.specials || createSpecialReferenceState();
   }
 
   protected markRef(id: number): void {
@@ -63,5 +62,29 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     const id = this.refs.size;
     this.refs.set(current, id);
     return createReferenceNode(id, current);
+  }
+
+  protected parseSpecialReference(
+    current: SpecialReference,
+  ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalSpecialReferenceNode {
+    const ref = this.getReference(SPECIAL_REF_SYMBOL[current]);
+    if (typeof ref === 'number') {
+      return {
+        t: SerovalNodeType.SpecialReference,
+        i: ref,
+        s: current,
+        l: undefined,
+        c: undefined,
+        m: undefined,
+        p: undefined,
+        e: undefined,
+        a: undefined,
+        f: undefined,
+        b: undefined,
+        o: undefined,
+        x: undefined,
+      };
+    }
+    return ref;
   }
 }

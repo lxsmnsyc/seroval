@@ -20,6 +20,6 @@ exports[`URLSearchParams > serialize > supports URLSearchParams 1`] = `"new URLS
 
 exports[`URLSearchParams > serializeAsync > supports URLSearchParams 1`] = `"Promise.resolve(new URLSearchParams(\\"hello=world&foo=bar\\"))"`;
 
-exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":19,\\"i\\":0,\\"s\\":\\"hello=world&foo=bar\\"},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
+exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":19,\\"i\\":0,\\"s\\":\\"hello=world&foo=bar\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"hello=world&foo=bar\\"}},\\"f\\":16383,\\"m\\":[],\\"s\\":{\\"0\\":0,\\"1\\":0}}"`;
+exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"hello=world&foo=bar\\"}},\\"f\\":16383,\\"m\\":[]}"`;

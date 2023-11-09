@@ -50,6 +50,7 @@ export function createNumberNode(value: number): SerovalConstantNode | SerovalNu
         f: undefined,
         b: undefined,
         o: undefined,
+        x: undefined,
       };
   }
 }
@@ -68,6 +69,7 @@ export function createStringNode(value: string): SerovalStringNode {
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -87,6 +89,7 @@ export function createBigIntNode(
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -104,6 +107,7 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -121,6 +125,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     a: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -138,6 +143,7 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -164,6 +170,7 @@ export function createArrayBufferNode(
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -185,6 +192,7 @@ export function createWKSymbolNode(
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -205,6 +213,7 @@ export function createReferenceNode<T>(
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }
 
@@ -226,5 +235,6 @@ export function createPluginNode(
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
   };
 }

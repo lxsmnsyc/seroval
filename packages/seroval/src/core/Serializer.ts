@@ -1,5 +1,4 @@
 import { crossSerializeStream } from './cross';
-import { createSpecialReferenceState } from './special-reference';
 import { serializeString } from './string';
 
 export interface SerializerOptions {
@@ -24,8 +23,6 @@ export default class Serializer {
 
   private refs = new Map<unknown, number>();
 
-  private specials = createSpecialReferenceState();
-
   constructor(
     private options: SerializerOptions,
   ) {
@@ -40,7 +37,6 @@ export default class Serializer {
       this.cleanups.push(crossSerializeStream(value, {
         scopeId: this.options.scopeId,
         refs: this.refs,
-        specials: this.specials,
         disabledFeatures: this.options.disabledFeatures,
         onError: this.options.onError,
         onSerialize: (data, initial) => {

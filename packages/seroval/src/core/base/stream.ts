@@ -105,6 +105,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: undefined,
               b: undefined,
               o: undefined,
+              x: undefined,
             }, false);
             this.popPendingState();
           } else {
@@ -123,6 +124,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
                 f: parsed,
                 b: undefined,
                 o: undefined,
+                x: undefined,
               }, false);
               this.pushReadableStreamReader(id, reader);
             }
@@ -146,6 +148,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: parsed,
               b: undefined,
               o: undefined,
+              x: undefined,
             }, false);
             this.popPendingState();
           }
@@ -175,6 +178,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       f: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -197,6 +201,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       a: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -222,6 +227,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       ],
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 
@@ -246,6 +252,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             f: parsed,
             b: undefined,
             o: undefined,
+            x: undefined,
           }, false);
           this.popPendingState();
         }
@@ -267,6 +274,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: parsed,
               b: undefined,
               o: undefined,
+              x: undefined,
             }, false);
             this.popPendingState();
           }
@@ -287,6 +295,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       f: undefined,
       b: undefined,
       o: undefined,
+      x: undefined,
     };
   }
 

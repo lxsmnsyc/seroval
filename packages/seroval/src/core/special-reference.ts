@@ -1,8 +1,5 @@
-
+import { createEffectfulFunction, createFunction } from './function-string';
 // These represents special references that are not provided
-
-import { createEffectfulFunction, createFunction } from "./function-string";
-
 // by the user but are accessed by the serial output
 export const enum SpecialReference {
   // A sentinel ref is used to allow recursive Map
@@ -11,23 +8,21 @@ export const enum SpecialReference {
   // value
   Sentinel = 0,
   // A factory for creating iterators
-  SymbolIteratorFactory = 1,
+  Iterator = 1,
+  SymbolIterator = 2,
 }
 
-export type SpecialReferenceState = Record<SpecialReference, 0 | 1 | 2>;
-
-export function createSpecialReferenceState(): SpecialReferenceState {
-  return {
-    [SpecialReference.Sentinel]: 0,
-    [SpecialReference.SymbolIteratorFactory]: 0,
-  };
-}
+export const SPECIAL_REF_SYMBOL: Record<SpecialReference, symbol> = {
+  [SpecialReference.Sentinel]: Symbol(''),
+  [SpecialReference.Iterator]: Symbol(''),
+  [SpecialReference.SymbolIterator]: Symbol.iterator,
+};
 
 export function getSpecialReferenceValue(features: number, ref: SpecialReference): string {
   switch (ref) {
     case SpecialReference.Sentinel:
       return '[]';
-    case SpecialReference.SymbolIteratorFactory:
+    case SpecialReference.Iterator:
       return createFunction(
         features,
         ['s'],
@@ -37,6 +32,8 @@ export function getSpecialReferenceValue(features: number, ref: SpecialReference
           '(i=0,{next:' + createEffectfulFunction(features, [], 'c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
         ) + ')',
       );
+    case SpecialReference.SymbolIterator:
+      return 'Symbol.iterator';
     default:
       return '';
   }
