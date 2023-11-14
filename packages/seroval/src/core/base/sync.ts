@@ -61,9 +61,7 @@ type ObjectLikeNode =
   | SerovalObjectNode
   | SerovalNullConstructorNode;
 
-export interface BaseSyncParserContextOptions extends BaseParserContextOptions {
-  refs?: Map<unknown, number>;
-}
+export type BaseSyncParserContextOptions = BaseParserContextOptions
 
 export default abstract class BaseSyncParserContext extends BaseParserContext {
   protected parseItems(

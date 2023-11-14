@@ -4,7 +4,7 @@ import { SerovalNodeType } from './constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { hasReferenceID } from './reference';
 import type { SpecialReference } from './special-reference';
-import { SPECIAL_REF_SYMBOL } from './special-reference';
+import { SPECIAL_REFS } from './special-reference';
 import type {
   SerovalIndexedValueNode, SerovalReferenceNode, SerovalSpecialReferenceNode,
 } from './types';
@@ -67,7 +67,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
   protected parseSpecialReference(
     current: SpecialReference,
   ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalSpecialReferenceNode {
-    const ref = this.getReference(SPECIAL_REF_SYMBOL[current]);
+    const ref = this.getReference(SPECIAL_REFS[current]);
     if (typeof ref === 'number') {
       return {
         t: SerovalNodeType.SpecialReference,

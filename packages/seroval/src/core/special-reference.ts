@@ -12,9 +12,9 @@ export const enum SpecialReference {
   SymbolIterator = 2,
 }
 
-export const SPECIAL_REF_SYMBOL: Record<SpecialReference, symbol> = {
-  [SpecialReference.Sentinel]: Symbol(''),
-  [SpecialReference.Iterator]: Symbol(''),
+export const SPECIAL_REFS: Record<SpecialReference, unknown> = {
+  [SpecialReference.Sentinel]: [],
+  [SpecialReference.Iterator]: [],
   [SpecialReference.SymbolIterator]: Symbol.iterator,
 };
 
