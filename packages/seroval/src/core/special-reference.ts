@@ -12,11 +12,21 @@ export const enum SpecialReference {
   SymbolIterator = 2,
 }
 
-export const SPECIAL_REFS: Record<SpecialReference, unknown> = {
-  [SpecialReference.Sentinel]: [],
-  [SpecialReference.Iterator]: [],
-  [SpecialReference.SymbolIterator]: Symbol.iterator,
-};
+const SENTINEL_REF: never[] = [];
+const ITERATOR_REF: never[] = [];
+
+export function getSpecialReferenceSource(features: number, ref: SpecialReference): unknown {
+  switch (ref) {
+    case SpecialReference.Sentinel:
+      return SENTINEL_REF;
+    case SpecialReference.Iterator:
+      return ITERATOR_REF;
+    case SpecialReference.SymbolIterator:
+      return Symbol.iterator;
+    default:
+      throw new Error('unknown special reference ' + ref);
+  }
+}
 
 export function getSpecialReferenceValue(features: number, ref: SpecialReference): string {
   switch (ref) {
