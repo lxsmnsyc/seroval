@@ -1,16 +1,10 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Iterable > compat > should use Symbol.iterator instead of Array.values. 1`] = `"(h=>(h={[Symbol.iterator]:(s=>((i,c,d)=>(i=0,{next:()=>{c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})))({v:[h,void 0],t:-1,d:1})}))()"`;
-
 exports[`Iterable > compat > should use functions instead of method shorthand. 1`] = `"(function(h){return(h={[Symbol.iterator]:(function(s){return(function(i,c,d){return(i=0,{next:function(){c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})})})({v:[h,void 0],t:-1,d:1})})})()"`;
 
 exports[`Iterable > compat > should use method shorthand instead of arrow functions. 1`] = `"(function(h){return(h={[Symbol.iterator]:(function(s){return(function(i,c,d){return(i=0,{next:function(){c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})})})({v:[h,void 0],t:-1,d:1})})})()"`;
 
-exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":2,\\"a\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":1}],\\"s\\":3},\\"o\\":0,\\"x\\":{}}],\\"s\\":1},\\"o\\":0,\\"x\\":{\\"1\\":{\\"t\\":41,\\"i\\":4,\\"s\\":1},\\"2\\":{\\"t\\":17,\\"i\\":3,\\"s\\":3}}},\\"f\\":16381,\\"m\\":[0]}"`;
-
-exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 2`] = `"(h=>(h={[Symbol.iterator]:(s=>((i,c,d)=>(i=0,{next:()=>{c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})))({v:[h,void 0],t:-1,d:1})}))()"`;
-
-exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":2,\\"a\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":1}],\\"s\\":3},\\"o\\":0,\\"x\\":{}}],\\"s\\":1},\\"o\\":0,\\"x\\":{\\"1\\":{\\"t\\":41,\\"i\\":4,\\"s\\":1},\\"2\\":{\\"t\\":17,\\"i\\":3,\\"s\\":3}}},\\"f\\":16315,\\"m\\":[0]}"`;
+exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":2,\\"a\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":1}],\\"s\\":3},\\"o\\":0,\\"x\\":{}}],\\"s\\":1},\\"o\\":0,\\"x\\":{\\"1\\":{\\"t\\":41,\\"i\\":4,\\"s\\":1},\\"2\\":{\\"t\\":17,\\"i\\":3,\\"s\\":3}}},\\"f\\":16379,\\"m\\":[0]}"`;
 
 exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 2`] = `"(function(h){return(h={[Symbol.iterator]:(function(s){return(function(i,c,d){return(i=0,{next:function(){c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})})})({v:[h,void 0],t:-1,d:1})})})()"`;
 

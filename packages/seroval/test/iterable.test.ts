@@ -196,16 +196,6 @@ describe('Iterable', () => {
     });
   });
   describe('compat', () => {
-    it('should use Symbol.iterator instead of Array.values.', () => {
-      const example = {
-        * [Symbol.iterator](): unknown {
-          yield example;
-        },
-      };
-      expect(serialize(example, {
-        disabledFeatures: Feature.ArrayPrototypeValues,
-      })).toMatchSnapshot();
-    });
     it('should use method shorthand instead of arrow functions.', () => {
       const example = {
         * [Symbol.iterator](): unknown {
@@ -223,23 +213,11 @@ describe('Iterable', () => {
         },
       };
       expect(serialize(example, {
-        disabledFeatures: Feature.MethodShorthand | Feature.ArrowFunction,
+        disabledFeatures: Feature.ArrowFunction,
       })).toMatchSnapshot();
     });
   });
   describe('compat#toJSON', () => {
-    it('should use Symbol.iterator instead of Array.values.', () => {
-      const example = {
-        * [Symbol.iterator](): unknown {
-          yield example;
-        },
-      };
-      const result = toJSON(example, {
-        disabledFeatures: Feature.ArrayPrototypeValues,
-      });
-      expect(JSON.stringify(result)).toMatchSnapshot();
-      expect(compileJSON(result)).toMatchSnapshot();
-    });
     it('should use method shorthand instead of arrow functions.', () => {
       const example = {
         * [Symbol.iterator](): unknown {
@@ -259,7 +237,7 @@ describe('Iterable', () => {
         },
       };
       const result = toJSON(example, {
-        disabledFeatures: Feature.MethodShorthand | Feature.ArrowFunction,
+        disabledFeatures: Feature.ArrowFunction,
       });
       expect(JSON.stringify(result)).toMatchSnapshot();
       expect(compileJSON(result)).toMatchSnapshot();

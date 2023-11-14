@@ -46,8 +46,6 @@ By default, all feature flags are enabled. The following are the feature flags a
 
 - [`AggregateError`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError)
   - Compiles down to `Error` instead.
-- [`ArrayPrototypeValues`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values)
-  - Used for `Iterable`, uses `Symbol.iterator` instead.
 - [`ArrowFunction`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
   - Uses function expressions for top-level and for deferred `Promise` values
   - method shorthands (if `MethodShortand` is not set) or function expressions for `Iterable`.
@@ -58,9 +56,6 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Affects both `Error` and `AggregateError`
 - [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
   - Disables serialization of `Map`
-- [`MethodShorthand`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions)
-  - Uses function expressions instead.
-  - Only affects `Iterable`
 - [`ObjectAssign`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
   - Uses manual object assignments instead.
   - Affects `Iterable`, `Error`, `AggregateError` and `Object.create(null)`
