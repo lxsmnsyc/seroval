@@ -12,8 +12,8 @@ export const enum SpecialReference {
   SymbolIterator = 2,
 }
 
-const SENTINEL_REF: never[] = [];
-const ITERATOR_REF: never[] = [];
+const SENTINEL_REF = {};
+const ITERATOR_REF = {};
 
 export function getSpecialReferenceSource(features: number, ref: SpecialReference): unknown {
   switch (ref) {
