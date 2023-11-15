@@ -8,6 +8,7 @@ import {
   createBigIntNode,
   createBigIntTypedArrayNode,
   createBoxedNode,
+  createDataViewNode,
   createDateNode,
   createNumberNode,
   createPluginNode,
@@ -157,21 +158,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: DataView,
   ): SerovalDataViewNode {
-    return {
-      t: SerovalNodeType.DataView,
-      i: id,
-      s: undefined,
-      l: current.byteLength,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-      x: undefined,
-    };
+    return createDataViewNode(id, current, this.parse(current.buffer));
   }
 
   protected parseError(

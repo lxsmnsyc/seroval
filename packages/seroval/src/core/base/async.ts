@@ -15,6 +15,7 @@ import {
   createBoxedNode,
   createTypedArrayNode,
   createBigIntTypedArrayNode,
+  createDataViewNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import {
@@ -164,21 +165,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: DataView,
   ): Promise<SerovalDataViewNode> {
-    return {
-      t: SerovalNodeType.DataView,
-      i: id,
-      s: undefined,
-      l: current.byteLength,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: await this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-      x: undefined,
-    };
+    return createDataViewNode(id, current, await this.parse(current.buffer));
   }
 
   private async parseError(

@@ -18,6 +18,7 @@ import type {
   SerovalBigIntTypedArrayNode,
   SerovalBoxedNode,
   SerovalConstantNode,
+  SerovalDataViewNode,
   SerovalDateNode,
   SerovalIndexedValueNode,
   SerovalNode,
@@ -322,6 +323,28 @@ export function createBigIntTypedArrayNode(
     s: undefined,
     l: current.length,
     c: current.constructor.name,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: buffer,
+    b: current.byteOffset,
+    o: undefined,
+    x: undefined,
+  };
+}
+
+export function createDataViewNode(
+  id: number,
+  current: DataView,
+  buffer: SerovalNode,
+): SerovalDataViewNode {
+  return {
+    t: SerovalNodeType.DataView,
+    i: id,
+    s: undefined,
+    l: current.byteLength,
+    c: undefined,
     m: undefined,
     p: undefined,
     e: undefined,
