@@ -17,6 +17,7 @@ import {
   createBigIntTypedArrayNode,
   createDataViewNode,
   createErrorNode,
+  createSetNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import {
@@ -204,25 +205,11 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Set<unknown>,
   ): Promise<SerovalSetNode> {
-    const nodes: SerovalNode[] = [];
+    const items: SerovalNode[] = [];
     for (const item of current.keys()) {
-      nodes.push(await this.parse(item));
+      items.push(await this.parse(item));
     }
-    return {
-      t: SerovalNodeType.Set,
-      i: id,
-      s: undefined,
-      l: current.size,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: nodes,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createSetNode(id, current.size, items);
   }
 
   private async parseBlob(

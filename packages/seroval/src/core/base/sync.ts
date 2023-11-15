@@ -14,6 +14,7 @@ import {
   createNumberNode,
   createPluginNode,
   createRegExpNode,
+  createSetNode,
   createStringNode,
   createTypedArrayNode,
   createWKSymbolNode,
@@ -197,25 +198,11 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: Set<unknown>,
   ): SerovalSetNode {
-    const nodes: SerovalNode[] = [];
+    const items: SerovalNode[] = [];
     for (const item of current.keys()) {
-      nodes.push(this.parse(item));
+      items.push(this.parse(item));
     }
-    return {
-      t: SerovalNodeType.Set,
-      i: id,
-      s: undefined,
-      l: current.size,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: nodes,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createSetNode(id, current.size, items);
   }
 
   protected parsePlainProperties(

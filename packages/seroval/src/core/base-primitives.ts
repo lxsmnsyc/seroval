@@ -28,6 +28,7 @@ import type {
   SerovalPluginNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
+  SerovalSetNode,
   SerovalStringNode,
   SerovalTypedArrayNode,
   SerovalWKSymbolNode,
@@ -373,6 +374,28 @@ export function createErrorNode(
     p: options,
     e: undefined,
     a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+    x: undefined,
+  };
+}
+
+export function createSetNode(
+  id: number,
+  size: number,
+  items: SerovalNode[],
+): SerovalSetNode {
+  return {
+    t: SerovalNodeType.Set,
+    i: id,
+    s: undefined,
+    l: size,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: items,
     f: undefined,
     b: undefined,
     o: undefined,
