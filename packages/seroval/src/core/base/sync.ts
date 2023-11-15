@@ -6,6 +6,7 @@ import {
   createArrayBufferNode,
   createArrayNode,
   createBigIntNode,
+  createBigIntTypedArrayNode,
   createBoxedNode,
   createDateNode,
   createNumberNode,
@@ -149,21 +150,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: BigIntTypedArrayValue,
   ): SerovalBigIntTypedArrayNode {
-    return {
-      t: SerovalNodeType.BigIntTypedArray,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: current.constructor.name,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-      x: undefined,
-    };
+    return createBigIntTypedArrayNode(id, current, this.parse(current.buffer));
   }
 
   protected parseDataView(

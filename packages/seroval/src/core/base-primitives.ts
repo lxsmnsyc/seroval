@@ -1,4 +1,4 @@
-import type { TypedArrayValue } from '../types';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import assert from './assert';
 import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
@@ -15,6 +15,7 @@ import type {
   SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalBigIntNode,
+  SerovalBigIntTypedArrayNode,
   SerovalBoxedNode,
   SerovalConstantNode,
   SerovalDateNode,
@@ -295,6 +296,28 @@ export function createTypedArrayNode(
 ): SerovalTypedArrayNode {
   return {
     t: SerovalNodeType.TypedArray,
+    i: id,
+    s: undefined,
+    l: current.length,
+    c: current.constructor.name,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: buffer,
+    b: current.byteOffset,
+    o: undefined,
+    x: undefined,
+  };
+}
+
+export function createBigIntTypedArrayNode(
+  id: number,
+  current: BigIntTypedArrayValue,
+  buffer: SerovalNode,
+): SerovalBigIntTypedArrayNode {
+  return {
+    t: SerovalNodeType.BigIntTypedArray,
     i: id,
     s: undefined,
     l: current.length,

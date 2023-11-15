@@ -14,6 +14,7 @@ import {
   createArrayNode,
   createBoxedNode,
   createTypedArrayNode,
+  createBigIntTypedArrayNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import {
@@ -156,21 +157,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: BigIntTypedArrayValue,
   ): Promise<SerovalBigIntTypedArrayNode> {
-    return {
-      t: SerovalNodeType.BigIntTypedArray,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: current.constructor.name,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: await this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-      x: undefined,
-    };
+    return createBigIntTypedArrayNode(id, current, await this.parse(current.buffer));
   }
 
   private async parseDataView(
