@@ -16,6 +16,7 @@ import {
   createTypedArrayNode,
   createBigIntTypedArrayNode,
   createDataViewNode,
+  createErrorNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import {
@@ -37,7 +38,7 @@ import {
 import { iteratorToSequence } from '../iterator-to-sequence';
 import { BaseParserContext } from '../parser-context';
 import promiseToResult from '../promise-to-result';
-import { getErrorConstructor, getErrorOptions } from '../shared';
+import { getErrorOptions } from '../shared';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {
@@ -173,24 +174,13 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     current: Error,
   ): Promise<SerovalErrorNode> {
     const options = getErrorOptions(current, this.features);
-    const optionsNode = options
-      ? await this.parseProperties(options)
-      : undefined;
-    return {
-      t: SerovalNodeType.Error,
-      i: id,
-      s: getErrorConstructor(current),
-      l: undefined,
-      c: undefined,
-      m: serializeString(current.message),
-      p: optionsNode,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createErrorNode(
+      id,
+      current,
+      options
+        ? await this.parseProperties(options)
+        : undefined,
+    );
   }
 
   private async parseMap(

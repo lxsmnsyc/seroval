@@ -9,7 +9,7 @@ import {
   NEG_ZERO_NODE,
 } from './literals';
 import { getReferenceID } from './reference';
-import { getObjectFlag } from './shared';
+import { getErrorConstructor, getObjectFlag } from './shared';
 import { serializeString } from './string';
 import type {
   SerovalArrayBufferNode,
@@ -20,9 +20,11 @@ import type {
   SerovalConstantNode,
   SerovalDataViewNode,
   SerovalDateNode,
+  SerovalErrorNode,
   SerovalIndexedValueNode,
   SerovalNode,
   SerovalNumberNode,
+  SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
@@ -351,6 +353,28 @@ export function createDataViewNode(
     a: undefined,
     f: buffer,
     b: current.byteOffset,
+    o: undefined,
+    x: undefined,
+  };
+}
+
+export function createErrorNode(
+  id: number,
+  current: Error,
+  options: SerovalObjectRecordNode | undefined,
+): SerovalErrorNode {
+  return {
+    t: SerovalNodeType.Error,
+    i: id,
+    s: getErrorConstructor(current),
+    l: undefined,
+    c: undefined,
+    m: serializeString(current.message),
+    p: options,
+    e: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
     o: undefined,
     x: undefined,
   };

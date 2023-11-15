@@ -10,6 +10,7 @@ import {
   createBoxedNode,
   createDataViewNode,
   createDateNode,
+  createErrorNode,
   createNumberNode,
   createPluginNode,
   createRegExpNode,
@@ -34,7 +35,7 @@ import { iteratorToSequence } from '../iterator-to-sequence';
 import type { BaseParserContextOptions } from '../parser-context';
 import { BaseParserContext } from '../parser-context';
 import { hasReferenceID } from '../reference';
-import { getErrorConstructor, getErrorOptions } from '../shared';
+import { getErrorOptions } from '../shared';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {
@@ -166,24 +167,13 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     current: Error,
   ): SerovalErrorNode {
     const options = getErrorOptions(current, this.features);
-    const optionsNode = options
-      ? this.parseProperties(options)
-      : undefined;
-    return {
-      t: SerovalNodeType.Error,
-      i: id,
-      s: getErrorConstructor(current),
-      l: undefined,
-      c: undefined,
-      m: serializeString(current.message),
-      p: optionsNode,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createErrorNode(
+      id,
+      current,
+      options
+        ? this.parseProperties(options)
+        : undefined,
+    );
   }
 
   protected parseMap(
