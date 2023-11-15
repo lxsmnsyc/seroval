@@ -6,6 +6,7 @@ import {
   createArrayBufferNode,
   createArrayNode,
   createBigIntNode,
+  createBoxedNode,
   createDateNode,
   createNumberNode,
   createPluginNode,
@@ -133,21 +134,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: object,
   ): SerovalBoxedNode {
-    return {
-      t: SerovalNodeType.Boxed,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.valueOf()),
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createBoxedNode(id, this.parse(current.valueOf()));
   }
 
   protected parseTypedArray(

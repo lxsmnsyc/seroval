@@ -14,6 +14,7 @@ import type {
   SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalBigIntNode,
+  SerovalBoxedNode,
   SerovalConstantNode,
   SerovalDateNode,
   SerovalIndexedValueNode,
@@ -260,6 +261,27 @@ export function createArrayNode(
     f: undefined,
     b: undefined,
     o: getObjectFlag(current),
+    x: undefined,
+  };
+}
+
+export function createBoxedNode(
+  id: number,
+  boxed: SerovalNode,
+): SerovalBoxedNode {
+  return {
+    t: SerovalNodeType.Boxed,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: boxed,
+    b: undefined,
+    o: undefined,
     x: undefined,
   };
 }

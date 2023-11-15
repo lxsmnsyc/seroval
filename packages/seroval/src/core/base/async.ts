@@ -12,6 +12,7 @@ import {
   createStringNode,
   createNumberNode,
   createArrayNode,
+  createBoxedNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import {
@@ -95,25 +96,52 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     );
   }
 
+  private async parseProperties(
+    properties: Record<string, unknown>,
+  ): Promise<SerovalObjectRecordNode> {
+    const entries = Object.entries(properties);
+    const keyNodes: SerovalObjectRecordKey[] = [];
+    const valueNodes: SerovalNode[] = [];
+    for (
+      let i = 0, len = entries.length;
+      i < len;
+      i++
+    ) {
+      keyNodes.push(serializeString(entries[i][0]));
+      valueNodes.push(await this.parse(entries[i][1]));
+    }
+    // Check special properties
+    if (this.features & Feature.Symbol) {
+      if (Symbol.iterator in properties) {
+        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
+        valueNodes.push(await this.parse(iteratorToSequence(properties as Iterable<unknown>)));
+      }
+    }
+    return {
+      k: keyNodes,
+      v: valueNodes,
+      s: keyNodes.length,
+    };
+  }
+
+  private async parsePlainObject(
+    id: number,
+    current: Record<string, unknown>,
+    empty: boolean,
+  ): Promise<ObjectLikeNode> {
+    return this.createObjectNode(
+      id,
+      current,
+      empty,
+      await this.parseProperties(current),
+    );
+  }
+
   private async parseBoxed(
     id: number,
     current: object,
   ): Promise<SerovalBoxedNode> {
-    return {
-      t: SerovalNodeType.Boxed,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: await this.parse(current.valueOf()),
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createBoxedNode(id, await this.parse(current.valueOf()));
   }
 
   private async parseTypedArray(
@@ -177,47 +205,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       o: undefined,
       x: undefined,
     };
-  }
-
-  private async parseProperties(
-    properties: Record<string, unknown>,
-  ): Promise<SerovalObjectRecordNode> {
-    const entries = Object.entries(properties);
-    const keyNodes: SerovalObjectRecordKey[] = [];
-    const valueNodes: SerovalNode[] = [];
-    for (
-      let i = 0, len = entries.length;
-      i < len;
-      i++
-    ) {
-      keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(await this.parse(entries[i][1]));
-    }
-    // Check special properties
-    if (this.features & Feature.Symbol) {
-      if (Symbol.iterator in properties) {
-        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
-        valueNodes.push(await this.parse(iteratorToSequence(properties as Iterable<unknown>)));
-      }
-    }
-    return {
-      k: keyNodes,
-      v: valueNodes,
-      s: keyNodes.length,
-    };
-  }
-
-  private async parsePlainObject(
-    id: number,
-    current: Record<string, unknown>,
-    empty: boolean,
-  ): Promise<ObjectLikeNode> {
-    return this.createObjectNode(
-      id,
-      current,
-      empty,
-      await this.parseProperties(current),
-    );
   }
 
   private async parseError(
