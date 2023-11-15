@@ -1,3 +1,4 @@
+import type { TypedArrayValue } from '../types';
 import assert from './assert';
 import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
@@ -24,6 +25,7 @@ import type {
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalStringNode,
+  SerovalTypedArrayNode,
   SerovalWKSymbolNode,
 } from './types';
 
@@ -281,6 +283,28 @@ export function createBoxedNode(
     a: undefined,
     f: boxed,
     b: undefined,
+    o: undefined,
+    x: undefined,
+  };
+}
+
+export function createTypedArrayNode(
+  id: number,
+  current: TypedArrayValue,
+  buffer: SerovalNode,
+): SerovalTypedArrayNode {
+  return {
+    t: SerovalNodeType.TypedArray,
+    i: id,
+    s: undefined,
+    l: current.length,
+    c: current.constructor.name,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: buffer,
+    b: current.byteOffset,
     o: undefined,
     x: undefined,
   };

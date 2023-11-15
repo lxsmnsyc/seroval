@@ -12,6 +12,7 @@ import {
   createPluginNode,
   createRegExpNode,
   createStringNode,
+  createTypedArrayNode,
   createWKSymbolNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
@@ -141,21 +142,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: TypedArrayValue,
   ): SerovalTypedArrayNode {
-    return {
-      t: SerovalNodeType.TypedArray,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: current.constructor.name,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-      x: undefined,
-    };
+    return createTypedArrayNode(id, current, this.parse(current.buffer));
   }
 
   protected parseBigIntTypedArray(
