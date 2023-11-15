@@ -1,12 +1,30 @@
-import { createIndexedValueNode, createReferenceNode } from './base-primitives';
-import { ALL_ENABLED } from './compat';
-import { SerovalNodeType } from './constants';
+import UnsupportedTypeError from './UnsupportedTypeError';
+import assert from './assert';
+import {
+  createIndexedValueNode,
+  createReferenceNode,
+  createWKSymbolNode,
+} from './base-primitives';
+import { ALL_ENABLED, Feature } from './compat';
+import type { WellKnownSymbols } from './constants';
+import {
+  INV_SYMBOL_REF,
+  SerovalNodeType,
+} from './constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { hasReferenceID } from './reference';
-import type { SpecialReference } from './special-reference';
-import { SPECIAL_REFS } from './special-reference';
+import { getObjectFlag } from './shared';
+import { ITERATOR, MAP_SENTINEL, SpecialReference } from './special-reference';
 import type {
-  SerovalIndexedValueNode, SerovalReferenceNode, SerovalSpecialReferenceNode,
+  SerovalIndexedValueNode,
+  SerovalIteratorNode,
+  SerovalMapSentinelNode,
+  SerovalNode,
+  SerovalNullConstructorNode,
+  SerovalObjectNode,
+  SerovalObjectRecordNode,
+  SerovalReferenceNode,
+  SerovalWKSymbolNode,
 } from './types';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
@@ -64,29 +82,117 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return createReferenceNode(id, current);
   }
 
-  protected parseSpecialReference(
-    current: SpecialReference,
-  ): SerovalIndexedValueNode | SerovalReferenceNode | SerovalSpecialReferenceNode {
-    const ref = this.getReference(
-      SPECIAL_REFS[current],
-    );
-    if (typeof ref === 'number') {
-      return {
-        t: SerovalNodeType.SpecialReference,
-        i: ref,
-        s: current,
-        l: undefined,
-        c: undefined,
-        m: undefined,
-        p: undefined,
-        e: undefined,
-        a: undefined,
-        f: undefined,
-        b: undefined,
-        o: undefined,
-        x: undefined,
-      };
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  protected parseFunction(current: Function): SerovalNode {
+    assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
+    return this.getStrictReference(current);
+  }
+
+  protected parseWKSymbol(
+    current: symbol,
+  ): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
+    assert(this.features & Feature.Symbol, new UnsupportedTypeError(current));
+    const registeredID = this.refs.get(current);
+    if (registeredID != null) {
+      this.markRef(registeredID);
+      return createIndexedValueNode(registeredID);
     }
-    return ref;
+    const isValid = current in INV_SYMBOL_REF;
+    assert(current in INV_SYMBOL_REF || hasReferenceID(current), new Error('Cannot serialize symbol without reference ID.'));
+    const id = this.refs.size;
+    this.refs.set(current, id);
+    if (isValid) {
+      return createWKSymbolNode(id, current as WellKnownSymbols);
+    }
+    return createReferenceNode(id, current);
+  }
+
+  protected parseMapSentinel(): SerovalIndexedValueNode | SerovalMapSentinelNode {
+    const registeredID = this.refs.get(MAP_SENTINEL);
+    if (registeredID != null) {
+      this.markRef(registeredID);
+      return createIndexedValueNode(registeredID);
+    }
+    const id = this.refs.size;
+    this.refs.set(MAP_SENTINEL, id);
+    return {
+      t: SerovalNodeType.MapSentinel,
+      i: id,
+      s: undefined,
+      l: undefined,
+      c: undefined,
+      m: undefined,
+      p: undefined,
+      e: undefined,
+      a: undefined,
+      f: undefined,
+      b: undefined,
+      o: undefined,
+      x: undefined,
+    };
+  }
+
+  protected parseIterator(): SerovalIndexedValueNode | SerovalIteratorNode {
+    const registeredID = this.refs.get(ITERATOR);
+    if (registeredID != null) {
+      this.markRef(registeredID);
+      return createIndexedValueNode(registeredID);
+    }
+    const id = this.refs.size;
+    this.refs.set(ITERATOR, id);
+    return {
+      t: SerovalNodeType.Iterator,
+      i: id,
+      s: undefined,
+      l: undefined,
+      c: undefined,
+      m: undefined,
+      p: undefined,
+      e: undefined,
+      a: undefined,
+      f: undefined,
+      b: undefined,
+      o: undefined,
+      x: {
+        [SpecialReference.Sentinel]: undefined,
+        [SpecialReference.SymbolIterator]: this.parseWKSymbol(Symbol.iterator),
+        [SpecialReference.Iterator]: undefined,
+      },
+    };
+  }
+
+  protected createObjectNode(
+    id: number,
+    current: Record<string, unknown>,
+    empty: boolean,
+    record: SerovalObjectRecordNode,
+  ): SerovalObjectNode | SerovalNullConstructorNode {
+    return {
+      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+      i: id,
+      s: undefined,
+      l: undefined,
+      c: undefined,
+      m: undefined,
+      p: record,
+      e: undefined,
+      a: undefined,
+      f: undefined,
+      b: undefined,
+      o: getObjectFlag(current),
+      x: {
+        [SpecialReference.Sentinel]: undefined,
+        [SpecialReference.SymbolIterator]: (
+          this.features & Feature.Symbol && Symbol.iterator in current
+            ? this.parseWKSymbol(Symbol.iterator)
+            : undefined
+        ),
+        [SpecialReference.Iterator]: (
+          this.features & Feature.Symbol && Symbol.iterator in current
+            ? this.parseIterator()
+            : undefined
+        ),
+      },
+    };
   }
 }

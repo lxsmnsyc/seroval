@@ -33,8 +33,12 @@ export interface SerovalBaseNode {
   // object flag
   o: SerovalObjectFlags | undefined;
   // x
-  x: Partial<Record<SpecialReference, SerovalNode>> | undefined;
+  x: SerovalX | undefined;
 }
+
+export type SerovalX = {
+  [key in SpecialReference]?: SerovalNode | undefined;
+};
 
 export const enum SerovalObjectRecordSpecialKey {
   SymbolIterator = 0,
@@ -164,14 +168,16 @@ export interface SerovalSetNode extends SerovalBaseNode {
   a: SerovalNode[];
 }
 
+export interface SerovalMapX extends SerovalX {
+  [SpecialReference.Sentinel]: SerovalMapSentinelNode | SerovalIndexedValueNode;
+}
+
 export interface SerovalMapNode extends SerovalBaseNode {
   t: SerovalNodeType.Map;
   i: number;
   // key/value pairs
   e: SerovalMapRecordNode;
-  x: {
-    [SpecialReference.Sentinel]: SerovalNodeWithID;
-  };
+  x: SerovalMapX;
 }
 
 export interface SerovalArrayNode extends SerovalBaseNode {
@@ -184,16 +190,23 @@ export interface SerovalArrayNode extends SerovalBaseNode {
   o: SerovalObjectFlags;
 }
 
+export interface SerovalObjectX extends SerovalX {
+  [SpecialReference.SymbolIterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
+}
+
 export interface SerovalObjectNode extends SerovalBaseNode {
   t: SerovalNodeType.Object;
   // key/value pairs
   p: SerovalObjectRecordNode;
   i: number;
   o: SerovalObjectFlags;
-  x: {
-    [SpecialReference.SymbolIterator]: SerovalNode | undefined;
-    [SpecialReference.Iterator]: SerovalNode | undefined;
-  };
+  x: SerovalObjectX;
+}
+
+export interface SerovalNullConstructorX extends SerovalX {
+  [SpecialReference.SymbolIterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
 }
 
 export interface SerovalNullConstructorNode extends SerovalBaseNode {
@@ -202,10 +215,7 @@ export interface SerovalNullConstructorNode extends SerovalBaseNode {
   p: SerovalObjectRecordNode;
   i: number;
   o: SerovalObjectFlags;
-  x: {
-    [SpecialReference.SymbolIterator]: SerovalNode | undefined;
-    [SpecialReference.Iterator]: SerovalNode | undefined;
-  };
+  x: SerovalNullConstructorX;
 }
 
 export interface SerovalPromiseNode extends SerovalBaseNode {
@@ -406,10 +416,19 @@ export interface SerovalPluginNode extends SerovalBaseNode {
   c: string;
 }
 
-export interface SerovalSpecialReferenceNode extends SerovalBaseNode {
-  t: SerovalNodeType.SpecialReference;
+export interface SerovalMapSentinelNode extends SerovalBaseNode {
+  t: SerovalNodeType.MapSentinel;
   i: number;
-  s: SpecialReference;
+}
+
+export interface SerovalIteratorX extends SerovalX {
+  [SpecialReference.SymbolIterator]: SerovalNodeWithID;
+}
+
+export interface SerovalIteratorNode extends SerovalBaseNode {
+  t: SerovalNodeType.Iterator;
+  i: number;
+  x: SerovalIteratorX;
 }
 
 export type SerovalSyncNode =
@@ -439,7 +458,8 @@ export type SerovalSyncNode =
   | SerovalCustomEventNode
   | SerovalDOMExceptionNode
   | SerovalPluginNode
-  | SerovalSpecialReferenceNode;
+  | SerovalMapSentinelNode
+  | SerovalIteratorNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode

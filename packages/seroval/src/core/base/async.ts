@@ -8,13 +8,12 @@ import {
   createDateNode,
   createRegExpNode,
   createArrayBufferNode,
-  createWKSymbolNode,
   createBigIntNode,
   createStringNode,
   createNumberNode,
+  createArrayNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
-import type { WellKnownSymbols } from '../constants';
 import {
   SerovalNodeType,
   UNIVERSAL_SENTINEL,
@@ -34,8 +33,7 @@ import {
 import { iteratorToSequence } from '../iterator-to-sequence';
 import { BaseParserContext } from '../parser-context';
 import promiseToResult from '../promise-to-result';
-import { hasReferenceID } from '../reference';
-import { getErrorConstructor, getErrorOptions, getObjectFlag } from '../shared';
+import { getErrorConstructor, getErrorOptions } from '../shared';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {
@@ -90,21 +88,11 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: unknown[],
   ): Promise<SerovalArrayNode> {
-    return {
-      t: SerovalNodeType.Array,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: await this.parseItems(current),
-      f: undefined,
-      b: undefined,
-      o: getObjectFlag(current),
-      x: undefined,
-    };
+    return createArrayNode(
+      id,
+      current,
+      await this.parseItems(current),
+    );
   }
 
   private async parseBoxed(
@@ -224,34 +212,12 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     current: Record<string, unknown>,
     empty: boolean,
   ): Promise<ObjectLikeNode> {
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: await this.parseProperties(current),
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: getObjectFlag(current),
-      x: {
-        [SpecialReference.SymbolIterator]: (
-          this.features & Feature.Symbol && Symbol.iterator in current
-            ? await this.parse(Symbol.iterator)
-            : undefined
-        ),
-        [SpecialReference.Iterator]: (
-          this.features & Feature.Symbol && Symbol.iterator in current
-            ? this.parseSpecialReference(
-              SpecialReference.Iterator,
-            )
-            : undefined
-        ),
-      },
-    };
+    return this.createObjectNode(
+      id,
+      current,
+      empty,
+      await this.parseProperties(current),
+    );
   }
 
   private async parseError(
@@ -303,7 +269,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       b: undefined,
       o: undefined,
       x: {
-        [SpecialReference.Sentinel]: this.parseSpecialReference(SpecialReference.Sentinel),
+        [SpecialReference.Sentinel]: this.parseMapSentinel(),
+        [SpecialReference.SymbolIterator]: undefined,
+        [SpecialReference.Iterator]: undefined,
       },
     };
   }
@@ -766,14 +734,10 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         const id = this.getReference(current);
         return typeof id === 'number' ? this.parseObject(id, current as object) : id;
       }
-      case 'symbol': {
-        assert(this.features & Feature.Symbol, new UnsupportedTypeError(current));
-        const id = this.getReference(current);
-        return typeof id === 'number' ? createWKSymbolNode(id, current as WellKnownSymbols) : id;
-      }
+      case 'symbol':
+        return this.parseWKSymbol(current);
       case 'function':
-        assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
-        return this.getStrictReference(current);
+        return this.parseFunction(current);
       default:
         throw new UnsupportedTypeError(current);
     }

@@ -8,13 +8,16 @@ import {
   NEG_ZERO_NODE,
 } from './literals';
 import { getReferenceID } from './reference';
+import { getObjectFlag } from './shared';
 import { serializeString } from './string';
 import type {
   SerovalArrayBufferNode,
+  SerovalArrayNode,
   SerovalBigIntNode,
   SerovalConstantNode,
   SerovalDateNode,
   SerovalIndexedValueNode,
+  SerovalNode,
   SerovalNumberNode,
   SerovalPluginNode,
   SerovalReferenceNode,
@@ -235,6 +238,28 @@ export function createPluginNode(
     f: undefined,
     b: undefined,
     o: undefined,
+    x: undefined,
+  };
+}
+
+export function createArrayNode(
+  id: number,
+  current: unknown[],
+  parsedItems: SerovalNode[],
+): SerovalArrayNode {
+  return {
+    t: SerovalNodeType.Array,
+    i: id,
+    s: undefined,
+    l: current.length,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: parsedItems,
+    f: undefined,
+    b: undefined,
+    o: getObjectFlag(current),
     x: undefined,
   };
 }

@@ -10,7 +10,7 @@ import { createEffectfulFunction, createFunction } from './function-string';
 import { REFERENCES_KEY } from './keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { isValidIdentifier } from './shared';
-import { SpecialReference, getSpecialReferenceValue } from './special-reference';
+import { SpecialReference } from './special-reference';
 import type {
   SerovalArrayNode,
   SerovalIndexedValueNode,
@@ -52,7 +52,8 @@ import type {
   SerovalReadableStreamEnqueueNode,
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamCloseNode,
-  SerovalSpecialReferenceNode,
+  SerovalMapSentinelNode,
+  SerovalIteratorNode,
 } from './types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -755,7 +756,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         serialized += '([' + result + '])';
       }
     }
-    if (sentinel.t === SerovalNodeType.SpecialReference) {
+    if (sentinel.t === SerovalNodeType.MapSentinel) {
       this.markRef(sentinel.i);
       serialized = '(' + this.serialize(sentinel) + ',' + serialized + ')';
     }
@@ -1020,12 +1021,26 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     node: SerovalReadableStreamCloseNode,
   ): string;
 
-  protected serializeSpecialReference(
-    node: SerovalSpecialReferenceNode,
-  ): string {
+  protected serializeMapSentinel(node: SerovalMapSentinelNode): string {
     return this.assignIndexedValue(
       node.i,
-      getSpecialReferenceValue(this.features, node.s),
+      '[]',
+    );
+  }
+
+  protected serializeIterator(node: SerovalIteratorNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      createFunction(
+        this.features,
+        ['s'],
+        '(' + createFunction(
+          this.features,
+          ['i', 'c', 'd'],
+          '(i=0,{[' + this.serialize(node.x[SpecialReference.SymbolIterator]) + ']:' + createFunction(this.features, [], 'this') + ','
+            + 'next:' + createEffectfulFunction(this.features, [], 'c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
+        ) + ')',
+      ),
     );
   }
 
@@ -1112,8 +1127,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializeDOMException(node);
       case SerovalNodeType.Plugin:
         return this.serializePlugin(node);
-      case SerovalNodeType.SpecialReference:
-        return this.serializeSpecialReference(node);
+      case SerovalNodeType.MapSentinel:
+        return this.serializeMapSentinel(node);
+      case SerovalNodeType.Iterator:
+        return this.serializeIterator(node);
       default:
         throw new Error('invariant');
     }

@@ -8,9 +8,9 @@ exports[`Plugin > crossSerializeAsync > scoped > supports Plugin 1`] = `"($R=>$R
 
 exports[`Plugin > crossSerializeAsync > supports Plugin 1`] = `"$R[0]=Promise.resolve(Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\"))"`;
 
-exports[`Plugin > crossSerializeStream > scoped > supports Plugin 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[$R[3]=Symbol.iterator]:($R[4]=s=>((i,c,d)=>(i=0,{next:()=>{c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})))($R[1]={v:$R[2]=[72,101,108,108,111,44,32,87,111,114,108,100,33,void 0],t:-1,d:13})}))($R[\\"example\\"])"`;
+exports[`Plugin > crossSerializeStream > scoped > supports Plugin 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[$R[3]=Symbol.iterator]:($R[4]=s=>((i,c,d)=>(i=0,{[$R[3]]:()=>this,next:()=>{c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})))($R[1]={v:$R[2]=[72,101,108,108,111,44,32,87,111,114,108,100,33,void 0],t:-1,d:13})}))($R[\\"example\\"])"`;
 
-exports[`Plugin > crossSerializeStream > supports Plugin 1`] = `"$R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[$R[3]=Symbol.iterator]:($R[4]=s=>((i,c,d)=>(i=0,{next:()=>{c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})))($R[1]={v:$R[2]=[72,101,108,108,111,44,32,87,111,114,108,100,33,void 0],t:-1,d:13})})"`;
+exports[`Plugin > crossSerializeStream > supports Plugin 1`] = `"$R[0]=Object.assign(Object.create(null),{0:72,1:101,2:108,3:108,4:111,5:44,6:32,7:87,8:111,9:114,10:108,11:100,12:33,[$R[3]=Symbol.iterator]:($R[4]=s=>((i,c,d)=>(i=0,{[$R[3]]:()=>this,next:()=>{c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})))($R[1]={v:$R[2]=[72,101,108,108,111,44,32,87,111,114,108,100,33,void 0],t:-1,d:13})})"`;
 
 exports[`Plugin > serialize > supports Plugin 1`] = `"Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\")"`;
 

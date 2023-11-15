@@ -4,6 +4,7 @@ import UnsupportedTypeError from '../UnsupportedTypeError';
 import assert from '../assert';
 import {
   createArrayBufferNode,
+  createArrayNode,
   createBigIntNode,
   createDateNode,
   createNumberNode,
@@ -29,7 +30,7 @@ import { iteratorToSequence } from '../iterator-to-sequence';
 import type { BaseParserContextOptions } from '../parser-context';
 import { BaseParserContext } from '../parser-context';
 import { hasReferenceID } from '../reference';
-import { getErrorConstructor, getErrorOptions, getObjectFlag } from '../shared';
+import { getErrorConstructor, getErrorOptions } from '../shared';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {
@@ -80,21 +81,11 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: unknown[],
   ): SerovalArrayNode {
-    return {
-      t: SerovalNodeType.Array,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: this.parseItems(current),
-      f: undefined,
-      b: undefined,
-      o: getObjectFlag(current),
-      x: undefined,
-    };
+    return createArrayNode(
+      id,
+      current,
+      this.parseItems(current),
+    );
   }
 
   protected parseProperties(
@@ -130,34 +121,12 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     current: Record<string, unknown>,
     empty: boolean,
   ): ObjectLikeNode {
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: this.parseProperties(current),
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: getObjectFlag(current),
-      x: {
-        [SpecialReference.SymbolIterator]: (
-          this.features & Feature.Symbol && Symbol.iterator in current
-            ? this.parse(Symbol.iterator)
-            : undefined
-        ),
-        [SpecialReference.Iterator]: (
-          this.features & Feature.Symbol && Symbol.iterator in current
-            ? this.parseSpecialReference(
-              SpecialReference.Iterator,
-            )
-            : undefined
-        ),
-      },
-    };
+    return this.createObjectNode(
+      id,
+      current,
+      empty,
+      this.parseProperties(current),
+    );
   }
 
   protected parseBoxed(
@@ -293,7 +262,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       b: undefined,
       o: undefined,
       x: {
-        [SpecialReference.Sentinel]: this.parseSpecialReference(SpecialReference.Sentinel),
+        [SpecialReference.Sentinel]: this.parseMapSentinel(),
       },
     };
   }
