@@ -413,6 +413,26 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return '';
   }
 
+  protected serializeAsyncIterable(
+    source: SerovalNodeWithProperties,
+    node: SerovalNode,
+  ): string {
+    if (
+      source.x
+      && source.x[SpecialReference.SymbolAsyncIterator]
+      && source.x[SpecialReference.AsyncIterator]
+    ) {
+      const key = '[' + this.serialize(source.x[SpecialReference.SymbolAsyncIterator]) + ']:';
+      const parent = this.stack;
+      this.stack = [];
+      const serialized = this.serialize(node);
+      this.stack = parent;
+      const constructor = this.serialize(source.x[SpecialReference.AsyncIterator]);
+      return key + '(' + constructor + ')(' + serialized + ')';
+    }
+    return '';
+  }
+
   protected serializeArrayItem(
     id: number,
     item: SerovalNode | undefined,
@@ -468,7 +488,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalObjectRecordSpecialKey.SymbolIterator:
         return this.serializeIterable(source, val);
       case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
-        return '';
+        return this.serializeAsyncIterable(source, val);
       default: {
         const check = Number(key);
         // Test if key is a valid number or JS identifier
@@ -557,6 +577,24 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         }
         break;
       case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
+        if (
+          source.x
+          && source.x[SpecialReference.AsyncIterator]
+          && source.x[SpecialReference.SymbolAsyncIterator]
+        ) {
+          const parent = this.stack;
+          this.stack = [];
+          const serialized = this.serialize(value);
+          this.stack = parent;
+          const parentAssignment = this.assignments;
+          this.assignments = mainAssignments;
+          this.createArrayAssign(
+            source.i,
+            this.serialize(source.x[SpecialReference.SymbolAsyncIterator]),
+            '(' + this.serialize(source.x[SpecialReference.AsyncIterator]) + ')(' + serialized + ')',
+          );
+          this.assignments = parentAssignment;
+        }
         break;
       default: {
         const serialized = this.serialize(value);
@@ -1152,6 +1190,8 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializeMapSentinel(node);
       case SerovalNodeType.Iterator:
         return this.serializeIterator(node);
+      case SerovalNodeType.AsyncIterator:
+        return this.serializeAsyncIterator(node);
       default:
         throw new Error('invariant');
     }

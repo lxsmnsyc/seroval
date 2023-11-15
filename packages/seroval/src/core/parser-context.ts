@@ -237,7 +237,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
         ),
         [SpecialReference.AsyncIterator]: (
           this.features & Feature.Symbol && Symbol.asyncIterator in current
-            ? this.parseIterator()
+            ? this.parseAsyncIterator()
             : undefined
         ),
       },

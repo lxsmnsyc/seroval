@@ -107,7 +107,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
         '(' + createFunction(
           this.features,
           ['b'],
-          'b=s.tee(),s=b[0],b=b[1].getReader(),{[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 'this') + ','
+          '(b=s.tee(),s=b[0],b=b[1].getReader(),{[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 'this') + ','
           + 'next:' + createFunction(
             this.features,
             [],

@@ -48,7 +48,7 @@ import {
 } from '../constants';
 import type { Plugin, PluginAccessOptions } from '../plugin';
 import type { Sequence } from '../iterator-to-sequence';
-import { sequenceToIterator } from '../iterator-to-sequence';
+import { sequenceToAsyncIterator, sequenceToIterator } from '../iterator-to-sequence';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
@@ -165,6 +165,13 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
           case SerovalObjectRecordSpecialKey.SymbolIterator: {
             const current = value as Sequence;
             result[Symbol.iterator] = (): Iterator<unknown> => sequenceToIterator(current);
+          }
+            break;
+          case SerovalObjectRecordSpecialKey.SymbolAsyncIterator: {
+            const current = value as Sequence;
+            result[Symbol.asyncIterator] = (
+              (): AsyncIterator<unknown> => sequenceToAsyncIterator(current)
+            );
           }
             break;
           default:

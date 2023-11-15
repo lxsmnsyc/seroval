@@ -474,7 +474,8 @@ export type SerovalSyncNode =
   | SerovalDOMExceptionNode
   | SerovalPluginNode
   | SerovalMapSentinelNode
-  | SerovalIteratorNode;
+  | SerovalIteratorNode
+  | SerovalAsyncIteratorNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode

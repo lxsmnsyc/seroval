@@ -454,7 +454,10 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (currentFeatures & Feature.Symbol && Symbol.iterator in current) {
+    if (
+      currentFeatures & Feature.Symbol
+      && Symbol.iterator in current
+    ) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);
