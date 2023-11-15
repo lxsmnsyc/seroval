@@ -62,6 +62,7 @@ import type {
   SerovalDataViewNode,
 } from '../types';
 import {
+  createCustomEVentNode,
   createDOMExceptionNode,
   createEventNode,
   createURLNode,
@@ -288,21 +289,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: CustomEvent,
   ): SerovalCustomEventNode {
-    return {
-      t: SerovalNodeType.CustomEvent,
-      i: id,
-      s: serializeString(current.type),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(createCustomEventOptions(current)),
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createCustomEVentNode(id, current.type, this.parse(createCustomEventOptions(current)));
   }
 
   protected parseAggregateError(

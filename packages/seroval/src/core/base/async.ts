@@ -74,6 +74,7 @@ import {
   createURLSearchParamsNode,
   createDOMExceptionNode,
   createEventNode,
+  createCustomEVentNode,
 } from '../web-api';
 
 type ObjectLikeNode =
@@ -386,21 +387,11 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: CustomEvent,
   ): Promise<SerovalCustomEventNode> {
-    return {
-      t: SerovalNodeType.CustomEvent,
-      i: id,
-      s: serializeString(current.type),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: await this.parse(createCustomEventOptions(current)),
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createCustomEVentNode(
+      id,
+      current.type,
+      await this.parse(createCustomEventOptions(current)),
+    );
   }
 
   private async parseAggregateError(
