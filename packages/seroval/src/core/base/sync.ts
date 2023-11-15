@@ -61,7 +61,6 @@ import type {
   SerovalDataViewNode,
 } from '../types';
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
-import { SpecialReference } from '../special-reference';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -186,23 +185,12 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       keyNodes.push(this.parse(key));
       valueNodes.push(this.parse(value));
     }
-    return {
-      t: SerovalNodeType.Map,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: { k: keyNodes, v: valueNodes, s: current.size },
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-      x: {
-        [SpecialReference.Sentinel]: this.parseMapSentinel(),
-      },
-    };
+    return this.createMapNode(
+      id,
+      keyNodes,
+      valueNodes,
+      current.size,
+    );
   }
 
   protected parseSet(

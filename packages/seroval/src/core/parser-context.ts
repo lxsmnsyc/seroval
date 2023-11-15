@@ -18,6 +18,7 @@ import { ITERATOR, MAP_SENTINEL, SpecialReference } from './special-reference';
 import type {
   SerovalIndexedValueNode,
   SerovalIteratorNode,
+  SerovalMapNode,
   SerovalMapSentinelNode,
   SerovalNode,
   SerovalNullConstructorNode,
@@ -192,6 +193,33 @@ export abstract class BaseParserContext implements PluginAccessOptions {
             ? this.parseIterator()
             : undefined
         ),
+      },
+    };
+  }
+
+  protected createMapNode(
+    id: number,
+    k: SerovalNode[],
+    v: SerovalNode[],
+    s: number,
+  ): SerovalMapNode {
+    return {
+      t: SerovalNodeType.Map,
+      i: id,
+      s: undefined,
+      l: undefined,
+      c: undefined,
+      m: undefined,
+      p: undefined,
+      e: { k, v, s },
+      a: undefined,
+      f: undefined,
+      b: undefined,
+      o: undefined,
+      x: {
+        [SpecialReference.Sentinel]: this.parseMapSentinel(),
+        [SpecialReference.SymbolIterator]: undefined,
+        [SpecialReference.Iterator]: undefined,
       },
     };
   }
