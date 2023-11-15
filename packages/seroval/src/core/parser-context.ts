@@ -14,8 +14,14 @@ import {
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { hasReferenceID } from './reference';
 import { getObjectFlag } from './shared';
-import { ITERATOR, MAP_SENTINEL, SpecialReference } from './special-reference';
+import {
+  ASYNC_ITERATOR,
+  ITERATOR,
+  MAP_SENTINEL,
+  SpecialReference,
+} from './special-reference';
 import type {
+  SerovalAsyncIteratorNode,
   SerovalIndexedValueNode,
   SerovalIteratorNode,
   SerovalMapNode,
@@ -162,6 +168,37 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     };
   }
 
+  protected parseAsyncIterator(): SerovalIndexedValueNode | SerovalAsyncIteratorNode {
+    const registeredID = this.refs.get(ASYNC_ITERATOR);
+    if (registeredID != null) {
+      this.markRef(registeredID);
+      return createIndexedValueNode(registeredID);
+    }
+    const id = this.refs.size;
+    this.refs.set(ASYNC_ITERATOR, id);
+    return {
+      t: SerovalNodeType.AsyncIterator,
+      i: id,
+      s: undefined,
+      l: undefined,
+      c: undefined,
+      m: undefined,
+      p: undefined,
+      e: undefined,
+      a: undefined,
+      f: undefined,
+      b: undefined,
+      o: undefined,
+      x: {
+        [SpecialReference.Sentinel]: undefined,
+        [SpecialReference.SymbolIterator]: undefined,
+        [SpecialReference.Iterator]: undefined,
+        [SpecialReference.SymbolAsyncIterator]: this.parseWKSymbol(Symbol.asyncIterator),
+        [SpecialReference.AsyncIterator]: undefined,
+      },
+    };
+  }
+
   protected createObjectNode(
     id: number,
     current: Record<string, unknown>,
@@ -193,6 +230,16 @@ export abstract class BaseParserContext implements PluginAccessOptions {
             ? this.parseIterator()
             : undefined
         ),
+        [SpecialReference.SymbolAsyncIterator]: (
+          this.features & Feature.Symbol && Symbol.asyncIterator in current
+            ? this.parseWKSymbol(Symbol.asyncIterator)
+            : undefined
+        ),
+        [SpecialReference.AsyncIterator]: (
+          this.features & Feature.Symbol && Symbol.asyncIterator in current
+            ? this.parseIterator()
+            : undefined
+        ),
       },
     };
   }
@@ -220,6 +267,8 @@ export abstract class BaseParserContext implements PluginAccessOptions {
         [SpecialReference.Sentinel]: this.parseMapSentinel(),
         [SpecialReference.SymbolIterator]: undefined,
         [SpecialReference.Iterator]: undefined,
+        [SpecialReference.SymbolAsyncIterator]: undefined,
+        [SpecialReference.AsyncIterator]: undefined,
       },
     };
   }

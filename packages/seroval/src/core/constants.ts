@@ -53,6 +53,7 @@ export const enum SerovalNodeType {
   Plugin = 40,
   MapSentinel = 41,
   Iterator = 42,
+  AsyncIterator = 43,
 }
 
 export const enum SerovalObjectFlags {

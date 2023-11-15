@@ -7,6 +7,7 @@ import type {
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamConstructorNode,
   SerovalNode,
+  SerovalAsyncIteratorNode,
 } from '../types';
 import {
   GLOBAL_CONTEXT_PROMISE_REJECT,
@@ -24,7 +25,8 @@ import BaseSerializerContext from '../serializer-context';
 import type { SerovalMode } from '../plugin';
 import { serializeString } from '../string';
 import type { CrossContextOptions } from './cross-parser';
-import { createFunction } from '../function-string';
+import { createEffectfulFunction, createFunction } from '../function-string';
+import { SpecialReference } from '../special-reference';
 
 export interface CrossSerializerContextOptions
   extends BaseSerializerContextOptions, CrossContextOptions {
@@ -94,6 +96,30 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     node: SerovalReadableStreamCloseNode,
   ): string {
     return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CLOSE + '(' + this.getRefParam(node.i) + ')';
+  }
+
+  protected serializeAsyncIterator(node: SerovalAsyncIteratorNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      createFunction(
+        this.features,
+        ['s'],
+        '(' + createFunction(
+          this.features,
+          ['b'],
+          'b=s.tee(),s=b[0],b=b[1].getReader(),{[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 'this') + ','
+          + 'next:' + createFunction(
+            this.features,
+            [],
+            'b.read().then(' + createEffectfulFunction(
+              this.features,
+              ['d'],
+              'if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}',
+            ) + ')',
+          ) + '})',
+        ) + ')',
+      ),
+    );
   }
 
   serializeTop(tree: SerovalNode): string {

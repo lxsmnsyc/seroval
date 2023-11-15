@@ -54,6 +54,7 @@ import type {
   SerovalReadableStreamCloseNode,
   SerovalMapSentinelNode,
   SerovalIteratorNode,
+  SerovalAsyncIteratorNode,
 } from './types';
 import {
   SerovalObjectRecordSpecialKey,
@@ -466,6 +467,8 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     switch (key) {
       case SerovalObjectRecordSpecialKey.SymbolIterator:
         return this.serializeIterable(source, val);
+      case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
+        return '';
       default: {
         const check = Number(key);
         // Test if key is a valid number or JS identifier
@@ -552,6 +555,8 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
           );
           this.assignments = parentAssignment;
         }
+        break;
+      case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
         break;
       default: {
         const serialized = this.serialize(value);
@@ -1036,9 +1041,25 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         ['s'],
         '(' + createFunction(
           this.features,
-          ['i', 'c', 'd'],
-          '(i=0,{[' + this.serialize(node.x[SpecialReference.SymbolIterator]) + ']:' + createFunction(this.features, [], 'this') + ','
-            + 'next:' + createEffectfulFunction(this.features, [], 'c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
+          ['i', 'c', 'd', 't'],
+          '(i=0,t={[' + this.serialize(node.x[SpecialReference.SymbolIterator]) + ']:' + createFunction(this.features, [], 't') + ','
+            + 'next:' + createEffectfulFunction(this.features, [], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
+        ) + ')',
+      ),
+    );
+  }
+
+  protected serializeAsyncIterator(node: SerovalAsyncIteratorNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      createFunction(
+        this.features,
+        ['s'],
+        '(' + createFunction(
+          this.features,
+          ['i', 'c', 'd', 't'],
+          '(i=0,t={[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 't') + ','
+            + 'next:async ' + createEffectfulFunction(this.features, [], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
         ) + ')',
       ),
     );

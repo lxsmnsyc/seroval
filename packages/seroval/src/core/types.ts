@@ -42,6 +42,7 @@ export type SerovalX = {
 
 export const enum SerovalObjectRecordSpecialKey {
   SymbolIterator = 0,
+  SymbolAsyncIterator = 1,
 }
 
 export type SerovalObjectRecordKey =
@@ -193,6 +194,8 @@ export interface SerovalArrayNode extends SerovalBaseNode {
 export interface SerovalObjectX extends SerovalX {
   [SpecialReference.SymbolIterator]: SerovalNodeWithID | undefined;
   [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.SymbolAsyncIterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
 }
 
 export interface SerovalObjectNode extends SerovalBaseNode {
@@ -206,6 +209,8 @@ export interface SerovalObjectNode extends SerovalBaseNode {
 
 export interface SerovalNullConstructorX extends SerovalX {
   [SpecialReference.SymbolIterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.SymbolAsyncIterator]: SerovalNodeWithID | undefined;
   [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
 }
 
@@ -429,6 +434,16 @@ export interface SerovalIteratorNode extends SerovalBaseNode {
   t: SerovalNodeType.Iterator;
   i: number;
   x: SerovalIteratorX;
+}
+
+export interface SerovalAsyncIteratorX extends SerovalX {
+  [SpecialReference.SymbolAsyncIterator]: SerovalNodeWithID;
+}
+
+export interface SerovalAsyncIteratorNode extends SerovalBaseNode {
+  t: SerovalNodeType.AsyncIterator;
+  i: number;
+  x: SerovalAsyncIteratorX;
 }
 
 export type SerovalSyncNode =

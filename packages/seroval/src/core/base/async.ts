@@ -37,7 +37,7 @@ import {
   FALSE_NODE,
   UNDEFINED_NODE,
 } from '../literals';
-import { iteratorToSequence } from '../iterator-to-sequence';
+import { asyncIteratorToSequence, iteratorToSequence } from '../iterator-to-sequence';
 import { BaseParserContext } from '../parser-context';
 import promiseToResult from '../promise-to-result';
 import { getErrorOptions } from '../shared';
@@ -125,7 +125,15 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
         keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
-        valueNodes.push(await this.parse(iteratorToSequence(properties as Iterable<unknown>)));
+        valueNodes.push(
+          await this.parse(iteratorToSequence(properties as Iterable<unknown>)),
+        );
+      }
+      if (Symbol.asyncIterator in properties) {
+        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolAsyncIterator);
+        valueNodes.push(
+          await this.parse(asyncIteratorToSequence(properties as AsyncIterable<unknown>)),
+        );
       }
     }
     return {

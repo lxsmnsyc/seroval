@@ -13,15 +13,19 @@ import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../constants';
 import { createRequestOptions, createResponseOptions } from '../constructors';
 import { NULL_NODE } from '../literals';
 import { serializeString } from '../string';
-import type {
-  SerovalNode,
-  SerovalPluginNode,
-  SerovalPromiseConstructorNode,
-  SerovalReadableStreamConstructorNode,
-  SerovalRequestNode,
-  SerovalResponseNode,
+import {
+  SerovalObjectRecordSpecialKey,
+  type SerovalNode,
+  type SerovalObjectRecordKey,
+  type SerovalObjectRecordNode,
+  type SerovalPluginNode,
+  type SerovalPromiseConstructorNode,
+  type SerovalReadableStreamConstructorNode,
+  type SerovalRequestNode,
+  type SerovalResponseNode,
 } from '../types';
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
+import { asyncIteratorToReadableStream, iteratorToSequence } from '../iterator-to-sequence';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
@@ -82,6 +86,42 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     if (--this.pending <= 0) {
       this.onDone();
     }
+  }
+
+  protected parseProperties(
+    properties: Record<string, unknown>,
+  ): SerovalObjectRecordNode {
+    const entries = Object.entries(properties);
+    const keyNodes: SerovalObjectRecordKey[] = [];
+    const valueNodes: SerovalNode[] = [];
+    for (
+      let i = 0, len = entries.length;
+      i < len;
+      i++
+    ) {
+      keyNodes.push(serializeString(entries[i][0]));
+      valueNodes.push(this.parse(entries[i][1]));
+    }
+    // Check special properties, symbols in this case
+    if (this.features & Feature.Symbol) {
+      if (Symbol.iterator in properties) {
+        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
+        valueNodes.push(
+          this.parse(iteratorToSequence(properties as Iterable<unknown>)),
+        );
+      }
+      if (Symbol.asyncIterator in properties) {
+        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolAsyncIterator);
+        valueNodes.push(
+          this.parse(asyncIteratorToReadableStream(properties as AsyncIterable<unknown>)),
+        );
+      }
+    }
+    return {
+      k: keyNodes,
+      v: valueNodes,
+      s: keyNodes.length,
+    };
   }
 
   private pushReadableStreamReader(
