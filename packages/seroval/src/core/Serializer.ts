@@ -1,7 +1,8 @@
+import type { PluginAccessOptions } from './plugin';
 import { crossSerializeStream } from './cross';
 import { serializeString } from './string';
 
-export interface SerializerOptions {
+export interface SerializerOptions extends PluginAccessOptions {
   globalIdentifier: string;
   scopeId?: string;
   disabledFeatures?: number;
@@ -35,6 +36,7 @@ export default class Serializer {
       this.pending++;
       this.keys.add(key);
       this.cleanups.push(crossSerializeStream(value, {
+        plugins: this.options.plugins,
         scopeId: this.options.scopeId,
         refs: this.refs,
         disabledFeatures: this.options.disabledFeatures,
