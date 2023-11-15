@@ -3,6 +3,7 @@ import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import UnsupportedTypeError from '../UnsupportedTypeError';
 import assert from '../assert';
 import {
+  createAggregateErrorNode,
   createArrayBufferNode,
   createArrayNode,
   createBigIntNode,
@@ -182,6 +183,20 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     );
   }
 
+  protected parseAggregateError(
+    id: number,
+    current: AggregateError,
+  ): SerovalAggregateErrorNode {
+    const options = getErrorOptions(current, this.features);
+    return createAggregateErrorNode(
+      id,
+      current,
+      options
+        ? this.parseProperties(options)
+        : undefined,
+    );
+  }
+
   protected parseMap(
     id: number,
     current: Map<unknown, unknown>,
@@ -290,31 +305,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     current: CustomEvent,
   ): SerovalCustomEventNode {
     return createCustomEVentNode(id, current.type, this.parse(createCustomEventOptions(current)));
-  }
-
-  protected parseAggregateError(
-    id: number,
-    current: AggregateError,
-  ): SerovalAggregateErrorNode {
-    const options = getErrorOptions(current, this.features);
-    const optionsNode = options
-      ? this.parseProperties(options)
-      : undefined;
-    return {
-      t: SerovalNodeType.AggregateError,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: serializeString(current.message),
-      p: optionsNode,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
   }
 
   protected parsePlugin(

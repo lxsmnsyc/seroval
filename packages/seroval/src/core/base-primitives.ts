@@ -12,6 +12,7 @@ import { getReferenceID } from './reference';
 import { getErrorConstructor, getObjectFlag } from './shared';
 import { serializeString } from './string';
 import type {
+  SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalBigIntNode,
@@ -366,6 +367,28 @@ export function createErrorNode(
 ): SerovalErrorNode {
   return {
     t: SerovalNodeType.Error,
+    i: id,
+    s: getErrorConstructor(current),
+    l: undefined,
+    c: undefined,
+    m: serializeString(current.message),
+    p: options,
+    e: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+    x: undefined,
+  };
+}
+
+export function createAggregateErrorNode(
+  id: number,
+  current: AggregateError,
+  options: SerovalObjectRecordNode | undefined,
+): SerovalAggregateErrorNode {
+  return {
+    t: SerovalNodeType.AggregateError,
     i: id,
     s: getErrorConstructor(current),
     l: undefined,

@@ -18,6 +18,7 @@ import {
   createDataViewNode,
   createErrorNode,
   createSetNode,
+  createAggregateErrorNode,
 } from '../base-primitives';
 import { BIGINT_FLAG, Feature } from '../compat';
 import {
@@ -181,6 +182,20 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   ): Promise<SerovalErrorNode> {
     const options = getErrorOptions(current, this.features);
     return createErrorNode(
+      id,
+      current,
+      options
+        ? await this.parseProperties(options)
+        : undefined,
+    );
+  }
+
+  private async parseAggregateError(
+    id: number,
+    current: AggregateError,
+  ): Promise<SerovalAggregateErrorNode> {
+    const options = getErrorOptions(current, this.features);
+    return createAggregateErrorNode(
       id,
       current,
       options
@@ -392,31 +407,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       current.type,
       await this.parse(createCustomEventOptions(current)),
     );
-  }
-
-  private async parseAggregateError(
-    id: number,
-    current: AggregateError,
-  ): Promise<SerovalAggregateErrorNode> {
-    const options = getErrorOptions(current, this.features);
-    const optionsNode = options
-      ? await this.parseProperties(options)
-      : undefined;
-    return {
-      t: SerovalNodeType.AggregateError,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: serializeString(current.message),
-      p: optionsNode,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
   }
 
   private async parsePromise(
