@@ -69,7 +69,12 @@ import type {
   SerovalSetNode,
   SerovalDataViewNode,
 } from '../types';
-import { createURLNode, createURLSearchParamsNode, createDOMExceptionNode } from '../web-api';
+import {
+  createURLNode,
+  createURLSearchParamsNode,
+  createDOMExceptionNode,
+  createEventNode,
+} from '../web-api';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -374,21 +379,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Event,
   ): Promise<SerovalEventNode> {
-    return {
-      t: SerovalNodeType.Event,
-      i: id,
-      s: serializeString(current.type),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: await this.parse(createEventOptions(current)),
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createEventNode(id, current.type, await this.parse(createEventOptions(current)));
   }
 
   private async parseCustomEvent(

@@ -61,7 +61,12 @@ import type {
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
 } from '../types';
-import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
+import {
+  createDOMExceptionNode,
+  createEventNode,
+  createURLNode,
+  createURLSearchParamsNode,
+} from '../web-api';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -276,21 +281,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: Event,
   ): SerovalEventNode {
-    return {
-      t: SerovalNodeType.Event,
-      i: id,
-      s: serializeString(current.type),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(createEventOptions(current)),
-      b: undefined,
-      o: undefined,
-      x: undefined,
-    };
+    return createEventNode(id, current.type, this.parse(createEventOptions(current)));
   }
 
   protected parseCustomEvent(
