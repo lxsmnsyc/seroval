@@ -14,7 +14,9 @@ import {
   GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR,
   GLOBAL_CONTEXT_REFERENCES,
   GLOBAL_CONTEXT_STREAM_CONSTRUCTOR,
-  GLOBAL_CONTEXT_STREAM_EMIT,
+  GLOBAL_CONTEXT_STREAM_ENQUEUE,
+  GLOBAL_CONTEXT_STREAM_CLOSE,
+  GLOBAL_CONTEXT_STREAM_ERROR,
   GLOBAL_CONTEXT_API,
 } from '../keys';
 import type { BaseSerializerContextOptions } from '../serializer-context';
@@ -79,19 +81,19 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   protected serializeReadableStreamEnqueue(
     node: SerovalReadableStreamEnqueueNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',0,' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_ENQUEUE + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.f) + ')';
   }
 
   protected serializeReadableStreamError(
     node: SerovalReadableStreamErrorNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',1,' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_ERROR + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.f) + ')';
   }
 
   protected serializeReadableStreamClose(
     node: SerovalReadableStreamCloseNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',2)';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CLOSE + '(' + this.getRefParam(node.i) + ')';
   }
 
   serializeTop(tree: SerovalNode): string {
