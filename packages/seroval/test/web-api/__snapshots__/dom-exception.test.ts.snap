@@ -20,6 +20,14 @@ exports[`DOMException > serialize > supports DOMException 1`] = `"new DOMExcepti
 
 exports[`DOMException > serializeAsync > supports DOMException 1`] = `"Promise.resolve(new DOMException(\\"This is an example message.\\",\\"Example\\"))"`;
 
+exports[`DOMException > toCrossJSON > supports DOMException 1`] = `"{\\"t\\":39,\\"i\\":0,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}"`;
+
+exports[`DOMException > toCrossJSONAsync > supports DOMException 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":39,\\"i\\":1,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}}"`;
+
+exports[`DOMException > toCrossJSONStream > supports DOMException 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`DOMException > toCrossJSONStream > supports DOMException 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":39,\\"i\\":1,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}}"`;
+
 exports[`DOMException > toJSON > supports DOMException 1`] = `"{\\"t\\":{\\"t\\":39,\\"i\\":0,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`DOMException > toJSONAsync > supports DOMException 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":39,\\"i\\":1,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}},\\"f\\":16383,\\"m\\":[]}"`;

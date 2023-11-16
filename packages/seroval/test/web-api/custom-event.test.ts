@@ -4,9 +4,13 @@ import {
   crossSerializeAsync,
   crossSerializeStream,
   deserialize,
+  fromCrossJSON,
   fromJSON,
   serialize,
   serializeAsync,
+  toCrossJSON,
+  toCrossJSONAsync,
+  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../../src';
@@ -15,76 +19,69 @@ const EXAMPLE_EVENT_TYPE = 'example';
 const EXAMPLE_DETAIL: Record<string, unknown> = {};
 EXAMPLE_DETAIL.self = EXAMPLE_DETAIL;
 const EXAMPLE_OPTIONS: CustomEventInit = { detail: EXAMPLE_DETAIL };
+const EXAMPLE = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
 
 describe('CustomEvent', () => {
   describe('serialize', () => {
     it('supports CustomEvent', () => {
-      const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-      const result = serialize(example);
+      const result = serialize(EXAMPLE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<CustomEvent>(result);
+      const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(CustomEvent);
     });
   });
   describe('serializeAsync', () => {
     it('supports CustomEvent', async () => {
-      const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-      const result = await serializeAsync(Promise.resolve(example));
+      const result = await serializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
-      const back = await deserialize<Promise<CustomEvent>>(result);
+      const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(CustomEvent);
     });
   });
   describe('toJSON', () => {
     it('supports CustomEvent', () => {
-      const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-      const result = toJSON(example);
+      const result = toJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<CustomEvent>(result);
+      const back = fromJSON<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(CustomEvent);
     });
   });
   describe('toJSONAsync', () => {
     it('supports CustomEvent', async () => {
-      const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-      const result = await toJSONAsync(Promise.resolve(example));
+      const example = Promise.resolve(EXAMPLE);
+      const result = await toJSONAsync(example);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<Promise<CustomEvent>>(result);
+      const back = await fromJSON<typeof example>(result);
       expect(back).toBeInstanceOf(CustomEvent);
     });
   });
   describe('crossSerialize', () => {
     it('supports CustomEvent', () => {
-      const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-      const result = crossSerialize(example);
+      const result = crossSerialize(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports CustomEvent', () => {
-        const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-        const result = crossSerialize(example, { scopeId: 'example' });
+        const result = crossSerialize(EXAMPLE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports CustomEvent', async () => {
-      const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-      const result = await crossSerializeAsync(Promise.resolve(example));
+      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports CustomEvent', async () => {
-        const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
     it('supports CustomEvent', async () => new Promise<void>((done) => {
-      const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-      crossSerializeStream(Promise.resolve(example), {
+      crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -95,8 +92,7 @@ describe('CustomEvent', () => {
     }));
     describe('scoped', () => {
       it('supports CustomEvent', async () => new Promise<void>((done) => {
-        const example = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
-        crossSerializeStream(Promise.resolve(example), {
+        crossSerializeStream(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -107,5 +103,38 @@ describe('CustomEvent', () => {
         });
       }));
     });
+  });
+  describe('toCrossJSON', () => {
+    it('supports CustomEvent', () => {
+      const result = toCrossJSON(EXAMPLE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(CustomEvent);
+    });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports CustomEvent', async () => {
+      const example = Promise.resolve(EXAMPLE);
+      const result = await toCrossJSONAsync(example);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = await fromCrossJSON<typeof example>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(CustomEvent);
+    });
+  });
+  describe('toCrossJSONStream', () => {
+    it('supports CustomEvent', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(EXAMPLE), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });

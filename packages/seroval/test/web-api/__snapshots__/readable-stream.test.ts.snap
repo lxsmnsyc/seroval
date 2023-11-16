@@ -27,3 +27,139 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `"$R[0]=_$.S()"`;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"_$.St($R[0],$R[1]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"}))"`;
+
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 1`] = `
+{
+  "a": undefined,
+  "b": undefined,
+  "c": undefined,
+  "e": undefined,
+  "f": undefined,
+  "i": 0,
+  "l": undefined,
+  "m": undefined,
+  "o": undefined,
+  "p": undefined,
+  "s": undefined,
+  "t": 31,
+  "x": undefined,
+}
+`;
+
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 2`] = `
+{
+  "a": undefined,
+  "b": undefined,
+  "c": undefined,
+  "e": undefined,
+  "f": {
+    "a": undefined,
+    "b": undefined,
+    "c": undefined,
+    "e": undefined,
+    "f": undefined,
+    "i": undefined,
+    "l": undefined,
+    "m": undefined,
+    "o": undefined,
+    "p": undefined,
+    "s": "foo",
+    "t": 1,
+    "x": undefined,
+  },
+  "i": 0,
+  "l": undefined,
+  "m": undefined,
+  "o": undefined,
+  "p": undefined,
+  "s": undefined,
+  "t": 32,
+  "x": undefined,
+}
+`;
+
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 3`] = `
+{
+  "a": undefined,
+  "b": undefined,
+  "c": undefined,
+  "e": undefined,
+  "f": {
+    "a": undefined,
+    "b": undefined,
+    "c": undefined,
+    "e": undefined,
+    "f": undefined,
+    "i": undefined,
+    "l": undefined,
+    "m": undefined,
+    "o": undefined,
+    "p": undefined,
+    "s": "bar",
+    "t": 1,
+    "x": undefined,
+  },
+  "i": 0,
+  "l": undefined,
+  "m": undefined,
+  "o": undefined,
+  "p": undefined,
+  "s": undefined,
+  "t": 32,
+  "x": undefined,
+}
+`;
+
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 4`] = `
+{
+  "a": undefined,
+  "b": undefined,
+  "c": undefined,
+  "e": undefined,
+  "f": {
+    "a": undefined,
+    "b": undefined,
+    "c": undefined,
+    "e": undefined,
+    "f": undefined,
+    "i": undefined,
+    "l": undefined,
+    "m": undefined,
+    "o": undefined,
+    "p": undefined,
+    "s": "baz",
+    "t": 1,
+    "x": undefined,
+  },
+  "i": 0,
+  "l": undefined,
+  "m": undefined,
+  "o": undefined,
+  "p": undefined,
+  "s": undefined,
+  "t": 32,
+  "x": undefined,
+}
+`;
+
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 5`] = `
+{
+  "a": undefined,
+  "b": undefined,
+  "c": undefined,
+  "e": undefined,
+  "f": undefined,
+  "i": 0,
+  "l": undefined,
+  "m": undefined,
+  "o": undefined,
+  "p": undefined,
+  "s": undefined,
+  "t": 33,
+  "x": undefined,
+}
+`;
+
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 1`] = `"{\\"t\\":31,\\"i\\":0}"`;
+
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 2`] = `"{\\"t\\":34,\\"i\\":0,\\"f\\":{\\"t\\":13,\\"i\\":1,\\"s\\":0,\\"m\\":\\"Oops!\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}}"`;
