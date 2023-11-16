@@ -1,4 +1,4 @@
-import { Feature } from './compat';
+import { Feature } from '../compat';
 
 export function createFunction(
   features: number,

@@ -1,7 +1,7 @@
 /* eslint-disable prefer-destructuring */
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import UnsupportedTypeError from '../UnsupportedTypeError';
-import assert from '../assert';
+import assert from '../utils/assert';
 import {
   createAggregateErrorNode,
   createArrayBufferNode,
@@ -26,18 +26,18 @@ import {
   SerovalNodeType,
   UNIVERSAL_SENTINEL,
 } from '../constants';
-import { createCustomEventOptions, createEventOptions } from '../constructors';
+import { createCustomEventOptions, createEventOptions } from '../utils/constructors';
 import {
   FALSE_NODE,
   NULL_NODE,
   TRUE_NODE,
   UNDEFINED_NODE,
 } from '../literals';
-import { iteratorToSequence } from '../iterator-to-sequence';
+import { iteratorToSequence } from '../utils/iterator-to-sequence';
 import type { BaseParserContextOptions } from '../parser-context';
 import { BaseParserContext } from '../parser-context';
 import { hasReferenceID } from '../reference';
-import { getErrorOptions } from '../shared';
+import { getErrorOptions } from '../utils/error';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {

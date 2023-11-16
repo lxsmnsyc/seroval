@@ -1,5 +1,5 @@
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
-import assert from './assert';
+import assert from './utils/assert';
 import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
 import {
@@ -9,7 +9,7 @@ import {
   NEG_ZERO_NODE,
 } from './literals';
 import { getReferenceID } from './reference';
-import { getErrorConstructor, getObjectFlag } from './shared';
+import { getErrorConstructor } from './utils/error';
 import { serializeString } from './string';
 import type {
   SerovalAggregateErrorNode,
@@ -34,6 +34,7 @@ import type {
   SerovalTypedArrayNode,
   SerovalWKSymbolNode,
 } from './types';
+import { getObjectFlag } from './utils/get-object-flag';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
   switch (value) {

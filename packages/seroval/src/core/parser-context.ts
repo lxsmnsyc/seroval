@@ -1,5 +1,5 @@
 import UnsupportedTypeError from './UnsupportedTypeError';
-import assert from './assert';
+import assert from './utils/assert';
 import {
   createIndexedValueNode,
   createReferenceNode,
@@ -13,7 +13,6 @@ import {
 } from './constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
 import { hasReferenceID } from './reference';
-import { getObjectFlag } from './shared';
 import {
   ASYNC_ITERATOR,
   ITERATOR,
@@ -33,6 +32,7 @@ import type {
   SerovalReferenceNode,
   SerovalWKSymbolNode,
 } from './types';
+import { getObjectFlag } from './utils/get-object-flag';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;

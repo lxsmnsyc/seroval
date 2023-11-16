@@ -2,7 +2,6 @@
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import { getReference } from '../reference';
-import { getTypedArrayConstructor } from '../shared';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
@@ -47,8 +46,9 @@ import {
   SerovalObjectFlags,
 } from '../constants';
 import type { Plugin, PluginAccessOptions } from '../plugin';
-import type { Sequence } from '../iterator-to-sequence';
-import { sequenceToAsyncIterator, sequenceToIterator } from '../iterator-to-sequence';
+import type { Sequence } from '../utils/iterator-to-sequence';
+import { sequenceToAsyncIterator, sequenceToIterator } from '../utils/iterator-to-sequence';
+import { getTypedArrayConstructor } from '../utils/typed-array';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {

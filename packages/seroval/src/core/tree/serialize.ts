@@ -10,10 +10,10 @@ import type {
 } from '../types';
 import type { BaseSerializerContextOptions } from '../serializer-context';
 import BaseSerializerContext from '../serializer-context';
-import getIdentifier from '../get-identifier';
+import getIdentifier from '../utils/get-identifier';
 import type { SerovalMode } from '../plugin';
 import { SerovalNodeType } from '../constants';
-import { createFunction } from '../function-string';
+import { createFunction } from '../utils/function-string';
 
 export type VanillaSerializerContextOptions = BaseSerializerContextOptions
 

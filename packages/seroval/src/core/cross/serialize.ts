@@ -25,7 +25,7 @@ import BaseSerializerContext from '../serializer-context';
 import type { SerovalMode } from '../plugin';
 import { serializeString } from '../string';
 import type { CrossContextOptions } from './cross-parser';
-import { createEffectfulFunction, createFunction } from '../function-string';
+import { createEffectfulFunction, createFunction } from '../utils/function-string';
 import { SpecialReference } from '../special-reference';
 
 export interface CrossSerializerContextOptions

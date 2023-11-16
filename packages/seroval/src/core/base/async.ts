@@ -2,7 +2,7 @@
 /* eslint-disable no-await-in-loop */
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import UnsupportedTypeError from '../UnsupportedTypeError';
-import assert from '../assert';
+import assert from '../utils/assert';
 import {
   createPluginNode,
   createDateNode,
@@ -30,17 +30,17 @@ import {
   createResponseOptions,
   createEventOptions,
   createCustomEventOptions,
-} from '../constructors';
+} from '../utils/constructors';
 import {
   NULL_NODE,
   TRUE_NODE,
   FALSE_NODE,
   UNDEFINED_NODE,
 } from '../literals';
-import { asyncIteratorToSequence, iteratorToSequence } from '../iterator-to-sequence';
+import { asyncIteratorToSequence, iteratorToSequence } from '../utils/iterator-to-sequence';
 import { BaseParserContext } from '../parser-context';
-import promiseToResult from '../promise-to-result';
-import { getErrorOptions } from '../shared';
+import promiseToResult from '../utils/promise-to-result';
+import { getErrorOptions } from '../utils/error';
 import { serializeString } from '../string';
 import { SerovalObjectRecordSpecialKey } from '../types';
 import type {

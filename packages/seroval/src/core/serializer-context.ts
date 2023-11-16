@@ -6,10 +6,9 @@ import {
   SerovalNodeType,
   SerovalObjectFlags,
 } from './constants';
-import { createEffectfulFunction, createFunction } from './function-string';
+import { createEffectfulFunction, createFunction } from './utils/function-string';
 import { REFERENCES_KEY } from './keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
-import { isValidIdentifier } from './shared';
 import { SpecialReference } from './special-reference';
 import type {
   SerovalArrayNode,
@@ -59,6 +58,7 @@ import type {
 import {
   SerovalObjectRecordSpecialKey,
 } from './types';
+import { isValidIdentifier } from './utils/is-valid-identifier';
 
 interface IndexAssignment {
   t: 'index';

@@ -2,7 +2,7 @@ import { ALL_ENABLED, BIGINT_FLAG, Feature } from './compat';
 import { INV_SYMBOL_REF, UNIVERSAL_SENTINEL } from './constants';
 import type { Plugin, PluginAccessOptions } from './plugin';
 import { hasReferenceID } from './reference';
-import { getErrorOptions } from './shared';
+import { getErrorOptions } from './utils/error';
 
 export type SerializationMode = 'sync' | 'async' | 'stream';
 
