@@ -13,4 +13,14 @@ export default class VanillaDeserializerContext extends BaseDeserializerContext 
       markedRefs: options.markedRefs,
     });
   }
+
+  assignIndexedValue<T>(
+    index: number,
+    value: T,
+  ): T {
+    if (this.markedRefs.has(index)) {
+      this.refs.set(index, value);
+    }
+    return value;
+  }
 }

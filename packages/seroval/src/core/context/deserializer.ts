@@ -25,7 +25,10 @@ import type {
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPluginNode,
+  SerovalPromiseConstructorNode,
   SerovalPromiseNode,
+  SerovalPromiseRejectNode,
+  SerovalPromiseResolveNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalRequestNode,
@@ -49,6 +52,9 @@ import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import type { Sequence } from '../utils/iterator-to-sequence';
 import { sequenceToAsyncIterator, sequenceToIterator } from '../utils/iterator-to-sequence';
 import { getTypedArrayConstructor } from '../utils/typed-array';
+import type { Deferred } from '../utils/deferred';
+import { createDeferred } from '../utils/deferred';
+import assert from '../utils/assert';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
@@ -65,29 +71,6 @@ function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
 
 type AssignableValue = AggregateError | Error | Iterable<unknown>
 type AssignableNode = SerovalAggregateErrorNode | SerovalErrorNode;
-
-interface Deferred {
-  resolve(value: unknown): void;
-  reject(value: unknown): void;
-  promise: Promise<unknown>;
-}
-
-function createDeferred(): Deferred {
-  let resolve: Deferred['resolve'];
-  let reject: Deferred['reject'];
-  return {
-    resolve(v): void {
-      resolve(v);
-    },
-    reject(v): void {
-      reject(v);
-    },
-    promise: new Promise((res, rej) => {
-      resolve = res as Deferred['resolve'];
-      reject = rej as Deferred['reject'];
-    }),
-  };
-}
 
 export interface BaseDeserializerOptions extends PluginAccessOptions {
   refs?: Map<number, unknown>;
@@ -117,15 +100,10 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     this.markedRefs = new Set(options.markedRefs);
   }
 
-  assignIndexedValue<T>(
-    index: number,
+  protected abstract assignIndexedValue<T>(
+    id: number,
     value: T,
-  ): T {
-    if (this.markedRefs.has(index)) {
-      this.refs.set(index, value);
-    }
-    return value;
-  }
+  ): T;
 
   private deserializeReference(
     node: SerovalReferenceNode,
@@ -318,9 +296,9 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     const result = this.assignIndexedValue(node.i, deferred.promise);
     const deserialized = this.deserialize(node.f);
     if (node.s) {
-      deferred.resolve(deserialized);
+      deferred.promise.resolve(deserialized);
     } else {
-      deferred.reject(deserialized);
+      deferred.promise.reject(deserialized);
     }
     return result;
   }
@@ -471,6 +449,31 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     throw new Error('Missing plugin for tag "' + node.c + '".');
   }
 
+  private deserializePromiseConstructor(node: SerovalPromiseConstructorNode): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      createDeferred().promise,
+    );
+  }
+
+  private deserializePromiseResolve(node: SerovalPromiseResolveNode): unknown {
+    const deferred = this.refs.get(node.i) as Deferred | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.resolve(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializePromiseReject(node: SerovalPromiseRejectNode): unknown {
+    const deferred = this.refs.get(node.i) as Deferred | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.reject(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
   deserialize(node: SerovalNode): unknown {
     switch (node.t) {
       case SerovalNodeType.Constant:
@@ -539,6 +542,19 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializeDOMException(node);
       case SerovalNodeType.Plugin:
         return this.deserializePlugin(node);
+      case SerovalNodeType.PromiseConstructor:
+        return this.deserializePromiseConstructor(node);
+      case SerovalNodeType.PromiseResolve:
+        return this.deserializePromiseResolve(node);
+      case SerovalNodeType.PromiseReject:
+        return this.deserializePromiseReject(node);
+      case SerovalNodeType.ReadableStreamConstructor:
+      case SerovalNodeType.ReadableStreamEnqueue:
+      case SerovalNodeType.ReadableStreamError:
+      case SerovalNodeType.ReadableStreamClose:
+      case SerovalNodeType.MapSentinel:
+      case SerovalNodeType.Iterator:
+      case SerovalNodeType.AsyncIterator:
       default:
         throw new Error('invariant');
     }
