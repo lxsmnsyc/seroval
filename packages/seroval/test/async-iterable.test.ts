@@ -5,27 +5,31 @@ import {
   crossSerializeStream,
   deserialize,
   Feature,
+  fromCrossJSON,
   fromJSON,
   serializeAsync,
+  toCrossJSONAsync,
+  toCrossJSONStream,
   toJSONAsync,
 } from '../src';
+
+const EXAMPLE = {
+  title: 'Hello World',
+  async* [Symbol.asyncIterator](): AsyncIterator<number> {
+    await Promise.resolve();
+    yield 1;
+    yield 2;
+    yield 3;
+  },
+};
 
 describe('AsyncIterable', () => {
   describe('serializeAsync', () => {
     it('supports AsyncIterables', async () => {
-      const example = {
-        title: 'Hello World',
-        async* [Symbol.asyncIterator](): AsyncIterator<number> {
-          await Promise.resolve();
-          yield 1;
-          yield 2;
-          yield 3;
-        },
-      };
-      const result = await serializeAsync(example);
+      const result = await serializeAsync(EXAMPLE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<typeof example>(result);
-      expect(back.title).toBe(example.title);
+      const back = deserialize<typeof EXAMPLE>(result);
+      expect(back.title).toBe(EXAMPLE.title);
       expect(Symbol.asyncIterator in back).toBe(true);
       const iterator = back[Symbol.asyncIterator]();
       expect((await iterator.next()).value).toBe(1);
@@ -35,19 +39,10 @@ describe('AsyncIterable', () => {
   });
   describe('toJSONAsync', () => {
     it('supports AsyncIterables', async () => {
-      const example = {
-        title: 'Hello World',
-        async* [Symbol.asyncIterator](): AsyncIterator<number> {
-          await Promise.resolve();
-          yield 1;
-          yield 2;
-          yield 3;
-        },
-      };
-      const result = await toJSONAsync(example);
+      const result = await toJSONAsync(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof example>(result);
-      expect(back.title).toBe(example.title);
+      const back = fromJSON<typeof EXAMPLE>(result);
+      expect(back.title).toBe(EXAMPLE.title);
       expect(Symbol.asyncIterator in back).toBe(true);
       const iterator = back[Symbol.asyncIterator]();
       expect((await iterator.next()).value).toBe(1);
@@ -57,46 +52,19 @@ describe('AsyncIterable', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports AsyncIterables', async () => {
-      const example = Promise.resolve({
-        title: 'Hello World',
-        async* [Symbol.asyncIterator]() {
-          await Promise.resolve();
-          yield 1;
-          yield 2;
-          yield 3;
-        },
-      });
-      const result = await crossSerializeAsync(example);
+      const result = await crossSerializeAsync(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports AsyncIterables', async () => {
-        const example = Promise.resolve({
-          title: 'Hello World',
-          async* [Symbol.asyncIterator]() {
-            await Promise.resolve();
-            yield 1;
-            yield 2;
-            yield 3;
-          },
-        });
-        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        const result = await crossSerializeAsync(EXAMPLE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
     it('supports AsyncIterables', async () => new Promise<void>((done) => {
-      const example = Promise.resolve({
-        title: 'Hello World',
-        async* [Symbol.asyncIterator]() {
-          await Promise.resolve();
-          yield 1;
-          yield 2;
-          yield 3;
-        },
-      });
-      crossSerializeStream(example, {
+      crossSerializeStream(EXAMPLE, {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -107,16 +75,7 @@ describe('AsyncIterable', () => {
     }));
     describe('scoped', () => {
       it('supports AsyncIterables', async () => new Promise<void>((done) => {
-        const example = Promise.resolve({
-          title: 'Hello World',
-          async* [Symbol.asyncIterator]() {
-            await Promise.resolve();
-            yield 1;
-            yield 2;
-            yield 3;
-          },
-        });
-        crossSerializeStream(example, {
+        crossSerializeStream(EXAMPLE, {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -127,6 +86,33 @@ describe('AsyncIterable', () => {
         });
       }));
     });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports AsyncIterables', async () => {
+      const result = await toCrossJSONAsync(EXAMPLE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        refs: new Map(),
+      });
+      expect(back.title).toBe(EXAMPLE.title);
+      expect(Symbol.asyncIterator in back).toBe(true);
+      const iterator = back[Symbol.asyncIterator]();
+      expect((await iterator.next()).value).toBe(1);
+      expect((await iterator.next()).value).toBe(2);
+      expect((await iterator.next()).value).toBe(3);
+    });
+  });
+  describe('toCrossJSONStream', () => {
+    it('supports AsyncIterables', async () => new Promise<void>((done) => {
+      toCrossJSONStream(EXAMPLE, {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
   describe('compat', () => {
     it('should use function expressions instead of arrow functions.', async () => {
