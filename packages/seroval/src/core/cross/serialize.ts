@@ -20,8 +20,8 @@ import {
   GLOBAL_CONTEXT_STREAM_ERROR,
   GLOBAL_CONTEXT_API,
 } from '../keys';
-import type { BaseSerializerContextOptions } from '../serializer-context';
-import BaseSerializerContext from '../serializer-context';
+import type { BaseSerializerContextOptions } from '../context/serializer';
+import BaseSerializerContext from '../context/serializer';
 import type { SerovalMode } from '../plugin';
 import { serializeString } from '../string';
 import type { CrossContextOptions } from './cross-parser';

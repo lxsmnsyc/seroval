@@ -1,15 +1,15 @@
-import { Feature } from './compat';
+import { Feature } from '../compat';
 import {
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
   SYMBOL_STRING,
   SerovalNodeType,
   SerovalObjectFlags,
-} from './constants';
-import { createEffectfulFunction, createFunction } from './utils/function-string';
-import { REFERENCES_KEY } from './keys';
-import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
-import { SpecialReference } from './special-reference';
+} from '../constants';
+import { createEffectfulFunction, createFunction } from '../utils/function-string';
+import { REFERENCES_KEY } from '../keys';
+import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
+import { SpecialReference } from '../special-reference';
 import type {
   SerovalArrayNode,
   SerovalIndexedValueNode,
@@ -54,11 +54,11 @@ import type {
   SerovalMapSentinelNode,
   SerovalIteratorNode,
   SerovalAsyncIteratorNode,
-} from './types';
+} from '../types';
 import {
   SerovalObjectRecordSpecialKey,
-} from './types';
-import { isValidIdentifier } from './utils/is-valid-identifier';
+} from '../types';
+import { isValidIdentifier } from '../utils/is-valid-identifier';
 
 interface IndexAssignment {
   t: 'index';

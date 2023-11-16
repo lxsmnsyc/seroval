@@ -1,24 +1,24 @@
-import UnsupportedTypeError from './UnsupportedTypeError';
-import assert from './utils/assert';
+import UnsupportedTypeError from '../UnsupportedTypeError';
+import assert from '../utils/assert';
 import {
   createIndexedValueNode,
   createReferenceNode,
   createWKSymbolNode,
-} from './base-primitives';
-import { ALL_ENABLED, Feature } from './compat';
-import type { WellKnownSymbols } from './constants';
+} from '../base-primitives';
+import { ALL_ENABLED, Feature } from '../compat';
+import type { WellKnownSymbols } from '../constants';
 import {
   INV_SYMBOL_REF,
   SerovalNodeType,
-} from './constants';
-import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
-import { hasReferenceID } from './reference';
+} from '../constants';
+import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
+import { hasReferenceID } from '../reference';
 import {
   ASYNC_ITERATOR,
   ITERATOR,
   MAP_SENTINEL,
   SpecialReference,
-} from './special-reference';
+} from '../special-reference';
 import type {
   SerovalAsyncIteratorNode,
   SerovalIndexedValueNode,
@@ -31,8 +31,8 @@ import type {
   SerovalObjectRecordNode,
   SerovalReferenceNode,
   SerovalWKSymbolNode,
-} from './types';
-import { getObjectFlag } from './utils/get-object-flag';
+} from '../types';
+import { getObjectFlag } from '../utils/get-object-flag';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;

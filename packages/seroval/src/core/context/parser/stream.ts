@@ -1,18 +1,18 @@
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
-import UnsupportedTypeError from '../UnsupportedTypeError';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
+import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
   createArrayBufferNode,
   createDateNode,
   createPluginNode,
   createRegExpNode,
-} from '../base-primitives';
+} from '../../base-primitives';
 import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
-import { BIGINT_FLAG, Feature } from '../compat';
-import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../constants';
-import { createRequestOptions, createResponseOptions } from '../utils/constructors';
-import { NULL_NODE } from '../literals';
-import { serializeString } from '../string';
+import { BIGINT_FLAG, Feature } from '../../compat';
+import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../../constants';
+import { createRequestOptions, createResponseOptions } from '../../utils/constructors';
+import { NULL_NODE } from '../../literals';
+import { serializeString } from '../../string';
 import {
   SerovalObjectRecordSpecialKey,
   type SerovalNode,
@@ -23,9 +23,9 @@ import {
   type SerovalReadableStreamConstructorNode,
   type SerovalRequestNode,
   type SerovalResponseNode,
-} from '../types';
-import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
-import { asyncIteratorToReadableStream, iteratorToSequence } from '../utils/iterator-to-sequence';
+} from '../../types';
+import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
+import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
