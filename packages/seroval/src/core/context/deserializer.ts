@@ -29,6 +29,10 @@ import type {
   SerovalPromiseNode,
   SerovalPromiseRejectNode,
   SerovalPromiseResolveNode,
+  SerovalReadableStreamCloseNode,
+  SerovalReadableStreamConstructorNode,
+  SerovalReadableStreamEnqueueNode,
+  SerovalReadableStreamErrorNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalRequestNode,
@@ -52,8 +56,8 @@ import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import type { Sequence } from '../utils/iterator-to-sequence';
 import { sequenceToAsyncIterator, sequenceToIterator } from '../utils/iterator-to-sequence';
 import { getTypedArrayConstructor } from '../utils/typed-array';
-import type { Deferred } from '../utils/deferred';
-import { createDeferred } from '../utils/deferred';
+import type { Deferred, DeferredStream } from '../utils/deferred';
+import { createDeferred, createDeferredStream } from '../utils/deferred';
 import assert from '../utils/assert';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
@@ -293,14 +297,14 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     node: SerovalPromiseNode,
   ): Promise<unknown> {
     const deferred = createDeferred();
-    const result = this.assignIndexedValue(node.i, deferred.promise);
+    const result = this.assignIndexedValue(node.i, deferred);
     const deserialized = this.deserialize(node.f);
     if (node.s) {
-      deferred.promise.resolve(deserialized);
+      deferred.resolve(deserialized);
     } else {
-      deferred.promise.reject(deserialized);
+      deferred.reject(deserialized);
     }
-    return result;
+    return result.promise;
   }
 
   private deserializeURL(
@@ -452,8 +456,8 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializePromiseConstructor(node: SerovalPromiseConstructorNode): unknown {
     return this.assignIndexedValue(
       node.i,
-      createDeferred().promise,
-    );
+      createDeferred(),
+    ).promise;
   }
 
   private deserializePromiseResolve(node: SerovalPromiseResolveNode): unknown {
@@ -471,6 +475,40 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     deferred.reject(
       this.deserialize(node.f),
     );
+    return undefined;
+  }
+
+  private deserializeReadableStreamConstructor(
+    node: SerovalReadableStreamConstructorNode,
+  ): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      createDeferredStream(),
+    ).stream;
+  }
+
+  private deserializeReadableStreamEnqueue(node: SerovalReadableStreamEnqueueNode): unknown {
+    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
+    assert(deferred, new Error('Missing ReadableStream instance.'));
+    deferred.enqueue(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializeReadableStreamError(node: SerovalReadableStreamErrorNode): unknown {
+    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.error(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializeReadableStreamClose(node: SerovalReadableStreamCloseNode): unknown {
+    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.close();
     return undefined;
   }
 
@@ -549,9 +587,13 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
       case SerovalNodeType.PromiseReject:
         return this.deserializePromiseReject(node);
       case SerovalNodeType.ReadableStreamConstructor:
+        return this.deserializeReadableStreamConstructor(node);
       case SerovalNodeType.ReadableStreamEnqueue:
+        return this.deserializeReadableStreamEnqueue(node);
       case SerovalNodeType.ReadableStreamError:
+        return this.deserializeReadableStreamError(node);
       case SerovalNodeType.ReadableStreamClose:
+        return this.deserializeReadableStreamClose(node);
       case SerovalNodeType.MapSentinel:
       case SerovalNodeType.Iterator:
       case SerovalNodeType.AsyncIterator:
