@@ -78,7 +78,6 @@ type AssignableNode = SerovalAggregateErrorNode | SerovalErrorNode;
 
 export interface BaseDeserializerOptions extends PluginAccessOptions {
   refs?: Map<number, unknown>;
-  markedRefs: number[] | Set<number>;
 }
 
 export default abstract class BaseDeserializerContext implements PluginAccessOptions {
@@ -90,18 +89,11 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
    */
   refs: Map<number, unknown>;
 
-  /**
-   * Which refs are pre-marked
-   * @private
-   */
-  markedRefs: Set<number>;
-
   plugins?: Plugin<any, any>[] | undefined;
 
   constructor(options: BaseDeserializerOptions) {
     this.plugins = options.plugins;
     this.refs = options.refs || new Map<number, unknown>();
-    this.markedRefs = new Set(options.markedRefs);
   }
 
   protected abstract assignIndexedValue<T>(

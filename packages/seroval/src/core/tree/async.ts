@@ -6,11 +6,4 @@ export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>
 
 export default class AsyncParserContext extends BaseAsyncParserContext {
   readonly mode: SerovalMode = 'vanilla';
-
-  constructor(options: AsyncParserContextOptions) {
-    super({
-      plugins: options.plugins,
-      disabledFeatures: options.disabledFeatures,
-    });
-  }
 }

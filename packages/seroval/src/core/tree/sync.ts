@@ -6,11 +6,4 @@ export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 
 export default class SyncParserContext extends BaseSyncParserContext {
   readonly mode: SerovalMode = 'vanilla';
-
-  constructor(options: SyncParserContextOptions) {
-    super({
-      plugins: options.plugins,
-      disabledFeatures: options.disabledFeatures,
-    });
-  }
 }
