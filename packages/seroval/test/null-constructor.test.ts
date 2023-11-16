@@ -81,6 +81,23 @@ describe('null-constructor', () => {
       expect(back.constructor).toBeUndefined();
       expect([...back]).toMatchObject([1, 2, 3]);
     });
+    it('supports Symbol.asyncIterator', async () => {
+      const example = Object.assign(Object.create(null), {
+        async* [Symbol.asyncIterator]() {
+          await Promise.resolve();
+          yield 1;
+          await Promise.resolve();
+          yield 2;
+          await Promise.resolve();
+          yield 3;
+        },
+      }) as AsyncIterable<number>;
+      const result = await serializeAsync(example);
+      expect(result).toMatchSnapshot();
+      const back = deserialize<AsyncIterable<number>>(result);
+      expect(back.constructor).toBeUndefined();
+      expect(Symbol.asyncIterator in back).toBe(true);
+    });
   });
   describe('toJSON', () => {
     it('supports Object.create(null)', () => {
@@ -148,6 +165,23 @@ describe('null-constructor', () => {
       const back = await fromJSON<Promise<Iterable<number>>>(result);
       expect(back.constructor).toBeUndefined();
       expect([...back]).toMatchObject([1, 2, 3]);
+    });
+    it('supports Symbol.asyncIterator', async () => {
+      const example = Object.assign(Object.create(null), {
+        async* [Symbol.asyncIterator]() {
+          await Promise.resolve();
+          yield 1;
+          await Promise.resolve();
+          yield 2;
+          await Promise.resolve();
+          yield 3;
+        },
+      }) as AsyncIterable<number>;
+      const result = await toJSONAsync(example);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromJSON<AsyncIterable<number>>(result);
+      expect(back.constructor).toBeUndefined();
+      expect(Symbol.asyncIterator in back).toBe(true);
     });
   });
   describe('crossSerialize', () => {
@@ -224,6 +258,20 @@ describe('null-constructor', () => {
       const result = await crossSerializeAsync(example);
       expect(result).toMatchSnapshot();
     });
+    it('supports Symbol.asyncIterator', async () => {
+      const example = Object.assign(Object.create(null), {
+        async* [Symbol.asyncIterator]() {
+          await Promise.resolve();
+          yield 1;
+          await Promise.resolve();
+          yield 2;
+          await Promise.resolve();
+          yield 3;
+        },
+      }) as AsyncIterable<number>;
+      const result = await crossSerializeAsync(example);
+      expect(result).toMatchSnapshot();
+    });
     describe('scoped', () => {
       it('supports Objects', async () => {
         const example = Promise.resolve(Object.assign(Object.create(null), { hello: 'world' }) as { hello: string });
@@ -245,6 +293,20 @@ describe('null-constructor', () => {
             yield 3;
           },
         }) as Iterable<number>);
+        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        expect(result).toMatchSnapshot();
+      });
+      it('supports Symbol.asyncIterator', async () => {
+        const example = Object.assign(Object.create(null), {
+          async* [Symbol.asyncIterator]() {
+            await Promise.resolve();
+            yield 1;
+            await Promise.resolve();
+            yield 2;
+            await Promise.resolve();
+            yield 3;
+          },
+        }) as AsyncIterable<number>;
         const result = await crossSerializeAsync(example, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
@@ -292,6 +354,26 @@ describe('null-constructor', () => {
         },
       });
     }));
+    it('supports Symbol.asyncIterator', async () => new Promise<void>((done) => {
+      const example = Object.assign(Object.create(null), {
+        async* [Symbol.asyncIterator]() {
+          await Promise.resolve();
+          yield 1;
+          await Promise.resolve();
+          yield 2;
+          await Promise.resolve();
+          yield 3;
+        },
+      }) as AsyncIterable<number>;
+      crossSerializeStream(example, {
+        onSerialize(data) {
+          expect(data).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
     describe('scoped', () => {
       it('supports Objects', async () => new Promise<void>((done) => {
         const example = Promise.resolve(Object.assign(Object.create(null), { hello: 'world' }) as { hello: string });
@@ -327,6 +409,27 @@ describe('null-constructor', () => {
             yield 3;
           },
         }) as Iterable<number>);
+        crossSerializeStream(example, {
+          scopeId: 'example',
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            done();
+          },
+        });
+      }));
+      it('supports Symbol.asyncIterator', async () => new Promise<void>((done) => {
+        const example = Object.assign(Object.create(null), {
+          async* [Symbol.asyncIterator]() {
+            await Promise.resolve();
+            yield 1;
+            await Promise.resolve();
+            yield 2;
+            await Promise.resolve();
+            yield 3;
+          },
+        }) as AsyncIterable<number>;
         crossSerializeStream(example, {
           scopeId: 'example',
           onSerialize(data) {

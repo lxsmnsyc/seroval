@@ -132,7 +132,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       if (Symbol.asyncIterator in properties) {
         keyNodes.push(SerovalObjectRecordSpecialKey.SymbolAsyncIterator);
         valueNodes.push(
-          await this.parse(asyncIteratorToSequence(properties as AsyncIterable<unknown>)),
+          await this.parse(await asyncIteratorToSequence(properties as AsyncIterable<unknown>)),
         );
       }
     }

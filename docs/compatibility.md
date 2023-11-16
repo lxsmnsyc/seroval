@@ -48,7 +48,8 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Compiles down to `Error` instead.
 - [`ArrowFunction`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
   - Uses function expressions for top-level and for deferred `Promise` values
-  - method shorthands (if `MethodShortand` is not set) or function expressions for `Iterable`.
+  - Uses function expressions for `Iterable`
+  - Uses function expressions for `AsyncIterable`
 - [`BigInt`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
   - Disables serialization of `BigInt`, `BigInt64Array` and `BigUint64Array`
 - [`ErrorPrototypeStack`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack)

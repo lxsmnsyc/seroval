@@ -28,7 +28,7 @@ describe('Iterable', () => {
       expect(result).toMatchSnapshot();
       const back = deserialize<Iterable<number> & { title: string }>(result);
       expect(back.title).toBe(example.title);
-      expect(Symbol.iterator in back).toBeTruthy();
+      expect(Symbol.iterator in back).toBe(true);
       const iterator = back[Symbol.iterator]();
       expect(iterator.next().value).toBe(1);
       expect(iterator.next().value).toBe(2);
@@ -49,7 +49,7 @@ describe('Iterable', () => {
       expect(result).toMatchSnapshot();
       const back = await deserialize<typeof example>(result);
       expect(back.title).toBe((await example).title);
-      expect(Symbol.iterator in back).toBeTruthy();
+      expect(Symbol.iterator in back).toBe(true);
       const iterator = back[Symbol.iterator]();
       expect(iterator.next().value).toBe(1);
       expect(iterator.next().value).toBe(2);
@@ -70,7 +70,7 @@ describe('Iterable', () => {
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Iterable<number> & { title: string }>(result);
       expect(back.title).toBe(example.title);
-      expect(Symbol.iterator in back).toBeTruthy();
+      expect(Symbol.iterator in back).toBe(true);
       const iterator = back[Symbol.iterator]();
       expect(iterator.next().value).toBe(1);
       expect(iterator.next().value).toBe(2);
@@ -91,7 +91,7 @@ describe('Iterable', () => {
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<typeof example>(result);
       expect(back.title).toBe((await example).title);
-      expect(Symbol.iterator in back).toBeTruthy();
+      expect(Symbol.iterator in back).toBe(true);
       const iterator = back[Symbol.iterator]();
       expect(iterator.next().value).toBe(1);
       expect(iterator.next().value).toBe(2);
@@ -196,17 +196,7 @@ describe('Iterable', () => {
     });
   });
   describe('compat', () => {
-    it('should use method shorthand instead of arrow functions.', () => {
-      const example = {
-        * [Symbol.iterator](): unknown {
-          yield example;
-        },
-      };
-      expect(serialize(example, {
-        disabledFeatures: Feature.ArrowFunction,
-      })).toMatchSnapshot();
-    });
-    it('should use functions instead of method shorthand.', () => {
+    it('should use function expression instead of arrow functions.', () => {
       const example = {
         * [Symbol.iterator](): unknown {
           yield example;
@@ -218,19 +208,7 @@ describe('Iterable', () => {
     });
   });
   describe('compat#toJSON', () => {
-    it('should use method shorthand instead of arrow functions.', () => {
-      const example = {
-        * [Symbol.iterator](): unknown {
-          yield example;
-        },
-      };
-      const result = toJSON(example, {
-        disabledFeatures: Feature.ArrowFunction,
-      });
-      expect(JSON.stringify(result)).toMatchSnapshot();
-      expect(compileJSON(result)).toMatchSnapshot();
-    });
-    it('should use functions instead of method shorthand.', () => {
+    it('should use function expression instead of arrow functions.', () => {
       const example = {
         * [Symbol.iterator](): unknown {
           yield example;
