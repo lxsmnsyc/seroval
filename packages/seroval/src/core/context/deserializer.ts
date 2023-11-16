@@ -45,7 +45,7 @@ import {
   SerovalNodeType,
   SerovalObjectFlags,
 } from '../constants';
-import type { Plugin, PluginAccessOptions } from '../plugin';
+import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import type { Sequence } from '../utils/iterator-to-sequence';
 import { sequenceToAsyncIterator, sequenceToIterator } from '../utils/iterator-to-sequence';
 import { getTypedArrayConstructor } from '../utils/typed-array';
@@ -89,36 +89,40 @@ function createDeferred(): Deferred {
   };
 }
 
-export interface DeserializerOptions extends PluginAccessOptions {
+export interface BaseDeserializerOptions extends PluginAccessOptions {
+  refs?: Map<number, unknown>;
   markedRefs: number[] | Set<number>;
 }
 
-export default class VanillaDeserializerContext implements PluginAccessOptions {
+export default abstract class BaseDeserializerContext implements PluginAccessOptions {
+  abstract readonly mode: SerovalMode;
+
   /**
    * Mapping ids to values
    * @private
    */
-  values: Map<number, unknown> = new Map();
+  refs: Map<number, unknown>;
 
   /**
    * Which refs are pre-marked
    * @private
    */
-  refs: Set<number>;
+  markedRefs: Set<number>;
 
   plugins?: Plugin<any, any>[] | undefined;
 
-  constructor(options: DeserializerOptions) {
+  constructor(options: BaseDeserializerOptions) {
     this.plugins = options.plugins;
-    this.refs = new Set(options.markedRefs);
+    this.refs = options.refs || new Map<number, unknown>();
+    this.markedRefs = new Set(options.markedRefs);
   }
 
   assignIndexedValue<T>(
     index: number,
     value: T,
   ): T {
-    if (this.refs.has(index)) {
-      this.values.set(index, value);
+    if (this.markedRefs.has(index)) {
+      this.refs.set(index, value);
     }
     return value;
   }
@@ -478,7 +482,7 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
       case SerovalNodeType.BigInt:
         return BigInt(node.s);
       case SerovalNodeType.IndexedValue:
-        return this.values.get(node.i);
+        return this.refs.get(node.i);
       case SerovalNodeType.Reference:
         return this.deserializeReference(node);
       case SerovalNodeType.Array:

@@ -1,7 +1,7 @@
 import type { CrossAsyncParserContextOptions } from './async';
 import AsyncCrossParserContext from './async';
-import type { CrossContextOptions } from './cross-parser';
-import CrossSerializerContext from './serialize';
+import type { CrossContextOptions } from './parser';
+import CrossSerializerContext from './serializer';
 import type { CrossStreamParserContextOptions } from './stream';
 import StreamCrossParserContext from './stream';
 import type { CrossSyncParserContextOptions } from './sync';
