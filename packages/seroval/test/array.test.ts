@@ -9,41 +9,50 @@ import {
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
+  toCrossJSONStream,
+  toCrossJSONAsync,
+  fromCrossJSON,
+  toCrossJSON,
 } from '../src';
+
+const EXAMPLE = [1, 2, 3];
+
+const RECURSIVE_EXAMPLE: unknown[] = [];
+RECURSIVE_EXAMPLE[0] = RECURSIVE_EXAMPLE;
+RECURSIVE_EXAMPLE[1] = RECURSIVE_EXAMPLE;
+
+const ASYNC_RECURSIVE_EXAMPLE: Promise<unknown>[] = [];
+ASYNC_RECURSIVE_EXAMPLE[0] = Promise.resolve(ASYNC_RECURSIVE_EXAMPLE);
+ASYNC_RECURSIVE_EXAMPLE[1] = Promise.resolve(ASYNC_RECURSIVE_EXAMPLE);
 
 describe('arrays', () => {
   describe('serialize', () => {
     it('supports Arrays', () => {
-      const example = [1, 2, 3];
-      const result = serialize(example);
+      const result = serialize(EXAMPLE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<number[]>(result);
+      const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Array);
-      expect(back[0]).toBe(example[0]);
-      expect(back[1]).toBe(example[1]);
-      expect(back[2]).toBe(example[2]);
+      expect(back[0]).toBe(EXAMPLE[0]);
+      expect(back[1]).toBe(EXAMPLE[1]);
+      expect(back[2]).toBe(EXAMPLE[2]);
     });
     it('supports self recursion', () => {
-      const example: unknown[] = [];
-      example[0] = example;
-      example[1] = example;
-      const result = serialize(example);
+      const result = serialize(RECURSIVE_EXAMPLE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<unknown[]>(result);
+      const back = deserialize<typeof RECURSIVE_EXAMPLE>(result);
       expect(back[0]).toBe(back);
       expect(back[1]).toBe(back);
     });
   });
   describe('serializeAsync', () => {
     it('supports Arrays', async () => {
-      const example = [1, 2, 3];
-      const result = await serializeAsync(Promise.resolve(example));
+      const result = await serializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
-      const back = await deserialize<Promise<number[]>>(result);
+      const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Array);
-      expect(back[0]).toBe(example[0]);
-      expect(back[1]).toBe(example[1]);
-      expect(back[2]).toBe(example[2]);
+      expect(back[0]).toBe(EXAMPLE[0]);
+      expect(back[1]).toBe(EXAMPLE[1]);
+      expect(back[2]).toBe(EXAMPLE[2]);
     });
     it('supports self recursion', async () => {
       const example: Promise<unknown>[] = [];
@@ -58,108 +67,83 @@ describe('arrays', () => {
   });
   describe('toJSON', () => {
     it('supports Arrays', () => {
-      const example = [1, 2, 3];
-      const result = toJSON(example);
+      const result = toJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<number[]>(result);
+      const back = fromJSON<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Array);
-      expect(back[0]).toBe(example[0]);
-      expect(back[1]).toBe(example[1]);
-      expect(back[2]).toBe(example[2]);
+      expect(back[0]).toBe(EXAMPLE[0]);
+      expect(back[1]).toBe(EXAMPLE[1]);
+      expect(back[2]).toBe(EXAMPLE[2]);
     });
     it('supports self recursion', () => {
-      const example: unknown[] = [];
-      example[0] = example;
-      example[1] = example;
-      const result = toJSON(example);
+      const result = toJSON(RECURSIVE_EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<unknown[]>(result);
+      const back = fromJSON<typeof RECURSIVE_EXAMPLE>(result);
       expect(back[0]).toBe(back);
       expect(back[1]).toBe(back);
     });
   });
   describe('toJSONAsync', () => {
     it('supports Arrays', async () => {
-      const example = [1, 2, 3];
-      const result = await toJSONAsync(Promise.resolve(example));
+      const result = await toJSONAsync(Promise.resolve(EXAMPLE));
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<Promise<number[]>>(result);
+      const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Array);
-      expect(back[0]).toBe(example[0]);
-      expect(back[1]).toBe(example[1]);
-      expect(back[2]).toBe(example[2]);
+      expect(back[0]).toBe(EXAMPLE[0]);
+      expect(back[1]).toBe(EXAMPLE[1]);
+      expect(back[2]).toBe(EXAMPLE[2]);
     });
     it('supports self recursion', async () => {
-      const example: Promise<unknown>[] = [];
-      example[0] = Promise.resolve(example);
-      example[1] = Promise.resolve(example);
-      const result = await toJSONAsync(example);
+      const result = await toJSONAsync(ASYNC_RECURSIVE_EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof example>(result);
+      const back = fromJSON<typeof ASYNC_RECURSIVE_EXAMPLE>(result);
       expect(await back[0]).toBe(back);
       expect(await back[1]).toBe(back);
     });
   });
   describe('crossSerialize', () => {
     it('supports Arrays', () => {
-      const example = [1, 2, 3];
-      const result = crossSerialize(example);
+      const result = crossSerialize(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     it('supports self recursion', () => {
-      const example: unknown[] = [];
-      example[0] = example;
-      example[1] = example;
-      const result = crossSerialize(example);
+      const result = crossSerialize(RECURSIVE_EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports Arrays', () => {
-        const example = [1, 2, 3];
-        const result = crossSerialize(example, { scopeId: 'example' });
+        const result = crossSerialize(EXAMPLE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
       it('supports self recursion', () => {
-        const example: unknown[] = [];
-        example[0] = example;
-        example[1] = example;
-        const result = crossSerialize(example, { scopeId: 'example' });
+        const result = crossSerialize(RECURSIVE_EXAMPLE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports Arrays', async () => {
-      const example = [1, 2, 3];
-      const result = await crossSerializeAsync(Promise.resolve(example));
+      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
     });
     it('supports self recursion', async () => {
-      const example: Promise<unknown>[] = [];
-      example[0] = Promise.resolve(example);
-      example[1] = Promise.resolve(example);
-      const result = await crossSerializeAsync(example);
+      const result = await crossSerializeAsync(ASYNC_RECURSIVE_EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports Arrays', async () => {
-        const example = [1, 2, 3];
-        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
       it('supports self recursion', async () => {
-        const example: Promise<unknown>[] = [];
-        example[0] = Promise.resolve(example);
-        example[1] = Promise.resolve(example);
-        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        const result = await crossSerializeAsync(ASYNC_RECURSIVE_EXAMPLE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
     it('supports Arrays', async () => new Promise<void>((done) => {
-      const example = [1, 2, 3];
-      crossSerializeStream(Promise.resolve(example), {
+      crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -169,10 +153,7 @@ describe('arrays', () => {
       });
     }));
     it('supports self recursion', async () => new Promise<void>((done) => {
-      const example: Promise<unknown>[] = [];
-      example[0] = Promise.resolve(example);
-      example[1] = Promise.resolve(example);
-      crossSerializeStream(example, {
+      crossSerializeStream(ASYNC_RECURSIVE_EXAMPLE, {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -183,8 +164,7 @@ describe('arrays', () => {
     }));
     describe('scoped', () => {
       it('supports Arrays', async () => new Promise<void>((done) => {
-        const example = [1, 2, 3];
-        crossSerializeStream(Promise.resolve(example), {
+        crossSerializeStream(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -195,10 +175,7 @@ describe('arrays', () => {
         });
       }));
       it('supports self recursion', async () => new Promise<void>((done) => {
-        const example: Promise<unknown>[] = [];
-        example[0] = Promise.resolve(example);
-        example[1] = Promise.resolve(example);
-        crossSerializeStream(example, {
+        crossSerializeStream(ASYNC_RECURSIVE_EXAMPLE, {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -209,5 +186,71 @@ describe('arrays', () => {
         });
       }));
     });
+  });
+  describe('toCrossJSON', () => {
+    it('supports Arrays', () => {
+      const result = toCrossJSON(EXAMPLE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Array);
+      expect(back[0]).toBe(EXAMPLE[0]);
+      expect(back[1]).toBe(EXAMPLE[1]);
+      expect(back[2]).toBe(EXAMPLE[2]);
+    });
+    it('supports self recursion', () => {
+      const result = toCrossJSON(RECURSIVE_EXAMPLE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof RECURSIVE_EXAMPLE>(result, {
+        refs: new Map(),
+      });
+      expect(back[0]).toBe(back);
+      expect(back[1]).toBe(back);
+    });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports Arrays', async () => {
+      const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Array);
+      expect(back[0]).toBe(EXAMPLE[0]);
+      expect(back[1]).toBe(EXAMPLE[1]);
+      expect(back[2]).toBe(EXAMPLE[2]);
+    });
+    it('supports self recursion', async () => {
+      const result = await toCrossJSONAsync(ASYNC_RECURSIVE_EXAMPLE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof ASYNC_RECURSIVE_EXAMPLE>(result, {
+        refs: new Map(),
+      });
+      expect(await back[0]).toBe(back);
+      expect(await back[1]).toBe(back);
+    });
+  });
+  describe('toCrossJSONStream', () => {
+    it('supports Arrays', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(EXAMPLE), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports self recursion', async () => new Promise<void>((done) => {
+      toCrossJSONStream(ASYNC_RECURSIVE_EXAMPLE, {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });

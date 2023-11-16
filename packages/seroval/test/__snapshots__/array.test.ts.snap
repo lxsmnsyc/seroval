@@ -44,6 +44,24 @@ exports[`arrays > serializeAsync > supports Arrays 1`] = `"Promise.resolve([1,2,
 
 exports[`arrays > serializeAsync > supports self recursion 1`] = `"(h=>(h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]))()"`;
 
+exports[`arrays > toCrossJSON > supports Arrays 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}"`;
+
+exports[`arrays > toCrossJSON > supports self recursion 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":4,\\"i\\":0}],\\"o\\":0}"`;
+
+exports[`arrays > toCrossJSONAsync > supports Arrays 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}}"`;
+
+exports[`arrays > toCrossJSONAsync > supports self recursion 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}},{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"o\\":0}"`;
+
+exports[`arrays > toCrossJSONStream > supports Arrays 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`arrays > toCrossJSONStream > supports Arrays 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}}"`;
+
+exports[`arrays > toCrossJSONStream > supports self recursion 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":28,\\"i\\":1},{\\"t\\":28,\\"i\\":2}],\\"o\\":0}"`;
+
+exports[`arrays > toCrossJSONStream > supports self recursion 2`] = `"{\\"t\\":29,\\"i\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}"`;
+
+exports[`arrays > toCrossJSONStream > supports self recursion 3`] = `"{\\"t\\":29,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":0}}"`;
+
 exports[`arrays > toJSON > supports Arrays 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`arrays > toJSON > supports self recursion 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":4,\\"i\\":0},{\\"t\\":4,\\"i\\":0}],\\"o\\":0},\\"f\\":16383,\\"m\\":[0]}"`;
