@@ -6,4 +6,11 @@ export type VanillaDeserializerContextOptions = Omit<BaseDeserializerOptions, 'r
 
 export default class VanillaDeserializerContext extends BaseDeserializerContext {
   readonly mode: SerovalMode = 'vanilla';
+
+  constructor(options: VanillaDeserializerContextOptions) {
+    super({
+      plugins: options.plugins,
+      markedRefs: options.markedRefs,
+    });
+  }
 }
