@@ -56,26 +56,18 @@ export async function crossSerializeAsync<T>(
   return serial.serializeTop(tree);
 }
 
-export interface SerovalCrossJSON {
-  t: SerovalNode;
-  f: number;
-}
-
 export type ToCrossJSONOptions = CrossParserContextOptions;
 
 export function toCrossJSON<T>(
   source: T,
   options: CrossParserContextOptions = {},
-): SerovalCrossJSON {
+): SerovalNode {
   const ctx = new SyncCrossParserContext({
     plugins: options.plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  return {
-    t: ctx.parse(source),
-    f: ctx.features,
-  };
+  return ctx.parse(source);
 }
 
 export type ToCrossJSONAsyncOptions = CrossParserContextOptions;
@@ -83,16 +75,13 @@ export type ToCrossJSONAsyncOptions = CrossParserContextOptions;
 export async function toCrossJSONAsync<T>(
   source: T,
   options: CrossParserContextOptions = {},
-): Promise<SerovalCrossJSON> {
+): Promise<SerovalNode> {
   const ctx = new AsyncCrossParserContext({
     plugins: options.plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  return {
-    t: await ctx.parse(source),
-    f: ctx.features,
-  };
+  return ctx.parse(source);
 }
 
 export interface CrossSerializeStreamOptions
@@ -166,12 +155,12 @@ export function toCrossJSONStream<T>(
 export type FromCrossJSONOptions = CrossDeserializerContextOptions;
 
 export function fromCrossJSON<T>(
-  source: SerovalCrossJSON,
+  source: SerovalNode,
   options: FromCrossJSONOptions,
 ): T {
   const ctx = new CrossDeserializerContext({
     plugins: options.plugins,
     refs: options.refs,
   });
-  return ctx.deserialize(source.t) as T;
+  return ctx.deserialize(source) as T;
 }
