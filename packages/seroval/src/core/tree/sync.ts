@@ -1,4 +1,4 @@
-import BaseSyncParserContext from '../base/sync';
+import BaseSyncParserContext from '../base-parser/sync';
 import type { BaseParserContextOptions } from '../parser-context';
 import type { SerovalMode } from '../plugin';
 

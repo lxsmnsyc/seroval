@@ -1,6 +1,6 @@
-import type BaseAsyncParserContext from './base/async';
-import type BaseStreamParserContext from './base/stream';
-import type BaseSyncParserContext from './base/sync';
+import type BaseAsyncParserContext from './base-parser/async';
+import type BaseStreamParserContext from './base-parser/stream';
+import type BaseSyncParserContext from './base-parser/sync';
 import type BaseSerializerContext from './serializer-context';
 import type VanillaDeserializerContext from './tree/deserialize';
 
