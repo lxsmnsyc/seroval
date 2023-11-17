@@ -20,6 +20,14 @@ exports[`DataView > serialize > supports DataView 1`] = `"new DataView(new Uint8
 
 exports[`DataView > serializeAsync > supports DataView 1`] = `"Promise.resolve(new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
+exports[`DataView > toCrossJSON > supports DataView 1`] = `"{\\"t\\":22,\\"i\\":0,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":1,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}"`;
+
+exports[`DataView > toCrossJSONAsync > supports DataView 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":22,\\"i\\":1,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}}"`;
+
+exports[`DataView > toCrossJSONStream > supports DataView 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`DataView > toCrossJSONStream > supports DataView 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":22,\\"i\\":1,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}}"`;
+
 exports[`DataView > toJSON > supports DataView 1`] = `"{\\"t\\":{\\"t\\":22,\\"i\\":0,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":1,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`DataView > toJSONAsync > supports DataView 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":22,\\"i\\":1,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}},\\"f\\":16383,\\"m\\":[]}"`;
