@@ -1080,12 +1080,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       createFunction(
         this.features,
         ['s'],
-        '(' + createFunction(
+        createFunction(
           this.features,
           ['i', 'c', 'd', 't'],
           '(i=0,t={[' + this.serialize(node.x[SpecialReference.SymbolIterator]) + ']:' + createFunction(this.features, [], 't') + ','
             + 'next:' + createEffectfulFunction(this.features, [], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
-        ) + ')',
+        ),
       ),
     );
   }
@@ -1096,12 +1096,20 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       createFunction(
         this.features,
         ['s'],
-        '(' + createFunction(
+        createFunction(
           this.features,
-          ['i', 'c', 'd', 't'],
+          ['i', 't'],
           '(i=0,t={[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 't') + ','
-            + 'next:async ' + createEffectfulFunction(this.features, [], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
-        ) + ')',
+            + 'next:' + createFunction(
+            this.features,
+            [],
+            'Promise.resolve().then(' + createEffectfulFunction(
+              this.features,
+              ['c', 'd'],
+              'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
+            ) + ')',
+          ) + '})',
+        ),
       ),
     );
   }

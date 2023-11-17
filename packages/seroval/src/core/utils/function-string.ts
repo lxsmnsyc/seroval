@@ -11,7 +11,7 @@ export function createFunction(
       : '(' + parameters.join(',') + ')';
     return joined + '=>' + body;
   }
-  return 'function(' + parameters.join(',') + '){return' + body + '}';
+  return 'function(' + parameters.join(',') + '){return ' + body + '}';
 }
 
 export function createEffectfulFunction(

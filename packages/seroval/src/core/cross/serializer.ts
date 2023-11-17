@@ -104,7 +104,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       createFunction(
         this.features,
         ['s'],
-        '(' + createFunction(
+        createFunction(
           this.features,
           ['b'],
           '(b=s.tee(),s=b[0],b=b[1].getReader(),{[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 'this') + ','
@@ -117,7 +117,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
               'if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}',
             ) + ')',
           ) + '})',
-        ) + ')',
+        ),
       ),
     );
   }
