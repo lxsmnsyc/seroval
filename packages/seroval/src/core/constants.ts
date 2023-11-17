@@ -52,8 +52,8 @@ export const enum SerovalNodeType {
   DOMException = 39,
   Plugin = 40,
   MapSentinel = 41,
-  Iterator = 42,
-  AsyncIterator = 43,
+  IteratorFactory = 42,
+  AsyncIteratorFactory = 43,
 }
 
 export const enum SerovalObjectFlags {

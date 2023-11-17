@@ -393,46 +393,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(node.i, REFERENCES_KEY + '.get("' + node.s + '")');
   }
 
-  protected serializeIterable(
-    source: SerovalNodeWithProperties,
-    node: SerovalNode,
-  ): string {
-    if (
-      source.x
-      && source.x[SpecialReference.SymbolIterator]
-      && source.x[SpecialReference.Iterator]
-    ) {
-      const key = '[' + this.serialize(source.x[SpecialReference.SymbolIterator]) + ']:';
-      const parent = this.stack;
-      this.stack = [];
-      const serialized = this.serialize(node);
-      this.stack = parent;
-      const constructor = this.serialize(source.x[SpecialReference.Iterator]);
-      return key + '(' + constructor + ')(' + serialized + ')';
-    }
-    return '';
-  }
-
-  protected serializeAsyncIterable(
-    source: SerovalNodeWithProperties,
-    node: SerovalNode,
-  ): string {
-    if (
-      source.x
-      && source.x[SpecialReference.SymbolAsyncIterator]
-      && source.x[SpecialReference.AsyncIterator]
-    ) {
-      const key = '[' + this.serialize(source.x[SpecialReference.SymbolAsyncIterator]) + ']:';
-      const parent = this.stack;
-      this.stack = [];
-      const serialized = this.serialize(node);
-      this.stack = parent;
-      const constructor = this.serialize(source.x[SpecialReference.AsyncIterator]);
-      return key + '(' + constructor + ')(' + serialized + ')';
-    }
-    return '';
-  }
-
   protected serializeArrayItem(
     id: number,
     item: SerovalNode | undefined,
@@ -486,9 +446,35 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     // E.g. Symbol.asyncIterator
     switch (key) {
       case SerovalObjectRecordSpecialKey.SymbolIterator:
-        return this.serializeIterable(source, val);
+        if (
+          source.x
+          && source.x[SpecialReference.SymbolIterator]
+          && source.x[SpecialReference.IteratorFactory]
+        ) {
+          const serialKey = '[' + this.serialize(source.x[SpecialReference.SymbolIterator]) + ']:';
+          const parent = this.stack;
+          this.stack = [];
+          const serialized = this.serialize(val);
+          this.stack = parent;
+          const constructor = this.serialize(source.x[SpecialReference.IteratorFactory]);
+          return serialKey + '(' + constructor + ')(' + serialized + ')';
+        }
+        return '';
       case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
-        return this.serializeAsyncIterable(source, val);
+        if (
+          source.x
+          && source.x[SpecialReference.SymbolAsyncIterator]
+          && source.x[SpecialReference.AsyncIteratorFactory]
+        ) {
+          const serialKey = '[' + this.serialize(source.x[SpecialReference.SymbolAsyncIterator]) + ']:';
+          const parent = this.stack;
+          this.stack = [];
+          const serialized = this.serialize(val);
+          this.stack = parent;
+          const constructor = this.serialize(source.x[SpecialReference.AsyncIteratorFactory]);
+          return serialKey + '(' + constructor + ')(' + serialized + ')';
+        }
+        return '';
       default: {
         const check = Number(key);
         // Test if key is a valid number or JS identifier
@@ -559,7 +545,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalObjectRecordSpecialKey.SymbolIterator:
         if (
           source.x
-          && source.x[SpecialReference.Iterator]
+          && source.x[SpecialReference.IteratorFactory]
           && source.x[SpecialReference.SymbolIterator]
         ) {
           const parent = this.stack;
@@ -571,7 +557,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
           this.createArrayAssign(
             source.i,
             this.serialize(source.x[SpecialReference.SymbolIterator]),
-            '(' + this.serialize(source.x[SpecialReference.Iterator]) + ')(' + serialized + ')',
+            '(' + this.serialize(source.x[SpecialReference.IteratorFactory]) + ')(' + serialized + ')',
           );
           this.assignments = parentAssignment;
         }
@@ -579,7 +565,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
         if (
           source.x
-          && source.x[SpecialReference.AsyncIterator]
+          && source.x[SpecialReference.AsyncIteratorFactory]
           && source.x[SpecialReference.SymbolAsyncIterator]
         ) {
           const parent = this.stack;
@@ -591,7 +577,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
           this.createArrayAssign(
             source.i,
             this.serialize(source.x[SpecialReference.SymbolAsyncIterator]),
-            '(' + this.serialize(source.x[SpecialReference.AsyncIterator]) + ')(' + serialized + ')',
+            '(' + this.serialize(source.x[SpecialReference.AsyncIteratorFactory]) + ')(' + serialized + ')',
           );
           this.assignments = parentAssignment;
         }
@@ -1199,9 +1185,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePlugin(node);
       case SerovalNodeType.MapSentinel:
         return this.serializeMapSentinel(node);
-      case SerovalNodeType.Iterator:
+      case SerovalNodeType.IteratorFactory:
         return this.serializeIterator(node);
-      case SerovalNodeType.AsyncIterator:
+      case SerovalNodeType.AsyncIteratorFactory:
         return this.serializeAsyncIterator(node);
       default:
         throw new Error('invariant');

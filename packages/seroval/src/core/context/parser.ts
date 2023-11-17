@@ -139,7 +139,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     };
   }
 
-  protected parseIterator(): SerovalIndexedValueNode | SerovalIteratorNode {
+  protected parseIteratorFactory(): SerovalIndexedValueNode | SerovalIteratorNode {
     const registeredID = this.refs.get(ITERATOR);
     if (registeredID != null) {
       this.markRef(registeredID);
@@ -148,7 +148,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     const id = this.refs.size;
     this.refs.set(ITERATOR, id);
     return {
-      t: SerovalNodeType.Iterator,
+      t: SerovalNodeType.IteratorFactory,
       i: id,
       s: undefined,
       l: undefined,
@@ -163,12 +163,14 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       x: {
         [SpecialReference.Sentinel]: undefined,
         [SpecialReference.SymbolIterator]: this.parseWKSymbol(Symbol.iterator),
-        [SpecialReference.Iterator]: undefined,
+        [SpecialReference.IteratorFactory]: undefined,
+        [SpecialReference.SymbolAsyncIterator]: undefined,
+        [SpecialReference.AsyncIteratorFactory]: undefined,
       },
     };
   }
 
-  protected parseAsyncIterator(): SerovalIndexedValueNode | SerovalAsyncIteratorNode {
+  protected parseAsyncIteratorFactory(): SerovalIndexedValueNode | SerovalAsyncIteratorNode {
     const registeredID = this.refs.get(ASYNC_ITERATOR);
     if (registeredID != null) {
       this.markRef(registeredID);
@@ -177,7 +179,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     const id = this.refs.size;
     this.refs.set(ASYNC_ITERATOR, id);
     return {
-      t: SerovalNodeType.AsyncIterator,
+      t: SerovalNodeType.AsyncIteratorFactory,
       i: id,
       s: undefined,
       l: undefined,
@@ -192,9 +194,9 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       x: {
         [SpecialReference.Sentinel]: undefined,
         [SpecialReference.SymbolIterator]: undefined,
-        [SpecialReference.Iterator]: undefined,
+        [SpecialReference.IteratorFactory]: undefined,
         [SpecialReference.SymbolAsyncIterator]: this.parseWKSymbol(Symbol.asyncIterator),
-        [SpecialReference.AsyncIterator]: undefined,
+        [SpecialReference.AsyncIteratorFactory]: undefined,
       },
     };
   }
@@ -225,9 +227,9 @@ export abstract class BaseParserContext implements PluginAccessOptions {
             ? this.parseWKSymbol(Symbol.iterator)
             : undefined
         ),
-        [SpecialReference.Iterator]: (
+        [SpecialReference.IteratorFactory]: (
           this.features & Feature.Symbol && Symbol.iterator in current
-            ? this.parseIterator()
+            ? this.parseIteratorFactory()
             : undefined
         ),
         [SpecialReference.SymbolAsyncIterator]: (
@@ -235,9 +237,9 @@ export abstract class BaseParserContext implements PluginAccessOptions {
             ? this.parseWKSymbol(Symbol.asyncIterator)
             : undefined
         ),
-        [SpecialReference.AsyncIterator]: (
+        [SpecialReference.AsyncIteratorFactory]: (
           this.features & Feature.Symbol && Symbol.asyncIterator in current
-            ? this.parseAsyncIterator()
+            ? this.parseAsyncIteratorFactory()
             : undefined
         ),
       },
@@ -266,9 +268,9 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       x: {
         [SpecialReference.Sentinel]: this.parseMapSentinel(),
         [SpecialReference.SymbolIterator]: undefined,
-        [SpecialReference.Iterator]: undefined,
+        [SpecialReference.IteratorFactory]: undefined,
         [SpecialReference.SymbolAsyncIterator]: undefined,
-        [SpecialReference.AsyncIterator]: undefined,
+        [SpecialReference.AsyncIteratorFactory]: undefined,
       },
     };
   }

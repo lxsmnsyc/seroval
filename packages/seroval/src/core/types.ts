@@ -193,9 +193,9 @@ export interface SerovalArrayNode extends SerovalBaseNode {
 
 export interface SerovalObjectX extends SerovalX {
   [SpecialReference.SymbolIterator]: SerovalNodeWithID | undefined;
-  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.IteratorFactory]: SerovalNodeWithID | undefined;
   [SpecialReference.SymbolAsyncIterator]: SerovalNodeWithID | undefined;
-  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.AsyncIteratorFactory]: SerovalNodeWithID | undefined;
 }
 
 export interface SerovalObjectNode extends SerovalBaseNode {
@@ -209,9 +209,9 @@ export interface SerovalObjectNode extends SerovalBaseNode {
 
 export interface SerovalNullConstructorX extends SerovalX {
   [SpecialReference.SymbolIterator]: SerovalNodeWithID | undefined;
-  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.IteratorFactory]: SerovalNodeWithID | undefined;
   [SpecialReference.SymbolAsyncIterator]: SerovalNodeWithID | undefined;
-  [SpecialReference.Iterator]: SerovalNodeWithID | undefined;
+  [SpecialReference.IteratorFactory]: SerovalNodeWithID | undefined;
 }
 
 export interface SerovalNullConstructorNode extends SerovalBaseNode {
@@ -431,7 +431,7 @@ export interface SerovalIteratorX extends SerovalX {
 }
 
 export interface SerovalIteratorNode extends SerovalBaseNode {
-  t: SerovalNodeType.Iterator;
+  t: SerovalNodeType.IteratorFactory;
   i: number;
   x: SerovalIteratorX;
 }
@@ -441,7 +441,7 @@ export interface SerovalAsyncIteratorX extends SerovalX {
 }
 
 export interface SerovalAsyncIteratorNode extends SerovalBaseNode {
-  t: SerovalNodeType.AsyncIterator;
+  t: SerovalNodeType.AsyncIteratorFactory;
   i: number;
   x: SerovalAsyncIteratorX;
 }

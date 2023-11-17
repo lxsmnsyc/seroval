@@ -594,8 +594,8 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
       case SerovalNodeType.ReadableStreamClose:
         return this.deserializeReadableStreamClose(node);
       case SerovalNodeType.MapSentinel:
-      case SerovalNodeType.Iterator:
-      case SerovalNodeType.AsyncIterator:
+      case SerovalNodeType.IteratorFactory:
+      case SerovalNodeType.AsyncIteratorFactory:
       default:
         throw new Error('invariant');
     }
