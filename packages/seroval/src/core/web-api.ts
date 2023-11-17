@@ -26,7 +26,6 @@ export function createURLNode(
     a: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -47,7 +46,6 @@ export function createURLSearchParamsNode(
     a: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -68,7 +66,6 @@ export function createDOMExceptionNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -90,7 +87,6 @@ export function createEventNode(
     f: options,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -112,6 +108,5 @@ export function createCustomEVentNode(
     f: options,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }

@@ -12,6 +12,7 @@ import {
   createDataViewNode,
   createDateNode,
   createErrorNode,
+  createIteratorFactoryInstanceNode,
   createNumberNode,
   createPluginNode,
   createRegExpNode,
@@ -39,7 +40,6 @@ import { BaseParserContext } from '../parser';
 import { hasReferenceID } from '../../reference';
 import { getErrorOptions } from '../../utils/error';
 import { serializeString } from '../../string';
-import { SerovalObjectRecordSpecialKey } from '../../types';
 import type {
   SerovalBoxedNode,
   SerovalArrayNode,
@@ -117,8 +117,17 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     // Check special properties, symbols in this case
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
-        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
-        valueNodes.push(this.parse(iteratorToSequence(properties as Iterable<unknown>)));
+        keyNodes.push(
+          this.parseWKSymbol(Symbol.iterator),
+        );
+        valueNodes.push(
+          createIteratorFactoryInstanceNode(
+            this.parseIteratorFactory(),
+            this.parse(
+              iteratorToSequence(properties as Iterable<unknown>),
+            ),
+          ),
+        );
       }
     }
     return {
@@ -264,7 +273,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -289,7 +297,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 

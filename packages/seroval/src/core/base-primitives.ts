@@ -15,6 +15,7 @@ import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
+  SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntNode,
   SerovalBigIntTypedArrayNode,
   SerovalBoxedNode,
@@ -23,6 +24,7 @@ import type {
   SerovalDateNode,
   SerovalErrorNode,
   SerovalIndexedValueNode,
+  SerovalIteratorFactoryInstanceNode,
   SerovalNode,
   SerovalNumberNode,
   SerovalObjectRecordNode,
@@ -63,7 +65,6 @@ export function createNumberNode(value: number): SerovalConstantNode | SerovalNu
         f: undefined,
         b: undefined,
         o: undefined,
-        x: undefined,
       };
   }
 }
@@ -82,7 +83,6 @@ export function createStringNode(value: string): SerovalStringNode {
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -102,7 +102,6 @@ export function createBigIntNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -120,7 +119,6 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -138,7 +136,6 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     a: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -156,7 +153,6 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -183,7 +179,6 @@ export function createArrayBufferNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -205,7 +200,6 @@ export function createWKSymbolNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -226,7 +220,6 @@ export function createReferenceNode<T>(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -248,7 +241,6 @@ export function createPluginNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -270,7 +262,6 @@ export function createArrayNode(
     f: undefined,
     b: undefined,
     o: getObjectFlag(current),
-    x: undefined,
   };
 }
 
@@ -291,7 +282,6 @@ export function createBoxedNode(
     f: boxed,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -313,7 +303,6 @@ export function createTypedArrayNode(
     f: buffer,
     b: current.byteOffset,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -335,7 +324,6 @@ export function createBigIntTypedArrayNode(
     f: buffer,
     b: current.byteOffset,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -357,7 +345,6 @@ export function createDataViewNode(
     f: buffer,
     b: current.byteOffset,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -379,7 +366,6 @@ export function createErrorNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -401,7 +387,6 @@ export function createAggregateErrorNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
   };
 }
 
@@ -423,6 +408,51 @@ export function createSetNode(
     f: undefined,
     b: undefined,
     o: undefined,
-    x: undefined,
+  };
+}
+
+export function createIteratorFactoryInstanceNode(
+  factory: SerovalNode,
+  items: SerovalNode,
+): SerovalIteratorFactoryInstanceNode {
+  return {
+    t: SerovalNodeType.IteratorFactoryInstance,
+    i: undefined,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: [
+      factory,
+      items,
+    ],
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createAsyncIteratorFactoryInstanceNode(
+  factory: SerovalNode,
+  items: SerovalNode,
+): SerovalAsyncIteratorFactoryInstanceNode {
+  return {
+    t: SerovalNodeType.AsyncIteratorFactoryInstance,
+    i: undefined,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: [
+      factory,
+      items,
+    ],
+    f: undefined,
+    b: undefined,
+    o: undefined,
   };
 }

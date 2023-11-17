@@ -104,7 +104,7 @@ describe('ReadableStream', () => {
       });
       toCrossJSONStream(example, {
         onParse(data) {
-          expect(data).toMatchSnapshot();
+          expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
           resolve();

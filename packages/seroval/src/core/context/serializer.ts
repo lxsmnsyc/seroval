@@ -9,7 +9,6 @@ import {
 import { createEffectfulFunction, createFunction } from '../utils/function-string';
 import { REFERENCES_KEY } from '../keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
-import { SpecialReference } from '../special-reference';
 import type {
   SerovalArrayNode,
   SerovalIndexedValueNode,
@@ -52,11 +51,10 @@ import type {
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamCloseNode,
   SerovalMapSentinelNode,
-  SerovalIteratorNode,
-  SerovalAsyncIteratorNode,
-} from '../types';
-import {
-  SerovalObjectRecordSpecialKey,
+  SerovalIteratorFactoryInstanceNode,
+  SerovalIteratorFactoryNode,
+  SerovalAsyncIteratorFactoryInstanceNode,
+  SerovalAsyncIteratorFactoryNode,
 } from '../types';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
 
@@ -440,60 +438,25 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     key: SerovalObjectRecordKey,
     val: SerovalNode,
   ): string {
-    // Only reason this is a switch is so that
-    // in the future, maybe other Symbols are going
-    // to be introduced and/or has merit to be added
-    // E.g. Symbol.asyncIterator
-    switch (key) {
-      case SerovalObjectRecordSpecialKey.SymbolIterator:
-        if (
-          source.x
-          && source.x[SpecialReference.SymbolIterator]
-          && source.x[SpecialReference.IteratorFactory]
-        ) {
-          const serialKey = '[' + this.serialize(source.x[SpecialReference.SymbolIterator]) + ']:';
-          const parent = this.stack;
-          this.stack = [];
-          const serialized = this.serialize(val);
-          this.stack = parent;
-          const constructor = this.serialize(source.x[SpecialReference.IteratorFactory]);
-          return serialKey + '(' + constructor + ')(' + serialized + ')';
+    if (typeof key === 'string') {
+      const check = Number(key);
+      // Test if key is a valid number or JS identifier
+      // so that we don't have to serialize the key and wrap with brackets
+      const isIdentifier = check >= 0 || isValidIdentifier(key);
+      if (this.isIndexedValueInStack(val)) {
+        const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
+        this.markRef(source.i);
+        // eslint-disable-next-line no-self-compare
+        if (isIdentifier && check !== check) {
+          this.createObjectAssign(source.i, key, refParam);
+        } else {
+          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), refParam);
         }
         return '';
-      case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
-        if (
-          source.x
-          && source.x[SpecialReference.SymbolAsyncIterator]
-          && source.x[SpecialReference.AsyncIteratorFactory]
-        ) {
-          const serialKey = '[' + this.serialize(source.x[SpecialReference.SymbolAsyncIterator]) + ']:';
-          const parent = this.stack;
-          this.stack = [];
-          const serialized = this.serialize(val);
-          this.stack = parent;
-          const constructor = this.serialize(source.x[SpecialReference.AsyncIteratorFactory]);
-          return serialKey + '(' + constructor + ')(' + serialized + ')';
-        }
-        return '';
-      default: {
-        const check = Number(key);
-        // Test if key is a valid number or JS identifier
-        // so that we don't have to serialize the key and wrap with brackets
-        const isIdentifier = check >= 0 || isValidIdentifier(key);
-        if (this.isIndexedValueInStack(val)) {
-          const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
-          this.markRef(source.i);
-          // eslint-disable-next-line no-self-compare
-          if (isIdentifier && check !== check) {
-            this.createObjectAssign(source.i, key, refParam);
-          } else {
-            this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), refParam);
-          }
-          return '';
-        }
-        return (isIdentifier ? key : ('"' + key + '"')) + ':' + this.serialize(val);
       }
+      return (isIdentifier ? key : ('"' + key + '"')) + ':' + this.serialize(val);
     }
+    return '[' + this.serialize(key) + ']:' + this.serialize(val);
   }
 
   protected serializeProperties(
@@ -541,71 +504,42 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     key: SerovalObjectRecordKey,
     value: SerovalNode,
   ): void {
-    switch (key) {
-      case SerovalObjectRecordSpecialKey.SymbolIterator:
-        if (
-          source.x
-          && source.x[SpecialReference.IteratorFactory]
-          && source.x[SpecialReference.SymbolIterator]
-        ) {
-          const parent = this.stack;
-          this.stack = [];
-          const serialized = this.serialize(value);
-          this.stack = parent;
-          const parentAssignment = this.assignments;
-          this.assignments = mainAssignments;
-          this.createArrayAssign(
-            source.i,
-            this.serialize(source.x[SpecialReference.SymbolIterator]),
-            '(' + this.serialize(source.x[SpecialReference.IteratorFactory]) + ')(' + serialized + ')',
-          );
-          this.assignments = parentAssignment;
-        }
-        break;
-      case SerovalObjectRecordSpecialKey.SymbolAsyncIterator:
-        if (
-          source.x
-          && source.x[SpecialReference.AsyncIteratorFactory]
-          && source.x[SpecialReference.SymbolAsyncIterator]
-        ) {
-          const parent = this.stack;
-          this.stack = [];
-          const serialized = this.serialize(value);
-          this.stack = parent;
-          const parentAssignment = this.assignments;
-          this.assignments = mainAssignments;
-          this.createArrayAssign(
-            source.i,
-            this.serialize(source.x[SpecialReference.SymbolAsyncIterator]),
-            '(' + this.serialize(source.x[SpecialReference.AsyncIteratorFactory]) + ')(' + serialized + ')',
-          );
-          this.assignments = parentAssignment;
-        }
-        break;
-      default: {
-        const serialized = this.serialize(value);
-        const check = Number(key);
-        // Test if key is a valid number or JS identifier
-        // so that we don't have to serialize the key and wrap with brackets
-        const isIdentifier = check >= 0 || isValidIdentifier(key);
-        if (this.isIndexedValueInStack(value)) {
-          // eslint-disable-next-line no-self-compare
-          if (isIdentifier && check !== check) {
-            this.createObjectAssign(source.i, key, serialized);
-          } else {
-            this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
-          }
+    if (typeof key === 'string') {
+      const serialized = this.serialize(value);
+      const check = Number(key);
+      // Test if key is a valid number or JS identifier
+      // so that we don't have to serialize the key and wrap with brackets
+      const isIdentifier = check >= 0 || isValidIdentifier(key);
+      if (this.isIndexedValueInStack(value)) {
+        // eslint-disable-next-line no-self-compare
+        if (isIdentifier && check !== check) {
+          this.createObjectAssign(source.i, key, serialized);
         } else {
-          const parentAssignment = this.assignments;
-          this.assignments = mainAssignments;
-          if (isIdentifier) {
-            this.createObjectAssign(source.i, key, serialized);
-          } else {
-            this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
-          }
-          this.assignments = parentAssignment;
+          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
         }
+      } else {
+        const parentAssignment = this.assignments;
+        this.assignments = mainAssignments;
+        if (isIdentifier) {
+          this.createObjectAssign(source.i, key, serialized);
+        } else {
+          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
+        }
+        this.assignments = parentAssignment;
       }
+    } else {
+      const parent = this.stack;
+      this.stack = [];
+      const serialized = this.serialize(value);
+      this.stack = parent;
+      const parentAssignment = this.assignments;
+      this.assignments = mainAssignments;
+      this.createArrayAssign(
+        source.i,
+        this.serialize(key),
+        serialized,
+      );
+      this.assignments = parentAssignment;
     }
   }
 
@@ -766,7 +700,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     let serialized = MAP_CONSTRUCTOR;
     const size = node.e.s;
     const id = node.i;
-    const sentinel = node.x[SpecialReference.Sentinel];
+    const sentinel = node.f;
     const sentinelID = this.getRefParam(sentinel.i);
     if (size) {
       const keys = node.e.k;
@@ -1060,7 +994,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     );
   }
 
-  protected serializeIterator(node: SerovalIteratorNode): string {
+  protected serializeIteratorFactory(node: SerovalIteratorFactoryNode): string {
     return this.assignIndexedValue(
       node.i,
       createFunction(
@@ -1069,14 +1003,20 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         createFunction(
           this.features,
           ['i', 'c', 'd', 't'],
-          '(i=0,t={[' + this.serialize(node.x[SpecialReference.SymbolIterator]) + ']:' + createFunction(this.features, [], 't') + ','
+          '(i=0,t={[' + this.serialize(node.f) + ']:' + createFunction(this.features, [], 't') + ','
             + 'next:' + createEffectfulFunction(this.features, [], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
         ),
       ),
     );
   }
 
-  protected serializeAsyncIterator(node: SerovalAsyncIteratorNode): string {
+  protected serializeIteratorFactoryInstance(
+    node: SerovalIteratorFactoryInstanceNode,
+  ): string {
+    return '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')';
+  }
+
+  protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
     return this.assignIndexedValue(
       node.i,
       createFunction(
@@ -1085,7 +1025,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         createFunction(
           this.features,
           ['i', 't'],
-          '(i=0,t={[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 't') + ','
+          '(i=0,t={[' + this.serialize(node.f) + ']:' + createFunction(this.features, [], 't') + ','
             + 'next:' + createFunction(
             this.features,
             [],
@@ -1098,6 +1038,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         ),
       ),
     );
+  }
+
+  protected serializeAsyncIteratorFactoryInstance(
+    node: SerovalAsyncIteratorFactoryInstanceNode,
+  ): string {
+    return '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')';
   }
 
   serialize(node: SerovalNode): string {
@@ -1186,9 +1132,15 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalNodeType.MapSentinel:
         return this.serializeMapSentinel(node);
       case SerovalNodeType.IteratorFactory:
-        return this.serializeIterator(node);
+        return this.serializeIteratorFactory(node);
+      case SerovalNodeType.IteratorFactoryInstance:
+        return this.serializeIteratorFactoryInstance(node);
       case SerovalNodeType.AsyncIteratorFactory:
-        return this.serializeAsyncIterator(node);
+        return this.serializeAsyncIteratorFactory(node);
+      case SerovalNodeType.AsyncIteratorFactoryInstance:
+        return this.serializeAsyncIteratorFactoryInstance(node);
+      case SerovalNodeType.ReadableStream:
+      case SerovalNodeType.ReadableStreamFactory:
       default:
         throw new Error('invariant');
     }

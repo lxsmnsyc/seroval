@@ -187,3 +187,36 @@ export function readableStreamToAsyncIterator<T>(
     };
   };
 }
+
+export async function readableStreamToSequence<T>(
+  stream: ReadableStream<T>,
+): Promise<Sequence> {
+  const values: unknown[] = [];
+  let throwsAt = -1;
+  let doneAt = -1;
+
+  const iterator = stream.getReader();
+
+  async function push(): Promise<void> {
+    try {
+      const value = await iterator.read();
+      values.push(value.value);
+      if (value.done) {
+        doneAt = values.length - 1;
+      } else {
+        await push();
+      }
+    } catch (error) {
+      throwsAt = values.length;
+      values.push(error);
+    }
+  }
+
+  await push();
+
+  return {
+    v: values,
+    t: throwsAt,
+    d: doneAt,
+  };
+}

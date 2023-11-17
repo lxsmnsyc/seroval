@@ -2,7 +2,9 @@ import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
 import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
   createArrayBufferNode,
+  createAsyncIteratorFactoryInstanceNode,
   createDateNode,
+  createIteratorFactoryInstanceNode,
   createPluginNode,
   createRegExpNode,
 } from '../../base-primitives';
@@ -13,16 +15,15 @@ import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../../constants';
 import { createRequestOptions, createResponseOptions } from '../../utils/constructors';
 import { NULL_NODE } from '../../literals';
 import { serializeString } from '../../string';
-import {
-  SerovalObjectRecordSpecialKey,
-  type SerovalNode,
-  type SerovalObjectRecordKey,
-  type SerovalObjectRecordNode,
-  type SerovalPluginNode,
-  type SerovalPromiseConstructorNode,
-  type SerovalReadableStreamConstructorNode,
-  type SerovalRequestNode,
-  type SerovalResponseNode,
+import type {
+  SerovalNode,
+  SerovalObjectRecordKey,
+  SerovalObjectRecordNode,
+  SerovalPluginNode,
+  SerovalPromiseConstructorNode,
+  SerovalReadableStreamConstructorNode,
+  SerovalRequestNode,
+  SerovalResponseNode,
 } from '../../types';
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
 import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
@@ -105,15 +106,29 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     // Check special properties, symbols in this case
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
-        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
+        keyNodes.push(
+          this.parseWKSymbol(Symbol.iterator),
+        );
         valueNodes.push(
-          this.parse(iteratorToSequence(properties as Iterable<unknown>)),
+          createIteratorFactoryInstanceNode(
+            this.parseIteratorFactory(),
+            this.parse(
+              iteratorToSequence(properties as Iterable<unknown>),
+            ),
+          ),
         );
       }
       if (Symbol.asyncIterator in properties) {
-        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolAsyncIterator);
+        keyNodes.push(
+          this.parseWKSymbol(Symbol.asyncIterator),
+        );
         valueNodes.push(
-          this.parse(asyncIteratorToReadableStream(properties as AsyncIterable<unknown>)),
+          createAsyncIteratorFactoryInstanceNode(
+            this.parseAsyncIteratorFactory(),
+            this.parse(
+              asyncIteratorToReadableStream(properties as AsyncIterable<unknown>),
+            ),
+          ),
         );
       }
     }
@@ -145,7 +160,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: undefined,
               b: undefined,
               o: undefined,
-              x: undefined,
             }, false);
             this.popPendingState();
           } else {
@@ -164,7 +178,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
                 f: parsed,
                 b: undefined,
                 o: undefined,
-                x: undefined,
               }, false);
               this.pushReadableStreamReader(id, reader);
             }
@@ -188,7 +201,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: parsed,
               b: undefined,
               o: undefined,
-              x: undefined,
             }, false);
             this.popPendingState();
           }
@@ -218,7 +230,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       f: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -241,7 +252,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       a: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -267,7 +277,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       ],
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -292,7 +301,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             f: parsed,
             b: undefined,
             o: undefined,
-            x: undefined,
           }, false);
           this.popPendingState();
         }
@@ -314,7 +322,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: parsed,
               b: undefined,
               o: undefined,
-              x: undefined,
             }, false);
             this.popPendingState();
           }
@@ -335,7 +342,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       f: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 

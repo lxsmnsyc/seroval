@@ -6,6 +6,7 @@ import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
+  SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntTypedArrayNode,
   SerovalBlobNode,
   SerovalBoxedNode,
@@ -18,6 +19,7 @@ import type {
   SerovalFileNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
+  SerovalIteratorFactoryInstanceNode,
   SerovalMapNode,
   SerovalNode,
   SerovalNullConstructorNode,
@@ -41,9 +43,6 @@ import type {
   SerovalTypedArrayNode,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
-} from '../types';
-import {
-  SerovalObjectRecordSpecialKey,
 } from '../types';
 import {
   CONSTANT_VAL,
@@ -132,33 +131,14 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   ): Record<string | symbol, unknown> {
     const len = node.s;
     if (len) {
-      let key: SerovalObjectRecordKey;
-      let value: unknown;
       const keys = node.k;
       const vals = node.v;
-      for (let i = 0; i < len; i++) {
+      for (let i = 0, key: SerovalObjectRecordKey; i < len; i++) {
         key = keys[i];
-        value = this.deserialize(vals[i]);
-        switch (key) {
-          case SerovalObjectRecordSpecialKey.SymbolIterator: {
-            const current = value as Sequence;
-            result[Symbol.iterator] = sequenceToIterator(current);
-          }
-            break;
-          case SerovalObjectRecordSpecialKey.SymbolAsyncIterator: {
-            const current = value;
-            if ((current as object).constructor === ReadableStream) {
-              result[Symbol.asyncIterator] = readableStreamToAsyncIterator(
-                current as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
-              );
-            } else {
-              result[Symbol.asyncIterator] = sequenceToAsyncIterator(current as Sequence);
-            }
-          }
-            break;
-          default:
-            result[deserializeString(key)] = value;
-            break;
+        if (typeof key === 'string') {
+          result[deserializeString(key)] = this.deserialize(vals[i]);
+        } else {
+          result[this.deserialize(key) as symbol] = this.deserialize(vals[i]);
         }
       }
     }
@@ -511,6 +491,25 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     return undefined;
   }
 
+  private deserializeIteratorFactoryInstance(
+    node: SerovalIteratorFactoryInstanceNode,
+  ): unknown {
+    const source = this.deserialize(node.a[1]);
+    return sequenceToIterator(source as Sequence);
+  }
+
+  private deserializeAsyncIteratorFactoryInstance(
+    node: SerovalAsyncIteratorFactoryInstanceNode,
+  ): unknown {
+    const source = this.deserialize(node.a[1]);
+    if ((source as object).constructor === ReadableStream) {
+      return readableStreamToAsyncIterator(
+        source as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
+      );
+    }
+    return sequenceToAsyncIterator(source as Sequence);
+  }
+
   deserialize(node: SerovalNode): unknown {
     switch (node.t) {
       case SerovalNodeType.Constant:
@@ -593,6 +592,10 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializeReadableStreamError(node);
       case SerovalNodeType.ReadableStreamClose:
         return this.deserializeReadableStreamClose(node);
+      case SerovalNodeType.IteratorFactoryInstance:
+        return this.deserializeIteratorFactoryInstance(node);
+      case SerovalNodeType.AsyncIteratorFactoryInstance:
+        return this.deserializeAsyncIteratorFactoryInstance(node);
       case SerovalNodeType.MapSentinel:
       case SerovalNodeType.IteratorFactory:
       case SerovalNodeType.AsyncIteratorFactory:

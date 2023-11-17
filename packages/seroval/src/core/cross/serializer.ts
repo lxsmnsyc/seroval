@@ -7,7 +7,7 @@ import type {
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamConstructorNode,
   SerovalNode,
-  SerovalAsyncIteratorNode,
+  SerovalAsyncIteratorFactoryNode,
 } from '../types';
 import {
   GLOBAL_CONTEXT_PROMISE_REJECT,
@@ -26,7 +26,6 @@ import type { SerovalMode } from '../plugin';
 import { serializeString } from '../string';
 import type { CrossContextOptions } from './parser';
 import { createEffectfulFunction, createFunction } from '../utils/function-string';
-import { SpecialReference } from '../special-reference';
 
 export interface CrossSerializerContextOptions
   extends BaseSerializerContextOptions, CrossContextOptions {
@@ -98,7 +97,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CLOSE + '(' + this.getRefParam(node.i) + ')';
   }
 
-  protected serializeAsyncIterator(node: SerovalAsyncIteratorNode): string {
+  protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
     return this.assignIndexedValue(
       node.i,
       createFunction(
@@ -107,7 +106,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
         createFunction(
           this.features,
           ['b'],
-          '(b=s.tee(),s=b[0],b=b[1].getReader(),{[' + this.serialize(node.x[SpecialReference.SymbolAsyncIterator]) + ']:' + createFunction(this.features, [], 'this') + ','
+          '(b=s.tee(),s=b[0],b=b[1].getReader(),{[' + this.serialize(node.f) + ']:' + createFunction(this.features, [], 'this') + ','
           + 'next:' + createFunction(
             this.features,
             [],

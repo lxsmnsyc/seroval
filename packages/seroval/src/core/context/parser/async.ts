@@ -19,6 +19,8 @@ import {
   createErrorNode,
   createSetNode,
   createAggregateErrorNode,
+  createIteratorFactoryInstanceNode,
+  createAsyncIteratorFactoryInstanceNode,
 } from '../../base-primitives';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import {
@@ -37,12 +39,11 @@ import {
   FALSE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
-import { asyncIteratorToSequence, iteratorToSequence } from '../../utils/iterator-to-sequence';
+import { asyncIteratorToSequence, iteratorToSequence, readableStreamToSequence } from '../../utils/iterator-to-sequence';
 import { BaseParserContext } from '../parser';
 import promiseToResult from '../../utils/promise-to-result';
 import { getErrorOptions } from '../../utils/error';
 import { serializeString } from '../../string';
-import { SerovalObjectRecordSpecialKey } from '../../types';
 import type {
   SerovalErrorNode,
   SerovalArrayNode,
@@ -69,6 +70,7 @@ import type {
   SerovalResponseNode,
   SerovalSetNode,
   SerovalDataViewNode,
+  SerovalReadableStreamNode,
 } from '../../types';
 import {
   createURLNode,
@@ -124,15 +126,29 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Check special properties
     if (this.features & Feature.Symbol) {
       if (Symbol.iterator in properties) {
-        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
+        keyNodes.push(
+          this.parseWKSymbol(Symbol.iterator),
+        );
         valueNodes.push(
-          await this.parse(iteratorToSequence(properties as Iterable<unknown>)),
+          createIteratorFactoryInstanceNode(
+            this.parseIteratorFactory(),
+            await this.parse(
+              iteratorToSequence(properties as Iterable<unknown>),
+            ),
+          ),
         );
       }
       if (Symbol.asyncIterator in properties) {
-        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolAsyncIterator);
+        keyNodes.push(
+          this.parseWKSymbol(Symbol.asyncIterator),
+        );
         valueNodes.push(
-          await this.parse(await asyncIteratorToSequence(properties as AsyncIterable<unknown>)),
+          createAsyncIteratorFactoryInstanceNode(
+            this.parseAsyncIteratorFactory(),
+            await this.parse(
+              await asyncIteratorToSequence(properties as AsyncIterable<unknown>),
+            ),
+          ),
         );
       }
     }
@@ -258,7 +274,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       a: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -279,7 +294,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       a: undefined,
       b: current.lastModified,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -321,7 +335,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -346,7 +359,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -369,7 +381,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       a: undefined,
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -395,7 +406,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       ],
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -435,7 +445,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       f: await this.parse(result),
       b: undefined,
       o: undefined,
-      x: undefined,
     };
   }
 
@@ -459,6 +468,18 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       }
     }
     return undefined;
+  }
+
+  private async parseReadableStream(
+    id: number,
+    current: ReadableStream,
+  ): Promise<SerovalReadableStreamNode> {
+    return this.createReadableStreamNode(
+      id,
+      await this.parse(
+        await readableStreamToSequence(current),
+      ),
+    );
   }
 
   private async parseObject(
@@ -579,6 +600,8 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           return this.parseCustomEvent(id, current as unknown as CustomEvent);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
+        case (typeof ReadableStream !== 'undefined' ? ReadableStream : UNIVERSAL_SENTINEL):
+          return this.parseReadableStream(id, current as unknown as ReadableStream);
         default:
           break;
       }
