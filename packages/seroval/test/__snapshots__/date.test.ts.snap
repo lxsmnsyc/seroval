@@ -20,6 +20,14 @@ exports[`Date > serialize > supports Date 1`] = `"new Date(\\"2023-03-14T11:16:2
 
 exports[`Date > serializeAsync > supports Date 1`] = `"Promise.resolve(new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
+exports[`Date > toCrossJSON > supports Date 1`] = `"{\\"t\\":5,\\"i\\":0,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}"`;
+
+exports[`Date > toCrossJSONAsync > supports Date 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":5,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}}"`;
+
+exports[`Date > toCrossJSONStream > supports Date 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`Date > toCrossJSONStream > supports Date 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":5,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}}"`;
+
 exports[`Date > toJSON > supports Date 1`] = `"{\\"t\\":{\\"t\\":5,\\"i\\":0,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`Date > toJSONAsync > supports Date 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":5,\\"i\\":1,\\"s\\":\\"2023-03-14T11:16:24.879Z\\"}},\\"f\\":16383,\\"m\\":[]}"`;
