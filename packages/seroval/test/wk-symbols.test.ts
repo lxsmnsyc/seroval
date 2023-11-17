@@ -7,6 +7,9 @@ import {
   // fromJSON,
   serialize,
   serializeAsync,
+  toCrossJSON,
+  toCrossJSONAsync,
+  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
@@ -452,5 +455,197 @@ describe('well-known symbols', () => {
         });
       }));
     });
+  });
+  describe('toCrossJSON', () => {
+    it('supports well-known symbols', () => {
+      expect(JSON.stringify(toCrossJSON(Symbol.asyncIterator))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.hasInstance))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.isConcatSpreadable))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.iterator))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.match))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.matchAll))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.replace))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.search))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.species))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.split))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.toPrimitive))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.toStringTag))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.unscopables))).toMatchSnapshot();
+    });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports well-known symbols', async () => {
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.asyncIterator))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.hasInstance))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.isConcatSpreadable))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.iterator))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.match))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.matchAll))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.replace))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.search))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.species))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.split))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.toPrimitive))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.toStringTag))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.unscopables))),
+      ).toMatchSnapshot();
+    });
+  });
+  describe('toCrossJSONStream', () => {
+    it('supports Symbol.asyncIterator', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.asyncIterator), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.hasInstance', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.hasInstance), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.isConcatSpreadable), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.iterator', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.iterator), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.match', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.match), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.matchAll', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.matchAll), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.replace', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.replace), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.search', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.search), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.species', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.species), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.split', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.split), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.toPrimitive', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.toPrimitive), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.toStringTag', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.toStringTag), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports Symbol.unscopables', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Symbol.unscopables), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });

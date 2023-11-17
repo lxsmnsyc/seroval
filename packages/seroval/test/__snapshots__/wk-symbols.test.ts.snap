@@ -260,6 +260,110 @@ exports[`well-known symbols > serializeAsync > supports well-known symbols 12`] 
 
 exports[`well-known symbols > serializeAsync > supports well-known symbols 13`] = `"Promise.resolve(Symbol.unscopables)"`;
 
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 1`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":0}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 2`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":1}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 3`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":2}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 4`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":3}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 5`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":4}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 6`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":5}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 7`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":6}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 8`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":7}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 9`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":8}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 10`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":9}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 11`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":10}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 12`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":11}"`;
+
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 13`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":12}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":0}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 2`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":1}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 3`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":2}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 4`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":3}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 5`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":4}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 6`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":5}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 7`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":6}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 8`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":7}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 9`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":8}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 10`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":9}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 11`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":10}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 12`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":11}}"`;
+
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 13`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":12}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.asyncIterator 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.asyncIterator 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":0}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.hasInstance 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.hasInstance 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":1}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.isConcatSpreadable 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.isConcatSpreadable 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":2}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.iterator 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.iterator 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":3}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.match 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.match 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":4}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.matchAll 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.matchAll 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":5}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.replace 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.replace 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":6}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.search 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.search 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":7}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.species 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.species 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":8}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.split 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.split 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":9}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toPrimitive 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toPrimitive 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":10}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toStringTag 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toStringTag 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":11}}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.unscopables 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.unscopables 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":12}}"`;
+
 exports[`well-known symbols > toJSON > supports well-known symbols 1`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`well-known symbols > toJSON > supports well-known symbols 2`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":1},\\"f\\":16383,\\"m\\":[]}"`;
