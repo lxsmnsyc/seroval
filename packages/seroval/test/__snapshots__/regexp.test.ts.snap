@@ -20,6 +20,14 @@ exports[`RegExp > serialize > supports RegExp 1`] = `"/[a-z0-9]+/i"`;
 
 exports[`RegExp > serializeAsync > supports RegExp 1`] = `"Promise.resolve(/[a-z0-9]+/i)"`;
 
+exports[`RegExp > toCrossJSON > supports RegExp 1`] = `"{\\"t\\":6,\\"i\\":0,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"}"`;
+
+exports[`RegExp > toCrossJSONAsync > supports RegExp 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":6,\\"i\\":1,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"}}"`;
+
+exports[`RegExp > toCrossJSONStream > supports RegExp 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`RegExp > toCrossJSONStream > supports RegExp 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":6,\\"i\\":1,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"}}"`;
+
 exports[`RegExp > toJSON > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":6,\\"i\\":0,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":6,\\"i\\":1,\\"c\\":\\"[a-z0-9]+\\",\\"m\\":\\"i\\"}},\\"f\\":16383,\\"m\\":[]}"`;
