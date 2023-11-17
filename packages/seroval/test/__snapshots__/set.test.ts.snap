@@ -48,6 +48,14 @@ exports[`Set > serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,
 
 exports[`Set > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Set([Promise.resolve().then(()=>h)])))()"`;
 
+exports[`Set > toCrossJSON > supports Set 1`] = `"{\\"t\\":7,\\"i\\":0,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}"`;
+
+exports[`Set > toCrossJSON > supports self-recursion 1`] = `"{\\"t\\":7,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}"`;
+
+exports[`Set > toCrossJSONAsync > supports Set 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":7,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}}"`;
+
+exports[`Set > toCrossJSONAsync > supports self-recursion 1`] = `"{\\"t\\":7,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}]}"`;
+
 exports[`Set > toJSON > supports Set 1`] = `"{\\"t\\":{\\"t\\":7,\\"i\\":0,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`Set > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":7,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]},\\"f\\":16383,\\"m\\":[0]}"`;
