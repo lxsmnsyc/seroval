@@ -53,8 +53,8 @@ import {
   SerovalObjectFlags,
 } from '../constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
-import type { Sequence } from '../utils/iterator-to-sequence';
-import { sequenceToAsyncIterator, sequenceToIterator } from '../utils/iterator-to-sequence';
+import type { Sequence, SerializedAsyncIteratorResult } from '../utils/iterator-to-sequence';
+import { readableStreamToAsyncIterator, sequenceToAsyncIterator, sequenceToIterator } from '../utils/iterator-to-sequence';
 import { getTypedArrayConstructor } from '../utils/typed-array';
 import type { Deferred, DeferredStream } from '../utils/deferred';
 import { createDeferred, createDeferredStream } from '../utils/deferred';
@@ -142,14 +142,18 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         switch (key) {
           case SerovalObjectRecordSpecialKey.SymbolIterator: {
             const current = value as Sequence;
-            result[Symbol.iterator] = (): Iterator<unknown> => sequenceToIterator(current);
+            result[Symbol.iterator] = sequenceToIterator(current);
           }
             break;
           case SerovalObjectRecordSpecialKey.SymbolAsyncIterator: {
-            const current = value as Sequence;
-            result[Symbol.asyncIterator] = (
-              (): AsyncIterator<unknown> => sequenceToAsyncIterator(current)
-            );
+            const current = value;
+            if (this.mode === 'cross') {
+              result[Symbol.asyncIterator] = readableStreamToAsyncIterator(
+                current as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
+              );
+            } else {
+              result[Symbol.asyncIterator] = sequenceToAsyncIterator(current as Sequence);
+            }
           }
             break;
           default:

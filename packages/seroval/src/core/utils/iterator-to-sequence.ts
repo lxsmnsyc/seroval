@@ -32,30 +32,34 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
   };
 }
 
-export function sequenceToIterator<T>(sequence: Sequence): IterableIterator<T> {
-  let index = 0;
+export function sequenceToIterator<T>(
+  sequence: Sequence,
+): () => IterableIterator<T> {
+  return (): IterableIterator<T> => {
+    let index = 0;
 
-  return {
-    next(): IteratorResult<T> {
-      if (index > sequence.d) {
+    return {
+      [Symbol.iterator](): IterableIterator<T> {
+        return this;
+      },
+      next(): IteratorResult<T> {
+        if (index > sequence.d) {
+          return {
+            done: true,
+            value: undefined,
+          };
+        }
+        const currentIndex = index++;
+        const currentItem = sequence.v[currentIndex];
+        if (currentIndex === sequence.t) {
+          throw currentItem;
+        }
         return {
-          done: true,
-          value: undefined,
+          done: currentIndex === sequence.d,
+          value: currentItem as T,
         };
-      }
-      const currentIndex = index++;
-      const currentItem = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw currentItem;
-      }
-      return {
-        done: currentIndex === sequence.d,
-        value: currentItem as T,
-      };
-    },
-    [Symbol.iterator](): IterableIterator<T> {
-      return this;
-    },
+      },
+    };
   };
 }
 
@@ -90,30 +94,33 @@ export async function asyncIteratorToSequence<T>(source: AsyncIterable<T>): Prom
   };
 }
 
-export function sequenceToAsyncIterator<T>(sequence: Sequence): AsyncIterableIterator<T> {
-  let index = 0;
-
-  return {
-    async next(): Promise<IteratorResult<T>> {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: undefined,
-        };
-      }
-      const currentIndex = index++;
-      const currentItem = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw currentItem;
-      }
-      return Promise.resolve({
-        done: currentIndex === sequence.d,
-        value: currentItem as T,
-      });
-    },
-    [Symbol.asyncIterator](): AsyncIterableIterator<T> {
-      return this;
-    },
+export function sequenceToAsyncIterator<T>(
+  sequence: Sequence,
+): () => AsyncIterableIterator<T> {
+  return (): AsyncIterableIterator<T> => {
+    let index = 0;
+    return {
+      [Symbol.asyncIterator](): AsyncIterableIterator<T> {
+        return this;
+      },
+      async next(): Promise<IteratorResult<T>> {
+        if (index > sequence.d) {
+          return {
+            done: true,
+            value: undefined,
+          };
+        }
+        const currentIndex = index++;
+        const currentItem = sequence.v[currentIndex];
+        if (currentIndex === sequence.t) {
+          throw currentItem;
+        }
+        return Promise.resolve({
+          done: currentIndex === sequence.d,
+          value: currentItem as T,
+        });
+      },
+    };
   };
 }
 
@@ -139,4 +146,44 @@ export function asyncIteratorToReadableStream<T>(
       await push();
     },
   });
+}
+
+type RSNext<T> = [0, T];
+type RSThrow = [1, any];
+type RSReturn<T> = [2, T];
+
+export type SerializedAsyncIteratorResult<T> = RSNext<T> | RSThrow | RSReturn<T>;
+
+export function readableStreamToAsyncIterator<T>(
+  source: ReadableStream<SerializedAsyncIteratorResult<T>>,
+): () => AsyncIterableIterator<T> {
+  let current = source;
+  return (): AsyncIterableIterator<T> => {
+    const [left, right] = current.tee();
+    const clone = left;
+    current = right;
+    const reader = clone.getReader();
+    return {
+      [Symbol.asyncIterator](): AsyncIterableIterator<T> {
+        return this;
+      },
+      async next(): Promise<IteratorResult<T>> {
+        const result = await reader.read();
+        if (result.done) {
+          return {
+            done: true,
+            value: undefined,
+          };
+        }
+        const [status, value] = result.value;
+        if (status === 1) {
+          throw value;
+        }
+        return {
+          done: status === 2,
+          value,
+        };
+      },
+    };
+  };
 }
