@@ -94,6 +94,7 @@ export function crossSerializeStream<T>(
   options: CrossSerializeStreamOptions,
 ): () => void {
   const ctx = new StreamCrossParserContext({
+    plugins: options.plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial): void {
@@ -138,6 +139,7 @@ export function toCrossJSONStream<T>(
   options: ToCrossJSONStreamOptions,
 ): () => void {
   const ctx = new StreamCrossParserContext({
+    plugins: options.plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
     onParse: options.onParse,

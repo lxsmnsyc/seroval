@@ -440,9 +440,12 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
       for (let i = 0, len = currentPlugins.length; i < len; i++) {
         const plugin = currentPlugins[i];
         if (plugin.tag === node.c) {
-          return plugin.deserialize(node.s, this, {
-            id: node.i,
-          });
+          return this.assignIndexedValue(
+            node.i,
+            plugin.deserialize(node.s, this, {
+              id: node.i,
+            }),
+          );
         }
       }
     }

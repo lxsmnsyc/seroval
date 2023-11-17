@@ -1027,9 +1027,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       for (let i = 0, len = currentPlugins.length; i < len; i++) {
         const plugin = currentPlugins[i];
         if (plugin.tag === node.c) {
-          return plugin.serialize(node.s, this, {
-            id: node.i,
-          });
+          return this.assignIndexedValue(
+            node.i,
+            plugin.serialize(node.s, this, {
+              id: node.i,
+            }),
+          );
         }
       }
     }
