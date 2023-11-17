@@ -5,6 +5,9 @@ import {
   crossSerializeStream,
   serialize,
   serializeAsync,
+  toCrossJSON,
+  toCrossJSONAsync,
+  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
@@ -209,5 +212,87 @@ describe('boxed number', () => {
         });
       }));
     });
+  });
+  describe('toCrossJSON', () => {
+    it('supports boxed numbers', () => {
+      const value = 0xDEADBEEF;
+      expect(JSON.stringify(toCrossJSON(Object(value)))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Object(NaN)))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Object(Infinity)))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Object(-Infinity)))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Object(-0)))).toMatchSnapshot();
+    });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports boxed numbers', async () => {
+      const value = 0xDEADBEEF;
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(value)))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(NaN)))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(Infinity)))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(-Infinity)))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(-0)))),
+      ).toMatchSnapshot();
+    });
+  });
+  describe('toCrossJSONStream', () => {
+    it('supports boxed numbers', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Object(0xDEADBEEF)), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed NaN', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Object(NaN)), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed Infinity', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Object(Infinity)), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed -Infinity', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Object(-Infinity)), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
+    it('supports boxed -0', async () => new Promise<void>((done) => {
+      toCrossJSONStream(Promise.resolve(Object(-0)), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          done();
+        },
+      });
+    }));
   });
 });
