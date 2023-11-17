@@ -147,7 +147,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
             break;
           case SerovalObjectRecordSpecialKey.SymbolAsyncIterator: {
             const current = value;
-            if (this.mode === 'cross') {
+            if ((current as object).constructor === ReadableStream) {
               result[Symbol.asyncIterator] = readableStreamToAsyncIterator(
                 current as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
               );
