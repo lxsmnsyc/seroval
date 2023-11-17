@@ -64,23 +64,29 @@ describe('string', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports strings', async () => new Promise<void>((done) => {
+    it('supports strings', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(QUOTED), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports sanitized strings', async () => new Promise<void>((done) => {
+    it('supports sanitized strings', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(HTML), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
@@ -108,23 +114,29 @@ describe('string', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports strings', async () => new Promise<void>((done) => {
+    it('supports strings', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(QUOTED), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports sanitized strings', async () => new Promise<void>((done) => {
+    it('supports sanitized strings', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(HTML), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

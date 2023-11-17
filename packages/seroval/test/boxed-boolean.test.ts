@@ -66,46 +66,58 @@ describe('boxed boolean', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports boxed true', async () => new Promise<void>((done) => {
+    it('supports boxed true', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Object(true)), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports boxed false', async () => new Promise<void>((done) => {
+    it('supports boxed false', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Object(false)), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports boxed true', async () => new Promise<void>((done) => {
+      it('supports boxed true', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Object(true)), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports boxed false', async () => new Promise<void>((done) => {
+      it('supports boxed false', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Object(false)), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -128,23 +140,29 @@ describe('boxed boolean', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports boxed true', async () => new Promise<void>((done) => {
+    it('supports boxed true', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Object(true)), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports boxed false', async () => new Promise<void>((done) => {
+    it('supports boxed false', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Object(false)), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

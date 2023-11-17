@@ -128,20 +128,23 @@ describe('Plugin', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Plugin', async () => new Promise<void>((done) => {
+    it('supports Plugin', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(EXAMPLE, {
         plugins: [BufferPlugin],
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
 
     describe('scoped', () => {
-      it('supports Plugin', async () => new Promise<void>((done) => {
+      it('supports Plugin', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(EXAMPLE, {
           scopeId: 'example',
           plugins: [BufferPlugin],
@@ -149,7 +152,10 @@ describe('Plugin', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -185,14 +191,17 @@ describe('Plugin', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Plugin', async () => new Promise<void>((done) => {
+    it('supports Plugin', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(EXAMPLE, {
         plugins: [BufferPlugin],
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

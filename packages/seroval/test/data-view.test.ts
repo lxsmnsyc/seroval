@@ -81,25 +81,31 @@ describe('DataView', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports DataView', async () => new Promise<void>((done) => {
+    it('supports DataView', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports DataView', async () => new Promise<void>((done) => {
+      it('supports DataView', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -128,13 +134,16 @@ describe('DataView', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports DataView', async () => new Promise<void>((done) => {
+    it('supports DataView', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(EXAMPLE), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

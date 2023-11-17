@@ -5,7 +5,7 @@ import {
 
 describe('ReadableStream', () => {
   describe('crossSerializeStream', () => {
-    it('supports ReadableStream', async () => new Promise<void>((done) => {
+    it('supports ReadableStream', async () => new Promise<void>((resolve, reject) => {
       const example = new ReadableStream({
         start(controller): void {
           controller.enqueue('foo');
@@ -19,11 +19,14 @@ describe('ReadableStream', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports ReadableStream errors', async () => new Promise<void>((done) => {
+    it('supports ReadableStream errors', async () => new Promise<void>((resolve, reject) => {
       const example = new ReadableStream({
         start(controller): void {
           const error = new Error('Oops!');
@@ -36,12 +39,15 @@ describe('ReadableStream', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports ReadableStream', async () => new Promise<void>((done) => {
+      it('supports ReadableStream', async () => new Promise<void>((resolve, reject) => {
         const example = new ReadableStream({
           start(controller): void {
             controller.enqueue('foo');
@@ -56,11 +62,14 @@ describe('ReadableStream', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports ReadableStream errors', async () => new Promise<void>((done) => {
+      it('supports ReadableStream errors', async () => new Promise<void>((resolve, reject) => {
         const example = new ReadableStream({
           start(controller): void {
             const error = new Error('Oops!');
@@ -74,14 +83,17 @@ describe('ReadableStream', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports ReadableStream', async () => new Promise<void>((done) => {
+    it('supports ReadableStream', async () => new Promise<void>((resolve, reject) => {
       const example = new ReadableStream({
         start(controller): void {
           controller.enqueue('foo');
@@ -95,11 +107,14 @@ describe('ReadableStream', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports ReadableStream errors', async () => new Promise<void>((done) => {
+    it('supports ReadableStream errors', async () => new Promise<void>((resolve, reject) => {
       const example = new ReadableStream({
         start(controller): void {
           const error = new Error('Oops!');
@@ -112,7 +127,10 @@ describe('ReadableStream', () => {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

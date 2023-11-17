@@ -180,277 +180,355 @@ describe('well-known symbols', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Symbol.asyncIterator', async () => new Promise<void>((done) => {
+    it('supports Symbol.asyncIterator', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.asyncIterator), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.hasInstance', async () => new Promise<void>((done) => {
+    it('supports Symbol.hasInstance', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.hasInstance), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((done) => {
+    it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.isConcatSpreadable), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.iterator', async () => new Promise<void>((done) => {
+    it('supports Symbol.iterator', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.iterator), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.match', async () => new Promise<void>((done) => {
+    it('supports Symbol.match', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.match), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.matchAll', async () => new Promise<void>((done) => {
+    it('supports Symbol.matchAll', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.matchAll), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.replace', async () => new Promise<void>((done) => {
+    it('supports Symbol.replace', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.replace), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.search', async () => new Promise<void>((done) => {
+    it('supports Symbol.search', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.search), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.species', async () => new Promise<void>((done) => {
+    it('supports Symbol.species', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.species), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.split', async () => new Promise<void>((done) => {
+    it('supports Symbol.split', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.split), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.toPrimitive', async () => new Promise<void>((done) => {
+    it('supports Symbol.toPrimitive', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.toPrimitive), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.toStringTag', async () => new Promise<void>((done) => {
+    it('supports Symbol.toStringTag', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.toStringTag), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.unscopables', async () => new Promise<void>((done) => {
+    it('supports Symbol.unscopables', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Symbol.unscopables), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Symbol.asyncIterator', async () => new Promise<void>((done) => {
+      it('supports Symbol.asyncIterator', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.asyncIterator), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.hasInstance', async () => new Promise<void>((done) => {
+      it('supports Symbol.hasInstance', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.hasInstance), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((done) => {
+      it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.isConcatSpreadable), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.iterator', async () => new Promise<void>((done) => {
+      it('supports Symbol.iterator', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.iterator), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.match', async () => new Promise<void>((done) => {
+      it('supports Symbol.match', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.match), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.matchAll', async () => new Promise<void>((done) => {
+      it('supports Symbol.matchAll', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.matchAll), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.replace', async () => new Promise<void>((done) => {
+      it('supports Symbol.replace', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.replace), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.search', async () => new Promise<void>((done) => {
+      it('supports Symbol.search', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.search), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.species', async () => new Promise<void>((done) => {
+      it('supports Symbol.species', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.species), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.split', async () => new Promise<void>((done) => {
+      it('supports Symbol.split', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.split), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.toPrimitive', async () => new Promise<void>((done) => {
+      it('supports Symbol.toPrimitive', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.toPrimitive), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.toStringTag', async () => new Promise<void>((done) => {
+      it('supports Symbol.toStringTag', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.toStringTag), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Symbol.unscopables', async () => new Promise<void>((done) => {
+      it('supports Symbol.unscopables', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Symbol.unscopables), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -517,133 +595,172 @@ describe('well-known symbols', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Symbol.asyncIterator', async () => new Promise<void>((done) => {
+    it('supports Symbol.asyncIterator', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.asyncIterator), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.hasInstance', async () => new Promise<void>((done) => {
+    it('supports Symbol.hasInstance', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.hasInstance), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((done) => {
+    it('supports Symbol.isConcatSpreadable', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.isConcatSpreadable), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.iterator', async () => new Promise<void>((done) => {
+    it('supports Symbol.iterator', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.iterator), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.match', async () => new Promise<void>((done) => {
+    it('supports Symbol.match', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.match), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.matchAll', async () => new Promise<void>((done) => {
+    it('supports Symbol.matchAll', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.matchAll), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.replace', async () => new Promise<void>((done) => {
+    it('supports Symbol.replace', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.replace), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.search', async () => new Promise<void>((done) => {
+    it('supports Symbol.search', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.search), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.species', async () => new Promise<void>((done) => {
+    it('supports Symbol.species', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.species), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.split', async () => new Promise<void>((done) => {
+    it('supports Symbol.split', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.split), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.toPrimitive', async () => new Promise<void>((done) => {
+    it('supports Symbol.toPrimitive', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.toPrimitive), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.toStringTag', async () => new Promise<void>((done) => {
+    it('supports Symbol.toStringTag', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.toStringTag), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Symbol.unscopables', async () => new Promise<void>((done) => {
+    it('supports Symbol.unscopables', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Symbol.unscopables), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

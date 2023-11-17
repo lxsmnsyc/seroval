@@ -66,7 +66,7 @@ describe('Request', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Request', async () => new Promise<void>((done) => {
+    it('supports Request', async () => new Promise<void>((resolve, reject) => {
       const example = new Request(EXAMPLE_URL, {
         method: 'POST',
         body: EXAMPLE_BODY,
@@ -76,12 +76,15 @@ describe('Request', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Request', async () => new Promise<void>((done) => {
+      it('supports Request', async () => new Promise<void>((resolve, reject) => {
         const example = new Request(EXAMPLE_URL, {
           method: 'POST',
           body: EXAMPLE_BODY,
@@ -92,7 +95,10 @@ describe('Request', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -116,7 +122,7 @@ describe('Request', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Request', async () => new Promise<void>((done) => {
+    it('supports Request', async () => new Promise<void>((resolve, reject) => {
       const example = new Request(EXAMPLE_URL, {
         method: 'POST',
         body: EXAMPLE_BODY,
@@ -126,7 +132,10 @@ describe('Request', () => {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

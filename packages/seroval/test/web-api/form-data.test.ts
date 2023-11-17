@@ -87,25 +87,31 @@ describe('FormData', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports FormData', async () => new Promise<void>((done) => {
+    it('supports FormData', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports FormData', async () => new Promise<void>((done) => {
+      it('supports FormData', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -132,13 +138,16 @@ describe('FormData', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports FormData', async () => new Promise<void>((done) => {
+    it('supports FormData', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(SYNC_EXAMPLE), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

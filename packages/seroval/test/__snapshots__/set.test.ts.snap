@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Set > compat > should fallback to Symbol.iterator 1`] = `"(h=>(Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>((i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})))({v:[1,2,3,void 0],t:-1,d:3})})))()"`;
+exports[`Set > compat > should fallback to Symbol.iterator 1`] = `"(h=>(Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3})})))()"`;
 
 exports[`Set > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Set]\\""`;
 

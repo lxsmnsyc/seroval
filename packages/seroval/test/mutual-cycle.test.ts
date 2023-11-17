@@ -285,7 +285,7 @@ describe('mutual cyclic references', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Arrays and Arrays', async () => new Promise<void>((done) => {
+    it('supports Arrays and Arrays', async () => new Promise<void>((resolve, reject) => {
       const a: Promise<unknown>[] = [];
       const b: Promise<unknown>[] = [];
       a[0] = Promise.resolve(b);
@@ -296,11 +296,14 @@ describe('mutual cyclic references', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Arrays and Objects', async () => new Promise<void>((done) => {
+    it('supports Arrays and Objects', async () => new Promise<void>((resolve, reject) => {
       const a: Promise<unknown>[] = [];
       const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
@@ -311,11 +314,14 @@ describe('mutual cyclic references', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Objects and Objects', async () => new Promise<void>((done) => {
+    it('supports Objects and Objects', async () => new Promise<void>((resolve, reject) => {
       const a: Record<string, Promise<unknown>> = {};
       const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
@@ -326,12 +332,15 @@ describe('mutual cyclic references', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Arrays and Arrays', async () => new Promise<void>((done) => {
+      it('supports Arrays and Arrays', async () => new Promise<void>((resolve, reject) => {
         const a: Promise<unknown>[] = [];
         const b: Promise<unknown>[] = [];
         a[0] = Promise.resolve(b);
@@ -343,11 +352,14 @@ describe('mutual cyclic references', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Arrays and Objects', async () => new Promise<void>((done) => {
+      it('supports Arrays and Objects', async () => new Promise<void>((resolve, reject) => {
         const a: Promise<unknown>[] = [];
         const b: Record<string, Promise<unknown>> = {};
         a[0] = Promise.resolve(b);
@@ -359,11 +371,14 @@ describe('mutual cyclic references', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports Objects and Objects', async () => new Promise<void>((done) => {
+      it('supports Objects and Objects', async () => new Promise<void>((resolve, reject) => {
         const a: Record<string, Promise<unknown>> = {};
         const b: Record<string, Promise<unknown>> = {};
         a[0] = Promise.resolve(b);
@@ -375,7 +390,10 @@ describe('mutual cyclic references', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -470,7 +488,7 @@ describe('mutual cyclic references', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Arrays and Arrays', async () => new Promise<void>((done) => {
+    it('supports Arrays and Arrays', async () => new Promise<void>((resolve, reject) => {
       const a: Promise<unknown>[] = [];
       const b: Promise<unknown>[] = [];
       a[0] = Promise.resolve(b);
@@ -481,11 +499,14 @@ describe('mutual cyclic references', () => {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Arrays and Objects', async () => new Promise<void>((done) => {
+    it('supports Arrays and Objects', async () => new Promise<void>((resolve, reject) => {
       const a: Promise<unknown>[] = [];
       const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
@@ -496,11 +517,14 @@ describe('mutual cyclic references', () => {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Objects and Objects', async () => new Promise<void>((done) => {
+    it('supports Objects and Objects', async () => new Promise<void>((resolve, reject) => {
       const a: Record<string, Promise<unknown>> = {};
       const b: Record<string, Promise<unknown>> = {};
       a[0] = Promise.resolve(b);
@@ -511,7 +535,10 @@ describe('mutual cyclic references', () => {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

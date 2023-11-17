@@ -85,53 +85,68 @@ describe('number', () => {
   });
 
   describe('crossSerializeStream', () => {
-    it('supports numbers', async () => new Promise<void>((done) => {
+    it('supports numbers', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(0xDEADBEEF), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports NaN', async () => new Promise<void>((done) => {
+    it('supports NaN', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(NaN), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Infinity', async () => new Promise<void>((done) => {
+    it('supports Infinity', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(Infinity), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports -Infinity', async () => new Promise<void>((done) => {
+    it('supports -Infinity', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(-Infinity), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports -0', async () => new Promise<void>((done) => {
+    it('supports -0', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(-0), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
@@ -167,53 +182,68 @@ describe('number', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports numbers', async () => new Promise<void>((done) => {
+    it('supports numbers', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(0xDEADBEEF), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports NaN', async () => new Promise<void>((done) => {
+    it('supports NaN', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(NaN), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports Infinity', async () => new Promise<void>((done) => {
+    it('supports Infinity', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(Infinity), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports -Infinity', async () => new Promise<void>((done) => {
+    it('supports -Infinity', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(-Infinity), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports -0', async () => new Promise<void>((done) => {
+    it('supports -0', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(-0), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

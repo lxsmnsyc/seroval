@@ -50,19 +50,22 @@ describe('Response', () => {
   });
 
   describe('crossSerializeStream', () => {
-    it('supports Response', async () => new Promise<void>((done) => {
+    it('supports Response', async () => new Promise<void>((resolve, reject) => {
       const example = new Response(EXAMPLE_BODY);
       crossSerializeStream(example, {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Response', async () => new Promise<void>((done) => {
+      it('supports Response', async () => new Promise<void>((resolve, reject) => {
         const example = new Response(EXAMPLE_BODY);
         crossSerializeStream(example, {
           scopeId: 'example',
@@ -70,7 +73,10 @@ describe('Response', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -89,14 +95,17 @@ describe('Response', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Response', async () => new Promise<void>((done) => {
+    it('supports Response', async () => new Promise<void>((resolve, reject) => {
       const example = new Response(EXAMPLE_BODY);
       toCrossJSONStream(example, {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

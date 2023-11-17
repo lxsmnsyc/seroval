@@ -54,23 +54,29 @@ describe('boolean', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports true value', async () => new Promise<void>((done) => {
+    it('supports true value', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(true), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports false value', async () => new Promise<void>((done) => {
+    it('supports false value', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(false), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
@@ -92,23 +98,29 @@ describe('boolean', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports true value', async () => new Promise<void>((done) => {
+    it('supports true value', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(true), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports false value', async () => new Promise<void>((done) => {
+    it('supports false value', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(false), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

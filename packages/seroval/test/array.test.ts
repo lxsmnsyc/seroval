@@ -142,46 +142,58 @@ describe('arrays', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Arrays', async () => new Promise<void>((done) => {
+    it('supports Arrays', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports self recursion', async () => new Promise<void>((done) => {
+    it('supports self recursion', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(ASYNC_RECURSIVE_EXAMPLE, {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Arrays', async () => new Promise<void>((done) => {
+      it('supports Arrays', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports self recursion', async () => new Promise<void>((done) => {
+      it('supports self recursion', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(ASYNC_RECURSIVE_EXAMPLE, {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
@@ -232,23 +244,29 @@ describe('arrays', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Arrays', async () => new Promise<void>((done) => {
+    it('supports Arrays', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(EXAMPLE), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports self recursion', async () => new Promise<void>((done) => {
+    it('supports self recursion', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(ASYNC_RECURSIVE_EXAMPLE, {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));

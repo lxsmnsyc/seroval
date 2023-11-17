@@ -143,17 +143,20 @@ describe('Set', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Set', async () => new Promise<void>((done) => {
+    it('supports Set', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports self-recursion', async () => new Promise<void>((done) => {
+    it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
       const example: Set<Promise<unknown>> = new Set();
       example.add(Promise.resolve(example));
       crossSerializeStream(example, {
@@ -161,23 +164,29 @@ describe('Set', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Set', async () => new Promise<void>((done) => {
+      it('supports Set', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports self-recursion', async () => new Promise<void>((done) => {
+      it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
         const example: Set<Promise<unknown>> = new Set();
         example.add(Promise.resolve(example));
         crossSerializeStream(example, {
@@ -186,7 +195,10 @@ describe('Set', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));

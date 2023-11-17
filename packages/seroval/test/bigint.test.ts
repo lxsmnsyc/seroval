@@ -54,13 +54,16 @@ describe('bigint', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports bigint', async () => new Promise<void>((done) => {
+    it('supports bigint', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
@@ -79,13 +82,16 @@ describe('bigint', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports bigint', async () => new Promise<void>((done) => {
+    it('supports bigint', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(EXAMPLE), {
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
