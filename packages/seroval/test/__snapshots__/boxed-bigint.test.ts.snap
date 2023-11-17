@@ -24,6 +24,14 @@ exports[`boxed bigint > serialize > supports boxed bigint 1`] = `"Object(9007199
 
 exports[`boxed bigint > serializeAsync > supports boxed bigint 1`] = `"Promise.resolve(Object(9007199254740991n))"`;
 
+exports[`boxed bigint > toCrossJSON > supports boxed bigint 1`] = `"{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}"`;
+
+exports[`boxed bigint > toCrossJSONAsync > supports boxed bigint 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}}"`;
+
+exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}}"`;
+
 exports[`boxed bigint > toJSON > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}},\\"f\\":16383,\\"m\\":[]}"`;
