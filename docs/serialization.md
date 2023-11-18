@@ -9,6 +9,9 @@
 - `crossSerialize`
 - `crossSerializeAsync`
 - `crossSerializeStream`
+- `toCrossJSON`
+- `toCrossJSONAsync`
+- `toCrossJSONStream`
 
 ## Basic serialization
 
