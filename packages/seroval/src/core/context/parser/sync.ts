@@ -25,7 +25,6 @@ import { BIGINT_FLAG, Feature } from '../../compat';
 import type { WellKnownSymbols } from '../../constants';
 import {
   SerovalNodeType,
-  UNIVERSAL_SENTINEL,
 } from '../../constants';
 import { createCustomEventOptions, createEventOptions } from '../../utils/constructors';
 import {
@@ -69,6 +68,7 @@ import {
   createURLNode,
   createURLSearchParamsNode,
 } from '../../web-api';
+import { UNIVERSAL_SENTINEL } from '../../special-reference';
 
 type ObjectLikeNode =
   | SerovalObjectNode

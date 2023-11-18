@@ -12,7 +12,7 @@ import {
 import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
 import { BIGINT_FLAG, Feature } from '../../compat';
-import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../../constants';
+import { SerovalNodeType } from '../../constants';
 import { createRequestOptions, createResponseOptions } from '../../utils/constructors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE } from '../../literals';
 import { serializeString } from '../../string';
@@ -28,6 +28,7 @@ import type {
 } from '../../types';
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
 import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
+import { UNIVERSAL_SENTINEL } from '../../special-reference';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;

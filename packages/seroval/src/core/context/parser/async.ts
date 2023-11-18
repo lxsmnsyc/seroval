@@ -25,7 +25,6 @@ import {
 import { BIGINT_FLAG, Feature } from '../../compat';
 import {
   SerovalNodeType,
-  UNIVERSAL_SENTINEL,
 } from '../../constants';
 import {
   createRequestOptions,
@@ -80,6 +79,7 @@ import {
   createCustomEventNode,
   createReadableStreamNode,
 } from '../../web-api';
+import { UNIVERSAL_SENTINEL } from '../../special-reference';
 
 type ObjectLikeNode =
   | SerovalObjectNode
