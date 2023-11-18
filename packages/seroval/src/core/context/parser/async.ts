@@ -111,7 +111,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   }
 
   private async parseProperties(
-    properties: Record<string, unknown>,
+    properties: Record<string | symbol, unknown>,
   ): Promise<SerovalObjectRecordNode> {
     const entries = Object.entries(properties);
     const keyNodes: SerovalObjectRecordKey[] = [];
@@ -134,7 +134,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           createIteratorFactoryInstanceNode(
             this.parseIteratorFactory(),
             await this.parse(
-              iteratorToSequence(properties as Iterable<unknown>),
+              iteratorToSequence(properties as unknown as Iterable<unknown>),
             ),
           ),
         );
@@ -147,10 +147,18 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           createAsyncIteratorFactoryInstanceNode(
             this.parseAsyncIteratorFactory(),
             await this.parse(
-              await asyncIteratorToSequence(properties as AsyncIterable<unknown>),
+              await asyncIteratorToSequence(properties as unknown as AsyncIterable<unknown>),
             ),
           ),
         );
+      }
+      if (Symbol.toStringTag in properties) {
+        keyNodes.push(this.parseWKSymbol(Symbol.toStringTag));
+        valueNodes.push(await this.parse(properties[Symbol.toStringTag]));
+      }
+      if (Symbol.isConcatSpreadable in properties) {
+        keyNodes.push(this.parseWKSymbol(Symbol.isConcatSpreadable));
+        valueNodes.push(await this.parse(properties[Symbol.isConcatSpreadable]));
       }
     }
     return {

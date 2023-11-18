@@ -90,7 +90,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
   }
 
   protected parseProperties(
-    properties: Record<string, unknown>,
+    properties: Record<string | symbol, unknown>,
   ): SerovalObjectRecordNode {
     const entries = Object.entries(properties);
     const keyNodes: SerovalObjectRecordKey[] = [];
@@ -113,7 +113,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
           createIteratorFactoryInstanceNode(
             this.parseIteratorFactory(),
             this.parse(
-              iteratorToSequence(properties as Iterable<unknown>),
+              iteratorToSequence(properties as unknown as Iterable<unknown>),
             ),
           ),
         );
@@ -126,10 +126,18 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
           createAsyncIteratorFactoryInstanceNode(
             this.parseAsyncIteratorFactory(),
             this.parse(
-              asyncIteratorToReadableStream(properties as AsyncIterable<unknown>),
+              asyncIteratorToReadableStream(properties as unknown as AsyncIterable<unknown>),
             ),
           ),
         );
+      }
+      if (Symbol.toStringTag in properties) {
+        keyNodes.push(this.parseWKSymbol(Symbol.toStringTag));
+        valueNodes.push(this.parse(properties[Symbol.toStringTag]));
+      }
+      if (Symbol.isConcatSpreadable in properties) {
+        keyNodes.push(this.parseWKSymbol(Symbol.isConcatSpreadable));
+        valueNodes.push(this.parse(properties[Symbol.isConcatSpreadable]));
       }
     }
     return {
