@@ -1,3 +1,5 @@
+import type BaseStreamParserContext from '../context/parser/stream';
+
 /* eslint-disable no-await-in-loop */
 export interface Sequence {
   v: unknown[];
@@ -124,11 +126,12 @@ export function sequenceToAsyncIterator<T>(
 
 export function asyncIteratorToReadableStream<T>(
   source: AsyncIterable<T>,
+  parser: BaseStreamParserContext,
 ): ReadableStream<unknown> {
   return new ReadableStream({
     async start(controller): Promise<void> {
       const iterator = source[Symbol.asyncIterator]();
-      while (true) {
+      while (parser.isAlive()) {
         try {
           const result = await iterator.next();
           controller.enqueue([result.done ? 2 : 0, result.value]);
@@ -140,6 +143,7 @@ export function asyncIteratorToReadableStream<T>(
           controller.enqueue([1, error]);
         }
       }
+      controller.close();
     },
   });
 }
