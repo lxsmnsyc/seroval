@@ -116,9 +116,10 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     // Check special properties, symbols in this case
     if (this.features & Feature.Symbol) {
-      if (Symbol.iterator in properties) {
+      let symbol = Symbol.iterator;
+      if (symbol in properties) {
         keyNodes.push(
-          this.parseWKSymbol(Symbol.iterator),
+          this.parseWKSymbol(symbol),
         );
         valueNodes.push(
           createIteratorFactoryInstanceNode(
@@ -129,13 +130,15 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
           ),
         );
       }
-      if (Symbol.toStringTag in properties) {
-        keyNodes.push(this.parseWKSymbol(Symbol.toStringTag));
-        valueNodes.push(this.parse(properties[Symbol.toStringTag]));
+      symbol = Symbol.toStringTag;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(createStringNode(properties[symbol] as string));
       }
-      if (Symbol.isConcatSpreadable in properties) {
-        keyNodes.push(this.parseWKSymbol(Symbol.isConcatSpreadable));
-        valueNodes.push(this.parse(properties[Symbol.isConcatSpreadable]));
+      symbol = Symbol.isConcatSpreadable;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
       }
     }
     return {

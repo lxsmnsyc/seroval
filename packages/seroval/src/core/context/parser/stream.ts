@@ -7,13 +7,14 @@ import {
   createIteratorFactoryInstanceNode,
   createPluginNode,
   createRegExpNode,
+  createStringNode,
 } from '../../base-primitives';
 import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../../constants';
 import { createRequestOptions, createResponseOptions } from '../../utils/constructors';
-import { NULL_NODE } from '../../literals';
+import { FALSE_NODE, NULL_NODE, TRUE_NODE } from '../../literals';
 import { serializeString } from '../../string';
 import type {
   SerovalNode,
@@ -105,9 +106,10 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
     // Check special properties, symbols in this case
     if (this.features & Feature.Symbol) {
-      if (Symbol.iterator in properties) {
+      let symbol = Symbol.iterator;
+      if (symbol in properties) {
         keyNodes.push(
-          this.parseWKSymbol(Symbol.iterator),
+          this.parseWKSymbol(symbol),
         );
         valueNodes.push(
           createIteratorFactoryInstanceNode(
@@ -118,9 +120,10 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
           ),
         );
       }
-      if (Symbol.asyncIterator in properties) {
+      symbol = Symbol.asyncIterator;
+      if (symbol in properties) {
         keyNodes.push(
-          this.parseWKSymbol(Symbol.asyncIterator),
+          this.parseWKSymbol(symbol),
         );
         valueNodes.push(
           createAsyncIteratorFactoryInstanceNode(
@@ -131,13 +134,15 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
           ),
         );
       }
-      if (Symbol.toStringTag in properties) {
-        keyNodes.push(this.parseWKSymbol(Symbol.toStringTag));
-        valueNodes.push(this.parse(properties[Symbol.toStringTag]));
+      symbol = Symbol.toStringTag;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(createStringNode(properties[symbol] as string));
       }
-      if (Symbol.isConcatSpreadable in properties) {
-        keyNodes.push(this.parseWKSymbol(Symbol.isConcatSpreadable));
-        valueNodes.push(this.parse(properties[Symbol.isConcatSpreadable]));
+      symbol = Symbol.isConcatSpreadable;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
       }
     }
     return {
