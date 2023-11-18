@@ -1,4 +1,5 @@
-import assert from './assert';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
+import assert from './utils/assert';
 import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
 import {
@@ -8,20 +9,34 @@ import {
   NEG_ZERO_NODE,
 } from './literals';
 import { getReferenceID } from './reference';
+import { getErrorConstructor } from './utils/error';
 import { serializeString } from './string';
 import type {
+  SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
+  SerovalArrayNode,
+  SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntNode,
+  SerovalBigIntTypedArrayNode,
+  SerovalBoxedNode,
   SerovalConstantNode,
+  SerovalDataViewNode,
   SerovalDateNode,
+  SerovalErrorNode,
   SerovalIndexedValueNode,
+  SerovalIteratorFactoryInstanceNode,
+  SerovalNode,
   SerovalNumberNode,
+  SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
+  SerovalSetNode,
   SerovalStringNode,
+  SerovalTypedArrayNode,
   SerovalWKSymbolNode,
 } from './types';
+import { getObjectFlag } from './utils/get-object-flag';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
   switch (value) {
@@ -223,6 +238,219 @@ export function createPluginNode(
     p: undefined,
     e: undefined,
     a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createArrayNode(
+  id: number,
+  current: unknown[],
+  parsedItems: SerovalNode[],
+): SerovalArrayNode {
+  return {
+    t: SerovalNodeType.Array,
+    i: id,
+    s: undefined,
+    l: current.length,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: parsedItems,
+    f: undefined,
+    b: undefined,
+    o: getObjectFlag(current),
+  };
+}
+
+export function createBoxedNode(
+  id: number,
+  boxed: SerovalNode,
+): SerovalBoxedNode {
+  return {
+    t: SerovalNodeType.Boxed,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: boxed,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createTypedArrayNode(
+  id: number,
+  current: TypedArrayValue,
+  buffer: SerovalNode,
+): SerovalTypedArrayNode {
+  return {
+    t: SerovalNodeType.TypedArray,
+    i: id,
+    s: undefined,
+    l: current.length,
+    c: current.constructor.name,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: buffer,
+    b: current.byteOffset,
+    o: undefined,
+  };
+}
+
+export function createBigIntTypedArrayNode(
+  id: number,
+  current: BigIntTypedArrayValue,
+  buffer: SerovalNode,
+): SerovalBigIntTypedArrayNode {
+  return {
+    t: SerovalNodeType.BigIntTypedArray,
+    i: id,
+    s: undefined,
+    l: current.length,
+    c: current.constructor.name,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: buffer,
+    b: current.byteOffset,
+    o: undefined,
+  };
+}
+
+export function createDataViewNode(
+  id: number,
+  current: DataView,
+  buffer: SerovalNode,
+): SerovalDataViewNode {
+  return {
+    t: SerovalNodeType.DataView,
+    i: id,
+    s: undefined,
+    l: current.byteLength,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: buffer,
+    b: current.byteOffset,
+    o: undefined,
+  };
+}
+
+export function createErrorNode(
+  id: number,
+  current: Error,
+  options: SerovalObjectRecordNode | undefined,
+): SerovalErrorNode {
+  return {
+    t: SerovalNodeType.Error,
+    i: id,
+    s: getErrorConstructor(current),
+    l: undefined,
+    c: undefined,
+    m: serializeString(current.message),
+    p: options,
+    e: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createAggregateErrorNode(
+  id: number,
+  current: AggregateError,
+  options: SerovalObjectRecordNode | undefined,
+): SerovalAggregateErrorNode {
+  return {
+    t: SerovalNodeType.AggregateError,
+    i: id,
+    s: getErrorConstructor(current),
+    l: undefined,
+    c: undefined,
+    m: serializeString(current.message),
+    p: options,
+    e: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createSetNode(
+  id: number,
+  size: number,
+  items: SerovalNode[],
+): SerovalSetNode {
+  return {
+    t: SerovalNodeType.Set,
+    i: id,
+    s: undefined,
+    l: size,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: items,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createIteratorFactoryInstanceNode(
+  factory: SerovalNode,
+  items: SerovalNode,
+): SerovalIteratorFactoryInstanceNode {
+  return {
+    t: SerovalNodeType.IteratorFactoryInstance,
+    i: undefined,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: [
+      factory,
+      items,
+    ],
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createAsyncIteratorFactoryInstanceNode(
+  factory: SerovalNode,
+  items: SerovalNode,
+): SerovalAsyncIteratorFactoryInstanceNode {
+  return {
+    t: SerovalNodeType.AsyncIteratorFactoryInstance,
+    i: undefined,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: [
+      factory,
+      items,
+    ],
     f: undefined,
     b: undefined,
     o: undefined,

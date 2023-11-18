@@ -1,27 +1,34 @@
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
-import UnsupportedTypeError from '../UnsupportedTypeError';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
+import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
   createArrayBufferNode,
+  createAsyncIteratorFactoryInstanceNode,
   createDateNode,
+  createIteratorFactoryInstanceNode,
   createPluginNode,
   createRegExpNode,
-} from '../base-primitives';
+  createStringNode,
+} from '../../base-primitives';
 import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
-import { BIGINT_FLAG, Feature } from '../compat';
-import { SerovalNodeType, UNIVERSAL_SENTINEL } from '../constants';
-import { createRequestOptions, createResponseOptions } from '../constructors';
-import { NULL_NODE } from '../literals';
-import { serializeString } from '../string';
+import { BIGINT_FLAG, Feature } from '../../compat';
+import { SerovalNodeType } from '../../constants';
+import { createRequestOptions, createResponseOptions } from '../../utils/constructors';
+import { FALSE_NODE, NULL_NODE, TRUE_NODE } from '../../literals';
+import { serializeString } from '../../string';
 import type {
   SerovalNode,
+  SerovalObjectRecordKey,
+  SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
   SerovalReadableStreamConstructorNode,
   SerovalRequestNode,
   SerovalResponseNode,
-} from '../types';
-import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
+} from '../../types';
+import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
+import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
+import { UNIVERSAL_SENTINEL } from '../../special-reference';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
@@ -82,6 +89,71 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     if (--this.pending <= 0) {
       this.onDone();
     }
+  }
+
+  protected parseProperties(
+    properties: Record<string | symbol, unknown>,
+  ): SerovalObjectRecordNode {
+    const entries = Object.entries(properties);
+    const keyNodes: SerovalObjectRecordKey[] = [];
+    const valueNodes: SerovalNode[] = [];
+    for (
+      let i = 0, len = entries.length;
+      i < len;
+      i++
+    ) {
+      keyNodes.push(serializeString(entries[i][0]));
+      valueNodes.push(this.parse(entries[i][1]));
+    }
+    // Check special properties, symbols in this case
+    if (this.features & Feature.Symbol) {
+      let symbol = Symbol.iterator;
+      if (symbol in properties) {
+        keyNodes.push(
+          this.parseWKSymbol(symbol),
+        );
+        valueNodes.push(
+          createIteratorFactoryInstanceNode(
+            this.parseIteratorFactory(),
+            this.parse(
+              iteratorToSequence(properties as unknown as Iterable<unknown>),
+            ),
+          ),
+        );
+      }
+      symbol = Symbol.asyncIterator;
+      if (symbol in properties) {
+        keyNodes.push(
+          this.parseWKSymbol(symbol),
+        );
+        valueNodes.push(
+          createAsyncIteratorFactoryInstanceNode(
+            this.parseAsyncIteratorFactory(),
+            this.parse(
+              asyncIteratorToReadableStream(
+                properties as unknown as AsyncIterable<unknown>,
+                this,
+              ),
+            ),
+          ),
+        );
+      }
+      symbol = Symbol.toStringTag;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(createStringNode(properties[symbol] as string));
+      }
+      symbol = Symbol.isConcatSpreadable;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
+      }
+    }
+    return {
+      k: keyNodes,
+      v: valueNodes,
+      s: keyNodes.length,
+    };
   }
 
   private pushReadableStreamReader(
@@ -450,7 +522,10 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (currentFeatures & Feature.Symbol && Symbol.iterator in current) {
+    if (
+      currentFeatures & Feature.Symbol
+      && (Symbol.iterator in current || Symbol.asyncIterator in current)
+    ) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);

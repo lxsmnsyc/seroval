@@ -1,35 +1,44 @@
 /* eslint-disable prefer-destructuring */
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
-import UnsupportedTypeError from '../UnsupportedTypeError';
-import assert from '../assert';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
+import UnsupportedTypeError from '../../UnsupportedTypeError';
+import assert from '../../utils/assert';
 import {
+  createAggregateErrorNode,
   createArrayBufferNode,
+  createArrayNode,
   createBigIntNode,
+  createBigIntTypedArrayNode,
+  createBoxedNode,
+  createDataViewNode,
   createDateNode,
+  createErrorNode,
+  createIteratorFactoryInstanceNode,
   createNumberNode,
   createPluginNode,
   createRegExpNode,
+  createSetNode,
   createStringNode,
+  createTypedArrayNode,
   createWKSymbolNode,
-} from '../base-primitives';
-import { BIGINT_FLAG, Feature } from '../compat';
-import type { WellKnownSymbols } from '../constants';
+} from '../../base-primitives';
+import { BIGINT_FLAG, Feature } from '../../compat';
+import type { WellKnownSymbols } from '../../constants';
 import {
-  SerovalNodeType, UNIVERSAL_SENTINEL,
-} from '../constants';
-import { createCustomEventOptions, createEventOptions } from '../constructors';
+  SerovalNodeType,
+} from '../../constants';
+import { createCustomEventOptions, createEventOptions } from '../../utils/constructors';
 import {
   FALSE_NODE,
   NULL_NODE,
   TRUE_NODE,
   UNDEFINED_NODE,
-} from '../literals';
-import type { BaseParserContextOptions } from '../parser-context';
-import { BaseParserContext } from '../parser-context';
-import { hasReferenceID } from '../reference';
-import { getErrorConstructor, getErrorOptions, getObjectFlag } from '../shared';
-import { serializeString } from '../string';
-import { SerovalObjectRecordSpecialKey } from '../types';
+} from '../../literals';
+import { iteratorToSequence } from '../../utils/iterator-to-sequence';
+import type { BaseParserContextOptions } from '../parser';
+import { BaseParserContext } from '../parser';
+import { hasReferenceID } from '../../reference';
+import { getErrorOptions } from '../../utils/error';
+import { serializeString } from '../../string';
 import type {
   SerovalBoxedNode,
   SerovalArrayNode,
@@ -51,37 +60,30 @@ import type {
   SerovalTypedArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
-} from '../types';
-import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../web-api';
+} from '../../types';
+import {
+  createCustomEventNode,
+  createDOMExceptionNode,
+  createEventNode,
+  createURLNode,
+  createURLSearchParamsNode,
+} from '../../web-api';
+import { UNIVERSAL_SENTINEL } from '../../special-reference';
 
 type ObjectLikeNode =
   | SerovalObjectNode
   | SerovalNullConstructorNode;
 
-export interface BaseSyncParserContextOptions extends BaseParserContextOptions {
-  refs?: Map<unknown, number>;
-}
+export type BaseSyncParserContextOptions = BaseParserContextOptions
 
 export default abstract class BaseSyncParserContext extends BaseParserContext {
   protected parseItems(
     current: unknown[],
   ): SerovalNode[] {
-    const size = current.length;
     const nodes = [];
-    const deferred = [];
-    for (let i = 0, item: unknown; i < size; i++) {
+    for (let i = 0, len = current.length; i < len; i++) {
       if (i in current) {
-        item = current[i];
-        if (this.isIterable(item)) {
-          deferred[i] = item;
-        } else {
-          nodes[i] = this.parse(item);
-        }
-      }
-    }
-    for (let i = 0; i < size; i++) {
-      if (i in deferred) {
-        nodes[i] = this.parse(deferred[i]);
+        nodes[i] = this.parse(current[i]);
       }
     }
     return nodes;
@@ -91,56 +93,52 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: unknown[],
   ): SerovalArrayNode {
-    return {
-      t: SerovalNodeType.Array,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: this.parseItems(current),
-      f: undefined,
-      b: undefined,
-      o: getObjectFlag(current),
-    };
+    return createArrayNode(
+      id,
+      current,
+      this.parseItems(current),
+    );
   }
 
   protected parseProperties(
-    properties: Record<string, unknown>,
+    properties: Record<string | symbol, unknown>,
   ): SerovalObjectRecordNode {
     const entries = Object.entries(properties);
     const keyNodes: SerovalObjectRecordKey[] = [];
     const valueNodes: SerovalNode[] = [];
-    const deferredKeys: string[] = [];
-    const deferredValues: unknown[] = [];
     for (
-      let i = 0, len = entries.length, key: string, item: unknown;
+      let i = 0, len = entries.length;
       i < len;
       i++
     ) {
-      key = serializeString(entries[i][0]);
-      item = entries[i][1];
-      // Defer iterables since iterables have lazy evaluation.
-      // Of course this doesn't include types seroval supports.
-      if (this.isIterable(item)) {
-        deferredKeys.push(key);
-        deferredValues.push(item);
-      } else {
-        keyNodes.push(key);
-        valueNodes.push(this.parse(item));
-      }
-    }
-    for (let i = 0, len = deferredKeys.length; i < len; i++) {
-      keyNodes.push(deferredKeys[i]);
-      valueNodes.push(this.parse(deferredValues[i]));
+      keyNodes.push(serializeString(entries[i][0]));
+      valueNodes.push(this.parse(entries[i][1]));
     }
     // Check special properties, symbols in this case
     if (this.features & Feature.Symbol) {
-      if (Symbol.iterator in properties) {
-        keyNodes.push(SerovalObjectRecordSpecialKey.SymbolIterator);
-        valueNodes.push(this.parse(Array.from(properties as Iterable<unknown>)));
+      let symbol = Symbol.iterator;
+      if (symbol in properties) {
+        keyNodes.push(
+          this.parseWKSymbol(symbol),
+        );
+        valueNodes.push(
+          createIteratorFactoryInstanceNode(
+            this.parseIteratorFactory(),
+            this.parse(
+              iteratorToSequence(properties as unknown as Iterable<unknown>),
+            ),
+          ),
+        );
+      }
+      symbol = Symbol.toStringTag;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(createStringNode(properties[symbol] as string));
+      }
+      symbol = Symbol.isConcatSpreadable;
+      if (symbol in properties) {
+        keyNodes.push(this.parseWKSymbol(symbol));
+        valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
       }
     }
     return {
@@ -155,100 +153,40 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     current: Record<string, unknown>,
     empty: boolean,
   ): ObjectLikeNode {
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: this.parseProperties(current),
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: getObjectFlag(current),
-    };
+    return this.createObjectNode(
+      id,
+      current,
+      empty,
+      this.parseProperties(current),
+    );
   }
 
   protected parseBoxed(
     id: number,
     current: object,
   ): SerovalBoxedNode {
-    return {
-      t: SerovalNodeType.Boxed,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.valueOf()),
-      b: undefined,
-      o: undefined,
-    };
+    return createBoxedNode(id, this.parse(current.valueOf()));
   }
 
   protected parseTypedArray(
     id: number,
     current: TypedArrayValue,
   ): SerovalTypedArrayNode {
-    return {
-      t: SerovalNodeType.TypedArray,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: current.constructor.name,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-    };
+    return createTypedArrayNode(id, current, this.parse(current.buffer));
   }
 
   protected parseBigIntTypedArray(
     id: number,
     current: BigIntTypedArrayValue,
   ): SerovalBigIntTypedArrayNode {
-    return {
-      t: SerovalNodeType.BigIntTypedArray,
-      i: id,
-      s: undefined,
-      l: current.length,
-      c: current.constructor.name,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-    };
+    return createBigIntTypedArrayNode(id, current, this.parse(current.buffer));
   }
 
   protected parseDataView(
     id: number,
     current: DataView,
   ): SerovalDataViewNode {
-    return {
-      t: SerovalNodeType.DataView,
-      i: id,
-      s: undefined,
-      l: current.byteLength,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(current.buffer),
-      b: current.byteOffset,
-      o: undefined,
-    };
+    return createDataViewNode(id, current, this.parse(current.buffer));
   }
 
   protected parseError(
@@ -256,23 +194,27 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     current: Error,
   ): SerovalErrorNode {
     const options = getErrorOptions(current, this.features);
-    const optionsNode = options
-      ? this.parseProperties(options)
-      : undefined;
-    return {
-      t: SerovalNodeType.Error,
-      i: id,
-      s: getErrorConstructor(current),
-      l: undefined,
-      c: undefined,
-      m: serializeString(current.message),
-      p: optionsNode,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
+    return createErrorNode(
+      id,
+      current,
+      options
+        ? this.parseProperties(options)
+        : undefined,
+    );
+  }
+
+  protected parseAggregateError(
+    id: number,
+    current: AggregateError,
+  ): SerovalAggregateErrorNode {
+    const options = getErrorOptions(current, this.features);
+    return createAggregateErrorNode(
+      id,
+      current,
+      options
+        ? this.parseProperties(options)
+        : undefined,
+    );
   }
 
   protected parseMap(
@@ -281,70 +223,27 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
   ): SerovalMapNode {
     const keyNodes: SerovalNode[] = [];
     const valueNodes: SerovalNode[] = [];
-    const deferredKey: unknown[] = [];
-    const deferredValue: unknown[] = [];
     for (const [key, value] of current.entries()) {
-      // Either key or value might be an iterable
-      if (this.isIterable(key) || this.isIterable(value)) {
-        deferredKey.push(key);
-        deferredValue.push(value);
-      } else {
-        keyNodes.push(this.parse(key));
-        valueNodes.push(this.parse(value));
-      }
+      keyNodes.push(this.parse(key));
+      valueNodes.push(this.parse(value));
     }
-    for (let i = 0, len = deferredKey.length; i < len; i++) {
-      keyNodes.push(this.parse(deferredKey[i]));
-      valueNodes.push(this.parse(deferredValue[i]));
-    }
-    return {
-      t: SerovalNodeType.Map,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: { k: keyNodes, v: valueNodes, s: current.size },
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
+    return this.createMapNode(
+      id,
+      keyNodes,
+      valueNodes,
+      current.size,
+    );
   }
 
   protected parseSet(
     id: number,
     current: Set<unknown>,
   ): SerovalSetNode {
-    const nodes: SerovalNode[] = [];
-    const deferred: unknown[] = [];
+    const items: SerovalNode[] = [];
     for (const item of current.keys()) {
-      // Iterables are lazy, so the evaluation must be deferred
-      if (this.isIterable(item)) {
-        deferred.push(item);
-      } else {
-        nodes.push(this.parse(item));
-      }
+      items.push(this.parse(item));
     }
-    // Parse deferred items
-    for (let i = 0, len = deferred.length; i < len; i++) {
-      nodes.push(this.parse(deferred[i]));
-    }
-    return {
-      t: SerovalNodeType.Set,
-      i: id,
-      s: undefined,
-      l: current.size,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: nodes,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
+    return createSetNode(id, current.size, items);
   }
 
   protected parsePlainProperties(
@@ -353,22 +252,9 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     const size = entries.length;
     const keyNodes: string[] = [];
     const valueNodes: SerovalNode[] = [];
-    const deferredKeys: string[] = [];
-    const deferredValues: unknown[] = [];
-    for (let i = 0, key: string, item: unknown; i < size; i++) {
-      key = serializeString(entries[i][0]);
-      item = entries[i][1];
-      if (this.isIterable(item)) {
-        deferredKeys.push(key);
-        deferredValues.push(item);
-      } else {
-        keyNodes.push(key);
-        valueNodes.push(this.parse(item));
-      }
-    }
-    for (let i = 0, len = deferredKeys.length; i < len; i++) {
-      keyNodes.push(deferredKeys[i]);
-      valueNodes.push(this.parse(deferredValues[i]));
+    for (let i = 0; i < size; i++) {
+      keyNodes.push(serializeString(entries[i][0]));
+      valueNodes.push(this.parse(entries[i][1]));
     }
     return {
       k: keyNodes,
@@ -429,64 +315,14 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     current: Event,
   ): SerovalEventNode {
-    return {
-      t: SerovalNodeType.Event,
-      i: id,
-      s: serializeString(current.type),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(createEventOptions(current)),
-      b: undefined,
-      o: undefined,
-    };
+    return createEventNode(id, current.type, this.parse(createEventOptions(current)));
   }
 
   protected parseCustomEvent(
     id: number,
     current: CustomEvent,
   ): SerovalCustomEventNode {
-    return {
-      t: SerovalNodeType.CustomEvent,
-      i: id,
-      s: serializeString(current.type),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parse(createCustomEventOptions(current)),
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  protected parseAggregateError(
-    id: number,
-    current: AggregateError,
-  ): SerovalAggregateErrorNode {
-    const options = getErrorOptions(current, this.features);
-    const optionsNode = options
-      ? this.parseProperties(options)
-      : undefined;
-    return {
-      t: SerovalNodeType.AggregateError,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: serializeString(current.message),
-      p: optionsNode,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
+    return createCustomEventNode(id, current.type, this.parse(createCustomEventOptions(current)));
   }
 
   protected parsePlugin(
@@ -636,7 +472,10 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (currentFeatures & Feature.Symbol && Symbol.iterator in current) {
+    if (
+      currentFeatures & Feature.Symbol
+      && Symbol.iterator in current
+    ) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);

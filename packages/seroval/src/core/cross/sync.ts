@@ -1,6 +1,6 @@
-import BaseSyncParserContext from '../base/sync';
+import BaseSyncParserContext from '../context/parser/sync';
 import type { SerovalMode } from '../plugin';
-import type { CrossParserContextOptions } from './cross-parser';
+import type { CrossParserContextOptions } from './parser';
 
 export type CrossSyncParserContextOptions = CrossParserContextOptions
 

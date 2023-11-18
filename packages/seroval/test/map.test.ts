@@ -6,50 +6,55 @@ import {
   crossSerializeStream,
   deserialize,
   Feature,
+  fromCrossJSON,
   fromJSON,
   serialize,
   serializeAsync,
+  toCrossJSON,
+  toCrossJSONAsync,
+  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
 
+const EXAMPLE = new Map([[1, 2], [3, 4]]);
+const RECURSIVE = new Map<unknown, unknown>();
+RECURSIVE.set(RECURSIVE, RECURSIVE);
+
+const ASYNC_RECURSIVE = new Map<Promise<unknown>, Promise<unknown>>();
+ASYNC_RECURSIVE.set(Promise.resolve(ASYNC_RECURSIVE), Promise.resolve(ASYNC_RECURSIVE));
+
 describe('Map', () => {
   describe('serialize', () => {
     it('supports Map', () => {
-      const example = new Map([[1, 2], [3, 4]]);
-      const result = serialize(example);
+      const result = serialize(EXAMPLE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Map<number, number>>(result);
+      const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Map);
-      expect(back.get(1)).toBe(example.get(1));
-      expect(back.get(3)).toBe(example.get(3));
+      expect(back.get(1)).toBe(EXAMPLE.get(1));
+      expect(back.get(3)).toBe(EXAMPLE.get(3));
     });
     it('supports self-recursion', () => {
-      const example: Map<unknown, unknown> = new Map();
-      example.set(example, example);
-      const result = serialize(example);
+      const result = serialize(RECURSIVE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Map<unknown, unknown>>(result);
+      const back = deserialize<typeof RECURSIVE>(result);
       expect(back.has(back)).toBe(true);
       expect(back.get(back)).toBe(back);
     });
   });
   describe('serializeAsync', () => {
     it('supports Map', async () => {
-      const example = new Map([[1, 2], [3, 4]]);
-      const result = await serializeAsync(Promise.resolve(example));
+      const result = await serializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
-      const back = await deserialize<Promise<Map<number, number>>>(result);
+      const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Map);
-      expect(back.get(1)).toBe(example.get(1));
-      expect(back.get(3)).toBe(example.get(3));
+      expect(back.get(1)).toBe(EXAMPLE.get(1));
+      expect(back.get(3)).toBe(EXAMPLE.get(3));
     });
     it('supports self-recursion', async () => {
-      const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
-      example.set(Promise.resolve(example), Promise.resolve(example));
-      const result = await serializeAsync(example);
+      const result = await serializeAsync(ASYNC_RECURSIVE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Map<Promise<unknown>, Promise<unknown>>>(result);
+      const back = deserialize<typeof ASYNC_RECURSIVE>(result);
       for (const [key, value] of back) {
         expect(await key).toBe(back);
         expect(await value).toBe(back);
@@ -58,40 +63,34 @@ describe('Map', () => {
   });
   describe('toJSON', () => {
     it('supports Map', () => {
-      const example = new Map([[1, 2], [3, 4]]);
-      const result = toJSON(example);
+      const result = toJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Map<number, number>>(result);
+      const back = fromJSON<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Map);
-      expect(back.get(1)).toBe(example.get(1));
-      expect(back.get(3)).toBe(example.get(3));
+      expect(back.get(1)).toBe(EXAMPLE.get(1));
+      expect(back.get(3)).toBe(EXAMPLE.get(3));
     });
     it('supports self-recursion', () => {
-      const example: Map<unknown, unknown> = new Map();
-      example.set(example, example);
-      const result = toJSON(example);
+      const result = toJSON(RECURSIVE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Map<unknown, unknown>>(result);
+      const back = fromJSON<typeof RECURSIVE>(result);
       expect(back.has(back)).toBe(true);
       expect(back.get(back)).toBe(back);
     });
   });
   describe('toJSONAsync', () => {
     it('supports Map', async () => {
-      const example = new Map([[1, 2], [3, 4]]);
-      const result = await toJSONAsync(Promise.resolve(example));
+      const result = await toJSONAsync(Promise.resolve(EXAMPLE));
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<Promise<Map<number, number>>>(result);
+      const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Map);
-      expect(back.get(1)).toBe(example.get(1));
-      expect(back.get(3)).toBe(example.get(3));
+      expect(back.get(1)).toBe(EXAMPLE.get(1));
+      expect(back.get(3)).toBe(EXAMPLE.get(3));
     });
     it('supports self-recursion', async () => {
-      const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
-      example.set(Promise.resolve(example), Promise.resolve(example));
-      const result = await toJSONAsync(example);
+      const result = await toJSONAsync(ASYNC_RECURSIVE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Map<Promise<unknown>, Promise<unknown>>>(result);
+      const back = fromJSON<typeof ASYNC_RECURSIVE>(result);
       for (const [key, value] of back) {
         expect(await key).toBe(back);
         expect(await value).toBe(back);
@@ -100,128 +99,197 @@ describe('Map', () => {
   });
   describe('crossSerialize', () => {
     it('supports Map', () => {
-      const example = new Map([[1, 2], [3, 4]]);
-      const result = crossSerialize(example);
+      const result = crossSerialize(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     it('supports self-recursion', () => {
-      const example: Map<unknown, unknown> = new Map();
-      example.set(example, example);
-      const result = crossSerialize(example);
+      const result = crossSerialize(RECURSIVE);
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports Map', () => {
-        const example = new Map([[1, 2], [3, 4]]);
-        const result = crossSerialize(example, { scopeId: 'example' });
+        const result = crossSerialize(EXAMPLE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
       it('supports self-recursion', () => {
-        const example: Map<unknown, unknown> = new Map();
-        example.set(example, example);
-        const result = crossSerialize(example, { scopeId: 'example' });
+        const result = crossSerialize(RECURSIVE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports Map', async () => {
-      const example = new Map([[1, 2], [3, 4]]);
-      const result = await crossSerializeAsync(Promise.resolve(example));
+      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
     });
     it('supports self-recursion', async () => {
-      const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
-      example.set(Promise.resolve(example), Promise.resolve(example));
-      const result = await crossSerializeAsync(example);
+      const result = await crossSerializeAsync(ASYNC_RECURSIVE);
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports Map', async () => {
-        const example = new Map([[1, 2], [3, 4]]);
-        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        const result = await crossSerializeAsync(
+          Promise.resolve(EXAMPLE),
+          { scopeId: 'example' },
+        );
         expect(result).toMatchSnapshot();
       });
       it('supports self-recursion', async () => {
-        const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
-        example.set(Promise.resolve(example), Promise.resolve(example));
-        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        const result = await crossSerializeAsync(ASYNC_RECURSIVE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Map', async () => new Promise<void>((done) => {
-      const example = new Map([[1, 2], [3, 4]]);
-      crossSerializeStream(Promise.resolve(example), {
+    it('supports Map', async () => new Promise<void>((resolve, reject) => {
+      crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports self-recursion', async () => new Promise<void>((done) => {
-      const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
-      example.set(Promise.resolve(example), Promise.resolve(example));
-      crossSerializeStream(example, {
+    it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
+      crossSerializeStream(ASYNC_RECURSIVE, {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Map', async () => new Promise<void>((done) => {
-        const example = new Map([[1, 2], [3, 4]]);
-        crossSerializeStream(Promise.resolve(example), {
+      it('supports Map', async () => new Promise<void>((resolve, reject) => {
+        crossSerializeStream(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports self-recursion', async () => new Promise<void>((done) => {
-        const example: Map<Promise<unknown>, Promise<unknown>> = new Map();
-        example.set(Promise.resolve(example), Promise.resolve(example));
-        crossSerializeStream(example, {
+      it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
+        crossSerializeStream(ASYNC_RECURSIVE, {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
     });
   });
+  describe('toCrossJSON', () => {
+    it('supports Map', () => {
+      const result = toCrossJSON(EXAMPLE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Map);
+      expect(back.get(1)).toBe(EXAMPLE.get(1));
+      expect(back.get(3)).toBe(EXAMPLE.get(3));
+    });
+    it('supports self-recursion', () => {
+      const result = toCrossJSON(RECURSIVE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof RECURSIVE>(result, {
+        refs: new Map(),
+      });
+      expect(back.has(back)).toBe(true);
+      expect(back.get(back)).toBe(back);
+    });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports Map', async () => {
+      const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Map);
+      expect(back.get(1)).toBe(EXAMPLE.get(1));
+      expect(back.get(3)).toBe(EXAMPLE.get(3));
+    });
+    it('supports self-recursion', async () => {
+      const result = await toCrossJSONAsync(ASYNC_RECURSIVE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof ASYNC_RECURSIVE>(result, {
+        refs: new Map(),
+      });
+      for (const [key, value] of back) {
+        expect(await key).toBe(back);
+        expect(await value).toBe(back);
+      }
+    });
+  });
+  describe('crossSerializeStream', () => {
+    it('supports Map', async () => new Promise<void>((resolve, reject) => {
+      toCrossJSONStream(Promise.resolve(EXAMPLE), {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          resolve();
+        },
+        onError(error) {
+          reject(error);
+        },
+      });
+    }));
+    it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
+      toCrossJSONStream(ASYNC_RECURSIVE, {
+        onParse(data) {
+          expect(JSON.stringify(data)).toMatchSnapshot();
+        },
+        onDone() {
+          resolve();
+        },
+        onError(error) {
+          reject(error);
+        },
+      });
+    }));
+  });
   describe('compat', () => {
     it('should fallback to Symbol.iterator', () => {
-      expect(serialize(new Map(), {
+      expect(serialize(EXAMPLE, {
         disabledFeatures: Feature.Map,
       })).toMatchSnapshot();
     });
     it('should throw an error for unsupported target', () => {
-      expect(() => serialize(new Map(), {
+      expect(() => serialize(EXAMPLE, {
         disabledFeatures: Feature.Map | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
   });
   describe('compat#toJSON', () => {
     it('should fallback to Symbol.iterator', () => {
-      expect(JSON.stringify(toJSON(new Map(), {
+      expect(JSON.stringify(toJSON(EXAMPLE, {
         disabledFeatures: Feature.Map,
       }))).toMatchSnapshot();
     });
     it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(new Map(), {
+      expect(() => toJSON(EXAMPLE, {
         disabledFeatures: Feature.Map | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });

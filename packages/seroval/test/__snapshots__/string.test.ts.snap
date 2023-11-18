@@ -24,6 +24,22 @@ exports[`string > serializeAsync > supports strings 1`] = `"Promise.resolve(\\"\
 
 exports[`string > serializeAsync > supports strings 2`] = `"Promise.resolve(\\"\\\\x3Cscript>\\\\x3C/script>\\")"`;
 
+exports[`string > toCrossJSON > supports strings 1`] = `"{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}"`;
+
+exports[`string > toCrossJSON > supports strings 2`] = `"{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}"`;
+
+exports[`string > toCrossJSONAsync > supports strings 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}}"`;
+
+exports[`string > toCrossJSONAsync > supports strings 2`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}}"`;
+
+exports[`string > toCrossJSONStream > supports sanitized strings 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`string > toCrossJSONStream > supports sanitized strings 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"}}"`;
+
+exports[`string > toCrossJSONStream > supports strings 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`string > toCrossJSONStream > supports strings 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"}}"`;
+
 exports[`string > toJSON > supports strings 1`] = `"{\\"t\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\\\\\\\"hello\\\\\\\\\\\\\\"\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`string > toJSON > supports strings 2`] = `"{\\"t\\":{\\"t\\":1,\\"s\\":\\"\\\\\\\\x3Cscript>\\\\\\\\x3C/script>\\"},\\"f\\":16383,\\"m\\":[]}"`;

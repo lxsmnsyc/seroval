@@ -7,6 +7,7 @@ import type {
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamConstructorNode,
   SerovalNode,
+  SerovalAsyncIteratorFactoryNode,
 } from '../types';
 import {
   GLOBAL_CONTEXT_PROMISE_REJECT,
@@ -14,15 +15,16 @@ import {
   GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR,
   GLOBAL_CONTEXT_REFERENCES,
   GLOBAL_CONTEXT_STREAM_CONSTRUCTOR,
-  GLOBAL_CONTEXT_STREAM_EMIT,
+  GLOBAL_CONTEXT_STREAM_ENQUEUE,
+  GLOBAL_CONTEXT_STREAM_CLOSE,
+  GLOBAL_CONTEXT_STREAM_ERROR,
   GLOBAL_CONTEXT_API,
 } from '../keys';
-import type { BaseSerializerContextOptions } from '../serializer-context.old';
-import BaseSerializerContext from '../serializer-context.old';
+import type { BaseSerializerContextOptions } from '../context/serializer';
+import BaseSerializerContext from '../context/serializer';
 import type { SerovalMode } from '../plugin';
-import { Feature } from '../compat';
 import { serializeString } from '../string';
-import type { CrossContextOptions } from './cross-parser';
+import type { CrossContextOptions } from './parser';
 
 export interface CrossSerializerContextOptions
   extends BaseSerializerContextOptions, CrossContextOptions {
@@ -79,19 +81,39 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   protected serializeReadableStreamEnqueue(
     node: SerovalReadableStreamEnqueueNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',0,' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_ENQUEUE + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.f) + ')';
   }
 
   protected serializeReadableStreamError(
     node: SerovalReadableStreamErrorNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',1,' + this.serialize(node.f) + ')';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_ERROR + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.f) + ')';
   }
 
   protected serializeReadableStreamClose(
     node: SerovalReadableStreamCloseNode,
   ): string {
-    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_EMIT + '(' + this.getRefParam(node.i) + ',2)';
+    return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CLOSE + '(' + this.getRefParam(node.i) + ')';
+  }
+
+  protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      this.createFunction(
+        ['s'],
+        this.createFunction(
+          ['b', 't'],
+          '(b=s.tee(),s=b[0],b=b[1].getReader(),t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
+          + 'next:' + this.createFunction(
+            [],
+            'b.read().then(' + this.createEffectfulFunction(
+              ['d'],
+              'if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}',
+            ) + ')',
+          ) + '})',
+        ),
+      ),
+    );
   }
 
   serializeTop(tree: SerovalNode): string {
@@ -109,9 +131,6 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     }
     const args = this.scopeId == null ? '()' : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(this.scopeId) + '"])';
     const body = mainBody + (patches ? ref : '');
-    if (this.features & Feature.ArrowFunction) {
-      return '(' + params + '=>(' + body + '))' + args;
-    }
-    return '(function(' + params + '){return ' + body + '})' + args;
+    return '(' + this.createFunction([params], body) + ')' + args;
   }
 }

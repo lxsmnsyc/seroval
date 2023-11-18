@@ -1,8 +1,8 @@
-import type BaseAsyncParserContext from './base/async';
-import type BaseStreamParserContext from './base/stream';
-import type BaseSyncParserContext from './base/sync';
-import type BaseSerializerContext from './serializer-context.old';
-import type VanillaDeserializerContext from './tree/deserialize';
+import type BaseAsyncParserContext from './context/parser/async';
+import type BaseStreamParserContext from './context/parser/stream';
+import type BaseSyncParserContext from './context/parser/sync';
+import type BaseSerializerContext from './context/serializer';
+import type BaseDeserializerContext from './context/deserializer';
 
 export type SerovalMode = 'vanilla' | 'cross';
 
@@ -37,10 +37,10 @@ export interface Plugin<Value, Node> {
   ): string;
   deserialize(
     node: Node,
-    ctx: VanillaDeserializerContext,
+    ctx: BaseDeserializerContext,
     data: PluginData,
   ): Value;
-  isIterable?: (value: Value) => boolean;
+  // isIterable?: (value: Value) => boolean;
   // isSerializable?: (value: Value) => boolean;
 }
 

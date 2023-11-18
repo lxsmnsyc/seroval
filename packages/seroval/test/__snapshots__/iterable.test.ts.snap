@@ -1,43 +1,39 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Iterable > compat > should use Symbol.iterator instead of Array.values. 1`] = `"(h=>(h={[Symbol.iterator]:()=>[h][Symbol.iterator]()}))()"`;
+exports[`Iterable > compat > should use function expression instead of arrow functions. 1`] = `"(function(h){return ({title:\\"Hello World\\",[h=Symbol.iterator]:(function(s){return function(i,c,d,t){return (i=0,t={[h]:function(){return t},next:function(){if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})}})({v:[1,2,3,void 0],t:-1,d:3})})})()"`;
 
-exports[`Iterable > compat > should use functions instead of method shorthand. 1`] = `"(function(h){return h={[Symbol.iterator]:function(){return [h].values()}}})()"`;
+exports[`Iterable > compat#toJSON > should use function expression instead of arrow functions. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"title\\",{\\"t\\":17,\\"i\\":1,\\"s\\":3}],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":2},\\"o\\":0},\\"f\\":16379,\\"m\\":[1]}"`;
 
-exports[`Iterable > compat > should use method shorthand instead of arrow functions. 1`] = `"(function(h){return h={[Symbol.iterator](){return [h].values()}}})()"`;
+exports[`Iterable > compat#toJSON > should use function expression instead of arrow functions. 2`] = `"(function(h){return ({title:\\"Hello World\\",[h=Symbol.iterator]:(function(s){return function(i,c,d,t){return (i=0,t={[h]:function(){return t},next:function(){if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}})}})({v:[1,2,3,void 0],t:-1,d:3})})})()"`;
 
-exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16381,\\"m\\":[0]}"`;
+exports[`Iterable > crossSerialize > scoped > supports Iterables 1`] = `"($R=>$R[0]={title:\\"Hello World\\",[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})($R[\\"example\\"])"`;
 
-exports[`Iterable > compat#toJSON > should use Symbol.iterator instead of Array.values. 2`] = `"(h=>(h={[Symbol.iterator]:()=>[h][Symbol.iterator]()}))()"`;
+exports[`Iterable > crossSerialize > supports Iterables 1`] = `"$R[0]={title:\\"Hello World\\",[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})}"`;
 
-exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16315,\\"m\\":[0]}"`;
+exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={title:\\"Hello World\\",[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))($R[\\"example\\"])"`;
 
-exports[`Iterable > compat#toJSON > should use functions instead of method shorthand. 2`] = `"(function(h){return h={[Symbol.iterator]:function(){return [h].values()}}})()"`;
+exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `"$R[0]=Promise.resolve($R[1]={title:\\"Hello World\\",[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})"`;
 
-exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16379,\\"m\\":[0]}"`;
+exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`Iterable > compat#toJSON > should use method shorthand instead of arrow functions. 2`] = `"(function(h){return h={[Symbol.iterator](){return [h].values()}}})()"`;
-
-exports[`Iterable > crossSerialize > scoped > supports Iterables 1`] = `"($R=>($R[0]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[1]=[1,2,3].values()}))($R[\\"example\\"])"`;
-
-exports[`Iterable > crossSerialize > supports Iterables 1`] = `"$R[0]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[1]=[1,2,3].values()}"`;
-
-exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `"($R=>($R[0]=Promise.resolve($R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})))($R[\\"example\\"])"`;
-
-exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `"$R[0]=Promise.resolve($R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})"`;
-
-exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
-
-exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `"($R=>(_$.Ps($R[0],$R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})))($R[\\"example\\"])"`;
+exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `"($R=>_$.Ps($R[0],$R[1]={title:\\"Hello World\\",[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))($R[\\"example\\"])"`;
 
 exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `"$R[0]=_$.P()"`;
 
-exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `"_$.Ps($R[0],$R[1]={title:\\"Hello World\\",[Symbol.iterator]:()=>$R[2]=[1,2,3].values()})"`;
+exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `"_$.Ps($R[0],$R[1]={title:\\"Hello World\\",[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})"`;
 
-exports[`Iterable > serialize > supports Iterables 1`] = `"({title:\\"Hello World\\",[Symbol.iterator]:()=>[1,2,3].values()})"`;
+exports[`Iterable > serialize > supports Iterables 1`] = `"(h=>({title:\\"Hello World\\",[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3})}))()"`;
 
-exports[`Iterable > serializeAsync > supports Iterables 1`] = `"Promise.resolve({title:\\"Hello World\\",[Symbol.iterator]:()=>[1,2,3].values()})"`;
+exports[`Iterable > serializeAsync > supports Iterables 1`] = `"(h=>(Promise.resolve({title:\\"Hello World\\",[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3})})))()"`;
 
-exports[`Iterable > toJSON > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"title\\",0],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":2},\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Iterable > toCrossJSON > supports Iterables 1`] = `"{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"title\\",{\\"t\\":17,\\"i\\":1,\\"s\\":3}],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":2},\\"o\\":0}"`;
 
-exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"title\\",0],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}],\\"s\\":2},\\"o\\":0}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Iterable > toCrossJSONAsync > supports Iterables 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"title\\",{\\"t\\":17,\\"i\\":2,\\"s\\":3}],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":3,\\"f\\":{\\"t\\":4,\\"i\\":2}},{\\"t\\":10,\\"i\\":4,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":5,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":2},\\"o\\":0}}"`;
+
+exports[`Iterable > toCrossJSONStream > supports Iterables 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`Iterable > toCrossJSONStream > supports Iterables 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"title\\",{\\"t\\":17,\\"i\\":2,\\"s\\":3}],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":3,\\"f\\":{\\"t\\":4,\\"i\\":2}},{\\"t\\":10,\\"i\\":4,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":5,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":2},\\"o\\":0}}"`;
+
+exports[`Iterable > toJSON > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[\\"title\\",{\\"t\\":17,\\"i\\":1,\\"s\\":3}],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":2},\\"o\\":0},\\"f\\":16383,\\"m\\":[1]}"`;
+
+exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"title\\",{\\"t\\":17,\\"i\\":2,\\"s\\":3}],\\"v\\":[{\\"t\\":1,\\"s\\":\\"Hello World\\"},{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":3,\\"f\\":{\\"t\\":4,\\"i\\":2}},{\\"t\\":10,\\"i\\":4,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":5,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":2},\\"o\\":0}},\\"f\\":16383,\\"m\\":[2]}"`;

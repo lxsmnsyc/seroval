@@ -36,17 +36,16 @@ self._$ = self._$ || {
   uS(stream) {
     delete stream.c;
   },
-  Se(stream, type, data, controller) {
-    controller = stream.c;
-    switch (type) {
-      case 0: return controller.enqueue(data);
-      case 1:
-        this.uS(stream);
-        return controller.error(data);
-      case 2:
-        this.uS(stream);
-        return controller.close();
-    }
+  Se(stream, data) {
+    stream.c.enqueue(data);
+  },
+  St(stream, data) {
+    stream.c.error(data);
+    this.uS(stream);
+  },
+  Sc(stream) {
+    stream.c.close();
+    this.uS(stream);
   },
   // ReadableStream constructor
   S(stream, controller) {

@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`URLSearchParams > crossSerialize > scoped > supports URLSearchParams 1`] = `"($R=>($R[0]=new URLSearchParams(\\"hello=world&foo=bar\\")))($R[\\"example\\"])"`;
+exports[`URLSearchParams > crossSerialize > scoped > supports URLSearchParams 1`] = `"($R=>$R[0]=new URLSearchParams(\\"hello=world&foo=bar\\"))($R[\\"example\\"])"`;
 
 exports[`URLSearchParams > crossSerialize > supports URLSearchParams 1`] = `"$R[0]=new URLSearchParams(\\"hello=world&foo=bar\\")"`;
 
-exports[`URLSearchParams > crossSerializeAsync > scoped > supports URLSearchParams 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new URLSearchParams(\\"hello=world&foo=bar\\"))))($R[\\"example\\"])"`;
+exports[`URLSearchParams > crossSerializeAsync > scoped > supports URLSearchParams 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new URLSearchParams(\\"hello=world&foo=bar\\")))($R[\\"example\\"])"`;
 
 exports[`URLSearchParams > crossSerializeAsync > supports URLSearchParams 1`] = `"$R[0]=Promise.resolve($R[1]=new URLSearchParams(\\"hello=world&foo=bar\\"))"`;
 
-exports[`URLSearchParams > crossSerializeStream > scoped > supports URLSearchParams 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`URLSearchParams > crossSerializeStream > scoped > supports URLSearchParams 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`URLSearchParams > crossSerializeStream > scoped > supports URLSearchParams 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new URLSearchParams(\\"hello=world&foo=bar\\"))))($R[\\"example\\"])"`;
+exports[`URLSearchParams > crossSerializeStream > scoped > supports URLSearchParams 2`] = `"($R=>_$.Ps($R[0],$R[1]=new URLSearchParams(\\"hello=world&foo=bar\\")))($R[\\"example\\"])"`;
 
 exports[`URLSearchParams > crossSerializeStream > supports URLSearchParams 1`] = `"$R[0]=_$.P()"`;
 
@@ -20,6 +20,14 @@ exports[`URLSearchParams > serialize > supports URLSearchParams 1`] = `"new URLS
 
 exports[`URLSearchParams > serializeAsync > supports URLSearchParams 1`] = `"Promise.resolve(new URLSearchParams(\\"hello=world&foo=bar\\"))"`;
 
+exports[`URLSearchParams > toCrossJSONStream > supports URLSearchParams 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`URLSearchParams > toCrossJSONStream > supports URLSearchParams 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"hello=world&foo=bar\\"}}"`;
+
 exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":19,\\"i\\":0,\\"s\\":\\"hello=world&foo=bar\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
+exports[`URLSearchParams > toJSON > supports URLSearchParams 2`] = `"{\\"t\\":19,\\"i\\":0,\\"s\\":\\"hello=world&foo=bar\\"}"`;
+
 exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"hello=world&foo=bar\\"}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 2`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":19,\\"i\\":1,\\"s\\":\\"hello=world&foo=bar\\"}}"`;

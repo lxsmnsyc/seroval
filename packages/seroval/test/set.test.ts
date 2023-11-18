@@ -6,44 +6,48 @@ import {
   crossSerializeStream,
   deserialize,
   Feature,
+  fromCrossJSON,
   fromJSON,
   serialize,
   serializeAsync,
+  toCrossJSON,
+  toCrossJSONAsync,
   toJSON,
   toJSONAsync,
 } from '../src';
 
+const EXAMPLE = new Set([1, 2, 3]);
+
+const RECURSIVE = new Set<unknown>();
+RECURSIVE.add(RECURSIVE);
+
 describe('Set', () => {
   describe('serialize', () => {
     it('supports Set', () => {
-      const example = new Set([1, 2, 3]);
-      const result = serialize(example);
+      const result = serialize(EXAMPLE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Set<number>>(result);
+      const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Set);
-      expect(back.has(1)).toBe(example.has(1));
-      expect(back.has(2)).toBe(example.has(2));
-      expect(back.has(3)).toBe(example.has(3));
+      expect(back.has(1)).toBe(EXAMPLE.has(1));
+      expect(back.has(2)).toBe(EXAMPLE.has(2));
+      expect(back.has(3)).toBe(EXAMPLE.has(3));
     });
     it('supports self-recursion', () => {
-      const example: Set<unknown> = new Set();
-      example.add(example);
-      const result = serialize(example);
+      const result = serialize(RECURSIVE);
       expect(result).toMatchSnapshot();
-      const back = deserialize<Set<unknown>>(result);
+      const back = deserialize<typeof RECURSIVE>(result);
       expect(back.has(back)).toBe(true);
     });
   });
   describe('serializeAsync', () => {
     it('supports Set', async () => {
-      const example = new Set([1, 2, 3]);
-      const result = await serializeAsync(Promise.resolve(example));
+      const result = await serializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
-      const back = await deserialize<Promise<Set<number>>>(result);
+      const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Set);
-      expect(back.has(1)).toBe(example.has(1));
-      expect(back.has(2)).toBe(example.has(2));
-      expect(back.has(3)).toBe(example.has(3));
+      expect(back.has(1)).toBe(EXAMPLE.has(1));
+      expect(back.has(2)).toBe(EXAMPLE.has(2));
+      expect(back.has(3)).toBe(EXAMPLE.has(3));
     });
     it('supports self-recursion', async () => {
       const example: Set<Promise<unknown>> = new Set();
@@ -58,34 +62,30 @@ describe('Set', () => {
   });
   describe('toJSON', () => {
     it('supports Set', () => {
-      const example = new Set([1, 2, 3]);
-      const result = toJSON(example);
+      const result = toJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Set<number>>(result);
+      const back = fromJSON<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Set);
-      expect(back.has(1)).toBe(example.has(1));
-      expect(back.has(2)).toBe(example.has(2));
-      expect(back.has(3)).toBe(example.has(3));
+      expect(back.has(1)).toBe(EXAMPLE.has(1));
+      expect(back.has(2)).toBe(EXAMPLE.has(2));
+      expect(back.has(3)).toBe(EXAMPLE.has(3));
     });
     it('supports self-recursion', () => {
-      const example: Set<unknown> = new Set();
-      example.add(example);
-      const result = toJSON(example);
+      const result = toJSON(RECURSIVE);
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<Set<unknown>>(result);
+      const back = fromJSON<typeof RECURSIVE>(result);
       expect(back.has(back)).toBe(true);
     });
   });
   describe('toJSONAsync', () => {
     it('supports Set', async () => {
-      const example = new Set([1, 2, 3]);
-      const result = await toJSONAsync(Promise.resolve(example));
+      const result = await toJSONAsync(Promise.resolve(EXAMPLE));
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<Promise<Set<number>>>(result);
+      const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Set);
-      expect(back.has(1)).toBe(example.has(1));
-      expect(back.has(2)).toBe(example.has(2));
-      expect(back.has(3)).toBe(example.has(3));
+      expect(back.has(1)).toBe(EXAMPLE.has(1));
+      expect(back.has(2)).toBe(EXAMPLE.has(2));
+      expect(back.has(3)).toBe(EXAMPLE.has(3));
     });
     it('supports self-recursion', async () => {
       const example: Set<Promise<unknown>> = new Set();
@@ -100,34 +100,27 @@ describe('Set', () => {
   });
   describe('crossSerialize', () => {
     it('supports Set', () => {
-      const example = new Set([1, 2, 3]);
-      const result = crossSerialize(example);
+      const result = crossSerialize(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     it('supports self-recursion', () => {
-      const example: Set<unknown> = new Set();
-      example.add(example);
-      const result = crossSerialize(example);
+      const result = crossSerialize(RECURSIVE);
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports Set', () => {
-        const example = new Set([1, 2, 3]);
-        const result = crossSerialize(example, { scopeId: 'example' });
+        const result = crossSerialize(EXAMPLE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
       it('supports self-recursion', () => {
-        const example: Set<unknown> = new Set();
-        example.add(example);
-        const result = crossSerialize(example, { scopeId: 'example' });
+        const result = crossSerialize(RECURSIVE, { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports Set', async () => {
-      const example = new Set([1, 2, 3]);
-      const result = await crossSerializeAsync(Promise.resolve(example));
+      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
     });
     it('supports self-recursion', async () => {
@@ -138,8 +131,7 @@ describe('Set', () => {
     });
     describe('scoped', () => {
       it('supports Set', async () => {
-        const example = new Set([1, 2, 3]);
-        const result = await crossSerializeAsync(Promise.resolve(example), { scopeId: 'example' });
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), { scopeId: 'example' });
         expect(result).toMatchSnapshot();
       });
       it('supports self-recursion', async () => {
@@ -151,18 +143,20 @@ describe('Set', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Set', async () => new Promise<void>((done) => {
-      const example = new Set([1, 2, 3]);
-      crossSerializeStream(Promise.resolve(example), {
+    it('supports Set', async () => new Promise<void>((resolve, reject) => {
+      crossSerializeStream(Promise.resolve(EXAMPLE), {
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
-    it('supports self-recursion', async () => new Promise<void>((done) => {
+    it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
       const example: Set<Promise<unknown>> = new Set();
       example.add(Promise.resolve(example));
       crossSerializeStream(example, {
@@ -170,24 +164,29 @@ describe('Set', () => {
           expect(data).toMatchSnapshot();
         },
         onDone() {
-          done();
+          resolve();
+        },
+        onError(error) {
+          reject(error);
         },
       });
     }));
     describe('scoped', () => {
-      it('supports Set', async () => new Promise<void>((done) => {
-        const example = new Set([1, 2, 3]);
-        crossSerializeStream(Promise.resolve(example), {
+      it('supports Set', async () => new Promise<void>((resolve, reject) => {
+        crossSerializeStream(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
-      it('supports self-recursion', async () => new Promise<void>((done) => {
+      it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
         const example: Set<Promise<unknown>> = new Set();
         example.add(Promise.resolve(example));
         crossSerializeStream(example, {
@@ -196,32 +195,81 @@ describe('Set', () => {
             expect(data).toMatchSnapshot();
           },
           onDone() {
-            done();
+            resolve();
+          },
+          onError(error) {
+            reject(error);
           },
         });
       }));
     });
   });
+  describe('toCrossJSON', () => {
+    it('supports Set', () => {
+      const result = toCrossJSON(EXAMPLE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Set);
+      expect(back.has(1)).toBe(EXAMPLE.has(1));
+      expect(back.has(2)).toBe(EXAMPLE.has(2));
+      expect(back.has(3)).toBe(EXAMPLE.has(3));
+    });
+    it('supports self-recursion', () => {
+      const result = toCrossJSON(RECURSIVE);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof RECURSIVE>(result, {
+        refs: new Map(),
+      });
+      expect(back.has(back)).toBe(true);
+    });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports Set', async () => {
+      const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Set);
+      expect(back.has(1)).toBe(EXAMPLE.has(1));
+      expect(back.has(2)).toBe(EXAMPLE.has(2));
+      expect(back.has(3)).toBe(EXAMPLE.has(3));
+    });
+    it('supports self-recursion', async () => {
+      const example: Set<Promise<unknown>> = new Set();
+      example.add(Promise.resolve(example));
+      const result = await toCrossJSONAsync(example);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<Set<Promise<unknown>>>(result, {
+        refs: new Map(),
+      });
+      for (const key of back) {
+        expect(await key).toBe(back);
+      }
+    });
+  });
   describe('compat', () => {
     it('should fallback to Symbol.iterator', () => {
-      expect(serialize(new Set([1, 2, 3]), {
+      expect(serialize(EXAMPLE, {
         disabledFeatures: Feature.Set,
       })).toMatchSnapshot();
     });
     it('should throw an error for unsupported target', () => {
-      expect(() => serialize(new Set([1, 2, 3]), {
+      expect(() => serialize(EXAMPLE, {
         disabledFeatures: Feature.Set | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });
   });
   describe('compat#toJSON', () => {
     it('should fallback to Symbol.iterator', () => {
-      expect(JSON.stringify(toJSON(new Set([1, 2, 3]), {
+      expect(JSON.stringify(toJSON(EXAMPLE, {
         disabledFeatures: Feature.Set,
       }))).toMatchSnapshot();
     });
     it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(new Set([1, 2, 3]), {
+      expect(() => toJSON(EXAMPLE, {
         disabledFeatures: Feature.Set | Feature.Symbol,
       })).toThrowErrorMatchingSnapshot();
     });

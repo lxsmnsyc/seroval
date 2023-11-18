@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Reference > crossSerialize > crossSerialize > supports Reference 1`] = `"($R=>($R[0]=__SEROVAL_REFS__.get(\\"example\\")))($R[\\"example\\"])"`;
+exports[`Reference > crossSerialize > crossSerialize > supports Reference 1`] = `"($R=>$R[0]=__SEROVAL_REFS__.get(\\"example\\"))($R[\\"example\\"])"`;
 
 exports[`Reference > crossSerialize > supports Reference 1`] = `"$R[0]=__SEROVAL_REFS__.get(\\"example\\")"`;
 
-exports[`Reference > crossSerializeAsync > scoped > supports Reference 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\"))))($R[\\"example\\"])"`;
+exports[`Reference > crossSerializeAsync > scoped > supports Reference 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\")))($R[\\"example\\"])"`;
 
 exports[`Reference > crossSerializeAsync > supports Reference 1`] = `"$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\"))"`;
 
-exports[`Reference > crossSerializeStream > scoped > supports Reference 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`Reference > crossSerializeStream > scoped > supports Reference 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`Reference > crossSerializeStream > scoped > supports Reference 2`] = `"($R=>(_$.Ps($R[0],$R[1]=__SEROVAL_REFS__.get(\\"example\\"))))($R[\\"example\\"])"`;
+exports[`Reference > crossSerializeStream > scoped > supports Reference 2`] = `"($R=>_$.Ps($R[0],$R[1]=__SEROVAL_REFS__.get(\\"example\\")))($R[\\"example\\"])"`;
 
 exports[`Reference > crossSerializeStream > supports Reference 1`] = `"$R[0]=_$.P()"`;
 
@@ -19,6 +19,14 @@ exports[`Reference > crossSerializeStream > supports Reference 2`] = `"_$.Ps($R[
 exports[`Reference > serialize > supports Reference 1`] = `"__SEROVAL_REFS__.get(\\"example\\")"`;
 
 exports[`Reference > serializeAsync > supports Reference 1`] = `"Promise.resolve(__SEROVAL_REFS__.get(\\"example\\"))"`;
+
+exports[`Reference > toCrossJSON > supports Reference 1`] = `"{\\"t\\":20,\\"i\\":0,\\"s\\":\\"example\\"}"`;
+
+exports[`Reference > toCrossJSONAsync > supports Reference 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":20,\\"i\\":1,\\"s\\":\\"example\\"}}"`;
+
+exports[`Reference > toCrossJSONStream > supports Reference 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`Reference > toCrossJSONStream > supports Reference 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":20,\\"i\\":1,\\"s\\":\\"example\\"}}"`;
 
 exports[`Reference > toJSON > supports Reference 1`] = `"{\\"t\\":{\\"t\\":20,\\"i\\":0,\\"s\\":\\"example\\"},\\"f\\":16383,\\"m\\":[]}"`;
 

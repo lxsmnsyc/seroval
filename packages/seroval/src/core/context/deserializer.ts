@@ -2,11 +2,11 @@
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import { getReference } from '../reference';
-import { getTypedArrayConstructor } from '../shared';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
+  SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntTypedArrayNode,
   SerovalBlobNode,
   SerovalBoxedNode,
@@ -19,6 +19,7 @@ import type {
   SerovalFileNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
+  SerovalIteratorFactoryInstanceNode,
   SerovalMapNode,
   SerovalNode,
   SerovalNullConstructorNode,
@@ -26,7 +27,15 @@ import type {
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPluginNode,
+  SerovalPromiseConstructorNode,
   SerovalPromiseNode,
+  SerovalPromiseRejectNode,
+  SerovalPromiseResolveNode,
+  SerovalReadableStreamCloseNode,
+  SerovalReadableStreamConstructorNode,
+  SerovalReadableStreamEnqueueNode,
+  SerovalReadableStreamErrorNode,
+  SerovalReadableStreamNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalRequestNode,
@@ -37,16 +46,24 @@ import type {
   SerovalURLSearchParamsNode,
 } from '../types';
 import {
-  SerovalObjectRecordSpecialKey,
-} from '../types';
-import {
   CONSTANT_VAL,
   ERROR_CONSTRUCTOR,
   SYMBOL_REF,
   SerovalNodeType,
   SerovalObjectFlags,
 } from '../constants';
-import type { Plugin, PluginAccessOptions } from '../plugin';
+import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
+import type { Sequence, SerializedAsyncIteratorResult } from '../utils/iterator-to-sequence';
+import {
+  readableStreamToAsyncIterator,
+  sequenceToAsyncIterator,
+  sequenceToIterator,
+  sequenceToReadableStream,
+} from '../utils/iterator-to-sequence';
+import { getTypedArrayConstructor } from '../utils/typed-array';
+import type { Deferred, DeferredStream } from '../utils/deferred';
+import { createDeferred, createDeferredStream } from '../utils/deferred';
+import assert from '../utils/assert';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
@@ -64,62 +81,30 @@ function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
 type AssignableValue = AggregateError | Error | Iterable<unknown>
 type AssignableNode = SerovalAggregateErrorNode | SerovalErrorNode;
 
-interface Deferred {
-  resolve(value: unknown): void;
-  reject(value: unknown): void;
-  promise: Promise<unknown>;
+export interface BaseDeserializerOptions extends PluginAccessOptions {
+  refs?: Map<number, unknown>;
 }
 
-function createDeferred(): Deferred {
-  let resolve: Deferred['resolve'];
-  let reject: Deferred['reject'];
-  return {
-    resolve(v): void {
-      resolve(v);
-    },
-    reject(v): void {
-      reject(v);
-    },
-    promise: new Promise((res, rej) => {
-      resolve = res as Deferred['resolve'];
-      reject = rej as Deferred['reject'];
-    }),
-  };
-}
+export default abstract class BaseDeserializerContext implements PluginAccessOptions {
+  abstract readonly mode: SerovalMode;
 
-export interface DeserializerOptions extends PluginAccessOptions {
-  markedRefs: number[] | Set<number>;
-}
-
-export default class VanillaDeserializerContext implements PluginAccessOptions {
   /**
    * Mapping ids to values
    * @private
    */
-  values: Map<number, unknown> = new Map();
-
-  /**
-   * Which refs are pre-marked
-   * @private
-   */
-  refs: Set<number>;
+  refs: Map<number, unknown>;
 
   plugins?: Plugin<any, any>[] | undefined;
 
-  constructor(options: DeserializerOptions) {
+  constructor(options: BaseDeserializerOptions) {
     this.plugins = options.plugins;
-    this.refs = new Set(options.markedRefs);
+    this.refs = options.refs || new Map<number, unknown>();
   }
 
-  assignIndexedValue<T>(
-    index: number,
+  protected abstract assignIndexedValue<T>(
+    id: number,
     value: T,
-  ): T {
-    if (this.refs.has(index)) {
-      this.values.set(index, value);
-    }
-    return value;
-  }
+  ): T;
 
   private deserializeReference(
     node: SerovalReferenceNode,
@@ -152,22 +137,14 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
   ): Record<string | symbol, unknown> {
     const len = node.s;
     if (len) {
-      let key: SerovalObjectRecordKey;
-      let value: unknown;
       const keys = node.k;
       const vals = node.v;
-      for (let i = 0; i < len; i++) {
+      for (let i = 0, key: SerovalObjectRecordKey; i < len; i++) {
         key = keys[i];
-        value = this.deserialize(vals[i]);
-        switch (key) {
-          case SerovalObjectRecordSpecialKey.SymbolIterator: {
-            const current = value as unknown[];
-            result[Symbol.iterator] = (): IterableIterator<unknown> => current.values();
-          }
-            break;
-          default:
-            result[deserializeString(key)] = value;
-            break;
+        if (typeof key === 'string') {
+          result[deserializeString(key)] = this.deserialize(vals[i]);
+        } else {
+          result[this.deserialize(key) as symbol] = this.deserialize(vals[i]);
         }
       }
     }
@@ -302,14 +279,14 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
     node: SerovalPromiseNode,
   ): Promise<unknown> {
     const deferred = createDeferred();
-    const result = this.assignIndexedValue(node.i, deferred.promise);
+    const result = this.assignIndexedValue(node.i, deferred);
     const deserialized = this.deserialize(node.f);
     if (node.s) {
       deferred.resolve(deserialized);
     } else {
       deferred.reject(deserialized);
     }
-    return result;
+    return result.promise;
   }
 
   private deserializeURL(
@@ -449,13 +426,105 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
       for (let i = 0, len = currentPlugins.length; i < len; i++) {
         const plugin = currentPlugins[i];
         if (plugin.tag === node.c) {
-          return plugin.deserialize(node.s, this, {
-            id: node.i,
-          });
+          return this.assignIndexedValue(
+            node.i,
+            plugin.deserialize(node.s, this, {
+              id: node.i,
+            }),
+          );
         }
       }
     }
     throw new Error('Missing plugin for tag "' + node.c + '".');
+  }
+
+  private deserializePromiseConstructor(node: SerovalPromiseConstructorNode): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      createDeferred(),
+    ).promise;
+  }
+
+  private deserializePromiseResolve(node: SerovalPromiseResolveNode): unknown {
+    const deferred = this.refs.get(node.i) as Deferred | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.resolve(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializePromiseReject(node: SerovalPromiseRejectNode): unknown {
+    const deferred = this.refs.get(node.i) as Deferred | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.reject(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializeReadableStreamConstructor(
+    node: SerovalReadableStreamConstructorNode,
+  ): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      createDeferredStream(),
+    ).stream;
+  }
+
+  private deserializeReadableStreamEnqueue(node: SerovalReadableStreamEnqueueNode): unknown {
+    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
+    assert(deferred, new Error('Missing ReadableStream instance.'));
+    deferred.enqueue(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializeReadableStreamError(node: SerovalReadableStreamErrorNode): unknown {
+    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.error(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializeReadableStreamClose(node: SerovalReadableStreamCloseNode): unknown {
+    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
+    assert(deferred, new Error('Missing Promise instance.'));
+    deferred.close();
+    return undefined;
+  }
+
+  private deserializeIteratorFactoryInstance(
+    node: SerovalIteratorFactoryInstanceNode,
+  ): unknown {
+    const source = this.deserialize(node.a[1]);
+    return sequenceToIterator(source as Sequence);
+  }
+
+  private deserializeAsyncIteratorFactoryInstance(
+    node: SerovalAsyncIteratorFactoryInstanceNode,
+  ): unknown {
+    const source = this.deserialize(node.a[1]);
+    if ((source as object).constructor === ReadableStream) {
+      return readableStreamToAsyncIterator(
+        source as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
+      );
+    }
+    return sequenceToAsyncIterator(source as Sequence);
+  }
+
+  private deserializeReadableStream(
+    node: SerovalReadableStreamNode,
+  ): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      sequenceToReadableStream(
+        this.deserialize(node.a[1]) as Sequence,
+      ),
+    );
   }
 
   deserialize(node: SerovalNode): unknown {
@@ -469,7 +538,7 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
       case SerovalNodeType.BigInt:
         return BigInt(node.s);
       case SerovalNodeType.IndexedValue:
-        return this.values.get(node.i);
+        return this.refs.get(node.i);
       case SerovalNodeType.Reference:
         return this.deserializeReference(node);
       case SerovalNodeType.Array:
@@ -526,6 +595,30 @@ export default class VanillaDeserializerContext implements PluginAccessOptions {
         return this.deserializeDOMException(node);
       case SerovalNodeType.Plugin:
         return this.deserializePlugin(node);
+      case SerovalNodeType.PromiseConstructor:
+        return this.deserializePromiseConstructor(node);
+      case SerovalNodeType.PromiseResolve:
+        return this.deserializePromiseResolve(node);
+      case SerovalNodeType.PromiseReject:
+        return this.deserializePromiseReject(node);
+      case SerovalNodeType.ReadableStreamConstructor:
+        return this.deserializeReadableStreamConstructor(node);
+      case SerovalNodeType.ReadableStreamEnqueue:
+        return this.deserializeReadableStreamEnqueue(node);
+      case SerovalNodeType.ReadableStreamError:
+        return this.deserializeReadableStreamError(node);
+      case SerovalNodeType.ReadableStreamClose:
+        return this.deserializeReadableStreamClose(node);
+      case SerovalNodeType.IteratorFactoryInstance:
+        return this.deserializeIteratorFactoryInstance(node);
+      case SerovalNodeType.AsyncIteratorFactoryInstance:
+        return this.deserializeAsyncIteratorFactoryInstance(node);
+      case SerovalNodeType.ReadableStream:
+        return this.deserializeReadableStream(node);
+      case SerovalNodeType.MapSentinel:
+      case SerovalNodeType.IteratorFactory:
+      case SerovalNodeType.AsyncIteratorFactory:
+      case SerovalNodeType.ReadableStreamFactory:
       default:
         throw new Error('invariant');
     }

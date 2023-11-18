@@ -1,5 +1,5 @@
-import type { BaseStreamParserContextOptions } from '../base/stream';
-import BaseStreamParserContext from '../base/stream';
+import type { BaseStreamParserContextOptions } from '../context/parser/stream';
+import BaseStreamParserContext from '../context/parser/stream';
 import type { SerovalMode } from '../plugin';
 
 export type CrossStreamParserContextOptions = BaseStreamParserContextOptions

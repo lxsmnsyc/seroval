@@ -1,10 +1,10 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`mutual cyclic references > crossSerialize > scoped > supports Arrays and Arrays 1`] = `"($R=>($R[0]=[$R[1]=[$R[2]=[,]],$R[2]],$R[2][0]=$R[1],$R[0]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerialize > scoped > supports Arrays and Arrays 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=[,]],$R[2]],$R[2][0]=$R[1],$R[0])($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerialize > scoped > supports Arrays and Objects 1`] = `"($R=>($R[0]=[$R[1]=[$R[2]={}],$R[2]],$R[2][0]=$R[1],$R[0]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerialize > scoped > supports Arrays and Objects 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]={}],$R[2]],$R[2][0]=$R[1],$R[0])($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerialize > scoped > supports Objects and Objects 1`] = `"($R=>($R[0]=[$R[1]={0:$R[2]={}},$R[2]],$R[2][0]=$R[1],$R[0]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerialize > scoped > supports Objects and Objects 1`] = `"($R=>$R[0]=[$R[1]={0:$R[2]={}},$R[2]],$R[2][0]=$R[1],$R[0])($R[\\"example\\"])"`;
 
 exports[`mutual cyclic references > crossSerialize > supports Arrays and Arrays 1`] = `"($R[0]=[$R[1]=[$R[2]=[,]],$R[2]],$R[2][0]=$R[1],$R[0])"`;
 
@@ -12,11 +12,11 @@ exports[`mutual cyclic references > crossSerialize > supports Arrays and Objects
 
 exports[`mutual cyclic references > crossSerialize > supports Objects and Objects 1`] = `"($R[0]=[$R[1]={0:$R[2]={}},$R[2]],$R[2][0]=$R[1],$R[0])"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Arrays 1`] = `"($R=>($R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]=[$R[4]=Promise.resolve().then(()=>$R[1])])],$R[3]]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Arrays 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]=[$R[4]=Promise.resolve().then(()=>$R[1])])],$R[3]])($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Objects 1`] = `"($R=>($R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})],$R[3]]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Objects 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})],$R[3]])($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Objects and Objects 1`] = `"($R=>($R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})},$R[3]]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Objects and Objects 1`] = `"($R=>$R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})},$R[3]])($R[\\"example\\"])"`;
 
 exports[`mutual cyclic references > crossSerializeAsync > supports Arrays and Arrays 1`] = `"$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]=[$R[4]=Promise.resolve().then(()=>$R[1])])],$R[3]]"`;
 
@@ -24,23 +24,23 @@ exports[`mutual cyclic references > crossSerializeAsync > supports Arrays and Ob
 
 exports[`mutual cyclic references > crossSerializeAsync > supports Objects and Objects 1`] = `"$R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})},$R[3]]"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Arrays 1`] = `"($R=>($R[0]=[$R[1]=[$R[2]=_$.P()],$R[3]=[$R[4]=_$.P()]]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Arrays 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=_$.P()],$R[3]=[$R[4]=_$.P()]])($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Arrays 2`] = `"($R=>(_$.Ps($R[2],$R[3])))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Arrays 2`] = `"($R=>_$.Ps($R[2],$R[3]))($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Arrays 3`] = `"($R=>(_$.Ps($R[4],$R[1])))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Arrays 3`] = `"($R=>_$.Ps($R[4],$R[1]))($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Objects 1`] = `"($R=>($R[0]=[$R[1]=[$R[2]=_$.P()],$R[3]={0:$R[4]=_$.P()}]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Objects 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=_$.P()],$R[3]={0:$R[4]=_$.P()}])($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Objects 2`] = `"($R=>(_$.Ps($R[2],$R[3])))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Objects 2`] = `"($R=>_$.Ps($R[2],$R[3]))($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Objects 3`] = `"($R=>(_$.Ps($R[4],$R[1])))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Objects 3`] = `"($R=>_$.Ps($R[4],$R[1]))($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Objects and Objects 1`] = `"($R=>($R[0]=[$R[1]={0:$R[2]=_$.P()},$R[3]={0:$R[4]=_$.P()}]))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Objects and Objects 1`] = `"($R=>$R[0]=[$R[1]={0:$R[2]=_$.P()},$R[3]={0:$R[4]=_$.P()}])($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Objects and Objects 2`] = `"($R=>(_$.Ps($R[2],$R[3])))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Objects and Objects 2`] = `"($R=>_$.Ps($R[2],$R[3]))($R[\\"example\\"])"`;
 
-exports[`mutual cyclic references > crossSerializeStream > scoped > supports Objects and Objects 3`] = `"($R=>(_$.Ps($R[4],$R[1])))($R[\\"example\\"])"`;
+exports[`mutual cyclic references > crossSerializeStream > scoped > supports Objects and Objects 3`] = `"($R=>_$.Ps($R[4],$R[1]))($R[\\"example\\"])"`;
 
 exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 1`] = `"$R[0]=[$R[1]=[$R[2]=_$.P()],$R[3]=[$R[4]=_$.P()]]"`;
 
@@ -71,6 +71,36 @@ exports[`mutual cyclic references > serializeAsync > supports Arrays and Arrays 
 exports[`mutual cyclic references > serializeAsync > supports Arrays and Objects 1`] = `"((h,j)=>([h=[Promise.resolve(j={0:Promise.resolve().then(()=>h)})],j]))()"`;
 
 exports[`mutual cyclic references > serializeAsync > supports Objects and Objects 1`] = `"((h,j)=>([h={0:Promise.resolve(j={0:Promise.resolve().then(()=>h)})},j]))()"`;
+
+exports[`mutual cyclic references > toCrossJSON > supports Arrays and Arrays 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":1}],\\"o\\":0}],\\"o\\":0},{\\"t\\":4,\\"i\\":2}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSON > supports Arrays and Objects 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":4,\\"i\\":1}],\\"s\\":1},\\"o\\":0}],\\"o\\":0},{\\"t\\":4,\\"i\\":2}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSON > supports Objects and Objects 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":4,\\"i\\":1}],\\"s\\":1},\\"o\\":0}],\\"s\\":1},\\"o\\":0},{\\"t\\":4,\\"i\\":2}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSONAsync > supports Arrays and Arrays 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":9,\\"i\\":3,\\"l\\":1,\\"a\\":[{\\"t\\":12,\\"i\\":4,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":1}}],\\"o\\":0}}],\\"o\\":0},{\\"t\\":4,\\"i\\":3}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSONAsync > supports Arrays and Objects 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":12,\\"i\\":4,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":1}}],\\"s\\":1},\\"o\\":0}}],\\"o\\":0},{\\"t\\":4,\\"i\\":3}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSONAsync > supports Objects and Objects 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":12,\\"i\\":4,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":1}}],\\"s\\":1},\\"o\\":0}}],\\"s\\":1},\\"o\\":0},{\\"t\\":4,\\"i\\":3}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Arrays and Arrays 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":28,\\"i\\":2}],\\"o\\":0},{\\"t\\":9,\\"i\\":3,\\"l\\":1,\\"a\\":[{\\"t\\":28,\\"i\\":4}],\\"o\\":0}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Arrays and Arrays 2`] = `"{\\"t\\":29,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":3}}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Arrays and Arrays 3`] = `"{\\"t\\":29,\\"i\\":4,\\"f\\":{\\"t\\":4,\\"i\\":1}}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Arrays and Objects 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":28,\\"i\\":2}],\\"o\\":0},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":28,\\"i\\":4}],\\"s\\":1},\\"o\\":0}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Arrays and Objects 2`] = `"{\\"t\\":29,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":3}}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Arrays and Objects 3`] = `"{\\"t\\":29,\\"i\\":4,\\"f\\":{\\"t\\":4,\\"i\\":1}}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Objects and Objects 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":28,\\"i\\":2}],\\"s\\":1},\\"o\\":0},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"0\\"],\\"v\\":[{\\"t\\":28,\\"i\\":4}],\\"s\\":1},\\"o\\":0}],\\"o\\":0}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Objects and Objects 2`] = `"{\\"t\\":29,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":3}}"`;
+
+exports[`mutual cyclic references > toCrossJSONStream > supports Objects and Objects 3`] = `"{\\"t\\":29,\\"i\\":4,\\"f\\":{\\"t\\":4,\\"i\\":1}}"`;
 
 exports[`mutual cyclic references > toJSON > supports Arrays and Arrays 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":1,\\"a\\":[{\\"t\\":9,\\"i\\":2,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":1}],\\"o\\":0}],\\"o\\":0},{\\"t\\":4,\\"i\\":2}],\\"o\\":0},\\"f\\":16383,\\"m\\":[1,2]}"`;
 

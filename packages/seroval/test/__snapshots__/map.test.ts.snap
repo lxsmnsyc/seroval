@@ -1,61 +1,79 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Map > compat > should fallback to Symbol.iterator 1`] = `"Object.assign(Object.create(null),{[Symbol.iterator]:()=>[].values()})"`;
+exports[`Map > compat > should fallback to Symbol.iterator 1`] = `"(h=>(Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[[1,2],[3,4],void 0],t:-1,d:2}),[Symbol.toStringTag]:\\"Map\\"})))()"`;
 
 exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
-exports[`Map > compat#toJSON > should fallback to Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[0],\\"v\\":[{\\"t\\":9,\\"i\\":1,\\"l\\":0,\\"a\\":[],\\"o\\":0}],\\"s\\":1},\\"o\\":0},\\"f\\":16351,\\"m\\":[]}"`;
+exports[`Map > compat#toJSON > should fallback to Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":3},{\\"t\\":17,\\"i\\":7,\\"s\\":11}],\\"v\\":[{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":3,\\"a\\":[{\\"t\\":9,\\"i\\":5,\\"l\\":2,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2}],\\"o\\":0},{\\"t\\":9,\\"i\\":6,\\"l\\":2,\\"a\\":[{\\"t\\":0,\\"s\\":3},{\\"t\\":0,\\"s\\":4}],\\"o\\":0},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":2}],\\"s\\":3},\\"o\\":0}]},{\\"t\\":1,\\"s\\":\\"Map\\"}],\\"s\\":2},\\"o\\":0},\\"f\\":16351,\\"m\\":[1]}"`;
 
 exports[`Map > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
-exports[`Map > crossSerialize > scoped > supports Map 1`] = `"($R=>($R[0]=new Map([[1,2],[3,4]])))($R[\\"example\\"])"`;
+exports[`Map > crossSerialize > scoped > supports Map 1`] = `"($R=>$R[0]=($R[1]=[],new Map([[1,2],[3,4]])))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>($R[0]=new Map,$R[0].set($R[0],$R[0]),$R[0]))($R[\\"example\\"])"`;
+exports[`Map > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>$R[0]=($R[1]=[],new Map),$R[0].set($R[0],$R[0]),$R[0])($R[\\"example\\"])"`;
 
-exports[`Map > crossSerialize > supports Map 1`] = `"$R[0]=new Map([[1,2],[3,4]])"`;
+exports[`Map > crossSerialize > supports Map 1`] = `"$R[0]=($R[1]=[],new Map([[1,2],[3,4]]))"`;
 
-exports[`Map > crossSerialize > supports self-recursion 1`] = `"($R[0]=new Map,$R[0].set($R[0],$R[0]),$R[0])"`;
+exports[`Map > crossSerialize > supports self-recursion 1`] = `"($R[0]=($R[1]=[],new Map),$R[0].set($R[0],$R[0]),$R[0])"`;
 
-exports[`Map > crossSerializeAsync > scoped > supports Map 1`] = `"($R=>($R[0]=Promise.resolve($R[1]=new Map([[1,2],[3,4]]))))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeAsync > scoped > supports Map 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=($R[2]=[],new Map([[1,2],[3,4]]))))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>($R[0]=new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]=($R[3]=[],new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]])))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeAsync > supports Map 1`] = `"$R[0]=Promise.resolve($R[1]=new Map([[1,2],[3,4]]))"`;
+exports[`Map > crossSerializeAsync > supports Map 1`] = `"$R[0]=Promise.resolve($R[1]=($R[2]=[],new Map([[1,2],[3,4]])))"`;
 
-exports[`Map > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]])"`;
+exports[`Map > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=($R[3]=[],new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]]))"`;
 
-exports[`Map > crossSerializeStream > scoped > supports Map 1`] = `"($R=>($R[0]=_$.P()))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports Map 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports Map 2`] = `"($R=>(_$.Ps($R[0],$R[1]=new Map([[1,2],[3,4]]))))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports Map 2`] = `"($R=>_$.Ps($R[0],$R[1]=($R[2]=[],new Map([[1,2],[3,4]]))))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>($R[0]=new Map([[$R[1]=_$.P(),$R[2]=_$.P()]])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=($R[3]=[],new Map([[$R[1]=_$.P(),$R[2]=_$.P()]])))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>(_$.Ps($R[1],$R[0])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>_$.Ps($R[1],$R[0]))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>(_$.Ps($R[2],$R[0])))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>_$.Ps($R[2],$R[0]))($R[\\"example\\"])"`;
 
 exports[`Map > crossSerializeStream > supports Map 1`] = `"$R[0]=_$.P()"`;
 
-exports[`Map > crossSerializeStream > supports Map 2`] = `"_$.Ps($R[0],$R[1]=new Map([[1,2],[3,4]]))"`;
+exports[`Map > crossSerializeStream > supports Map 2`] = `"_$.Ps($R[0],$R[1]=($R[2]=[],new Map([[1,2],[3,4]])))"`;
 
-exports[`Map > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=new Map([[$R[1]=_$.P(),$R[2]=_$.P()]])"`;
+exports[`Map > crossSerializeStream > supports Map 3`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`Map > crossSerializeStream > supports Map 4`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":8,\\"i\\":1,\\"e\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2},\\"f\\":{\\"t\\":41,\\"i\\":2}}}"`;
+
+exports[`Map > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=($R[3]=[],new Map([[$R[1]=_$.P(),$R[2]=_$.P()]]))"`;
 
 exports[`Map > crossSerializeStream > supports self-recursion 2`] = `"_$.Ps($R[1],$R[0])"`;
 
 exports[`Map > crossSerializeStream > supports self-recursion 3`] = `"_$.Ps($R[2],$R[0])"`;
 
-exports[`Map > serialize > supports Map 1`] = `"new Map([[1,2],[3,4]])"`;
+exports[`Map > crossSerializeStream > supports self-recursion 4`] = `"{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":28,\\"i\\":1}],\\"v\\":[{\\"t\\":28,\\"i\\":2}],\\"s\\":1},\\"f\\":{\\"t\\":41,\\"i\\":3}}"`;
 
-exports[`Map > serialize > supports self-recursion 1`] = `"(h=>(h=new Map,h.set(h,h),h))()"`;
+exports[`Map > crossSerializeStream > supports self-recursion 5`] = `"{\\"t\\":29,\\"i\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}"`;
 
-exports[`Map > serializeAsync > supports Map 1`] = `"Promise.resolve(new Map([[1,2],[3,4]]))"`;
+exports[`Map > crossSerializeStream > supports self-recursion 6`] = `"{\\"t\\":29,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":0}}"`;
 
-exports[`Map > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Map([[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]])))()"`;
+exports[`Map > serialize > supports Map 1`] = `"(h=>((h=[],new Map([[1,2],[3,4]]))))()"`;
 
-exports[`Map > toJSON > supports Map 1`] = `"{\\"t\\":{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Map > serialize > supports self-recursion 1`] = `"((h,j)=>(j=(h=[],new Map),j.set(j,j),j))()"`;
 
-exports[`Map > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":4,\\"i\\":0}],\\"v\\":[{\\"t\\":4,\\"i\\":0}],\\"s\\":1}},\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`Map > serializeAsync > supports Map 1`] = `"(h=>(Promise.resolve((h=[],new Map([[1,2],[3,4]])))))()"`;
 
-exports[`Map > toJSONAsync > supports Map 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":8,\\"i\\":1,\\"e\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2}}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Map > serializeAsync > supports self-recursion 1`] = `"((h,j)=>(j=(h=[],new Map([[Promise.resolve().then(()=>j),Promise.resolve().then(()=>j)]]))))()"`;
 
-exports[`Map > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"v\\":[{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":1}},\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`Map > toCrossJSON > supports Map 1`] = `"{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2},\\"f\\":{\\"t\\":41,\\"i\\":1}}"`;
+
+exports[`Map > toCrossJSON > supports self-recursion 1`] = `"{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":4,\\"i\\":0}],\\"v\\":[{\\"t\\":4,\\"i\\":0}],\\"s\\":1},\\"f\\":{\\"t\\":41,\\"i\\":1}}"`;
+
+exports[`Map > toCrossJSONAsync > supports Map 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":8,\\"i\\":1,\\"e\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2},\\"f\\":{\\"t\\":41,\\"i\\":2}}}"`;
+
+exports[`Map > toCrossJSONAsync > supports self-recursion 1`] = `"{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"v\\":[{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":1},\\"f\\":{\\"t\\":41,\\"i\\":3}}"`;
+
+exports[`Map > toJSON > supports Map 1`] = `"{\\"t\\":{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2},\\"f\\":{\\"t\\":41,\\"i\\":1}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`Map > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":4,\\"i\\":0}],\\"v\\":[{\\"t\\":4,\\"i\\":0}],\\"s\\":1},\\"f\\":{\\"t\\":41,\\"i\\":1}},\\"f\\":16383,\\"m\\":[0]}"`;
+
+exports[`Map > toJSONAsync > supports Map 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":8,\\"i\\":1,\\"e\\":{\\"k\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":3}],\\"v\\":[{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":4}],\\"s\\":2},\\"f\\":{\\"t\\":41,\\"i\\":2}}},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`Map > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"v\\":[{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"s\\":1},\\"f\\":{\\"t\\":41,\\"i\\":3}},\\"f\\":16383,\\"m\\":[0]}"`;

@@ -6,12 +6,10 @@
 
 export const enum Feature {
   AggregateError = 0x01,
-  ArrayPrototypeValues = 0x02,
   ArrowFunction = 0x04,
   BigInt = 0x08,
   ErrorPrototypeStack = 0x10,
   Map = 0x20,
-  MethodShorthand = 0x40,
   ObjectAssign = 0x80,
   Promise = 0x100,
   Set = 0x200,

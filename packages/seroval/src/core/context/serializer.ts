@@ -1,15 +1,13 @@
-import { Feature } from './compat';
+import { Feature } from '../compat';
 import {
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
   SYMBOL_STRING,
   SerovalNodeType,
   SerovalObjectFlags,
-} from './constants';
-import getIdentifier from './get-identifier';
-import { REFERENCES_KEY } from './keys';
-import type { Plugin, PluginAccessOptions, SerovalMode } from './plugin';
-import { isValidIdentifier } from './shared';
+} from '../constants';
+import { REFERENCES_KEY } from '../keys';
+import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import type {
   SerovalArrayNode,
   SerovalIndexedValueNode,
@@ -51,10 +49,15 @@ import type {
   SerovalReadableStreamEnqueueNode,
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamCloseNode,
-} from './types';
-import {
-  SerovalObjectRecordSpecialKey,
-} from './types';
+  SerovalMapSentinelNode,
+  SerovalIteratorFactoryInstanceNode,
+  SerovalIteratorFactoryNode,
+  SerovalAsyncIteratorFactoryInstanceNode,
+  SerovalAsyncIteratorFactoryNode,
+  SerovalReadableStreamNode,
+  SerovalReadableStreamFactoryNode,
+} from '../types';
+import { isValidIdentifier } from '../utils/is-valid-identifier';
 
 interface IndexAssignment {
   t: 'index';
@@ -174,30 +177,26 @@ function resolveAssignments(assignments: Assignment[]): string | undefined {
   return undefined;
 }
 
+const NULL_CONSTRUCTOR = 'Object.create(null)';
 const SET_CONSTRUCTOR = 'new Set';
 const MAP_CONSTRUCTOR = 'new Map';
 
-const enum SpecialReference {
-  Sentinel = 0,
-  Symbol = 1,
-  SymbolIterator = 2,
-  Object = 3,
-  ObjectFreeze = 4,
-  ObjectSeal = 5,
-  ObjectPreventExtensions = 6,
-  ObjectAssign = 7,
-  ObjectCreate = 8,
-  Promise = 9,
-  PromiseResolve = 10,
-  PromiseReject = 11,
-}
+const PROMISE_RESOLVE = 'Promise.resolve';
+const PROMISE_REJECT = 'Promise.reject';
 
-const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, SpecialReference | undefined> = {
-  [SerovalObjectFlags.Frozen]: SpecialReference.ObjectFreeze,
-  [SerovalObjectFlags.Sealed]: SpecialReference.ObjectSeal,
-  [SerovalObjectFlags.NonExtensible]: SpecialReference.ObjectPreventExtensions,
+const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = {
+  [SerovalObjectFlags.Frozen]: 'Object.freeze',
+  [SerovalObjectFlags.Sealed]: 'Object.seal',
+  [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
   [SerovalObjectFlags.None]: undefined,
 };
+
+type SerovalNodeWithProperties =
+  | SerovalObjectNode
+  | SerovalNullConstructorNode
+  | SerovalAggregateErrorNode
+  | SerovalErrorNode
+  | SerovalHeadersNode;
 
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
@@ -244,6 +243,32 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
 
   abstract readonly mode: SerovalMode;
 
+  protected createFunction(
+    parameters: string[],
+    body: string,
+  ): string {
+    if (this.features & Feature.ArrowFunction) {
+      const joined = parameters.length === 1
+        ? parameters[0]
+        : '(' + parameters.join(',') + ')';
+      return joined + '=>' + body;
+    }
+    return 'function(' + parameters.join(',') + '){return ' + body + '}';
+  }
+
+  protected createEffectfulFunction(
+    parameters: string[],
+    body: string,
+  ): string {
+    if (this.features & Feature.ArrowFunction) {
+      const joined = parameters.length === 1
+        ? parameters[0]
+        : '(' + parameters.join(',') + ')';
+      return joined + '=>{' + body + '}';
+    }
+    return 'function(' + parameters.join(',') + '){' + body + '}';
+  }
+
   /**
    * A tiny function that tells if a reference
    * is to be accessed. This is a requirement for
@@ -265,56 +290,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    */
   abstract getRefParam(id: number | string): string;
 
-  private specials = new Set<SpecialReference>();
-
-  protected getSpecialReferenceValue(ref: SpecialReference): string {
-    switch (ref) {
-      case SpecialReference.Sentinel:
-        return '[]';
-      case SpecialReference.Symbol:
-        return 'Symbol';
-      case SpecialReference.SymbolIterator:
-        return this.getSpecialReference(SpecialReference.Symbol, true) + '.iterator';
-      case SpecialReference.Object:
-        return 'Object';
-      case SpecialReference.ObjectFreeze:
-        return this.getSpecialReference(SpecialReference.Object, true) + '.freeze';
-      case SpecialReference.ObjectSeal:
-        return this.getSpecialReference(SpecialReference.Object, true) + '.seal';
-      case SpecialReference.ObjectPreventExtensions:
-        return this.getSpecialReference(SpecialReference.Object, true) + '.preventExtensions';
-      case SpecialReference.ObjectAssign:
-        return this.getSpecialReference(SpecialReference.Object, true) + '.assign';
-      case SpecialReference.ObjectCreate:
-        return this.getSpecialReference(SpecialReference.Object, true) + '.create';
-      case SpecialReference.Promise:
-        return 'Promise';
-      case SpecialReference.PromiseResolve:
-        return this.getSpecialReference(SpecialReference.Promise, true) + '.resolve.bind(' + this.getSpecialReference(SpecialReference.Promise, false) + ')';
-      case SpecialReference.PromiseReject:
-        return this.getSpecialReference(SpecialReference.Promise, true) + '.reject.bind(' + this.getSpecialReference(SpecialReference.Promise, false) + ')';
-      default:
-        throw new Error('unknown special reference');
-    }
-  }
-
-  /**
-   * Generates special references that isn't provided by the user
-   * but by the script.
-   */
-  protected getSpecialReference(ref: SpecialReference, call: boolean): string {
-    const param = this.getRefParam('_' + getIdentifier(ref));
-    if (this.specials.has(ref)) {
-      return param;
-    }
-    this.specials.add(ref);
-    const expr = param + '=' + this.getSpecialReferenceValue(ref);
-    if (call) {
-      return '(' + expr + ')';
-    }
-    return expr;
-  }
-
   protected pushObjectFlag(flag: SerovalObjectFlags, id: number): void {
     if (flag !== SerovalObjectFlags.None) {
       this.markRef(id);
@@ -329,11 +304,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     let result = '';
     for (let i = 0, current = this.flags, len = current.length; i < len; i++) {
       const flag = current[i];
-      const constructor = OBJECT_FLAG_CONSTRUCTOR[flag.type];
-      if (constructor) {
-        const ref = this.getSpecialReference(constructor, true);
-        result += ref + '(' + flag.value + '),';
-      }
+      result += OBJECT_FLAG_CONSTRUCTOR[flag.type] + '(' + flag.value + '),';
     }
     return result;
   }
@@ -447,30 +418,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(node.i, REFERENCES_KEY + '.get("' + node.s + '")');
   }
 
-  protected getIterableAccess(): string {
-    return this.features & Feature.ArrayPrototypeValues
-      ? '.values()'
-      : '[' + this.getSpecialReference(SpecialReference.SymbolIterator, false) + ']()';
-  }
-
-  protected serializeIterable(
-    node: SerovalNode,
-  ): string {
-    const key = '[' + this.getSpecialReference(SpecialReference.SymbolIterator, false) + ']';
-    const parent = this.stack;
-    this.stack = [];
-    let serialized = this.serialize(node) + this.getIterableAccess();
-    this.stack = parent;
-    if (this.features & Feature.ArrowFunction) {
-      serialized = ':()=>' + serialized;
-    } else if (this.features & Feature.MethodShorthand) {
-      serialized = '(){return ' + serialized + '}';
-    } else {
-      serialized = ':function(){return ' + serialized + '}';
-    }
-    return key + serialized;
-  }
-
   protected serializeArrayItem(
     id: number,
     item: SerovalNode | undefined,
@@ -514,50 +461,43 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   }
 
   protected serializeProperty(
-    id: number,
+    source: SerovalNodeWithProperties,
     key: SerovalObjectRecordKey,
     val: SerovalNode,
   ): string {
-    // Only reason this is a switch is so that
-    // in the future, maybe other Symbols are going
-    // to be introduced and/or has merit to be added
-    // E.g. Symbol.asyncIterator
-    switch (key) {
-      case SerovalObjectRecordSpecialKey.SymbolIterator:
-        return this.serializeIterable(val);
-      default: {
-        const check = Number(key);
-        // Test if key is a valid number or JS identifier
-        // so that we don't have to serialize the key and wrap with brackets
-        const isIdentifier = check >= 0 || isValidIdentifier(key);
-        if (this.isIndexedValueInStack(val)) {
-          const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
-          this.markRef(id);
-          // eslint-disable-next-line no-self-compare
-          if (isIdentifier && check !== check) {
-            this.createObjectAssign(id, key, refParam);
-          } else {
-            this.createArrayAssign(id, isIdentifier ? key : ('"' + key + '"'), refParam);
-          }
-          return '';
+    if (typeof key === 'string') {
+      const check = Number(key);
+      // Test if key is a valid number or JS identifier
+      // so that we don't have to serialize the key and wrap with brackets
+      const isIdentifier = check >= 0 || isValidIdentifier(key);
+      if (this.isIndexedValueInStack(val)) {
+        const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
+        this.markRef(source.i);
+        // eslint-disable-next-line no-self-compare
+        if (isIdentifier && check !== check) {
+          this.createObjectAssign(source.i, key, refParam);
+        } else {
+          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), refParam);
         }
-        return (isIdentifier ? key : ('"' + key + '"')) + ':' + this.serialize(val);
+        return '';
       }
+      return (isIdentifier ? key : ('"' + key + '"')) + ':' + this.serialize(val);
     }
+    return '[' + this.serialize(key) + ']:' + this.serialize(val);
   }
 
   protected serializeProperties(
-    sourceID: number,
-    node: SerovalObjectRecordNode,
+    source: SerovalNodeWithProperties,
+    record: SerovalObjectRecordNode,
   ): string {
-    const len = node.s;
+    const len = record.s;
     if (len) {
-      this.stack.push(sourceID);
-      const keys = node.k;
-      const values = node.v;
-      let result = this.serializeProperty(sourceID, keys[0], values[0]);
+      this.stack.push(source.i);
+      const keys = record.k;
+      const values = record.v;
+      let result = this.serializeProperty(source, keys[0], values[0]);
       for (let i = 1, item = result; i < len; i++) {
-        item = this.serializeProperty(sourceID, keys[i], values[i]);
+        item = this.serializeProperty(source, keys[i], values[i]);
         result += (item && result && ',') + item;
       }
       this.stack.pop();
@@ -570,84 +510,78 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     node: SerovalObjectNode,
   ): string {
     this.pushObjectFlag(node.o, node.i);
-    return this.assignIndexedValue(node.i, this.serializeProperties(node.i, node.p));
+    return this.assignIndexedValue(node.i, this.serializeProperties(node, node.p));
   }
 
   protected serializeWithObjectAssign(
+    source: SerovalNodeWithProperties,
     value: SerovalObjectRecordNode,
-    id: number,
     serialized: string,
   ): string {
-    const fields = this.serializeProperties(id, value);
+    const fields = this.serializeProperties(source, value);
     if (fields !== '{}') {
-      return this.getSpecialReference(SpecialReference.ObjectAssign, true) + '(' + serialized + ',' + fields + ')';
+      return 'Object.assign(' + serialized + ',' + fields + ')';
     }
     return serialized;
   }
 
   protected serializeAssignment(
-    sourceID: number,
+    source: SerovalNodeWithProperties,
     mainAssignments: Assignment[],
     key: SerovalObjectRecordKey,
     value: SerovalNode,
   ): void {
-    switch (key) {
-      case SerovalObjectRecordSpecialKey.SymbolIterator: {
-        const parent = this.stack;
-        this.stack = [];
-        const serialized = this.serialize(value) + this.getIterableAccess();
-        this.stack = parent;
+    if (typeof key === 'string') {
+      const serialized = this.serialize(value);
+      const check = Number(key);
+      // Test if key is a valid number or JS identifier
+      // so that we don't have to serialize the key and wrap with brackets
+      const isIdentifier = check >= 0 || isValidIdentifier(key);
+      if (this.isIndexedValueInStack(value)) {
+        // eslint-disable-next-line no-self-compare
+        if (isIdentifier && check !== check) {
+          this.createObjectAssign(source.i, key, serialized);
+        } else {
+          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
+        }
+      } else {
         const parentAssignment = this.assignments;
         this.assignments = mainAssignments;
-        this.createArrayAssign(
-          sourceID,
-          this.getSpecialReference(SpecialReference.Sentinel, false),
-          this.features & Feature.ArrowFunction
-            ? '()=>' + serialized
-            : 'function(){return ' + serialized + '}',
-        );
+        if (isIdentifier) {
+          this.createObjectAssign(source.i, key, serialized);
+        } else {
+          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
+        }
         this.assignments = parentAssignment;
       }
-        break;
-      default: {
-        const serialized = this.serialize(value);
-        const check = Number(key);
-        // Test if key is a valid number or JS identifier
-        // so that we don't have to serialize the key and wrap with brackets
-        const isIdentifier = check >= 0 || isValidIdentifier(key);
-        if (this.isIndexedValueInStack(value)) {
-          // eslint-disable-next-line no-self-compare
-          if (isIdentifier && check !== check) {
-            this.createObjectAssign(sourceID, key, serialized);
-          } else {
-            this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
-          }
-        } else {
-          const parentAssignment = this.assignments;
-          this.assignments = mainAssignments;
-          if (isIdentifier) {
-            this.createObjectAssign(sourceID, key, serialized);
-          } else {
-            this.createArrayAssign(sourceID, isIdentifier ? key : ('"' + key + '"'), serialized);
-          }
-          this.assignments = parentAssignment;
-        }
-      }
+    } else {
+      const parent = this.stack;
+      this.stack = [];
+      const serialized = this.serialize(value);
+      this.stack = parent;
+      const parentAssignment = this.assignments;
+      this.assignments = mainAssignments;
+      this.createArrayAssign(
+        source.i,
+        this.serialize(key),
+        serialized,
+      );
+      this.assignments = parentAssignment;
     }
   }
 
   protected serializeAssignments(
-    sourceID: number,
+    source: SerovalNodeWithProperties,
     node: SerovalObjectRecordNode,
   ): string | undefined {
     const len = node.s;
     if (len) {
-      this.stack.push(sourceID);
+      this.stack.push(source.i);
       const mainAssignments: Assignment[] = [];
       const keys = node.k;
       const values = node.v;
       for (let i = 0; i < len; i++) {
-        this.serializeAssignment(sourceID, mainAssignments, keys[i], values[i]);
+        this.serializeAssignment(source, mainAssignments, keys[i], values[i]);
       }
       this.stack.pop();
       return resolveAssignments(mainAssignments);
@@ -656,29 +590,28 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   }
 
   protected serializeDictionary(
-    i: number,
-    p: SerovalObjectRecordNode | undefined,
+    node: SerovalNodeWithProperties,
     init: string,
   ): string {
-    if (p) {
+    if (node.p) {
       if (this.features & Feature.ObjectAssign) {
-        init = this.serializeWithObjectAssign(p, i, init);
+        init = this.serializeWithObjectAssign(node, node.p, init);
       } else {
-        this.markRef(i);
-        const assignments = this.serializeAssignments(i, p);
+        this.markRef(node.i);
+        const assignments = this.serializeAssignments(node, node.p);
         if (assignments) {
-          return '(' + this.assignIndexedValue(i, init) + ',' + assignments + this.getRefParam(i) + ')';
+          return '(' + this.assignIndexedValue(node.i, init) + ',' + assignments + this.getRefParam(node.i) + ')';
         }
       }
     }
-    return this.assignIndexedValue(i, init);
+    return this.assignIndexedValue(node.i, init);
   }
 
   protected serializeNullConstructor(
     node: SerovalNullConstructorNode,
   ): string {
     this.pushObjectFlag(node.o, node.i);
-    return this.serializeDictionary(node.i, node.p, this.getSpecialReference(SpecialReference.ObjectCreate, true) + '(null)');
+    return this.serializeDictionary(node, NULL_CONSTRUCTOR);
   }
 
   protected serializeDate(
@@ -731,6 +664,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     id: number,
     key: SerovalNode,
     val: SerovalNode,
+    sentinel: string,
   ): string {
     if (this.isIndexedValueInStack(key)) {
       // Create reference for the map instance
@@ -755,9 +689,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         // basically we serialize the intended object in place WITHOUT
         // actually returning it, this is by returning a placeholder
         // value that we will remove sometime after.
-        const serialized = '(' + this.serialize(val) + ',[' + this.getSpecialReference(SpecialReference.Sentinel, false) + ',' + this.getSpecialReference(SpecialReference.Sentinel, false) + '])';
+        const serialized = '(' + this.serialize(val) + ',[' + sentinel + ',' + sentinel + '])';
         this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
-        this.createDeleteAssignment(id, this.getSpecialReference(SpecialReference.Sentinel, false));
+        this.createDeleteAssignment(id, sentinel);
         return serialized;
       }
       const parent = this.stack;
@@ -771,9 +705,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
       this.markRef(id);
       if (key.t !== SerovalNodeType.IndexedValue && key.i != null && this.isMarked(key.i)) {
-        const serialized = '(' + this.serialize(key) + ',[' + this.getSpecialReference(SpecialReference.Sentinel, false) + ',' + this.getSpecialReference(SpecialReference.Sentinel, false) + '])';
+        const serialized = '(' + this.serialize(key) + ',[' + sentinel + ',' + sentinel + '])';
         this.createSetAssignment(id, this.getRefParam(key.i), valueRef);
-        this.createDeleteAssignment(id, this.getSpecialReference(SpecialReference.Sentinel, false));
+        this.createDeleteAssignment(id, sentinel);
         return serialized;
       }
       // Reset stack for the key serialization
@@ -793,13 +727,15 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     let serialized = MAP_CONSTRUCTOR;
     const size = node.e.s;
     const id = node.i;
+    const sentinel = node.f;
+    const sentinelID = this.getRefParam(sentinel.i);
     if (size) {
       const keys = node.e.k;
       const vals = node.e.v;
       this.stack.push(id);
-      let result = this.serializeMapEntry(id, keys[0], vals[0]);
+      let result = this.serializeMapEntry(id, keys[0], vals[0], sentinelID);
       for (let i = 1, item = result; i < size; i++) {
-        item = this.serializeMapEntry(id, keys[i], vals[i]);
+        item = this.serializeMapEntry(id, keys[i], vals[i], sentinelID);
         result += (item && result && ',') + item;
       }
       this.stack.pop();
@@ -809,6 +745,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       if (result) {
         serialized += '([' + result + '])';
       }
+    }
+    if (sentinel.t === SerovalNodeType.MapSentinel) {
+      this.markRef(sentinel.i);
+      serialized = '(' + this.serialize(sentinel) + ',' + serialized + ')';
     }
     return this.assignIndexedValue(id, serialized);
   }
@@ -858,13 +798,13 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     // `AggregateError` might've been extended
     // either through class or custom properties
     // Make sure to assign extra properties
-    return this.serializeDictionary(id, node.p, serialized);
+    return this.serializeDictionary(node, serialized);
   }
 
   protected serializeError(
     node: SerovalErrorNode,
   ): string {
-    return this.serializeDictionary(node.i, node.p, 'new ' + ERROR_CONSTRUCTOR_STRING[node.s] + '("' + node.m + '")');
+    return this.serializeDictionary(node, 'new ' + ERROR_CONSTRUCTOR_STRING[node.s] + '("' + node.m + '")');
   }
 
   protected serializePromise(
@@ -874,25 +814,18 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     // Check if resolved value is a parent expression
     const fulfilled = node.f;
     const id = node.i;
-    const specialRef = node.s ? SpecialReference.PromiseResolve : SpecialReference.PromiseReject;
-    const constructor = this.getSpecialReference(specialRef, true);
+    const constructor = node.s ? PROMISE_RESOLVE : PROMISE_REJECT;
     if (this.isIndexedValueInStack(fulfilled)) {
       // A Promise trick, reference the value
       // inside the `then` expression so that
       // the Promise evaluates after the parent
       // has initialized
       const ref = this.getRefParam((fulfilled as SerovalIndexedValueNode).i);
-      if (this.features & Feature.ArrowFunction) {
-        if (node.s) {
-          serialized = constructor + '().then(()=>' + ref + ')';
-        } else {
-          serialized = constructor + '().catch(()=>{throw ' + ref + '})';
-        }
-      } else if (node.s) {
-        serialized = constructor + '().then(function(){return ' + ref + '})';
-      } else {
-        serialized = constructor + '().catch(function(){throw ' + ref + '})';
-      }
+      serialized = constructor + (
+        node.s
+          ? '().then(' + this.createFunction([], ref) + ')'
+          : '().catch(' + this.createEffectfulFunction([], 'throw ' + ref) + ')'
+      );
     } else {
       this.stack.push(id);
       const result = this.serialize(fulfilled);
@@ -947,7 +880,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): string {
     return this.assignIndexedValue(
       node.i,
-      'new Headers(' + this.serializeProperties(node.i, node.e) + ')',
+      'new Headers(' + this.serializeProperties(node, node.e) + ')',
     );
   }
 
@@ -1041,9 +974,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       for (let i = 0, len = currentPlugins.length; i < len; i++) {
         const plugin = currentPlugins[i];
         if (plugin.tag === node.c) {
-          return plugin.serialize(node.s, this, {
-            id: node.i,
-          });
+          return this.assignIndexedValue(
+            node.i,
+            plugin.serialize(node.s, this, {
+              id: node.i,
+            }),
+          );
         }
       }
     }
@@ -1077,6 +1013,89 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected abstract serializeReadableStreamClose(
     node: SerovalReadableStreamCloseNode,
   ): string;
+
+  protected serializeMapSentinel(node: SerovalMapSentinelNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      '[]',
+    );
+  }
+
+  protected serializeIteratorFactory(node: SerovalIteratorFactoryNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      this.createFunction(
+        ['s'],
+        this.createFunction(
+          ['i', 'c', 'd', 't'],
+          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
+            + 'next:' + this.createEffectfulFunction([], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
+        ),
+      ),
+    );
+  }
+
+  protected serializeIteratorFactoryInstance(
+    node: SerovalIteratorFactoryInstanceNode,
+  ): string {
+    return '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')';
+  }
+
+  protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      this.createFunction(
+        ['s'],
+        this.createFunction(
+          ['i', 't'],
+          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
+            + 'next:' + this.createFunction(
+            [],
+            'Promise.resolve().then(' + this.createEffectfulFunction(
+              ['c', 'd'],
+              'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
+            ) + ')',
+          ) + '})',
+        ),
+      ),
+    );
+  }
+
+  protected serializeAsyncIteratorFactoryInstance(
+    node: SerovalAsyncIteratorFactoryInstanceNode,
+  ): string {
+    return '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')';
+  }
+
+  protected serializeReadableStream(
+    node: SerovalReadableStreamNode,
+  ): string {
+    this.stack.push(node.i);
+    const result = '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')';
+    this.stack.pop();
+    return this.assignIndexedValue(
+      node.i,
+      result,
+    );
+  }
+
+  protected serializeReadableStreamFactory(
+    node: SerovalReadableStreamFactoryNode,
+  ): string {
+    return this.assignIndexedValue(
+      node.i,
+      this.createFunction(
+        ['s'],
+        'new ReadableStream({start:' + this.createFunction(
+          ['c'],
+          'Promise.resolve().then(' + this.createEffectfulFunction(
+            ['i', 'v'],
+            'for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])',
+          ) + ')',
+        ) + '})',
+      ),
+    );
+  }
 
   serialize(node: SerovalNode): string {
     switch (node.t) {
@@ -1161,6 +1180,20 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializeDOMException(node);
       case SerovalNodeType.Plugin:
         return this.serializePlugin(node);
+      case SerovalNodeType.MapSentinel:
+        return this.serializeMapSentinel(node);
+      case SerovalNodeType.IteratorFactory:
+        return this.serializeIteratorFactory(node);
+      case SerovalNodeType.IteratorFactoryInstance:
+        return this.serializeIteratorFactoryInstance(node);
+      case SerovalNodeType.AsyncIteratorFactory:
+        return this.serializeAsyncIteratorFactory(node);
+      case SerovalNodeType.AsyncIteratorFactoryInstance:
+        return this.serializeAsyncIteratorFactoryInstance(node);
+      case SerovalNodeType.ReadableStream:
+        return this.serializeReadableStream(node);
+      case SerovalNodeType.ReadableStreamFactory:
+        return this.serializeReadableStreamFactory(node);
       default:
         throw new Error('invariant');
     }

@@ -51,6 +51,13 @@ export const enum SerovalNodeType {
   CustomEvent = 38,
   DOMException = 39,
   Plugin = 40,
+  MapSentinel = 41,
+  IteratorFactory = 42,
+  IteratorFactoryInstance = 43,
+  AsyncIteratorFactory = 44,
+  AsyncIteratorFactoryInstance = 45,
+  ReadableStream = 46,
+  ReadableStreamFactory = 47,
 }
 
 export const enum SerovalObjectFlags {
@@ -186,5 +193,3 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
   [ErrorConstructorTag.TypeError]: TypeError,
   [ErrorConstructorTag.URIError]: URIError,
 };
-
-export const UNIVERSAL_SENTINEL = Symbol('why');

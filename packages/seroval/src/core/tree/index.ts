@@ -2,8 +2,8 @@ import type { PluginAccessOptions } from '../plugin';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
 import AsyncParserContext from './async';
-import VanillaDeserializerContext from './deserialize';
-import VanillaSerializerContext from './serialize';
+import VanillaDeserializerContext from './deserializer';
+import VanillaSerializerContext from './serializer';
 import type { SyncParserContextOptions } from './sync';
 import SyncParserContext from './sync';
 

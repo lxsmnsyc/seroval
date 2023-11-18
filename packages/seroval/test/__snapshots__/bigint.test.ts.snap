@@ -16,6 +16,14 @@ exports[`bigint > serialize > supports bigint 1`] = `"9007199254740991n"`;
 
 exports[`bigint > serializeAsync > supports bigint 1`] = `"Promise.resolve(9007199254740991n)"`;
 
+exports[`bigint > toCrossJSON > supports bigint 1`] = `"{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}"`;
+
+exports[`bigint > toCrossJSONAsync > supports bigint 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}"`;
+
+exports[`bigint > toCrossJSONStream > supports bigint 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+
+exports[`bigint > toCrossJSONStream > supports bigint 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}"`;
+
 exports[`bigint > toJSON > supports bigint 1`] = `"{\\"t\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"},\\"f\\":16383,\\"m\\":[]}"`;
 
 exports[`bigint > toJSONAsync > supports bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}},\\"f\\":16383,\\"m\\":[]}"`;

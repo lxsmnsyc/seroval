@@ -9,6 +9,9 @@
 - `crossSerialize`
 - `crossSerializeAsync`
 - `crossSerializeStream`
+- `toCrossJSON`
+- `toCrossJSONAsync`
+- `toCrossJSONStream`
 
 ## Basic serialization
 
@@ -116,9 +119,6 @@ const BufferPlugin = createPlugin<Buffer, SerovalNode>({
   },
   deserialize(node, ctx) {
     return Buffer.from(ctx.deserialize(node) as string, 'base64');
-  },
-  isIterable() {
-    return true;
   },
 });
 ```

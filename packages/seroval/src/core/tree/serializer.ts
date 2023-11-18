@@ -8,11 +8,10 @@ import type {
   SerovalReadableStreamEnqueueNode,
   SerovalReadableStreamErrorNode,
 } from '../types';
-import type { BaseSerializerContextOptions } from '../serializer-context.old';
-import BaseSerializerContext from '../serializer-context.old';
-import getIdentifier from '../get-identifier';
+import type { BaseSerializerContextOptions } from '../context/serializer';
+import BaseSerializerContext from '../context/serializer';
+import getIdentifier from '../utils/get-identifier';
 import type { SerovalMode } from '../plugin';
-import { Feature } from '../compat';
 import { SerovalNodeType } from '../constants';
 
 export type VanillaSerializerContextOptions = BaseSerializerContextOptions
@@ -30,7 +29,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
    * Variables
    * @private
    */
-  vars: (string | undefined)[] = [];
+  vars: string[] = [];
 
   /**
    * Increments the number of references the referenced value has
@@ -131,17 +130,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
           body = index + '=' + body;
         }
       }
-      let params = this.vars.length > 1
-        ? this.vars.join(',')
-        : this.vars[0];
-      // Source is probably already assigned
-      if (this.features & Feature.ArrowFunction) {
-        params = this.vars.length > 1 || this.vars.length === 0
-          ? '(' + params + ')'
-          : params;
-        return '(' + params + '=>(' + body + '))()';
-      }
-      return '(function(' + params + '){return ' + body + '})()';
+      return '(' + this.createFunction(this.vars, '(' + body + ')') + ')()';
     }
     if (tree.t === SerovalNodeType.Object) {
       return '(' + result + ')';

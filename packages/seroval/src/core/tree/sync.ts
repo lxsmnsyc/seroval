@@ -1,5 +1,5 @@
-import BaseSyncParserContext from '../base/sync';
-import type { BaseParserContextOptions } from '../parser-context';
+import BaseSyncParserContext from '../context/parser/sync';
+import type { BaseParserContextOptions } from '../context/parser';
 import type { SerovalMode } from '../plugin';
 
 export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
