@@ -20,7 +20,7 @@ exports[`null-constructor > crossSerialize > supports self-recursion 1`] = `"($R
 
 exports[`null-constructor > crossSerializeAsync > scoped > supports Object.create(null) 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{hello:\\"world\\"})))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})}))($R[\\"example\\"])"`;
+exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})}))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})))($R[\\"example\\"])"`;
 
@@ -28,7 +28,7 @@ exports[`null-constructor > crossSerializeAsync > scoped > supports self-recursi
 
 exports[`null-constructor > crossSerializeAsync > supports Object.create(null) 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
 
-exports[`null-constructor > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})"`;
+exports[`null-constructor > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})"`;
 
 exports[`null-constructor > crossSerializeAsync > supports Symbol.iterator 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))"`;
 
@@ -38,7 +38,7 @@ exports[`null-constructor > crossSerializeStream > scoped > supports Object.crea
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 2`] = `"($R=>_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{hello:\\"world\\"})))($R[\\"example\\"])"`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())}))($R[\\"example\\"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())}))($R[\\"example\\"])"`;
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `"($R=>_$.Se($R[3],$R[4]=[0,1]))($R[\\"example\\"])"`;
 
@@ -64,7 +64,7 @@ exports[`null-constructor > crossSerializeStream > supports Object.create(null) 
 
 exports[`null-constructor > crossSerializeStream > supports Object.create(null) 2`] = `"_$.Ps($R[0],$R[1]=Object.assign(Object.create(null),{hello:\\"world\\"}))"`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())})"`;
+exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())})"`;
 
 exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"_$.Se($R[3],$R[4]=[0,1])"`;
 

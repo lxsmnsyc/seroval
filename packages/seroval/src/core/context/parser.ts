@@ -30,7 +30,6 @@ import type {
   SerovalObjectNode,
   SerovalObjectRecordNode,
   SerovalReadableStreamFactoryNode,
-  SerovalReadableStreamNode,
   SerovalReferenceNode,
   SerovalWKSymbolNode,
 } from '../types';
@@ -232,9 +231,9 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     };
   }
 
-  protected parseReadableStreamFactory(
-    items: SerovalNode,
-  ): SerovalIndexedValueNode | SerovalReadableStreamFactoryNode {
+  protected parseReadableStreamFactory(): (
+    SerovalIndexedValueNode | SerovalReadableStreamFactoryNode
+  ) {
     const registeredID = this.refs.get(READABLE_STREAM);
     if (registeredID != null) {
       this.markRef(registeredID);
@@ -252,27 +251,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       p: undefined,
       e: undefined,
       a: undefined,
-      f: items,
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  protected createReadableStreamNode(
-    id: number,
-    items: SerovalNode,
-  ): SerovalReadableStreamNode {
-    return {
-      t: SerovalNodeType.ReadableStream,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parseReadableStreamFactory(items),
+      f: undefined,
       b: undefined,
       o: undefined,
     };

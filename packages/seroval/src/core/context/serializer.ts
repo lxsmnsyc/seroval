@@ -6,7 +6,6 @@ import {
   SerovalNodeType,
   SerovalObjectFlags,
 } from '../constants';
-import { createEffectfulFunction, createFunction } from '../utils/function-string';
 import { REFERENCES_KEY } from '../keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import type {
@@ -55,6 +54,8 @@ import type {
   SerovalIteratorFactoryNode,
   SerovalAsyncIteratorFactoryInstanceNode,
   SerovalAsyncIteratorFactoryNode,
+  SerovalReadableStreamNode,
+  SerovalReadableStreamFactoryNode,
 } from '../types';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
 
@@ -241,6 +242,32 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   }
 
   abstract readonly mode: SerovalMode;
+
+  protected createFunction(
+    parameters: string[],
+    body: string,
+  ): string {
+    if (this.features & Feature.ArrowFunction) {
+      const joined = parameters.length === 1
+        ? parameters[0]
+        : '(' + parameters.join(',') + ')';
+      return joined + '=>' + body;
+    }
+    return 'function(' + parameters.join(',') + '){return ' + body + '}';
+  }
+
+  protected createEffectfulFunction(
+    parameters: string[],
+    body: string,
+  ): string {
+    if (this.features & Feature.ArrowFunction) {
+      const joined = parameters.length === 1
+        ? parameters[0]
+        : '(' + parameters.join(',') + ')';
+      return joined + '=>{' + body + '}';
+    }
+    return 'function(' + parameters.join(',') + '){' + body + '}';
+  }
 
   /**
    * A tiny function that tells if a reference
@@ -796,8 +823,8 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       const ref = this.getRefParam((fulfilled as SerovalIndexedValueNode).i);
       serialized = constructor + (
         node.s
-          ? '().then(' + createFunction(this.features, [], ref) + ')'
-          : '().catch(' + createEffectfulFunction(this.features, [], 'throw ' + ref) + ')'
+          ? '().then(' + this.createFunction([], ref) + ')'
+          : '().catch(' + this.createEffectfulFunction([], 'throw ' + ref) + ')'
       );
     } else {
       this.stack.push(id);
@@ -997,14 +1024,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected serializeIteratorFactory(node: SerovalIteratorFactoryNode): string {
     return this.assignIndexedValue(
       node.i,
-      createFunction(
-        this.features,
+      this.createFunction(
         ['s'],
-        createFunction(
-          this.features,
+        this.createFunction(
           ['i', 'c', 'd', 't'],
-          '(i=0,t={[' + this.serialize(node.f) + ']:' + createFunction(this.features, [], 't') + ','
-            + 'next:' + createEffectfulFunction(this.features, [], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
+          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
+            + 'next:' + this.createEffectfulFunction([], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
         ),
       ),
     );
@@ -1019,18 +1044,14 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
     return this.assignIndexedValue(
       node.i,
-      createFunction(
-        this.features,
+      this.createFunction(
         ['s'],
-        createFunction(
-          this.features,
+        this.createFunction(
           ['i', 't'],
-          '(i=0,t={[' + this.serialize(node.f) + ']:' + createFunction(this.features, [], 't') + ','
-            + 'next:' + createFunction(
-            this.features,
+          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
+            + 'next:' + this.createFunction(
             [],
-            'Promise.resolve().then(' + createEffectfulFunction(
-              this.features,
+            'Promise.resolve().then(' + this.createEffectfulFunction(
               ['c', 'd'],
               'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
             ) + ')',
@@ -1044,6 +1065,30 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     node: SerovalAsyncIteratorFactoryInstanceNode,
   ): string {
     return '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')';
+  }
+
+  protected serializeReadableStream(
+    node: SerovalReadableStreamNode,
+  ): string {
+    return this.assignIndexedValue(
+      node.i,
+      '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')',
+    );
+  }
+
+  protected serializeReadableStreamFactory(
+    node: SerovalReadableStreamFactoryNode,
+  ): string {
+    return this.assignIndexedValue(
+      node.i,
+      this.createFunction(
+        ['s'],
+        'new ReadableStream({start:' + this.createEffectfulFunction(
+          ['c', 'i', 'v'],
+          'for(i=0;i<s.d;i++)(v=s.v[i],i==s.t)?c.error(v):c.enqueue(v);c.close()',
+        ) + '})',
+      ),
+    );
   }
 
   serialize(node: SerovalNode): string {
@@ -1140,7 +1185,9 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalNodeType.AsyncIteratorFactoryInstance:
         return this.serializeAsyncIteratorFactoryInstance(node);
       case SerovalNodeType.ReadableStream:
+        return this.serializeReadableStream(node);
       case SerovalNodeType.ReadableStreamFactory:
+        return this.serializeReadableStreamFactory(node);
       default:
         throw new Error('invariant');
     }

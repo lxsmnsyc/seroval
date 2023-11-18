@@ -77,7 +77,8 @@ import {
   createURLSearchParamsNode,
   createDOMExceptionNode,
   createEventNode,
-  createCustomEVentNode,
+  createCustomEventNode,
+  createReadableStreamNode,
 } from '../../web-api';
 
 type ObjectLikeNode =
@@ -420,7 +421,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: CustomEvent,
   ): Promise<SerovalCustomEventNode> {
-    return createCustomEVentNode(
+    return createCustomEventNode(
       id,
       current.type,
       await this.parse(createCustomEventOptions(current)),
@@ -474,8 +475,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: ReadableStream,
   ): Promise<SerovalReadableStreamNode> {
-    return this.createReadableStreamNode(
+    return createReadableStreamNode(
       id,
+      this.parseReadableStreamFactory(),
       await this.parse(
         await readableStreamToSequence(current),
       ),

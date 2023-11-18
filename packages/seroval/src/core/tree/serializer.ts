@@ -13,7 +13,6 @@ import BaseSerializerContext from '../context/serializer';
 import getIdentifier from '../utils/get-identifier';
 import type { SerovalMode } from '../plugin';
 import { SerovalNodeType } from '../constants';
-import { createFunction } from '../utils/function-string';
 
 export type VanillaSerializerContextOptions = BaseSerializerContextOptions
 
@@ -131,7 +130,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
           body = index + '=' + body;
         }
       }
-      return '(' + createFunction(this.features, this.vars, '(' + body + ')') + ')()';
+      return '(' + this.createFunction(this.vars, '(' + body + ')') + ')()';
     }
     if (tree.t === SerovalNodeType.Object) {
       return '(' + result + ')';

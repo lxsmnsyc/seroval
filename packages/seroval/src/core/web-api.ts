@@ -5,6 +5,7 @@ import type {
   SerovalDOMExceptionNode,
   SerovalEventNode,
   SerovalNode,
+  SerovalReadableStreamNode,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
 } from './types';
@@ -90,7 +91,7 @@ export function createEventNode(
   };
 }
 
-export function createCustomEVentNode(
+export function createCustomEventNode(
   id: number,
   type: string,
   options: SerovalNode,
@@ -106,6 +107,30 @@ export function createCustomEVentNode(
     e: undefined,
     a: undefined,
     f: options,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createReadableStreamNode(
+  id: number,
+  factory: SerovalNode,
+  items: SerovalNode,
+): SerovalReadableStreamNode {
+  return {
+    t: SerovalNodeType.ReadableStream,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: [
+      factory,
+      items,
+    ],
+    f: undefined,
     b: undefined,
     o: undefined,
   };

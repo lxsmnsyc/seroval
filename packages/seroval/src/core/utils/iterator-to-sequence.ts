@@ -220,3 +220,21 @@ export async function readableStreamToSequence<T>(
     d: doneAt,
   };
 }
+
+export function sequenceToReadableStream<T>(
+  sequence: Sequence,
+): ReadableStream<T> {
+  return new ReadableStream<T>({
+    start(controller): void {
+      for (let i = 0; i <= sequence.d; i++) {
+        const value = sequence.v[i];
+        if (i === sequence.t) {
+          controller.error(value);
+        } else {
+          controller.enqueue(value as T);
+        }
+      }
+      controller.close();
+    },
+  });
+}

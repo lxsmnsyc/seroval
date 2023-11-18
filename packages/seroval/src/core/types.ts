@@ -425,13 +425,15 @@ export interface SerovalAsyncIteratorFactoryInstanceNode extends SerovalBaseNode
 export interface SerovalReadableStreamNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStream;
   i: number;
-  f: SerovalReadableStreamFactoryNode | SerovalIndexedValueNode;
+  a: [
+    instance: SerovalNode,
+    sequence: SerovalNode,
+  ];
 }
 
 export interface SerovalReadableStreamFactoryNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStreamFactory;
   i: number;
-  f: SerovalNode;
 }
 
 export type SerovalSyncNode =

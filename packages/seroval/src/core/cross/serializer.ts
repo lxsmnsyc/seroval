@@ -25,7 +25,6 @@ import BaseSerializerContext from '../context/serializer';
 import type { SerovalMode } from '../plugin';
 import { serializeString } from '../string';
 import type { CrossContextOptions } from './parser';
-import { createEffectfulFunction, createFunction } from '../utils/function-string';
 
 export interface CrossSerializerContextOptions
   extends BaseSerializerContextOptions, CrossContextOptions {
@@ -100,18 +99,14 @@ export default class CrossSerializerContext extends BaseSerializerContext {
   protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
     return this.assignIndexedValue(
       node.i,
-      createFunction(
-        this.features,
+      this.createFunction(
         ['s'],
-        createFunction(
-          this.features,
-          ['b'],
-          '(b=s.tee(),s=b[0],b=b[1].getReader(),{[' + this.serialize(node.f) + ']:' + createFunction(this.features, [], 'this') + ','
-          + 'next:' + createFunction(
-            this.features,
+        this.createFunction(
+          ['b', 't'],
+          '(b=s.tee(),s=b[0],b=b[1].getReader(),t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
+          + 'next:' + this.createFunction(
             [],
-            'b.read().then(' + createEffectfulFunction(
-              this.features,
+            'b.read().then(' + this.createEffectfulFunction(
               ['d'],
               'if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}',
             ) + ')',
@@ -136,6 +131,6 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     }
     const args = this.scopeId == null ? '()' : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(this.scopeId) + '"])';
     const body = mainBody + (patches ? ref : '');
-    return '(' + createFunction(this.features, [params], body) + ')' + args;
+    return '(' + this.createFunction([params], body) + ')' + args;
   }
 }

@@ -14,7 +14,7 @@ exports[`frozen object > crossSerialize > supports self-recursion 1`] = `"($R[0]
 
 exports[`frozen object > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.freeze($R[1]),$R[0])($R[\\"example\\"])"`;
 
-exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.freeze($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.freeze($R[0]),$R[0])($R[\\"example\\"])"`;
 
 exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}),Object.freeze($R[1]),$R[0])($R[\\"example\\"])"`;
 
@@ -22,7 +22,7 @@ exports[`frozen object > crossSerializeAsync > scoped > supports self-recursion 
 
 exports[`frozen object > crossSerializeAsync > supports Objects 1`] = `"($R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.freeze($R[1]),$R[0])"`;
 
-exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.freeze($R[0]),$R[0])"`;
+exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.freeze($R[0]),$R[0])"`;
 
 exports[`frozen object > crossSerializeAsync > supports Symbol.iterator 1`] = `"($R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}),Object.freeze($R[1]),$R[0])"`;
 
@@ -32,7 +32,7 @@ exports[`frozen object > crossSerializeStream > scoped > supports Objects 1`] = 
 
 exports[`frozen object > crossSerializeStream > scoped > supports Objects 2`] = `"($R=>_$.Ps($R[0],$R[1]={hello:\\"world\\"}),Object.freeze($R[1]),$R[0])($R[\\"example\\"])"`;
 
-exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())},Object.freeze($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())},Object.freeze($R[0]),$R[0])($R[\\"example\\"])"`;
 
 exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `"($R=>_$.Se($R[3],$R[4]=[0,1]))($R[\\"example\\"])"`;
 
@@ -58,7 +58,7 @@ exports[`frozen object > crossSerializeStream > supports Objects 1`] = `"$R[0]=_
 
 exports[`frozen object > crossSerializeStream > supports Objects 2`] = `"(_$.Ps($R[0],$R[1]={hello:\\"world\\"}),Object.freeze($R[1]),$R[0])"`;
 
-exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>b=>(b=s.tee(),s=b[0],b=b[1].getReader(),{[$R[1]]:()=>this,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())},Object.freeze($R[0]),$R[0])"`;
+exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=_$.S())},Object.freeze($R[0]),$R[0])"`;
 
 exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"_$.Se($R[3],$R[4]=[0,1])"`;
 
