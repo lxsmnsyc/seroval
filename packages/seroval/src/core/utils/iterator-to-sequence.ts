@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 export interface Sequence {
   v: unknown[];
   t: number;
@@ -70,22 +71,19 @@ export async function asyncIteratorToSequence<T>(source: AsyncIterable<T>): Prom
 
   const iterator = source[Symbol.asyncIterator]();
 
-  async function push(): Promise<void> {
+  while (true) {
     try {
       const value = await iterator.next();
       values.push(value.value);
       if (value.done) {
         doneAt = values.length - 1;
-      } else {
-        await push();
+        break;
       }
     } catch (error) {
       throwsAt = values.length;
       values.push(error);
     }
   }
-
-  await push();
 
   return {
     v: values,
@@ -130,20 +128,18 @@ export function asyncIteratorToReadableStream<T>(
   return new ReadableStream({
     async start(controller): Promise<void> {
       const iterator = source[Symbol.asyncIterator]();
-      async function push(): Promise<void> {
+      while (true) {
         try {
           const result = await iterator.next();
           controller.enqueue([result.done ? 2 : 0, result.value]);
           if (result.done) {
             controller.close();
-          } else {
-            await push();
+            return;
           }
         } catch (error) {
           controller.enqueue([1, error]);
         }
       }
-      await push();
     },
   });
 }
@@ -197,22 +193,21 @@ export async function readableStreamToSequence<T>(
 
   const iterator = stream.getReader();
 
-  async function push(): Promise<void> {
+  while (true) {
     try {
       const value = await iterator.read();
       values.push(value.value);
       if (value.done) {
         doneAt = values.length - 1;
-      } else {
-        await push();
+        break;
       }
     } catch (error) {
       throwsAt = values.length;
+      doneAt = throwsAt;
       values.push(error);
+      break;
     }
   }
-
-  await push();
 
   return {
     v: values,
@@ -226,15 +221,14 @@ export function sequenceToReadableStream<T>(
 ): ReadableStream<T> {
   return new ReadableStream<T>({
     start(controller): void {
-      for (let i = 0; i <= sequence.d; i++) {
-        const value = sequence.v[i];
-        if (i === sequence.t) {
-          controller.error(value);
-        } else {
-          controller.enqueue(value as T);
-        }
+      for (let i = 0; i < sequence.d; i++) {
+        controller.enqueue(sequence.v[i] as T);
       }
-      controller.close();
+      if (sequence.t === -1) {
+        controller.close();
+      } else {
+        controller.error(sequence.v[sequence.t] as T);
+      }
     },
   });
 }

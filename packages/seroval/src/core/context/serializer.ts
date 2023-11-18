@@ -1070,9 +1070,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected serializeReadableStream(
     node: SerovalReadableStreamNode,
   ): string {
+    this.stack.push(node.i);
+    const result = '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')';
+    this.stack.pop();
     return this.assignIndexedValue(
       node.i,
-      '(' + this.serialize(node.a[0]) + ')(' + this.serialize(node.a[1]) + ')',
+      result,
     );
   }
 
@@ -1083,9 +1086,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       node.i,
       this.createFunction(
         ['s'],
-        'new ReadableStream({start:' + this.createEffectfulFunction(
-          ['c', 'i', 'v'],
-          'for(i=0;i<s.d;i++)(v=s.v[i],i==s.t)?c.error(v):c.enqueue(v);c.close()',
+        'new ReadableStream({start:' + this.createFunction(
+          ['c'],
+          'Promise.resolve().then(' + this.createEffectfulFunction(
+            ['i', 'v'],
+            'for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])',
+          ) + ')',
         ) + '})',
       ),
     );

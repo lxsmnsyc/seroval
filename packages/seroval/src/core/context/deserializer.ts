@@ -35,6 +35,7 @@ import type {
   SerovalReadableStreamConstructorNode,
   SerovalReadableStreamEnqueueNode,
   SerovalReadableStreamErrorNode,
+  SerovalReadableStreamNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalRequestNode,
@@ -53,7 +54,12 @@ import {
 } from '../constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import type { Sequence, SerializedAsyncIteratorResult } from '../utils/iterator-to-sequence';
-import { readableStreamToAsyncIterator, sequenceToAsyncIterator, sequenceToIterator } from '../utils/iterator-to-sequence';
+import {
+  readableStreamToAsyncIterator,
+  sequenceToAsyncIterator,
+  sequenceToIterator,
+  sequenceToReadableStream,
+} from '../utils/iterator-to-sequence';
 import { getTypedArrayConstructor } from '../utils/typed-array';
 import type { Deferred, DeferredStream } from '../utils/deferred';
 import { createDeferred, createDeferredStream } from '../utils/deferred';
@@ -510,6 +516,17 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     return sequenceToAsyncIterator(source as Sequence);
   }
 
+  private deserializeReadableStream(
+    node: SerovalReadableStreamNode,
+  ): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      sequenceToReadableStream(
+        this.deserialize(node.a[1]) as Sequence,
+      ),
+    );
+  }
+
   deserialize(node: SerovalNode): unknown {
     switch (node.t) {
       case SerovalNodeType.Constant:
@@ -596,6 +613,9 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializeIteratorFactoryInstance(node);
       case SerovalNodeType.AsyncIteratorFactoryInstance:
         return this.deserializeAsyncIteratorFactoryInstance(node);
+      case SerovalNodeType.ReadableStream:
+        return this.deserializeReadableStream(node);
+      case SerovalNodeType.ReadableStreamFactory:
       case SerovalNodeType.MapSentinel:
       case SerovalNodeType.IteratorFactory:
       case SerovalNodeType.AsyncIteratorFactory:

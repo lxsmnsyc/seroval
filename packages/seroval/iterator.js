@@ -1,15 +1,35 @@
-function* test() {
+async function readableStreamToSequence(stream) {
+  const values = [];
+  let throwsAt = -1;
+  let doneAt = -1;
 
-}
+  const iterator = stream.getReader();
 
-function inheritance(value) {
-  const p = Object.getPrototypeOf(value);
-  if (p) {
-    console.log(p);
-    console.log(Object.getOwnPropertyDescriptors(p));
-    inheritance(p);
+  while (true) {
+    try {
+      const value = await iterator.read();
+      values.push(value.value);
+      if (value.done) {
+        doneAt = values.length - 1;
+        break;
+      }
+    } catch (error) {
+      throwsAt = values.length;
+      values.push(error);
+    }
   }
+
+  return {
+    v: values,
+    t: throwsAt,
+    d: doneAt,
+  };
 }
 
-inheritance(test());
-inheritance(new ReadableStream());
+console.log(await readableStreamToSequence(
+  new ReadableStream({
+    start(controller) {
+      controller.error('foo');
+    }
+  })
+))

@@ -1,5 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream 1`] = `"($R=>$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[\\"foo\\",\\"bar\\",\\"baz\\",void 0],t:-1,d:3}))($R[\\"example\\"])"`;
+
+exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream errors 1`] = `"($R=>$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[$R[4]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})],t:0,d:0}))($R[\\"example\\"])"`;
+
+exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `"$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[\\"foo\\",\\"bar\\",\\"baz\\",void 0],t:-1,d:3})"`;
+
+exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1`] = `"$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[$R[4]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})],t:0,d:0})"`;
+
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `"($R=>$R[0]=_$.S())($R[\\"example\\"])"`;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 2`] = `"($R=>_$.Se($R[0],\\"foo\\"))($R[\\"example\\"])"`;
@@ -28,6 +36,18 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"_$.St($R[0],$R[1]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"}))"`;
 
+exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `"(s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))({v:[\\"foo\\",\\"bar\\",\\"baz\\",void 0],t:-1,d:3})"`;
+
+exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = `"(s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))({v:[Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})],t:0,d:0})"`;
+
+exports[`ReadableStream > serializeAsync > supports ReadableStream errors 2`] = `"Oops!"`;
+
+exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream 1`] = `"{\\"t\\":46,\\"i\\":0,\\"a\\":[{\\"t\\":47,\\"i\\":1},{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":3,\\"l\\":4,\\"a\\":[{\\"t\\":1,\\"s\\":\\"foo\\"},{\\"t\\":1,\\"s\\":\\"bar\\"},{\\"t\\":1,\\"s\\":\\"baz\\"},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}"`;
+
+exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream errors 1`] = `"{\\"t\\":46,\\"i\\":0,\\"a\\":[{\\"t\\":47,\\"i\\":1},{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":3,\\"l\\":1,\\"a\\":[{\\"t\\":13,\\"i\\":4,\\"s\\":0,\\"m\\":\\"Oops!\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}],\\"o\\":0},{\\"t\\":0,\\"s\\":0},{\\"t\\":0,\\"s\\":0}],\\"s\\":3},\\"o\\":0}]}"`;
+
+exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream errors 2`] = `"Oops!"`;
+
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 1`] = `"{\\"t\\":31,\\"i\\":0}"`;
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 2`] = `"{\\"t\\":32,\\"i\\":0,\\"f\\":{\\"t\\":1,\\"s\\":\\"foo\\"}}"`;
@@ -41,3 +61,9 @@ exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 5`] = `"{\
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 1`] = `"{\\"t\\":31,\\"i\\":0}"`;
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 2`] = `"{\\"t\\":34,\\"i\\":0,\\"f\\":{\\"t\\":13,\\"i\\":1,\\"s\\":0,\\"m\\":\\"Oops!\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}}"`;
+
+exports[`ReadableStream > toJSONAsync > supports ReadableStream 1`] = `"{\\"t\\":{\\"t\\":46,\\"i\\":0,\\"a\\":[{\\"t\\":47,\\"i\\":1},{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":3,\\"l\\":4,\\"a\\":[{\\"t\\":1,\\"s\\":\\"foo\\"},{\\"t\\":1,\\"s\\":\\"bar\\"},{\\"t\\":1,\\"s\\":\\"baz\\"},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 1`] = `"{\\"t\\":{\\"t\\":46,\\"i\\":0,\\"a\\":[{\\"t\\":47,\\"i\\":1},{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":3,\\"l\\":1,\\"a\\":[{\\"t\\":13,\\"i\\":4,\\"s\\":0,\\"m\\":\\"Oops!\\",\\"p\\":{\\"k\\":[\\"stack\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"\\"}],\\"s\\":1}}],\\"o\\":0},{\\"t\\":0,\\"s\\":0},{\\"t\\":0,\\"s\\":0}],\\"s\\":3},\\"o\\":0}]},\\"f\\":16383,\\"m\\":[]}"`;
+
+exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 2`] = `"Oops!"`;
