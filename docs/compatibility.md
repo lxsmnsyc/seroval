@@ -21,7 +21,7 @@ serializeWithTarget(y, 0);
 ```
 
 ```js
-(function(h){return (h=Object.create(null),h.self=h,h.example="Hello World",h)})()
+(function(h){return (h=(h=Object.create(null),h.example="Hello World",h),h.self=h,h)})()
 (h=>(h=Object.assign(Object.create(null),{example:"Hello World"}),h.self=h,h))()
 ```
 
@@ -65,7 +65,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 - [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
   - Disables serialization of `Set`
 - [`Symbol`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
-  - Disables serialization of well-known symbols and `Iterable`.
+  - Disables serialization of well-known symbols, `Iterable` and `AsyncIterable`.
 - [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
   - Disables serialization of `TypedArray`
 - [`BigIntTypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array)

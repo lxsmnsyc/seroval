@@ -1,33 +1,15 @@
+import { serialize, Feature } from 'seroval';
 
-import { serialize } from './dist/esm/development/index.mjs';
+const y = Object.create(null);
+y.self = y;
+y.example = 'Hello World';
 
-// const instance = new Serializer({
-//   globalIdentifier: 'test',
-//   onData: console.log,
-// });
+function serializeWithTarget(value, disabledFeatures) {
+  const result = serialize(value, {
+    disabledFeatures,
+  });
+  console.log(result);
+}
 
-// const example = { foo: 'bar' };
-
-// function* hello() {
-//   yield example;
-// }
-
-// instance.write('foo', hello());
-// instance.write('bar', hello());
-
-const example = {
-  a: new Map(),
-  b: new Set(),
-};
-
-example.a.set(example.a, example.b);
-
-const example2 = {
-  foo: new Map(),
-  bar: new Set(),
-};
-
-example2.foo.set(example2.foo, example2.bar);
-example2.heck = example;
-
-console.log(serialize(example2));
+serializeWithTarget(y, Feature.ArrowFunction | Feature.ObjectAssign);
+serializeWithTarget(y, 0);
