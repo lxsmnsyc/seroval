@@ -142,12 +142,13 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ❓[^9][^13] | ❌[^12] |
 | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ❓[^9] | ❓[^9] | ❓[^9] |
 | [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ❓[^9][^10] | ❓[^9] | ❓[^9][^10] |
-| [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ❌ | ❓[^9] |
+| [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ❓[^9] | ❓[^9] |
 | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ❓[^9][^13] | ❓[^9][^13] |
 | [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ❓[^9][^13] | ❓[^9][^13] |
 | [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ❓[^9] | ❓[^9] | ❓[^9] |
 | [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ❓[^9] | ❓[^9] | ❓[^9] |
 | [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) | ❓[^9] | ❓[^9] | ❓[^9] |
+| [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols) | ❌ | ❓[^8] | ❓[^8] |
 | Cyclic references | ✅ | ✅ | ✅ |
 | Isomorphic references | ✅ | ✅ | ✅ |
 
@@ -159,7 +160,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 [^6]: `Feature.ErrorPrototypeStack` must be enabled if serializing `Error.prototype.stack` is desired.
 [^7]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
 [^8]: `Feature.Symbol` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^9]: `Feature.WebAPI` must be enabled, otherwise throws an `UnsupportedTypeError` (except for `Iterable ` instances, whereas `Feature.Symbol` must be enabled).
+[^9]: `Feature.WebAPI` must be enabled, otherwise throws an `UnsupportedTypeError` (except for `Iterable ` and `AsyncIterable` instances, whereas `Feature.Symbol` must be enabled).
 [^10]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
 [^11]: `Feature.Promise` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^12]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data) while having a sync constructor, it cannot be represented in a way that the type is consistent to its original declaration.
