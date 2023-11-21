@@ -508,7 +508,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     node: SerovalAsyncIteratorFactoryInstanceNode,
   ): unknown {
     const source = this.deserialize(node.a[1]);
-    if ((source as object).constructor === ReadableStream) {
+    if (node.s) {
       return readableStreamToAsyncIterator(
         source as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
       );
