@@ -7,7 +7,6 @@ import type {
   SerovalReadableStreamErrorNode,
   SerovalReadableStreamConstructorNode,
   SerovalNode,
-  SerovalAsyncIteratorFactoryNode,
 } from '../types';
 import {
   GLOBAL_CONTEXT_PROMISE_REJECT,
