@@ -147,7 +147,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         );
         valueNodes.push(
           createAsyncIteratorFactoryInstanceNode(
-            this.parseAsyncIteratorFactory(),
+            this.parseAsyncIteratorFactory(0),
             await this.parse(
               await asyncIteratorToSequence(properties as unknown as AsyncIterable<unknown>),
             ),

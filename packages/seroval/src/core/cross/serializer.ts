@@ -96,26 +96,6 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     return GLOBAL_CONTEXT_API + '.' + GLOBAL_CONTEXT_STREAM_CLOSE + '(' + this.getRefParam(node.i) + ')';
   }
 
-  protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
-    return this.assignIndexedValue(
-      node.i,
-      this.createFunction(
-        ['s'],
-        this.createFunction(
-          ['b', 't'],
-          '(b=s.tee(),s=b[0],b=b[1].getReader(),t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
-          + 'next:' + this.createFunction(
-            [],
-            'b.read().then(' + this.createEffectfulFunction(
-              ['d'],
-              'if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}',
-            ) + ')',
-          ) + '})',
-        ),
-      ),
-    );
-  }
-
   serializeTop(tree: SerovalNode): string {
     const result = this.serialize(tree);
     const id = tree.i;
