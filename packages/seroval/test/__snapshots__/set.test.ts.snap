@@ -24,21 +24,21 @@ exports[`Set > crossSerializeAsync > supports Set 1`] = `"$R[0]=Promise.resolve(
 
 exports[`Set > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports Set 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports Set 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `"($R=>_$.Ps($R[0],$R[1]=new Set([1,2,3])))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Set([1,2,3])))($R[\\"example\\"])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=_$.P()]))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()]))($R[\\"example\\"])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>_$.Ps($R[1],$R[0]))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R[\\"example\\"])"`;
 
-exports[`Set > crossSerializeStream > supports Set 1`] = `"$R[0]=_$.P()"`;
+exports[`Set > crossSerializeStream > supports Set 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`Set > crossSerializeStream > supports Set 2`] = `"_$.Ps($R[0],$R[1]=new Set([1,2,3]))"`;
+exports[`Set > crossSerializeStream > supports Set 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Set([1,2,3]))"`;
 
-exports[`Set > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=_$.P()])"`;
+exports[`Set > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()])"`;
 
-exports[`Set > crossSerializeStream > supports self-recursion 2`] = `"_$.Ps($R[1],$R[0])"`;
+exports[`Set > crossSerializeStream > supports self-recursion 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
 
 exports[`Set > serialize > supports Set 1`] = `"new Set([1,2,3])"`;
 

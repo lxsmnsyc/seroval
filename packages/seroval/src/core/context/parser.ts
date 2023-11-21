@@ -14,23 +14,22 @@ import {
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { hasReferenceID } from '../reference';
 import {
+  SpecialReference,
   ASYNC_ITERATOR,
   ITERATOR,
-  MAP_SENTINEL,
-  READABLE_STREAM,
+  SPECIAL_REFS,
 } from '../special-reference';
 import type {
   SerovalAsyncIteratorFactoryNode,
   SerovalIndexedValueNode,
   SerovalIteratorFactoryNode,
   SerovalMapNode,
-  SerovalMapSentinelNode,
   SerovalNode,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordNode,
-  SerovalReadableStreamFactoryNode,
   SerovalReferenceNode,
+  SerovalSpecialReferenceNode,
   SerovalWKSymbolNode,
 } from '../types';
 import { getObjectFlag } from '../utils/get-object-flag';
@@ -115,18 +114,21 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return createReferenceNode(id, current);
   }
 
-  protected parseMapSentinel(): SerovalIndexedValueNode | SerovalMapSentinelNode {
-    const registeredID = this.refs.get(MAP_SENTINEL);
+  protected parseSpecialReference(
+    ref: SpecialReference,
+  ): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
+    const specialRef = SPECIAL_REFS[ref];
+    const registeredID = this.refs.get(specialRef);
     if (registeredID != null) {
       this.markRef(registeredID);
       return createIndexedValueNode(registeredID);
     }
     const id = this.refs.size;
-    this.refs.set(MAP_SENTINEL, id);
+    this.refs.set(specialRef, id);
     return {
-      t: SerovalNodeType.MapSentinel,
+      t: SerovalNodeType.SpecialReference,
       i: id,
-      s: undefined,
+      s: ref,
       l: undefined,
       c: undefined,
       m: undefined,
@@ -225,33 +227,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       p: undefined,
       e: { k, v, s },
       a: undefined,
-      f: this.parseMapSentinel(),
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  protected parseReadableStreamFactory(): (
-    SerovalIndexedValueNode | SerovalReadableStreamFactoryNode
-  ) {
-    const registeredID = this.refs.get(READABLE_STREAM);
-    if (registeredID != null) {
-      this.markRef(registeredID);
-      return createIndexedValueNode(registeredID);
-    }
-    const id = this.refs.size;
-    this.refs.set(READABLE_STREAM, id);
-    return {
-      t: SerovalNodeType.ReadableStreamFactory,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: undefined,
+      f: this.parseSpecialReference(SpecialReference.MapSentinel),
       b: undefined,
       o: undefined,
     };

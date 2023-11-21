@@ -8,13 +8,13 @@ exports[`DOMException > crossSerializeAsync > scoped > supports DOMException 1`]
 
 exports[`DOMException > crossSerializeAsync > supports DOMException 1`] = `"$R[0]=Promise.resolve($R[1]=new DOMException(\\"This is an example message.\\",\\"Example\\"))"`;
 
-exports[`DOMException > crossSerializeStream > scoped > supports DOMException 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
+exports[`DOMException > crossSerializeStream > scoped > supports DOMException 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
-exports[`DOMException > crossSerializeStream > scoped > supports DOMException 2`] = `"($R=>_$.Ps($R[0],$R[1]=new DOMException(\\"This is an example message.\\",\\"Example\\")))($R[\\"example\\"])"`;
+exports[`DOMException > crossSerializeStream > scoped > supports DOMException 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new DOMException(\\"This is an example message.\\",\\"Example\\")))($R[\\"example\\"])"`;
 
-exports[`DOMException > crossSerializeStream > supports DOMException 1`] = `"$R[0]=_$.P()"`;
+exports[`DOMException > crossSerializeStream > supports DOMException 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`DOMException > crossSerializeStream > supports DOMException 2`] = `"_$.Ps($R[0],$R[1]=new DOMException(\\"This is an example message.\\",\\"Example\\"))"`;
+exports[`DOMException > crossSerializeStream > supports DOMException 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new DOMException(\\"This is an example message.\\",\\"Example\\"))"`;
 
 exports[`DOMException > serialize > supports DOMException 1`] = `"new DOMException(\\"This is an example message.\\",\\"Example\\")"`;
 
@@ -24,9 +24,9 @@ exports[`DOMException > toCrossJSON > supports DOMException 1`] = `"{\\"t\\":39,
 
 exports[`DOMException > toCrossJSONAsync > supports DOMException 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":39,\\"i\\":1,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}}"`;
 
-exports[`DOMException > toCrossJSONStream > supports DOMException 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+exports[`DOMException > toCrossJSONStream > supports DOMException 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
 
-exports[`DOMException > toCrossJSONStream > supports DOMException 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":39,\\"i\\":1,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}}"`;
+exports[`DOMException > toCrossJSONStream > supports DOMException 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":39,\\"i\\":2,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"}]}"`;
 
 exports[`DOMException > toJSON > supports DOMException 1`] = `"{\\"t\\":{\\"t\\":39,\\"i\\":0,\\"s\\":\\"This is an example message.\\",\\"c\\":\\"Example\\"},\\"f\\":16383,\\"m\\":[]}"`;
 

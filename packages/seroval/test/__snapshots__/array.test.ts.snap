@@ -16,25 +16,25 @@ exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=Promise.re
 
 exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `"($R=>_$.Ps($R[0],$R[1]=[1,2,3]))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=[1,2,3]))($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=_$.P(),$R[2]=_$.P()])($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),$R[3]=($R[2])()])($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `"($R=>_$.Ps($R[1],$R[0]))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 3`] = `"($R=>_$.Ps($R[2],$R[0]))($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 3`] = `"($R=>($R[4])($R[3],$R[0]))($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=_$.P()"`;
+exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"_$.Ps($R[0],$R[1]=[1,2,3])"`;
+exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=[1,2,3])"`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=_$.P(),$R[2]=_$.P()]"`;
+exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),$R[3]=($R[2])()]"`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"_$.Ps($R[1],$R[0])"`;
+exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 3`] = `"_$.Ps($R[2],$R[0])"`;
+exports[`arrays > crossSerializeStream > supports self recursion 3`] = `"($R[4])($R[3],$R[0])"`;
 
 exports[`arrays > serialize > supports Arrays 1`] = `"[1,2,3]"`;
 
@@ -52,15 +52,15 @@ exports[`arrays > toCrossJSONAsync > supports Arrays 1`] = `"{\\"t\\":12,\\"i\\"
 
 exports[`arrays > toCrossJSONAsync > supports self recursion 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}},{\\"t\\":12,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}],\\"o\\":0}"`;
 
-exports[`arrays > toCrossJSONStream > supports Arrays 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+exports[`arrays > toCrossJSONStream > supports Arrays 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
 
-exports[`arrays > toCrossJSONStream > supports Arrays 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":9,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}}"`;
+exports[`arrays > toCrossJSONStream > supports Arrays 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":9,\\"i\\":2,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0}]}"`;
 
-exports[`arrays > toCrossJSONStream > supports self recursion 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":28,\\"i\\":1},{\\"t\\":28,\\"i\\":2}],\\"o\\":0}"`;
+exports[`arrays > toCrossJSONStream > supports self recursion 1`] = `"{\\"t\\":9,\\"i\\":0,\\"l\\":2,\\"a\\":[{\\"t\\":28,\\"i\\":1,\\"f\\":{\\"t\\":41,\\"i\\":2,\\"s\\":2}},{\\"t\\":28,\\"i\\":3,\\"f\\":{\\"t\\":4,\\"i\\":2}}],\\"o\\":0}"`;
 
-exports[`arrays > toCrossJSONStream > supports self recursion 2`] = `"{\\"t\\":29,\\"i\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}"`;
+exports[`arrays > toCrossJSONStream > supports self recursion 2`] = `"{\\"t\\":29,\\"i\\":1,\\"a\\":[{\\"t\\":41,\\"i\\":4,\\"s\\":3},{\\"t\\":4,\\"i\\":0}]}"`;
 
-exports[`arrays > toCrossJSONStream > supports self recursion 3`] = `"{\\"t\\":29,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":0}}"`;
+exports[`arrays > toCrossJSONStream > supports self recursion 3`] = `"{\\"t\\":29,\\"i\\":3,\\"a\\":[{\\"t\\":4,\\"i\\":4},{\\"t\\":4,\\"i\\":0}]}"`;
 
 exports[`arrays > toJSON > supports Arrays 1`] = `"{\\"t\\":{\\"t\\":9,\\"i\\":0,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}],\\"o\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 

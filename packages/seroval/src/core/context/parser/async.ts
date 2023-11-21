@@ -79,7 +79,7 @@ import {
   createCustomEventNode,
   createReadableStreamNode,
 } from '../../web-api';
-import { UNIVERSAL_SENTINEL } from '../../special-reference';
+import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -489,7 +489,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   ): Promise<SerovalReadableStreamNode> {
     return createReadableStreamNode(
       id,
-      this.parseReadableStreamFactory(),
+      this.parseSpecialReference(SpecialReference.ReadableStream),
       await this.parse(
         await readableStreamToSequence(current),
       ),
