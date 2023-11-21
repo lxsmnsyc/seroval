@@ -426,6 +426,7 @@ export interface SerovalIteratorFactoryInstanceNode extends SerovalBaseNode {
 export interface SerovalAsyncIteratorFactoryNode extends SerovalBaseNode {
   t: SerovalNodeType.AsyncIteratorFactory;
   i: number;
+  s: 0 | 1;
   f: SerovalNode;
 }
 
