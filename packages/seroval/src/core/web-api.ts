@@ -5,6 +5,7 @@ import type {
   SerovalDOMExceptionNode,
   SerovalEventNode,
   SerovalNode,
+  SerovalNodeWithID,
   SerovalReadableStreamNode,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
@@ -114,7 +115,7 @@ export function createCustomEventNode(
 
 export function createReadableStreamNode(
   id: number,
-  factory: SerovalNode,
+  factory: SerovalNodeWithID,
   items: SerovalNode,
 ): SerovalReadableStreamNode {
   return {
