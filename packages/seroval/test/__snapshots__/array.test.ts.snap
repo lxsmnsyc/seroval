@@ -20,7 +20,7 @@ exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `"($R=>$
 
 exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=[1,2,3]))($R[\\"example\\"])"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),$R[3]=($R[2])()])($R[\\"example\\"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),$R[3]=$R[2]()])($R[\\"example\\"])"`;
 
 exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R[\\"example\\"])"`;
 
@@ -30,7 +30,7 @@ exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=($R[1]=(s
 
 exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=[1,2,3])"`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),$R[3]=($R[2])()]"`;
+exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),$R[3]=$R[2]()]"`;
 
 exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
 

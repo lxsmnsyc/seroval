@@ -54,7 +54,7 @@ exports[`objects > crossSerializeStream > scoped > supports Symbol.iterator 1`] 
 
 exports[`objects > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[7]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={[$R[3]=Symbol.iterator]:($R[4]=s=>(i,c,d,t)=>(i=0,t={[$R[3]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[5]={v:$R[6]=[1,2,3,void 0],t:-1,d:3})}))($R[\\"example\\"])"`;
 
-exports[`objects > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=($R[2])()})($R[\\"example\\"])"`;
+exports[`objects > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=$R[2]()})($R[\\"example\\"])"`;
 
 exports[`objects > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R[\\"example\\"])"`;
 
@@ -80,7 +80,7 @@ exports[`objects > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]
 
 exports[`objects > crossSerializeStream > supports Symbol.iterator 2`] = `"($R[7]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={[$R[3]=Symbol.iterator]:($R[4]=s=>(i,c,d,t)=>(i=0,t={[$R[3]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[5]={v:$R[6]=[1,2,3,void 0],t:-1,d:3})})"`;
 
-exports[`objects > crossSerializeStream > supports self-recursion 1`] = `"$R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=($R[2])()}"`;
+exports[`objects > crossSerializeStream > supports self-recursion 1`] = `"$R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=$R[2]()}"`;
 
 exports[`objects > crossSerializeStream > supports self-recursion 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
 

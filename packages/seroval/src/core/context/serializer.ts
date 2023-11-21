@@ -997,7 +997,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): string {
     return this.assignIndexedValue(
       node.i,
-      '(' + this.serialize(node.f) + ')()',
+      this.getConstructor(node.f) + '()',
     );
   }
 
@@ -1018,7 +1018,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): string {
     return this.assignIndexedValue(
       node.i,
-      '(' + this.serialize(node.f) + ')()',
+      this.getConstructor(node.f) + '()',
     );
   }
 
@@ -1037,7 +1037,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected serializeReadableStreamClose(
     node: SerovalReadableStreamCloseNode,
   ): string {
-    return '(' + this.serialize(node.f) + ')(' + this.getRefParam(node.i) + ')';
+    return this.getConstructor(node.f) + '(' + this.getRefParam(node.i) + ')';
   }
 
   private serializeSpecialReferenceValue(ref: SpecialReference): string {

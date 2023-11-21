@@ -325,7 +325,7 @@ export interface SerovalPromiseRejectNode extends SerovalBaseNode {
 export interface SerovalReadableStreamConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStreamConstructor;
   i: number;
-  f: SerovalNode;
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalReadableStreamEnqueueNode extends SerovalBaseNode {
@@ -349,7 +349,7 @@ export interface SerovalReadableStreamErrorNode extends SerovalBaseNode {
 export interface SerovalReadableStreamCloseNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStreamClose;
   i: number;
-  f: SerovalNode;
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalRequestNode extends SerovalBaseNode {
