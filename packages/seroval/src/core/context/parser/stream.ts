@@ -349,7 +349,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               p: undefined,
               e: undefined,
               a: [
-                this.parseSpecialReference(SpecialReference.PromiseResolve),
+                this.parseSpecialReference(SpecialReference.PromiseReject),
                 parsed,
               ],
               f: undefined,
