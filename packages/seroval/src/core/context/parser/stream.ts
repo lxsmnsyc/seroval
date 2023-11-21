@@ -219,8 +219,8 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               b: undefined,
               o: undefined,
             }, false);
-            this.popPendingState();
           }
+          this.popPendingState();
         }
       },
     );
@@ -319,8 +319,8 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             b: undefined,
             o: undefined,
           }, false);
-          this.popPendingState();
         }
+        this.popPendingState();
       },
       (data) => {
         if (this.alive) {
@@ -340,9 +340,9 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               b: undefined,
               o: undefined,
             }, false);
-            this.popPendingState();
           }
         }
+        this.popPendingState();
       },
     );
     this.pushPendingState();
