@@ -20,7 +20,7 @@ exports[`objects > crossSerialize > supports self-recursion 1`] = `"($R[0]={},$R
 
 exports[`objects > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={hello:\\"world\\"}))($R[\\"example\\"])"`;
 
-exports[`objects > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})($R[\\"example\\"])"`;
+exports[`objects > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(i,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>Promise.resolve().then((c,d)=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})($R[\\"example\\"])"`;
 
 exports[`objects > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))($R[\\"example\\"])"`;
 
@@ -28,7 +28,7 @@ exports[`objects > crossSerializeAsync > scoped > supports self-recursion 1`] = 
 
 exports[`objects > crossSerializeAsync > supports Objects 1`] = `"$R[0]=Promise.resolve($R[1]={hello:\\"world\\"})"`;
 
-exports[`objects > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})}"`;
+exports[`objects > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(i,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>Promise.resolve().then((c,d)=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})}"`;
 
 exports[`objects > crossSerializeAsync > supports Symbol.iterator 1`] = `"$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})"`;
 
@@ -108,7 +108,7 @@ exports[`objects > toCrossJSON > supports self-recursion 1`] = `"{\\"t\\":10,\\"
 
 exports[`objects > toCrossJSONAsync > supports Objects 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0}}"`;
 
-exports[`objects > toCrossJSONAsync > supports Symbol.asyncIterator 1`] = `"{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":0}],\\"v\\":[{\\"t\\":45,\\"a\\":[{\\"t\\":44,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":1},\\"o\\":0}"`;
+exports[`objects > toCrossJSONAsync > supports Symbol.asyncIterator 1`] = `"{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":0}],\\"v\\":[{\\"t\\":45,\\"a\\":[{\\"t\\":44,\\"i\\":2,\\"s\\":0,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":1},\\"o\\":0}"`;
 
 exports[`objects > toCrossJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":2,\\"s\\":3}],\\"v\\":[{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":3,\\"f\\":{\\"t\\":4,\\"i\\":2}},{\\"t\\":10,\\"i\\":4,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":5,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":1},\\"o\\":0}}"`;
 
@@ -118,7 +118,7 @@ exports[`objects > toCrossJSONStream > supports Objects 1`] = `"{\\"t\\":28,\\"i
 
 exports[`objects > toCrossJSONStream > supports Objects 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0}]}"`;
 
-exports[`objects > toCrossJSONStream > supports Symbol.asyncIterator 1`] = `"{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":0}],\\"v\\":[{\\"t\\":45,\\"a\\":[{\\"t\\":44,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":31,\\"i\\":3,\\"f\\":{\\"t\\":41,\\"i\\":4,\\"s\\":5}}]}],\\"s\\":1},\\"o\\":0}"`;
+exports[`objects > toCrossJSONStream > supports Symbol.asyncIterator 1`] = `"{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":0}],\\"v\\":[{\\"t\\":45,\\"a\\":[{\\"t\\":44,\\"i\\":2,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":31,\\"i\\":3,\\"f\\":{\\"t\\":41,\\"i\\":4,\\"s\\":5}}]}],\\"s\\":1},\\"o\\":0}"`;
 
 exports[`objects > toCrossJSONStream > supports Symbol.asyncIterator 2`] = `"{\\"t\\":32,\\"i\\":3,\\"a\\":[{\\"t\\":41,\\"i\\":6,\\"s\\":6},{\\"t\\":9,\\"i\\":5,\\"l\\":2,\\"a\\":[{\\"t\\":0,\\"s\\":0},{\\"t\\":0,\\"s\\":1}],\\"o\\":0}]}"`;
 
@@ -148,7 +148,7 @@ exports[`objects > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":10
 
 exports[`objects > toJSONAsync > supports Objects 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"hello\\"],\\"v\\":[{\\"t\\":1,\\"s\\":\\"world\\"}],\\"s\\":1},\\"o\\":0}},\\"f\\":16383,\\"m\\":[]}"`;
 
-exports[`objects > toJSONAsync > supports Symbol.asyncIterator 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":0}],\\"v\\":[{\\"t\\":45,\\"a\\":[{\\"t\\":44,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[1]}"`;
+exports[`objects > toJSONAsync > supports Symbol.asyncIterator 1`] = `"{\\"t\\":{\\"t\\":10,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":0}],\\"v\\":[{\\"t\\":45,\\"a\\":[{\\"t\\":44,\\"i\\":2,\\"s\\":0,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":1},\\"o\\":0},\\"f\\":16383,\\"m\\":[1]}"`;
 
 exports[`objects > toJSONAsync > supports Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":2,\\"s\\":3}],\\"v\\":[{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":3,\\"f\\":{\\"t\\":4,\\"i\\":2}},{\\"t\\":10,\\"i\\":4,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":5,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]}],\\"s\\":1},\\"o\\":0}},\\"f\\":16383,\\"m\\":[2]}"`;
 
