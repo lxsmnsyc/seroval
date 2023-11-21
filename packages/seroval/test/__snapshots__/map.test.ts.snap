@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Map > compat > should fallback to Symbol.iterator 1`] = `"(h=>(Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[[1,2],[3,4],void 0],t:-1,d:2}),[Symbol.toStringTag]:\\"Map\\"})))()"`;
+exports[`Map > compat > should fallback to Symbol.iterator 1`] = `"((h,j)=>(Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[[1,2],[3,4],void 0],t:-1,d:2}),[Symbol.toStringTag]:\\"Map\\"})))()"`;
 
 exports[`Map > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Map]\\""`;
 
@@ -32,7 +32,7 @@ exports[`Map > crossSerializeStream > scoped > supports self-recursion 1`] = `"(
 
 exports[`Map > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[5]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R[\\"example\\"])"`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>($R[5])($R[3],$R[0]))($R[\\"example\\"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>$R[5]($R[3],$R[0]))($R[\\"example\\"])"`;
 
 exports[`Map > crossSerializeStream > supports Map 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
@@ -46,7 +46,7 @@ exports[`Map > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=($R[
 
 exports[`Map > crossSerializeStream > supports self-recursion 2`] = `"($R[5]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
 
-exports[`Map > crossSerializeStream > supports self-recursion 3`] = `"($R[5])($R[3],$R[0])"`;
+exports[`Map > crossSerializeStream > supports self-recursion 3`] = `"$R[5]($R[3],$R[0])"`;
 
 exports[`Map > crossSerializeStream > supports self-recursion 4`] = `"{\\"t\\":8,\\"i\\":0,\\"e\\":{\\"k\\":[{\\"t\\":28,\\"i\\":1,\\"f\\":{\\"t\\":41,\\"i\\":2,\\"s\\":2}}],\\"v\\":[{\\"t\\":28,\\"i\\":3,\\"f\\":{\\"t\\":4,\\"i\\":2}}],\\"s\\":1},\\"f\\":{\\"t\\":41,\\"i\\":4,\\"s\\":0}}"`;
 

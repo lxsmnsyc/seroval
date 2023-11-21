@@ -28,7 +28,7 @@ exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[3]=($R[1])()})))($R[\\"example\\"])"`;
 
-exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 3`] = `"($R=>($R[4])($R[3],$R[5]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"})))($R[\\"example\\"])"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 3`] = `"($R=>$R[4]($R[3],$R[5]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"})))($R[\\"example\\"])"`;
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
@@ -42,7 +42,7 @@ exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `"$
 
 exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object.assign(new Error(\\"B\\"),{stack:\\"\\",cause:$R[3]=($R[1])()}))"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"($R[4])($R[3],$R[5]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))"`;
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"$R[4]($R[3],$R[5]=Object.assign(new Error(\\"A\\"),{stack:\\"\\"}))"`;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
