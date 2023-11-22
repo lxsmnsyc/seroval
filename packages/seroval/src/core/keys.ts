@@ -3,43 +3,7 @@ import { serializeString } from './string';
 // Used for mapping isomorphic references
 export const REFERENCES_KEY = '__SEROVAL_REFS__';
 
-export const GLOBAL_CONTEXT_API = '_$';
-
 export const GLOBAL_CONTEXT_REFERENCES = '$R';
-
-export const LOCAL_CONTEXT_PROMISE_RESOLVE = 's';
-
-export const LOCAL_CONTEXT_PROMISE_REJECT = 'f';
-
-export const GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR = 'P';
-
-export const GLOBAL_CONTEXT_PROMISE_RESOLVE = 'Ps';
-
-export const GLOBAL_CONTEXT_PROMISE_REJECT = 'Pf';
-
-export const LOCAL_CONTEXT_STREAM_CONTROLLER = 'c';
-
-export const GLOBAL_CONTEXT_STREAM_CONSTRUCTOR = 'S';
-
-export const GLOBAL_CONTEXT_STREAM_ENQUEUE = 'Se';
-
-export const GLOBAL_CONTEXT_STREAM_ERROR = 'St';
-
-export const GLOBAL_CONTEXT_STREAM_CLOSE = 'Sc';
-
-const GLOBAL_CONTEXT_API_REF = `self.${GLOBAL_CONTEXT_API}`;
-
-export const GLOBAL_CONTEXT_API_SCRIPT = `${GLOBAL_CONTEXT_API_REF}=${GLOBAL_CONTEXT_API_REF}||{`
-  + `${GLOBAL_CONTEXT_PROMISE_CONSTRUCTOR}:function(s,f,p){return(p=new Promise(function(a,b){s=a,f=b})).${LOCAL_CONTEXT_PROMISE_RESOLVE}=s,p.${LOCAL_CONTEXT_PROMISE_REJECT}=f,p},`
-  + `uP:function(p){delete p.${LOCAL_CONTEXT_PROMISE_RESOLVE};delete p.${LOCAL_CONTEXT_PROMISE_REJECT}},`
-  + `${GLOBAL_CONTEXT_PROMISE_RESOLVE}:function(p,d){p.${LOCAL_CONTEXT_PROMISE_RESOLVE}(d),p.status="success",p.value=d,this.uP(p)},`
-  + `${GLOBAL_CONTEXT_PROMISE_REJECT}:function(p,d){p.${LOCAL_CONTEXT_PROMISE_REJECT}(d),p.status="failure",p.value=d,this.uP(p)},`
-  + `uS:function(s){delete s.${LOCAL_CONTEXT_STREAM_CONTROLLER}},`
-  + `${GLOBAL_CONTEXT_STREAM_CLOSE}:function(s){s.${LOCAL_CONTEXT_STREAM_CONTROLLER}.close(),this.uS(s)},`
-  + `${GLOBAL_CONTEXT_STREAM_ERROR}:function(s,e){s.${LOCAL_CONTEXT_STREAM_CONTROLLER}.error(e),this.uS(s)},`
-  + `${GLOBAL_CONTEXT_STREAM_ENQUEUE}:function(s,d){s.${LOCAL_CONTEXT_STREAM_CONTROLLER}.enqueue(d)},`
-  + `${GLOBAL_CONTEXT_STREAM_CONSTRUCTOR}:function(s,c){return(s=new ReadableStream({start:function(x){c=x}})).${LOCAL_CONTEXT_STREAM_CONTROLLER}=c,s}`
-  + '}';
 
 const GLOBAL_CONTEXT_R = `self.${GLOBAL_CONTEXT_REFERENCES}`;
 

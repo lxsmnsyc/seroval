@@ -449,7 +449,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     const deferred = this.refs.get(node.i) as Deferred | undefined;
     assert(deferred, new Error('Missing Promise instance.'));
     deferred.resolve(
-      this.deserialize(node.f),
+      this.deserialize(node.a[1]),
     );
     return undefined;
   }
@@ -458,7 +458,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     const deferred = this.refs.get(node.i) as Deferred | undefined;
     assert(deferred, new Error('Missing Promise instance.'));
     deferred.reject(
-      this.deserialize(node.f),
+      this.deserialize(node.a[1]),
     );
     return undefined;
   }
@@ -476,7 +476,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     const deferred = this.refs.get(node.i) as DeferredStream | undefined;
     assert(deferred, new Error('Missing ReadableStream instance.'));
     deferred.enqueue(
-      this.deserialize(node.f),
+      this.deserialize(node.a[1]),
     );
     return undefined;
   }
@@ -485,7 +485,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     const deferred = this.refs.get(node.i) as DeferredStream | undefined;
     assert(deferred, new Error('Missing Promise instance.'));
     deferred.error(
-      this.deserialize(node.f),
+      this.deserialize(node.a[1]),
     );
     return undefined;
   }
@@ -508,7 +508,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     node: SerovalAsyncIteratorFactoryInstanceNode,
   ): unknown {
     const source = this.deserialize(node.a[1]);
-    if ((source as object).constructor === ReadableStream) {
+    if (node.s) {
       return readableStreamToAsyncIterator(
         source as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
       );
@@ -615,10 +615,9 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializeAsyncIteratorFactoryInstance(node);
       case SerovalNodeType.ReadableStream:
         return this.deserializeReadableStream(node);
-      case SerovalNodeType.MapSentinel:
+      case SerovalNodeType.SpecialReference:
       case SerovalNodeType.IteratorFactory:
       case SerovalNodeType.AsyncIteratorFactory:
-      case SerovalNodeType.ReadableStreamFactory:
       default:
         throw new Error('invariant');
     }

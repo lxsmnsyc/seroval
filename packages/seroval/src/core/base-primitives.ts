@@ -26,6 +26,7 @@ import type {
   SerovalIndexedValueNode,
   SerovalIteratorFactoryInstanceNode,
   SerovalNode,
+  SerovalNodeWithID,
   SerovalNumberNode,
   SerovalObjectRecordNode,
   SerovalPluginNode,
@@ -412,7 +413,7 @@ export function createSetNode(
 }
 
 export function createIteratorFactoryInstanceNode(
-  factory: SerovalNode,
+  factory: SerovalNodeWithID,
   items: SerovalNode,
 ): SerovalIteratorFactoryInstanceNode {
   return {
@@ -435,7 +436,7 @@ export function createIteratorFactoryInstanceNode(
 }
 
 export function createAsyncIteratorFactoryInstanceNode(
-  factory: SerovalNode,
+  factory: SerovalNodeWithID,
   items: SerovalNode,
 ): SerovalAsyncIteratorFactoryInstanceNode {
   return {

@@ -8,13 +8,13 @@ exports[`DataView > crossSerializeAsync > scoped > supports DataView 1`] = `"($R
 
 exports[`DataView > crossSerializeAsync > supports DataView 1`] = `"$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
-exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
+exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
-exports[`DataView > crossSerializeStream > scoped > supports DataView 2`] = `"($R=>_$.Ps($R[0],$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R[\\"example\\"])"`;
+exports[`DataView > crossSerializeStream > scoped > supports DataView 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new DataView($R[3]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R[\\"example\\"])"`;
 
-exports[`DataView > crossSerializeStream > supports DataView 1`] = `"$R[0]=_$.P()"`;
+exports[`DataView > crossSerializeStream > supports DataView 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`DataView > crossSerializeStream > supports DataView 2`] = `"_$.Ps($R[0],$R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
+exports[`DataView > crossSerializeStream > supports DataView 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new DataView($R[3]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
 exports[`DataView > serialize > supports DataView 1`] = `"new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
 
@@ -24,9 +24,9 @@ exports[`DataView > toCrossJSON > supports DataView 1`] = `"{\\"t\\":22,\\"i\\":
 
 exports[`DataView > toCrossJSONAsync > supports DataView 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":22,\\"i\\":1,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}}"`;
 
-exports[`DataView > toCrossJSONStream > supports DataView 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+exports[`DataView > toCrossJSONStream > supports DataView 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
 
-exports[`DataView > toCrossJSONStream > supports DataView 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":22,\\"i\\":1,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}}"`;
+exports[`DataView > toCrossJSONStream > supports DataView 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":4,\\"s\\":3},{\\"t\\":22,\\"i\\":2,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":3,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0}]}"`;
 
 exports[`DataView > toJSON > supports DataView 1`] = `"{\\"t\\":{\\"t\\":22,\\"i\\":0,\\"l\\":16,\\"f\\":{\\"t\\":21,\\"i\\":1,\\"s\\":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},\\"b\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 
