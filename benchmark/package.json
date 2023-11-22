@@ -21,7 +21,7 @@
     "next-json": "^0.2.2",
     "o-son": "^1.0.1",
     "serialize-javascript": "^6.0.1",
-    "seroval": "workspace:^0.13.2",
+    "seroval": "workspace:^0.14.0",
     "superjson": "^1.13.3",
     "tosource": "2.0.0-alpha.3",
     "warp10": "^2.1.0"
@@ -43,5 +43,5 @@
   "typesVersions": {
     "*": {}
   },
-  "version": "0.13.2"
+  "version": "0.14.0"
 }
