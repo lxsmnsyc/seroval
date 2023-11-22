@@ -5,6 +5,7 @@ import type {
   Symbols,
   ErrorConstructorTag,
 } from './constants';
+import type { SpecialReference } from './special-reference';
 
 export interface SerovalBaseNode {
   // Type of the node
@@ -162,7 +163,7 @@ export interface SerovalMapNode extends SerovalBaseNode {
   i: number;
   // key/value pairs
   e: SerovalMapRecordNode;
-  f: SerovalMapSentinelNode | SerovalIndexedValueNode;
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalArrayNode extends SerovalBaseNode {
@@ -300,42 +301,55 @@ export interface SerovalBoxedNode extends SerovalBaseNode {
 export interface SerovalPromiseConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.PromiseConstructor;
   i: number;
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalPromiseResolveNode extends SerovalBaseNode {
   t: SerovalNodeType.PromiseResolve;
-  // reference to the resolver
   i: number;
-  f: SerovalNode;
+  a: [
+    resolver: SerovalNodeWithID,
+    resolved: SerovalNode,
+  ];
 }
 
 export interface SerovalPromiseRejectNode extends SerovalBaseNode {
   t: SerovalNodeType.PromiseReject;
-  // reference to the resolver
   i: number;
-  f: SerovalNode;
+  a: [
+    resolver: SerovalNodeWithID,
+    resolved: SerovalNode,
+  ];
 }
 
 export interface SerovalReadableStreamConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStreamConstructor;
   i: number;
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalReadableStreamEnqueueNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStreamEnqueue;
   i: number;
-  f: SerovalNode;
-}
-
-export interface SerovalReadableStreamCloseNode extends SerovalBaseNode {
-  t: SerovalNodeType.ReadableStreamClose;
-  i: number;
+  a: [
+    resolver: SerovalNodeWithID,
+    resolved: SerovalNode,
+  ];
 }
 
 export interface SerovalReadableStreamErrorNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStreamError;
   i: number;
-  f: SerovalNode;
+  a: [
+    resolver: SerovalNodeWithID,
+    resolved: SerovalNode,
+  ];
+}
+
+export interface SerovalReadableStreamCloseNode extends SerovalBaseNode {
+  t: SerovalNodeType.ReadableStreamClose;
+  i: number;
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalRequestNode extends SerovalBaseNode {
@@ -389,9 +403,10 @@ export interface SerovalPluginNode extends SerovalBaseNode {
   c: string;
 }
 
-export interface SerovalMapSentinelNode extends SerovalBaseNode {
-  t: SerovalNodeType.MapSentinel;
+export interface SerovalSpecialReferenceNode extends SerovalBaseNode {
+  t: SerovalNodeType.SpecialReference;
   i: number;
+  s: SpecialReference;
 }
 
 export interface SerovalIteratorFactoryNode extends SerovalBaseNode {
@@ -403,7 +418,7 @@ export interface SerovalIteratorFactoryNode extends SerovalBaseNode {
 export interface SerovalIteratorFactoryInstanceNode extends SerovalBaseNode {
   t: SerovalNodeType.IteratorFactoryInstance;
   a: [
-    instance: SerovalNode,
+    instance: SerovalNodeWithID,
     sequence: SerovalNode,
   ];
 }
@@ -411,13 +426,14 @@ export interface SerovalIteratorFactoryInstanceNode extends SerovalBaseNode {
 export interface SerovalAsyncIteratorFactoryNode extends SerovalBaseNode {
   t: SerovalNodeType.AsyncIteratorFactory;
   i: number;
+  s: 0 | 1;
   f: SerovalNode;
 }
 
 export interface SerovalAsyncIteratorFactoryInstanceNode extends SerovalBaseNode {
   t: SerovalNodeType.AsyncIteratorFactoryInstance;
   a: [
-    instance: SerovalNode,
+    instance: SerovalNodeWithID,
     sequence: SerovalNode,
   ];
 }
@@ -426,14 +442,9 @@ export interface SerovalReadableStreamNode extends SerovalBaseNode {
   t: SerovalNodeType.ReadableStream;
   i: number;
   a: [
-    instance: SerovalNode,
+    instance: SerovalNodeWithID,
     sequence: SerovalNode,
   ];
-}
-
-export interface SerovalReadableStreamFactoryNode extends SerovalBaseNode {
-  t: SerovalNodeType.ReadableStreamFactory;
-  i: number;
 }
 
 export type SerovalSyncNode =
@@ -463,7 +474,7 @@ export type SerovalSyncNode =
   | SerovalCustomEventNode
   | SerovalDOMExceptionNode
   | SerovalPluginNode
-  | SerovalMapSentinelNode
+  | SerovalSpecialReferenceNode
   | SerovalIteratorFactoryNode
   | SerovalIteratorFactoryInstanceNode
   | SerovalAsyncIteratorFactoryNode
@@ -482,8 +493,7 @@ export type SerovalAsyncNode =
   | SerovalReadableStreamErrorNode
   | SerovalRequestNode
   | SerovalResponseNode
-  | SerovalReadableStreamNode
-  | SerovalReadableStreamFactoryNode;
+  | SerovalReadableStreamNode;
 
 export type SerovalNode =
   | SerovalSyncNode

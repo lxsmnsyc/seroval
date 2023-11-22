@@ -8,13 +8,13 @@ exports[`typed arrays > crossSerializeAsync > scoped > supports typed arrays 1`]
 
 exports[`typed arrays > crossSerializeAsync > supports typed arrays 1`] = `"$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))"`;
 
-exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 1`] = `"($R=>$R[0]=_$.P())($R[\\"example\\"])"`;
+exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
-exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 2`] = `"($R=>_$.Ps($R[0],$R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)))($R[\\"example\\"])"`;
+exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Uint32Array($R[3]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)))($R[\\"example\\"])"`;
 
-exports[`typed arrays > crossSerializeStream > supports typed arrays 1`] = `"$R[0]=_$.P()"`;
+exports[`typed arrays > crossSerializeStream > supports typed arrays 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`typed arrays > crossSerializeStream > supports typed arrays 2`] = `"_$.Ps($R[0],$R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))"`;
+exports[`typed arrays > crossSerializeStream > supports typed arrays 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Uint32Array($R[3]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))"`;
 
 exports[`typed arrays > serialize > supports typed arrays 1`] = `"new Uint32Array(new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)"`;
 
@@ -24,9 +24,9 @@ exports[`typed arrays > toCrossJSON > supports typed arrays 1`] = `"{\\"t\\":15,
 
 exports[`typed arrays > toCrossJSONAsync > supports typed arrays 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":15,\\"i\\":1,\\"l\\":4,\\"c\\":\\"Uint32Array\\",\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},\\"b\\":0}}"`;
 
-exports[`typed arrays > toCrossJSONStream > supports typed arrays 1`] = `"{\\"t\\":28,\\"i\\":0}"`;
+exports[`typed arrays > toCrossJSONStream > supports typed arrays 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
 
-exports[`typed arrays > toCrossJSONStream > supports typed arrays 2`] = `"{\\"t\\":29,\\"i\\":0,\\"f\\":{\\"t\\":15,\\"i\\":1,\\"l\\":4,\\"c\\":\\"Uint32Array\\",\\"f\\":{\\"t\\":21,\\"i\\":2,\\"s\\":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},\\"b\\":0}}"`;
+exports[`typed arrays > toCrossJSONStream > supports typed arrays 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":4,\\"s\\":3},{\\"t\\":15,\\"i\\":2,\\"l\\":4,\\"c\\":\\"Uint32Array\\",\\"f\\":{\\"t\\":21,\\"i\\":3,\\"s\\":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},\\"b\\":0}]}"`;
 
 exports[`typed arrays > toJSON > supports typed arrays 1`] = `"{\\"t\\":{\\"t\\":15,\\"i\\":0,\\"l\\":4,\\"c\\":\\"Uint32Array\\",\\"f\\":{\\"t\\":21,\\"i\\":1,\\"s\\":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},\\"b\\":0},\\"f\\":16383,\\"m\\":[]}"`;
 

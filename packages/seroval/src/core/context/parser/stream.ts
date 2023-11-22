@@ -28,7 +28,7 @@ import type {
 } from '../../types';
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
 import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
-import { UNIVERSAL_SENTINEL } from '../../special-reference';
+import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
@@ -57,7 +57,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
   }
 
   private onParse(node: SerovalNode, initial: boolean): void {
-    this.onParseCallback(node, initial);
+    try {
+      this.onParseCallback(node, initial);
+    } catch (error) {
+      this.onError(error);
+    }
   }
 
   private onError(error: unknown): void {
@@ -128,7 +132,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         );
         valueNodes.push(
           createAsyncIteratorFactoryInstanceNode(
-            this.parseAsyncIteratorFactory(),
+            this.parseAsyncIteratorFactory(1),
             this.parse(
               asyncIteratorToReadableStream(
                 properties as unknown as AsyncIterable<unknown>,
@@ -174,7 +178,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               p: undefined,
               e: undefined,
               a: undefined,
-              f: undefined,
+              f: this.parseSpecialReference(SpecialReference.ReadableStreamClose),
               b: undefined,
               o: undefined,
             }, false);
@@ -191,8 +195,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
                 m: undefined,
                 p: undefined,
                 e: undefined,
-                a: undefined,
-                f: parsed,
+                a: [
+                  this.parseSpecialReference(SpecialReference.ReadableStreamEnqueue),
+                  parsed,
+                ],
+                f: undefined,
                 b: undefined,
                 o: undefined,
               }, false);
@@ -214,8 +221,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               m: undefined,
               p: undefined,
               e: undefined,
-              a: undefined,
-              f: parsed,
+              a: [
+                this.parseSpecialReference(SpecialReference.ReadableStreamError),
+                parsed,
+              ],
+              f: undefined,
               b: undefined,
               o: undefined,
             }, false);
@@ -244,7 +254,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       p: undefined,
       e: undefined,
       a: undefined,
-      f: undefined,
+      f: this.parseSpecialReference(SpecialReference.ReadableStreamConstructor),
       b: undefined,
       o: undefined,
     };
@@ -314,8 +324,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             m: undefined,
             p: undefined,
             e: undefined,
-            a: undefined,
-            f: parsed,
+            a: [
+              this.parseSpecialReference(SpecialReference.PromiseResolve),
+              parsed,
+            ],
+            f: undefined,
             b: undefined,
             o: undefined,
           }, false);
@@ -335,8 +348,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               m: undefined,
               p: undefined,
               e: undefined,
-              a: undefined,
-              f: parsed,
+              a: [
+                this.parseSpecialReference(SpecialReference.PromiseReject),
+                parsed,
+              ],
+              f: undefined,
               b: undefined,
               o: undefined,
             }, false);
@@ -356,7 +372,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       p: undefined,
       e: undefined,
       a: undefined,
-      f: undefined,
+      f: this.parseSpecialReference(SpecialReference.PromiseConstructor),
       b: undefined,
       o: undefined,
     };
