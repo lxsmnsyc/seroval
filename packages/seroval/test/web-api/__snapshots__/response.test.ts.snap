@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Response > crossSerializeAsync > scoped > supports Blob 1`] = `"($R=>$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"}))($R[\\"example\\"])"`;
+exports[`Response > crossSerializeAsync > scoped > supports Blob 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"}))($R[\\"example\\"]))"`;
 
-exports[`Response > crossSerializeAsync > supports Blob 1`] = `"$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"})"`;
+exports[`Response > crossSerializeAsync > supports Blob 1`] = `"(self.$R=self.$R||[],$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"}))"`;
 
-exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `"($R=>$R[0]=new Response($R[1]=($R[2]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))(),$R[3]={headers:$R[4]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"}))($R[\\"example\\"])"`;
+exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=new Response($R[1]=($R[2]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))(),$R[3]={headers:$R[4]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"}))($R[\\"example\\"]))"`;
 
 exports[`Response > crossSerializeStream > scoped > supports Response 2`] = `"($R=>($R[7]=(s,d)=>{s.c.enqueue(d)})($R[1],$R[5]=new Uint8Array($R[6]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,0,12)))($R[\\"example\\"])"`;
 
 exports[`Response > crossSerializeStream > scoped > supports Response 3`] = `"($R=>($R[8]=s=>{s.c.close();delete s.c})($R[1]))($R[\\"example\\"])"`;
 
-exports[`Response > crossSerializeStream > supports Response 1`] = `"$R[0]=new Response($R[1]=($R[2]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))(),$R[3]={headers:$R[4]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"})"`;
+exports[`Response > crossSerializeStream > supports Response 1`] = `"(self.$R=self.$R||[],$R[0]=new Response($R[1]=($R[2]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))(),$R[3]={headers:$R[4]=new Headers({\\"content-type\\":\\"text/plain;charset=UTF-8\\"}),status:200,statusText:\\"\\"}))"`;
 
 exports[`Response > crossSerializeStream > supports Response 2`] = `"($R[7]=(s,d)=>{s.c.enqueue(d)})($R[1],$R[5]=new Uint8Array($R[6]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,0,12))"`;
 

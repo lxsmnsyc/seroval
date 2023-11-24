@@ -1,38 +1,38 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`sealed object > crossSerialize > scoped > supports Objects 1`] = `"($R=>$R[0]={hello:\\"world\\"},Object.seal($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerialize > scoped > supports Objects 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]={hello:\\"world\\"},Object.seal($R[0]),$R[0])($R[\\"example\\"]))"`;
 
-exports[`sealed object > crossSerialize > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerialize > scoped > supports Symbol.iterator 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]={[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0])($R[\\"example\\"]))"`;
 
-exports[`sealed object > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>$R[0]={},$R[0].b=$R[0].a=$R[0],Object.seal($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerialize > scoped > supports self-recursion 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]={},$R[0].b=$R[0].a=$R[0],Object.seal($R[0]),$R[0])($R[\\"example\\"]))"`;
 
-exports[`sealed object > crossSerialize > supports Objects 1`] = `"($R[0]={hello:\\"world\\"},Object.seal($R[0]),$R[0])"`;
+exports[`sealed object > crossSerialize > supports Objects 1`] = `"(self.$R=self.$R||[],($R[0]={hello:\\"world\\"},Object.seal($R[0]),$R[0]))"`;
 
-exports[`sealed object > crossSerialize > supports Symbol.iterator 1`] = `"($R[0]={[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0])"`;
+exports[`sealed object > crossSerialize > supports Symbol.iterator 1`] = `"(self.$R=self.$R||[],($R[0]={[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0]))"`;
 
-exports[`sealed object > crossSerialize > supports self-recursion 1`] = `"($R[0]={},$R[0].b=$R[0].a=$R[0],Object.seal($R[0]),$R[0])"`;
+exports[`sealed object > crossSerialize > supports self-recursion 1`] = `"(self.$R=self.$R||[],($R[0]={},$R[0].b=$R[0].a=$R[0],Object.seal($R[0]),$R[0]))"`;
 
-exports[`sealed object > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeAsync > scoped > supports Objects 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0])($R[\\"example\\"]))"`;
 
-exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(i,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>Promise.resolve().then((c,d)=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(i,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>Promise.resolve().then((c,d)=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0])($R[\\"example\\"]))"`;
 
-exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}),Object.seal($R[1]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}),Object.seal($R[1]),$R[0])($R[\\"example\\"]))"`;
 
-exports[`sealed object > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])},Object.seal($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeAsync > scoped > supports self-recursion 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])},Object.seal($R[0]),$R[0])($R[\\"example\\"]))"`;
 
-exports[`sealed object > crossSerializeAsync > supports Objects 1`] = `"($R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0])"`;
+exports[`sealed object > crossSerializeAsync > supports Objects 1`] = `"(self.$R=self.$R||[],($R[0]=Promise.resolve($R[1]={hello:\\"world\\"}),Object.seal($R[1]),$R[0]))"`;
 
-exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(i,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>Promise.resolve().then((c,d)=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0])"`;
+exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"(self.$R=self.$R||[],($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(i,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>Promise.resolve().then((c,d)=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}})}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})},Object.seal($R[0]),$R[0]))"`;
 
-exports[`sealed object > crossSerializeAsync > supports Symbol.iterator 1`] = `"($R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}),Object.seal($R[1]),$R[0])"`;
+exports[`sealed object > crossSerializeAsync > supports Symbol.iterator 1`] = `"(self.$R=self.$R||[],($R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}),Object.seal($R[1]),$R[0]))"`;
 
-exports[`sealed object > crossSerializeAsync > supports self-recursion 1`] = `"($R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])},Object.seal($R[0]),$R[0])"`;
+exports[`sealed object > crossSerializeAsync > supports self-recursion 1`] = `"(self.$R=self.$R||[],($R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])},Object.seal($R[0]),$R[0]))"`;
 
-exports[`sealed object > crossSerializeStream > scoped > supports Objects 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports Objects 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
 
 exports[`sealed object > crossSerializeStream > scoped > supports Objects 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={hello:\\"world\\"}),Object.seal($R[2]),$R[0])($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=($R[4]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())},Object.seal($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=($R[4]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())},Object.seal($R[0]),$R[0])($R[\\"example\\"]))"`;
 
 exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `"($R=>($R[6]=(s,d)=>{s.c.enqueue(d)})($R[3],$R[5]=[0,1]))($R[\\"example\\"])"`;
 
@@ -44,21 +44,21 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
 
 exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIterator 6`] = `"($R=>($R[10]=s=>{s.c.close();delete s.c})($R[3]))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
 
 exports[`sealed object > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[7]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={[$R[3]=Symbol.iterator]:($R[4]=s=>(i,c,d,t)=>(i=0,t={[$R[3]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[5]={v:$R[6]=[1,2,3,void 0],t:-1,d:3})}),Object.seal($R[2]),$R[0])($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=$R[2]()},Object.seal($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=$R[2]()},Object.seal($R[0]),$R[0])($R[\\"example\\"]))"`;
 
 exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R[\\"example\\"])"`;
 
 exports[`sealed object > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>$R[4]($R[3],$R[0]))($R[\\"example\\"])"`;
 
-exports[`sealed object > crossSerializeStream > supports Objects 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`sealed object > crossSerializeStream > supports Objects 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`sealed object > crossSerializeStream > supports Objects 2`] = `"(($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={hello:\\"world\\"}),Object.seal($R[2]),$R[0])"`;
 
-exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=($R[4]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())},Object.seal($R[0]),$R[0])"`;
+exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"(self.$R=self.$R||[],($R[0]={[$R[1]=Symbol.asyncIterator]:($R[2]=s=>(b,t)=>(b=s.tee(),s=b[0],b=b[1].getReader(),t={[$R[1]]:()=>t,next:()=>b.read().then(d=>{if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}})}))($R[3]=($R[4]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())},Object.seal($R[0]),$R[0]))"`;
 
 exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"($R[6]=(s,d)=>{s.c.enqueue(d)})($R[3],$R[5]=[0,1])"`;
 
@@ -70,11 +70,11 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 5`
 
 exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 6`] = `"($R[10]=s=>{s.c.close();delete s.c})($R[3])"`;
 
-exports[`sealed object > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`sealed object > crossSerializeStream > supports Symbol.iterator 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`sealed object > crossSerializeStream > supports Symbol.iterator 2`] = `"(($R[7]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={[$R[3]=Symbol.iterator]:($R[4]=s=>(i,c,d,t)=>(i=0,t={[$R[3]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[5]={v:$R[6]=[1,2,3,void 0],t:-1,d:3})}),Object.seal($R[2]),$R[0])"`;
 
-exports[`sealed object > crossSerializeStream > supports self-recursion 1`] = `"($R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=$R[2]()},Object.seal($R[0]),$R[0])"`;
+exports[`sealed object > crossSerializeStream > supports self-recursion 1`] = `"(self.$R=self.$R||[],($R[0]={a:$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))(),b:$R[3]=$R[2]()},Object.seal($R[0]),$R[0]))"`;
 
 exports[`sealed object > crossSerializeStream > supports self-recursion 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
 

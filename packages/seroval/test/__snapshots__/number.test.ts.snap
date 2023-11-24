@@ -1,42 +1,42 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`number > crossSerialize > supports numbers 1`] = `"3735928559"`;
+exports[`number > crossSerialize > supports numbers 1`] = `"(self.$R=self.$R||[],3735928559)"`;
 
-exports[`number > crossSerialize > supports numbers 2`] = `"0/0"`;
+exports[`number > crossSerialize > supports numbers 2`] = `"(self.$R=self.$R||[],0/0)"`;
 
-exports[`number > crossSerialize > supports numbers 3`] = `"1/0"`;
+exports[`number > crossSerialize > supports numbers 3`] = `"(self.$R=self.$R||[],1/0)"`;
 
-exports[`number > crossSerialize > supports numbers 4`] = `"-1/0"`;
+exports[`number > crossSerialize > supports numbers 4`] = `"(self.$R=self.$R||[],-1/0)"`;
 
-exports[`number > crossSerialize > supports numbers 5`] = `"-0"`;
+exports[`number > crossSerialize > supports numbers 5`] = `"(self.$R=self.$R||[],-0)"`;
 
-exports[`number > crossSerializeAsync > supports numbers 1`] = `"$R[0]=Promise.resolve(3735928559)"`;
+exports[`number > crossSerializeAsync > supports numbers 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(3735928559))"`;
 
-exports[`number > crossSerializeAsync > supports numbers 2`] = `"$R[0]=Promise.resolve(0/0)"`;
+exports[`number > crossSerializeAsync > supports numbers 2`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(0/0))"`;
 
-exports[`number > crossSerializeAsync > supports numbers 3`] = `"$R[0]=Promise.resolve(1/0)"`;
+exports[`number > crossSerializeAsync > supports numbers 3`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(1/0))"`;
 
-exports[`number > crossSerializeAsync > supports numbers 4`] = `"$R[0]=Promise.resolve(-1/0)"`;
+exports[`number > crossSerializeAsync > supports numbers 4`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(-1/0))"`;
 
-exports[`number > crossSerializeAsync > supports numbers 5`] = `"$R[0]=Promise.resolve(-0)"`;
+exports[`number > crossSerializeAsync > supports numbers 5`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(-0))"`;
 
-exports[`number > crossSerializeStream > supports -0 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`number > crossSerializeStream > supports -0 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`number > crossSerializeStream > supports -0 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],-0)"`;
 
-exports[`number > crossSerializeStream > supports -Infinity 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`number > crossSerializeStream > supports -Infinity 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`number > crossSerializeStream > supports -Infinity 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],-1/0)"`;
 
-exports[`number > crossSerializeStream > supports Infinity 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`number > crossSerializeStream > supports Infinity 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`number > crossSerializeStream > supports Infinity 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],1/0)"`;
 
-exports[`number > crossSerializeStream > supports NaN 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`number > crossSerializeStream > supports NaN 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`number > crossSerializeStream > supports NaN 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],0/0)"`;
 
-exports[`number > crossSerializeStream > supports numbers 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`number > crossSerializeStream > supports numbers 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`number > crossSerializeStream > supports numbers 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],3735928559)"`;
 

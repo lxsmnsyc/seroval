@@ -4,11 +4,11 @@ exports[`bigint > compat > should throw an error for unsupported target 1`] = `"
 
 exports[`bigint > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object BigInt]\\""`;
 
-exports[`bigint > crossSerialize > supports bigint 1`] = `"9007199254740991n"`;
+exports[`bigint > crossSerialize > supports bigint 1`] = `"(self.$R=self.$R||[],9007199254740991n)"`;
 
-exports[`bigint > crossSerializeAsync > supports bigint 1`] = `"$R[0]=Promise.resolve(9007199254740991n)"`;
+exports[`bigint > crossSerializeAsync > supports bigint 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(9007199254740991n))"`;
 
-exports[`bigint > crossSerializeStream > supports bigint 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`bigint > crossSerializeStream > supports bigint 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`bigint > crossSerializeStream > supports bigint 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],9007199254740991n)"`;
 

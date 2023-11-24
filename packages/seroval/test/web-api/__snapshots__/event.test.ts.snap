@@ -1,18 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Event > crossSerialize > scoped > supports Event 1`] = `"($R=>$R[0]=new Event(\\"example\\",$R[1]={bubbles:!1,cancelable:!1,composed:!1}))($R[\\"example\\"])"`;
+exports[`Event > crossSerialize > scoped > supports Event 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=new Event(\\"example\\",$R[1]={bubbles:!1,cancelable:!1,composed:!1}))($R[\\"example\\"]))"`;
 
-exports[`Event > crossSerialize > supports Event 1`] = `"$R[0]=new Event(\\"example\\",$R[1]={bubbles:!1,cancelable:!1,composed:!1})"`;
+exports[`Event > crossSerialize > supports Event 1`] = `"(self.$R=self.$R||[],$R[0]=new Event(\\"example\\",$R[1]={bubbles:!1,cancelable:!1,composed:!1}))"`;
 
-exports[`Event > crossSerializeAsync > scoped > supports Event 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1})))($R[\\"example\\"])"`;
+exports[`Event > crossSerializeAsync > scoped > supports Event 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1})))($R[\\"example\\"]))"`;
 
-exports[`Event > crossSerializeAsync > supports Event 1`] = `"$R[0]=Promise.resolve($R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1}))"`;
+exports[`Event > crossSerializeAsync > supports Event 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve($R[1]=new Event(\\"example\\",$R[2]={bubbles:!1,cancelable:!1,composed:!1})))"`;
 
-exports[`Event > crossSerializeStream > scoped > supports Event 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`Event > crossSerializeStream > scoped > supports Event 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
 
 exports[`Event > crossSerializeStream > scoped > supports Event 2`] = `"($R=>($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Event(\\"example\\",$R[3]={bubbles:!1,cancelable:!1,composed:!1})))($R[\\"example\\"])"`;
 
-exports[`Event > crossSerializeStream > supports Event 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`Event > crossSerializeStream > supports Event 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`Event > crossSerializeStream > supports Event 2`] = `"($R[4]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Event(\\"example\\",$R[3]={bubbles:!1,cancelable:!1,composed:!1}))"`;
 

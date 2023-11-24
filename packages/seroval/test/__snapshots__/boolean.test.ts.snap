@@ -1,18 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`boolean > crossSerialize > supports boolean 1`] = `"!0"`;
+exports[`boolean > crossSerialize > supports boolean 1`] = `"(self.$R=self.$R||[],!0)"`;
 
-exports[`boolean > crossSerialize > supports boolean 2`] = `"!1"`;
+exports[`boolean > crossSerialize > supports boolean 2`] = `"(self.$R=self.$R||[],!1)"`;
 
-exports[`boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Promise.resolve(!0)"`;
+exports[`boolean > crossSerializeAsync > supports boolean 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(!0))"`;
 
-exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Promise.resolve(!1)"`;
+exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve(!1))"`;
 
-exports[`boolean > crossSerializeStream > supports false value 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boolean > crossSerializeStream > supports false value 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`boolean > crossSerializeStream > supports false value 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],!1)"`;
 
-exports[`boolean > crossSerializeStream > supports true value 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boolean > crossSerializeStream > supports true value 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`boolean > crossSerializeStream > supports true value 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],!0)"`;
 
