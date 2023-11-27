@@ -105,7 +105,7 @@ Object.entries(fixtures).forEach(([key, value]) => {
       add.skip(name, () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const sampleOutput = utils.toString(getData());
-        return () => {
+        return (): void => {
           utils.fromString(sampleOutput);
         };
       })
