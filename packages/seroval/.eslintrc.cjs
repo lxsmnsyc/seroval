@@ -13,11 +13,6 @@ module.exports = {
         "devDependencies": ["**/*.test.ts"]
       }
     ],
-    "no-plusplus": "off",
-    "no-continue": "off",
-    "no-param-reassign": "off",
-    "no-restricted-syntax": "off",
-    "no-bitwise": "off",
     "prefer-template": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
     "prefer-object-spread": "off",
