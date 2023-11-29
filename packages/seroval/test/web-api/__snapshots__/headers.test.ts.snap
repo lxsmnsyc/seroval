@@ -1,18 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Headers > crossSerialize > scoped > supports Headers 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))($R[\\"example\\"]))"`;
+exports[`Headers > crossSerialize > scoped > supports Headers 1`] = `"($R=>$R[0]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))($R[\\"example\\"])"`;
 
-exports[`Headers > crossSerialize > supports Headers 1`] = `"(self.$R=self.$R||[],$R[0]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
+exports[`Headers > crossSerialize > supports Headers 1`] = `"$R[0]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})"`;
 
-exports[`Headers > crossSerializeAsync > scoped > supports Headers 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})))($R[\\"example\\"]))"`;
+exports[`Headers > crossSerializeAsync > scoped > supports Headers 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})))($R[\\"example\\"])"`;
 
-exports[`Headers > crossSerializeAsync > supports Headers 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve($R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})))"`;
+exports[`Headers > crossSerializeAsync > supports Headers 1`] = `"$R[0]=Promise.resolve($R[1]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
 
-exports[`Headers > crossSerializeStream > scoped > supports Headers 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
+exports[`Headers > crossSerializeStream > scoped > supports Headers 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
 exports[`Headers > crossSerializeStream > scoped > supports Headers 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"})))($R[\\"example\\"])"`;
 
-exports[`Headers > crossSerializeStream > supports Headers 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
+exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
 exports[`Headers > crossSerializeStream > supports Headers 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Headers({\\"content-encoding\\":\\"gzip\\",\\"content-type\\":\\"text/plain\\"}))"`;
 

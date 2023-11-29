@@ -1,18 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Date > crossSerialize > scoped > supports Date 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\"))($R[\\"example\\"]))"`;
+exports[`Date > crossSerialize > scoped > supports Date 1`] = `"($R=>$R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\"))($R[\\"example\\"])"`;
 
-exports[`Date > crossSerialize > supports Date 1`] = `"(self.$R=self.$R||[],$R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
+exports[`Date > crossSerialize > supports Date 1`] = `"$R[0]=new Date(\\"2023-03-14T11:16:24.879Z\\")"`;
 
-exports[`Date > crossSerializeAsync > scoped > supports Date 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\")))($R[\\"example\\"]))"`;
+exports[`Date > crossSerializeAsync > scoped > supports Date 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\")))($R[\\"example\\"])"`;
 
-exports[`Date > crossSerializeAsync > supports Date 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\")))"`;
+exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=Promise.resolve($R[1]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 
-exports[`Date > crossSerializeStream > scoped > supports Date 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
+exports[`Date > crossSerializeStream > scoped > supports Date 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
 
 exports[`Date > crossSerializeStream > scoped > supports Date 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Date(\\"2023-03-14T11:16:24.879Z\\")))($R[\\"example\\"])"`;
 
-exports[`Date > crossSerializeStream > supports Date 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
+exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
 exports[`Date > crossSerializeStream > supports Date 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Date(\\"2023-03-14T11:16:24.879Z\\"))"`;
 

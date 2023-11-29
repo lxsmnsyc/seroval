@@ -1,14 +1,14 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[\\"foo\\",\\"bar\\",\\"baz\\",void 0],t:-1,d:3}))($R[\\"example\\"]))"`;
+exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream 1`] = `"($R=>$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[\\"foo\\",\\"bar\\",\\"baz\\",void 0],t:-1,d:3}))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream errors 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[$R[4]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})],t:0,d:0}))($R[\\"example\\"]))"`;
+exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream errors 1`] = `"($R=>$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[$R[4]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})],t:0,d:0}))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[\\"foo\\",\\"bar\\",\\"baz\\",void 0],t:-1,d:3}))"`;
+exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `"$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[\\"foo\\",\\"bar\\",\\"baz\\",void 0],t:-1,d:3})"`;
 
-exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[$R[4]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})],t:0,d:0}))"`;
+exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1`] = `"$R[0]=($R[1]=s=>new ReadableStream({start:c=>Promise.resolve().then((i,v)=>{for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])})}))($R[2]={v:$R[3]=[$R[4]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})],t:0,d:0})"`;
 
-exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())($R[\\"example\\"]))"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `"($R=>$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())($R[\\"example\\"])"`;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 2`] = `"($R=>($R[2]=(s,d)=>{s.c.enqueue(d)})($R[0],\\"foo\\"))($R[\\"example\\"])"`;
 
@@ -18,11 +18,11 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 5`] = `"($R=>($R[3]=s=>{s.c.close();delete s.c})($R[0]))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())($R[\\"example\\"]))"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 1`] = `"($R=>$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())($R[\\"example\\"])"`;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 2`] = `"($R=>($R[3]=(s,d)=>{s.c.error(d);delete s.c})($R[0],$R[2]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"})))($R[\\"example\\"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())"`;
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `"$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))()"`;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 2`] = `"($R[2]=(s,d)=>{s.c.enqueue(d)})($R[0],\\"foo\\")"`;
 
@@ -32,7 +32,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 4`] = `
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `"($R[3]=s=>{s.c.close();delete s.c})($R[0])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))())"`;
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `"$R[0]=($R[1]=(s,c)=>((s=new ReadableStream({start:x=>{c=x}})).c=c,s))()"`;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"($R[3]=(s,d)=>{s.c.error(d);delete s.c})($R[0],$R[2]=Object.assign(new Error(\\"Oops!\\"),{stack:\\"\\"}))"`;
 

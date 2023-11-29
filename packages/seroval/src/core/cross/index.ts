@@ -1,4 +1,3 @@
-import { getCrossReferenceHeader } from '../keys';
 import type { SerovalNode } from '../types';
 import type { CrossAsyncParserContextOptions } from './async';
 import AsyncCrossParserContext from './async';
@@ -10,10 +9,6 @@ import type { CrossStreamParserContextOptions } from './stream';
 import StreamCrossParserContext from './stream';
 import type { CrossSyncParserContextOptions } from './sync';
 import SyncCrossParserContext from './sync';
-
-function insertCrossReferenceHeader(scopeId: string | undefined, value: string): string {
-  return '(' + getCrossReferenceHeader(scopeId) + ',' + value + ')';
-}
 
 export interface CrossSerializeOptions
   extends CrossSyncParserContextOptions, CrossContextOptions {
@@ -35,7 +30,7 @@ export function crossSerialize<T>(
     scopeId: options.scopeId,
     markedRefs: ctx.marked,
   });
-  return insertCrossReferenceHeader(options.scopeId, serial.serializeTop(tree));
+  return serial.serializeTop(tree);
 }
 
 export interface CrossSerializeAsyncOptions
@@ -58,7 +53,7 @@ export async function crossSerializeAsync<T>(
     scopeId: options.scopeId,
     markedRefs: ctx.marked,
   });
-  return insertCrossReferenceHeader(options.scopeId, serial.serializeTop(tree));
+  return serial.serializeTop(tree);
 }
 
 export type ToCrossJSONOptions = CrossParserContextOptions;
@@ -119,10 +114,6 @@ export function crossSerializeStream<T>(
           options.onError(err);
         }
         return;
-      }
-
-      if (initial) {
-        serialized = insertCrossReferenceHeader(options.scopeId, serialized);
       }
 
       options.onSerialize(
