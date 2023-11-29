@@ -1,18 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`URL > crossSerialize > scoped > supports URL 1`] = `"($R=>$R[0]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))($R[\\"example\\"])"`;
+exports[`URL > crossSerialize > scoped > supports URL 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))($R[\\"example\\"]))"`;
 
-exports[`URL > crossSerialize > supports URL 1`] = `"$R[0]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\")"`;
+exports[`URL > crossSerialize > supports URL 1`] = `"(self.$R=self.$R||[],$R[0]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))"`;
 
-exports[`URL > crossSerializeAsync > scoped > supports URL 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\")))($R[\\"example\\"])"`;
+exports[`URL > crossSerializeAsync > scoped > supports URL 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\")))($R[\\"example\\"]))"`;
 
-exports[`URL > crossSerializeAsync > supports URL 1`] = `"$R[0]=Promise.resolve($R[1]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))"`;
+exports[`URL > crossSerializeAsync > supports URL 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve($R[1]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\")))"`;
 
-exports[`URL > crossSerializeStream > scoped > supports URL 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`URL > crossSerializeStream > scoped > supports URL 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
 
 exports[`URL > crossSerializeStream > scoped > supports URL 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\")))($R[\\"example\\"])"`;
 
-exports[`URL > crossSerializeStream > supports URL 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`URL > crossSerializeStream > supports URL 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`URL > crossSerializeStream > supports URL 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new URL(\\"https://github.com/lxsmnsyc/seroval?hello=world\\"))"`;
 

@@ -1,18 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`sparse arrays > crossSerialize > scoped > supports sparse arrays 1`] = `"($R=>$R[0]=[,,,,,,,,,,])($R[\\"example\\"])"`;
+exports[`sparse arrays > crossSerialize > scoped > supports sparse arrays 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=[,,,,,,,,,,])($R[\\"example\\"]))"`;
 
-exports[`sparse arrays > crossSerialize > supports sparse arrays 1`] = `"$R[0]=[,,,,,,,,,,]"`;
+exports[`sparse arrays > crossSerialize > supports sparse arrays 1`] = `"(self.$R=self.$R||[],$R[0]=[,,,,,,,,,,])"`;
 
-exports[`sparse arrays > crossSerializeAsync > scoped > supports sparse arrays 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,]))($R[\\"example\\"])"`;
+exports[`sparse arrays > crossSerializeAsync > scoped > supports sparse arrays 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,]))($R[\\"example\\"]))"`;
 
-exports[`sparse arrays > crossSerializeAsync > supports sparse arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,])"`;
+exports[`sparse arrays > crossSerializeAsync > supports sparse arrays 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,]))"`;
 
-exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
 
 exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=[,,,,,,,,,,]))($R[\\"example\\"])"`;
 
-exports[`sparse arrays > crossSerializeStream > supports sparse arrays 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`sparse arrays > crossSerializeStream > supports sparse arrays 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`sparse arrays > crossSerializeStream > supports sparse arrays 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=[,,,,,,,,,,])"`;
 

@@ -1,18 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Reference > crossSerialize > crossSerialize > supports Reference 1`] = `"($R=>$R[0]=__SEROVAL_REFS__.get(\\"example\\"))($R[\\"example\\"])"`;
+exports[`Reference > crossSerialize > crossSerialize > supports Reference 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=__SEROVAL_REFS__.get(\\"example\\"))($R[\\"example\\"]))"`;
 
-exports[`Reference > crossSerialize > supports Reference 1`] = `"$R[0]=__SEROVAL_REFS__.get(\\"example\\")"`;
+exports[`Reference > crossSerialize > supports Reference 1`] = `"(self.$R=self.$R||[],$R[0]=__SEROVAL_REFS__.get(\\"example\\"))"`;
 
-exports[`Reference > crossSerializeAsync > scoped > supports Reference 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\")))($R[\\"example\\"])"`;
+exports[`Reference > crossSerializeAsync > scoped > supports Reference 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\")))($R[\\"example\\"]))"`;
 
-exports[`Reference > crossSerializeAsync > supports Reference 1`] = `"$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\"))"`;
+exports[`Reference > crossSerializeAsync > supports Reference 1`] = `"(self.$R=self.$R||[],$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get(\\"example\\")))"`;
 
-exports[`Reference > crossSerializeStream > scoped > supports Reference 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`Reference > crossSerializeStream > scoped > supports Reference 1`] = `"((self.$R=self.$R||{})[\\"example\\"]=[],($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"]))"`;
 
 exports[`Reference > crossSerializeStream > scoped > supports Reference 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=__SEROVAL_REFS__.get(\\"example\\")))($R[\\"example\\"])"`;
 
-exports[`Reference > crossSerializeStream > supports Reference 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`Reference > crossSerializeStream > supports Reference 1`] = `"(self.$R=self.$R||[],$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())"`;
 
 exports[`Reference > crossSerializeStream > supports Reference 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=__SEROVAL_REFS__.get(\\"example\\"))"`;
 
