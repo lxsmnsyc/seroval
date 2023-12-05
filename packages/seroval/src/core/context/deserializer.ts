@@ -15,7 +15,6 @@ import type {
   SerovalDateNode,
   SerovalErrorNode,
   SerovalEventNode,
-  SerovalFileNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalIteratorFactoryInstanceNode,
@@ -290,18 +289,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
       deferred.reject(deserialized);
     }
     return result.promise;
-  }
-
-  private deserializeFile(
-    node: SerovalFileNode,
-  ): File {
-    const source = this.deserialize(node.f) as ArrayBuffer;
-    const result = this.assignIndexedValue(node.i, new File(
-      [source],
-      deserializeString(node.m),
-      { type: deserializeString(node.c), lastModified: node.b },
-    ));
-    return result;
   }
 
   private deserializeHeaders(
@@ -591,8 +578,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializePromise(node);
       case SerovalNodeType.WKSymbol:
         return SYMBOL_REF[node.s];
-      case SerovalNodeType.File:
-        return this.deserializeFile(node);
       case SerovalNodeType.Headers:
         return this.deserializeHeaders(node);
       case SerovalNodeType.FormData:

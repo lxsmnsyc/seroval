@@ -244,19 +244,6 @@ export interface SerovalDataViewNode extends SerovalBaseNode {
   b: number;
 }
 
-export interface SerovalFileNode extends SerovalBaseNode {
-  t: SerovalNodeType.File;
-  i: number;
-  // file type
-  c: string;
-  // file name
-  m: string;
-  // reference to array buffer
-  f: SerovalNode;
-  // last modified
-  b: number;
-}
-
 export interface SerovalHeadersNode extends SerovalBaseNode {
   t: SerovalNodeType.Headers;
   i: number;
@@ -464,7 +451,6 @@ export type SerovalSyncNode =
   | SerovalReferenceNode
   | SerovalArrayBufferNode
   | SerovalDataViewNode
-  | SerovalFileNode
   | SerovalHeadersNode
   | SerovalFormDataNode
   | SerovalBoxedNode
@@ -480,7 +466,6 @@ export type SerovalSyncNode =
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode
-  | SerovalFileNode
   | SerovalPromiseConstructorNode
   | SerovalPromiseResolveNode
   | SerovalPromiseRejectNode

@@ -7,7 +7,8 @@ import {
   serializeAsync,
   toCrossJSONAsync,
   toJSONAsync,
-} from '../../src';
+} from 'seroval';
+import FilePlugin from '.';
 
 const EXAMPLE = new File(['Hello World'], 'hello.txt', {
   type: 'text/plain',
@@ -17,7 +18,9 @@ const EXAMPLE = new File(['Hello World'], 'hello.txt', {
 describe('File', () => {
   describe('serializeAsync', () => {
     it('supports File', async () => {
-      const result = await serializeAsync(EXAMPLE);
+      const result = await serializeAsync(EXAMPLE, {
+        plugins: [FilePlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(File);
@@ -27,9 +30,13 @@ describe('File', () => {
   });
   describe('toJSONAsync', () => {
     it('supports File', async () => {
-      const result = await toJSONAsync(EXAMPLE);
+      const result = await toJSONAsync(EXAMPLE, {
+        plugins: [FilePlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof EXAMPLE>(result);
+      const back = fromJSON<typeof EXAMPLE>(result, {
+        plugins: [FilePlugin],
+      });
       expect(back).toBeInstanceOf(File);
       expect(await back.text()).toBe(await EXAMPLE.text());
       expect(back.type).toBe(EXAMPLE.type);
@@ -37,21 +44,29 @@ describe('File', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports File', async () => {
-      const result = await crossSerializeAsync(EXAMPLE);
+      const result = await crossSerializeAsync(EXAMPLE, {
+        plugins: [FilePlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports File', async () => {
-        const result = await crossSerializeAsync(EXAMPLE, { scopeId: 'example' });
+        const result = await crossSerializeAsync(EXAMPLE, {
+          plugins: [FilePlugin],
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports File', async () => {
-      const result = await toCrossJSONAsync(EXAMPLE);
+      const result = await toCrossJSONAsync(EXAMPLE, {
+        plugins: [FilePlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        plugins: [FilePlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(File);

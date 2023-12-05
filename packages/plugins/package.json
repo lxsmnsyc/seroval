@@ -63,6 +63,15 @@
       "import": "./dist/esm/production/web/blob.mjs",
       "types": "./dist/types/web/blob/index.d.ts"
     },
+    "./web/file": {
+      "development": {
+        "require": "./dist/cjs/development/web/file.cjs",
+        "import": "./dist/esm/development/web/file.mjs"
+      },
+      "require": "./dist/cjs/production/web/file.cjs",
+      "import": "./dist/esm/production/web/file.mjs",
+      "types": "./dist/types/web/file/index.d.ts"
+    },
     "./web/url": {
       "development": {
         "require": "./dist/cjs/development/web/url.cjs",
@@ -86,6 +95,9 @@
     "*": {
       "web/blob": [
         "./dist/types/web/blob/index.d.ts"
+      ],
+      "web/file": [
+        "./dist/types/web/file/index.d.ts"
       ],
       "web/url": [
         "./dist/types/web/url/index.d.ts"

@@ -62,7 +62,6 @@ import type {
   SerovalAggregateErrorNode,
   SerovalCustomEventNode,
   SerovalEventNode,
-  SerovalFileNode,
   SerovalFormDataNode,
   SerovalHeadersNode,
   SerovalMapNode,
@@ -272,26 +271,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       items.push(await this.parse(item));
     }
     return createSetNode(id, current.size, items);
-  }
-
-  private async parseFile(
-    id: number,
-    current: File,
-  ): Promise<SerovalFileNode> {
-    return {
-      t: SerovalNodeType.File,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: serializeString(current.type),
-      m: serializeString(current.name),
-      p: undefined,
-      e: undefined,
-      f: await this.parse(await current.arrayBuffer()),
-      a: undefined,
-      b: current.lastModified,
-      o: undefined,
-    };
   }
 
   protected async parsePlainProperties(
@@ -642,8 +621,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof File !== 'undefined' ? File : UNIVERSAL_SENTINEL):
-          return this.parseFile(id, current as unknown as File);
         case (typeof Headers !== 'undefined' ? Headers : UNIVERSAL_SENTINEL):
           return this.parseHeaders(id, current as unknown as Headers);
         case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):

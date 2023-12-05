@@ -30,7 +30,6 @@ import type {
   SerovalErrorNode,
   SerovalPromiseNode,
   SerovalWKSymbolNode,
-  SerovalFileNode,
   SerovalHeadersNode,
   SerovalFormDataNode,
   SerovalBoxedNode,
@@ -844,15 +843,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
   }
 
-  protected serializeFile(
-    node: SerovalFileNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new File([' + this.serialize(node.f) + '],"' + node.m + '",{type:"' + node.c + '",lastModified:' + node.b + '})',
-    );
-  }
-
   protected serializeHeaders(
     node: SerovalHeadersNode,
   ): string {
@@ -1232,8 +1222,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePromise(node);
       case SerovalNodeType.WKSymbol:
         return this.serializeWKSymbol(node);
-      case SerovalNodeType.File:
-        return this.serializeFile(node);
       case SerovalNodeType.Headers:
         return this.serializeHeaders(node);
       case SerovalNodeType.FormData:
