@@ -55,35 +55,11 @@ By default, all feature flags are enabled. The following are the feature flags a
 - [`ErrorPrototypeStack`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack)
   - Skipped when detected.
   - Affects both `Error` and `AggregateError`
-- [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
-  - Disables serialization of `Map`
 - [`ObjectAssign`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
   - Uses manual object assignments instead.
   - Affects `Iterable`, `Error`, `AggregateError` and `Object.create(null)`
-- [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
-  - Disables serialization of `Promise`
-- [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
-  - Disables serialization of `Set`
-- [`Symbol`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
-  - Disables serialization of well-known symbols, `Iterable` and `AsyncIterable`.
-- [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
-  - Disables serialization of `TypedArray`
 - [`BigIntTypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array)
   - Disables serialization of `BigInt64Array` and `BigUint64Array`
-- `WebAPI`
-  - Disables serialization for the following:
-    - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
-    - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
-    - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
-    - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
-    - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
-    - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
-    - [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
-    - [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)
-    - [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)
-    - [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
-    - [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
-    - [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException)
 
 ## Supported Types
 
