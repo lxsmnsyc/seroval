@@ -77,7 +77,6 @@ import type {
   SerovalStreamConstructorNode,
 } from '../../types';
 import {
-  createURLNode,
   createURLSearchParamsNode,
   createDOMExceptionNode,
   createEventNode,
@@ -572,6 +571,10 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     if (isStream(current)) {
       return this.parseStream(id, current);
     }
+    const parsed = await this.parsePlugin(id, current);
+    if (parsed) {
+      return parsed;
+    }
     const currentClass = current.constructor;
     switch (currentClass) {
       case Object:
@@ -661,8 +664,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof URL !== 'undefined' ? URL : UNIVERSAL_SENTINEL):
-          return createURLNode(id, current as unknown as URL);
         case (typeof URLSearchParams !== 'undefined' ? URLSearchParams : UNIVERSAL_SENTINEL):
           return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
         case (typeof Blob !== 'undefined' ? Blob : UNIVERSAL_SENTINEL):
@@ -688,10 +689,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         default:
           break;
       }
-    }
-    const parsed = await this.parsePlugin(id, current);
-    if (parsed) {
-      return parsed;
     }
     if (
       (currentFeatures & Feature.AggregateError)

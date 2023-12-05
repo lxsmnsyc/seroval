@@ -28,7 +28,6 @@ export const enum SerovalNodeType {
   TypedArray = 15,
   BigIntTypedArray = 16,
   WKSymbol = 17,
-  URL = 18,
   URLSearchParams = 19,
   Reference = 20,
   ArrayBuffer = 21,

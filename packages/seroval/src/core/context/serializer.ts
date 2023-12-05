@@ -30,7 +30,6 @@ import type {
   SerovalErrorNode,
   SerovalPromiseNode,
   SerovalWKSymbolNode,
-  SerovalURLNode,
   SerovalURLSearchParamsNode,
   SerovalBlobNode,
   SerovalFileNode,
@@ -232,7 +231,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    */
   assignments: Assignment[] = [];
 
-  plugins?: Plugin<unknown, unknown>[] | undefined;
+  plugins?: Plugin<any, any>[] | undefined;
 
   /**
    * Refs that are...referenced
@@ -847,12 +846,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
   }
 
-  protected serializeURL(
-    node: SerovalURLNode,
-  ): string {
-    return this.assignIndexedValue(node.i, 'new URL("' + node.s + '")');
-  }
-
   protected serializeURLSearchParams(
     node: SerovalURLSearchParamsNode,
   ): string {
@@ -1283,8 +1276,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePromise(node);
       case SerovalNodeType.WKSymbol:
         return this.serializeWKSymbol(node);
-      case SerovalNodeType.URL:
-        return this.serializeURL(node);
       case SerovalNodeType.URLSearchParams:
         return this.serializeURLSearchParams(node);
       case SerovalNodeType.Blob:

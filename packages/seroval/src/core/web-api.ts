@@ -7,29 +7,8 @@ import type {
   SerovalNode,
   SerovalNodeWithID,
   SerovalReadableStreamNode,
-  SerovalURLNode,
   SerovalURLSearchParamsNode,
 } from './types';
-
-export function createURLNode(
-  id: number,
-  current: URL,
-): SerovalURLNode {
-  return {
-    t: SerovalNodeType.URL,
-    i: id,
-    s: serializeString(current.href),
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    p: undefined,
-    e: undefined,
-    f: undefined,
-    a: undefined,
-    b: undefined,
-    o: undefined,
-  };
-}
 
 export function createURLSearchParamsNode(
   id: number,

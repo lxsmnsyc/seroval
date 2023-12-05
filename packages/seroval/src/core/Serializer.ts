@@ -24,7 +24,7 @@ export default class Serializer {
 
   private refs = new Map<unknown, number>();
 
-  private plugins?: Plugin<unknown, unknown>[];
+  private plugins?: Plugin<any, any>[];
 
   constructor(
     private options: SerializerOptions,

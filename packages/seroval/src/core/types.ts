@@ -226,13 +226,6 @@ export interface SerovalWKSymbolNode extends SerovalBaseNode {
   s: Symbols;
 }
 
-export interface SerovalURLNode extends SerovalBaseNode {
-  t: SerovalNodeType.URL;
-  i: number;
-  // raw URL
-  s: string;
-}
-
 export interface SerovalURLSearchParamsNode extends SerovalBaseNode {
   t: SerovalNodeType.URLSearchParams;
   i: number;
@@ -485,7 +478,6 @@ export type SerovalSyncNode =
   | SerovalErrorNode
   | SerovalAggregateErrorNode
   | SerovalWKSymbolNode
-  | SerovalURLNode
   | SerovalURLSearchParamsNode
   | SerovalReferenceNode
   | SerovalArrayBufferNode

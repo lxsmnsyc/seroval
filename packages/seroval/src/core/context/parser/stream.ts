@@ -30,7 +30,7 @@ import type {
   SerovalRequestNode,
   SerovalResponseNode,
 } from '../../types';
-import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
+import { createDOMExceptionNode, createURLSearchParamsNode } from '../../web-api';
 import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
@@ -472,6 +472,10 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     if (isStream(current)) {
       return this.parseStream(id, current);
     }
+    const parsed = this.parsePlugin(id, current);
+    if (parsed) {
+      return parsed;
+    }
     const currentClass = current.constructor;
     switch (currentClass) {
       case Object:
@@ -561,8 +565,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof URL !== 'undefined' ? URL : UNIVERSAL_SENTINEL):
-          return createURLNode(id, current as unknown as URL);
         case (typeof URLSearchParams !== 'undefined' ? URLSearchParams : UNIVERSAL_SENTINEL):
           return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
         case (typeof Headers !== 'undefined' ? Headers : UNIVERSAL_SENTINEL):
@@ -584,10 +586,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         default:
           break;
       }
-    }
-    const parsed = this.parsePlugin(id, current);
-    if (parsed) {
-      return parsed;
     }
     if (
       (currentFeatures & Feature.AggregateError)

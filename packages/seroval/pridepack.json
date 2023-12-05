@@ -1,6 +1,7 @@
 {
   "target": "es2018",
   "entrypoints": {
-    ".": "src/index.ts"
+    ".": "src/index.ts",
+    "./plugins/web/url": "plugins/web/url/index.ts"
   }
 }

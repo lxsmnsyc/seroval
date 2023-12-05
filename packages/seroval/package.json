@@ -61,9 +61,22 @@
       "require": "./dist/cjs/production/index.cjs",
       "import": "./dist/esm/production/index.mjs",
       "types": "./dist/types/src/index.d.ts"
+    },
+    "./plugins/web/url": {
+      "development": {
+        "require": "./dist/cjs/development/plugins/web/url.cjs",
+        "import": "./dist/esm/development/plugins/web/url.mjs"
+      },
+      "require": "./dist/cjs/production/plugins/web/url.cjs",
+      "import": "./dist/esm/production/plugins/web/url.mjs",
+      "types": "./dist/types/plugins/web/url/index.d.ts"
     }
   },
   "typesVersions": {
-    "*": {}
+    "*": {
+      "plugins/web/url": [
+        "./dist/types/plugins/web/url/index.d.ts"
+      ]
+    }
   }
 }

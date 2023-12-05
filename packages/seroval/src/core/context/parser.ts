@@ -48,7 +48,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
 
   refs: Map<unknown, number>;
 
-  plugins?: Plugin<unknown, unknown>[] | undefined;
+  plugins?: Plugin<any, any>[] | undefined;
 
   constructor(options: BaseParserContextOptions) {
     this.plugins = options.plugins;

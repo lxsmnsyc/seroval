@@ -46,7 +46,6 @@ import type {
   SerovalStreamReturnNode,
   SerovalStreamThrowNode,
   SerovalTypedArrayNode,
-  SerovalURLNode,
   SerovalURLSearchParamsNode,
 } from '../types';
 import {
@@ -100,7 +99,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
    */
   refs: Map<number, unknown>;
 
-  plugins?: Plugin<unknown, unknown>[] | undefined;
+  plugins?: Plugin<any, any>[] | undefined;
 
   constructor(options: BaseDeserializerOptions) {
     this.plugins = options.plugins;
@@ -293,12 +292,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
       deferred.reject(deserialized);
     }
     return result.promise;
-  }
-
-  private deserializeURL(
-    node: SerovalURLNode,
-  ): URL {
-    return this.assignIndexedValue(node.i, new URL(deserializeString(node.s)));
   }
 
   private deserializeURLSearchParams(
@@ -617,8 +610,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializePromise(node);
       case SerovalNodeType.WKSymbol:
         return SYMBOL_REF[node.s];
-      case SerovalNodeType.URL:
-        return this.deserializeURL(node);
       case SerovalNodeType.URLSearchParams:
         return this.deserializeURLSearchParams(node);
       case SerovalNodeType.Blob:
