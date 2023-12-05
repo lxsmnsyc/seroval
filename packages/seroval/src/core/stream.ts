@@ -92,3 +92,30 @@ export function createStream<T>(): Stream<T> {
     },
   };
 }
+
+export function createStreamFromAsyncIterable<T>(
+  iterable: AsyncIterable<T>,
+): Stream<T> {
+  const stream = createStream<T>();
+
+  const iterator = iterable[Symbol.asyncIterator]();
+
+  async function push(): Promise<void> {
+    try {
+      const value = await iterator.next();
+      if (value.done) {
+        stream.return(value.value as T);
+      } else {
+        stream.next(value.value);
+      }
+    } catch (error) {
+      stream.throw(error);
+    }
+  }
+
+  push().catch(() => {
+    // no-op
+  });
+
+  return stream;
+}

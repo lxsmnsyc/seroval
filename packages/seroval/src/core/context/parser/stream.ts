@@ -31,10 +31,10 @@ import type {
   SerovalResponseNode,
 } from '../../types';
 import { createDOMExceptionNode, createURLSearchParamsNode } from '../../web-api';
-import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
+import { iteratorToSequence } from '../../utils/iterator-to-sequence';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
-import { isStream } from '../../stream';
+import { createStreamFromAsyncIterable, isStream } from '../../stream';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
@@ -155,9 +155,8 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
           createAsyncIteratorFactoryInstanceNode(
             this.parseAsyncIteratorFactory(1),
             this.parse(
-              asyncIteratorToReadableStream(
+              createStreamFromAsyncIterable(
                 properties as unknown as AsyncIterable<unknown>,
-                this,
               ),
             ),
           ),

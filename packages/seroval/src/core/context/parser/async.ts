@@ -42,7 +42,7 @@ import {
   FALSE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
-import { asyncIteratorToSequence, iteratorToSequence, readableStreamToSequence } from '../../utils/iterator-to-sequence';
+import { iteratorToSequence, readableStreamToSequence } from '../../utils/iterator-to-sequence';
 import { BaseParserContext } from '../parser';
 import promiseToResult from '../../utils/promise-to-result';
 import { getErrorOptions } from '../../utils/error';
@@ -85,7 +85,7 @@ import {
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
-import { isStream } from '../../stream';
+import { createStreamFromAsyncIterable, isStream } from '../../stream';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -155,7 +155,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           createAsyncIteratorFactoryInstanceNode(
             this.parseAsyncIteratorFactory(0),
             await this.parse(
-              await asyncIteratorToSequence(properties as unknown as AsyncIterable<unknown>),
+              createStreamFromAsyncIterable(properties as unknown as AsyncIterable<unknown>),
             ),
           ),
         );

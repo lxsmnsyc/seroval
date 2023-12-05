@@ -6,6 +6,7 @@ import {
   createAggregateErrorNode,
   createArrayBufferNode,
   createArrayNode,
+  createAsyncIteratorFactoryInstanceNode,
   createBigIntNode,
   createBigIntTypedArrayNode,
   createBoxedNode,
@@ -70,7 +71,7 @@ import {
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
-import { isStream } from '../../stream';
+import { createStream, isStream } from '../../stream';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -128,6 +129,20 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
             this.parseIteratorFactory(),
             this.parse(
               iteratorToSequence(properties as unknown as Iterable<unknown>),
+            ),
+          ),
+        );
+      }
+      symbol = Symbol.asyncIterator;
+      if (symbol in properties) {
+        keyNodes.push(
+          this.parseWKSymbol(symbol),
+        );
+        valueNodes.push(
+          createAsyncIteratorFactoryInstanceNode(
+            this.parseAsyncIteratorFactory(1),
+            this.parse(
+              createStream(),
             ),
           ),
         );

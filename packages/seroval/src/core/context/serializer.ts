@@ -1145,46 +1145,16 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')';
   }
 
-  private getStreamingAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
-    return this.createFunction(
-      ['s'],
-      this.createFunction(
-        ['b', 't'],
-        '(b=s.tee(),s=b[0],b=b[1].getReader(),t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
-        + 'next:' + this.createFunction(
-          [],
-          'b.read().then(' + this.createEffectfulFunction(
-            ['d'],
-            'if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}',
-          ) + ')',
-        ) + '})',
-      ),
-    );
-  }
-
-  private getBlockingAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
-    return this.createFunction(
-      ['s'],
-      this.createFunction(
-        ['i', 't'],
-        '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
-          + 'next:' + this.createFunction(
-          [],
-          'Promise.resolve().then(' + this.createEffectfulFunction(
-            ['c', 'd'],
-            'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
-          ) + ')',
-        ) + '})',
-      ),
-    );
-  }
-
   protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
     return this.assignIndexedValue(
       node.i,
-      node.s
-        ? this.getStreamingAsyncIteratorFactory(node)
-        : this.getBlockingAsyncIteratorFactory(node),
+      this.createFunction(
+        ['s'],
+        this.createFunction(
+          [],
+          '',
+        ),
+      ),
     );
   }
 
