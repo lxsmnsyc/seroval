@@ -33,7 +33,8 @@ import type {
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
 import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
-import { isStream, type Stream } from '../../stream';
+import type { Stream } from '../../stream';
+import { isStream } from '../../stream';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
