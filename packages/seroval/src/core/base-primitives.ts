@@ -34,6 +34,9 @@ import type {
   SerovalRegExpNode,
   SerovalSetNode,
   SerovalStreamConstructorNode,
+  SerovalStreamNextNode,
+  SerovalStreamReturnNode,
+  SerovalStreamThrowNode,
   SerovalStringNode,
   SerovalTypedArrayNode,
   SerovalWKSymbolNode,
@@ -462,7 +465,7 @@ export function createAsyncIteratorFactoryInstanceNode(
 export function createStreamConstructorNode(
   id: number,
   factory: SerovalNodeWithID,
-  init: SerovalNode,
+  sequence: SerovalNode[],
 ): SerovalStreamConstructorNode {
   return {
     t: SerovalNodeType.StreamConstructor,
@@ -473,11 +476,68 @@ export function createStreamConstructorNode(
     m: undefined,
     p: undefined,
     e: undefined,
-    a: [
-      factory,
-      init,
-    ],
-    f: undefined,
+    a: sequence,
+    f: factory,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createStreamNextNode(
+  id: number,
+  parsed: SerovalNode,
+): SerovalStreamNextNode {
+  return {
+    t: SerovalNodeType.StreamNext,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parsed,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createStreamThrowNode(
+  id: number,
+  parsed: SerovalNode,
+): SerovalStreamThrowNode {
+  return {
+    t: SerovalNodeType.StreamThrow,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parsed,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createStreamReturnNode(
+  id: number,
+  parsed: SerovalNode,
+): SerovalStreamReturnNode {
+  return {
+    t: SerovalNodeType.StreamReturn,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: parsed,
     b: undefined,
     o: undefined,
   };

@@ -22,6 +22,9 @@ import {
   createIteratorFactoryInstanceNode,
   createAsyncIteratorFactoryInstanceNode,
   createStreamConstructorNode,
+  createStreamNextNode,
+  createStreamThrowNode,
+  createStreamReturnNode,
 } from '../../base-primitives';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import {
@@ -83,7 +86,7 @@ import {
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
-import { isStream, toStreamInit } from '../../stream';
+import { isStream } from '../../stream';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -504,12 +507,58 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: Stream,
   ): Promise<SerovalStreamConstructorNode> {
+    this.markRef(id);
     return createStreamConstructorNode(
       id,
       this.parseSpecialReference(SpecialReference.StreamConstructor),
-      await this.parse(
-        toStreamInit(current),
-      ),
+      await new Promise<SerovalNode[]>((resolve, reject) => {
+        const sequence: SerovalNode[] = [];
+        const cleanup = current.on({
+          next: (value) => {
+            this.parse(value).then(
+              (data) => {
+                sequence.push(
+                  createStreamNextNode(id, data),
+                );
+              },
+              (data) => {
+                reject(data);
+                cleanup();
+              },
+            );
+          },
+          throw: (value) => {
+            this.parse(value).then(
+              (data) => {
+                sequence.push(
+                  createStreamThrowNode(id, data),
+                );
+                resolve(sequence);
+                cleanup();
+              },
+              (data) => {
+                reject(data);
+                cleanup();
+              },
+            );
+          },
+          return: (value) => {
+            this.parse(value).then(
+              (data) => {
+                sequence.push(
+                  createStreamReturnNode(id, data),
+                );
+                resolve(sequence);
+                cleanup();
+              },
+              (data) => {
+                reject(data);
+                cleanup();
+              },
+            );
+          },
+        });
+      }),
     );
   }
 

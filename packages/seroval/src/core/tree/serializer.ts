@@ -32,15 +32,6 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
   vars: string[] = [];
 
   /**
-   * Increments the number of references the referenced value has
-   */
-  markRef(
-    current: number,
-  ): void {
-    this.marked.add(current);
-  }
-
-  /**
    * Creates the reference param (identifier) from the given reference ID
    * Calling this function means the value has been referenced somewhere
    */

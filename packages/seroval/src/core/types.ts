@@ -450,10 +450,8 @@ export interface SerovalReadableStreamNode extends SerovalBaseNode {
 export interface SerovalStreamConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.StreamConstructor;
   i: number;
-  a: [
-    instance: SerovalNodeWithID,
-    sequence: SerovalNode,
-  ];
+  a: SerovalNode[];
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalStreamNextNode extends SerovalBaseNode {

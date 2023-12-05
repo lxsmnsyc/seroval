@@ -356,11 +356,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return createStreamConstructorNode(
       id,
       this.parseSpecialReference(SpecialReference.StreamConstructor),
-      this.parse({
-        b: [],
-        a: true,
-        s: false,
-      }),
+      [],
     );
   }
 

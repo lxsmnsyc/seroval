@@ -18,14 +18,11 @@ export function isStream<T>(value: object): value is Stream<T> {
   return '__SEROVAL_STREAM__' in value;
 }
 
-export interface StreamInit {
-  b: unknown[]; // buffer
-  a: boolean; // alive
-  s: boolean; // success
-}
-
-export function createStream<T = any>(init: StreamInit): Stream<T> {
+export function createStream<T = any>(): Stream<T> {
   const listeners = new Set<StreamListener<T>>();
+  const buffer: unknown[] = [];
+  let alive = true;
+  let success = false;
 
   function flushNext(value: T): void {
     for (const listener of listeners.keys()) {
@@ -49,10 +46,10 @@ export function createStream<T = any>(init: StreamInit): Stream<T> {
     __SEROVAL_STREAM__: true,
     on(listener: StreamListener<T>): () => void {
       listeners.add(listener);
-      for (let i = 0, len = init.b.length; i < len; i++) {
-        const value = init.b[i];
+      for (let i = 0, len = buffer.length; i < len; i++) {
+        const value = buffer[i];
         if (i === len - 1) {
-          if (init.s) {
+          if (success) {
             listener.return(value as T);
           } else {
             listener.throw(value);
@@ -66,53 +63,26 @@ export function createStream<T = any>(init: StreamInit): Stream<T> {
       };
     },
     next(value): void {
-      if (init.a) {
-        init.b.push(value);
+      if (alive) {
+        buffer.push(value);
         flushNext(value);
       }
     },
     throw(value): void {
-      if (init.a) {
-        init.b.push(value);
+      if (alive) {
+        buffer.push(value);
         flushThrow(value);
-        init.a = false;
-        init.s = false;
+        alive = false;
+        success = false;
       }
     },
     return(value): void {
-      if (init.a) {
-        init.b.push(value);
+      if (alive) {
+        buffer.push(value);
         flushReturn(value);
-        init.a = false;
-        init.s = true;
+        alive = false;
+        success = true;
       }
     },
   };
-}
-
-export async function toStreamInit<T = any>(stream: Stream<T>): Promise<StreamInit> {
-  return new Promise<StreamInit>((res) => {
-    const buffer: unknown[] = [];
-    stream.on({
-      next(value) {
-        buffer.push(value);
-      },
-      throw(value) {
-        buffer.push(value);
-        res({
-          b: buffer,
-          a: false,
-          s: false,
-        });
-      },
-      return(value) {
-        buffer.push(value);
-        res({
-          b: buffer,
-          a: false,
-          s: true,
-        });
-      },
-    });
-  });
 }

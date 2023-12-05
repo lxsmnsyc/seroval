@@ -1096,22 +1096,22 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         );
       case SpecialReference.StreamConstructor:
         return this.createFunction(
-          ['i', 'l', 's', 'f'],
-          '(l=[],s=0,f=' + this.createEffectfulFunction(
+          ['b', 'a', 's', 'l', 'p', 'f'],
+          '(b=[],a=!0,s=!1,l=[],s=0,f=' + this.createEffectfulFunction(
             ['v', 'm', 'x'],
             'for(x=0;x<s;x++)l[x]&&l[x][m](v)',
           ) + ',{__SEROVAL_STREAM__:!0,on:' + this.createEffectfulFunction(
             ['o', 't', 'x', 'z', 'c'],
-            'l[t=s++]=o;for(x=0,z=i.b.length;x<z;x++)(c=i.b[x],x===z-1?o[i.s?"return":"throw"](c):o.next(c));return ' + this.createEffectfulFunction([], 'l[t]=void 0'),
+            'l[t=p++]=o;for(x=0,z=b.length;x<z;x++)(c=b[x],x===z-1?o[s?"return":"throw"](c):o.next(c));return ' + this.createEffectfulFunction([], 'l[t]=void 0'),
           ) + ',next:' + this.createEffectfulFunction(
             ['v'],
-            'i.a&&(i.b.push(v),f(v,"next"))',
+            'a&&(b.push(v),f(v,"next"))',
           ) + ',throw:' + this.createEffectfulFunction(
             ['v'],
-            'i.a&&(i.b.push(v),f(v,"throw"),i.a=i.s=!1)',
+            'a&&(b.push(v),f(v,"throw"),a=s=!1)',
           ) + ',return:' + this.createEffectfulFunction(
             ['v'],
-            'i.a&&(i.b.push(v),f(v,"return"),i.a=!1,i.s=!0)',
+            'a&&(b.push(v),f(v,"return"),a=!1,s=!0)',
           ) + '})',
         );
       default:
@@ -1210,10 +1210,16 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   protected serializeStreamConstructor(
     node: SerovalStreamConstructorNode,
   ): string {
-    this.stack.push(node.i);
-    const result = this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')';
-    this.stack.pop();
-    return this.assignIndexedValue(node.i, result);
+    const result = this.assignIndexedValue(node.i, this.getConstructor(node.f) + '()');
+    const len = node.a.length;
+    if (len) {
+      let values = this.serialize(node.a[0]);
+      for (let i = 1; i < len; i++) {
+        values += ',' + this.serialize(node.a[i]);
+      }
+      return '(' + result + ',' + values + ',' + this.getRefParam(node.i) + ')';
+    }
+    return result;
   }
 
   protected serializeStreamNext(

@@ -8,6 +8,9 @@ import {
   createPluginNode,
   createRegExpNode,
   createStreamConstructorNode,
+  createStreamNextNode,
+  createStreamReturnNode,
+  createStreamThrowNode,
   createStringNode,
 } from '../../base-primitives';
 import type { BaseSyncParserContextOptions } from './sync';
@@ -424,11 +427,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     const result = createStreamConstructorNode(
       id,
       this.parseSpecialReference(SpecialReference.StreamConstructor),
-      this.parse({
-        b: [],
-        a: true,
-        s: false,
-      }),
+      [],
     );
     this.pushPendingState();
     current.on({
@@ -436,20 +435,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         if (this.alive) {
           const parsed = this.parseWithError(value);
           if (parsed) {
-            this.onParse({
-              t: SerovalNodeType.StreamNext,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: undefined,
-              f: parsed,
-              b: undefined,
-              o: undefined,
-            });
+            this.onParse(createStreamNextNode(id, parsed));
           }
         }
       },
@@ -457,20 +443,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         if (this.alive) {
           const parsed = this.parseWithError(value);
           if (parsed) {
-            this.onParse({
-              t: SerovalNodeType.StreamThrow,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: undefined,
-              f: parsed,
-              b: undefined,
-              o: undefined,
-            });
+            this.onParse(createStreamThrowNode(id, parsed));
           }
         }
         this.popPendingState();
@@ -479,20 +452,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         if (this.alive) {
           const parsed = this.parseWithError(value);
           if (parsed) {
-            this.onParse({
-              t: SerovalNodeType.StreamReturn,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: undefined,
-              f: parsed,
-              b: undefined,
-              o: undefined,
-            });
+            this.onParse(createStreamReturnNode(id, parsed));
           }
         }
         this.popPendingState();

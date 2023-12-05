@@ -68,7 +68,7 @@ import { getTypedArrayConstructor } from '../utils/typed-array';
 import type { Deferred, DeferredStream } from '../utils/deferred';
 import { createDeferred, createDeferredStream } from '../utils/deferred';
 import assert from '../utils/assert';
-import type { Stream, StreamInit } from '../stream';
+import type { Stream } from '../stream';
 import { createStream } from '../stream';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
@@ -538,9 +538,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   ): unknown {
     return this.assignIndexedValue(
       node.i,
-      createStream(
-        this.deserialize(node.a[1]) as StreamInit,
-      ),
+      createStream(),
     );
   }
 
