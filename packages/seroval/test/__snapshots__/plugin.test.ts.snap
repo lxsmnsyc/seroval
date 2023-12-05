@@ -1,27 +1,27 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Plugin > crossSerialize > scoped > supports Plugin 1`] = `"($R=>$R[0]=Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\"))($R[\\"example\\"])"`;
+exports[`Plugin > crossSerialize > scoped > supports Plugin 1`] = `"($R=>$R[0]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64"))($R["example"])"`;
 
-exports[`Plugin > crossSerialize > supports Plugin 1`] = `"$R[0]=Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\")"`;
+exports[`Plugin > crossSerialize > supports Plugin 1`] = `"$R[0]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64")"`;
 
-exports[`Plugin > crossSerializeAsync > scoped > supports Plugin 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\")))($R[\\"example\\"])"`;
+exports[`Plugin > crossSerializeAsync > scoped > supports Plugin 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64")))($R["example"])"`;
 
-exports[`Plugin > crossSerializeAsync > supports Plugin 1`] = `"$R[0]=Promise.resolve($R[1]=Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\"))"`;
+exports[`Plugin > crossSerializeAsync > supports Plugin 1`] = `"$R[0]=Promise.resolve($R[1]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64"))"`;
 
-exports[`Plugin > crossSerializeStream > scoped > supports Plugin 1`] = `"($R=>$R[0]=Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\"))($R[\\"example\\"])"`;
+exports[`Plugin > crossSerializeStream > scoped > supports Plugin 1`] = `"($R=>$R[0]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64"))($R["example"])"`;
 
-exports[`Plugin > crossSerializeStream > supports Plugin 1`] = `"$R[0]=Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\")"`;
+exports[`Plugin > crossSerializeStream > supports Plugin 1`] = `"$R[0]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64")"`;
 
-exports[`Plugin > serialize > supports Plugin 1`] = `"Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\")"`;
+exports[`Plugin > serialize > supports Plugin 1`] = `"Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64")"`;
 
-exports[`Plugin > serializeAsync > supports Plugin 1`] = `"Promise.resolve(Buffer.from(\\"SGVsbG8sIFdvcmxkIQ==\\", \\"base64\\"))"`;
+exports[`Plugin > serializeAsync > supports Plugin 1`] = `"Promise.resolve(Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64"))"`;
 
-exports[`Plugin > toCrossJSON > supports Plugin 1`] = `"{\\"t\\":40,\\"i\\":0,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"}"`;
+exports[`Plugin > toCrossJSON > supports Plugin 1`] = `"{"t":40,"i":0,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"}"`;
 
-exports[`Plugin > toCrossJSONAsync > supports Plugin 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":40,\\"i\\":1,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"}}"`;
+exports[`Plugin > toCrossJSONAsync > supports Plugin 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"}}"`;
 
-exports[`Plugin > toCrossJSONStream > supports Plugin 1`] = `"{\\"t\\":40,\\"i\\":0,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"}"`;
+exports[`Plugin > toCrossJSONStream > supports Plugin 1`] = `"{"t":40,"i":0,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"}"`;
 
-exports[`Plugin > toJSON > supports Plugin 1`] = `"{\\"t\\":{\\"t\\":40,\\"i\\":0,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Plugin > toJSON > supports Plugin 1`] = `"{"t":{"t":40,"i":0,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"},"f":16383,"m":[]}"`;
 
-exports[`Plugin > toJSONAsync > supports Plugin 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":40,\\"i\\":1,\\"s\\":{\\"t\\":1,\\"s\\":\\"SGVsbG8sIFdvcmxkIQ==\\"},\\"c\\":\\"Buffer\\"}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Plugin > toJSONAsync > supports Plugin 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"}},"f":16383,"m":[]}"`;

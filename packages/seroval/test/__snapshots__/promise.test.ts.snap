@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Promise > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Promise]\\""`;
+exports[`Promise > compat > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object Promise]"]`;
 
 exports[`Promise > compat > should use function expression instead of arrow functions 1`] = `"(function(h){return (h={self:Promise.resolve().then(function(){return h})})})()"`;
 
 exports[`Promise > compat > should use function expression instead of arrow functions 2`] = `"(function(h){return (h={self:Promise.reject().catch(function(){throw h})})})()"`;
 
-exports[`Promise > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Promise]\\""`;
+exports[`Promise > compat#toJSON > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object Promise]"]`;

@@ -1,30 +1,30 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 1`] = `"($R=>$R[0]=Symbol.asyncIterator)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 1`] = `"($R=>$R[0]=Symbol.asyncIterator)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 2`] = `"($R=>$R[0]=Symbol.hasInstance)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 2`] = `"($R=>$R[0]=Symbol.hasInstance)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 3`] = `"($R=>$R[0]=Symbol.isConcatSpreadable)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 3`] = `"($R=>$R[0]=Symbol.isConcatSpreadable)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 4`] = `"($R=>$R[0]=Symbol.iterator)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 4`] = `"($R=>$R[0]=Symbol.iterator)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 5`] = `"($R=>$R[0]=Symbol.match)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 5`] = `"($R=>$R[0]=Symbol.match)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 6`] = `"($R=>$R[0]=Symbol.matchAll)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 6`] = `"($R=>$R[0]=Symbol.matchAll)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 7`] = `"($R=>$R[0]=Symbol.replace)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 7`] = `"($R=>$R[0]=Symbol.replace)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 8`] = `"($R=>$R[0]=Symbol.search)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 8`] = `"($R=>$R[0]=Symbol.search)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 9`] = `"($R=>$R[0]=Symbol.species)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 9`] = `"($R=>$R[0]=Symbol.species)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 10`] = `"($R=>$R[0]=Symbol.split)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 10`] = `"($R=>$R[0]=Symbol.split)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 11`] = `"($R=>$R[0]=Symbol.toPrimitive)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 11`] = `"($R=>$R[0]=Symbol.toPrimitive)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 12`] = `"($R=>$R[0]=Symbol.toStringTag)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 12`] = `"($R=>$R[0]=Symbol.toStringTag)($R["example"])"`;
 
-exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 13`] = `"($R=>$R[0]=Symbol.unscopables)($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerialize > scoped > supports well-known symbols 13`] = `"($R=>$R[0]=Symbol.unscopables)($R["example"])"`;
 
 exports[`well-known symbols > crossSerialize > supports well-known symbols 1`] = `"$R[0]=Symbol.asyncIterator"`;
 
@@ -52,31 +52,31 @@ exports[`well-known symbols > crossSerialize > supports well-known symbols 12`] 
 
 exports[`well-known symbols > crossSerialize > supports well-known symbols 13`] = `"$R[0]=Symbol.unscopables"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.asyncIterator))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.asyncIterator))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 2`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.hasInstance))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 2`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.hasInstance))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 3`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.isConcatSpreadable))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 3`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.isConcatSpreadable))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 4`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.iterator))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 4`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.iterator))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 5`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.match))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 5`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.match))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 6`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.matchAll))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 6`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.matchAll))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 7`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.replace))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 7`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.replace))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 8`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.search))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 8`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.search))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 9`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.species))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 9`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.species))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 10`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.split))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 10`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.split))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 11`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.toPrimitive))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 11`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.toPrimitive))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 12`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.toStringTag))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 12`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.toStringTag))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 13`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.unscopables))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeAsync > scoped > supports well-known symbols 13`] = `"($R=>$R[0]=Promise.resolve($R[1]=Symbol.unscopables))($R["example"])"`;
 
 exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 1`] = `"$R[0]=Promise.resolve($R[1]=Symbol.asyncIterator)"`;
 
@@ -104,109 +104,109 @@ exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 
 
 exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 13`] = `"$R[0]=Promise.resolve($R[1]=Symbol.unscopables)"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.asyncIterator))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.asyncIterator))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.hasInstance))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.hasInstance))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.isConcatSpreadable))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.isConcatSpreadable))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.iterator))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.iterator))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.match))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.match))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.matchAll))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.matchAll))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.replace))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.replace))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.search))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.search))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.species))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.species))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.split))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.split))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toPrimitive))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toPrimitive))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toStringTag))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toStringTag))($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.unscopables))($R[\\"example\\"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.unscopables))($R["example"])"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.asyncIterator)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.asyncIterator)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.hasInstance)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.hasInstance)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.isConcatSpreadable)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.isConcatSpreadable)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.iterator)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.iterator)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.match 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.match 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.match)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.match 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.match)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.matchAll)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.matchAll)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.replace)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.replace)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.search 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.search 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.search)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.search 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.search)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.species 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.species 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.species)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.species 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.species)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.split 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.split 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.split)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.split 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.split)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toPrimitive)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toPrimitive)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toStringTag)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.toStringTag)"`;
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.unscopables)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Symbol.unscopables)"`;
 
 exports[`well-known symbols > serialize > supports well-known symbols 1`] = `"Symbol.asyncIterator"`;
 
@@ -260,158 +260,158 @@ exports[`well-known symbols > serializeAsync > supports well-known symbols 12`] 
 
 exports[`well-known symbols > serializeAsync > supports well-known symbols 13`] = `"Promise.resolve(Symbol.unscopables)"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 1`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":0}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 1`] = `"{"t":17,"i":0,"s":0}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 2`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":1}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 2`] = `"{"t":17,"i":0,"s":1}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 3`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":2}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 3`] = `"{"t":17,"i":0,"s":2}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 4`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":3}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 4`] = `"{"t":17,"i":0,"s":3}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 5`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":4}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 5`] = `"{"t":17,"i":0,"s":4}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 6`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":5}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 6`] = `"{"t":17,"i":0,"s":5}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 7`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":6}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 7`] = `"{"t":17,"i":0,"s":6}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 8`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":7}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 8`] = `"{"t":17,"i":0,"s":7}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 9`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":8}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 9`] = `"{"t":17,"i":0,"s":8}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 10`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":9}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 10`] = `"{"t":17,"i":0,"s":9}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 11`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":10}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 11`] = `"{"t":17,"i":0,"s":10}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 12`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":11}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 12`] = `"{"t":17,"i":0,"s":11}"`;
 
-exports[`well-known symbols > toCrossJSON > supports well-known symbols 13`] = `"{\\"t\\":17,\\"i\\":0,\\"s\\":12}"`;
+exports[`well-known symbols > toCrossJSON > supports well-known symbols 13`] = `"{"t":17,"i":0,"s":12}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":0}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":0}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 2`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":1}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":1}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 3`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 3`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 4`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":3}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 4`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":3}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 5`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":4}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 5`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":4}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 6`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":5}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 6`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":5}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 7`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":6}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 7`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":6}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 8`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":7}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 8`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":7}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 9`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":8}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 9`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":8}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 10`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":9}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 10`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":9}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 11`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":10}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 11`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":10}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 12`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":11}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 12`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":11}}"`;
 
-exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 13`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":12}}"`;
+exports[`well-known symbols > toCrossJSONAsync > supports well-known symbols 13`] = `"{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":12}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.asyncIterator 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.asyncIterator 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.asyncIterator 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":0}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.asyncIterator 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":0}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.hasInstance 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.hasInstance 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.hasInstance 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":1}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.hasInstance 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":1}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.isConcatSpreadable 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.isConcatSpreadable 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.isConcatSpreadable 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":2}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.isConcatSpreadable 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":2}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.iterator 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.iterator 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.iterator 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":3}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.iterator 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":3}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.match 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.match 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.match 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":4}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.match 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":4}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.matchAll 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.matchAll 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.matchAll 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":5}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.matchAll 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":5}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.replace 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.replace 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.replace 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":6}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.replace 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":6}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.search 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.search 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.search 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":7}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.search 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":7}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.species 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.species 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.species 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":8}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.species 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":8}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.split 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.split 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.split 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":9}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.split 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":9}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.toPrimitive 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toPrimitive 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.toPrimitive 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":10}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toPrimitive 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":10}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.toStringTag 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toStringTag 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.toStringTag 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":11}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.toStringTag 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":11}]}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.unscopables 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.unscopables 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`well-known symbols > toCrossJSONStream > supports Symbol.unscopables 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":17,\\"i\\":2,\\"s\\":12}]}"`;
+exports[`well-known symbols > toCrossJSONStream > supports Symbol.unscopables 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":17,"i":2,"s":12}]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 1`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":0},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 1`] = `"{"t":{"t":17,"i":0,"s":0},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 2`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":1},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 2`] = `"{"t":{"t":17,"i":0,"s":1},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 3`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":2},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 3`] = `"{"t":{"t":17,"i":0,"s":2},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 4`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":3},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 4`] = `"{"t":{"t":17,"i":0,"s":3},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 5`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":4},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 5`] = `"{"t":{"t":17,"i":0,"s":4},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 6`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":5},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 6`] = `"{"t":{"t":17,"i":0,"s":5},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 7`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":6},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 7`] = `"{"t":{"t":17,"i":0,"s":6},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 8`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":7},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 8`] = `"{"t":{"t":17,"i":0,"s":7},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 9`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":8},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 9`] = `"{"t":{"t":17,"i":0,"s":8},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 10`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":9},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 10`] = `"{"t":{"t":17,"i":0,"s":9},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 11`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":10},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 11`] = `"{"t":{"t":17,"i":0,"s":10},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 12`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":11},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 12`] = `"{"t":{"t":17,"i":0,"s":11},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSON > supports well-known symbols 13`] = `"{\\"t\\":{\\"t\\":17,\\"i\\":0,\\"s\\":12},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSON > supports well-known symbols 13`] = `"{"t":{"t":17,"i":0,"s":12},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":0}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":0}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":1}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":1}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 3`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 3`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":2}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 4`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":3}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 4`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":3}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 5`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":4}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 5`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":4}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 6`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":5}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 6`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":5}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 7`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":6}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 7`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":6}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 8`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":7}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 8`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":7}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 9`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":8}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 9`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":8}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 10`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":9}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 10`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":9}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 11`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":10}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 11`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":10}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 12`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":11}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 12`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":11}},"f":16383,"m":[]}"`;
 
-exports[`well-known symbols > toJSONAsync > supports well-known symbols 13`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":17,\\"i\\":1,\\"s\\":12}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`well-known symbols > toJSONAsync > supports well-known symbols 13`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":17,"i":1,"s":12}},"f":16383,"m":[]}"`;

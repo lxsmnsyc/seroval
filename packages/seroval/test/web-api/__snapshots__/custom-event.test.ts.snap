@@ -1,33 +1,33 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CustomEvent > crossSerialize > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=new CustomEvent(\\"example\\",$R[1]={detail:$R[2]={},bubbles:!1,cancelable:!1,composed:!1}),$R[2].self=$R[2],$R[0])($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerialize > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=new CustomEvent("example",$R[1]={detail:$R[2]={},bubbles:!1,cancelable:!1,composed:!1}),$R[2].self=$R[2],$R[0])($R["example"])"`;
 
-exports[`CustomEvent > crossSerialize > supports CustomEvent 1`] = `"($R[0]=new CustomEvent(\\"example\\",$R[1]={detail:$R[2]={},bubbles:!1,cancelable:!1,composed:!1}),$R[2].self=$R[2],$R[0])"`;
+exports[`CustomEvent > crossSerialize > supports CustomEvent 1`] = `"($R[0]=new CustomEvent("example",$R[1]={detail:$R[2]={},bubbles:!1,cancelable:!1,composed:!1}),$R[2].self=$R[2],$R[0])"`;
 
-exports[`CustomEvent > crossSerializeAsync > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new CustomEvent(\\"example\\",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerializeAsync > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new CustomEvent("example",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])($R["example"])"`;
 
-exports[`CustomEvent > crossSerializeAsync > supports CustomEvent 1`] = `"($R[0]=Promise.resolve($R[1]=new CustomEvent(\\"example\\",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])"`;
+exports[`CustomEvent > crossSerializeAsync > supports CustomEvent 1`] = `"($R[0]=Promise.resolve($R[1]=new CustomEvent("example",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])"`;
 
-exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 2`] = `"($R=>($R[5]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new CustomEvent(\\"example\\",$R[3]={detail:$R[4]={},bubbles:!1,cancelable:!1,composed:!1})),$R[4].self=$R[4],$R[0])($R[\\"example\\"])"`;
+exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 2`] = `"($R=>($R[5]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new CustomEvent("example",$R[3]={detail:$R[4]={},bubbles:!1,cancelable:!1,composed:!1})),$R[4].self=$R[4],$R[0])($R["example"])"`;
 
 exports[`CustomEvent > crossSerializeStream > supports CustomEvent 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`CustomEvent > crossSerializeStream > supports CustomEvent 2`] = `"(($R[5]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new CustomEvent(\\"example\\",$R[3]={detail:$R[4]={},bubbles:!1,cancelable:!1,composed:!1})),$R[4].self=$R[4],$R[0])"`;
+exports[`CustomEvent > crossSerializeStream > supports CustomEvent 2`] = `"(($R[5]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new CustomEvent("example",$R[3]={detail:$R[4]={},bubbles:!1,cancelable:!1,composed:!1})),$R[4].self=$R[4],$R[0])"`;
 
-exports[`CustomEvent > serialize > supports CustomEvent 1`] = `"((h,j)=>(j=new CustomEvent(\\"example\\",{detail:h={},bubbles:!1,cancelable:!1,composed:!1}),h.self=h,j))()"`;
+exports[`CustomEvent > serialize > supports CustomEvent 1`] = `"((h,j)=>(j=new CustomEvent("example",{detail:h={},bubbles:!1,cancelable:!1,composed:!1}),h.self=h,j))()"`;
 
-exports[`CustomEvent > serializeAsync > supports CustomEvent 1`] = `"((h,j)=>(j=Promise.resolve(new CustomEvent(\\"example\\",{detail:h={},bubbles:!1,cancelable:!1,composed:!1})),h.self=h,j))()"`;
+exports[`CustomEvent > serializeAsync > supports CustomEvent 1`] = `"((h,j)=>(j=Promise.resolve(new CustomEvent("example",{detail:h={},bubbles:!1,cancelable:!1,composed:!1})),h.self=h,j))()"`;
 
-exports[`CustomEvent > toCrossJSON > supports CustomEvent 1`] = `"{\\"t\\":38,\\"i\\":0,\\"s\\":\\"example\\",\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"detail\\",\\"bubbles\\",\\"cancelable\\",\\"composed\\"],\\"v\\":[{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"self\\"],\\"v\\":[{\\"t\\":4,\\"i\\":2}],\\"s\\":1},\\"o\\":0},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3}],\\"s\\":4},\\"o\\":0}}"`;
+exports[`CustomEvent > toCrossJSON > supports CustomEvent 1`] = `"{"t":38,"i":0,"s":"example","f":{"t":10,"i":1,"p":{"k":["detail","bubbles","cancelable","composed"],"v":[{"t":10,"i":2,"p":{"k":["self"],"v":[{"t":4,"i":2}],"s":1},"o":0},{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":4},"o":0}}"`;
 
-exports[`CustomEvent > toCrossJSONAsync > supports CustomEvent 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":38,\\"i\\":1,\\"s\\":\\"example\\",\\"f\\":{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"detail\\",\\"bubbles\\",\\"cancelable\\",\\"composed\\"],\\"v\\":[{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"self\\"],\\"v\\":[{\\"t\\":4,\\"i\\":3}],\\"s\\":1},\\"o\\":0},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3}],\\"s\\":4},\\"o\\":0}}}"`;
+exports[`CustomEvent > toCrossJSONAsync > supports CustomEvent 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":38,"i":1,"s":"example","f":{"t":10,"i":2,"p":{"k":["detail","bubbles","cancelable","composed"],"v":[{"t":10,"i":3,"p":{"k":["self"],"v":[{"t":4,"i":3}],"s":1},"o":0},{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":4},"o":0}}}"`;
 
-exports[`CustomEvent > toCrossJSONStream > supports CustomEvent 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`CustomEvent > toCrossJSONStream > supports CustomEvent 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`CustomEvent > toCrossJSONStream > supports CustomEvent 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":5,\\"s\\":3},{\\"t\\":38,\\"i\\":2,\\"s\\":\\"example\\",\\"f\\":{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"detail\\",\\"bubbles\\",\\"cancelable\\",\\"composed\\"],\\"v\\":[{\\"t\\":10,\\"i\\":4,\\"p\\":{\\"k\\":[\\"self\\"],\\"v\\":[{\\"t\\":4,\\"i\\":4}],\\"s\\":1},\\"o\\":0},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3}],\\"s\\":4},\\"o\\":0}}]}"`;
+exports[`CustomEvent > toCrossJSONStream > supports CustomEvent 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":5,"s":3},{"t":38,"i":2,"s":"example","f":{"t":10,"i":3,"p":{"k":["detail","bubbles","cancelable","composed"],"v":[{"t":10,"i":4,"p":{"k":["self"],"v":[{"t":4,"i":4}],"s":1},"o":0},{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":4},"o":0}}]}"`;
 
-exports[`CustomEvent > toJSON > supports CustomEvent 1`] = `"{\\"t\\":{\\"t\\":38,\\"i\\":0,\\"s\\":\\"example\\",\\"f\\":{\\"t\\":10,\\"i\\":1,\\"p\\":{\\"k\\":[\\"detail\\",\\"bubbles\\",\\"cancelable\\",\\"composed\\"],\\"v\\":[{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"self\\"],\\"v\\":[{\\"t\\":4,\\"i\\":2}],\\"s\\":1},\\"o\\":0},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3}],\\"s\\":4},\\"o\\":0}},\\"f\\":16383,\\"m\\":[2]}"`;
+exports[`CustomEvent > toJSON > supports CustomEvent 1`] = `"{"t":{"t":38,"i":0,"s":"example","f":{"t":10,"i":1,"p":{"k":["detail","bubbles","cancelable","composed"],"v":[{"t":10,"i":2,"p":{"k":["self"],"v":[{"t":4,"i":2}],"s":1},"o":0},{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":4},"o":0}},"f":16383,"m":[2]}"`;
 
-exports[`CustomEvent > toJSONAsync > supports CustomEvent 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":38,\\"i\\":1,\\"s\\":\\"example\\",\\"f\\":{\\"t\\":10,\\"i\\":2,\\"p\\":{\\"k\\":[\\"detail\\",\\"bubbles\\",\\"cancelable\\",\\"composed\\"],\\"v\\":[{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"self\\"],\\"v\\":[{\\"t\\":4,\\"i\\":3}],\\"s\\":1},\\"o\\":0},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3}],\\"s\\":4},\\"o\\":0}}},\\"f\\":16383,\\"m\\":[3]}"`;
+exports[`CustomEvent > toJSONAsync > supports CustomEvent 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":38,"i":1,"s":"example","f":{"t":10,"i":2,"p":{"k":["detail","bubbles","cancelable","composed"],"v":[{"t":10,"i":3,"p":{"k":["self"],"v":[{"t":4,"i":3}],"s":1},"o":0},{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":4},"o":0}}},"f":16383,"m":[3]}"`;

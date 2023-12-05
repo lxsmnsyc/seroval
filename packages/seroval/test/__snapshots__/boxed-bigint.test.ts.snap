@@ -1,37 +1,37 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`boxed bigint > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object BigInt]\\""`;
+exports[`boxed bigint > compat > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object BigInt]"]`;
 
-exports[`boxed bigint > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object BigInt]\\""`;
+exports[`boxed bigint > compat#toJSON > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object BigInt]"]`;
 
-exports[`boxed bigint > crossSerialize > scoped > supports boxed bigint 1`] = `"($R=>$R[0]=Object(9007199254740991n))($R[\\"example\\"])"`;
+exports[`boxed bigint > crossSerialize > scoped > supports boxed bigint 1`] = `"($R=>$R[0]=Object(9007199254740991n))($R["example"])"`;
 
 exports[`boxed bigint > crossSerialize > supports boxed bigint 1`] = `"$R[0]=Object(9007199254740991n)"`;
 
-exports[`boxed bigint > crossSerializeAsync > scoped > supports boxed bigint 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Object(9007199254740991n)))($R[\\"example\\"])"`;
+exports[`boxed bigint > crossSerializeAsync > scoped > supports boxed bigint 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Object(9007199254740991n)))($R["example"])"`;
 
 exports[`boxed bigint > crossSerializeAsync > supports boxed bigint 1`] = `"$R[0]=Promise.resolve($R[1]=Object(9007199254740991n))"`;
 
-exports[`boxed bigint > crossSerializeStream > scoped > supports boxed bigint 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`boxed bigint > crossSerializeStream > scoped > supports boxed bigint 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`boxed bigint > crossSerializeStream > scoped > supports boxed bigint 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(9007199254740991n)))($R[\\"example\\"])"`;
+exports[`boxed bigint > crossSerializeStream > scoped > supports boxed bigint 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(9007199254740991n)))($R["example"])"`;
 
 exports[`boxed bigint > crossSerializeStream > supports boxed bigint 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`boxed bigint > crossSerializeStream > supports boxed bigint 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(9007199254740991n))"`;
+exports[`boxed bigint > crossSerializeStream > supports boxed bigint 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(9007199254740991n))"`;
 
 exports[`boxed bigint > serialize > supports boxed bigint 1`] = `"Object(9007199254740991n)"`;
 
 exports[`boxed bigint > serializeAsync > supports boxed bigint 1`] = `"Promise.resolve(Object(9007199254740991n))"`;
 
-exports[`boxed bigint > toCrossJSON > supports boxed bigint 1`] = `"{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}"`;
+exports[`boxed bigint > toCrossJSON > supports boxed bigint 1`] = `"{"t":27,"i":0,"f":{"t":3,"s":"9007199254740991"}}"`;
 
-exports[`boxed bigint > toCrossJSONAsync > supports boxed bigint 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}}"`;
+exports[`boxed bigint > toCrossJSONAsync > supports boxed bigint 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":27,"i":1,"f":{"t":3,"s":"9007199254740991"}}}"`;
 
-exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":3,\\"s\\":3},{\\"t\\":27,\\"i\\":2,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}]}"`;
+exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":27,"i":2,"f":{"t":3,"s":"9007199254740991"}}]}"`;
 
-exports[`boxed bigint > toJSON > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":27,\\"i\\":0,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed bigint > toJSON > supports boxed bigint 1`] = `"{"t":{"t":27,"i":0,"f":{"t":3,"s":"9007199254740991"}},"f":16383,"m":[]}"`;
 
-exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":27,\\"i\\":1,\\"f\\":{\\"t\\":3,\\"s\\":\\"9007199254740991\\"}}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":27,"i":1,"f":{"t":3,"s":"9007199254740991"}}},"f":16383,"m":[]}"`;
