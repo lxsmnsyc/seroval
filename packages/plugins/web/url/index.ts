@@ -13,7 +13,7 @@ const URLPlugin = createPlugin<URL, SerovalNode>({
     sync(value, ctx) {
       return ctx.parse(value.href);
     },
-    async(value, ctx) {
+    async async(value, ctx) {
       return ctx.parse(value.href);
     },
     stream(value, ctx) {
@@ -21,7 +21,7 @@ const URLPlugin = createPlugin<URL, SerovalNode>({
     },
   },
   serialize(node, ctx) {
-    return 'new URL("' + ctx.serialize(node) + '")';
+    return 'new URL(' + ctx.serialize(node) + ')';
   },
   deserialize(node, ctx) {
     return new URL(ctx.deserialize(node) as string);
