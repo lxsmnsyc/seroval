@@ -1,20 +1,20 @@
-import { Serializer } from "./dist/esm/development/index.mjs";
+import { createStream, crossSerializeStream } from "./dist/esm/development/index.mjs";
 
 const sleep = (value, ms) => (
   new Promise((res) => setTimeout(res, ms, value))
 );
 
-async function * example() {
-  yield sleep('foo', 1000);
-  yield sleep('bar', 1000);
-  yield sleep('baz', 1000);
-}
-
-const serializer = new Serializer({
-  globalIdentifier: 'X',
-  onData(value) {
-    console.log(value);
-  },
+const stream = createStream({
+  b: [],
+  a: true,
 });
 
-serializer.write('example', example());
+stream.next('foo');
+stream.next('bar');
+stream.return('baz');
+
+crossSerializeStream(stream, {
+  onSerialize(data) {
+    console.log(data);
+  }
+})

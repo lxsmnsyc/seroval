@@ -57,6 +57,10 @@ export const enum SerovalNodeType {
   AsyncIteratorFactory = 44,
   AsyncIteratorFactoryInstance = 45,
   ReadableStream = 46,
+  StreamConstructor = 47,
+  StreamNext = 48,
+  StreamThrow = 49,
+  StreamReturn = 50,
 }
 
 export const enum SerovalObjectFlags {

@@ -17,6 +17,7 @@ import {
   createPluginNode,
   createRegExpNode,
   createSetNode,
+  createStreamConstructorNode,
   createStringNode,
   createTypedArrayNode,
   createWKSymbolNode,
@@ -68,7 +69,8 @@ import {
   createURLNode,
   createURLSearchParamsNode,
 } from '../../web-api';
-import { UNIVERSAL_SENTINEL } from '../../special-reference';
+import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
+import { Stream, isStream } from '../../stream';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -347,12 +349,30 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return undefined;
   }
 
+  protected parseStream(
+    id: number,
+    current: Stream,
+  ): SerovalNode {
+    return createStreamConstructorNode(
+      id,
+      this.parseSpecialReference(SpecialReference.StreamConstructor),
+      this.parse({
+        b: [],
+        a: true,
+        s: false,
+      }),
+    );
+  }
+
   protected parseObject(
     id: number,
     current: object,
   ): SerovalNode {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
+    }
+    if (isStream(current)) {
+      return this.parseStream(id, current);
     }
     const currentClass = current.constructor;
     switch (currentClass) {

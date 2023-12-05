@@ -21,6 +21,7 @@ import {
   createAggregateErrorNode,
   createIteratorFactoryInstanceNode,
   createAsyncIteratorFactoryInstanceNode,
+  createStreamConstructorNode,
 } from '../../base-primitives';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import {
@@ -70,6 +71,7 @@ import type {
   SerovalSetNode,
   SerovalDataViewNode,
   SerovalReadableStreamNode,
+  SerovalStreamConstructorNode,
 } from '../../types';
 import {
   createURLNode,
@@ -80,6 +82,8 @@ import {
   createReadableStreamNode,
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
+import type { Stream } from '../../stream';
+import { isStream, toStreamInit } from '../../stream';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -496,12 +500,28 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     );
   }
 
+  private async parseStream(
+    id: number,
+    current: Stream,
+  ): Promise<SerovalStreamConstructorNode> {
+    return createStreamConstructorNode(
+      id,
+      this.parseSpecialReference(SpecialReference.StreamConstructor),
+      await this.parse(
+        toStreamInit(current),
+      ),
+    );
+  }
+
   private async parseObject(
     id: number,
     current: object,
   ): Promise<SerovalNode> {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
+    }
+    if (isStream(current)) {
+      return this.parseStream(id, current);
     }
     const currentClass = current.constructor;
     switch (currentClass) {

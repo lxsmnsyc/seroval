@@ -7,6 +7,7 @@ import {
   createIteratorFactoryInstanceNode,
   createPluginNode,
   createRegExpNode,
+  createStreamConstructorNode,
   createStringNode,
 } from '../../base-primitives';
 import type { BaseSyncParserContextOptions } from './sync';
@@ -29,6 +30,7 @@ import type {
 import { createDOMExceptionNode, createURLNode, createURLSearchParamsNode } from '../../web-api';
 import { asyncIteratorToReadableStream, iteratorToSequence } from '../../utils/iterator-to-sequence';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
+import { isStream, type Stream } from '../../stream';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
@@ -56,11 +58,29 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     this.onDoneCallback = options.onDone;
   }
 
-  private onParse(node: SerovalNode, initial: boolean): void {
+  private initial = true;
+
+  private buffer: SerovalNode[] = [];
+
+  private onParseInternal(node: SerovalNode, initial: boolean): void {
     try {
       this.onParseCallback(node, initial);
     } catch (error) {
       this.onError(error);
+    }
+  }
+
+  private flush(): void {
+    for (let i = 0, len = this.buffer.length; i < len; i++) {
+      this.onParseInternal(this.buffer[i], false);
+    }
+  }
+
+  private onParse(node: SerovalNode): void {
+    if (this.initial) {
+      this.buffer.push(node);
+    } else {
+      this.onParseInternal(node, false);
     }
   }
 
@@ -79,10 +99,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
   }
 
   push<T>(value: T): void {
-    this.onParse(
-      this.parse(value),
-      false,
-    );
+    this.onParse(this.parse(value));
   }
 
   pushPendingState(): void {
@@ -181,7 +198,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: this.parseSpecialReference(SpecialReference.ReadableStreamClose),
               b: undefined,
               o: undefined,
-            }, false);
+            });
             this.popPendingState();
           } else {
             const parsed = this.parseWithError(data.value);
@@ -202,7 +219,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
                 f: undefined,
                 b: undefined,
                 o: undefined,
-              }, false);
+              });
               this.pushReadableStreamReader(id, reader);
             }
           }
@@ -228,7 +245,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: undefined,
               b: undefined,
               o: undefined,
-            }, false);
+            });
           }
           this.popPendingState();
         }
@@ -331,7 +348,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             f: undefined,
             b: undefined,
             o: undefined,
-          }, false);
+          });
         }
         this.popPendingState();
       },
@@ -355,7 +372,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
               f: undefined,
               b: undefined,
               o: undefined,
-            }, false);
+            });
           }
         }
         this.popPendingState();
@@ -400,12 +417,99 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     return undefined;
   }
 
+  protected parseStream(
+    id: number,
+    current: Stream,
+  ): SerovalNode {
+    const result = createStreamConstructorNode(
+      id,
+      this.parseSpecialReference(SpecialReference.StreamConstructor),
+      this.parse({
+        b: [],
+        a: true,
+        s: false,
+      }),
+    );
+    this.pushPendingState();
+    current.on({
+      next: (value) => {
+        if (this.alive) {
+          const parsed = this.parseWithError(value);
+          if (parsed) {
+            this.onParse({
+              t: SerovalNodeType.StreamNext,
+              i: id,
+              s: undefined,
+              l: undefined,
+              c: undefined,
+              m: undefined,
+              p: undefined,
+              e: undefined,
+              a: undefined,
+              f: parsed,
+              b: undefined,
+              o: undefined,
+            });
+          }
+        }
+      },
+      throw: (value) => {
+        if (this.alive) {
+          const parsed = this.parseWithError(value);
+          if (parsed) {
+            this.onParse({
+              t: SerovalNodeType.StreamThrow,
+              i: id,
+              s: undefined,
+              l: undefined,
+              c: undefined,
+              m: undefined,
+              p: undefined,
+              e: undefined,
+              a: undefined,
+              f: parsed,
+              b: undefined,
+              o: undefined,
+            });
+          }
+        }
+        this.popPendingState();
+      },
+      return: (value) => {
+        if (this.alive) {
+          const parsed = this.parseWithError(value);
+          if (parsed) {
+            this.onParse({
+              t: SerovalNodeType.StreamReturn,
+              i: id,
+              s: undefined,
+              l: undefined,
+              c: undefined,
+              m: undefined,
+              p: undefined,
+              e: undefined,
+              a: undefined,
+              f: parsed,
+              b: undefined,
+              o: undefined,
+            });
+          }
+        }
+        this.popPendingState();
+      },
+    });
+    return result;
+  }
+
   protected parseObject(
     id: number,
     current: object,
   ): SerovalNode {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
+    }
+    if (isStream(current)) {
+      return this.parseStream(id, current);
     }
     const currentClass = current.constructor;
     switch (currentClass) {
@@ -562,7 +666,9 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
   start<T>(current: T): void {
     const parsed = this.parseWithError(current);
     if (parsed) {
-      this.onParse(parsed, true);
+      this.onParseInternal(parsed, true);
+      this.initial = false;
+      this.flush();
 
       // Check if there's any pending pushes
       if (this.pending <= 0) {

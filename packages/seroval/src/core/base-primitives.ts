@@ -33,6 +33,7 @@ import type {
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalSetNode,
+  SerovalStreamConstructorNode,
   SerovalStringNode,
   SerovalTypedArrayNode,
   SerovalWKSymbolNode,
@@ -451,6 +452,30 @@ export function createAsyncIteratorFactoryInstanceNode(
     a: [
       factory,
       items,
+    ],
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
+}
+
+export function createStreamConstructorNode(
+  id: number,
+  factory: SerovalNodeWithID,
+  init: SerovalNode,
+): SerovalStreamConstructorNode {
+  return {
+    t: SerovalNodeType.StreamConstructor,
+    i: id,
+    s: undefined,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: [
+      factory,
+      init,
     ],
     f: undefined,
     b: undefined,

@@ -41,6 +41,10 @@ import type {
   SerovalRequestNode,
   SerovalResponseNode,
   SerovalSetNode,
+  SerovalStreamConstructorNode,
+  SerovalStreamNextNode,
+  SerovalStreamReturnNode,
+  SerovalStreamThrowNode,
   SerovalTypedArrayNode,
   SerovalURLNode,
   SerovalURLSearchParamsNode,
@@ -64,6 +68,8 @@ import { getTypedArrayConstructor } from '../utils/typed-array';
 import type { Deferred, DeferredStream } from '../utils/deferred';
 import { createDeferred, createDeferredStream } from '../utils/deferred';
 import assert from '../utils/assert';
+import type { Stream, StreamInit } from '../stream';
+import { createStream } from '../stream';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
@@ -527,6 +533,50 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     );
   }
 
+  private deserializeStreamConstructor(
+    node: SerovalStreamConstructorNode,
+  ): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      createStream(
+        this.deserialize(node.a[1]) as StreamInit,
+      ),
+    );
+  }
+
+  private deserializeStreamNext(
+    node: SerovalStreamNextNode,
+  ): unknown {
+    const deferred = this.refs.get(node.i) as Stream | undefined;
+    assert(deferred, new Error('Missing ReadableStream instance.'));
+    deferred.next(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializeStreamThrow(
+    node: SerovalStreamThrowNode,
+  ): unknown {
+    const deferred = this.refs.get(node.i) as Stream | undefined;
+    assert(deferred, new Error('Missing ReadableStream instance.'));
+    deferred.throw(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
+  private deserializeStreamReturn(
+    node: SerovalStreamReturnNode,
+  ): unknown {
+    const deferred = this.refs.get(node.i) as Stream | undefined;
+    assert(deferred, new Error('Missing ReadableStream instance.'));
+    deferred.return(
+      this.deserialize(node.f),
+    );
+    return undefined;
+  }
+
   deserialize(node: SerovalNode): unknown {
     switch (node.t) {
       case SerovalNodeType.Constant:
@@ -615,6 +665,14 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializeAsyncIteratorFactoryInstance(node);
       case SerovalNodeType.ReadableStream:
         return this.deserializeReadableStream(node);
+      case SerovalNodeType.StreamConstructor:
+        return this.deserializeStreamConstructor(node);
+      case SerovalNodeType.StreamNext:
+        return this.deserializeStreamNext(node);
+      case SerovalNodeType.StreamThrow:
+        return this.deserializeStreamThrow(node);
+      case SerovalNodeType.StreamReturn:
+        return this.deserializeStreamReturn(node);
       case SerovalNodeType.SpecialReference:
       case SerovalNodeType.IteratorFactory:
       case SerovalNodeType.AsyncIteratorFactory:

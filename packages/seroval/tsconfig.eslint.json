@@ -1,6 +1,6 @@
 {
   "exclude": ["node_modules"],
-  "include": ["src", "types", "test"],
+  "include": ["src", "types", "test", "plugins"],
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],

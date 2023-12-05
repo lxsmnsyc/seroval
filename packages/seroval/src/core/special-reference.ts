@@ -14,6 +14,7 @@ export const enum SpecialReference {
   ReadableStreamEnqueue = 6,
   ReadableStreamError = 7,
   ReadableStreamClose = 8,
+  StreamConstructor = 9,
 }
 
 export const SPECIAL_REFS: Record<SpecialReference, unknown> = {
@@ -26,4 +27,5 @@ export const SPECIAL_REFS: Record<SpecialReference, unknown> = {
   [SpecialReference.ReadableStreamEnqueue]: {},
   [SpecialReference.ReadableStreamError]: {},
   [SpecialReference.ReadableStreamClose]: {},
+  [SpecialReference.StreamConstructor]: {},
 };
