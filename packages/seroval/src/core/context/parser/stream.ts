@@ -422,7 +422,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
 
   protected parseStream(
     id: number,
-    current: Stream,
+    current: Stream<unknown>,
   ): SerovalNode {
     const result = createStreamConstructorNode(
       id,

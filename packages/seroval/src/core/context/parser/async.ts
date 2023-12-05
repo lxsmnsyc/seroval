@@ -505,7 +505,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
 
   private async parseStream(
     id: number,
-    current: Stream,
+    current: Stream<unknown>,
   ): Promise<SerovalStreamConstructorNode> {
     this.markRef(id);
     return createStreamConstructorNode(
