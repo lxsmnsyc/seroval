@@ -114,13 +114,13 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) | ✅ | ✅ | ✅ | |
 | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
 | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅[^7] | ❌[^6] | `seroval-plugins/web` |
-| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅[^7] | ❌[^6] | `seroval-plugins/web` |
+| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌[^6] | `seroval-plugins/web` |
+| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅ | ❌[^6] | `seroval-plugins/web` |
 | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
 | [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ✅[^5] | ✅ | ✅[^5] | `seroval-plugins/web` |
 | [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
-| [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ✅[^7] | ✅[^7] | `seroval-plugins/web` |
-| [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ✅[^7] | ✅[^7] | `seroval-plugins/web` |
+| [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
+| [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
 | [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
 | [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
 | [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) | ✅ | ✅ |  ✅ | `seroval-plugins/web` |
@@ -135,4 +135,3 @@ By default, all feature flags are enabled. The following are the feature flags a
 [^4]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
 [^5]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
 [^6]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data) while having a sync constructor, it cannot be represented in a way that the type is consistent to its original declaration.
-[^7]: Indirectly affected by the `Feature.TypedArray` flag.
