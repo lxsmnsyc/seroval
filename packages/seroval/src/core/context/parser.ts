@@ -165,9 +165,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     };
   }
 
-  protected parseAsyncIteratorFactory(
-    streaming: 0 | 1,
-  ): SerovalIndexedValueNode | SerovalAsyncIteratorFactoryNode {
+  protected parseAsyncIteratorFactory(): SerovalIndexedValueNode | SerovalAsyncIteratorFactoryNode {
     const registeredID = this.refs.get(ASYNC_ITERATOR);
     if (registeredID != null) {
       this.markRef(registeredID);
@@ -178,14 +176,17 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return {
       t: SerovalNodeType.AsyncIteratorFactory,
       i: id,
-      s: streaming,
+      s: undefined,
       l: undefined,
       c: undefined,
       m: undefined,
       p: undefined,
       e: undefined,
-      a: undefined,
-      f: this.parseWKSymbol(Symbol.asyncIterator),
+      a: [
+        this.parseSpecialReference(SpecialReference.PromiseConstructor),
+        this.parseWKSymbol(Symbol.asyncIterator),
+      ],
+      f: undefined,
       b: undefined,
       o: undefined,
     };

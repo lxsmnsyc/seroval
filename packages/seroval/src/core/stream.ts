@@ -110,6 +110,7 @@ export function createStreamFromAsyncIterable<T>(
         stream.return(value.value as T);
       } else {
         stream.next(value.value);
+        await push();
       }
     } catch (error) {
       stream.throw(error);

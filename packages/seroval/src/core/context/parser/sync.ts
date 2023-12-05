@@ -129,7 +129,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         );
         valueNodes.push(
           createAsyncIteratorFactoryInstanceNode(
-            this.parseAsyncIteratorFactory(1),
+            this.parseAsyncIteratorFactory(),
             this.parse(
               createStream(),
             ),

@@ -134,9 +134,11 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         );
         valueNodes.push(
           createAsyncIteratorFactoryInstanceNode(
-            this.parseAsyncIteratorFactory(0),
+            this.parseAsyncIteratorFactory(),
             await this.parse(
-              createStreamFromAsyncIterable(properties as unknown as AsyncIterable<unknown>),
+              createStreamFromAsyncIterable(
+                properties as unknown as AsyncIterable<unknown>,
+              ),
             ),
           ),
         );
@@ -328,6 +330,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         const sequence: SerovalNode[] = [];
         const cleanup = current.on({
           next: (value) => {
+            this.markRef(id);
             this.parse(value).then(
               (data) => {
                 sequence.push(
@@ -341,6 +344,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
             );
           },
           throw: (value) => {
+            this.markRef(id);
             this.parse(value).then(
               (data) => {
                 sequence.push(
@@ -356,6 +360,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
             );
           },
           return: (value) => {
+            this.markRef(id);
             this.parse(value).then(
               (data) => {
                 sequence.push(
