@@ -3,10 +3,6 @@ import type {
   SerovalPromiseConstructorNode,
   SerovalPromiseRejectNode,
   SerovalPromiseResolveNode,
-  SerovalReadableStreamCloseNode,
-  SerovalReadableStreamConstructorNode,
-  SerovalReadableStreamEnqueueNode,
-  SerovalReadableStreamErrorNode,
 } from '../types';
 import type { BaseSerializerContextOptions } from '../context/serializer';
 import BaseSerializerContext from '../context/serializer';
@@ -79,30 +75,6 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
 
   protected serializePromiseReject(
     node: SerovalPromiseRejectNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamConstructor(
-    node: SerovalReadableStreamConstructorNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamEnqueue(
-    node: SerovalReadableStreamEnqueueNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamError(
-    node: SerovalReadableStreamErrorNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamClose(
-    node: SerovalReadableStreamCloseNode,
   ): string {
     throw new Error('Unsupported node type "' + node.t + '".');
   }

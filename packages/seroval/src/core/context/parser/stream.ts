@@ -26,7 +26,6 @@ import type {
   SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
-  SerovalReadableStreamConstructorNode,
   SerovalRequestNode,
   SerovalResponseNode,
 } from '../../types';
@@ -177,106 +176,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       k: keyNodes,
       v: valueNodes,
       s: keyNodes.length,
-    };
-  }
-
-  private pushReadableStreamReader(
-    id: number,
-    reader: ReadableStreamDefaultReader,
-  ): void {
-    reader.read().then(
-      (data) => {
-        if (this.alive) {
-          if (data.done) {
-            this.onParse({
-              t: SerovalNodeType.ReadableStreamClose,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: undefined,
-              f: this.parseSpecialReference(SpecialReference.ReadableStreamClose),
-              b: undefined,
-              o: undefined,
-            });
-            this.popPendingState();
-          } else {
-            const parsed = this.parseWithError(data.value);
-            if (parsed) {
-              this.onParse({
-                t: SerovalNodeType.ReadableStreamEnqueue,
-                i: id,
-                s: undefined,
-                l: undefined,
-                c: undefined,
-                m: undefined,
-                p: undefined,
-                e: undefined,
-                a: [
-                  this.parseSpecialReference(SpecialReference.ReadableStreamEnqueue),
-                  parsed,
-                ],
-                f: undefined,
-                b: undefined,
-                o: undefined,
-              });
-              this.pushReadableStreamReader(id, reader);
-            }
-          }
-        }
-      },
-      (value) => {
-        if (this.alive) {
-          const parsed = this.parseWithError(value);
-          if (parsed) {
-            this.onParse({
-              t: SerovalNodeType.ReadableStreamError,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: [
-                this.parseSpecialReference(SpecialReference.ReadableStreamError),
-                parsed,
-              ],
-              f: undefined,
-              b: undefined,
-              o: undefined,
-            });
-          }
-          this.popPendingState();
-        }
-      },
-    );
-  }
-
-  private parseReadableStream(
-    id: number,
-    current: ReadableStream<unknown>,
-  ): SerovalReadableStreamConstructorNode {
-    const reader = current.getReader();
-    this.pushPendingState();
-    this.pushReadableStreamReader(id, reader);
-
-    return {
-      t: SerovalNodeType.ReadableStreamConstructor,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parseSpecialReference(SpecialReference.ReadableStreamConstructor),
-      b: undefined,
-      o: undefined,
     };
   }
 
@@ -564,8 +463,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof ReadableStream !== 'undefined' ? ReadableStream : UNIVERSAL_SENTINEL):
-          return this.parseReadableStream(id, current as unknown as ReadableStream);
         case (typeof Request !== 'undefined' ? Request : UNIVERSAL_SENTINEL):
           return this.parseRequest(id, current as unknown as Request);
         case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):

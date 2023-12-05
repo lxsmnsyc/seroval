@@ -219,20 +219,3 @@ export async function readableStreamToSequence<T>(
     d: doneAt,
   };
 }
-
-export function sequenceToReadableStream<T>(
-  sequence: Sequence,
-): ReadableStream<T> {
-  return new ReadableStream<T>({
-    start(controller): void {
-      for (let i = 0; i < sequence.d; i++) {
-        controller.enqueue(sequence.v[i] as T);
-      }
-      if (sequence.t === -1) {
-        controller.close();
-      } else {
-        controller.error(sequence.v[sequence.t] as T);
-      }
-    },
-  });
-}

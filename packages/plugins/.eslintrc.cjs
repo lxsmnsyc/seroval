@@ -13,6 +13,7 @@ module.exports = {
         "devDependencies": ["**/*.test.ts"]
       }
     ],
-    "prefer-template": "off"
+    "prefer-template": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   }
 };

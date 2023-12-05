@@ -40,15 +40,10 @@ import type {
   SerovalPromiseConstructorNode,
   SerovalPromiseResolveNode,
   SerovalPromiseRejectNode,
-  SerovalReadableStreamConstructorNode,
-  SerovalReadableStreamEnqueueNode,
-  SerovalReadableStreamErrorNode,
-  SerovalReadableStreamCloseNode,
   SerovalIteratorFactoryInstanceNode,
   SerovalIteratorFactoryNode,
   SerovalAsyncIteratorFactoryInstanceNode,
   SerovalAsyncIteratorFactoryNode,
-  SerovalReadableStreamNode,
   SerovalSpecialReferenceNode,
   SerovalNodeWithID,
   SerovalStreamConstructorNode,
@@ -938,48 +933,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.getConstructor(node.a[0]) + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.a[1]) + ')';
   }
 
-  protected serializeReadableStreamConstructor(
-    node: SerovalReadableStreamConstructorNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      this.getConstructor(node.f) + '()',
-    );
-  }
-
-  protected serializeReadableStreamEnqueue(
-    node: SerovalReadableStreamEnqueueNode,
-  ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.a[1]) + ')';
-  }
-
-  protected serializeReadableStreamError(
-    node: SerovalReadableStreamErrorNode,
-  ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.a[1]) + ')';
-  }
-
-  protected serializeReadableStreamClose(
-    node: SerovalReadableStreamCloseNode,
-  ): string {
-    return this.getConstructor(node.f) + '(' + this.getRefParam(node.i) + ')';
-  }
-
   private serializeSpecialReferenceValue(ref: SpecialReference): string {
     switch (ref) {
       case SpecialReference.MapSentinel:
         return '[]';
-      case SpecialReference.ReadableStream:
-        return this.createFunction(
-          ['s'],
-          'new ReadableStream({start:' + this.createFunction(
-            ['c'],
-            'Promise.resolve().then(' + this.createEffectfulFunction(
-              ['i', 'v'],
-              'for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])',
-            ) + ')',
-          ) + '})',
-        );
       case SpecialReference.PromiseConstructor:
         return this.createFunction(
           ['s', 'f', 'p'],
@@ -994,26 +951,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.createEffectfulFunction(
           ['p', 'd'],
           'p.f(d),p.status="failure",p.value=d;delete p.s;delete p.f',
-        );
-      case SpecialReference.ReadableStreamConstructor:
-        return this.createFunction(
-          ['s', 'c'],
-          '((s=new ReadableStream({start:' + this.createEffectfulFunction(['x'], 'c=x') + '})).c=c,s)',
-        );
-      case SpecialReference.ReadableStreamEnqueue:
-        return this.createEffectfulFunction(
-          ['s', 'd'],
-          's.c.enqueue(d)',
-        );
-      case SpecialReference.ReadableStreamError:
-        return this.createEffectfulFunction(
-          ['s', 'd'],
-          's.c.error(d);delete s.c',
-        );
-      case SpecialReference.ReadableStreamClose:
-        return this.createEffectfulFunction(
-          ['s'],
-          's.c.close();delete s.c',
         );
       case SpecialReference.StreamConstructor:
         return this.createFunction(
@@ -1090,18 +1027,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     node: SerovalAsyncIteratorFactoryInstanceNode,
   ): string {
     return this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')';
-  }
-
-  protected serializeReadableStream(
-    node: SerovalReadableStreamNode,
-  ): string {
-    this.stack.push(node.i);
-    const result = this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')';
-    this.stack.pop();
-    return this.assignIndexedValue(
-      node.i,
-      result,
-    );
   }
 
   protected serializeStreamConstructor(
@@ -1188,14 +1113,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePromiseResolve(node);
       case SerovalNodeType.PromiseReject:
         return this.serializePromiseReject(node);
-      case SerovalNodeType.ReadableStreamConstructor:
-        return this.serializeReadableStreamConstructor(node);
-      case SerovalNodeType.ReadableStreamEnqueue:
-        return this.serializeReadableStreamEnqueue(node);
-      case SerovalNodeType.ReadableStreamError:
-        return this.serializeReadableStreamError(node);
-      case SerovalNodeType.ReadableStreamClose:
-        return this.serializeReadableStreamClose(node);
       case SerovalNodeType.Request:
         return this.serializeRequest(node);
       case SerovalNodeType.Response:
@@ -1218,8 +1135,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializeAsyncIteratorFactory(node);
       case SerovalNodeType.AsyncIteratorFactoryInstance:
         return this.serializeAsyncIteratorFactoryInstance(node);
-      case SerovalNodeType.ReadableStream:
-        return this.serializeReadableStream(node);
       case SerovalNodeType.StreamConstructor:
         return this.serializeStreamConstructor(node);
       case SerovalNodeType.StreamNext:

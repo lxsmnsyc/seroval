@@ -27,11 +27,6 @@ import type {
   SerovalPromiseNode,
   SerovalPromiseRejectNode,
   SerovalPromiseResolveNode,
-  SerovalReadableStreamCloseNode,
-  SerovalReadableStreamConstructorNode,
-  SerovalReadableStreamEnqueueNode,
-  SerovalReadableStreamErrorNode,
-  SerovalReadableStreamNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
   SerovalRequestNode,
@@ -56,11 +51,10 @@ import {
   readableStreamToAsyncIterator,
   sequenceToAsyncIterator,
   sequenceToIterator,
-  sequenceToReadableStream,
 } from '../utils/iterator-to-sequence';
 import { getTypedArrayConstructor } from '../utils/typed-array';
-import type { Deferred, DeferredStream } from '../utils/deferred';
-import { createDeferred, createDeferredStream } from '../utils/deferred';
+import type { Deferred } from '../utils/deferred';
+import { createDeferred } from '../utils/deferred';
 import assert from '../utils/assert';
 import type { Stream } from '../stream';
 import { createStream } from '../stream';
@@ -398,40 +392,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     return undefined;
   }
 
-  private deserializeReadableStreamConstructor(
-    node: SerovalReadableStreamConstructorNode,
-  ): unknown {
-    return this.assignIndexedValue(
-      node.i,
-      createDeferredStream(),
-    ).stream;
-  }
-
-  private deserializeReadableStreamEnqueue(node: SerovalReadableStreamEnqueueNode): unknown {
-    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
-    assert(deferred, new Error('Missing ReadableStream instance.'));
-    deferred.enqueue(
-      this.deserialize(node.a[1]),
-    );
-    return undefined;
-  }
-
-  private deserializeReadableStreamError(node: SerovalReadableStreamErrorNode): unknown {
-    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
-    assert(deferred, new Error('Missing Promise instance.'));
-    deferred.error(
-      this.deserialize(node.a[1]),
-    );
-    return undefined;
-  }
-
-  private deserializeReadableStreamClose(node: SerovalReadableStreamCloseNode): unknown {
-    const deferred = this.refs.get(node.i) as DeferredStream | undefined;
-    assert(deferred, new Error('Missing Promise instance.'));
-    deferred.close();
-    return undefined;
-  }
-
   private deserializeIteratorFactoryInstance(
     node: SerovalIteratorFactoryInstanceNode,
   ): unknown {
@@ -451,31 +411,27 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     return sequenceToAsyncIterator(source as Sequence);
   }
 
-  private deserializeReadableStream(
-    node: SerovalReadableStreamNode,
-  ): unknown {
-    return this.assignIndexedValue(
-      node.i,
-      sequenceToReadableStream(
-        this.deserialize(node.a[1]) as Sequence,
-      ),
-    );
-  }
-
   private deserializeStreamConstructor(
     node: SerovalStreamConstructorNode,
   ): unknown {
-    return this.assignIndexedValue(
+    const result = this.assignIndexedValue(
       node.i,
       createStream(),
     );
+    const len = node.a.length;
+    if (len) {
+      for (let i = 0; i < len; i++) {
+        this.deserialize(node.a[i]);
+      }
+    }
+    return result;
   }
 
   private deserializeStreamNext(
     node: SerovalStreamNextNode,
   ): unknown {
     const deferred = this.refs.get(node.i) as Stream<unknown> | undefined;
-    assert(deferred, new Error('Missing ReadableStream instance.'));
+    assert(deferred, new Error('Missing Stream instance.'));
     deferred.next(
       this.deserialize(node.f),
     );
@@ -486,7 +442,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     node: SerovalStreamThrowNode,
   ): unknown {
     const deferred = this.refs.get(node.i) as Stream<unknown> | undefined;
-    assert(deferred, new Error('Missing ReadableStream instance.'));
+    assert(deferred, new Error('Missing Stream instance.'));
     deferred.throw(
       this.deserialize(node.f),
     );
@@ -497,7 +453,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     node: SerovalStreamReturnNode,
   ): unknown {
     const deferred = this.refs.get(node.i) as Stream<unknown> | undefined;
-    assert(deferred, new Error('Missing ReadableStream instance.'));
+    assert(deferred, new Error('Missing Stream instance.'));
     deferred.return(
       this.deserialize(node.f),
     );
@@ -566,20 +522,10 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializePromiseResolve(node);
       case SerovalNodeType.PromiseReject:
         return this.deserializePromiseReject(node);
-      case SerovalNodeType.ReadableStreamConstructor:
-        return this.deserializeReadableStreamConstructor(node);
-      case SerovalNodeType.ReadableStreamEnqueue:
-        return this.deserializeReadableStreamEnqueue(node);
-      case SerovalNodeType.ReadableStreamError:
-        return this.deserializeReadableStreamError(node);
-      case SerovalNodeType.ReadableStreamClose:
-        return this.deserializeReadableStreamClose(node);
       case SerovalNodeType.IteratorFactoryInstance:
         return this.deserializeIteratorFactoryInstance(node);
       case SerovalNodeType.AsyncIteratorFactoryInstance:
         return this.deserializeAsyncIteratorFactoryInstance(node);
-      case SerovalNodeType.ReadableStream:
-        return this.deserializeReadableStream(node);
       case SerovalNodeType.StreamConstructor:
         return this.deserializeStreamConstructor(node);
       case SerovalNodeType.StreamNext:

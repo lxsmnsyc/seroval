@@ -21,7 +21,7 @@ export function isStream<T>(value: object): value is Stream<T> {
 export function createStream<T>(): Stream<T> {
   const listeners = new Set<StreamListener<T>>();
   const buffer: unknown[] = [];
-  let done = true;
+  let alive = true;
   let success = false;
 
   function flushNext(value: T): void {
@@ -45,7 +45,7 @@ export function createStream<T>(): Stream<T> {
   return {
     __SEROVAL_STREAM__: true,
     on(listener: StreamListener<T>): () => void {
-      if (done) {
+      if (alive) {
         listeners.add(listener);
       }
       for (let i = 0, len = buffer.length; i < len; i++) {
@@ -61,31 +61,31 @@ export function createStream<T>(): Stream<T> {
         }
       }
       return () => {
-        if (done) {
+        if (alive) {
           listeners.delete(listener);
         }
       };
     },
     next(value): void {
-      if (done) {
+      if (alive) {
         buffer.push(value);
         flushNext(value);
       }
     },
     throw(value): void {
-      if (done) {
+      if (alive) {
         buffer.push(value);
         flushThrow(value);
-        done = false;
+        alive = false;
         success = false;
         listeners.clear();
       }
     },
     return(value): void {
-      if (done) {
+      if (alive) {
         buffer.push(value);
         flushReturn(value);
-        done = false;
+        alive = false;
         success = true;
         listeners.clear();
       }

@@ -42,7 +42,7 @@ import {
   FALSE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
-import { iteratorToSequence, readableStreamToSequence } from '../../utils/iterator-to-sequence';
+import { iteratorToSequence } from '../../utils/iterator-to-sequence';
 import { BaseParserContext } from '../parser';
 import promiseToResult from '../../utils/promise-to-result';
 import { getErrorOptions } from '../../utils/error';
@@ -69,14 +69,12 @@ import type {
   SerovalResponseNode,
   SerovalSetNode,
   SerovalDataViewNode,
-  SerovalReadableStreamNode,
   SerovalStreamConstructorNode,
 } from '../../types';
 import {
   createDOMExceptionNode,
   createEventNode,
   createCustomEventNode,
-  createReadableStreamNode,
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
@@ -396,19 +394,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     return undefined;
   }
 
-  private async parseReadableStream(
-    id: number,
-    current: ReadableStream,
-  ): Promise<SerovalReadableStreamNode> {
-    return createReadableStreamNode(
-      id,
-      this.parseSpecialReference(SpecialReference.ReadableStream),
-      await this.parse(
-        await readableStreamToSequence(current),
-      ),
-    );
-  }
-
   private async parseStream(
     id: number,
     current: Stream<unknown>,
@@ -581,8 +566,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           return this.parseCustomEvent(id, current as unknown as CustomEvent);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
-        case (typeof ReadableStream !== 'undefined' ? ReadableStream : UNIVERSAL_SENTINEL):
-          return this.parseReadableStream(id, current as unknown as ReadableStream);
         default:
           break;
       }
