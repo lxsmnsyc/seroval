@@ -149,7 +149,7 @@ export function asyncIteratorToReadableStream<T>(
 }
 
 type RSNext<T> = [0, T];
-type RSThrow = [1, any];
+type RSThrow = [1, unknown];
 type RSReturn<T> = [2, T];
 
 export type SerializedAsyncIteratorResult<T> = RSNext<T> | RSThrow | RSReturn<T>;

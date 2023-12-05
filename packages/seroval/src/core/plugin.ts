@@ -12,6 +12,7 @@ export interface PluginData {
 
 export interface Plugin<Value, Node> {
   tag: string;
+  extends?: Plugin<unknown, unknown>[];
   test(value: unknown): boolean;
   parse: {
     sync?: (
@@ -49,5 +50,31 @@ export function createPlugin<Value, Node>(
 }
 
 export interface PluginAccessOptions {
-  plugins?: Plugin<any, any>[];
+  plugins?: Plugin<unknown, unknown>[];
+}
+
+function dedupePlugins(
+  deduped: Set<Plugin<unknown, unknown>>,
+  plugins: Plugin<unknown, unknown>[],
+): void {
+  for (let i = 0, len = plugins.length; i < len; i++) {
+    const current = plugins[i];
+    if (!deduped.has(current)) {
+      deduped.add(current);
+      if (current.extends) {
+        dedupePlugins(deduped, current.extends);
+      }
+    }
+  }
+}
+
+export function resolvePlugins(
+  plugins?: Plugin<unknown, unknown>[],
+): Plugin<unknown, unknown>[] | undefined {
+  if (plugins) {
+    const deduped = new Set<Plugin<unknown, unknown>>();
+    dedupePlugins(deduped, plugins);
+    return [...deduped];
+  }
+  return undefined;
 }

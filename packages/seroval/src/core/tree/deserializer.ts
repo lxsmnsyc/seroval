@@ -12,10 +12,7 @@ export default class VanillaDeserializerContext extends BaseDeserializerContext 
   marked: Set<number>;
 
   constructor(options: VanillaDeserializerContextOptions) {
-    super({
-      plugins: options.plugins,
-      refs: undefined,
-    });
+    super(options);
     this.marked = new Set(options.markedRefs);
   }
 

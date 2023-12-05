@@ -1,10 +1,10 @@
-interface StreamListener<T = any> {
+interface StreamListener<T> {
   next(value: T): void;
   throw(value: unknown): void;
   return(value: T): void;
 }
 
-export interface Stream<T = any> {
+export interface Stream<T> {
   __SEROVAL_STREAM__: true;
 
   on(listener: StreamListener<T>): () => void;
@@ -18,7 +18,7 @@ export function isStream<T>(value: object): value is Stream<T> {
   return '__SEROVAL_STREAM__' in value;
 }
 
-export function createStream<T = any>(): Stream<T> {
+export function createStream<T>(): Stream<T> {
   const listeners = new Set<StreamListener<T>>();
   const buffer: unknown[] = [];
   let alive = true;

@@ -100,7 +100,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
    */
   refs: Map<number, unknown>;
 
-  plugins?: Plugin<any, any>[] | undefined;
+  plugins?: Plugin<unknown, unknown>[] | undefined;
 
   constructor(options: BaseDeserializerOptions) {
     this.plugins = options.plugins;
@@ -545,7 +545,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializeStreamNext(
     node: SerovalStreamNextNode,
   ): unknown {
-    const deferred = this.refs.get(node.i) as Stream | undefined;
+    const deferred = this.refs.get(node.i) as Stream<unknown> | undefined;
     assert(deferred, new Error('Missing ReadableStream instance.'));
     deferred.next(
       this.deserialize(node.f),
@@ -556,7 +556,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializeStreamThrow(
     node: SerovalStreamThrowNode,
   ): unknown {
-    const deferred = this.refs.get(node.i) as Stream | undefined;
+    const deferred = this.refs.get(node.i) as Stream<unknown> | undefined;
     assert(deferred, new Error('Missing ReadableStream instance.'));
     deferred.throw(
       this.deserialize(node.f),
@@ -567,7 +567,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializeStreamReturn(
     node: SerovalStreamReturnNode,
   ): unknown {
-    const deferred = this.refs.get(node.i) as Stream | undefined;
+    const deferred = this.refs.get(node.i) as Stream<unknown> | undefined;
     assert(deferred, new Error('Missing ReadableStream instance.'));
     deferred.return(
       this.deserialize(node.f),

@@ -70,7 +70,8 @@ import {
   createURLSearchParamsNode,
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
-import { Stream, isStream } from '../../stream';
+import type { Stream } from '../../stream';
+import { isStream } from '../../stream';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -351,7 +352,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
 
   protected parseStream(
     id: number,
-    current: Stream,
+    current: Stream<unknown>,
   ): SerovalNode {
     return createStreamConstructorNode(
       id,

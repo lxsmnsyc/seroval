@@ -25,7 +25,7 @@ export interface DeferredStream {
   stream: ReadableStream;
   close(): void;
   enqueue(chunk?: unknown): void;
-  error(e?: any): void;
+  error(e?: unknown): void;
 }
 
 export function createDeferredStream(): DeferredStream {

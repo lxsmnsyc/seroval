@@ -232,7 +232,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    */
   assignments: Assignment[] = [];
 
-  plugins?: Plugin<any, any>[] | undefined;
+  plugins?: Plugin<unknown, unknown>[] | undefined;
 
   /**
    * Refs that are...referenced
