@@ -2,7 +2,6 @@ import { SerovalNodeType } from './constants';
 import { serializeString } from './string';
 import type {
   SerovalDOMExceptionNode,
-  SerovalNode,
 } from './types';
 
 export function createDOMExceptionNode(
@@ -24,4 +23,3 @@ export function createDOMExceptionNode(
     o: undefined,
   };
 }
-

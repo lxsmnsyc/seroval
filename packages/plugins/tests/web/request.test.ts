@@ -53,7 +53,7 @@ describe('Request', () => {
     });
   });
   describe('crossSerializeAsync', () => {
-    it('supports Blob', async () => {
+    it('supports Request', async () => {
       const example = new Request(EXAMPLE_URL, {
         method: 'POST',
         body: EXAMPLE_BODY,
@@ -64,7 +64,7 @@ describe('Request', () => {
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
-      it('supports Blob', async () => {
+      it('supports Request', async () => {
         const example = new Request(EXAMPLE_URL, {
           method: 'POST',
           body: EXAMPLE_BODY,

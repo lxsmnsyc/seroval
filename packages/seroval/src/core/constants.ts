@@ -35,7 +35,6 @@ export const enum SerovalNodeType {
   PromiseConstructor = 28,
   PromiseResolve = 29,
   PromiseReject = 30,
-  Response = 36,
   DOMException = 39,
   Plugin = 40,
   SpecialReference = 41,

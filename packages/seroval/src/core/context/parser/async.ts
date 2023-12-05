@@ -31,9 +31,6 @@ import {
   SerovalNodeType,
 } from '../../constants';
 import {
-  createResponseOptions,
-} from '../../utils/constructors';
-import {
   NULL_NODE,
   TRUE_NODE,
   FALSE_NODE,
@@ -60,7 +57,6 @@ import type {
   SerovalMapNode,
   SerovalPlainRecordNode,
   SerovalPluginNode,
-  SerovalResponseNode,
   SerovalSetNode,
   SerovalDataViewNode,
   SerovalStreamConstructorNode,
@@ -278,31 +274,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     };
   }
 
-  private async parseResponse(
-    id: number,
-    current: Response,
-  ): Promise<SerovalResponseNode> {
-    return {
-      t: SerovalNodeType.Response,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      f: undefined,
-      a: [
-        current.body
-          ? await this.parse(await current.clone().arrayBuffer())
-          : NULL_NODE,
-        await this.parse(createResponseOptions(current)),
-      ],
-      b: undefined,
-      o: undefined,
-    };
-  }
-
   private async parsePromise(
     id: number,
     current: Promise<unknown>,
@@ -507,8 +478,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
-          return this.parseResponse(id, current as unknown as Response);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
         default:

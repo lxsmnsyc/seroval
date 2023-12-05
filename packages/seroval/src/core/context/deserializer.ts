@@ -27,7 +27,6 @@ import type {
   SerovalPromiseResolveNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
-  SerovalResponseNode,
   SerovalSetNode,
   SerovalStreamConstructorNode,
   SerovalStreamNextNode,
@@ -287,18 +286,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     );
   }
 
-  private deserializeResponse(
-    node: SerovalResponseNode,
-  ): Response {
-    return this.assignIndexedValue(
-      node.i,
-      new Response(
-        this.deserialize(node.a[0]) as BodyInit,
-        this.deserialize(node.a[1]) as ResponseInit,
-      ),
-    );
-  }
-
   private deserializeDOMException(
     node: SerovalDOMExceptionNode,
   ): DOMException {
@@ -461,8 +448,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return SYMBOL_REF[node.s];
       case SerovalNodeType.Boxed:
         return this.deserializeBoxed(node);
-      case SerovalNodeType.Response:
-        return this.deserializeResponse(node);
       case SerovalNodeType.DOMException:
         return this.deserializeDOMException(node);
       case SerovalNodeType.Plugin:

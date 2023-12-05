@@ -17,8 +17,7 @@ import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import { SerovalNodeType } from '../../constants';
-import { createResponseOptions } from '../../utils/constructors';
-import { FALSE_NODE, NULL_NODE, TRUE_NODE } from '../../literals';
+import { FALSE_NODE, TRUE_NODE } from '../../literals';
 import { serializeString } from '../../string';
 import type {
   SerovalNode,
@@ -26,7 +25,6 @@ import type {
   SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
-  SerovalResponseNode,
 } from '../../types';
 import { createDOMExceptionNode } from '../../web-api';
 import { iteratorToSequence } from '../../utils/iterator-to-sequence';
@@ -175,31 +173,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       k: keyNodes,
       v: valueNodes,
       s: keyNodes.length,
-    };
-  }
-
-  private parseResponse(
-    id: number,
-    current: Response,
-  ): SerovalResponseNode {
-    return {
-      t: SerovalNodeType.Response,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      f: undefined,
-      a: [
-        current.body
-          ? this.parse(current.clone().body)
-          : NULL_NODE,
-        this.parse(createResponseOptions(current)),
-      ],
-      b: undefined,
-      o: undefined,
     };
   }
 
@@ -440,8 +413,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
-          return this.parseResponse(id, current as unknown as Response);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
         default:
