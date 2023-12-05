@@ -6,6 +6,6 @@ exports[`Blob > crossSerializeAsync > supports Blob 1`] = `"$R[0]=new Blob([$R[1
 
 exports[`Blob > serializeAsync > supports Blob 1`] = `"new Blob([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:"text/plain"})"`;
 
-exports[`Blob > toCrossJSONAsync > supports Blob 1`] = `"{"t":40,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":21,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/url"}"`;
+exports[`Blob > toCrossJSONAsync > supports Blob 1`] = `"{"t":40,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":21,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/Blob"}"`;
 
-exports[`Blob > toJSONAsync > supports Blob 1`] = `"{"t":{"t":40,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":21,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/url"},"f":16383,"m":[]}"`;
+exports[`Blob > toJSONAsync > supports Blob 1`] = `"{"t":{"t":40,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":21,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/Blob"},"f":16383,"m":[]}"`;
