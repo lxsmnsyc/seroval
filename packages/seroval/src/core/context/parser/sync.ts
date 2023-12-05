@@ -50,7 +50,6 @@ import type {
   SerovalSetNode,
   SerovalPluginNode,
   SerovalAggregateErrorNode,
-  SerovalEventNode,
   SerovalPlainRecordNode,
   SerovalTypedArrayNode,
   SerovalBigIntTypedArrayNode,
@@ -58,7 +57,6 @@ import type {
 } from '../../types';
 import {
   createDOMExceptionNode,
-  createEventNode,
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
@@ -271,13 +269,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  protected parseEvent(
-    id: number,
-    current: Event,
-  ): SerovalEventNode {
-    return createEventNode(id, current.type, this.parse(createEventOptions(current)));
-  }
-
   protected parsePlugin(
     id: number,
     current: unknown,
@@ -407,8 +398,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):
-          return this.parseEvent(id, current as unknown as Event);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
         default:

@@ -467,8 +467,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
           return this.parseRequest(id, current as unknown as Request);
         case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
           return this.parseResponse(id, current as unknown as Response);
-        case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):
-          return this.parseEvent(id, current as unknown as Event);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
         default:

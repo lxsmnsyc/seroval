@@ -33,7 +33,6 @@ import {
 import {
   createRequestOptions,
   createResponseOptions,
-  createEventOptions,
 } from '../../utils/constructors';
 import {
   NULL_NODE,
@@ -59,7 +58,6 @@ import type {
   SerovalPromiseNode,
   SerovalTypedArrayNode,
   SerovalAggregateErrorNode,
-  SerovalEventNode,
   SerovalMapNode,
   SerovalPlainRecordNode,
   SerovalPluginNode,
@@ -71,7 +69,6 @@ import type {
 } from '../../types';
 import {
   createDOMExceptionNode,
-  createEventNode,
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
@@ -330,13 +327,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     };
   }
 
-  private async parseEvent(
-    id: number,
-    current: Event,
-  ): Promise<SerovalEventNode> {
-    return createEventNode(id, current.type, await this.parse(createEventOptions(current)));
-  }
-
   private async parsePromise(
     id: number,
     current: Promise<unknown>,
@@ -545,8 +535,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           return this.parseRequest(id, current as unknown as Request);
         case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
           return this.parseResponse(id, current as unknown as Response);
-        case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):
-          return this.parseEvent(id, current as unknown as Event);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
         default:
