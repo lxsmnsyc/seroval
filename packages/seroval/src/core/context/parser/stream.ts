@@ -17,7 +17,7 @@ import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import { SerovalNodeType } from '../../constants';
-import { createRequestOptions, createResponseOptions } from '../../utils/constructors';
+import { createResponseOptions } from '../../utils/constructors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE } from '../../literals';
 import { serializeString } from '../../string';
 import type {
@@ -26,7 +26,6 @@ import type {
   SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
-  SerovalRequestNode,
   SerovalResponseNode,
 } from '../../types';
 import { createDOMExceptionNode } from '../../web-api';
@@ -176,28 +175,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       k: keyNodes,
       v: valueNodes,
       s: keyNodes.length,
-    };
-  }
-
-  private parseRequest(
-    id: number,
-    current: Request,
-  ): SerovalRequestNode {
-    return {
-      t: SerovalNodeType.Request,
-      i: id,
-      s: serializeString(current.url),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      f: this.parse(
-        createRequestOptions(current, current.clone().body),
-      ),
-      a: undefined,
-      b: undefined,
-      o: undefined,
     };
   }
 
@@ -463,8 +440,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof Request !== 'undefined' ? Request : UNIVERSAL_SENTINEL):
-          return this.parseRequest(id, current as unknown as Request);
         case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
           return this.parseResponse(id, current as unknown as Response);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):

@@ -31,7 +31,6 @@ import {
   SerovalNodeType,
 } from '../../constants';
 import {
-  createRequestOptions,
   createResponseOptions,
 } from '../../utils/constructors';
 import {
@@ -61,7 +60,6 @@ import type {
   SerovalMapNode,
   SerovalPlainRecordNode,
   SerovalPluginNode,
-  SerovalRequestNode,
   SerovalResponseNode,
   SerovalSetNode,
   SerovalDataViewNode,
@@ -277,28 +275,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       k: keyNodes,
       v: valueNodes,
       s: size,
-    };
-  }
-
-  private async parseRequest(
-    id: number,
-    current: Request,
-  ): Promise<SerovalRequestNode> {
-    return {
-      t: SerovalNodeType.Request,
-      i: id,
-      s: serializeString(current.url),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      f: await this.parse(
-        createRequestOptions(current, current.body ? await current.clone().arrayBuffer() : null),
-      ),
-      a: undefined,
-      b: undefined,
-      o: undefined,
     };
   }
 
@@ -531,8 +507,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof Request !== 'undefined' ? Request : UNIVERSAL_SENTINEL):
-          return this.parseRequest(id, current as unknown as Request);
         case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
           return this.parseResponse(id, current as unknown as Response);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):

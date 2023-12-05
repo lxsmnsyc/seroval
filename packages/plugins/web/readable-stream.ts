@@ -113,15 +113,12 @@ const ReadableStreamPlugin = /* @__PURE__ */createPlugin<ReadableStream, Readabl
       start(controller): void {
         stream.on({
           next(value) {
-            console.log('next', value);
             controller.enqueue(value);
           },
           throw(value) {
-            console.log('throw', value);
             controller.error(value);
           },
           return() {
-            console.log('return');
             controller.close();
           },
         });

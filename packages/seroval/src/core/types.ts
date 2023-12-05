@@ -274,15 +274,6 @@ export interface SerovalPromiseRejectNode extends SerovalBaseNode {
   ];
 }
 
-export interface SerovalRequestNode extends SerovalBaseNode {
-  t: SerovalNodeType.Request;
-  i: number;
-  // Request URL
-  s: string;
-  // This is just a shortcut for serializing the option fields
-  f: SerovalNode;
-}
-
 export interface SerovalResponseNode extends SerovalBaseNode {
   t: SerovalNodeType.Response;
   i: number;
@@ -400,7 +391,6 @@ export type SerovalAsyncNode =
   | SerovalPromiseConstructorNode
   | SerovalPromiseResolveNode
   | SerovalPromiseRejectNode
-  | SerovalRequestNode
   | SerovalResponseNode
   | SerovalStreamConstructorNode
   | SerovalStreamNextNode
