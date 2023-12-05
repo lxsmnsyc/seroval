@@ -62,7 +62,6 @@ import type {
   SerovalAggregateErrorNode,
   SerovalCustomEventNode,
   SerovalEventNode,
-  SerovalFormDataNode,
   SerovalMapNode,
   SerovalPlainRecordNode,
   SerovalPluginNode,
@@ -286,30 +285,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       k: keyNodes,
       v: valueNodes,
       s: size,
-    };
-  }
-
-  private async parseFormData(
-    id: number,
-    current: FormData,
-  ): Promise<SerovalFormDataNode> {
-    const items: [key: string, value: FormDataEntryValue][] = [];
-    current.forEach((value, key) => {
-      items.push([key, value]);
-    });
-    return {
-      t: SerovalNodeType.FormData,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: await this.parsePlainProperties(items),
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
     };
   }
 
@@ -596,8 +571,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):
-          return this.parseFormData(id, current as unknown as FormData);
         case (typeof Request !== 'undefined' ? Request : UNIVERSAL_SENTINEL):
           return this.parseRequest(id, current as unknown as Request);
         case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):

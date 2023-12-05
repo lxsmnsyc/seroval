@@ -244,12 +244,6 @@ export interface SerovalDataViewNode extends SerovalBaseNode {
   b: number;
 }
 
-export interface SerovalFormDataNode extends SerovalBaseNode {
-  t: SerovalNodeType.FormData;
-  i: number;
-  e: SerovalPlainRecordNode;
-}
-
 export interface SerovalBoxedNode extends SerovalBaseNode {
   t: SerovalNodeType.Boxed;
   i: number;
@@ -445,7 +439,6 @@ export type SerovalSyncNode =
   | SerovalReferenceNode
   | SerovalArrayBufferNode
   | SerovalDataViewNode
-  | SerovalFormDataNode
   | SerovalBoxedNode
   | SerovalEventNode
   | SerovalCustomEventNode

@@ -25,9 +25,6 @@ import {
 } from '../../base-primitives';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import type { WellKnownSymbols } from '../../constants';
-import {
-  SerovalNodeType,
-} from '../../constants';
 import { createCustomEventOptions, createEventOptions } from '../../utils/constructors';
 import {
   FALSE_NODE,
@@ -57,7 +54,6 @@ import type {
   SerovalCustomEventNode,
   SerovalEventNode,
   SerovalPlainRecordNode,
-  SerovalFormDataNode,
   SerovalTypedArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
@@ -278,30 +274,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  protected parseFormData(
-    id: number,
-    current: FormData,
-  ): SerovalFormDataNode {
-    const items: [key: string, value: unknown][] = [];
-    current.forEach((value, key) => {
-      items.push([key, value]);
-    });
-    return {
-      t: SerovalNodeType.FormData,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: this.parsePlainProperties(items),
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
-  }
-
   protected parseEvent(
     id: number,
     current: Event,
@@ -445,8 +417,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):
-          return this.parseFormData(id, current as unknown as FormData);
         case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):
           return this.parseEvent(id, current as unknown as Event);
         case (typeof CustomEvent !== 'undefined' ? CustomEvent : UNIVERSAL_SENTINEL):

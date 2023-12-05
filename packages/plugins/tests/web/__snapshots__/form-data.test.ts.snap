@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FormData > crossSerialize > scoped > supports FormData 1`] = `"($R=>$R[0]=($R[1]=(e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})($R[2]=[$R[3]=["hello","world"],$R[4]=["foo","bar"]]))($R["example"])"`;
+
+exports[`FormData > crossSerialize > supports FormData 1`] = `"$R[0]=($R[1]=(e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})($R[2]=[$R[3]=["hello","world"],$R[4]=["foo","bar"]])"`;
+
+exports[`FormData > crossSerializeAsync > scoped > supports FormData 1`] = `"($R=>$R[0]=($R[1]=(e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})($R[2]=[$R[3]=["hello-world",$R[4]=new File([$R[6]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],"hello.txt",$R[5]={type:"text/plain",lastModified:1681027542680})],$R[7]=["foo-bar",$R[8]=new File([$R[10]=new Uint8Array([70,111,111,32,66,97,114]).buffer],"foo-bar.txt",$R[9]={type:"text/plain",lastModified:1681027542680})]]))($R["example"])"`;
+
+exports[`FormData > crossSerializeAsync > supports FormData 1`] = `"$R[0]=($R[1]=(e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})($R[2]=[$R[3]=["hello-world",$R[4]=new File([$R[6]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],"hello.txt",$R[5]={type:"text/plain",lastModified:1681027542680})],$R[7]=["foo-bar",$R[8]=new File([$R[10]=new Uint8Array([70,111,111,32,66,97,114]).buffer],"foo-bar.txt",$R[9]={type:"text/plain",lastModified:1681027542680})]])"`;
+
+exports[`FormData > crossSerializeStream > scoped > supports FormData 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+
+exports[`FormData > crossSerializeStream > scoped > supports FormData 2`] = `"($R=>($R[7]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=($R[3]=(e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})($R[4]=[$R[5]=["hello","world"],$R[6]=["foo","bar"]])))($R["example"])"`;
+
+exports[`FormData > crossSerializeStream > supports FormData 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+
+exports[`FormData > crossSerializeStream > supports FormData 2`] = `"($R[7]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=($R[3]=(e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})($R[4]=[$R[5]=["hello","world"],$R[6]=["foo","bar"]]))"`;
+
+exports[`FormData > serialize > supports FormData 1`] = `"((e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})([["hello","world"],["foo","bar"]])"`;
+
+exports[`FormData > serializeAsync > supports FormData 1`] = `"((e,f,i,s,t)=>{f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f})([["hello-world",new File([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],"hello.txt",{type:"text/plain",lastModified:1681027542680})],["foo-bar",new File([new Uint8Array([70,111,111,32,66,97,114]).buffer],"foo-bar.txt",{type:"text/plain",lastModified:1681027542680})]])"`;
+
+exports[`FormData > toCrossJSON > supports FormData 1`] = `"{"t":40,"i":0,"s":{"factory":{"t":40,"i":1,"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"l":2,"a":[{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"hello"},{"t":1,"s":"world"}],"o":0},{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"foo"},{"t":1,"s":"bar"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"}"`;
+
+exports[`FormData > toCrossJSONAsync > supports FormData 1`] = `"{"t":40,"i":0,"s":{"factory":{"t":40,"i":1,"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"l":2,"a":[{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"hello-world"},{"t":40,"i":4,"s":{"name":{"t":1,"s":"hello.txt"},"options":{"t":10,"i":5,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}],"s":2},"o":0},"buffer":{"t":21,"i":6,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/File"}],"o":0},{"t":9,"i":7,"l":2,"a":[{"t":1,"s":"foo-bar"},{"t":40,"i":8,"s":{"name":{"t":1,"s":"foo-bar.txt"},"options":{"t":10,"i":9,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}],"s":2},"o":0},"buffer":{"t":21,"i":10,"s":[70,111,111,32,66,97,114]}},"c":"seroval-plugins/web/File"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"}"`;
+
+exports[`FormData > toCrossJSONStream > supports FormData 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+
+exports[`FormData > toCrossJSONStream > supports FormData 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":7,"s":3},{"t":40,"i":2,"s":{"factory":{"t":40,"i":3,"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":4,"l":2,"a":[{"t":9,"i":5,"l":2,"a":[{"t":1,"s":"hello"},{"t":1,"s":"world"}],"o":0},{"t":9,"i":6,"l":2,"a":[{"t":1,"s":"foo"},{"t":1,"s":"bar"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"}]}"`;
+
+exports[`FormData > toJSON > supports FormData 1`] = `"{"t":{"t":40,"i":0,"s":{"factory":{"t":40,"i":1,"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"l":2,"a":[{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"hello"},{"t":1,"s":"world"}],"o":0},{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"foo"},{"t":1,"s":"bar"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"},"f":16383,"m":[]}"`;
+
+exports[`FormData > toJSONAsync > supports FormData 1`] = `"{"t":{"t":40,"i":0,"s":{"factory":{"t":40,"i":1,"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"l":2,"a":[{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"hello-world"},{"t":40,"i":4,"s":{"name":{"t":1,"s":"hello.txt"},"options":{"t":10,"i":5,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}],"s":2},"o":0},"buffer":{"t":21,"i":6,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/File"}],"o":0},{"t":9,"i":7,"l":2,"a":[{"t":1,"s":"foo-bar"},{"t":40,"i":8,"s":{"name":{"t":1,"s":"foo-bar.txt"},"options":{"t":10,"i":9,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}],"s":2},"o":0},"buffer":{"t":21,"i":10,"s":[70,111,111,32,66,97,114]}},"c":"seroval-plugins/web/File"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"},"f":16383,"m":[]}"`;

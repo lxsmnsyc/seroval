@@ -30,7 +30,6 @@ import type {
   SerovalErrorNode,
   SerovalPromiseNode,
   SerovalWKSymbolNode,
-  SerovalFormDataNode,
   SerovalBoxedNode,
   SerovalRequestNode,
   SerovalResponseNode,
@@ -242,7 +241,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
 
   abstract readonly mode: SerovalMode;
 
-  protected createFunction(
+  createFunction(
     parameters: string[],
     body: string,
   ): string {
@@ -255,7 +254,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return 'function(' + parameters.join(',') + '){return ' + body + '}';
   }
 
-  protected createEffectfulFunction(
+  createEffectfulFunction(
     parameters: string[],
     body: string,
   ): string {
@@ -845,36 +844,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.getRefParam(id) + '.append("' + key + '",' + this.serialize(value) + ')';
   }
 
-  protected serializeFormDataEntries(
-    node: SerovalFormDataNode,
-    size: number,
-  ): string {
-    const keys = node.e.k;
-    const vals = node.e.v;
-    const id = node.i;
-    let result = this.serializeFormDataEntry(id, keys[0], vals[0]);
-    for (let i = 1; i < size; i++) {
-      result += ',' + this.serializeFormDataEntry(id, keys[i], vals[i]);
-    }
-    return result;
-  }
-
-  protected serializeFormData(
-    node: SerovalFormDataNode,
-  ): string {
-    const size = node.e.s;
-    const id = node.i;
-    if (size) {
-      this.markRef(id);
-    }
-    const result = this.assignIndexedValue(id, 'new FormData()');
-    if (size) {
-      const entries = this.serializeFormDataEntries(node, size);
-      return '(' + result + ',' + (entries ? entries + ',' : '') + this.getRefParam(id) + ')';
-    }
-    return result;
-  }
-
   protected serializeBoxed(
     node: SerovalBoxedNode,
   ): string {
@@ -1211,8 +1180,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePromise(node);
       case SerovalNodeType.WKSymbol:
         return this.serializeWKSymbol(node);
-      case SerovalNodeType.FormData:
-        return this.serializeFormData(node);
       case SerovalNodeType.Boxed:
         return this.serializeBoxed(node);
       case SerovalNodeType.PromiseConstructor:

@@ -564,8 +564,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):
-          return this.parseFormData(id, current as unknown as FormData);
         case (typeof ReadableStream !== 'undefined' ? ReadableStream : UNIVERSAL_SENTINEL):
           return this.parseReadableStream(id, current as unknown as ReadableStream);
         case (typeof Request !== 'undefined' ? Request : UNIVERSAL_SENTINEL):

@@ -15,7 +15,6 @@ import type {
   SerovalDateNode,
   SerovalErrorNode,
   SerovalEventNode,
-  SerovalFormDataNode,
   SerovalIteratorFactoryInstanceNode,
   SerovalMapNode,
   SerovalNode,
@@ -290,21 +289,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     return result.promise;
   }
 
-  private deserializeFormData(
-    node: SerovalFormDataNode,
-  ): FormData {
-    const result = this.assignIndexedValue(node.i, new FormData());
-    const keys = node.e.k;
-    const vals = node.e.v;
-    for (let i = 0, len = node.e.s; i < len; i++) {
-      result.set(
-        deserializeString(keys[i]),
-        this.deserialize(vals[i]) as FormDataEntryValue,
-      );
-    }
-    return result;
-  }
-
   private deserializeBoxed(
     node: SerovalBoxedNode,
   ): unknown {
@@ -562,8 +546,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializePromise(node);
       case SerovalNodeType.WKSymbol:
         return SYMBOL_REF[node.s];
-      case SerovalNodeType.FormData:
-        return this.deserializeFormData(node);
       case SerovalNodeType.Boxed:
         return this.deserializeBoxed(node);
       case SerovalNodeType.Request:
