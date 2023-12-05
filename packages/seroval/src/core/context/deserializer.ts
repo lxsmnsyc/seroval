@@ -8,7 +8,6 @@ import type {
   SerovalArrayNode,
   SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntTypedArrayNode,
-  SerovalBlobNode,
   SerovalBoxedNode,
   SerovalCustomEventNode,
   SerovalDOMExceptionNode,
@@ -291,17 +290,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
       deferred.reject(deserialized);
     }
     return result.promise;
-  }
-
-  private deserializeBlob(
-    node: SerovalBlobNode,
-  ): Blob {
-    const source = this.deserialize(node.f) as ArrayBuffer;
-    const result = this.assignIndexedValue(node.i, new Blob(
-      [source],
-      { type: deserializeString(node.c) },
-    ));
-    return result;
   }
 
   private deserializeFile(
@@ -603,8 +591,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializePromise(node);
       case SerovalNodeType.WKSymbol:
         return SYMBOL_REF[node.s];
-      case SerovalNodeType.Blob:
-        return this.deserializeBlob(node);
       case SerovalNodeType.File:
         return this.deserializeFile(node);
       case SerovalNodeType.Headers:

@@ -31,7 +31,6 @@ export const enum SerovalNodeType {
   Reference = 20,
   ArrayBuffer = 21,
   DataView = 22,
-  Blob = 23,
   File = 24,
   Headers = 25,
   FormData = 26,
