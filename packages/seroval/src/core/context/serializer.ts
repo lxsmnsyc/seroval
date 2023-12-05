@@ -1089,22 +1089,28 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         );
       case SpecialReference.StreamConstructor:
         return this.createFunction(
-          ['b', 'a', 's', 'l', 'p', 'f'],
+          ['b', 'a', 's', 'l', 'p', 'f', 'e', 'n'],
           '(b=[],a=!0,s=!1,l=[],s=0,f=' + this.createEffectfulFunction(
             ['v', 'm', 'x'],
             'for(x=0;x<s;x++)l[x]&&l[x][m](v)',
-          ) + ',{__SEROVAL_STREAM__:!0,on:' + this.createEffectfulFunction(
-            ['o', 't', 'x', 'z', 'c'],
-            'l[t=p++]=o;for(x=0,z=b.length;x<z;x++)(c=b[x],x===z-1?o[s?"return":"throw"](c):o.next(c));return ' + this.createEffectfulFunction([], 'l[t]=void 0'),
+          ) + ',n=' + this.createEffectfulFunction(
+            ['o', 'x', 'z', 'c'],
+            'for(x=0,z=b.length;x<z;x++)(c=b[x],x===z-1?o[s?"return":"throw"](c):o.next(c))',
+          ) + ',e=' + this.createFunction(
+            ['o', 't'],
+            '(a&&(l[t=p++]=o),n(o),' + this.createEffectfulFunction([], 'a&&(l[t]=void 0)') + ')',
+          ) + ',{__SEROVAL_STREAM__:!0,on:' + this.createFunction(
+            ['o'],
+            'e(o)',
           ) + ',next:' + this.createEffectfulFunction(
             ['v'],
             'a&&(b.push(v),f(v,"next"))',
           ) + ',throw:' + this.createEffectfulFunction(
             ['v'],
-            'a&&(b.push(v),f(v,"throw"),a=s=!1)',
+            'a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)',
           ) + ',return:' + this.createEffectfulFunction(
             ['v'],
-            'a&&(b.push(v),f(v,"return"),a=!1,s=!0)',
+            'a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)',
           ) + '})',
         );
       default:
