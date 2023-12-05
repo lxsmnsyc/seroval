@@ -2,7 +2,7 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
 const URLPlugin = /* @__PURE__ */createPlugin<URL, SerovalNode>({
-  tag: 'seroval-plugins/web/url',
+  tag: 'seroval-plugins/web/URL',
   test(value) {
     if (typeof URL === 'undefined') {
       return false;

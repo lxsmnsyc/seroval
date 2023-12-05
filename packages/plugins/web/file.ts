@@ -8,7 +8,7 @@ interface FileNode {
 }
 
 const FilePlugin = /* @__PURE__ */createPlugin<File, FileNode>({
-  tag: 'seroval-plugins/web/url',
+  tag: 'seroval-plugins/web/File',
   test(value) {
     if (typeof File === 'undefined') {
       return false;

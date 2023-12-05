@@ -2,7 +2,7 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
 const URLSearchParamsPlugin = /* @__PURE__ */createPlugin<URLSearchParams, SerovalNode>({
-  tag: 'seroval-plugins/web/url-search-params',
+  tag: 'seroval-plugins/web/URLSearchParams',
   test(value) {
     if (typeof URLSearchParams === 'undefined') {
       return false;

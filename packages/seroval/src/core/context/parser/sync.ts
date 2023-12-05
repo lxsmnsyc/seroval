@@ -56,7 +56,6 @@ import type {
   SerovalAggregateErrorNode,
   SerovalCustomEventNode,
   SerovalEventNode,
-  SerovalHeadersNode,
   SerovalPlainRecordNode,
   SerovalFormDataNode,
   SerovalTypedArrayNode,
@@ -279,30 +278,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  protected parseHeaders(
-    id: number,
-    current: Headers,
-  ): SerovalHeadersNode {
-    const items: [key: string, value: unknown][] = [];
-    current.forEach((value, key) => {
-      items.push([key, value]);
-    });
-    return {
-      t: SerovalNodeType.Headers,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: this.parsePlainProperties(items),
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
-  }
-
   protected parseFormData(
     id: number,
     current: FormData,
@@ -470,8 +445,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof Headers !== 'undefined' ? Headers : UNIVERSAL_SENTINEL):
-          return this.parseHeaders(id, current as unknown as Headers);
         case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):
           return this.parseFormData(id, current as unknown as FormData);
         case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):

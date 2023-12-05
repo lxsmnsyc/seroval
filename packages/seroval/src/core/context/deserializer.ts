@@ -16,7 +16,6 @@ import type {
   SerovalErrorNode,
   SerovalEventNode,
   SerovalFormDataNode,
-  SerovalHeadersNode,
   SerovalIteratorFactoryInstanceNode,
   SerovalMapNode,
   SerovalNode,
@@ -291,21 +290,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     return result.promise;
   }
 
-  private deserializeHeaders(
-    node: SerovalHeadersNode,
-  ): Headers {
-    const result = this.assignIndexedValue(node.i, new Headers());
-    const keys = node.e.k;
-    const vals = node.e.v;
-    for (let i = 0, len = node.e.s; i < len; i++) {
-      result.set(
-        deserializeString(keys[i]),
-        this.deserialize(vals[i]) as string,
-      );
-    }
-    return result;
-  }
-
   private deserializeFormData(
     node: SerovalFormDataNode,
   ): FormData {
@@ -578,8 +562,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializePromise(node);
       case SerovalNodeType.WKSymbol:
         return SYMBOL_REF[node.s];
-      case SerovalNodeType.Headers:
-        return this.deserializeHeaders(node);
       case SerovalNodeType.FormData:
         return this.deserializeFormData(node);
       case SerovalNodeType.Boxed:

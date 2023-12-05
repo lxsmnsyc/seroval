@@ -22,7 +22,7 @@ export interface SerovalBaseNode {
   m: string | undefined;
   // properties (objects)
   p: SerovalObjectRecordNode | undefined;
-  // entries (for Map, Headers, etc.)
+  // entries (for Map, etc.)
   e: SerovalMapRecordNode | SerovalPlainRecordNode | undefined;
   // array of nodes
   a: (SerovalNode | undefined)[] | undefined;
@@ -244,12 +244,6 @@ export interface SerovalDataViewNode extends SerovalBaseNode {
   b: number;
 }
 
-export interface SerovalHeadersNode extends SerovalBaseNode {
-  t: SerovalNodeType.Headers;
-  i: number;
-  e: SerovalPlainRecordNode;
-}
-
 export interface SerovalFormDataNode extends SerovalBaseNode {
   t: SerovalNodeType.FormData;
   i: number;
@@ -451,7 +445,6 @@ export type SerovalSyncNode =
   | SerovalReferenceNode
   | SerovalArrayBufferNode
   | SerovalDataViewNode
-  | SerovalHeadersNode
   | SerovalFormDataNode
   | SerovalBoxedNode
   | SerovalEventNode

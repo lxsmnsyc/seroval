@@ -7,7 +7,7 @@ interface BlobNode {
 }
 
 const BlobPlugin = /* @__PURE__ */createPlugin<Blob, BlobNode>({
-  tag: 'seroval-plugins/web/url',
+  tag: 'seroval-plugins/web/Blob',
   test(value) {
     if (typeof Blob === 'undefined') {
       return false;

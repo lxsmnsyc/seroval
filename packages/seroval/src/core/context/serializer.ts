@@ -30,7 +30,6 @@ import type {
   SerovalErrorNode,
   SerovalPromiseNode,
   SerovalWKSymbolNode,
-  SerovalHeadersNode,
   SerovalFormDataNode,
   SerovalBoxedNode,
   SerovalRequestNode,
@@ -196,8 +195,7 @@ type SerovalNodeWithProperties =
   | SerovalObjectNode
   | SerovalNullConstructorNode
   | SerovalAggregateErrorNode
-  | SerovalErrorNode
-  | SerovalHeadersNode;
+  | SerovalErrorNode;
 
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
@@ -843,15 +841,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
   }
 
-  protected serializeHeaders(
-    node: SerovalHeadersNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new Headers(' + this.serializeProperties(node, node.e) + ')',
-    );
-  }
-
   protected serializeFormDataEntry(id: number, key: string, value: SerovalNode): string {
     return this.getRefParam(id) + '.append("' + key + '",' + this.serialize(value) + ')';
   }
@@ -1222,8 +1211,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePromise(node);
       case SerovalNodeType.WKSymbol:
         return this.serializeWKSymbol(node);
-      case SerovalNodeType.Headers:
-        return this.serializeHeaders(node);
       case SerovalNodeType.FormData:
         return this.serializeFormData(node);
       case SerovalNodeType.Boxed:
