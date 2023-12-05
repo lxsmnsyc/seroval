@@ -1,7 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-const URLPlugin = createPlugin<URL, SerovalNode>({
+const URLPlugin = /* @__PURE__ */createPlugin<URL, SerovalNode>({
   tag: 'seroval-plugins/web/url',
   test(value) {
     if (typeof URL === 'undefined') {

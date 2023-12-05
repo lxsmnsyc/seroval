@@ -6,7 +6,7 @@ interface BlobNode {
   buffer: SerovalNode;
 }
 
-const BlobPlugin = createPlugin<Blob, BlobNode>({
+const BlobPlugin = /* @__PURE__ */createPlugin<Blob, BlobNode>({
   tag: 'seroval-plugins/web/url',
   test(value) {
     if (typeof Blob === 'undefined') {

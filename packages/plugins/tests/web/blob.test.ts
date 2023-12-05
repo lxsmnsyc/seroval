@@ -8,7 +8,7 @@ import {
   toCrossJSONAsync,
   toJSONAsync,
 } from 'seroval';
-import BlobPlugin from '.';
+import BlobPlugin from '../../web/blob';
 
 const EXAMPLE = new Blob(['Hello World'], {
   type: 'text/plain',

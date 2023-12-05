@@ -7,7 +7,7 @@ interface FileNode {
   buffer: SerovalNode;
 }
 
-const FilePlugin = createPlugin<File, FileNode>({
+const FilePlugin = /* @__PURE__ */createPlugin<File, FileNode>({
   tag: 'seroval-plugins/web/url',
   test(value) {
     if (typeof File === 'undefined') {

@@ -8,7 +8,7 @@ import {
   toCrossJSONAsync,
   toJSONAsync,
 } from 'seroval';
-import FilePlugin from '.';
+import FilePlugin from '../../web/file';
 
 const EXAMPLE = new File(['Hello World'], 'hello.txt', {
   type: 'text/plain',

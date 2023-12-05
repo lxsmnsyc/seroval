@@ -22,12 +22,12 @@ exports[`URL > serializeAsync > supports URL 1`] = `"Promise.resolve(new URL("ht
 
 exports[`URL > toCrossJSONStream > supports URL 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`URL > toCrossJSONStream > supports URL 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":40,"i":2,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval/plugins/web/url"}]}"`;
+exports[`URL > toCrossJSONStream > supports URL 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":40,"i":2,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/url"}]}"`;
 
-exports[`URL > toJSON > supports URL 1`] = `"{"t":{"t":40,"i":0,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval/plugins/web/url"},"f":16383,"m":[]}"`;
+exports[`URL > toJSON > supports URL 1`] = `"{"t":{"t":40,"i":0,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/url"},"f":16383,"m":[]}"`;
 
-exports[`URL > toJSON > supports URL 2`] = `"{"t":40,"i":0,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval/plugins/web/url"}"`;
+exports[`URL > toJSON > supports URL 2`] = `"{"t":40,"i":0,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/url"}"`;
 
-exports[`URL > toJSONAsync > supports URL 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval/plugins/web/url"}},"f":16383,"m":[]}"`;
+exports[`URL > toJSONAsync > supports URL 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/url"}},"f":16383,"m":[]}"`;
 
-exports[`URL > toJSONAsync > supports URL 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval/plugins/web/url"}}"`;
+exports[`URL > toJSONAsync > supports URL 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/url"}}"`;

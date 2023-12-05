@@ -54,56 +54,20 @@
   },
   "author": "Alexis Munsayac",
   "exports": {
-    "./web/blob": {
+    "./web": {
       "development": {
-        "require": "./dist/cjs/development/web/blob.cjs",
-        "import": "./dist/esm/development/web/blob.mjs"
+        "require": "./dist/cjs/development/web.cjs",
+        "import": "./dist/esm/development/web.mjs"
       },
-      "require": "./dist/cjs/production/web/blob.cjs",
-      "import": "./dist/esm/production/web/blob.mjs",
-      "types": "./dist/types/web/blob/index.d.ts"
-    },
-    "./web/file": {
-      "development": {
-        "require": "./dist/cjs/development/web/file.cjs",
-        "import": "./dist/esm/development/web/file.mjs"
-      },
-      "require": "./dist/cjs/production/web/file.cjs",
-      "import": "./dist/esm/production/web/file.mjs",
-      "types": "./dist/types/web/file/index.d.ts"
-    },
-    "./web/url": {
-      "development": {
-        "require": "./dist/cjs/development/web/url.cjs",
-        "import": "./dist/esm/development/web/url.mjs"
-      },
-      "require": "./dist/cjs/production/web/url.cjs",
-      "import": "./dist/esm/production/web/url.mjs",
-      "types": "./dist/types/web/url/index.d.ts"
-    },
-    "./web/url-search-params": {
-      "development": {
-        "require": "./dist/cjs/development/web/url-search-params.cjs",
-        "import": "./dist/esm/development/web/url-search-params.mjs"
-      },
-      "require": "./dist/cjs/production/web/url-search-params.cjs",
-      "import": "./dist/esm/production/web/url-search-params.mjs",
-      "types": "./dist/types/web/url-search-params/index.d.ts"
+      "require": "./dist/cjs/production/web.cjs",
+      "import": "./dist/esm/production/web.mjs",
+      "types": "./dist/types/web/index.d.ts"
     }
   },
   "typesVersions": {
     "*": {
-      "web/blob": [
-        "./dist/types/web/blob/index.d.ts"
-      ],
-      "web/file": [
-        "./dist/types/web/file/index.d.ts"
-      ],
-      "web/url": [
-        "./dist/types/web/url/index.d.ts"
-      ],
-      "web/url-search-params": [
-        "./dist/types/web/url-search-params/index.d.ts"
+      "web": [
+        "./dist/types/web/index.d.ts"
       ]
     }
   }

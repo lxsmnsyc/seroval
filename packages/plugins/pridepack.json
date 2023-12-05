@@ -1,9 +1,6 @@
 {
   "target": "es2018",
   "entrypoints": {
-    "./web/blob": "web/blob/index.ts",
-    "./web/file": "web/file/index.ts",
-    "./web/url": "web/url/index.ts",
-    "./web/url-search-params": "web/url-search-params/index.ts"
+    "./web": "web/index.ts"
   }
 }
