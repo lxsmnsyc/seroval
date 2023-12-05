@@ -34,7 +34,6 @@ import type {
   SerovalRequestNode,
   SerovalResponseNode,
   SerovalEventNode,
-  SerovalCustomEventNode,
   SerovalDOMExceptionNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
@@ -869,15 +868,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     );
   }
 
-  protected serializeCustomEvent(
-    node: SerovalCustomEventNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new CustomEvent("' + node.s + '",' + this.serialize(node.f) + ')',
-    );
-  }
-
   protected serializeDOMException(
     node: SerovalDOMExceptionNode,
   ): string {
@@ -1157,8 +1147,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializeResponse(node);
       case SerovalNodeType.Event:
         return this.serializeEvent(node);
-      case SerovalNodeType.CustomEvent:
-        return this.serializeCustomEvent(node);
       case SerovalNodeType.DOMException:
         return this.serializeDOMException(node);
       case SerovalNodeType.Plugin:

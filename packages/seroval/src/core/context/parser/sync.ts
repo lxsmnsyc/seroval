@@ -25,7 +25,6 @@ import {
 } from '../../base-primitives';
 import { BIGINT_FLAG, Feature } from '../../compat';
 import type { WellKnownSymbols } from '../../constants';
-import { createCustomEventOptions, createEventOptions } from '../../utils/constructors';
 import {
   FALSE_NODE,
   NULL_NODE,
@@ -51,7 +50,6 @@ import type {
   SerovalSetNode,
   SerovalPluginNode,
   SerovalAggregateErrorNode,
-  SerovalCustomEventNode,
   SerovalEventNode,
   SerovalPlainRecordNode,
   SerovalTypedArrayNode,
@@ -59,7 +57,6 @@ import type {
   SerovalDataViewNode,
 } from '../../types';
 import {
-  createCustomEventNode,
   createDOMExceptionNode,
   createEventNode,
 } from '../../web-api';
@@ -281,13 +278,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return createEventNode(id, current.type, this.parse(createEventOptions(current)));
   }
 
-  protected parseCustomEvent(
-    id: number,
-    current: CustomEvent,
-  ): SerovalCustomEventNode {
-    return createCustomEventNode(id, current.type, this.parse(createCustomEventOptions(current)));
-  }
-
   protected parsePlugin(
     id: number,
     current: unknown,
@@ -419,8 +409,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       switch (currentClass) {
         case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):
           return this.parseEvent(id, current as unknown as Event);
-        case (typeof CustomEvent !== 'undefined' ? CustomEvent : UNIVERSAL_SENTINEL):
-          return this.parseCustomEvent(id, current as unknown as CustomEvent);
         case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
           return createDOMExceptionNode(id, current as unknown as DOMException);
         default:

@@ -13,7 +13,8 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
-} from '../../src';
+} from 'seroval';
+import CustomEventPlugin from '../../web/custom-event';
 
 const EXAMPLE_EVENT_TYPE = 'example';
 const EXAMPLE_DETAIL: Record<string, unknown> = {};
@@ -24,7 +25,9 @@ const EXAMPLE = new CustomEvent(EXAMPLE_EVENT_TYPE, EXAMPLE_OPTIONS);
 describe('CustomEvent', () => {
   describe('serialize', () => {
     it('supports CustomEvent', () => {
-      const result = serialize(EXAMPLE);
+      const result = serialize(EXAMPLE, {
+        plugins: [CustomEventPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(CustomEvent);
@@ -32,7 +35,9 @@ describe('CustomEvent', () => {
   });
   describe('serializeAsync', () => {
     it('supports CustomEvent', async () => {
-      const result = await serializeAsync(Promise.resolve(EXAMPLE));
+      const result = await serializeAsync(Promise.resolve(EXAMPLE), {
+        plugins: [CustomEventPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(CustomEvent);
@@ -40,41 +45,59 @@ describe('CustomEvent', () => {
   });
   describe('toJSON', () => {
     it('supports CustomEvent', () => {
-      const result = toJSON(EXAMPLE);
+      const result = toJSON(EXAMPLE, {
+        plugins: [CustomEventPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof EXAMPLE>(result);
+      const back = fromJSON<typeof EXAMPLE>(result, {
+        plugins: [CustomEventPlugin],
+      });
       expect(back).toBeInstanceOf(CustomEvent);
     });
   });
   describe('toJSONAsync', () => {
     it('supports CustomEvent', async () => {
       const example = Promise.resolve(EXAMPLE);
-      const result = await toJSONAsync(example);
+      const result = await toJSONAsync(example, {
+        plugins: [CustomEventPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<typeof example>(result);
+      const back = await fromJSON<typeof example>(result, {
+        plugins: [CustomEventPlugin],
+      });
       expect(back).toBeInstanceOf(CustomEvent);
     });
   });
   describe('crossSerialize', () => {
     it('supports CustomEvent', () => {
-      const result = crossSerialize(EXAMPLE);
+      const result = crossSerialize(EXAMPLE, {
+        plugins: [CustomEventPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports CustomEvent', () => {
-        const result = crossSerialize(EXAMPLE, { scopeId: 'example' });
+        const result = crossSerialize(EXAMPLE, {
+          plugins: [CustomEventPlugin],
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports CustomEvent', async () => {
-      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
+      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+        plugins: [CustomEventPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports CustomEvent', async () => {
-        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), { scopeId: 'example' });
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+          plugins: [CustomEventPlugin],
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
@@ -82,6 +105,7 @@ describe('CustomEvent', () => {
   describe('crossSerializeStream', () => {
     it('supports CustomEvent', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(EXAMPLE), {
+        plugins: [CustomEventPlugin],
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -96,6 +120,7 @@ describe('CustomEvent', () => {
     describe('scoped', () => {
       it('supports CustomEvent', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
+          plugins: [CustomEventPlugin],
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -112,9 +137,12 @@ describe('CustomEvent', () => {
   });
   describe('toCrossJSON', () => {
     it('supports CustomEvent', () => {
-      const result = toCrossJSON(EXAMPLE);
+      const result = toCrossJSON(EXAMPLE, {
+        plugins: [CustomEventPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        plugins: [CustomEventPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(CustomEvent);
@@ -123,9 +151,12 @@ describe('CustomEvent', () => {
   describe('toCrossJSONAsync', () => {
     it('supports CustomEvent', async () => {
       const example = Promise.resolve(EXAMPLE);
-      const result = await toCrossJSONAsync(example);
+      const result = await toCrossJSONAsync(example, {
+        plugins: [CustomEventPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<typeof example>(result, {
+        plugins: [CustomEventPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(CustomEvent);
@@ -134,6 +165,7 @@ describe('CustomEvent', () => {
   describe('toCrossJSONStream', () => {
     it('supports CustomEvent', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(EXAMPLE), {
+        plugins: [CustomEventPlugin],
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },

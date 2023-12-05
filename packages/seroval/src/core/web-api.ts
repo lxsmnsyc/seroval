@@ -1,7 +1,6 @@
 import { SerovalNodeType } from './constants';
 import { serializeString } from './string';
 import type {
-  SerovalCustomEventNode,
   SerovalDOMExceptionNode,
   SerovalEventNode,
   SerovalNode,
@@ -34,27 +33,6 @@ export function createEventNode(
 ): SerovalEventNode {
   return {
     t: SerovalNodeType.Event,
-    i: id,
-    s: serializeString(type),
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    p: undefined,
-    e: undefined,
-    a: undefined,
-    f: options,
-    b: undefined,
-    o: undefined,
-  };
-}
-
-export function createCustomEventNode(
-  id: number,
-  type: string,
-  options: SerovalNode,
-): SerovalCustomEventNode {
-  return {
-    t: SerovalNodeType.CustomEvent,
     i: id,
     s: serializeString(type),
     l: undefined,

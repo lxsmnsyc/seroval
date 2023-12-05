@@ -36,14 +36,3 @@ export function createEventOptions(
     composed: current.composed,
   };
 }
-
-export function createCustomEventOptions(
-  current: CustomEvent,
-): CustomEventInit {
-  return {
-    detail: current.detail as unknown,
-    bubbles: current.bubbles,
-    cancelable: current.cancelable,
-    composed: current.composed,
-  };
-}

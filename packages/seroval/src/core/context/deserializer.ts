@@ -9,7 +9,6 @@ import type {
   SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntTypedArrayNode,
   SerovalBoxedNode,
-  SerovalCustomEventNode,
   SerovalDOMExceptionNode,
   SerovalDataViewNode,
   SerovalDateNode,
@@ -323,18 +322,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     );
   }
 
-  private deserializeCustomEvent(
-    node: SerovalCustomEventNode,
-  ): CustomEvent {
-    return this.assignIndexedValue(
-      node.i,
-      new CustomEvent(
-        deserializeString(node.s),
-        this.deserialize(node.f) as CustomEventInit,
-      ),
-    );
-  }
-
   private deserializeDOMException(
     node: SerovalDOMExceptionNode,
   ): DOMException {
@@ -503,8 +490,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializeResponse(node);
       case SerovalNodeType.Event:
         return this.deserializeEvent(node);
-      case SerovalNodeType.CustomEvent:
-        return this.deserializeCustomEvent(node);
       case SerovalNodeType.DOMException:
         return this.deserializeDOMException(node);
       case SerovalNodeType.Plugin:
