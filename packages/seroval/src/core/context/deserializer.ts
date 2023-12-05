@@ -46,10 +46,8 @@ import {
   SerovalObjectFlags,
 } from '../constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
-import type { Sequence, SerializedAsyncIteratorResult } from '../utils/iterator-to-sequence';
+import type { Sequence } from '../utils/iterator-to-sequence';
 import {
-  readableStreamToAsyncIterator,
-  sequenceToAsyncIterator,
   sequenceToIterator,
 } from '../utils/iterator-to-sequence';
 import { getTypedArrayConstructor } from '../utils/typed-array';
@@ -57,7 +55,7 @@ import type { Deferred } from '../utils/deferred';
 import { createDeferred } from '../utils/deferred';
 import assert from '../utils/assert';
 import type { Stream } from '../stream';
-import { createStream } from '../stream';
+import { createStream, streamToAsyncIterable } from '../stream';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {
@@ -403,12 +401,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     node: SerovalAsyncIteratorFactoryInstanceNode,
   ): unknown {
     const source = this.deserialize(node.a[1]);
-    if (node.s) {
-      return readableStreamToAsyncIterator(
-        source as ReadableStream<SerializedAsyncIteratorResult<unknown>>,
-      );
-    }
-    return sequenceToAsyncIterator(source as Sequence);
+    return streamToAsyncIterable(source as Stream<any>);
   }
 
   private deserializeStreamConstructor(

@@ -12,7 +12,7 @@ export { default as Serializer } from './core/Serializer';
 export * from './core/plugin';
 
 export type { Stream } from './core/stream';
-export { createStream } from './core/stream';
+export { createStream, streamToAsyncIterable } from './core/stream';
 
 export type { SerovalNode } from './core/types';
 

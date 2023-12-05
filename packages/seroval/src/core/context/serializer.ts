@@ -997,8 +997,11 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         ['s'],
         this.createFunction(
           ['i', 'c', 'd', 't'],
-          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
-            + 'next:' + this.createEffectfulFunction([], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
+          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ',next:'
+          + this.createEffectfulFunction(
+            [],
+            'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
+          ) + '})',
         ),
       ),
     );
@@ -1011,16 +1014,51 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   }
 
   protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
-    return this.assignIndexedValue(
+    const promise = node.a[0];
+    const symbol = node.a[1];
+
+    let result = '';
+
+    if (promise.t !== SerovalNodeType.IndexedValue) {
+      result += '(' + this.serialize(promise);
+      this.markRef(promise.i);
+    }
+    if (symbol.t !== SerovalNodeType.IndexedValue) {
+      result += (result ? ',' : '(') + this.serialize(symbol);
+      this.markRef(symbol.i);
+    }
+    if (result) {
+      result += ',';
+    }
+
+    const iterator = this.assignIndexedValue(
       node.i,
       this.createFunction(
         ['s'],
         this.createFunction(
-          [],
-          '',
+          ['b', 'c', 'p', 't'],
+          '(b=[],c=0,p=void 0,s.on({next:' + this.createEffectfulFunction(
+            ['v'],
+            'p&&p.s({done:!1,value:v});b.push([0,v])',
+          ) + ',throw:' + this.createEffectfulFunction(
+            ['v'],
+            'p&&p.f(v);b.push([1,v])',
+          ) + ',return:' + this.createEffectfulFunction(
+            ['v'],
+            'p&&p.s({done:!0,value:v});b.push([2,v])',
+          ) + '}),t={[' + this.getRefParam(symbol.i) + ']:' + this.createFunction([], 't') + ',next:' + this.createEffectfulFunction(
+            ['i', 't', 'v'],
+            'i=c++;if(i>b.length)return ' + this.getRefParam(promise.i) + '();t=b[i][0],v=b[i][1];if(t===1)throw v;return{done:t===2,value:v}',
+          ) + '})',
         ),
       ),
     );
+
+    if (result) {
+      return result + iterator + ')';
+    }
+
+    return iterator;
   }
 
   protected serializeAsyncIteratorFactoryInstance(

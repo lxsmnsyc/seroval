@@ -1,3 +1,6 @@
+import type { Deferred } from './utils/deferred';
+import { createDeferred } from './utils/deferred';
+
 interface StreamListener<T> {
   next(value: T): void;
   throw(value: unknown): void;
@@ -118,4 +121,62 @@ export function createStreamFromAsyncIterable<T>(
   });
 
   return stream;
+}
+
+export function streamToAsyncIterable<T>(
+  stream: Stream<T>,
+): () => AsyncIterableIterator<T> {
+  return (): AsyncIterableIterator<T> => {
+    const buffer: [type: 0 | 1 | 2, value: T][] = [];
+    let count = 0;
+    let pending: Deferred | undefined;
+
+    stream.on({
+      next(value) {
+        if (pending) {
+          pending.resolve({ done: false, value });
+        }
+        buffer.push([0, value]);
+      },
+      throw(value) {
+        if (pending) {
+          pending.reject(value);
+        }
+        buffer.push([1, value as T]);
+      },
+      return(value) {
+        if (pending) {
+          pending.resolve({ done: true, value });
+        }
+        buffer.push([2, value]);
+      },
+    });
+
+    return {
+      [Symbol.asyncIterator](): AsyncIterableIterator<T> {
+        return this;
+      },
+      async next(): Promise<IteratorResult<T>> {
+        const current = count++;
+        if (current < buffer.length) {
+          const [type, value] = buffer[current];
+          if (type === 1) {
+            throw value;
+          }
+          if (type === 0) {
+            return {
+              done: false,
+              value,
+            };
+          }
+          return {
+            done: true,
+            value,
+          };
+        }
+        pending = createDeferred();
+        return pending.promise as Promise<IteratorResult<T>>;
+      },
+    };
+  };
 }
