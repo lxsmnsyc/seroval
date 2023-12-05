@@ -109,47 +109,45 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       valueNodes.push(await this.parse(entries[i][1]));
     }
     // Check special properties
-    if (this.features & Feature.Symbol) {
-      let symbol = Symbol.iterator;
-      if (symbol in properties) {
-        keyNodes.push(
-          this.parseWKSymbol(symbol),
-        );
-        valueNodes.push(
-          createIteratorFactoryInstanceNode(
-            this.parseIteratorFactory(),
-            await this.parse(
-              iteratorToSequence(properties as unknown as Iterable<unknown>),
+    let symbol = Symbol.iterator;
+    if (symbol in properties) {
+      keyNodes.push(
+        this.parseWKSymbol(symbol),
+      );
+      valueNodes.push(
+        createIteratorFactoryInstanceNode(
+          this.parseIteratorFactory(),
+          await this.parse(
+            iteratorToSequence(properties as unknown as Iterable<unknown>),
+          ),
+        ),
+      );
+    }
+    symbol = Symbol.asyncIterator;
+    if (symbol in properties) {
+      keyNodes.push(
+        this.parseWKSymbol(symbol),
+      );
+      valueNodes.push(
+        createAsyncIteratorFactoryInstanceNode(
+          this.parseAsyncIteratorFactory(),
+          await this.parse(
+            createStreamFromAsyncIterable(
+              properties as unknown as AsyncIterable<unknown>,
             ),
           ),
-        );
-      }
-      symbol = Symbol.asyncIterator;
-      if (symbol in properties) {
-        keyNodes.push(
-          this.parseWKSymbol(symbol),
-        );
-        valueNodes.push(
-          createAsyncIteratorFactoryInstanceNode(
-            this.parseAsyncIteratorFactory(),
-            await this.parse(
-              createStreamFromAsyncIterable(
-                properties as unknown as AsyncIterable<unknown>,
-              ),
-            ),
-          ),
-        );
-      }
-      symbol = Symbol.toStringTag;
-      if (symbol in properties) {
-        keyNodes.push(this.parseWKSymbol(symbol));
-        valueNodes.push(createStringNode(properties[symbol] as string));
-      }
-      symbol = Symbol.isConcatSpreadable;
-      if (symbol in properties) {
-        keyNodes.push(this.parseWKSymbol(symbol));
-        valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
-      }
+        ),
+      );
+    }
+    symbol = Symbol.toStringTag;
+    if (symbol in properties) {
+      keyNodes.push(this.parseWKSymbol(symbol));
+      valueNodes.push(createStringNode(properties[symbol] as string));
+    }
+    symbol = Symbol.isConcatSpreadable;
+    if (symbol in properties) {
+      keyNodes.push(this.parseWKSymbol(symbol));
+      valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
     }
     return {
       k: keyNodes,
@@ -422,38 +420,40 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       case String:
       case BigInt:
         return this.parseBoxed(id, current);
+      case ArrayBuffer:
+        return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+      case Int8Array:
+      case Int16Array:
+      case Int32Array:
+      case Uint8Array:
+      case Uint16Array:
+      case Uint32Array:
+      case Uint8ClampedArray:
+      case Float32Array:
+      case Float64Array:
+        return this.parseTypedArray(id, current as unknown as TypedArrayValue);
+      case DataView:
+        return this.parseDataView(id, current as unknown as DataView);
+      case Map:
+        return this.parseMap(
+          id,
+          current as unknown as Map<unknown, unknown>,
+        );
+      case Set:
+        return this.parseSet(
+          id,
+          current as unknown as Set<unknown>,
+        );
       default:
         break;
     }
-    const currentFeatures = this.features;
     // Promises
     if (
-      (currentFeatures & Feature.Promise)
-      && (currentClass === Promise || current instanceof Promise)
+      (currentClass === Promise || current instanceof Promise)
     ) {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
-    // Typed Arrays
-    if (currentFeatures & Feature.TypedArray) {
-      switch (currentClass) {
-        case ArrayBuffer:
-          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-        case Int8Array:
-        case Int16Array:
-        case Int32Array:
-        case Uint8Array:
-        case Uint16Array:
-        case Uint32Array:
-        case Uint8ClampedArray:
-        case Float32Array:
-        case Float64Array:
-          return this.parseTypedArray(id, current as unknown as TypedArrayValue);
-        case DataView:
-          return this.parseDataView(id, current as unknown as DataView);
-        default:
-          break;
-      }
-    }
+    const currentFeatures = this.features;
     // BigInt Typed Arrays
     if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
       switch (currentClass) {
@@ -463,19 +463,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         default:
           break;
       }
-    }
-    // ES Collection
-    if (currentFeatures & Feature.Map && currentClass === Map) {
-      return this.parseMap(
-        id,
-        current as unknown as Map<unknown, unknown>,
-      );
-    }
-    if (currentFeatures & Feature.Set && currentClass === Set) {
-      return this.parseSet(
-        id,
-        current as unknown as Set<unknown>,
-      );
     }
     if (
       (currentFeatures & Feature.AggregateError)
@@ -492,8 +479,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Generator functions don't have a global constructor
     // despite existing
     if (
-      currentFeatures & Feature.Symbol
-      && (Symbol.iterator in current || Symbol.asyncIterator in current)
+      (Symbol.iterator in current || Symbol.asyncIterator in current)
     ) {
       return this.parsePlainObject(id, current, !!currentClass);
     }

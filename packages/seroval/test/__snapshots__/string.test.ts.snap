@@ -32,18 +32,18 @@ exports[`string > toCrossJSONAsync > supports strings 1`] = `"{"t":12,"i":0,"s":
 
 exports[`string > toCrossJSONAsync > supports strings 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}"`;
 
-exports[`string > toCrossJSONStream > supports sanitized strings 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+exports[`string > toCrossJSONStream > supports sanitized strings 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`string > toCrossJSONStream > supports sanitized strings 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":2,"s":3},{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}]}"`;
+exports[`string > toCrossJSONStream > supports sanitized strings 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}]}"`;
 
-exports[`string > toCrossJSONStream > supports strings 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+exports[`string > toCrossJSONStream > supports strings 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`string > toCrossJSONStream > supports strings 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":2,"s":3},{"t":1,"s":"\\\\\\"hello\\\\\\""}]}"`;
+exports[`string > toCrossJSONStream > supports strings 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":1,"s":"\\\\\\"hello\\\\\\""}]}"`;
 
-exports[`string > toJSON > supports strings 1`] = `"{"t":{"t":1,"s":"\\\\\\"hello\\\\\\""},"f":16383,"m":[]}"`;
+exports[`string > toJSON > supports strings 1`] = `"{"t":{"t":1,"s":"\\\\\\"hello\\\\\\""},"f":63,"m":[]}"`;
 
-exports[`string > toJSON > supports strings 2`] = `"{"t":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"},"f":16383,"m":[]}"`;
+exports[`string > toJSON > supports strings 2`] = `"{"t":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"},"f":63,"m":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":16383,"m":[]}"`;
+exports[`string > toJSONAsync > supports strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":63,"m":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":16383,"m":[]}"`;
+exports[`string > toJSONAsync > supports strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":63,"m":[]}"`;

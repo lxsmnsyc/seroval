@@ -24,18 +24,18 @@ exports[`boolean > toCrossJSONAsync > supports boolean 1`] = `"{"t":12,"i":0,"s"
 
 exports[`boolean > toCrossJSONAsync > supports boolean 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":2,"s":3}}"`;
 
-exports[`boolean > toCrossJSONStream > supports false value 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+exports[`boolean > toCrossJSONStream > supports false value 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boolean > toCrossJSONStream > supports false value 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":2,"s":3},{"t":2,"s":3}]}"`;
+exports[`boolean > toCrossJSONStream > supports false value 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":2,"s":3}]}"`;
 
-exports[`boolean > toCrossJSONStream > supports true value 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+exports[`boolean > toCrossJSONStream > supports true value 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boolean > toCrossJSONStream > supports true value 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":2,"s":3},{"t":2,"s":2}]}"`;
+exports[`boolean > toCrossJSONStream > supports true value 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":2,"s":2}]}"`;
 
-exports[`boolean > toJSON > supports boolean 1`] = `"{"t":{"t":2,"s":2},"f":16383,"m":[]}"`;
+exports[`boolean > toJSON > supports boolean 1`] = `"{"t":{"t":2,"s":2},"f":63,"m":[]}"`;
 
-exports[`boolean > toJSON > supports boolean 2`] = `"{"t":{"t":2,"s":3},"f":16383,"m":[]}"`;
+exports[`boolean > toJSON > supports boolean 2`] = `"{"t":{"t":2,"s":3},"f":63,"m":[]}"`;
 
-exports[`boolean > toJSONAsync > supports boolean 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":2}},"f":16383,"m":[]}"`;
+exports[`boolean > toJSONAsync > supports boolean 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":2}},"f":63,"m":[]}"`;
 
-exports[`boolean > toJSONAsync > supports boolean 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":3}},"f":16383,"m":[]}"`;
+exports[`boolean > toJSONAsync > supports boolean 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":3}},"f":63,"m":[]}"`;

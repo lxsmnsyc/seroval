@@ -4,10 +4,10 @@ export const ASYNC_ITERATOR = {};
 
 export const enum SpecialReference {
   MapSentinel = 0,
-  PromiseConstructor = 2,
-  PromiseResolve = 3,
-  PromiseReject = 4,
-  StreamConstructor = 9,
+  PromiseConstructor = 1,
+  PromiseResolve = 2,
+  PromiseReject = 3,
+  StreamConstructor = 4,
 }
 
 export const SPECIAL_REFS: Record<SpecialReference, unknown> = {

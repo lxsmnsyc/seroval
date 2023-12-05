@@ -40,26 +40,26 @@ exports[`boxed string > serializeAsync > supports boxed strings 1`] = `"Promise.
 
 exports[`boxed string > serializeAsync > supports boxed strings 2`] = `"Promise.resolve(Object("\\x3Cscript>\\x3C/script>"))"`;
 
-exports[`boxed string > toCrossJSON > supports boxed strings 1`] = `"{"t":27,"i":0,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}"`;
+exports[`boxed string > toCrossJSON > supports boxed strings 1`] = `"{"t":21,"i":0,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}"`;
 
-exports[`boxed string > toCrossJSON > supports boxed strings 2`] = `"{"t":27,"i":0,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}"`;
+exports[`boxed string > toCrossJSON > supports boxed strings 2`] = `"{"t":21,"i":0,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}"`;
 
-exports[`boxed string > toCrossJSONAsync > supports boxed strings 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":27,"i":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}}"`;
+exports[`boxed string > toCrossJSONAsync > supports boxed strings 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}}"`;
 
-exports[`boxed string > toCrossJSONAsync > supports boxed strings 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":27,"i":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}}"`;
+exports[`boxed string > toCrossJSONAsync > supports boxed strings 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":27,"i":2,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}]}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}]}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed strings 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed strings 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed strings 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":27,"i":2,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}]}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed strings 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}]}"`;
 
-exports[`boxed string > toJSON > supports boxed strings 1`] = `"{"t":{"t":27,"i":0,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":16383,"m":[]}"`;
+exports[`boxed string > toJSON > supports boxed strings 1`] = `"{"t":{"t":21,"i":0,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":63,"m":[]}"`;
 
-exports[`boxed string > toJSON > supports boxed strings 2`] = `"{"t":{"t":27,"i":0,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":16383,"m":[]}"`;
+exports[`boxed string > toJSON > supports boxed strings 2`] = `"{"t":{"t":21,"i":0,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":63,"m":[]}"`;
 
-exports[`boxed string > toJSONAsync > supports boxed strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":27,"i":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}},"f":16383,"m":[]}"`;
+exports[`boxed string > toJSONAsync > supports boxed strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}},"f":63,"m":[]}"`;
 
-exports[`boxed string > toJSONAsync > supports boxed strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":27,"i":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}},"f":16383,"m":[]}"`;
+exports[`boxed string > toJSONAsync > supports boxed strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}},"f":63,"m":[]}"`;

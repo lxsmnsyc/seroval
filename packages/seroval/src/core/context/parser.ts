@@ -1,11 +1,10 @@
-import UnsupportedTypeError from '../UnsupportedTypeError';
 import assert from '../utils/assert';
 import {
   createIndexedValueNode,
   createReferenceNode,
   createWKSymbolNode,
 } from '../base-primitives';
-import { ALL_ENABLED, Feature } from '../compat';
+import { ALL_ENABLED } from '../compat';
 import type { WellKnownSymbols } from '../constants';
 import {
   INV_SYMBOL_REF,
@@ -98,7 +97,6 @@ export abstract class BaseParserContext implements PluginAccessOptions {
   protected parseWKSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
-    assert(this.features & Feature.Symbol, new UnsupportedTypeError(current));
     const registeredID = this.refs.get(current);
     if (registeredID != null) {
       this.markRef(registeredID);

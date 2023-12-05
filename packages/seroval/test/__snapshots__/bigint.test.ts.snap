@@ -20,10 +20,10 @@ exports[`bigint > toCrossJSON > supports bigint 1`] = `"{"t":3,"s":"900719925474
 
 exports[`bigint > toCrossJSONAsync > supports bigint 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":3,"s":"9007199254740991"}}"`;
 
-exports[`bigint > toCrossJSONStream > supports bigint 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
+exports[`bigint > toCrossJSONStream > supports bigint 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`bigint > toCrossJSONStream > supports bigint 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":2,"s":3},{"t":3,"s":"9007199254740991"}]}"`;
+exports[`bigint > toCrossJSONStream > supports bigint 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":3,"s":"9007199254740991"}]}"`;
 
-exports[`bigint > toJSON > supports bigint 1`] = `"{"t":{"t":3,"s":"9007199254740991"},"f":16383,"m":[]}"`;
+exports[`bigint > toJSON > supports bigint 1`] = `"{"t":{"t":3,"s":"9007199254740991"},"f":63,"m":[]}"`;
 
-exports[`bigint > toJSONAsync > supports bigint 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":3,"s":"9007199254740991"}},"f":16383,"m":[]}"`;
+exports[`bigint > toJSONAsync > supports bigint 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":3,"s":"9007199254740991"}},"f":63,"m":[]}"`;

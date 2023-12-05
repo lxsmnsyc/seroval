@@ -104,45 +104,43 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       valueNodes.push(this.parse(entries[i][1]));
     }
     // Check special properties, symbols in this case
-    if (this.features & Feature.Symbol) {
-      let symbol = Symbol.iterator;
-      if (symbol in properties) {
-        keyNodes.push(
-          this.parseWKSymbol(symbol),
-        );
-        valueNodes.push(
-          createIteratorFactoryInstanceNode(
-            this.parseIteratorFactory(),
-            this.parse(
-              iteratorToSequence(properties as unknown as Iterable<unknown>),
-            ),
+    let symbol = Symbol.iterator;
+    if (symbol in properties) {
+      keyNodes.push(
+        this.parseWKSymbol(symbol),
+      );
+      valueNodes.push(
+        createIteratorFactoryInstanceNode(
+          this.parseIteratorFactory(),
+          this.parse(
+            iteratorToSequence(properties as unknown as Iterable<unknown>),
           ),
-        );
-      }
-      symbol = Symbol.asyncIterator;
-      if (symbol in properties) {
-        keyNodes.push(
-          this.parseWKSymbol(symbol),
-        );
-        valueNodes.push(
-          createAsyncIteratorFactoryInstanceNode(
-            this.parseAsyncIteratorFactory(),
-            this.parse(
-              createStream(),
-            ),
+        ),
+      );
+    }
+    symbol = Symbol.asyncIterator;
+    if (symbol in properties) {
+      keyNodes.push(
+        this.parseWKSymbol(symbol),
+      );
+      valueNodes.push(
+        createAsyncIteratorFactoryInstanceNode(
+          this.parseAsyncIteratorFactory(),
+          this.parse(
+            createStream(),
           ),
-        );
-      }
-      symbol = Symbol.toStringTag;
-      if (symbol in properties) {
-        keyNodes.push(this.parseWKSymbol(symbol));
-        valueNodes.push(createStringNode(properties[symbol] as string));
-      }
-      symbol = Symbol.isConcatSpreadable;
-      if (symbol in properties) {
-        keyNodes.push(this.parseWKSymbol(symbol));
-        valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
-      }
+        ),
+      );
+    }
+    symbol = Symbol.toStringTag;
+    if (symbol in properties) {
+      keyNodes.push(this.parseWKSymbol(symbol));
+      valueNodes.push(createStringNode(properties[symbol] as string));
+    }
+    symbol = Symbol.isConcatSpreadable;
+    if (symbol in properties) {
+      keyNodes.push(this.parseWKSymbol(symbol));
+      valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
     }
     return {
       k: keyNodes,
@@ -344,31 +342,34 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       case String:
       case BigInt:
         return this.parseBoxed(id, current);
+      case ArrayBuffer:
+        return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+      case Int8Array:
+      case Int16Array:
+      case Int32Array:
+      case Uint8Array:
+      case Uint16Array:
+      case Uint32Array:
+      case Uint8ClampedArray:
+      case Float32Array:
+      case Float64Array:
+        return this.parseTypedArray(id, current as unknown as TypedArrayValue);
+      case DataView:
+        return this.parseDataView(id, current as unknown as DataView);
+      case Map:
+        return this.parseMap(
+          id,
+          current as unknown as Map<unknown, unknown>,
+        );
+      case Set:
+        return this.parseSet(
+          id,
+          current as unknown as Set<unknown>,
+        );
       default:
         break;
     }
     const currentFeatures = this.features;
-    // Typed Arrays
-    if (currentFeatures & Feature.TypedArray) {
-      switch (currentClass) {
-        case ArrayBuffer:
-          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-        case Int8Array:
-        case Int16Array:
-        case Int32Array:
-        case Uint8Array:
-        case Uint16Array:
-        case Uint32Array:
-        case Uint8ClampedArray:
-        case Float32Array:
-        case Float64Array:
-          return this.parseTypedArray(id, current as unknown as TypedArrayValue);
-        case DataView:
-          return this.parseDataView(id, current as unknown as DataView);
-        default:
-          break;
-      }
-    }
     // BigInt Typed Arrays
     if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
       switch (currentClass) {
@@ -380,18 +381,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       }
     }
     // ES Collection
-    if (currentFeatures & Feature.Map && currentClass === Map) {
-      return this.parseMap(
-        id,
-        current as unknown as Map<unknown, unknown>,
-      );
-    }
-    if (currentFeatures & Feature.Set && currentClass === Set) {
-      return this.parseSet(
-        id,
-        current as unknown as Set<unknown>,
-      );
-    }
     if (
       (currentFeatures & Feature.AggregateError)
       && typeof AggregateError !== 'undefined'
@@ -406,10 +395,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (
-      currentFeatures & Feature.Symbol
-      && Symbol.iterator in current
-    ) {
+    if (Symbol.iterator in current) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);
@@ -434,7 +420,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         return typeof id === 'number' ? this.parseObject(id, current as object) : id;
       }
       case 'symbol': {
-        assert(this.features & Feature.Symbol, new UnsupportedTypeError(current));
         const id = this.getReference(current);
         return typeof id === 'number' ? createWKSymbolNode(id, current as WellKnownSymbols) : id;
       }
