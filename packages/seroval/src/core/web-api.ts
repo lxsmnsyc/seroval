@@ -7,28 +7,7 @@ import type {
   SerovalNode,
   SerovalNodeWithID,
   SerovalReadableStreamNode,
-  SerovalURLSearchParamsNode,
 } from './types';
-
-export function createURLSearchParamsNode(
-  id: number,
-  current: URLSearchParams,
-): SerovalURLSearchParamsNode {
-  return {
-    t: SerovalNodeType.URLSearchParams,
-    i: id,
-    s: serializeString(current.toString()),
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    p: undefined,
-    e: undefined,
-    f: undefined,
-    a: undefined,
-    b: undefined,
-    o: undefined,
-  };
-}
 
 export function createDOMExceptionNode(
   id: number,

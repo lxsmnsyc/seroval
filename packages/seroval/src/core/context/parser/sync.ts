@@ -67,7 +67,6 @@ import {
   createCustomEventNode,
   createDOMExceptionNode,
   createEventNode,
-  createURLSearchParamsNode,
 } from '../../web-api';
 import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
 import type { Stream } from '../../stream';
@@ -471,8 +470,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof URLSearchParams !== 'undefined' ? URLSearchParams : UNIVERSAL_SENTINEL):
-          return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
         case (typeof Headers !== 'undefined' ? Headers : UNIVERSAL_SENTINEL):
           return this.parseHeaders(id, current as unknown as Headers);
         case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):

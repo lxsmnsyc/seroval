@@ -13,14 +13,17 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
-} from '../../src';
+} from 'seroval';
+import URLSearchParamsPlugin from '.';
 
 const EXAMPLE = new URLSearchParams('hello=world&foo=bar');
 
 describe('URLSearchParams', () => {
   describe('serialize', () => {
     it('supports URLSearchParams', () => {
-      const result = serialize(EXAMPLE);
+      const result = serialize(EXAMPLE, {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(URLSearchParams);
@@ -29,7 +32,9 @@ describe('URLSearchParams', () => {
   });
   describe('serializeAsync', () => {
     it('supports URLSearchParams', async () => {
-      const result = await serializeAsync(Promise.resolve(EXAMPLE));
+      const result = await serializeAsync(Promise.resolve(EXAMPLE), {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(URLSearchParams);
@@ -38,42 +43,60 @@ describe('URLSearchParams', () => {
   });
   describe('toJSON', () => {
     it('supports URLSearchParams', () => {
-      const result = toJSON(EXAMPLE);
+      const result = toJSON(EXAMPLE, {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof EXAMPLE>(result);
+      const back = fromJSON<typeof EXAMPLE>(result, {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(back).toBeInstanceOf(URLSearchParams);
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
   describe('toJSONAsync', () => {
     it('supports URLSearchParams', async () => {
-      const result = await toJSONAsync(Promise.resolve(EXAMPLE));
+      const result = await toJSONAsync(Promise.resolve(EXAMPLE), {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
+      const back = await fromJSON<Promise<typeof EXAMPLE>>(result, {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(back).toBeInstanceOf(URLSearchParams);
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
   describe('crossSerialize', () => {
     it('supports URLSearchParams', () => {
-      const result = crossSerialize(EXAMPLE);
+      const result = crossSerialize(EXAMPLE, {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports URLSearchParams', () => {
-        const result = crossSerialize(EXAMPLE, { scopeId: 'example' });
+        const result = crossSerialize(EXAMPLE, {
+          plugins: [URLSearchParamsPlugin],
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports URLSearchParams', async () => {
-      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
+      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports URLSearchParams', async () => {
-        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), { scopeId: 'example' });
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+          plugins: [URLSearchParamsPlugin],
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
@@ -81,6 +104,7 @@ describe('URLSearchParams', () => {
   describe('crossSerializeStream', () => {
     it('supports URLSearchParams', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(EXAMPLE), {
+        plugins: [URLSearchParamsPlugin],
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -95,6 +119,7 @@ describe('URLSearchParams', () => {
     describe('scoped', () => {
       it('supports URLSearchParams', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
+          plugins: [URLSearchParamsPlugin],
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -111,9 +136,12 @@ describe('URLSearchParams', () => {
   });
   describe('toJSON', () => {
     it('supports URLSearchParams', () => {
-      const result = toCrossJSON(EXAMPLE);
+      const result = toCrossJSON(EXAMPLE, {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        plugins: [URLSearchParamsPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(URLSearchParams);
@@ -122,9 +150,12 @@ describe('URLSearchParams', () => {
   });
   describe('toJSONAsync', () => {
     it('supports URLSearchParams', async () => {
-      const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
+      const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE), {
+        plugins: [URLSearchParamsPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
+        plugins: [URLSearchParamsPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(URLSearchParams);
@@ -134,6 +165,7 @@ describe('URLSearchParams', () => {
   describe('toCrossJSONStream', () => {
     it('supports URLSearchParams', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(EXAMPLE), {
+        plugins: [URLSearchParamsPlugin],
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },

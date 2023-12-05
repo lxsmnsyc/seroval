@@ -77,7 +77,6 @@ import type {
   SerovalStreamConstructorNode,
 } from '../../types';
 import {
-  createURLSearchParamsNode,
   createDOMExceptionNode,
   createEventNode,
   createCustomEventNode,
@@ -664,8 +663,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     // Web APIs
     if (currentFeatures & Feature.WebAPI) {
       switch (currentClass) {
-        case (typeof URLSearchParams !== 'undefined' ? URLSearchParams : UNIVERSAL_SENTINEL):
-          return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
         case (typeof Blob !== 'undefined' ? Blob : UNIVERSAL_SENTINEL):
           return this.parseBlob(id, current as unknown as Blob);
         case (typeof File !== 'undefined' ? File : UNIVERSAL_SENTINEL):

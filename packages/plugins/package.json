@@ -53,33 +53,33 @@
     "access": "public"
   },
   "author": "Alexis Munsayac",
-  "types": "./dist/types/src/index.d.ts",
-  "main": "./dist/cjs/production/index.cjs",
-  "module": "./dist/esm/production/index.mjs",
   "exports": {
-    ".": {
+    "./web/url": {
       "development": {
-        "require": "./dist/cjs/development/index.cjs",
-        "import": "./dist/esm/development/index.mjs"
+        "require": "./dist/cjs/development/web/url.cjs",
+        "import": "./dist/esm/development/web/url.mjs"
       },
-      "require": "./dist/cjs/production/index.cjs",
-      "import": "./dist/esm/production/index.mjs",
-      "types": "./dist/types/src/index.d.ts"
+      "require": "./dist/cjs/production/web/url.cjs",
+      "import": "./dist/esm/production/web/url.mjs",
+      "types": "./dist/types/web/url/index.d.ts"
     },
-    "./plugins/web/url": {
+    "./web/url-search-params": {
       "development": {
-        "require": "./dist/cjs/development/plugins/web/url.cjs",
-        "import": "./dist/esm/development/plugins/web/url.mjs"
+        "require": "./dist/cjs/development/web/url-search-params.cjs",
+        "import": "./dist/esm/development/web/url-search-params.mjs"
       },
-      "require": "./dist/cjs/production/plugins/web/url.cjs",
-      "import": "./dist/esm/production/plugins/web/url.mjs",
-      "types": "./dist/types/plugins/web/url/index.d.ts"
+      "require": "./dist/cjs/production/web/url-search-params.cjs",
+      "import": "./dist/esm/production/web/url-search-params.mjs",
+      "types": "./dist/types/web/url-search-params/index.d.ts"
     }
   },
   "typesVersions": {
     "*": {
-      "plugins/web/url": [
-        "./dist/types/plugins/web/url/index.d.ts"
+      "web/url": [
+        "./dist/types/web/url/index.d.ts"
+      ],
+      "web/url-search-params": [
+        "./dist/types/web/url-search-params/index.d.ts"
       ]
     }
   }

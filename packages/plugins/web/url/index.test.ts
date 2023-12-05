@@ -14,7 +14,7 @@ import {
   toJSON,
   toJSONAsync,
 } from 'seroval';
-import URLPlugin from './index';
+import URLPlugin from '.';
 
 const EXAMPLE = new URL('https://github.com/lxsmnsyc/seroval?hello=world');
 
