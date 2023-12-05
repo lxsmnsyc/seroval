@@ -13,7 +13,8 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
-} from '../../src';
+} from 'seroval';
+import { DOMExceptionPlugin } from '../../web';
 
 const EXAMPLE_MESSAGE = 'This is an example message.';
 const EXAMPLE_NAME = 'Example';
@@ -22,7 +23,9 @@ const EXAMPLE = new DOMException(EXAMPLE_MESSAGE, EXAMPLE_NAME);
 describe('DOMException', () => {
   describe('serialize', () => {
     it('supports DOMException', () => {
-      const result = serialize(EXAMPLE);
+      const result = serialize(EXAMPLE, {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(DOMException);
@@ -32,7 +35,9 @@ describe('DOMException', () => {
   });
   describe('serializeAsync', () => {
     it('supports DOMException', async () => {
-      const result = await serializeAsync(Promise.resolve(EXAMPLE));
+      const result = await serializeAsync(Promise.resolve(EXAMPLE), {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(DOMException);
@@ -42,9 +47,13 @@ describe('DOMException', () => {
   });
   describe('toJSON', () => {
     it('supports DOMException', () => {
-      const result = toJSON(EXAMPLE);
+      const result = toJSON(EXAMPLE, {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof EXAMPLE>(result);
+      const back = fromJSON<typeof EXAMPLE>(result, {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(back).toBeInstanceOf(DOMException);
       expect(back.message).toBe(EXAMPLE.message);
       expect(back.name).toBe(EXAMPLE.name);
@@ -52,9 +61,13 @@ describe('DOMException', () => {
   });
   describe('toJSONAsync', () => {
     it('supports DOMException', async () => {
-      const result = await toJSONAsync(Promise.resolve(EXAMPLE));
+      const result = await toJSONAsync(Promise.resolve(EXAMPLE), {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
+      const back = await fromJSON<Promise<typeof EXAMPLE>>(result, {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(back).toBeInstanceOf(DOMException);
       expect(back.message).toBe(EXAMPLE.message);
       expect(back.name).toBe(EXAMPLE.name);
@@ -62,24 +75,34 @@ describe('DOMException', () => {
   });
   describe('crossSerialize', () => {
     it('supports DOMException', () => {
-      const result = crossSerialize(EXAMPLE);
+      const result = crossSerialize(EXAMPLE, {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports DOMException', () => {
-        const result = crossSerialize(EXAMPLE, { scopeId: 'example' });
+        const result = crossSerialize(EXAMPLE, {
+          plugins: [DOMExceptionPlugin],
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports DOMException', async () => {
-      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
+      const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports DOMException', async () => {
-        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), { scopeId: 'example' });
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+          plugins: [DOMExceptionPlugin],
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
@@ -87,6 +110,7 @@ describe('DOMException', () => {
   describe('crossSerializeStream', () => {
     it('supports DOMException', async () => new Promise<void>((resolve, reject) => {
       crossSerializeStream(Promise.resolve(EXAMPLE), {
+        plugins: [DOMExceptionPlugin],
         onSerialize(data) {
           expect(data).toMatchSnapshot();
         },
@@ -101,6 +125,7 @@ describe('DOMException', () => {
     describe('scoped', () => {
       it('supports DOMException', async () => new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
+          plugins: [DOMExceptionPlugin],
           scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -117,9 +142,12 @@ describe('DOMException', () => {
   });
   describe('toCrossJSON', () => {
     it('supports DOMException', () => {
-      const result = toCrossJSON(EXAMPLE);
+      const result = toCrossJSON(EXAMPLE, {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
+        plugins: [DOMExceptionPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(DOMException);
@@ -128,9 +156,12 @@ describe('DOMException', () => {
   describe('toCrossJSONAsync', () => {
     it('supports DOMException', async () => {
       const example = Promise.resolve(EXAMPLE);
-      const result = await toCrossJSONAsync(example);
+      const result = await toCrossJSONAsync(example, {
+        plugins: [DOMExceptionPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<typeof example>(result, {
+        plugins: [DOMExceptionPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(DOMException);
@@ -139,6 +170,7 @@ describe('DOMException', () => {
   describe('toCrossJSONStream', () => {
     it('supports DOMException', async () => new Promise<void>((resolve, reject) => {
       toCrossJSONStream(Promise.resolve(EXAMPLE), {
+        plugins: [DOMExceptionPlugin],
         onParse(data) {
           expect(JSON.stringify(data)).toMatchSnapshot();
         },

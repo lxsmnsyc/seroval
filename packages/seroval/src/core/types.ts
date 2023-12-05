@@ -274,15 +274,6 @@ export interface SerovalPromiseRejectNode extends SerovalBaseNode {
   ];
 }
 
-export interface SerovalDOMExceptionNode extends SerovalBaseNode {
-  t: SerovalNodeType.DOMException;
-  i: number;
-  // Message
-  s: string;
-  // name
-  c: string;
-}
-
 export interface SerovalPluginNode extends SerovalBaseNode {
   t: SerovalNodeType.Plugin;
   i: number;
@@ -371,7 +362,6 @@ export type SerovalSyncNode =
   | SerovalArrayBufferNode
   | SerovalDataViewNode
   | SerovalBoxedNode
-  | SerovalDOMExceptionNode
   | SerovalPluginNode
   | SerovalSpecialReferenceNode
   | SerovalIteratorFactoryNode

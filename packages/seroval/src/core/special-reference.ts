@@ -1,5 +1,3 @@
-export const UNIVERSAL_SENTINEL = {};
-
 export const ITERATOR = {};
 
 export const ASYNC_ITERATOR = {};

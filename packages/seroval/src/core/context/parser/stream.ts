@@ -26,9 +26,8 @@ import type {
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
 } from '../../types';
-import { createDOMExceptionNode } from '../../web-api';
 import { iteratorToSequence } from '../../utils/iterator-to-sequence';
-import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
+import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable, isStream } from '../../stream';
 
@@ -409,15 +408,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         id,
         current as unknown as Set<unknown>,
       );
-    }
-    // Web APIs
-    if (currentFeatures & Feature.WebAPI) {
-      switch (currentClass) {
-        case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
-          return createDOMExceptionNode(id, current as unknown as DOMException);
-        default:
-          break;
-      }
     }
     if (
       (currentFeatures & Feature.AggregateError)

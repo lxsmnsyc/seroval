@@ -9,7 +9,6 @@ import type {
   SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntTypedArrayNode,
   SerovalBoxedNode,
-  SerovalDOMExceptionNode,
   SerovalDataViewNode,
   SerovalDateNode,
   SerovalErrorNode,
@@ -286,18 +285,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     );
   }
 
-  private deserializeDOMException(
-    node: SerovalDOMExceptionNode,
-  ): DOMException {
-    return this.assignIndexedValue(
-      node.i,
-      new DOMException(
-        deserializeString(node.s),
-        deserializeString(node.c),
-      ),
-    );
-  }
-
   private deserializePlugin(node: SerovalPluginNode): unknown {
     const currentPlugins = this.plugins;
     if (currentPlugins) {
@@ -448,8 +435,6 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return SYMBOL_REF[node.s];
       case SerovalNodeType.Boxed:
         return this.deserializeBoxed(node);
-      case SerovalNodeType.DOMException:
-        return this.deserializeDOMException(node);
       case SerovalNodeType.Plugin:
         return this.deserializePlugin(node);
       case SerovalNodeType.PromiseConstructor:

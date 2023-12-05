@@ -55,10 +55,7 @@ import type {
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
 } from '../../types';
-import {
-  createDOMExceptionNode,
-} from '../../web-api';
-import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
+import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStream, isStream } from '../../stream';
 
@@ -394,15 +391,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         id,
         current as unknown as Set<unknown>,
       );
-    }
-    // Web APIs
-    if (currentFeatures & Feature.WebAPI) {
-      switch (currentClass) {
-        case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
-          return createDOMExceptionNode(id, current as unknown as DOMException);
-        default:
-          break;
-      }
     }
     if (
       (currentFeatures & Feature.AggregateError)

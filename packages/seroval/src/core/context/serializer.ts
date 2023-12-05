@@ -31,7 +31,6 @@ import type {
   SerovalPromiseNode,
   SerovalWKSymbolNode,
   SerovalBoxedNode,
-  SerovalDOMExceptionNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
   SerovalPromiseResolveNode,
@@ -841,15 +840,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(node.i, 'Object(' + this.serialize(node.f) + ')');
   }
 
-  protected serializeDOMException(
-    node: SerovalDOMExceptionNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new DOMException("' + node.s + '","' + node.c + '")',
-    );
-  }
-
   protected serializePlugin(
     node: SerovalPluginNode,
   ): string {
@@ -1114,8 +1104,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePromiseResolve(node);
       case SerovalNodeType.PromiseReject:
         return this.serializePromiseReject(node);
-      case SerovalNodeType.DOMException:
-        return this.serializeDOMException(node);
       case SerovalNodeType.Plugin:
         return this.serializePlugin(node);
       case SerovalNodeType.SpecialReference:

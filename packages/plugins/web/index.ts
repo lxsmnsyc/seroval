@@ -1,5 +1,6 @@
 export { default as BlobPlugin } from './blob';
 export { default as CustomEventPlugin } from './custom-event';
+export { default as DOMExceptionPlugin } from './dom-exception';
 export { default as EventPlugin } from './event';
 export { default as FilePlugin } from './file';
 export { default as FormDataPlugin } from './form-data';

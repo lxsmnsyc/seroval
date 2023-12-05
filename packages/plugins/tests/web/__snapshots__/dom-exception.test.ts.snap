@@ -20,14 +20,14 @@ exports[`DOMException > serialize > supports DOMException 1`] = `"new DOMExcepti
 
 exports[`DOMException > serializeAsync > supports DOMException 1`] = `"Promise.resolve(new DOMException("This is an example message.","Example"))"`;
 
-exports[`DOMException > toCrossJSON > supports DOMException 1`] = `"{"t":39,"i":0,"s":"This is an example message.","c":"Example"}"`;
+exports[`DOMException > toCrossJSON > supports DOMException 1`] = `"{"t":40,"i":0,"s":{"name":{"t":1,"s":"Example"},"message":{"t":1,"s":"This is an example message."}},"c":"seroval-plugins/web/DOMException"}"`;
 
-exports[`DOMException > toCrossJSONAsync > supports DOMException 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":39,"i":1,"s":"This is an example message.","c":"Example"}}"`;
+exports[`DOMException > toCrossJSONAsync > supports DOMException 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"name":{"t":1,"s":"Example"},"message":{"t":1,"s":"This is an example message."}},"c":"seroval-plugins/web/DOMException"}}"`;
 
 exports[`DOMException > toCrossJSONStream > supports DOMException 1`] = `"{"t":28,"i":0,"f":{"t":41,"i":1,"s":2}}"`;
 
-exports[`DOMException > toCrossJSONStream > supports DOMException 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":39,"i":2,"s":"This is an example message.","c":"Example"}]}"`;
+exports[`DOMException > toCrossJSONStream > supports DOMException 2`] = `"{"t":29,"i":0,"a":[{"t":41,"i":3,"s":3},{"t":40,"i":2,"s":{"name":{"t":1,"s":"Example"},"message":{"t":1,"s":"This is an example message."}},"c":"seroval-plugins/web/DOMException"}]}"`;
 
-exports[`DOMException > toJSON > supports DOMException 1`] = `"{"t":{"t":39,"i":0,"s":"This is an example message.","c":"Example"},"f":16383,"m":[]}"`;
+exports[`DOMException > toJSON > supports DOMException 1`] = `"{"t":{"t":40,"i":0,"s":{"name":{"t":1,"s":"Example"},"message":{"t":1,"s":"This is an example message."}},"c":"seroval-plugins/web/DOMException"},"f":16383,"m":[]}"`;
 
-exports[`DOMException > toJSONAsync > supports DOMException 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":39,"i":1,"s":"This is an example message.","c":"Example"}},"f":16383,"m":[]}"`;
+exports[`DOMException > toJSONAsync > supports DOMException 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":40,"i":1,"s":{"name":{"t":1,"s":"Example"},"message":{"t":1,"s":"This is an example message."}},"c":"seroval-plugins/web/DOMException"}},"f":16383,"m":[]}"`;
