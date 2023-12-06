@@ -1,12 +1,7 @@
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
-import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
-  createArrayBufferNode,
   createAsyncIteratorFactoryInstanceNode,
-  createDateNode,
   createIteratorFactoryInstanceNode,
   createPluginNode,
-  createRegExpNode,
   createStreamConstructorNode,
   createStreamNextNode,
   createStreamReturnNode,
@@ -15,7 +10,6 @@ import {
 } from '../../base-primitives';
 import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
-import { Feature } from '../../compat';
 import { SerovalNodeType } from '../../constants';
 import { FALSE_NODE, TRUE_NODE } from '../../literals';
 import { serializeString } from '../../string';
@@ -29,7 +23,7 @@ import type {
 import { iteratorToSequence } from '../../utils/iterator-to-sequence';
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
-import { createStreamFromAsyncIterable, isStream } from '../../stream';
+import { createStreamFromAsyncIterable } from '../../stream';
 
 export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
@@ -97,15 +91,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
   }
 
-  push<T>(value: T): void {
-    this.onParse(this.parse(value));
-  }
-
-  pushPendingState(): void {
+  private pushPendingState(): void {
     this.pending++;
   }
 
-  popPendingState(): void {
+  private popPendingState(): void {
     if (--this.pending <= 0) {
       this.onDone();
     }
@@ -173,7 +163,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     };
   }
 
-  private parsePromise(
+  protected parsePromise(
     id: number,
     current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
@@ -305,114 +295,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       },
     });
     return result;
-  }
-
-  protected parseObject(
-    id: number,
-    current: object,
-  ): SerovalNode {
-    if (Array.isArray(current)) {
-      return this.parseArray(id, current);
-    }
-    if (isStream(current)) {
-      return this.parseStream(id, current);
-    }
-    const parsed = this.parsePlugin(id, current);
-    if (parsed) {
-      return parsed;
-    }
-    const currentClass = current.constructor;
-    switch (currentClass) {
-      case Object:
-        return this.parsePlainObject(
-          id,
-          current as Record<string, unknown>,
-          false,
-        );
-      case undefined:
-        return this.parsePlainObject(
-          id,
-          current as Record<string, unknown>,
-          true,
-        );
-      case Date:
-        return createDateNode(id, current as unknown as Date);
-      case RegExp:
-        return createRegExpNode(id, current as unknown as RegExp);
-      case Error:
-      case EvalError:
-      case RangeError:
-      case ReferenceError:
-      case SyntaxError:
-      case TypeError:
-      case URIError:
-        return this.parseError(id, current as unknown as Error);
-      case Number:
-      case Boolean:
-      case String:
-      case BigInt:
-        return this.parseBoxed(id, current);
-      case ArrayBuffer:
-        return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-      case Int8Array:
-      case Int16Array:
-      case Int32Array:
-      case Uint8Array:
-      case Uint16Array:
-      case Uint32Array:
-      case Uint8ClampedArray:
-      case Float32Array:
-      case Float64Array:
-        return this.parseTypedArray(id, current as unknown as TypedArrayValue);
-      case DataView:
-        return this.parseDataView(id, current as unknown as DataView);
-      case Map:
-        return this.parseMap(
-          id,
-          current as unknown as Map<unknown, unknown>,
-        );
-      case Set:
-        return this.parseSet(
-          id,
-          current as unknown as Set<unknown>,
-        );
-      default:
-        break;
-    }
-    // Promises
-    if (currentClass === Promise || current instanceof Promise) {
-      return this.parsePromise(id, current as unknown as Promise<unknown>);
-    }
-    const currentFeatures = this.features;
-    // BigInt Typed Arrays
-    if (currentFeatures & Feature.BigIntTypedArray) {
-      switch (currentClass) {
-        case BigInt64Array:
-        case BigUint64Array:
-          return this.parseBigIntTypedArray(id, current as unknown as BigIntTypedArrayValue);
-        default:
-          break;
-      }
-    }
-    // ES Collection
-    if (
-      (currentFeatures & Feature.AggregateError)
-      && typeof AggregateError !== 'undefined'
-      && (currentClass === AggregateError || current instanceof AggregateError)
-    ) {
-      return this.parseAggregateError(id, current as unknown as AggregateError);
-    }
-    // Slow path. We only need to handle Errors and Iterators
-    // since they have very broad implementations.
-    if (current instanceof Error) {
-      return this.parseError(id, current);
-    }
-    // Generator functions don't have a global constructor
-    // despite existing
-    if (Symbol.iterator in current || Symbol.asyncIterator in current) {
-      return this.parsePlainObject(id, current, !!currentClass);
-    }
-    throw new UnsupportedTypeError(current);
   }
 
   private parseWithError<T>(current: T): SerovalNode | undefined {

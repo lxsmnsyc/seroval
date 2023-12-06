@@ -475,9 +475,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (
-      (Symbol.iterator in current || Symbol.asyncIterator in current)
-    ) {
+    if (Symbol.iterator in current || Symbol.asyncIterator in current) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);

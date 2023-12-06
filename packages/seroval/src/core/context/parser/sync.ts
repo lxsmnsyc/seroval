@@ -24,7 +24,7 @@ import {
   createWKSymbolNode,
 } from '../../base-primitives';
 import { Feature } from '../../compat';
-import type { WellKnownSymbols } from '../../constants';
+import { SerovalNodeType, type WellKnownSymbols } from '../../constants';
 import {
   FALSE_NODE,
   NULL_NODE,
@@ -54,6 +54,7 @@ import type {
   SerovalTypedArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
+  SerovalPromiseConstructorNode,
 } from '../../types';
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
@@ -297,6 +298,26 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     );
   }
 
+  protected parsePromise(
+    id: number,
+    current: Promise<unknown>,
+  ): SerovalPromiseConstructorNode {
+    return {
+      t: SerovalNodeType.PromiseConstructor,
+      i: id,
+      s: undefined,
+      l: undefined,
+      c: undefined,
+      m: undefined,
+      p: undefined,
+      e: undefined,
+      a: undefined,
+      f: this.parseSpecialReference(SpecialReference.PromiseConstructor),
+      b: undefined,
+      o: undefined,
+    };
+  }
+
   protected parseObject(
     id: number,
     current: object,
@@ -369,6 +390,10 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       default:
         break;
     }
+    // Promises
+    if (currentClass === Promise || current instanceof Promise) {
+      return this.parsePromise(id, current as unknown as Promise<unknown>);
+    }
     const currentFeatures = this.features;
     // BigInt Typed Arrays
     if (currentFeatures & Feature.BigIntTypedArray) {
@@ -380,7 +405,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
           break;
       }
     }
-    // ES Collection
     if (
       (currentFeatures & Feature.AggregateError)
       && typeof AggregateError !== 'undefined'
