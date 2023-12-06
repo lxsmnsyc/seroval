@@ -1,6 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import ReadableStreamPlugin from './readable-stream';
+import HeadersPlugin from './headers';
 
 function createResponseOptions(
   current: Response,
@@ -21,6 +22,7 @@ const ResponsePlugin = /* @__PURE__ */createPlugin<Response, ResponseNode>({
   tag: 'seroval-plugins/web/Response',
   extends: [
     ReadableStreamPlugin,
+    HeadersPlugin,
   ],
   test(value) {
     if (typeof Response === 'undefined') {

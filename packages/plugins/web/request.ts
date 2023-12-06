@@ -1,6 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import ReadableStreamPlugin from './readable-stream';
+import HeadersPlugin from './headers';
 
 function createRequestOptions(
   current: Request,
@@ -30,6 +31,7 @@ const RequestPlugin = /* @__PURE__ */createPlugin<Request, RequestNode>({
   tag: 'seroval-plugins/web/Request',
   extends: [
     ReadableStreamPlugin,
+    HeadersPlugin,
   ],
   test(value) {
     if (typeof Request === 'undefined') {
