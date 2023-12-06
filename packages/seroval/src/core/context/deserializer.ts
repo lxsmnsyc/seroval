@@ -289,9 +289,10 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializePlugin(node: SerovalPluginNode): unknown {
     const currentPlugins = this.plugins;
     if (currentPlugins) {
+      const tag = deserializeString(node.c);
       for (let i = 0, len = currentPlugins.length; i < len; i++) {
         const plugin = currentPlugins[i];
-        if (plugin.tag === node.c) {
+        if (plugin.tag === tag) {
           return this.assignIndexedValue(
             node.i,
             plugin.deserialize(node.s, this, {
