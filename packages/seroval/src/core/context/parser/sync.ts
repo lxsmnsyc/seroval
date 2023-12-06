@@ -50,7 +50,6 @@ import type {
   SerovalSetNode,
   SerovalPluginNode,
   SerovalAggregateErrorNode,
-  SerovalPlainRecordNode,
   SerovalTypedArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalDataViewNode,
@@ -246,23 +245,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       items.push(this.parse(item));
     }
     return createSetNode(id, current.size, items);
-  }
-
-  protected parsePlainProperties(
-    entries: [key: string, value: unknown][],
-  ): SerovalPlainRecordNode {
-    const size = entries.length;
-    const keyNodes: string[] = [];
-    const valueNodes: SerovalNode[] = [];
-    for (let i = 0; i < size; i++) {
-      keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(this.parse(entries[i][1]));
-    }
-    return {
-      k: keyNodes,
-      v: valueNodes,
-      s: size,
-    };
   }
 
   protected parsePlugin(

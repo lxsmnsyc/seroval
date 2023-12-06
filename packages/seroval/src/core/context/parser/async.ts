@@ -54,7 +54,6 @@ import type {
   SerovalTypedArrayNode,
   SerovalAggregateErrorNode,
   SerovalMapNode,
-  SerovalPlainRecordNode,
   SerovalPluginNode,
   SerovalSetNode,
   SerovalDataViewNode,
@@ -251,23 +250,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       items.push(await this.parse(item));
     }
     return createSetNode(id, current.size, items);
-  }
-
-  protected async parsePlainProperties(
-    entries: [key: string, value: unknown][],
-  ): Promise<SerovalPlainRecordNode> {
-    const size = entries.length;
-    const keyNodes: string[] = [];
-    const valueNodes: SerovalNode[] = [];
-    for (let i = 0; i < size; i++) {
-      keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(await this.parse(entries[i][1]));
-    }
-    return {
-      k: keyNodes,
-      v: valueNodes,
-      s: size,
-    };
   }
 
   private async parsePromise(
