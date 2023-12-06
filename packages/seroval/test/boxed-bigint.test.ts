@@ -6,7 +6,6 @@ import {
   serializeAsync,
   toJSONAsync,
   toJSON,
-  Feature,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
