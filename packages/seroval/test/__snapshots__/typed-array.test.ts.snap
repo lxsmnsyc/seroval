@@ -28,6 +28,6 @@ exports[`typed arrays > toCrossJSONStream > supports typed arrays 1`] = `"{"t":2
 
 exports[`typed arrays > toCrossJSONStream > supports typed arrays 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":4,"s":2},{"t":15,"i":2,"l":4,"c":"Uint32Array","f":{"t":19,"i":3,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0}]}"`;
 
-exports[`typed arrays > toJSON > supports typed arrays 1`] = `"{"t":{"t":15,"i":0,"l":4,"c":"Uint32Array","f":{"t":19,"i":1,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0},"f":63,"m":[]}"`;
+exports[`typed arrays > toJSON > supports typed arrays 1`] = `"{"t":{"t":15,"i":0,"l":4,"c":"Uint32Array","f":{"t":19,"i":1,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0},"f":31,"m":[]}"`;
 
-exports[`typed arrays > toJSONAsync > supports typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"l":4,"c":"Uint32Array","f":{"t":19,"i":2,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0}},"f":63,"m":[]}"`;
+exports[`typed arrays > toJSONAsync > supports typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"l":4,"c":"Uint32Array","f":{"t":19,"i":2,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0}},"f":31,"m":[]}"`;

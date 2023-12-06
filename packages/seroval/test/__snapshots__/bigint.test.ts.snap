@@ -1,9 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`bigint > compat > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object BigInt]"]`;
-
-exports[`bigint > compat#toJSON > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object BigInt]"]`;
-
 exports[`bigint > crossSerialize > supports bigint 1`] = `"9007199254740991n"`;
 
 exports[`bigint > crossSerializeAsync > supports bigint 1`] = `"$R[0]=Promise.resolve(9007199254740991n)"`;
@@ -24,6 +20,6 @@ exports[`bigint > toCrossJSONStream > supports bigint 1`] = `"{"t":22,"i":0,"f":
 
 exports[`bigint > toCrossJSONStream > supports bigint 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":3,"s":"9007199254740991"}]}"`;
 
-exports[`bigint > toJSON > supports bigint 1`] = `"{"t":{"t":3,"s":"9007199254740991"},"f":63,"m":[]}"`;
+exports[`bigint > toJSON > supports bigint 1`] = `"{"t":{"t":3,"s":"9007199254740991"},"f":31,"m":[]}"`;
 
-exports[`bigint > toJSONAsync > supports bigint 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":3,"s":"9007199254740991"}},"f":63,"m":[]}"`;
+exports[`bigint > toJSONAsync > supports bigint 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":3,"s":"9007199254740991"}},"f":31,"m":[]}"`;

@@ -2,7 +2,7 @@
 
 exports[`null-constructor > compat > should use manual assignment instead of Object.assign 1`] = `"(h=>((h=Object.create(null),h.hello="world",h)))()"`;
 
-exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["hello"],"v":[{"t":1,"s":"world"}],"s":1},"o":0},"f":47,"m":[]}"`;
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["hello"],"v":[{"t":1,"s":"world"}],"s":1},"o":0},"f":23,"m":[]}"`;
 
 exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"(h=>((h=Object.create(null),h.hello="world",h)))()"`;
 
@@ -134,16 +134,16 @@ exports[`null-constructor > toCrossJSONStream > supports self-recursion 2`] = `"
 
 exports[`null-constructor > toCrossJSONStream > supports self-recursion 3`] = `"{"t":23,"i":3,"a":[{"t":4,"i":4},{"t":4,"i":0}]}"`;
 
-exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["hello"],"v":[{"t":1,"s":"world"}],"s":1},"o":0},"f":63,"m":[]}"`;
+exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["hello"],"v":[{"t":1,"s":"world"}],"s":1},"o":0},"f":31,"m":[]}"`;
 
-exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0},"f":63,"m":[1]}"`;
+exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0},"f":31,"m":[1]}"`;
 
-exports[`null-constructor > toJSON > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":4,"i":0},{"t":4,"i":0}],"s":2},"o":0},"f":63,"m":[0]}"`;
+exports[`null-constructor > toJSON > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":4,"i":0},{"t":4,"i":0}],"s":2},"o":0},"f":31,"m":[0]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":["hello"],"v":[{"t":1,"s":"world"}],"s":1},"o":0}},"f":63,"m":[]}"`;
+exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":["hello"],"v":[{"t":1,"s":"world"}],"s":1},"o":0}},"f":31,"m":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Symbol.asyncIterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":1},"o":0},"f":63,"m":[1,4]}"`;
+exports[`null-constructor > toJSONAsync > supports Symbol.asyncIterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":1},"o":0},"f":31,"m":[1,4]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":[{"t":17,"i":2,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0}},"f":63,"m":[2]}"`;
+exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":[{"t":17,"i":2,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0}},"f":31,"m":[2]}"`;
 
-exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"s":2},"o":0},"f":63,"m":[0]}"`;
+exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"s":2},"o":0},"f":31,"m":[0]}"`;

@@ -24,10 +24,10 @@ exports[`URL > toCrossJSONStream > supports URL 1`] = `"{"t":22,"i":0,"f":{"t":2
 
 exports[`URL > toCrossJSONStream > supports URL 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":25,"i":2,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/URL"}]}"`;
 
-exports[`URL > toJSON > supports URL 1`] = `"{"t":{"t":25,"i":0,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/URL"},"f":63,"m":[]}"`;
+exports[`URL > toJSON > supports URL 1`] = `"{"t":{"t":25,"i":0,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/URL"},"f":31,"m":[]}"`;
 
 exports[`URL > toJSON > supports URL 2`] = `"{"t":25,"i":0,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/URL"}"`;
 
-exports[`URL > toJSONAsync > supports URL 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/URL"}},"f":63,"m":[]}"`;
+exports[`URL > toJSONAsync > supports URL 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/URL"}},"f":31,"m":[]}"`;
 
 exports[`URL > toJSONAsync > supports URL 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"https://github.com/lxsmnsyc/seroval?hello=world"},"c":"seroval-plugins/web/URL"}}"`;

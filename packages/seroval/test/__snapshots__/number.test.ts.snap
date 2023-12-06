@@ -80,22 +80,22 @@ exports[`number > toCrossJSONStream > supports numbers 1`] = `"{"t":22,"i":0,"f"
 
 exports[`number > toCrossJSONStream > supports numbers 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":0,"s":3735928559}]}"`;
 
-exports[`number > toJSON > supports numbers 1`] = `"{"t":{"t":0,"s":3735928559},"f":63,"m":[]}"`;
+exports[`number > toJSON > supports numbers 1`] = `"{"t":{"t":0,"s":3735928559},"f":31,"m":[]}"`;
 
-exports[`number > toJSON > supports numbers 2`] = `"{"t":{"t":2,"s":7},"f":63,"m":[]}"`;
+exports[`number > toJSON > supports numbers 2`] = `"{"t":{"t":2,"s":7},"f":31,"m":[]}"`;
 
-exports[`number > toJSON > supports numbers 3`] = `"{"t":{"t":2,"s":5},"f":63,"m":[]}"`;
+exports[`number > toJSON > supports numbers 3`] = `"{"t":{"t":2,"s":5},"f":31,"m":[]}"`;
 
-exports[`number > toJSON > supports numbers 4`] = `"{"t":{"t":2,"s":6},"f":63,"m":[]}"`;
+exports[`number > toJSON > supports numbers 4`] = `"{"t":{"t":2,"s":6},"f":31,"m":[]}"`;
 
-exports[`number > toJSON > supports numbers 5`] = `"{"t":{"t":2,"s":4},"f":63,"m":[]}"`;
+exports[`number > toJSON > supports numbers 5`] = `"{"t":{"t":2,"s":4},"f":31,"m":[]}"`;
 
-exports[`number > toJSONAsync > supports numbers 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":0,"s":3735928559}},"f":63,"m":[]}"`;
+exports[`number > toJSONAsync > supports numbers 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":0,"s":3735928559}},"f":31,"m":[]}"`;
 
-exports[`number > toJSONAsync > supports numbers 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":7}},"f":63,"m":[]}"`;
+exports[`number > toJSONAsync > supports numbers 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":7}},"f":31,"m":[]}"`;
 
-exports[`number > toJSONAsync > supports numbers 3`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":5}},"f":63,"m":[]}"`;
+exports[`number > toJSONAsync > supports numbers 3`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":5}},"f":31,"m":[]}"`;
 
-exports[`number > toJSONAsync > supports numbers 4`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":6}},"f":63,"m":[]}"`;
+exports[`number > toJSONAsync > supports numbers 4`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":6}},"f":31,"m":[]}"`;
 
-exports[`number > toJSONAsync > supports numbers 5`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":4}},"f":63,"m":[]}"`;
+exports[`number > toJSONAsync > supports numbers 5`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":4}},"f":31,"m":[]}"`;

@@ -34,7 +34,6 @@ import { serialize, Feature } from 'seroval';
 
 const ES2017FLAG = 
   Feature.AggregateError // ES2021
-  | Feature.BigInt // ES2020
   | Feature.BigIntTypedArray // ES2020;
 
 serialize(myValue, {
@@ -50,8 +49,6 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Uses function expressions for top-level and for deferred `Promise` values
   - Uses function expressions for `Iterable`
   - Uses function expressions for `AsyncIterable`
-- [`BigInt`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
-  - Disables serialization of `BigInt`, `BigInt64Array` and `BigUint64Array`
 - [`ErrorPrototypeStack`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack)
   - Skipped when detected.
   - Affects both `Error` and `AggregateError`
@@ -79,7 +76,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 | `boolean` | ✅ | ✅ | ✅ | |
 | `null` | ✅ | ✅ | ✅ | |
 | `undefined` | ✅ | ✅ | ✅ | |
-| `bigint` | ❓[^1] | ❓[^1] | ❓[^1] | |
+| `bigint` | ✅ | ✅ | ✅ | |
 | `Array` | ✅ | ✅ | ✅ | |
 | sparse (holey) `Arrays` | ✅ | ✅ | ✅ | |
 | `Object` | ✅ | ✅ | ✅ | |
@@ -99,25 +96,25 @@ By default, all feature flags are enabled. The following are the feature flags a
 | `Uint8ClampedArray` | ✅ | ✅ | ✅ | |
 | `Float32Array` | ✅ | ✅ | ✅ | |
 | `Float64Array` | ✅ | ✅ | ✅ | |
-| `BigInt64Array` | ❓[^1][^2] | ❓[^1][^2] | ❓[^1][^2] | |
-| `BigUint64Array` | ❓[^1][^2] | ❓[^1][^2] | ❓[^1][^2] | |
-| `Error` | ✅[^3] | ✅[^3] | ✅[^3] | |
-| `AggregateError` | ✅[^3][^4] | ✅[^3][^4] | ✅[^3][^4] | |
-| `EvalError` | ✅[^3] | ✅[^3] | ✅[^3] | |
-| `RangeError` | ✅[^3] | ✅[^3] | ✅[^3] | |
-| `ReferenceError` | ✅[^3] | ✅[^3] | ✅[^3] | |
-| `SyntaxError` | ✅[^3] | ✅[^3] | ✅[^3] | |
-| `TypeError` | ✅[^3] | ✅[^3] | ✅[^3] | |
-| `URIError` | ✅[^3] | ✅[^3] | ✅[^3] | |
+| `BigInt64Array` | ❓[^1] | ❓[^1] | ❓[^1] | |
+| `BigUint64Array` | ❓[^1] | ❓[^1] | ❓[^1] | |
+| `Error` | ✅[^2] | ✅[^2] | ✅[^2] | |
+| `AggregateError` | ✅[^2][^3] | ✅[^2][^3] | ✅[^2][^3] | |
+| `EvalError` | ✅[^2] | ✅[^2] | ✅[^2] | |
+| `RangeError` | ✅[^2] | ✅[^2] | ✅[^2] | |
+| `ReferenceError` | ✅[^2] | ✅[^2] | ✅[^2] | |
+| `SyntaxError` | ✅[^2] | ✅[^2] | ✅[^2] | |
+| `TypeError` | ✅[^2] | ✅[^2] | ✅[^2] | |
+| `URIError` | ✅[^2] | ✅[^2] | ✅[^2] | |
 | `Promise` | ❌ | ✅ | ✅ | |
 | [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) | ✅ | ✅ | ✅ | |
 | [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) | ✅ | ✅ | ✅ | |
 | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
 | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌[^6] | `seroval-plugins/web` |
-| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅ | ❌[^6] | `seroval-plugins/web` |
+| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌[^5] | `seroval-plugins/web` |
+| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅ | ❌[^5] | `seroval-plugins/web` |
 | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ✅[^5] | ✅ | ✅[^5] | `seroval-plugins/web` |
+| [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ✅[^4] | ✅ | ✅[^4] | `seroval-plugins/web` |
 | [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
 | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
 | [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
@@ -129,9 +126,8 @@ By default, all feature flags are enabled. The following are the feature flags a
 | Cyclic references | ✅ | ✅ | ✅ | |
 | Isomorphic references | ✅ | ✅ | ✅ | |
 
-[^1]: `Feature.BigInt` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^2]: `Feature.BigIntTypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
-[^3]: `Feature.ErrorPrototypeStack` must be enabled if serializing `Error.prototype.stack` is desired.
-[^4]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
-[^5]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
-[^6]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data) while having a sync constructor, it cannot be represented in a way that the type is consistent to its original declaration.
+[^1]: `Feature.BigIntTypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
+[^2]: `Feature.ErrorPrototypeStack` must be enabled if serializing `Error.prototype.stack` is desired.
+[^3]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
+[^4]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
+[^5]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data) while having a sync constructor, it cannot be represented in a way that the type is consistent to its original declaration.

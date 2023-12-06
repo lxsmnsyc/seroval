@@ -23,7 +23,7 @@ import {
   createTypedArrayNode,
   createWKSymbolNode,
 } from '../../base-primitives';
-import { BIGINT_FLAG, Feature } from '../../compat';
+import { Feature } from '../../compat';
 import type { WellKnownSymbols } from '../../constants';
 import {
   FALSE_NODE,
@@ -371,7 +371,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     const currentFeatures = this.features;
     // BigInt Typed Arrays
-    if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
+    if (currentFeatures & Feature.BigIntTypedArray) {
       switch (currentClass) {
         case BigInt64Array:
         case BigUint64Array:
@@ -395,7 +395,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (Symbol.iterator in current) {
+    if (Symbol.iterator in current || Symbol.asyncIterator in current) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);
@@ -410,10 +410,11 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       default: break;
     }
     switch (typeof current) {
-      case 'string': return createStringNode(current as string);
-      case 'number': return createNumberNode(current as number);
+      case 'string':
+        return createStringNode(current as string);
+      case 'number':
+        return createNumberNode(current as number);
       case 'bigint':
-        assert(this.features & Feature.BigInt, new UnsupportedTypeError(current));
         return createBigIntNode(current as bigint);
       case 'object': {
         const id = this.getReference(current);

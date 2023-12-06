@@ -1,9 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`boxed bigint > compat > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object BigInt]"]`;
-
-exports[`boxed bigint > compat#toJSON > should throw an error for unsupported target 1`] = `[Error: Unsupported type "[object BigInt]"]`;
-
 exports[`boxed bigint > crossSerialize > scoped > supports boxed bigint 1`] = `"($R=>$R[0]=Object(9007199254740991n))($R["example"])"`;
 
 exports[`boxed bigint > crossSerialize > supports boxed bigint 1`] = `"$R[0]=Object(9007199254740991n)"`;
@@ -32,6 +28,6 @@ exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 1`] = `"{"t":2
 
 exports[`boxed bigint > toCrossJSONStream > supports boxed bigint 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":3,"s":"9007199254740991"}}]}"`;
 
-exports[`boxed bigint > toJSON > supports boxed bigint 1`] = `"{"t":{"t":21,"i":0,"f":{"t":3,"s":"9007199254740991"}},"f":63,"m":[]}"`;
+exports[`boxed bigint > toJSON > supports boxed bigint 1`] = `"{"t":{"t":21,"i":0,"f":{"t":3,"s":"9007199254740991"}},"f":31,"m":[]}"`;
 
-exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":3,"s":"9007199254740991"}}},"f":63,"m":[]}"`;
+exports[`boxed bigint > toJSONAsync > supports boxed bigint 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":3,"s":"9007199254740991"}}},"f":31,"m":[]}"`;

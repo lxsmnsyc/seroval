@@ -2,7 +2,6 @@
 /* eslint-disable no-await-in-loop */
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
 import UnsupportedTypeError from '../../UnsupportedTypeError';
-import assert from '../../utils/assert';
 import {
   createPluginNode,
   createDateNode,
@@ -26,7 +25,7 @@ import {
   createStreamThrowNode,
   createStreamReturnNode,
 } from '../../base-primitives';
-import { BIGINT_FLAG, Feature } from '../../compat';
+import { Feature } from '../../compat';
 import {
   SerovalNodeType,
 } from '../../constants';
@@ -448,14 +447,12 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         break;
     }
     // Promises
-    if (
-      (currentClass === Promise || current instanceof Promise)
-    ) {
+    if (currentClass === Promise || current instanceof Promise) {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
     const currentFeatures = this.features;
     // BigInt Typed Arrays
-    if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
+    if (currentFeatures & Feature.BigIntTypedArray) {
       switch (currentClass) {
         case BigInt64Array:
         case BigUint64Array:
@@ -495,10 +492,11 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       default: break;
     }
     switch (typeof current) {
-      case 'string': return createStringNode(current as string);
-      case 'number': return createNumberNode(current as number);
+      case 'string':
+        return createStringNode(current as string);
+      case 'number':
+        return createNumberNode(current as number);
       case 'bigint':
-        assert(this.features & Feature.BigInt, new UnsupportedTypeError(current));
         return createBigIntNode(current as bigint);
       case 'object': {
         const id = this.getReference(current);

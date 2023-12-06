@@ -96,18 +96,4 @@ describe('bigint', () => {
       });
     }));
   });
-  describe('compat', () => {
-    it('should throw an error for unsupported target', () => {
-      expect(() => serialize(EXAMPLE, {
-        disabledFeatures: Feature.BigInt,
-      })).toThrowErrorMatchingSnapshot();
-    });
-  });
-  describe('compat#toJSON', () => {
-    it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(EXAMPLE, {
-        disabledFeatures: Feature.BigInt,
-      })).toThrowErrorMatchingSnapshot();
-    });
-  });
 });

@@ -15,7 +15,7 @@ import {
 } from '../../base-primitives';
 import type { BaseSyncParserContextOptions } from './sync';
 import BaseSyncParserContext from './sync';
-import { BIGINT_FLAG, Feature } from '../../compat';
+import { Feature } from '../../compat';
 import { SerovalNodeType } from '../../constants';
 import { FALSE_NODE, TRUE_NODE } from '../../literals';
 import { serializeString } from '../../string';
@@ -380,14 +380,12 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         break;
     }
     // Promises
-    if (
-      (currentClass === Promise || current instanceof Promise)
-    ) {
+    if (currentClass === Promise || current instanceof Promise) {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
     const currentFeatures = this.features;
     // BigInt Typed Arrays
-    if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
+    if (currentFeatures & Feature.BigIntTypedArray) {
       switch (currentClass) {
         case BigInt64Array:
         case BigUint64Array:
@@ -411,9 +409,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (
-      (Symbol.iterator in current || Symbol.asyncIterator in current)
-    ) {
+    if (Symbol.iterator in current || Symbol.asyncIterator in current) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);

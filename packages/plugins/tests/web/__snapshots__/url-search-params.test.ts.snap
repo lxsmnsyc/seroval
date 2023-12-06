@@ -24,10 +24,10 @@ exports[`URLSearchParams > toCrossJSONStream > supports URLSearchParams 1`] = `"
 
 exports[`URLSearchParams > toCrossJSONStream > supports URLSearchParams 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":25,"i":2,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}]}"`;
 
-exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{"t":{"t":25,"i":0,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"},"f":63,"m":[]}"`;
+exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{"t":{"t":25,"i":0,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"},"f":31,"m":[]}"`;
 
 exports[`URLSearchParams > toJSON > supports URLSearchParams 2`] = `"{"t":25,"i":0,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}"`;
 
-exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}},"f":63,"m":[]}"`;
+exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}},"f":31,"m":[]}"`;
 
 exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}}"`;
