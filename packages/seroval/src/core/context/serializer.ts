@@ -1015,7 +1015,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
             'if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)',
           ) + '}),t={[' + this.getRefParam(symbol.i) + ']:' + this.createFunction([], 't') + ',next:' + this.createEffectfulFunction(
             ['i', 't', 'v'],
-            'if(d===-1){return((i=c++)>=b.length)?(p.push(t=' + this.getRefParam(promise.i) + '()),t):{done:!0,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],c!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
+            'if(d===-1){return((i=c++)>=b.length)?(p.push(t=' + this.getRefParam(promise.i) + '()),t):{done:!0,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
           ) + '})',
         ),
       ),

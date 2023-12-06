@@ -188,7 +188,7 @@ export function streamToAsyncIterable<T>(
         }
         const current = count++;
         const value = buffer[current];
-        if (count !== doneAt) {
+        if (current !== doneAt) {
           return { done: false, value };
         }
         if (isThrow) {
