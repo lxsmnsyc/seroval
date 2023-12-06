@@ -23,7 +23,7 @@ export interface SerovalBaseNode {
   // properties (objects)
   p: SerovalObjectRecordNode | undefined;
   // entries (for Map, etc.)
-  e: SerovalMapRecordNode | SerovalPlainRecordNode | undefined;
+  e: SerovalMapRecordNode | undefined;
   // array of nodes
   a: (SerovalNode | undefined)[] | undefined;
   // fulfilled node
@@ -37,12 +37,6 @@ export interface SerovalBaseNode {
 export type SerovalObjectRecordKey =
   | string
   | SerovalNode;
-
-export interface SerovalPlainRecordNode {
-  k: string[];
-  v: SerovalNode[];
-  s: number;
-}
 
 export interface SerovalObjectRecordNode {
   k: SerovalObjectRecordKey[];
