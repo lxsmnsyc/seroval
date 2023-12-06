@@ -1,4 +1,3 @@
-/* eslint-disable prefer-spread */
 import { deserializeString } from '../string';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import { getReference } from '../reference';
@@ -7,12 +6,14 @@ import type {
   SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalAsyncIteratorFactoryInstanceNode,
+  SerovalAsyncIteratorFactoryNode,
   SerovalBigIntTypedArrayNode,
   SerovalBoxedNode,
   SerovalDataViewNode,
   SerovalDateNode,
   SerovalErrorNode,
   SerovalIteratorFactoryInstanceNode,
+  SerovalIteratorFactoryNode,
   SerovalMapNode,
   SerovalNode,
   SerovalNullConstructorNode,
@@ -331,6 +332,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializeIteratorFactoryInstance(
     node: SerovalIteratorFactoryInstanceNode,
   ): unknown {
+    this.deserialize(node.a[0]);
     const source = this.deserialize(node.a[1]);
     return sequenceToIterator(source as Sequence);
   }
@@ -338,6 +340,7 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializeAsyncIteratorFactoryInstance(
     node: SerovalAsyncIteratorFactoryInstanceNode,
   ): unknown {
+    this.deserialize(node.a[0]);
     const source = this.deserialize(node.a[1]);
     return streamToAsyncIterable(source as Stream<any>);
   }
@@ -388,6 +391,20 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
     deferred.return(
       this.deserialize(node.f),
     );
+    return undefined;
+  }
+
+  private deserializeIteratorFactory(
+    node: SerovalIteratorFactoryNode,
+  ): unknown {
+    this.deserialize(node.f);
+    return undefined;
+  }
+
+  private deserializeAsyncIteratorFactory(
+    node: SerovalAsyncIteratorFactoryNode,
+  ): unknown {
+    this.deserialize(node.a[1]);
     return undefined;
   }
 
@@ -455,9 +472,11 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
         return this.deserializeStreamThrow(node);
       case SerovalNodeType.StreamReturn:
         return this.deserializeStreamReturn(node);
-      case SerovalNodeType.SpecialReference:
       case SerovalNodeType.IteratorFactory:
+        return this.deserializeIteratorFactory(node);
       case SerovalNodeType.AsyncIteratorFactory:
+        return this.deserializeAsyncIteratorFactory(node);
+      case SerovalNodeType.SpecialReference:
       default:
         throw new Error('invariant');
     }
