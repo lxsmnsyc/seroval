@@ -128,28 +128,44 @@ export function streamToAsyncIterable<T>(
   stream: Stream<T>,
 ): () => AsyncIterableIterator<T> {
   return (): AsyncIterableIterator<T> => {
-    const buffer: [type: 0 | 1 | 2, value: T][] = [];
+    const buffer: T[] = [];
+    const pending: Deferred[] = [];
     let count = 0;
-    let pending: Deferred | undefined;
+    let doneAt = -1;
+    let isThrow = false;
+
+    function resolveAll(): void {
+      for (let i = 0, len = pending.length; i < len; i++) {
+        pending[i].resolve({ done: true, value: undefined });
+      }
+    }
 
     stream.on({
       next(value) {
-        if (pending) {
-          pending.resolve({ done: false, value });
+        const current = pending.shift();
+        if (current) {
+          current.resolve({ done: false, value });
         }
-        buffer.push([0, value]);
+        buffer.push(value);
       },
       throw(value) {
-        if (pending) {
-          pending.reject(value);
+        const current = pending.shift();
+        if (current) {
+          current.reject(value);
         }
-        buffer.push([1, value as T]);
+        resolveAll();
+        doneAt = buffer.length;
+        buffer.push(value as T);
+        isThrow = true;
       },
       return(value) {
-        if (pending) {
-          pending.resolve({ done: true, value });
+        const current = pending.shift();
+        if (current) {
+          current.resolve({ done: true, value });
         }
-        buffer.push([2, value]);
+        resolveAll();
+        doneAt = buffer.length;
+        buffer.push(value);
       },
     });
 
@@ -158,25 +174,27 @@ export function streamToAsyncIterable<T>(
         return this;
       },
       async next(): Promise<IteratorResult<T>> {
-        const current = count++;
-        if (current < buffer.length) {
-          const [type, value] = buffer[current];
-          if (type === 1) {
-            throw value;
+        if (doneAt === -1) {
+          const current = count++;
+          if (current >= buffer.length) {
+            const deferred = createDeferred();
+            pending.push(deferred);
+            return deferred.promise as Promise<IteratorResult<T>>;
           }
-          if (type === 0) {
-            return {
-              done: false,
-              value,
-            };
-          }
-          return {
-            done: true,
-            value,
-          };
+          return { done: false, value: buffer[current] };
         }
-        pending = createDeferred();
-        return pending.promise as Promise<IteratorResult<T>>;
+        if (count > doneAt) {
+          return { done: true, value: undefined };
+        }
+        const current = count++;
+        const value = buffer[current];
+        if (count !== doneAt) {
+          return { done: false, value };
+        }
+        if (isThrow) {
+          throw value;
+        }
+        return { done: true, value };
       },
     };
   };

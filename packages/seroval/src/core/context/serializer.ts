@@ -947,8 +947,8 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     let result = '';
     let initialized = false;
     if (node.f.t !== SerovalNodeType.IndexedValue) {
-      result = '(' + this.serialize(node.f) + ',';
       this.markRef(node.f.i);
+      result = '(' + this.serialize(node.f) + ',';
       initialized = true;
     }
     result += this.assignIndexedValue(
@@ -960,7 +960,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
           '(i=0,t={[' + this.getRefParam(node.f.i) + ']:' + this.createFunction([], 't') + ',next:'
           + this.createEffectfulFunction(
             [],
-            'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
+            'if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}',
           ) + '})',
         ),
       ),
@@ -984,12 +984,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     let result = '';
 
     if (promise.t !== SerovalNodeType.IndexedValue) {
-      result += '(' + this.serialize(promise);
       this.markRef(promise.i);
+      result += '(' + this.serialize(promise);
     }
     if (symbol.t !== SerovalNodeType.IndexedValue) {
-      result += (result ? ',' : '(') + this.serialize(symbol);
       this.markRef(symbol.i);
+      result += (result ? ',' : '(') + this.serialize(symbol);
     }
     if (result) {
       result += ',';
@@ -1000,19 +1000,22 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       this.createFunction(
         ['s'],
         this.createFunction(
-          ['b', 'c', 'p', 't'],
-          '(b=[],c=0,p=void 0,s.on({next:' + this.createEffectfulFunction(
-            ['v'],
-            'p&&p.s({done:!1,value:v});b.push([0,v])',
+          ['b', 'c', 'p', 'd', 'e', 't', 'f'],
+          '(b=[],c=0,p=[],d=-1,e=!1,f=' + this.createEffectfulFunction(
+            ['i', 'l'],
+            'for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})',
+          ) + ',s.on({next:' + this.createEffectfulFunction(
+            ['v', 't'],
+            'if(t=p.shift())t.s({done:!1,value:v});b.push(v)',
           ) + ',throw:' + this.createEffectfulFunction(
-            ['v'],
-            'p&&p.f(v);b.push([1,v])',
+            ['v', 't'],
+            'if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)',
           ) + ',return:' + this.createEffectfulFunction(
-            ['v'],
-            'p&&p.s({done:!0,value:v});b.push([2,v])',
+            ['v', 't'],
+            'if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)',
           ) + '}),t={[' + this.getRefParam(symbol.i) + ']:' + this.createFunction([], 't') + ',next:' + this.createEffectfulFunction(
             ['i', 't', 'v'],
-            'i=c++;if(i>b.length)return ' + this.getRefParam(promise.i) + '();t=b[i][0],v=b[i][1];if(t===1)throw v;return{done:t===2,value:v}',
+            'if(d===-1){return((i=c++)>=b.length)?(p.push(t=' + this.getRefParam(promise.i) + '()),t):{done:!0,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],c!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
           ) + '})',
         ),
       ),
