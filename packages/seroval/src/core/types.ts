@@ -286,7 +286,7 @@ export interface SerovalSpecialReferenceNode extends SerovalBaseNode {
 export interface SerovalIteratorFactoryNode extends SerovalBaseNode {
   t: SerovalNodeType.IteratorFactory;
   i: number;
-  f: SerovalNode;
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalIteratorFactoryInstanceNode extends SerovalBaseNode {

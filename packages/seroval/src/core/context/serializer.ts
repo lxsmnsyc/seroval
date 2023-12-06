@@ -944,13 +944,20 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   }
 
   protected serializeIteratorFactory(node: SerovalIteratorFactoryNode): string {
-    return this.assignIndexedValue(
+    let result = '';
+    let initialized = false;
+    if (node.f.t !== SerovalNodeType.IndexedValue) {
+      result = '(' + this.serialize(node.f) + ',';
+      this.markRef(node.f.i);
+      initialized = true;
+    }
+    result += this.assignIndexedValue(
       node.i,
       this.createFunction(
         ['s'],
         this.createFunction(
           ['i', 'c', 'd', 't'],
-          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ',next:'
+          '(i=0,t={[' + this.getRefParam(node.f.i) + ']:' + this.createFunction([], 't') + ',next:'
           + this.createEffectfulFunction(
             [],
             'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
@@ -958,6 +965,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         ),
       ),
     );
+    if (initialized) {
+      result += ')';
+    }
+    return result;
   }
 
   protected serializeIteratorFactoryInstance(
