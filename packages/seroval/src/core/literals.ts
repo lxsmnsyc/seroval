@@ -24,5 +24,7 @@ export const UNDEFINED_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.
 export const NULL_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.Null);
 export const NEG_ZERO_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.NegativeZero);
 export const INFINITY_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.Infinity);
-export const NEG_INFINITY_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.NegativeInfinity);
+export const NEG_INFINITY_NODE = /* @__PURE__ */createConstantNode(
+  SerovalConstant.NegativeInfinity,
+);
 export const NAN_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.NaN);
