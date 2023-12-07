@@ -11,9 +11,22 @@ export interface PluginData {
 }
 
 export interface Plugin<Value, Node> {
+  /**
+   * A unique string that helps idenfity the plugin
+   */
   tag: string;
+  /**
+   * List of dependency plugins
+   */
   extends?: Plugin<any, any>[];
+  /**
+   * Method to test if a value is an expected value of the plugin
+   * @param value
+   */
   test(value: unknown): boolean;
+  /**
+   * Parsing modes
+   */
   parse: {
     sync?: (
       value: Value,
@@ -31,11 +44,17 @@ export interface Plugin<Value, Node> {
       data: PluginData,
     ) => Node;
   };
+  /**
+   * Convert the parsed node into a JS string
+   */
   serialize(
     node: Node,
     ctx: BaseSerializerContext,
     data: PluginData,
   ): string;
+  /**
+   * Convert the parsed node into its runtime equivalent.
+   */
   deserialize(
     node: Node,
     ctx: BaseDeserializerContext,
