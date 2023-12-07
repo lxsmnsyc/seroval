@@ -245,3 +245,20 @@ The mentioned serialization metohds are ideal for server-to-client communication
 
 > **INFO**
 > Coming soon.
+
+## Plugins
+
+All serialization methods can accept plugins. Plugins allows extending the serialization capabilities of `seroval`. You can visit such examples on `seroval-plugins`.
+
+```js
+
+import { serializeAsync } from 'seroval';
+import { BlobPlugin } from 'seroval-plugins/web';
+
+const example = new Blob(['Hello, World!'], { type: 'text/plain '});
+console.log(await serializeAsync(example, {
+  plugins: [
+    BlobPlugin,
+  ],
+})); // new Blob([new Uint8Array([72,101,108,108,111,44,32,87,111,114,108,100,33]).buffer],{type:"text/plain "})
+```
