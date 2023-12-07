@@ -16,4 +16,3 @@ export { createStream } from './core/stream';
 
 export type { SerovalNode } from './core/types';
 
-export default serialize;
