@@ -162,7 +162,13 @@ export default abstract class BaseDeserializerContext implements PluginAccessOpt
   private deserializeRegExp(
     node: SerovalRegExpNode,
   ): RegExp {
-    return this.assignIndexedValue(node.i, new RegExp(node.c, node.m));
+    return this.assignIndexedValue(
+      node.i,
+      new RegExp(
+        deserializeString(node.c),
+        node.m,
+      ),
+    );
   }
 
   private deserializeSet(

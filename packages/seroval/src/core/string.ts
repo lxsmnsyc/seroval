@@ -38,16 +38,22 @@ export function serializeString(str: string): string {
   return result;
 }
 
+function deserializeReplacer(str: string): string {
+  switch (str) {
+    case '\\\\': return '\\';
+    case '\\"': return '"';
+    case '\\n': return '\n';
+    case '\\r': return '\r';
+    case '\\b': return '\b';
+    case '\\t': return '\t';
+    case '\\f': return '\f';
+    case '\\x3C': return '\x3C';
+    case '\\u2028': return '\u2028';
+    case '\\u2029': return '\u2029';
+    default: return str;
+  }
+}
+
 export function deserializeString(str: string): string {
-  return str
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\')
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '\r')
-    .replace(/\\b/g, '\b')
-    .replace(/\\t/g, '\t')
-    .replace(/\\f/g, '\f')
-    .replace(/\\x3C/g, '<')
-    .replace(/\\u2028/g, '\u2028')
-    .replace(/\\u2029/g, '\u2029');
+  return str.replace(/(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g, deserializeReplacer);
 }

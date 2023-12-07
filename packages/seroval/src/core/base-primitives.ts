@@ -150,7 +150,7 @@ export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode
     i: id,
     s: undefined,
     l: undefined,
-    c: current.source,
+    c: serializeString(current.source),
     m: current.flags,
     p: undefined,
     e: undefined,
