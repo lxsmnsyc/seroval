@@ -1,5 +1,3 @@
-import { serialize } from './core/tree';
-
 export { Feature } from './core/compat';
 export { createReference } from './core/reference';
 
@@ -15,4 +13,3 @@ export type { Stream } from './core/stream';
 export { createStream } from './core/stream';
 
 export type { SerovalNode } from './core/types';
-
