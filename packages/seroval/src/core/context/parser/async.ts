@@ -479,8 +479,8 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       case 'bigint':
         return createBigIntNode(current as bigint);
       case 'object': {
-        const id = this.getReference(current);
-        return typeof id === 'number' ? this.parseObject(id, current as object) : id;
+        const ref = this.getReference(current);
+        return ref.type === 'fresh' ? this.parseObject(ref.value, current as object) : ref.value;
       }
       case 'symbol':
         return this.parseWKSymbol(current);

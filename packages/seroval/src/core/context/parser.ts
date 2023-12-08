@@ -38,6 +38,16 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
   refs?: Map<unknown, number>;
 }
 
+interface FreshReference {
+  type: 'fresh';
+  value: number;
+}
+
+interface CachedReference {
+  type: 'cached';
+  value: SerovalIndexedValueNode | SerovalReferenceNode;
+}
+
 export abstract class BaseParserContext implements PluginAccessOptions {
   abstract readonly mode: SerovalMode;
 
@@ -63,18 +73,27 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return this.marked.has(id);
   }
 
-  protected getReference<T>(current: T): number | SerovalIndexedValueNode | SerovalReferenceNode {
+  protected getReference<T>(current: T): FreshReference | CachedReference {
     const registeredID = this.refs.get(current);
     if (registeredID != null) {
       this.markRef(registeredID);
-      return createIndexedValueNode(registeredID);
+      return {
+        type: 'cached',
+        value: createIndexedValueNode(registeredID),
+      };
     }
     const id = this.refs.size;
     this.refs.set(current, id);
     if (hasReferenceID(current)) {
-      return createReferenceNode(id, current);
+      return {
+        type: 'cached',
+        value: createReferenceNode(id, current),
+      };
     }
-    return id;
+    return {
+      type: 'fresh',
+      value: id,
+    };
   }
 
   protected getStrictReference<T>(current: T): SerovalIndexedValueNode | SerovalReferenceNode {

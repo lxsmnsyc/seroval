@@ -1,7 +1,6 @@
 /* eslint-disable prefer-destructuring */
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
 import UnsupportedTypeError from '../../UnsupportedTypeError';
-import assert from '../../utils/assert';
 import {
   createAggregateErrorNode,
   createArrayBufferNode,
@@ -21,10 +20,9 @@ import {
   createStreamConstructorNode,
   createStringNode,
   createTypedArrayNode,
-  createWKSymbolNode,
 } from '../../base-primitives';
 import { Feature } from '../../compat';
-import { SerovalNodeType, type WellKnownSymbols } from '../../constants';
+import { SerovalNodeType } from '../../constants';
 import {
   FALSE_NODE,
   NULL_NODE,
@@ -34,7 +32,6 @@ import {
 import { iteratorToSequence } from '../../utils/iterator-to-sequence';
 import type { BaseParserContextOptions } from '../parser';
 import { BaseParserContext } from '../parser';
-import { hasReferenceID } from '../../reference';
 import { getErrorOptions } from '../../utils/error';
 import { serializeString } from '../../string';
 import type {
@@ -423,16 +420,13 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       case 'bigint':
         return createBigIntNode(current as bigint);
       case 'object': {
-        const id = this.getReference(current);
-        return typeof id === 'number' ? this.parseObject(id, current as object) : id;
+        const ref = this.getReference(current);
+        return ref.type === 'fresh' ? this.parseObject(ref.value, current as object) : ref.value;
       }
-      case 'symbol': {
-        const id = this.getReference(current);
-        return typeof id === 'number' ? createWKSymbolNode(id, current as WellKnownSymbols) : id;
-      }
+      case 'symbol':
+        return this.parseWKSymbol(current);
       case 'function':
-        assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
-        return this.getStrictReference(current);
+        return this.parseFunction(current);
       default:
         throw new UnsupportedTypeError(current);
     }
