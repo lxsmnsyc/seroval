@@ -405,24 +405,23 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
   }
 
   parse<T>(current: T): SerovalNode {
-    switch (current) {
-      case true: return TRUE_NODE;
-      case false: return FALSE_NODE;
-      case undefined: return UNDEFINED_NODE;
-      case null: return NULL_NODE;
-      default: break;
-    }
     switch (typeof current) {
+      case 'boolean':
+        return current ? TRUE_NODE : FALSE_NODE;
+      case 'undefined':
+        return UNDEFINED_NODE;
       case 'string':
         return createStringNode(current as string);
       case 'number':
         return createNumberNode(current as number);
       case 'bigint':
         return createBigIntNode(current as bigint);
-      case 'object': {
-        const ref = this.getReference(current);
-        return ref.type === 'fresh' ? this.parseObject(ref.value, current as object) : ref.value;
-      }
+      case 'object':
+        if (current) {
+          const ref = this.getReference(current);
+          return ref.type === 'fresh' ? this.parseObject(ref.value, current as object) : ref.value;
+        }
+        return NULL_NODE;
       case 'symbol':
         return this.parseWKSymbol(current);
       case 'function':
