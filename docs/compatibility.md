@@ -64,67 +64,71 @@ By default, all feature flags are enabled. The following are the feature flags a
 - async = `serializeAsync`, `toJSONAsync`, `crossSerializeAsync`, `toCrossJSONAsync`
 - streaming = `crossSerializeStream`, `toCrossJSONStream`, `Serializer`
 
-| Type | sync | async | streaming | required package? |
-| --- | --- | --- | --- | --- |
-| `NaN` | ✅ | ✅ | ✅ | |
-| `Infinity` | ✅ | ✅ | ✅ | |
-| `-Infinity` | ✅ | ✅ | ✅ | |
-| `-Infinity` | ✅ | ✅ | ✅ | |
-| `-0` | ✅ | ✅ | ✅ | |
-| `number` | ✅ | ✅ | ✅ | |
-| `string` | ✅ | ✅ | ✅ | |
-| `boolean` | ✅ | ✅ | ✅ | |
-| `null` | ✅ | ✅ | ✅ | |
-| `undefined` | ✅ | ✅ | ✅ | |
-| `bigint` | ✅ | ✅ | ✅ | |
-| `Array` | ✅ | ✅ | ✅ | |
-| sparse (holey) `Arrays` | ✅ | ✅ | ✅ | |
-| `Object` | ✅ | ✅ | ✅ | |
-| `RegExp` | ✅ | ✅ | ✅ | |
-| `Date` | ✅ | ✅ | ✅ | |
-| `Map` | ✅ | ✅ | ✅ | |
-| `Set` | ✅ | ✅ | ✅ | |
-| `Object.create(null)` | ✅ | ✅ | ✅ | |
-| `ArrayBuffer` | ✅ | ✅ | ✅ | |
-| `DataView` | ✅ | ✅ | ✅ | |
-| `Int8Array` | ✅ | ✅ | ✅ | |
-| `Int16Array` | ✅ | ✅ | ✅ | |
-| `Int32Array` | ✅ | ✅ | ✅ | |
-| `Uint8Array` | ✅ | ✅ | ✅ | |
-| `Uint16Array` | ✅ | ✅ | ✅ | |
-| `Uint32Array` | ✅ | ✅ | ✅ | |
-| `Uint8ClampedArray` | ✅ | ✅ | ✅ | |
-| `Float32Array` | ✅ | ✅ | ✅ | |
-| `Float64Array` | ✅ | ✅ | ✅ | |
-| `BigInt64Array` | ❓[^1] | ❓[^1] | ❓[^1] | |
-| `BigUint64Array` | ❓[^1] | ❓[^1] | ❓[^1] | |
-| `Error` | ✅[^2] | ✅[^2] | ✅[^2] | |
-| `AggregateError` | ✅[^2][^3] | ✅[^2][^3] | ✅[^2][^3] | |
-| `EvalError` | ✅[^2] | ✅[^2] | ✅[^2] | |
-| `RangeError` | ✅[^2] | ✅[^2] | ✅[^2] | |
-| `ReferenceError` | ✅[^2] | ✅[^2] | ✅[^2] | |
-| `SyntaxError` | ✅[^2] | ✅[^2] | ✅[^2] | |
-| `TypeError` | ✅[^2] | ✅[^2] | ✅[^2] | |
-| `URIError` | ✅[^2] | ✅[^2] | ✅[^2] | |
-| `Promise` | ❌ | ✅ | ✅ | |
-| [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) | ✅ | ✅ | ✅ | |
-| [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) | ✅ | ✅ | ✅ | |
-| [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌[^5] | `seroval-plugins/web` |
-| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅ | ❌[^5] | `seroval-plugins/web` |
-| [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ✅[^4] | ✅ | ✅[^4] | `seroval-plugins/web` |
-| [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
-| [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
-| [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ✅ | ✅ | `seroval-plugins/web` |
-| [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ✅ | ✅ | ✅ | `seroval-plugins/web` |
-| [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) | ✅ | ✅ |  ✅ | `seroval-plugins/web` |
-| [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols) | ❌ | ✅ | ✅ | |
-| Built-in streaming primitive | ✅ | ✅ | ✅ | |
-| Cyclic references | ✅ | ✅ | ✅ | |
-| Isomorphic references | ✅ | ✅ | ✅ | |
+| Type | sync | async | streaming |
+| --- | --- | --- | --- |
+| `NaN` | ✅ | ✅ | ✅ |
+| `Infinity` | ✅ | ✅ | ✅ |
+| `-Infinity` | ✅ | ✅ | ✅ |
+| `-Infinity` | ✅ | ✅ | ✅ |
+| `-0` | ✅ | ✅ | ✅ |
+| `number` | ✅ | ✅ | ✅ |
+| `string` | ✅ | ✅ | ✅ |
+| `boolean` | ✅ | ✅ | ✅ |
+| `null` | ✅ | ✅ | ✅ |
+| `undefined` | ✅ | ✅ | ✅ |
+| `bigint` | ✅ | ✅ | ✅ |
+| `Array` | ✅ | ✅ | ✅ |
+| sparse (holey) `Arrays` | ✅ | ✅ | ✅ |
+| `Object` | ✅ | ✅ | ✅ |
+| `RegExp` | ✅ | ✅ | ✅ |
+| `Date` | ✅ | ✅ | ✅ |
+| `Map` | ✅ | ✅ | ✅ |
+| `Set` | ✅ | ✅ | ✅ |
+| `Object.create(null)` | ✅ | ✅ | ✅ |
+| `ArrayBuffer` | ✅ | ✅ | ✅ |
+| `DataView` | ✅ | ✅ | ✅ |
+| `Int8Array` | ✅ | ✅ | ✅ |
+| `Int16Array` | ✅ | ✅ | ✅ |
+| `Int32Array` | ✅ | ✅ | ✅ |
+| `Uint8Array` | ✅ | ✅ | ✅ |
+| `Uint16Array` | ✅ | ✅ | ✅ |
+| `Uint32Array` | ✅ | ✅ | ✅ |
+| `Uint8ClampedArray` | ✅ | ✅ | ✅ |
+| `Float32Array` | ✅ | ✅ | ✅ |
+| `Float64Array` | ✅ | ✅ | ✅ |
+| `BigInt64Array` | ❓[^1] | ❓[^1] | ❓[^1] |
+| `BigUint64Array` | ❓[^1] | ❓[^1] | ❓[^1] |
+| `Error` | ✅[^2] | ✅[^2] | ✅[^2] |
+| `AggregateError` | ✅[^2][^3] | ✅[^2][^3] | ✅[^2][^3] |
+| `EvalError` | ✅[^2] | ✅[^2] | ✅[^2] |
+| `RangeError` | ✅[^2] | ✅[^2] | ✅[^2] |
+| `ReferenceError` | ✅[^2] | ✅[^2] | ✅[^2] |
+| `SyntaxError` | ✅[^2] | ✅[^2] | ✅[^2] |
+| `TypeError` | ✅[^2] | ✅[^2] | ✅[^2] |
+| `URIError` | ✅[^2] | ✅[^2] | ✅[^2] |
+| `Promise` | ❌ | ✅ | ✅ |
+| [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) | ✅ | ✅ | ✅ |
+| [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties) | ✅ | ✅ | ✅ |
+| [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols) | ❌ | ✅ | ✅ |
+| Built-in streaming primitive | ✅ | ✅ | ✅ |
+| Cyclic references | ✅ | ✅ | ✅ |
+| Isomorphic references | ✅ | ✅ | ✅ |
+
+### `seroval-plugins/web`
+
+| Type | sync | async | streaming |
+| [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ✅ | ✅ | ✅ |
+| [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ✅ | ✅ | ✅ |
+| [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌[^5] |
+| [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅ | ❌[^5] |
+| [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ✅ | ✅ | ✅ |
+| [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ✅[^4] | ✅ | ✅[^4] |
+| [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ✅ | ✅ |
+| [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ✅ | ✅ |
+| [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ✅ | ✅ |
+| [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ✅ | ✅ | ✅ |
+| [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ✅ | ✅ | ✅ |
+| [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) | ✅ | ✅ |  ✅ |
 
 [^1]: `Feature.BigIntTypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^2]: `Feature.ErrorPrototypeStack` must be enabled if serializing `Error.prototype.stack` is desired.
