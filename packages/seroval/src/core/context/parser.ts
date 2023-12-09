@@ -38,15 +38,22 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
   refs?: Map<unknown, number>;
 }
 
-interface FreshReference {
-  type: 'fresh';
+interface FreshNode {
+  type: 0;
   value: number;
 }
 
-interface CachedReference {
-  type: 'cached';
-  value: SerovalIndexedValueNode | SerovalReferenceNode;
+interface IndexedNode {
+  type: 1;
+  value: SerovalIndexedValueNode;
 }
+
+interface ReferencedNode {
+  type: 2;
+  value: SerovalReferenceNode;
+}
+
+type ObjectNode = FreshNode | IndexedNode | ReferencedNode;
 
 export abstract class BaseParserContext implements PluginAccessOptions {
   abstract readonly mode: SerovalMode;
@@ -73,78 +80,72 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return this.marked.has(id);
   }
 
-  protected getReference<T>(current: T): FreshReference | CachedReference {
+  protected getIndexedValue<T>(current: T): FreshNode | IndexedNode {
     const registeredID = this.refs.get(current);
     if (registeredID != null) {
       this.markRef(registeredID);
       return {
-        type: 'cached',
+        type: 1,
         value: createIndexedValueNode(registeredID),
       };
     }
     const id = this.refs.size;
     this.refs.set(current, id);
-    if (hasReferenceID(current)) {
-      return {
-        type: 'cached',
-        value: createReferenceNode(id, current),
-      };
-    }
     return {
-      type: 'fresh',
+      type: 0,
       value: id,
     };
   }
 
-  protected getStrictReference<T>(current: T): SerovalIndexedValueNode | SerovalReferenceNode {
-    const registeredID = this.refs.get(current);
-    if (registeredID != null) {
-      this.markRef(registeredID);
-      return createIndexedValueNode(registeredID);
+  protected getReference<T>(current: T): ObjectNode {
+    const indexed = this.getIndexedValue(current);
+    if (indexed.type === 1) {
+      return indexed;
     }
-    const id = this.refs.size;
-    this.refs.set(current, id);
-    return createReferenceNode(id, current);
+    if (hasReferenceID(current)) {
+      return {
+        type: 2,
+        value: createReferenceNode(indexed.value, current),
+      };
+    }
+    return indexed;
+  }
+
+  protected getStrictReference<T>(current: T): SerovalIndexedValueNode | SerovalReferenceNode {
+    assert(hasReferenceID(current), new Error('Cannot serialize ' + typeof current + ' without reference ID.'));
+    const result = this.getIndexedValue(current);
+    if (result.type === 1) {
+      return result.value;
+    }
+    return createReferenceNode(result.value, current);
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   protected parseFunction(current: Function): SerovalNode {
-    assert(hasReferenceID(current), new Error('Cannot serialize function without reference ID.'));
     return this.getStrictReference(current);
   }
 
   protected parseWKSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
-    const registeredID = this.refs.get(current);
-    if (registeredID != null) {
-      this.markRef(registeredID);
-      return createIndexedValueNode(registeredID);
+    const ref = this.getReference(current);
+    if (ref.type !== 0) {
+      return ref.value;
     }
-    const isValid = current in INV_SYMBOL_REF;
-    assert(current in INV_SYMBOL_REF || hasReferenceID(current), new Error('Cannot serialize symbol without reference ID.'));
-    const id = this.refs.size;
-    this.refs.set(current, id);
-    if (isValid) {
-      return createWKSymbolNode(id, current as WellKnownSymbols);
-    }
-    return createReferenceNode(id, current);
+    assert(current in INV_SYMBOL_REF, new Error('Cannot serialized unsupported symbol.'));
+    return createWKSymbolNode(ref.value, current as WellKnownSymbols);
   }
 
   protected parseSpecialReference(
     ref: SpecialReference,
   ): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
-    const specialRef = SPECIAL_REFS[ref];
-    const registeredID = this.refs.get(specialRef);
-    if (registeredID != null) {
-      this.markRef(registeredID);
-      return createIndexedValueNode(registeredID);
+    const result = this.getIndexedValue(SPECIAL_REFS[ref]);
+    if (result.type === 1) {
+      return result.value;
     }
-    const id = this.refs.size;
-    this.refs.set(specialRef, id);
     return {
       t: SerovalNodeType.SpecialReference,
-      i: id,
+      i: result.value,
       s: ref,
       l: undefined,
       c: undefined,
@@ -159,16 +160,13 @@ export abstract class BaseParserContext implements PluginAccessOptions {
   }
 
   protected parseIteratorFactory(): SerovalIndexedValueNode | SerovalIteratorFactoryNode {
-    const registeredID = this.refs.get(ITERATOR);
-    if (registeredID != null) {
-      this.markRef(registeredID);
-      return createIndexedValueNode(registeredID);
+    const result = this.getIndexedValue(ITERATOR);
+    if (result.type === 1) {
+      return result.value;
     }
-    const id = this.refs.size;
-    this.refs.set(ITERATOR, id);
     return {
       t: SerovalNodeType.IteratorFactory,
-      i: id,
+      i: result.value,
       s: undefined,
       l: undefined,
       c: undefined,
@@ -183,16 +181,13 @@ export abstract class BaseParserContext implements PluginAccessOptions {
   }
 
   protected parseAsyncIteratorFactory(): SerovalIndexedValueNode | SerovalAsyncIteratorFactoryNode {
-    const registeredID = this.refs.get(ASYNC_ITERATOR);
-    if (registeredID != null) {
-      this.markRef(registeredID);
-      return createIndexedValueNode(registeredID);
+    const result = this.getIndexedValue(ASYNC_ITERATOR);
+    if (result.type === 1) {
+      return result.value;
     }
-    const id = this.refs.size;
-    this.refs.set(ASYNC_ITERATOR, id);
     return {
       t: SerovalNodeType.AsyncIteratorFactory,
-      i: id,
+      i: result.value,
       s: undefined,
       l: undefined,
       c: undefined,

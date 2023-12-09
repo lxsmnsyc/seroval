@@ -419,7 +419,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       case 'object':
         if (current) {
           const ref = this.getReference(current);
-          return ref.type === 'fresh' ? this.parseObject(ref.value, current as object) : ref.value;
+          return ref.type === 0 ? this.parseObject(ref.value, current as object) : ref.value;
         }
         return NULL_NODE;
       case 'symbol':
