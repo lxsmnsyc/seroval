@@ -129,6 +129,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 | [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ✅ | ✅ | ✅ |
 | [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ✅ | ✅ | ✅ |
 | [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) | ✅ | ✅ |  ✅ |
+| [`ImageData`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData) | ✅ | ✅ |  ✅ |
 
 [^1]: `Feature.BigIntTypedArray` must be enabled, otherwise throws an `UnsupportedTypeError`.
 [^2]: `Feature.ErrorPrototypeStack` must be enabled if serializing `Error.prototype.stack` is desired.

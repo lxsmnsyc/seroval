@@ -5,6 +5,7 @@ export { default as EventPlugin } from './event';
 export { default as FilePlugin } from './file';
 export { default as FormDataPlugin } from './form-data';
 export { default as HeadersPlugin } from './headers';
+export { default as ImageDataPlugin } from './image-data';
 export { default as ReadableStreamPlugin } from './readable-stream';
 export { default as Request } from './request';
 export { default as Response } from './response';
