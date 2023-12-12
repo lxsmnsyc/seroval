@@ -11,6 +11,21 @@ type TypedArrayConstructor =
   | BigInt64ArrayConstructor
   | BigUint64ArrayConstructor;
 
+export type TypedArrayValue =
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array;
+
+export type BigIntTypedArrayValue =
+  | BigInt64Array
+  | BigUint64Array;
+
 export function getTypedArrayConstructor(name: string): TypedArrayConstructor {
   switch (name) {
     case 'Int8Array': return Int8Array;

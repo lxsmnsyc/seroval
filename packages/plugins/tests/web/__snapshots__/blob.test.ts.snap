@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Blob > crossSerializeAsync > scoped > supports Blob 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Blob([$R[2]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:"text/plain"})))($R["example"])"`;
+
+exports[`Blob > crossSerializeAsync > supports Blob 1`] = `"$R[0]=new Blob([$R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:"text/plain"})"`;
+
+exports[`Blob > serializeAsync > supports Blob 1`] = `"new Blob([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:"text/plain"})"`;
+
+exports[`Blob > toCrossJSONAsync > supports Blob 1`] = `"{"t":25,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":19,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/Blob"}"`;
+
+exports[`Blob > toJSONAsync > supports Blob 1`] = `"{"t":{"t":25,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":19,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/Blob"},"f":31,"m":[]}"`;

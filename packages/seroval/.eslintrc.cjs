@@ -16,6 +16,7 @@ module.exports = {
     "prefer-template": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
     "prefer-object-spread": "off",
-    "class-methods-use-this": "off"
+    "class-methods-use-this": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   }
 };

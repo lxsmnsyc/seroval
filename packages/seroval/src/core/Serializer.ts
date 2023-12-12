@@ -1,4 +1,4 @@
-import type { PluginAccessOptions } from './plugin';
+import { resolvePlugins, type Plugin, type PluginAccessOptions } from './plugin';
 import { crossSerializeStream } from './cross';
 import { serializeString } from './string';
 
@@ -24,9 +24,12 @@ export default class Serializer {
 
   private refs = new Map<unknown, number>();
 
+  private plugins?: Plugin<any, any>[];
+
   constructor(
     private options: SerializerOptions,
   ) {
+    this.plugins = resolvePlugins(options.plugins);
   }
 
   keys = new Set<string>();
@@ -36,7 +39,7 @@ export default class Serializer {
       this.pending++;
       this.keys.add(key);
       this.cleanups.push(crossSerializeStream(value, {
-        plugins: this.options.plugins,
+        plugins: this.plugins,
         scopeId: this.options.scopeId,
         refs: this.refs,
         disabledFeatures: this.options.disabledFeatures,

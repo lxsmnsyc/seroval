@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`File > crossSerializeAsync > scoped > supports File 1`] = `"($R=>$R[0]=new File([$R[2]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],"hello.txt",$R[1]={type:"text/plain",lastModified:1681027542680}))($R["example"])"`;
+
+exports[`File > crossSerializeAsync > supports File 1`] = `"$R[0]=new File([$R[2]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],"hello.txt",$R[1]={type:"text/plain",lastModified:1681027542680})"`;
+
+exports[`File > serializeAsync > supports File 1`] = `"new File([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],"hello.txt",{type:"text/plain",lastModified:1681027542680})"`;
+
+exports[`File > toCrossJSONAsync > supports File 1`] = `"{"t":25,"i":0,"s":{"name":{"t":1,"s":"hello.txt"},"options":{"t":10,"i":1,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}],"s":2},"o":0},"buffer":{"t":19,"i":2,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/File"}"`;
+
+exports[`File > toJSONAsync > supports File 1`] = `"{"t":{"t":25,"i":0,"s":{"name":{"t":1,"s":"hello.txt"},"options":{"t":10,"i":1,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}],"s":2},"o":0},"buffer":{"t":19,"i":2,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/File"},"f":31,"m":[]}"`;

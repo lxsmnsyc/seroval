@@ -3,10 +3,6 @@ import type {
   SerovalPromiseConstructorNode,
   SerovalPromiseRejectNode,
   SerovalPromiseResolveNode,
-  SerovalReadableStreamCloseNode,
-  SerovalReadableStreamConstructorNode,
-  SerovalReadableStreamEnqueueNode,
-  SerovalReadableStreamErrorNode,
 } from '../types';
 import type { BaseSerializerContextOptions } from '../context/serializer';
 import BaseSerializerContext from '../context/serializer';
@@ -23,7 +19,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
    * Map tree refs to actual refs
    * @private
    */
-  valid = new Map<number | string, number>();
+  valid = new Map<number, number>();
 
   /**
    * Variables
@@ -32,19 +28,10 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
   vars: string[] = [];
 
   /**
-   * Increments the number of references the referenced value has
-   */
-  markRef(
-    current: number,
-  ): void {
-    this.marked.add(current);
-  }
-
-  /**
    * Creates the reference param (identifier) from the given reference ID
    * Calling this function means the value has been referenced somewhere
    */
-  getRefParam(index: number | string): string {
+  getRefParam(index: number): string {
     /**
      * Creates a new reference ID from a given reference ID
      * This new reference ID means that the reference itself
@@ -88,30 +75,6 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
 
   protected serializePromiseReject(
     node: SerovalPromiseRejectNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamConstructor(
-    node: SerovalReadableStreamConstructorNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamEnqueue(
-    node: SerovalReadableStreamEnqueueNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamError(
-    node: SerovalReadableStreamErrorNode,
-  ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
-  }
-
-  protected serializeReadableStreamClose(
-    node: SerovalReadableStreamCloseNode,
   ): string {
     throw new Error('Unsupported node type "' + node.t + '".');
   }

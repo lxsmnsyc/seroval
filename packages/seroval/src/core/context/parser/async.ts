@@ -1,8 +1,6 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-await-in-loop */
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
 import UnsupportedTypeError from '../../UnsupportedTypeError';
-import assert from '../../utils/assert';
 import {
   createPluginNode,
   createDateNode,
@@ -21,24 +19,22 @@ import {
   createAggregateErrorNode,
   createIteratorFactoryInstanceNode,
   createAsyncIteratorFactoryInstanceNode,
+  createStreamConstructorNode,
+  createStreamNextNode,
+  createStreamThrowNode,
+  createStreamReturnNode,
 } from '../../base-primitives';
-import { BIGINT_FLAG, Feature } from '../../compat';
+import { Feature } from '../../compat';
 import {
   SerovalNodeType,
 } from '../../constants';
-import {
-  createRequestOptions,
-  createResponseOptions,
-  createEventOptions,
-  createCustomEventOptions,
-} from '../../utils/constructors';
 import {
   NULL_NODE,
   TRUE_NODE,
   FALSE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
-import { asyncIteratorToSequence, iteratorToSequence, readableStreamToSequence } from '../../utils/iterator-to-sequence';
+import { iteratorToSequence } from '../../utils/iterator-to-sequence';
 import { BaseParserContext } from '../parser';
 import promiseToResult from '../../utils/promise-to-result';
 import { getErrorOptions } from '../../utils/error';
@@ -56,30 +52,16 @@ import type {
   SerovalPromiseNode,
   SerovalTypedArrayNode,
   SerovalAggregateErrorNode,
-  SerovalBlobNode,
-  SerovalCustomEventNode,
-  SerovalEventNode,
-  SerovalFileNode,
-  SerovalFormDataNode,
-  SerovalHeadersNode,
   SerovalMapNode,
-  SerovalPlainRecordNode,
   SerovalPluginNode,
-  SerovalRequestNode,
-  SerovalResponseNode,
   SerovalSetNode,
   SerovalDataViewNode,
-  SerovalReadableStreamNode,
+  SerovalStreamConstructorNode,
 } from '../../types';
-import {
-  createURLNode,
-  createURLSearchParamsNode,
-  createDOMExceptionNode,
-  createEventNode,
-  createCustomEventNode,
-  createReadableStreamNode,
-} from '../../web-api';
-import { SpecialReference, UNIVERSAL_SENTINEL } from '../../special-reference';
+import { SpecialReference } from '../../special-reference';
+import type { Stream } from '../../stream';
+import { createStreamFromAsyncIterable, isStream } from '../../stream';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../utils/typed-array';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -92,6 +74,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   ): Promise<SerovalNode[]> {
     const nodes = [];
     for (let i = 0, len = current.length; i < len; i++) {
+      // For consistency in holes
       if (i in current) {
         nodes[i] = await this.parse(current[i]);
       }
@@ -125,45 +108,45 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       valueNodes.push(await this.parse(entries[i][1]));
     }
     // Check special properties
-    if (this.features & Feature.Symbol) {
-      let symbol = Symbol.iterator;
-      if (symbol in properties) {
-        keyNodes.push(
-          this.parseWKSymbol(symbol),
-        );
-        valueNodes.push(
-          createIteratorFactoryInstanceNode(
-            this.parseIteratorFactory(),
-            await this.parse(
-              iteratorToSequence(properties as unknown as Iterable<unknown>),
+    let symbol = Symbol.iterator;
+    if (symbol in properties) {
+      keyNodes.push(
+        this.parseWKSymbol(symbol),
+      );
+      valueNodes.push(
+        createIteratorFactoryInstanceNode(
+          this.parseIteratorFactory(),
+          await this.parse(
+            iteratorToSequence(properties as unknown as Iterable<unknown>),
+          ),
+        ),
+      );
+    }
+    symbol = Symbol.asyncIterator;
+    if (symbol in properties) {
+      keyNodes.push(
+        this.parseWKSymbol(symbol),
+      );
+      valueNodes.push(
+        createAsyncIteratorFactoryInstanceNode(
+          this.parseAsyncIteratorFactory(),
+          await this.parse(
+            createStreamFromAsyncIterable(
+              properties as unknown as AsyncIterable<unknown>,
             ),
           ),
-        );
-      }
-      symbol = Symbol.asyncIterator;
-      if (symbol in properties) {
-        keyNodes.push(
-          this.parseWKSymbol(symbol),
-        );
-        valueNodes.push(
-          createAsyncIteratorFactoryInstanceNode(
-            this.parseAsyncIteratorFactory(0),
-            await this.parse(
-              await asyncIteratorToSequence(properties as unknown as AsyncIterable<unknown>),
-            ),
-          ),
-        );
-      }
-      symbol = Symbol.toStringTag;
-      if (symbol in properties) {
-        keyNodes.push(this.parseWKSymbol(symbol));
-        valueNodes.push(createStringNode(properties[symbol] as string));
-      }
-      symbol = Symbol.isConcatSpreadable;
-      if (symbol in properties) {
-        keyNodes.push(this.parseWKSymbol(symbol));
-        valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
-      }
+        ),
+      );
+    }
+    symbol = Symbol.toStringTag;
+    if (symbol in properties) {
+      keyNodes.push(this.parseWKSymbol(symbol));
+      valueNodes.push(createStringNode(properties[symbol] as string));
+    }
+    symbol = Symbol.isConcatSpreadable;
+    if (symbol in properties) {
+      keyNodes.push(this.parseWKSymbol(symbol));
+      valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
     }
     return {
       k: keyNodes,
@@ -270,176 +253,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     return createSetNode(id, current.size, items);
   }
 
-  private async parseBlob(
-    id: number,
-    current: Blob,
-  ): Promise<SerovalBlobNode> {
-    return {
-      t: SerovalNodeType.Blob,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: serializeString(current.type),
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      f: await this.parse(await current.arrayBuffer()),
-      a: undefined,
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  private async parseFile(
-    id: number,
-    current: File,
-  ): Promise<SerovalFileNode> {
-    return {
-      t: SerovalNodeType.File,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: serializeString(current.type),
-      m: serializeString(current.name),
-      p: undefined,
-      e: undefined,
-      f: await this.parse(await current.arrayBuffer()),
-      a: undefined,
-      b: current.lastModified,
-      o: undefined,
-    };
-  }
-
-  protected async parsePlainProperties(
-    entries: [key: string, value: unknown][],
-  ): Promise<SerovalPlainRecordNode> {
-    const size = entries.length;
-    const keyNodes: string[] = [];
-    const valueNodes: SerovalNode[] = [];
-    for (let i = 0; i < size; i++) {
-      keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(await this.parse(entries[i][1]));
-    }
-    return {
-      k: keyNodes,
-      v: valueNodes,
-      s: size,
-    };
-  }
-
-  private async parseHeaders(
-    id: number,
-    current: Headers,
-  ): Promise<SerovalHeadersNode> {
-    const items: [key: string, value: unknown][] = [];
-    current.forEach((value, key) => {
-      items.push([key, value]);
-    });
-    return {
-      t: SerovalNodeType.Headers,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: await this.parsePlainProperties(items),
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  private async parseFormData(
-    id: number,
-    current: FormData,
-  ): Promise<SerovalFormDataNode> {
-    const items: [key: string, value: FormDataEntryValue][] = [];
-    current.forEach((value, key) => {
-      items.push([key, value]);
-    });
-    return {
-      t: SerovalNodeType.FormData,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: await this.parsePlainProperties(items),
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  private async parseRequest(
-    id: number,
-    current: Request,
-  ): Promise<SerovalRequestNode> {
-    return {
-      t: SerovalNodeType.Request,
-      i: id,
-      s: serializeString(current.url),
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      f: await this.parse(
-        createRequestOptions(current, current.body ? await current.clone().arrayBuffer() : null),
-      ),
-      a: undefined,
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  private async parseResponse(
-    id: number,
-    current: Response,
-  ): Promise<SerovalResponseNode> {
-    return {
-      t: SerovalNodeType.Response,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      f: undefined,
-      a: [
-        current.body
-          ? await this.parse(await current.clone().arrayBuffer())
-          : NULL_NODE,
-        await this.parse(createResponseOptions(current)),
-      ],
-      b: undefined,
-      o: undefined,
-    };
-  }
-
-  private async parseEvent(
-    id: number,
-    current: Event,
-  ): Promise<SerovalEventNode> {
-    return createEventNode(id, current.type, await this.parse(createEventOptions(current)));
-  }
-
-  private async parseCustomEvent(
-    id: number,
-    current: CustomEvent,
-  ): Promise<SerovalCustomEventNode> {
-    return createCustomEventNode(
-      id,
-      current.type,
-      await this.parse(createCustomEventOptions(current)),
-    );
-  }
-
   private async parsePromise(
     id: number,
     current: Promise<unknown>,
@@ -483,16 +296,64 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     return undefined;
   }
 
-  private async parseReadableStream(
+  private async parseStream(
     id: number,
-    current: ReadableStream,
-  ): Promise<SerovalReadableStreamNode> {
-    return createReadableStreamNode(
+    current: Stream<unknown>,
+  ): Promise<SerovalStreamConstructorNode> {
+    return createStreamConstructorNode(
       id,
-      this.parseSpecialReference(SpecialReference.ReadableStream),
-      await this.parse(
-        await readableStreamToSequence(current),
-      ),
+      this.parseSpecialReference(SpecialReference.StreamConstructor),
+      await new Promise<SerovalNode[]>((resolve, reject) => {
+        const sequence: SerovalNode[] = [];
+        const cleanup = current.on({
+          next: (value) => {
+            this.markRef(id);
+            this.parse(value).then(
+              (data) => {
+                sequence.push(
+                  createStreamNextNode(id, data),
+                );
+              },
+              (data) => {
+                reject(data);
+                cleanup();
+              },
+            );
+          },
+          throw: (value) => {
+            this.markRef(id);
+            this.parse(value).then(
+              (data) => {
+                sequence.push(
+                  createStreamThrowNode(id, data),
+                );
+                resolve(sequence);
+                cleanup();
+              },
+              (data) => {
+                reject(data);
+                cleanup();
+              },
+            );
+          },
+          return: (value) => {
+            this.markRef(id);
+            this.parse(value).then(
+              (data) => {
+                sequence.push(
+                  createStreamReturnNode(id, data),
+                );
+                resolve(sequence);
+                cleanup();
+              },
+              (data) => {
+                reject(data);
+                cleanup();
+              },
+            );
+          },
+        });
+      }),
     );
   }
 
@@ -502,6 +363,13 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   ): Promise<SerovalNode> {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
+    }
+    if (isStream(current)) {
+      return this.parseStream(id, current);
+    }
+    const parsed = await this.parsePlugin(id, current);
+    if (parsed) {
+      return parsed;
     }
     const currentClass = current.constructor;
     switch (currentClass) {
@@ -534,40 +402,40 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       case String:
       case BigInt:
         return this.parseBoxed(id, current);
+      case ArrayBuffer:
+        return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+      case Int8Array:
+      case Int16Array:
+      case Int32Array:
+      case Uint8Array:
+      case Uint16Array:
+      case Uint32Array:
+      case Uint8ClampedArray:
+      case Float32Array:
+      case Float64Array:
+        return this.parseTypedArray(id, current as unknown as TypedArrayValue);
+      case DataView:
+        return this.parseDataView(id, current as unknown as DataView);
+      case Map:
+        return this.parseMap(
+          id,
+          current as unknown as Map<unknown, unknown>,
+        );
+      case Set:
+        return this.parseSet(
+          id,
+          current as unknown as Set<unknown>,
+        );
       default:
         break;
     }
-    const currentFeatures = this.features;
     // Promises
-    if (
-      (currentFeatures & Feature.Promise)
-      && (currentClass === Promise || current instanceof Promise)
-    ) {
+    if (currentClass === Promise || current instanceof Promise) {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
-    // Typed Arrays
-    if (currentFeatures & Feature.TypedArray) {
-      switch (currentClass) {
-        case ArrayBuffer:
-          return createArrayBufferNode(id, current as unknown as ArrayBuffer);
-        case Int8Array:
-        case Int16Array:
-        case Int32Array:
-        case Uint8Array:
-        case Uint16Array:
-        case Uint32Array:
-        case Uint8ClampedArray:
-        case Float32Array:
-        case Float64Array:
-          return this.parseTypedArray(id, current as unknown as TypedArrayValue);
-        case DataView:
-          return this.parseDataView(id, current as unknown as DataView);
-        default:
-          break;
-      }
-    }
+    const currentFeatures = this.features;
     // BigInt Typed Arrays
-    if ((currentFeatures & BIGINT_FLAG) === BIGINT_FLAG) {
+    if (currentFeatures & Feature.BigIntTypedArray) {
       switch (currentClass) {
         case BigInt64Array:
         case BigUint64Array:
@@ -575,54 +443,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         default:
           break;
       }
-    }
-    // ES Collection
-    if (currentFeatures & Feature.Map && currentClass === Map) {
-      return this.parseMap(
-        id,
-        current as unknown as Map<unknown, unknown>,
-      );
-    }
-    if (currentFeatures & Feature.Set && currentClass === Set) {
-      return this.parseSet(
-        id,
-        current as unknown as Set<unknown>,
-      );
-    }
-    // Web APIs
-    if (currentFeatures & Feature.WebAPI) {
-      switch (currentClass) {
-        case (typeof URL !== 'undefined' ? URL : UNIVERSAL_SENTINEL):
-          return createURLNode(id, current as unknown as URL);
-        case (typeof URLSearchParams !== 'undefined' ? URLSearchParams : UNIVERSAL_SENTINEL):
-          return createURLSearchParamsNode(id, current as unknown as URLSearchParams);
-        case (typeof Blob !== 'undefined' ? Blob : UNIVERSAL_SENTINEL):
-          return this.parseBlob(id, current as unknown as Blob);
-        case (typeof File !== 'undefined' ? File : UNIVERSAL_SENTINEL):
-          return this.parseFile(id, current as unknown as File);
-        case (typeof Headers !== 'undefined' ? Headers : UNIVERSAL_SENTINEL):
-          return this.parseHeaders(id, current as unknown as Headers);
-        case (typeof FormData !== 'undefined' ? FormData : UNIVERSAL_SENTINEL):
-          return this.parseFormData(id, current as unknown as FormData);
-        case (typeof Request !== 'undefined' ? Request : UNIVERSAL_SENTINEL):
-          return this.parseRequest(id, current as unknown as Request);
-        case (typeof Response !== 'undefined' ? Response : UNIVERSAL_SENTINEL):
-          return this.parseResponse(id, current as unknown as Response);
-        case (typeof Event !== 'undefined' ? Event : UNIVERSAL_SENTINEL):
-          return this.parseEvent(id, current as unknown as Event);
-        case (typeof CustomEvent !== 'undefined' ? CustomEvent : UNIVERSAL_SENTINEL):
-          return this.parseCustomEvent(id, current as unknown as CustomEvent);
-        case (typeof DOMException !== 'undefined' ? DOMException : UNIVERSAL_SENTINEL):
-          return createDOMExceptionNode(id, current as unknown as DOMException);
-        case (typeof ReadableStream !== 'undefined' ? ReadableStream : UNIVERSAL_SENTINEL):
-          return this.parseReadableStream(id, current as unknown as ReadableStream);
-        default:
-          break;
-      }
-    }
-    const parsed = await this.parsePlugin(id, current);
-    if (parsed) {
-      return parsed;
     }
     if (
       (currentFeatures & Feature.AggregateError)
@@ -638,33 +458,30 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     }
     // Generator functions don't have a global constructor
     // despite existing
-    if (
-      currentFeatures & Feature.Symbol
-      && (Symbol.iterator in current || Symbol.asyncIterator in current)
-    ) {
+    if (Symbol.iterator in current || Symbol.asyncIterator in current) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
     throw new UnsupportedTypeError(current);
   }
 
   async parse<T>(current: T): Promise<SerovalNode> {
-    switch (current) {
-      case true: return TRUE_NODE;
-      case false: return FALSE_NODE;
-      case undefined: return UNDEFINED_NODE;
-      case null: return NULL_NODE;
-      default: break;
-    }
     switch (typeof current) {
-      case 'string': return createStringNode(current as string);
-      case 'number': return createNumberNode(current as number);
+      case 'boolean':
+        return current ? TRUE_NODE : FALSE_NODE;
+      case 'undefined':
+        return UNDEFINED_NODE;
+      case 'string':
+        return createStringNode(current as string);
+      case 'number':
+        return createNumberNode(current as number);
       case 'bigint':
-        assert(this.features & Feature.BigInt, new UnsupportedTypeError(current));
         return createBigIntNode(current as bigint);
-      case 'object': {
-        const id = this.getReference(current);
-        return typeof id === 'number' ? this.parseObject(id, current as object) : id;
-      }
+      case 'object':
+        if (current) {
+          const ref = this.getReference(current);
+          return ref.type === 0 ? this.parseObject(ref.value, current as object) : ref.value;
+        }
+        return NULL_NODE;
       case 'symbol':
         return this.parseWKSymbol(current);
       case 'function':

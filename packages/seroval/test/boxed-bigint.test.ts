@@ -6,7 +6,6 @@ import {
   serializeAsync,
   toJSONAsync,
   toJSON,
-  Feature,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
@@ -130,19 +129,5 @@ describe('boxed bigint', () => {
         },
       });
     }));
-  });
-  describe('compat', () => {
-    it('should throw an error for unsupported target', () => {
-      expect(() => serialize(Object(EXAMPLE), {
-        disabledFeatures: Feature.BigInt,
-      })).toThrowErrorMatchingSnapshot();
-    });
-  });
-  describe('compat#toJSON', () => {
-    it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(Object(EXAMPLE), {
-        disabledFeatures: Feature.BigInt,
-      })).toThrowErrorMatchingSnapshot();
-    });
   });
 });

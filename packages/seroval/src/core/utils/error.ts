@@ -1,11 +1,18 @@
-import type {
-  ErrorValue,
-} from '../../types';
 import { Feature } from '../compat';
 import {
   ERROR_CONSTRUCTOR_STRING,
   ErrorConstructorTag,
 } from '../constants';
+
+type ErrorValue =
+  | Error
+  | AggregateError
+  | EvalError
+  | RangeError
+  | ReferenceError
+  | TypeError
+  | SyntaxError
+  | URIError;
 
 export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   if (error instanceof EvalError) {

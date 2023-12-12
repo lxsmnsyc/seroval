@@ -5,7 +5,6 @@ import {
   crossSerializeAsync,
   crossSerializeStream,
   deserialize,
-  Feature,
   fromCrossJSON,
   fromJSON,
   serialize,
@@ -269,29 +268,5 @@ describe('Map', () => {
         },
       });
     }));
-  });
-  describe('compat', () => {
-    it('should fallback to Symbol.iterator', () => {
-      expect(serialize(EXAMPLE, {
-        disabledFeatures: Feature.Map,
-      })).toMatchSnapshot();
-    });
-    it('should throw an error for unsupported target', () => {
-      expect(() => serialize(EXAMPLE, {
-        disabledFeatures: Feature.Map | Feature.Symbol,
-      })).toThrowErrorMatchingSnapshot();
-    });
-  });
-  describe('compat#toJSON', () => {
-    it('should fallback to Symbol.iterator', () => {
-      expect(JSON.stringify(toJSON(EXAMPLE, {
-        disabledFeatures: Feature.Map,
-      }))).toMatchSnapshot();
-    });
-    it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(EXAMPLE, {
-        disabledFeatures: Feature.Map | Feature.Symbol,
-      })).toThrowErrorMatchingSnapshot();
-    });
   });
 });
