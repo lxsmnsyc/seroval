@@ -34,9 +34,7 @@ export interface SerovalBaseNode {
   o: SerovalObjectFlags | undefined;
 }
 
-export type SerovalObjectRecordKey =
-  | string
-  | SerovalNode;
+export type SerovalObjectRecordKey = string | SerovalNode;
 
 export interface SerovalObjectRecordNode {
   k: SerovalObjectRecordKey[];
@@ -253,19 +251,13 @@ export interface SerovalPromiseConstructorNode extends SerovalBaseNode {
 export interface SerovalPromiseResolveNode extends SerovalBaseNode {
   t: SerovalNodeType.PromiseResolve;
   i: number;
-  a: [
-    resolver: SerovalNodeWithID,
-    resolved: SerovalNode,
-  ];
+  a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
 }
 
 export interface SerovalPromiseRejectNode extends SerovalBaseNode {
   t: SerovalNodeType.PromiseReject;
   i: number;
-  a: [
-    resolver: SerovalNodeWithID,
-    resolved: SerovalNode,
-  ];
+  a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
 }
 
 export interface SerovalPluginNode extends SerovalBaseNode {
@@ -291,27 +283,19 @@ export interface SerovalIteratorFactoryNode extends SerovalBaseNode {
 
 export interface SerovalIteratorFactoryInstanceNode extends SerovalBaseNode {
   t: SerovalNodeType.IteratorFactoryInstance;
-  a: [
-    instance: SerovalNodeWithID,
-    sequence: SerovalNode,
-  ];
+  a: [instance: SerovalNodeWithID, sequence: SerovalNode];
 }
 
 export interface SerovalAsyncIteratorFactoryNode extends SerovalBaseNode {
   t: SerovalNodeType.AsyncIteratorFactory;
   i: number;
-  a: [
-    promise: SerovalNodeWithID,
-    symbol: SerovalNodeWithID,
-  ];
+  a: [promise: SerovalNodeWithID, symbol: SerovalNodeWithID];
 }
 
-export interface SerovalAsyncIteratorFactoryInstanceNode extends SerovalBaseNode {
+export interface SerovalAsyncIteratorFactoryInstanceNode
+  extends SerovalBaseNode {
   t: SerovalNodeType.AsyncIteratorFactoryInstance;
-  a: [
-    instance: SerovalNodeWithID,
-    sequence: SerovalNode,
-  ];
+  a: [instance: SerovalNodeWithID, sequence: SerovalNode];
 }
 
 export interface SerovalStreamConstructorNode extends SerovalBaseNode {
@@ -373,8 +357,6 @@ export type SerovalAsyncNode =
   | SerovalStreamThrowNode
   | SerovalStreamReturnNode;
 
-export type SerovalNode =
-  | SerovalSyncNode
-  | SerovalAsyncNode;
+export type SerovalNode = SerovalSyncNode | SerovalAsyncNode;
 
 export type SerovalNodeWithID = Extract<SerovalNode, { i: number }>;

@@ -1,9 +1,7 @@
 import * as esbuild from 'esbuild';
 
 esbuild.buildSync({
-  entryPoints: [
-    './src/index.ts',
-  ],
+  entryPoints: ['./src/index.ts'],
   outfile: './build/index.cjs',
   bundle: true,
   minify: true,
@@ -11,9 +9,7 @@ esbuild.buildSync({
   format: 'cjs',
   platform: 'node',
   tsconfig: './tsconfig.json',
-  target: "es2018",
+  target: 'es2018',
   legalComments: 'eof',
-  external: [
-    "benny",
-  ],
+  external: ['benny'],
 });

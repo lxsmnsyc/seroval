@@ -3,7 +3,10 @@ import { createPlugin, createStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
-const ReadableStreamFactoryPlugin = /* @__PURE__ */createPlugin<object, undefined>({
+const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  undefined
+>({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
   test(value) {
     return value === READABLE_STREAM_FACTORY;
@@ -13,28 +16,27 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */createPlugin<object, undefine
       return undefined;
     },
     async async() {
-      return Promise.resolve(undefined);
+      return await Promise.resolve(undefined);
     },
     stream() {
       return undefined;
     },
   },
-  serialize(node, ctx) {
+  serialize(_node, ctx) {
     return ctx.createFunction(
       ['d'],
-      'new ReadableStream({start:' + ctx.createEffectfulFunction(
-        ['c'],
-        'd.on({next:' + ctx.createEffectfulFunction(
-          ['v'],
-          'c.enqueue(v)',
-        ) + ',throw:' + ctx.createEffectfulFunction(
-          ['v'],
-          'c.error(v)',
-        ) + ',return:' + ctx.createEffectfulFunction(
-          [],
-          'c.close()',
-        ) + '})',
-      ) + '})',
+      'new ReadableStream({start:' +
+        ctx.createEffectfulFunction(
+          ['c'],
+          'd.on({next:' +
+            ctx.createEffectfulFunction(['v'], 'c.enqueue(v)') +
+            ',throw:' +
+            ctx.createEffectfulFunction(['v'], 'c.error(v)') +
+            ',return:' +
+            ctx.createEffectfulFunction([], 'c.close()') +
+            '})',
+        ) +
+        '})',
     );
   },
   deserialize() {
@@ -73,11 +75,12 @@ interface ReadableStreamNode {
   stream: SerovalNode;
 }
 
-const ReadableStreamPlugin = /* @__PURE__ */createPlugin<ReadableStream, ReadableStreamNode>({
+const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
+  ReadableStream,
+  ReadableStreamNode
+>({
   tag: 'seroval/plugins/web/ReadableStream',
-  extends: [
-    ReadableStreamFactoryPlugin,
-  ],
+  extends: [ReadableStreamFactoryPlugin],
   test(value) {
     if (typeof ReadableStream === 'undefined') {
       return false;
@@ -85,7 +88,7 @@ const ReadableStreamPlugin = /* @__PURE__ */createPlugin<ReadableStream, Readabl
     return value instanceof ReadableStream;
   },
   parse: {
-    sync(value, ctx) {
+    sync(_value, ctx) {
       return {
         factory: ctx.parse(READABLE_STREAM_FACTORY),
         stream: ctx.parse(createStream()),
@@ -105,7 +108,13 @@ const ReadableStreamPlugin = /* @__PURE__ */createPlugin<ReadableStream, Readabl
     },
   },
   serialize(node, ctx) {
-    return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.stream) + ')';
+    return (
+      '(' +
+      ctx.serialize(node.factory) +
+      ')(' +
+      ctx.serialize(node.stream) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     const stream = ctx.deserialize(node.stream) as Stream<any>;

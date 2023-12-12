@@ -10,7 +10,7 @@ import getIdentifier from '../utils/get-identifier';
 import type { SerovalMode } from '../plugin';
 import { SerovalNodeType } from '../constants';
 
-export type VanillaSerializerContextOptions = BaseSerializerContextOptions
+export type VanillaSerializerContextOptions = BaseSerializerContextOptions;
 
 export default class VanillaSerializerContext extends BaseSerializerContext {
   readonly mode: SerovalMode = 'vanilla';
@@ -51,10 +51,7 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     return identifier;
   }
 
-  protected assignIndexedValue(
-    index: number,
-    value: string,
-  ): string {
+  protected assignIndexedValue(index: number, value: string): string {
     if (this.isMarked(index)) {
       return this.getRefParam(index) + '=' + value;
     }
@@ -67,15 +64,11 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
     throw new Error('Unsupported node type "' + node.t + '".');
   }
 
-  protected serializePromiseResolve(
-    node: SerovalPromiseResolveNode,
-  ): string {
+  protected serializePromiseResolve(node: SerovalPromiseResolveNode): string {
     throw new Error('Unsupported node type "' + node.t + '".');
   }
 
-  protected serializePromiseReject(
-    node: SerovalPromiseRejectNode,
-  ): string {
+  protected serializePromiseReject(node: SerovalPromiseRejectNode): string {
     throw new Error('Unsupported node type "' + node.t + '".');
   }
 

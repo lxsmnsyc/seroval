@@ -1,9 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-function createCustomEventOptions(
-  current: CustomEvent,
-): CustomEventInit {
+function createCustomEventOptions(current: CustomEvent): CustomEventInit {
   return {
     detail: current.detail as unknown,
     bubbles: current.bubbles,
@@ -17,7 +15,10 @@ interface CustomEventNode {
   options: SerovalNode;
 }
 
-const CustomEventPlugin = /* @__PURE__ */createPlugin<CustomEvent, CustomEventNode>({
+const CustomEventPlugin = /* @__PURE__ */ createPlugin<
+  CustomEvent,
+  CustomEventNode
+>({
   tag: 'seroval-plugins/web/CustomEvent',
   test(value) {
     if (typeof CustomEvent === 'undefined') {
@@ -46,7 +47,13 @@ const CustomEventPlugin = /* @__PURE__ */createPlugin<CustomEvent, CustomEventNo
     },
   },
   serialize(node, ctx) {
-    return 'new CustomEvent(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
+    return (
+      'new CustomEvent(' +
+      ctx.serialize(node.type) +
+      ',' +
+      ctx.serialize(node.options) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     return new CustomEvent(

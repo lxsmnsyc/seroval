@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 export interface Sequence {
   v: unknown[];
   t: number;

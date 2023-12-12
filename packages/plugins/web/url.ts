@@ -1,7 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-const URLPlugin = /* @__PURE__ */createPlugin<URL, SerovalNode>({
+const URLPlugin = /* @__PURE__ */ createPlugin<URL, SerovalNode>({
   tag: 'seroval-plugins/web/URL',
   test(value) {
     if (typeof URL === 'undefined') {
@@ -14,7 +14,7 @@ const URLPlugin = /* @__PURE__ */createPlugin<URL, SerovalNode>({
       return ctx.parse(value.href);
     },
     async async(value, ctx) {
-      return ctx.parse(value.href);
+      return await ctx.parse(value.href);
     },
     stream(value, ctx) {
       return ctx.parse(value.href);

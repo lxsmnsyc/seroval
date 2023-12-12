@@ -1,9 +1,5 @@
-import type {
-  SerovalNode,
-} from '../types';
-import {
-  GLOBAL_CONTEXT_REFERENCES,
-} from '../keys';
+import type { SerovalNode } from '../types';
+import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import type { BaseSerializerContextOptions } from '../context/serializer';
 import BaseSerializerContext from '../context/serializer';
 import type { SerovalMode } from '../plugin';
@@ -11,8 +7,8 @@ import { serializeString } from '../string';
 import type { CrossContextOptions } from './parser';
 
 export interface CrossSerializerContextOptions
-  extends BaseSerializerContextOptions, CrossContextOptions {
-}
+  extends BaseSerializerContextOptions,
+    CrossContextOptions {}
 
 export default class CrossSerializerContext extends BaseSerializerContext {
   readonly mode: SerovalMode = 'cross';
@@ -28,10 +24,7 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     return GLOBAL_CONTEXT_REFERENCES + '[' + id + ']';
   }
 
-  protected assignIndexedValue(
-    index: number,
-    value: string,
-  ): string {
+  protected assignIndexedValue(index: number, value: string): string {
     // In cross-reference, we have to assume that
     // every reference are going to be referenced
     // in the future, and so we need to store
@@ -61,7 +54,14 @@ export default class CrossSerializerContext extends BaseSerializerContext {
       return patches ? '(' + body + ')' : body;
     }
     // Get the arguments for the IIFE
-    const args = this.scopeId == null ? '()' : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(this.scopeId) + '"])';
+    const args =
+      this.scopeId == null
+        ? '()'
+        : '(' +
+          GLOBAL_CONTEXT_REFERENCES +
+          '["' +
+          serializeString(this.scopeId) +
+          '"])';
     // Create the IIFE
     return '(' + this.createFunction([params], body) + ')' + args;
   }

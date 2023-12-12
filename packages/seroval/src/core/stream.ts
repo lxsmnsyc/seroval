@@ -169,6 +169,18 @@ export function streamToAsyncIterable<T>(
       },
     });
 
+    function finalize() {
+      const current = count++;
+      const value = buffer[current];
+      if (current !== doneAt) {
+        return { done: false, value };
+      }
+      if (isThrow) {
+        throw value;
+      }
+      return { done: true, value };
+    }
+
     return {
       [Symbol.asyncIterator](): AsyncIterableIterator<T> {
         return this;
@@ -179,22 +191,14 @@ export function streamToAsyncIterable<T>(
           if (current >= buffer.length) {
             const deferred = createDeferred();
             pending.push(deferred);
-            return deferred.promise as Promise<IteratorResult<T>>;
+            return (await deferred.promise) as Promise<IteratorResult<T>>;
           }
           return { done: false, value: buffer[current] };
         }
         if (count > doneAt) {
           return { done: true, value: undefined };
         }
-        const current = count++;
-        const value = buffer[current];
-        if (current !== doneAt) {
-          return { done: false, value };
-        }
-        if (isThrow) {
-          throw value;
-        }
-        return { done: true, value };
+        return finalize();
       },
     };
   };

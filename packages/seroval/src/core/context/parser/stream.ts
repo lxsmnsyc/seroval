@@ -25,7 +25,8 @@ import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable } from '../../stream';
 
-export interface BaseStreamParserContextOptions extends BaseSyncParserContextOptions {
+export interface BaseStreamParserContextOptions
+  extends BaseSyncParserContextOptions {
   onParse: (node: SerovalNode, initial: boolean) => void;
   onError?: (error: unknown) => void;
   onDone?: () => void;
@@ -107,20 +108,14 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     const entries = Object.entries(properties);
     const keyNodes: SerovalObjectRecordKey[] = [];
     const valueNodes: SerovalNode[] = [];
-    for (
-      let i = 0, len = entries.length;
-      i < len;
-      i++
-    ) {
+    for (let i = 0, len = entries.length; i < len; i++) {
       keyNodes.push(serializeString(entries[i][0]));
       valueNodes.push(this.parse(entries[i][1]));
     }
     // Check special properties, symbols in this case
     let symbol = Symbol.iterator;
     if (symbol in properties) {
-      keyNodes.push(
-        this.parseWKSymbol(symbol),
-      );
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(
         createIteratorFactoryInstanceNode(
           this.parseIteratorFactory(),
@@ -132,9 +127,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
     symbol = Symbol.asyncIterator;
     if (symbol in properties) {
-      keyNodes.push(
-        this.parseWKSymbol(symbol),
-      );
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(
         createAsyncIteratorFactoryInstanceNode(
           this.parseAsyncIteratorFactory(),
@@ -148,12 +141,12 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
     symbol = Symbol.toStringTag;
     if (symbol in properties) {
-      keyNodes.push(this.parseWKSymbol(symbol));
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(createStringNode(properties[symbol] as string));
     }
     symbol = Symbol.isConcatSpreadable;
     if (symbol in properties) {
-      keyNodes.push(this.parseWKSymbol(symbol));
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
     }
     return {
@@ -168,7 +161,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
     current.then(
-      (data) => {
+      data => {
         const parsed = this.parseWithError(data);
         if (parsed) {
           this.onParse({
@@ -191,7 +184,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         }
         this.popPendingState();
       },
-      (data) => {
+      data => {
         if (this.alive) {
           const parsed = this.parseWithError(data);
           if (parsed) {
@@ -256,10 +249,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     return undefined;
   }
 
-  protected parseStream(
-    id: number,
-    current: Stream<unknown>,
-  ): SerovalNode {
+  protected parseStream(id: number, current: Stream<unknown>): SerovalNode {
     const result = createStreamConstructorNode(
       id,
       this.parseSpecialReference(SpecialReference.StreamConstructor),
@@ -267,7 +257,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     );
     this.pushPendingState();
     current.on({
-      next: (value) => {
+      next: value => {
         if (this.alive) {
           const parsed = this.parseWithError(value);
           if (parsed) {
@@ -275,7 +265,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
           }
         }
       },
-      throw: (value) => {
+      throw: value => {
         if (this.alive) {
           const parsed = this.parseWithError(value);
           if (parsed) {
@@ -284,7 +274,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         }
         this.popPendingState();
       },
-      return: (value) => {
+      return: value => {
         if (this.alive) {
           const parsed = this.parseWithError(value);
           if (parsed) {

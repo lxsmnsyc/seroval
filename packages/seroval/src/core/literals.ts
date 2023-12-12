@@ -18,13 +18,25 @@ function createConstantNode(value: SerovalConstant): SerovalConstantNode {
   };
 }
 
-export const TRUE_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.True);
-export const FALSE_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.False);
-export const UNDEFINED_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.Undefined);
-export const NULL_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.Null);
-export const NEG_ZERO_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.NegativeZero);
-export const INFINITY_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.Infinity);
-export const NEG_INFINITY_NODE = /* @__PURE__ */createConstantNode(
+export const TRUE_NODE = /* @__PURE__ */ createConstantNode(
+  SerovalConstant.True,
+);
+export const FALSE_NODE = /* @__PURE__ */ createConstantNode(
+  SerovalConstant.False,
+);
+export const UNDEFINED_NODE = /* @__PURE__ */ createConstantNode(
+  SerovalConstant.Undefined,
+);
+export const NULL_NODE = /* @__PURE__ */ createConstantNode(
+  SerovalConstant.Null,
+);
+export const NEG_ZERO_NODE = /* @__PURE__ */ createConstantNode(
+  SerovalConstant.NegativeZero,
+);
+export const INFINITY_NODE = /* @__PURE__ */ createConstantNode(
+  SerovalConstant.Infinity,
+);
+export const NEG_INFINITY_NODE = /* @__PURE__ */ createConstantNode(
   SerovalConstant.NegativeInfinity,
 );
-export const NAN_NODE = /* @__PURE__ */createConstantNode(SerovalConstant.NaN);
+export const NAN_NODE = /* @__PURE__ */ createConstantNode(SerovalConstant.NaN);

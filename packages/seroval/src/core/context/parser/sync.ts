@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring */
 import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
   createAggregateErrorNode,
@@ -54,18 +53,17 @@ import type {
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStream, isStream } from '../../stream';
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../utils/typed-array';
+import type {
+  BigIntTypedArrayValue,
+  TypedArrayValue,
+} from '../../utils/typed-array';
 
-type ObjectLikeNode =
-  | SerovalObjectNode
-  | SerovalNullConstructorNode;
+type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
-export type BaseSyncParserContextOptions = BaseParserContextOptions
+export type BaseSyncParserContextOptions = BaseParserContextOptions;
 
 export default abstract class BaseSyncParserContext extends BaseParserContext {
-  protected parseItems(
-    current: unknown[],
-  ): SerovalNode[] {
+  protected parseItems(current: unknown[]): SerovalNode[] {
     const nodes = [];
     for (let i = 0, len = current.length; i < len; i++) {
       if (i in current) {
@@ -75,15 +73,8 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return nodes;
   }
 
-  protected parseArray(
-    id: number,
-    current: unknown[],
-  ): SerovalArrayNode {
-    return createArrayNode(
-      id,
-      current,
-      this.parseItems(current),
-    );
+  protected parseArray(id: number, current: unknown[]): SerovalArrayNode {
+    return createArrayNode(id, current, this.parseItems(current));
   }
 
   protected parseProperties(
@@ -92,20 +83,14 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     const entries = Object.entries(properties);
     const keyNodes: SerovalObjectRecordKey[] = [];
     const valueNodes: SerovalNode[] = [];
-    for (
-      let i = 0, len = entries.length;
-      i < len;
-      i++
-    ) {
+    for (let i = 0, len = entries.length; i < len; i++) {
       keyNodes.push(serializeString(entries[i][0]));
       valueNodes.push(this.parse(entries[i][1]));
     }
     // Check special properties, symbols in this case
     let symbol = Symbol.iterator;
     if (symbol in properties) {
-      keyNodes.push(
-        this.parseWKSymbol(symbol),
-      );
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(
         createIteratorFactoryInstanceNode(
           this.parseIteratorFactory(),
@@ -117,26 +102,22 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     symbol = Symbol.asyncIterator;
     if (symbol in properties) {
-      keyNodes.push(
-        this.parseWKSymbol(symbol),
-      );
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(
         createAsyncIteratorFactoryInstanceNode(
           this.parseAsyncIteratorFactory(),
-          this.parse(
-            createStream(),
-          ),
+          this.parse(createStream()),
         ),
       );
     }
     symbol = Symbol.toStringTag;
     if (symbol in properties) {
-      keyNodes.push(this.parseWKSymbol(symbol));
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(createStringNode(properties[symbol] as string));
     }
     symbol = Symbol.isConcatSpreadable;
     if (symbol in properties) {
-      keyNodes.push(this.parseWKSymbol(symbol));
+      keyNodes.push(this.parseWellKnownSymbol(symbol));
       valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
     }
     return {
@@ -159,10 +140,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     );
   }
 
-  protected parseBoxed(
-    id: number,
-    current: object,
-  ): SerovalBoxedNode {
+  protected parseBoxed(id: number, current: object): SerovalBoxedNode {
     return createBoxedNode(id, this.parse(current.valueOf()));
   }
 
@@ -180,24 +158,16 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return createBigIntTypedArrayNode(id, current, this.parse(current.buffer));
   }
 
-  protected parseDataView(
-    id: number,
-    current: DataView,
-  ): SerovalDataViewNode {
+  protected parseDataView(id: number, current: DataView): SerovalDataViewNode {
     return createDataViewNode(id, current, this.parse(current.buffer));
   }
 
-  protected parseError(
-    id: number,
-    current: Error,
-  ): SerovalErrorNode {
+  protected parseError(id: number, current: Error): SerovalErrorNode {
     const options = getErrorOptions(current, this.features);
     return createErrorNode(
       id,
       current,
-      options
-        ? this.parseProperties(options)
-        : undefined,
+      options ? this.parseProperties(options) : undefined,
     );
   }
 
@@ -209,9 +179,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return createAggregateErrorNode(
       id,
       current,
-      options
-        ? this.parseProperties(options)
-        : undefined,
+      options ? this.parseProperties(options) : undefined,
     );
   }
 
@@ -225,18 +193,10 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       keyNodes.push(this.parse(key));
       valueNodes.push(this.parse(value));
     }
-    return this.createMapNode(
-      id,
-      keyNodes,
-      valueNodes,
-      current.size,
-    );
+    return this.createMapNode(id, keyNodes, valueNodes, current.size);
   }
 
-  protected parseSet(
-    id: number,
-    current: Set<unknown>,
-  ): SerovalSetNode {
+  protected parseSet(id: number, current: Set<unknown>): SerovalSetNode {
     const items: SerovalNode[] = [];
     for (const item of current.keys()) {
       items.push(this.parse(item));
@@ -266,10 +226,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return undefined;
   }
 
-  protected parseStream(
-    id: number,
-    current: Stream<unknown>,
-  ): SerovalNode {
+  protected parseStream(id: number, _current: Stream<unknown>): SerovalNode {
     return createStreamConstructorNode(
       id,
       this.parseSpecialReference(SpecialReference.StreamConstructor),
@@ -279,7 +236,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
 
   protected parsePromise(
     id: number,
-    current: Promise<unknown>,
+    _current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
     return {
       t: SerovalNodeType.PromiseConstructor,
@@ -297,10 +254,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     };
   }
 
-  protected parseObject(
-    id: number,
-    current: object,
-  ): SerovalNode {
+  protected parseObject(id: number, current: object): SerovalNode {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
     }
@@ -357,15 +311,9 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       case DataView:
         return this.parseDataView(id, current as unknown as DataView);
       case Map:
-        return this.parseMap(
-          id,
-          current as unknown as Map<unknown, unknown>,
-        );
+        return this.parseMap(id, current as unknown as Map<unknown, unknown>);
       case Set:
-        return this.parseSet(
-          id,
-          current as unknown as Set<unknown>,
-        );
+        return this.parseSet(id, current as unknown as Set<unknown>);
       default:
         break;
     }
@@ -379,15 +327,18 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       switch (currentClass) {
         case BigInt64Array:
         case BigUint64Array:
-          return this.parseBigIntTypedArray(id, current as unknown as BigIntTypedArrayValue);
+          return this.parseBigIntTypedArray(
+            id,
+            current as unknown as BigIntTypedArrayValue,
+          );
         default:
           break;
       }
     }
     if (
-      (currentFeatures & Feature.AggregateError)
-      && typeof AggregateError !== 'undefined'
-      && (currentClass === AggregateError || current instanceof AggregateError)
+      currentFeatures & Feature.AggregateError &&
+      typeof AggregateError !== 'undefined' &&
+      (currentClass === AggregateError || current instanceof AggregateError)
     ) {
       return this.parseAggregateError(id, current as unknown as AggregateError);
     }
@@ -416,16 +367,19 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         return createNumberNode(current as number);
       case 'bigint':
         return createBigIntNode(current as bigint);
-      case 'object':
+      case 'object': {
         if (current) {
           const ref = this.getReference(current);
-          return ref.type === 0 ? this.parseObject(ref.value, current as object) : ref.value;
+          return ref.type === 0
+            ? this.parseObject(ref.value, current as object)
+            : ref.value;
         }
         return NULL_NODE;
+      }
       case 'symbol':
-        return this.parseWKSymbol(current);
+        return this.parseWellKnownSymbol(current);
       case 'function':
-        return this.parseFunction(current);
+        return this.parseFunction(current as (...args: unknown[]) => unknown);
       default:
         throw new UnsupportedTypeError(current);
     }

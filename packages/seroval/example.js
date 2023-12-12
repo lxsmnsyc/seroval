@@ -7,7 +7,7 @@ const object = {
   null: null,
   undefined: undefined,
   bigint: 9007199254740991n,
-  array: [,,,], // holes
+  array: [, , ,], // holes
   regexp: /[a-z0-9]+/i,
   date: new Date(),
   map: new Map([['hello', 'world']]),

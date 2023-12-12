@@ -86,7 +86,7 @@ export const SYMBOL_STRING: Record<Symbols, string> = {
   [Symbols.Unscopables]: 'Symbol.unscopables',
 };
 
-export const INV_SYMBOL_REF = /* @__PURE__ */{
+export const INV_SYMBOL_REF = /* @__PURE__ */ {
   [Symbol.asyncIterator]: Symbols.AsyncIterator,
   [Symbol.hasInstance]: Symbols.HasInstance,
   [Symbol.isConcatSpreadable]: Symbols.IsConcatSpreadable,
@@ -171,12 +171,13 @@ type ErrorConstructors =
   | TypeErrorConstructor
   | URIErrorConstructor;
 
-export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> = {
-  [ErrorConstructorTag.Error]: Error,
-  [ErrorConstructorTag.EvalError]: EvalError,
-  [ErrorConstructorTag.RangeError]: RangeError,
-  [ErrorConstructorTag.ReferenceError]: ReferenceError,
-  [ErrorConstructorTag.SyntaxError]: SyntaxError,
-  [ErrorConstructorTag.TypeError]: TypeError,
-  [ErrorConstructorTag.URIError]: URIError,
-};
+export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
+  {
+    [ErrorConstructorTag.Error]: Error,
+    [ErrorConstructorTag.EvalError]: EvalError,
+    [ErrorConstructorTag.RangeError]: RangeError,
+    [ErrorConstructorTag.ReferenceError]: ReferenceError,
+    [ErrorConstructorTag.SyntaxError]: SyntaxError,
+    [ErrorConstructorTag.TypeError]: TypeError,
+    [ErrorConstructorTag.URIError]: URIError,
+  };

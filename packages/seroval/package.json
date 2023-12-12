@@ -16,8 +16,6 @@
   "devDependencies": {
     "@types/node": "^20.8.3",
     "@vitest/ui": "^1.0.1",
-    "eslint": "^8.51.0",
-    "eslint-config-lxsmnsyc": "^0.6.6",
     "pridepack": "2.5.1",
     "ts-prune": "^0.10.3",
     "tslib": "^2.6.2",

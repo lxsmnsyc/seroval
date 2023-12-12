@@ -28,11 +28,7 @@ export interface Plugin<Value, Node> {
    * Parsing modes
    */
   parse: {
-    sync?: (
-      value: Value,
-      ctx: BaseSyncParserContext,
-      data: PluginData,
-    ) => Node;
+    sync?: (value: Value, ctx: BaseSyncParserContext, data: PluginData) => Node;
     async?: (
       value: Value,
       ctx: BaseAsyncParserContext,
@@ -47,11 +43,7 @@ export interface Plugin<Value, Node> {
   /**
    * Convert the parsed node into a JS string
    */
-  serialize(
-    node: Node,
-    ctx: BaseSerializerContext,
-    data: PluginData,
-  ): string;
+  serialize(node: Node, ctx: BaseSerializerContext, data: PluginData): string;
   /**
    * Convert the parsed node into its runtime equivalent.
    */

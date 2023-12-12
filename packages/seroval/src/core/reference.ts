@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import assert from './utils/assert';
 import { REFERENCES_KEY } from './keys';
 

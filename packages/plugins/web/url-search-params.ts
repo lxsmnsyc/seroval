@@ -1,7 +1,10 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-const URLSearchParamsPlugin = /* @__PURE__ */createPlugin<URLSearchParams, SerovalNode>({
+const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<
+  URLSearchParams,
+  SerovalNode
+>({
   tag: 'seroval-plugins/web/URLSearchParams',
   test(value) {
     if (typeof URLSearchParams === 'undefined') {
@@ -14,7 +17,7 @@ const URLSearchParamsPlugin = /* @__PURE__ */createPlugin<URLSearchParams, Serov
       return ctx.parse(value.toString());
     },
     async async(value, ctx) {
-      return ctx.parse(value.toString());
+      return await ctx.parse(value.toString());
     },
     stream(value, ctx) {
       return ctx.parse(value.toString());

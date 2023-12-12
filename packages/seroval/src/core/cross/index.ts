@@ -12,8 +12,8 @@ import type { CrossSyncParserContextOptions } from './sync';
 import SyncCrossParserContext from './sync';
 
 export interface CrossSerializeOptions
-  extends CrossSyncParserContextOptions, CrossContextOptions {
-}
+  extends CrossSyncParserContextOptions,
+    CrossContextOptions {}
 
 export function crossSerialize<T>(
   source: T,
@@ -36,8 +36,8 @@ export function crossSerialize<T>(
 }
 
 export interface CrossSerializeAsyncOptions
-  extends CrossAsyncParserContextOptions, CrossContextOptions {
-}
+  extends CrossAsyncParserContextOptions,
+    CrossContextOptions {}
 
 export async function crossSerializeAsync<T>(
   source: T,
@@ -86,11 +86,12 @@ export async function toCrossJSONAsync<T>(
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  return ctx.parse(source);
+  return await ctx.parse(source);
 }
 
 export interface CrossSerializeStreamOptions
-  extends Omit<CrossStreamParserContextOptions, 'onParse'>, CrossContextOptions {
+  extends Omit<CrossStreamParserContextOptions, 'onParse'>,
+    CrossContextOptions {
   onSerialize: (data: string, initial: boolean) => void;
 }
 
@@ -122,10 +123,7 @@ export function crossSerializeStream<T>(
         return;
       }
 
-      options.onSerialize(
-        serialized,
-        initial,
-      );
+      options.onSerialize(serialized, initial);
     },
     onError: options.onError,
     onDone: options.onDone,

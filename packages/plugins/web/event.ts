@@ -1,9 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-function createEventOptions(
-  current: Event,
-): EventInit {
+function createEventOptions(current: Event): EventInit {
   return {
     bubbles: current.bubbles,
     cancelable: current.cancelable,
@@ -16,7 +14,7 @@ interface EventNode {
   options: SerovalNode;
 }
 
-const EventPlugin = /* @__PURE__ */createPlugin<Event, EventNode>({
+const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
   tag: 'seroval-plugins/web/Event',
   test(value) {
     if (typeof Event === 'undefined') {
@@ -45,7 +43,13 @@ const EventPlugin = /* @__PURE__ */createPlugin<Event, EventNode>({
     },
   },
   serialize(node, ctx) {
-    return 'new Event(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
+    return (
+      'new Event(' +
+      ctx.serialize(node.type) +
+      ',' +
+      ctx.serialize(node.options) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     return new Event(

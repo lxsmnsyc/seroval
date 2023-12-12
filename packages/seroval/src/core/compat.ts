@@ -12,4 +12,4 @@ export const enum Feature {
   BigIntTypedArray = 0x10,
 }
 
-export const ALL_ENABLED = 0x1F;
+export const ALL_ENABLED = 0x1f;

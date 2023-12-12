@@ -6,10 +6,7 @@ import {
 } from '../base-primitives';
 import { ALL_ENABLED } from '../compat';
 import type { WellKnownSymbols } from '../constants';
-import {
-  INV_SYMBOL_REF,
-  SerovalNodeType,
-} from '../constants';
+import { INV_SYMBOL_REF, SerovalNodeType } from '../constants';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { hasReferenceID } from '../reference';
 import {
@@ -81,12 +78,12 @@ export abstract class BaseParserContext implements PluginAccessOptions {
   }
 
   protected getIndexedValue<T>(current: T): FreshNode | IndexedNode {
-    const registeredID = this.refs.get(current);
-    if (registeredID != null) {
-      this.markRef(registeredID);
+    const registeredId = this.refs.get(current);
+    if (registeredId != null) {
+      this.markRef(registeredId);
       return {
         type: 1,
-        value: createIndexedValueNode(registeredID),
+        value: createIndexedValueNode(registeredId),
       };
     }
     const id = this.refs.size;
@@ -111,8 +108,15 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return indexed;
   }
 
-  protected getStrictReference<T>(current: T): SerovalIndexedValueNode | SerovalReferenceNode {
-    assert(hasReferenceID(current), new Error('Cannot serialize ' + typeof current + ' without reference ID.'));
+  protected getStrictReference<T>(
+    current: T,
+  ): SerovalIndexedValueNode | SerovalReferenceNode {
+    assert(
+      hasReferenceID(current),
+      new Error(
+        'Cannot serialize ' + typeof current + ' without reference ID.',
+      ),
+    );
     const result = this.getIndexedValue(current);
     if (result.type === 1) {
       return result.value;
@@ -120,19 +124,23 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return createReferenceNode(result.value, current);
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  protected parseFunction(current: Function): SerovalNode {
+  protected parseFunction(
+    current: (...args: unknown[]) => unknown,
+  ): SerovalNode {
     return this.getStrictReference(current);
   }
 
-  protected parseWKSymbol(
+  protected parseWellKnownSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
     const ref = this.getReference(current);
     if (ref.type !== 0) {
       return ref.value;
     }
-    assert(current in INV_SYMBOL_REF, new Error('Cannot serialized unsupported symbol.'));
+    assert(
+      current in INV_SYMBOL_REF,
+      new Error('Cannot serialized unsupported symbol.'),
+    );
     return createWKSymbolNode(ref.value, current as WellKnownSymbols);
   }
 
@@ -159,7 +167,9 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     };
   }
 
-  protected parseIteratorFactory(): SerovalIndexedValueNode | SerovalIteratorFactoryNode {
+  protected parseIteratorFactory():
+    | SerovalIndexedValueNode
+    | SerovalIteratorFactoryNode {
     const result = this.getIndexedValue(ITERATOR);
     if (result.type === 1) {
       return result.value;
@@ -174,13 +184,15 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       p: undefined,
       e: undefined,
       a: undefined,
-      f: this.parseWKSymbol(Symbol.iterator),
+      f: this.parseWellKnownSymbol(Symbol.iterator),
       b: undefined,
       o: undefined,
     };
   }
 
-  protected parseAsyncIteratorFactory(): SerovalIndexedValueNode | SerovalAsyncIteratorFactoryNode {
+  protected parseAsyncIteratorFactory():
+    | SerovalIndexedValueNode
+    | SerovalAsyncIteratorFactoryNode {
     const result = this.getIndexedValue(ASYNC_ITERATOR);
     if (result.type === 1) {
       return result.value;
@@ -196,7 +208,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       e: undefined,
       a: [
         this.parseSpecialReference(SpecialReference.PromiseConstructor),
-        this.parseWKSymbol(Symbol.asyncIterator),
+        this.parseWellKnownSymbol(Symbol.asyncIterator),
       ],
       f: undefined,
       b: undefined,

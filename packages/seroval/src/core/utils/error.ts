@@ -1,8 +1,5 @@
 import { Feature } from '../compat';
-import {
-  ERROR_CONSTRUCTOR_STRING,
-  ErrorConstructorTag,
-} from '../constants';
+import { ERROR_CONSTRUCTOR_STRING, ErrorConstructorTag } from '../constants';
 
 type ErrorValue =
   | Error
@@ -36,20 +33,27 @@ export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   return ErrorConstructorTag.Error;
 }
 
+function getInitialErrorOptions(
+  error: Error,
+): Record<string, unknown> | undefined {
+  const construct = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
+  // Name has been modified
+  if (error.name !== construct) {
+    return { name: error.name };
+  }
+  if (error.constructor.name !== construct) {
+    // Otherwise, name is overriden because
+    // the Error class is extended
+    return { name: error.constructor.name };
+  }
+  return {};
+}
+
 export function getErrorOptions(
   error: Error,
   features: number,
 ): Record<string, unknown> | undefined {
-  let options: Record<string, unknown> | undefined;
-  const constructor = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
-  // Name has been modified
-  if (error.name !== constructor) {
-    options = { name: error.name };
-  } else if (error.constructor.name !== constructor) {
-    // Otherwise, name is overriden because
-    // the Error class is extended
-    options = { name: error.constructor.name };
-  }
+  let options = getInitialErrorOptions(error);
   const names = Object.getOwnPropertyNames(error);
   for (let i = 0, len = names.length, name: string; i < len; i++) {
     name = names[i];

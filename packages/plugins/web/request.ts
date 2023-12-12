@@ -27,12 +27,9 @@ interface RequestNode {
   options: SerovalNode;
 }
 
-const RequestPlugin = /* @__PURE__ */createPlugin<Request, RequestNode>({
+const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   tag: 'seroval-plugins/web/Request',
-  extends: [
-    ReadableStreamPlugin,
-    HeadersPlugin,
-  ],
+  extends: [ReadableStreamPlugin, HeadersPlugin],
   test(value) {
     if (typeof Request === 'undefined') {
       return false;
@@ -54,17 +51,18 @@ const RequestPlugin = /* @__PURE__ */createPlugin<Request, RequestNode>({
     stream(value, ctx) {
       return {
         url: ctx.parse(value.url),
-        options: ctx.parse(
-          createRequestOptions(
-            value,
-            value.clone().body,
-          ),
-        ),
+        options: ctx.parse(createRequestOptions(value, value.clone().body)),
       };
     },
   },
   serialize(node, ctx) {
-    return 'new Request(' + ctx.serialize(node.url) + ',' + ctx.serialize(node.options) + ')';
+    return (
+      'new Request(' +
+      ctx.serialize(node.url) +
+      ',' +
+      ctx.serialize(node.options) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     return new Request(

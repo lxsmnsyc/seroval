@@ -8,7 +8,7 @@ interface ImageDataNode {
   options: SerovalNode;
 }
 
-const ImageDataPlugin = /* @__PURE__ */createPlugin<ImageData, ImageDataNode>({
+const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
   tag: 'seroval-plugins/web/ImageData',
   test(value) {
     if (typeof ImageData === 'undefined') {
@@ -49,11 +49,17 @@ const ImageDataPlugin = /* @__PURE__ */createPlugin<ImageData, ImageDataNode>({
     },
   },
   serialize(node, ctx) {
-    return 'new ImageData('
-      + ctx.serialize(node.data) + ','
-      + ctx.serialize(node.width) + ','
-      + ctx.serialize(node.height) + ','
-      + ctx.serialize(node.options) + ')';
+    return (
+      'new ImageData(' +
+      ctx.serialize(node.data) +
+      ',' +
+      ctx.serialize(node.width) +
+      ',' +
+      ctx.serialize(node.height) +
+      ',' +
+      ctx.serialize(node.options) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     return new ImageData(

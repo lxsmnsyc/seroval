@@ -44,7 +44,6 @@ export async function serializeAsync<T>(
 }
 
 export function deserialize<T>(source: string): T {
-  // eslint-disable-next-line no-eval
   return (0, eval)(source) as T;
 }
 

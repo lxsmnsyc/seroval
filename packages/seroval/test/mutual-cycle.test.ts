@@ -261,7 +261,9 @@ describe('mutual cyclic references', () => {
         a[0] = Promise.resolve(b);
         b[0] = Promise.resolve(a);
         const example = [a, b] as const;
-        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        const result = await crossSerializeAsync(example, {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports Arrays and Objects', async () => {
@@ -270,7 +272,9 @@ describe('mutual cyclic references', () => {
         a[0] = Promise.resolve(b);
         b[0] = Promise.resolve(a);
         const example = [a, b] as const;
-        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        const result = await crossSerializeAsync(example, {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports Objects and Objects', async () => {
@@ -279,75 +283,22 @@ describe('mutual cyclic references', () => {
         a[0] = Promise.resolve(b);
         b[0] = Promise.resolve(a);
         const example = [a, b] as const;
-        const result = await crossSerializeAsync(example, { scopeId: 'example' });
+        const result = await crossSerializeAsync(example, {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Arrays and Arrays', async () => new Promise<void>((resolve, reject) => {
-      const a: Promise<unknown>[] = [];
-      const b: Promise<unknown>[] = [];
-      a[0] = Promise.resolve(b);
-      b[0] = Promise.resolve(a);
-      const example = [a, b] as const;
-      crossSerializeStream(example, {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Arrays and Objects', async () => new Promise<void>((resolve, reject) => {
-      const a: Promise<unknown>[] = [];
-      const b: Record<string, Promise<unknown>> = {};
-      a[0] = Promise.resolve(b);
-      b[0] = Promise.resolve(a);
-      const example = [a, b] as const;
-      crossSerializeStream(example, {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Objects and Objects', async () => new Promise<void>((resolve, reject) => {
-      const a: Record<string, Promise<unknown>> = {};
-      const b: Record<string, Promise<unknown>> = {};
-      a[0] = Promise.resolve(b);
-      b[0] = Promise.resolve(a);
-      const example = [a, b] as const;
-      crossSerializeStream(example, {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports Arrays and Arrays', async () => new Promise<void>((resolve, reject) => {
+    it('supports Arrays and Arrays', async () =>
+      new Promise<void>((resolve, reject) => {
         const a: Promise<unknown>[] = [];
         const b: Promise<unknown>[] = [];
         a[0] = Promise.resolve(b);
         b[0] = Promise.resolve(a);
         const example = [a, b] as const;
         crossSerializeStream(example, {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -359,14 +310,14 @@ describe('mutual cyclic references', () => {
           },
         });
       }));
-      it('supports Arrays and Objects', async () => new Promise<void>((resolve, reject) => {
+    it('supports Arrays and Objects', async () =>
+      new Promise<void>((resolve, reject) => {
         const a: Promise<unknown>[] = [];
         const b: Record<string, Promise<unknown>> = {};
         a[0] = Promise.resolve(b);
         b[0] = Promise.resolve(a);
         const example = [a, b] as const;
         crossSerializeStream(example, {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -378,14 +329,14 @@ describe('mutual cyclic references', () => {
           },
         });
       }));
-      it('supports Objects and Objects', async () => new Promise<void>((resolve, reject) => {
+    it('supports Objects and Objects', async () =>
+      new Promise<void>((resolve, reject) => {
         const a: Record<string, Promise<unknown>> = {};
         const b: Record<string, Promise<unknown>> = {};
         a[0] = Promise.resolve(b);
         b[0] = Promise.resolve(a);
         const example = [a, b] as const;
         crossSerializeStream(example, {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -397,6 +348,67 @@ describe('mutual cyclic references', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports Arrays and Arrays', async () =>
+        new Promise<void>((resolve, reject) => {
+          const a: Promise<unknown>[] = [];
+          const b: Promise<unknown>[] = [];
+          a[0] = Promise.resolve(b);
+          b[0] = Promise.resolve(a);
+          const example = [a, b] as const;
+          crossSerializeStream(example, {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
+      it('supports Arrays and Objects', async () =>
+        new Promise<void>((resolve, reject) => {
+          const a: Promise<unknown>[] = [];
+          const b: Record<string, Promise<unknown>> = {};
+          a[0] = Promise.resolve(b);
+          b[0] = Promise.resolve(a);
+          const example = [a, b] as const;
+          crossSerializeStream(example, {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
+      it('supports Objects and Objects', async () =>
+        new Promise<void>((resolve, reject) => {
+          const a: Record<string, Promise<unknown>> = {};
+          const b: Record<string, Promise<unknown>> = {};
+          a[0] = Promise.resolve(b);
+          b[0] = Promise.resolve(a);
+          const example = [a, b] as const;
+          crossSerializeStream(example, {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -488,59 +500,62 @@ describe('mutual cyclic references', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Arrays and Arrays', async () => new Promise<void>((resolve, reject) => {
-      const a: Promise<unknown>[] = [];
-      const b: Promise<unknown>[] = [];
-      a[0] = Promise.resolve(b);
-      b[0] = Promise.resolve(a);
-      const example = [a, b] as const;
-      toCrossJSONStream(example, {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Arrays and Objects', async () => new Promise<void>((resolve, reject) => {
-      const a: Promise<unknown>[] = [];
-      const b: Record<string, Promise<unknown>> = {};
-      a[0] = Promise.resolve(b);
-      b[0] = Promise.resolve(a);
-      const example = [a, b] as const;
-      toCrossJSONStream(example, {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Objects and Objects', async () => new Promise<void>((resolve, reject) => {
-      const a: Record<string, Promise<unknown>> = {};
-      const b: Record<string, Promise<unknown>> = {};
-      a[0] = Promise.resolve(b);
-      b[0] = Promise.resolve(a);
-      const example = [a, b] as const;
-      toCrossJSONStream(example, {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports Arrays and Arrays', async () =>
+      new Promise<void>((resolve, reject) => {
+        const a: Promise<unknown>[] = [];
+        const b: Promise<unknown>[] = [];
+        a[0] = Promise.resolve(b);
+        b[0] = Promise.resolve(a);
+        const example = [a, b] as const;
+        toCrossJSONStream(example, {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports Arrays and Objects', async () =>
+      new Promise<void>((resolve, reject) => {
+        const a: Promise<unknown>[] = [];
+        const b: Record<string, Promise<unknown>> = {};
+        a[0] = Promise.resolve(b);
+        b[0] = Promise.resolve(a);
+        const example = [a, b] as const;
+        toCrossJSONStream(example, {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports Objects and Objects', async () =>
+      new Promise<void>((resolve, reject) => {
+        const a: Record<string, Promise<unknown>> = {};
+        const b: Record<string, Promise<unknown>> = {};
+        a[0] = Promise.resolve(b);
+        b[0] = Promise.resolve(a);
+        const example = [a, b] as const;
+        toCrossJSONStream(example, {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

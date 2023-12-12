@@ -1,4 +1,3 @@
-
 import { serialize } from './dist/esm/development/index.mjs';
 
 function example() {
@@ -31,5 +30,5 @@ function example() {
 }
 
 for (let i = 0; i < 10000; i++) {
-  serialize(example())
+  serialize(example());
 }

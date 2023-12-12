@@ -2,7 +2,8 @@ import BaseDeserializerContext from '../context/deserializer';
 import type { BaseDeserializerOptions } from '../context/deserializer';
 import type { SerovalMode } from '../plugin';
 
-export interface VanillaDeserializerContextOptions extends Omit<BaseDeserializerOptions, 'refs'> {
+export interface VanillaDeserializerContextOptions
+  extends Omit<BaseDeserializerOptions, 'refs'> {
   markedRefs: number[] | Set<number>;
 }
 
@@ -16,10 +17,7 @@ export default class VanillaDeserializerContext extends BaseDeserializerContext 
     this.marked = new Set(options.markedRefs);
   }
 
-  assignIndexedValue<T>(
-    index: number,
-    value: T,
-  ): T {
+  assignIndexedValue<T>(index: number, value: T): T {
     if (this.marked.has(index)) {
       this.refs.set(index, value);
     }

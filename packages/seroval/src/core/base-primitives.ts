@@ -41,37 +41,40 @@ import type {
   SerovalWKSymbolNode,
 } from './types';
 import { getObjectFlag } from './utils/get-object-flag';
-import type { BigIntTypedArrayValue, TypedArrayValue } from './utils/typed-array';
+import type {
+  BigIntTypedArrayValue,
+  TypedArrayValue,
+} from './utils/typed-array';
 
-export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
+export function createNumberNode(
+  value: number,
+): SerovalConstantNode | SerovalNumberNode {
   switch (value) {
     case Infinity:
       return INFINITY_NODE;
     case -Infinity:
       return NEG_INFINITY_NODE;
-    default:
-      // eslint-disable-next-line no-self-compare
-      if (value !== value) {
-        return NAN_NODE;
-      }
-      if (Object.is(value, -0)) {
-        return NEG_ZERO_NODE;
-      }
-      return {
-        t: SerovalNodeType.Number,
-        i: undefined,
-        s: value,
-        l: undefined,
-        c: undefined,
-        m: undefined,
-        p: undefined,
-        e: undefined,
-        a: undefined,
-        f: undefined,
-        b: undefined,
-        o: undefined,
-      };
   }
+  if (value !== value) {
+    return NAN_NODE;
+  }
+  if (Object.is(value, -0)) {
+    return NEG_ZERO_NODE;
+  }
+  return {
+    t: SerovalNodeType.Number,
+    i: undefined,
+    s: value,
+    l: undefined,
+    c: undefined,
+    m: undefined,
+    p: undefined,
+    e: undefined,
+    a: undefined,
+    f: undefined,
+    b: undefined,
+    o: undefined,
+  };
 }
 
 export function createStringNode(value: string): SerovalStringNode {
@@ -91,9 +94,7 @@ export function createStringNode(value: string): SerovalStringNode {
   };
 }
 
-export function createBigIntNode(
-  current: bigint,
-): SerovalBigIntNode {
+export function createBigIntNode(current: bigint): SerovalBigIntNode {
   return {
     t: SerovalNodeType.BigInt,
     i: undefined,
@@ -144,7 +145,10 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   };
 }
 
-export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode {
+export function createRegExpNode(
+  id: number,
+  current: RegExp,
+): SerovalRegExpNode {
   return {
     t: SerovalNodeType.RegExp,
     i: id,
@@ -191,7 +195,10 @@ export function createWKSymbolNode(
   id: number,
   current: WellKnownSymbols,
 ): SerovalWKSymbolNode {
-  assert(current in INV_SYMBOL_REF, new Error('Only well-known symbols are supported.'));
+  assert(
+    current in INV_SYMBOL_REF,
+    new Error('Only well-known symbols are supported.'),
+  );
   return {
     t: SerovalNodeType.WKSymbol,
     i: id,
@@ -429,10 +436,7 @@ export function createIteratorFactoryInstanceNode(
     m: undefined,
     p: undefined,
     e: undefined,
-    a: [
-      factory,
-      items,
-    ],
+    a: [factory, items],
     f: undefined,
     b: undefined,
     o: undefined,
@@ -452,10 +456,7 @@ export function createAsyncIteratorFactoryInstanceNode(
     m: undefined,
     p: undefined,
     e: undefined,
-    a: [
-      factory,
-      items,
-    ],
+    a: [factory, items],
     f: undefined,
     b: undefined,
     o: undefined,

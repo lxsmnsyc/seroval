@@ -19,7 +19,7 @@ import {
 
 const EXAMPLE = {
   title: 'Hello World',
-  * [Symbol.iterator](): Generator<number> {
+  *[Symbol.iterator](): Generator<number> {
     yield 1;
     yield 2;
     yield 3;
@@ -98,32 +98,17 @@ describe('Iterable', () => {
     });
     describe('scoped', () => {
       it('supports Iterables', async () => {
-        const result = await crossSerializeAsync(
-          Promise.resolve(EXAMPLE),
-          { scopeId: 'example' },
-        );
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Iterables', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(EXAMPLE), {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports Iterables', async () => new Promise<void>((resolve, reject) => {
+    it('supports Iterables', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -135,13 +120,31 @@ describe('Iterable', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports Iterables', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(EXAMPLE), {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('compat', () => {
     it('should use function expression instead of arrow functions.', () => {
-      expect(serialize(EXAMPLE, {
-        disabledFeatures: Feature.ArrowFunction,
-      })).toMatchSnapshot();
+      expect(
+        serialize(EXAMPLE, {
+          disabledFeatures: Feature.ArrowFunction,
+        }),
+      ).toMatchSnapshot();
     });
   });
   describe('compat#toJSON', () => {
@@ -184,18 +187,19 @@ describe('Iterable', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Iterables', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(EXAMPLE), {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports Iterables', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(EXAMPLE), {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

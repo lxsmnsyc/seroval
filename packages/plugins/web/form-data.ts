@@ -6,6 +6,7 @@ type FormDataInit = [key: string, value: FormDataEntryValue][];
 
 function convertFormData(instance: FormData): FormDataInit {
   const items: FormDataInit = [];
+  // biome-ignore lint/complexity/noForEach: <explanation>
   instance.forEach((value, key) => {
     items.push([key, value]);
   });
@@ -14,7 +15,7 @@ function convertFormData(instance: FormData): FormDataInit {
 
 const FORM_DATA_FACTORY = {};
 
-const FormDataFactoryPlugin = /* @__PURE__ */createPlugin<object, undefined>({
+const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, undefined>({
   tag: 'seroval-plugins/web/FormDataFactory',
   test(value) {
     return value === FORM_DATA_FACTORY;
@@ -24,13 +25,13 @@ const FormDataFactoryPlugin = /* @__PURE__ */createPlugin<object, undefined>({
       return undefined;
     },
     async async() {
-      return Promise.resolve(undefined);
+      return await Promise.resolve(undefined);
     },
     stream() {
       return undefined;
     },
   },
-  serialize(node, ctx) {
+  serialize(_node, ctx) {
     return ctx.createEffectfulFunction(
       ['e', 'f', 'i', 's', 't'],
       'f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f',
@@ -46,12 +47,9 @@ interface FormDataNode {
   entries: SerovalNode;
 }
 
-const FormDataPlugin = /* @__PURE__ */createPlugin<FormData, FormDataNode>({
+const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
   tag: 'seroval-plugins/web/FormData',
-  extends: [
-    FilePlugin,
-    FormDataFactoryPlugin,
-  ],
+  extends: [FilePlugin, FormDataFactoryPlugin],
   test(value) {
     if (typeof FormData === 'undefined') {
       return false;
@@ -79,7 +77,13 @@ const FormDataPlugin = /* @__PURE__ */createPlugin<FormData, FormDataNode>({
     },
   },
   serialize(node, ctx) {
-    return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.entries) + ')';
+    return (
+      '(' +
+      ctx.serialize(node.factory) +
+      ')(' +
+      ctx.serialize(node.entries) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     const instance = new FormData();

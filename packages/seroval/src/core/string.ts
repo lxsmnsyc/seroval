@@ -1,16 +1,27 @@
 export function serializeChar(str: string): string | undefined {
   switch (str) {
-    case '"': return '\\"';
-    case '\\': return '\\\\';
-    case '\n': return '\\n';
-    case '\r': return '\\r';
-    case '\b': return '\\b';
-    case '\t': return '\\t';
-    case '\f': return '\\f';
-    case '<': return '\\x3C';
-    case '\u2028': return '\\u2028';
-    case '\u2029': return '\\u2029';
-    default: return undefined;
+    case '"':
+      return '\\"';
+    case '\\':
+      return '\\\\';
+    case '\n':
+      return '\\n';
+    case '\r':
+      return '\\r';
+    case '\b':
+      return '\\b';
+    case '\t':
+      return '\\t';
+    case '\f':
+      return '\\f';
+    case '<':
+      return '\\x3C';
+    case '\u2028':
+      return '\\u2028';
+    case '\u2029':
+      return '\\u2029';
+    default:
+      return undefined;
   }
 }
 
@@ -40,20 +51,34 @@ export function serializeString(str: string): string {
 
 function deserializeReplacer(str: string): string {
   switch (str) {
-    case '\\\\': return '\\';
-    case '\\"': return '"';
-    case '\\n': return '\n';
-    case '\\r': return '\r';
-    case '\\b': return '\b';
-    case '\\t': return '\t';
-    case '\\f': return '\f';
-    case '\\x3C': return '\x3C';
-    case '\\u2028': return '\u2028';
-    case '\\u2029': return '\u2029';
-    default: return str;
+    case '\\\\':
+      return '\\';
+    case '\\"':
+      return '"';
+    case '\\n':
+      return '\n';
+    case '\\r':
+      return '\r';
+    case '\\b':
+      return '\b';
+    case '\\t':
+      return '\t';
+    case '\\f':
+      return '\f';
+    case '\\x3C':
+      return '\x3C';
+    case '\\u2028':
+      return '\u2028';
+    case '\\u2029':
+      return '\u2029';
+    default:
+      return str;
   }
 }
 
 export function deserializeString(str: string): string {
-  return str.replace(/(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g, deserializeReplacer);
+  return str.replace(
+    /(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g,
+    deserializeReplacer,
+  );
 }

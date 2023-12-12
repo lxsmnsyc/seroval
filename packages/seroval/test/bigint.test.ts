@@ -49,28 +49,33 @@ describe('bigint', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports bigint', async () => {
-      expect(await crossSerializeAsync(Promise.resolve(EXAMPLE))).toMatchSnapshot();
+      expect(
+        await crossSerializeAsync(Promise.resolve(EXAMPLE)),
+      ).toMatchSnapshot();
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports bigint', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(EXAMPLE), {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports bigint', async () =>
+      new Promise<void>((resolve, reject) => {
+        crossSerializeStream(Promise.resolve(EXAMPLE), {
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
   describe('toCrossJSON', () => {
     it('supports bigint', () => {
       expect(JSON.stringify(toCrossJSON(EXAMPLE))).toMatchSnapshot();
-      expect(fromCrossJSON(toCrossJSON(EXAMPLE), { refs: new Map() })).toBe(EXAMPLE);
+      expect(fromCrossJSON(toCrossJSON(EXAMPLE), { refs: new Map() })).toBe(
+        EXAMPLE,
+      );
     });
   });
   describe('toCrossJSONAsync', () => {
@@ -81,18 +86,19 @@ describe('bigint', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports bigint', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(EXAMPLE), {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports bigint', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(EXAMPLE), {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });
