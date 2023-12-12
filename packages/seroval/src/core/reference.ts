@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import assert from './utils/assert';
 import { REFERENCES_KEY } from './keys';
 
@@ -29,28 +28,28 @@ export function getReference<T>(id: string): T {
   return INV_REFERENCE.get(id) as T;
 }
 
-if (typeof globalThis !== undefined) {
+if (typeof globalThis !== 'undefined') {
   Object.defineProperty(globalThis, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,
     writable: false,
     enumerable: false,
   });
-} else if (typeof window !== undefined) {
+} else if (typeof window !== 'undefined') {
   Object.defineProperty(window, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,
     writable: false,
     enumerable: false,
   });
-} else if (typeof self !== undefined) {
+} else if (typeof self !== 'undefined') {
   Object.defineProperty(self, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,
     writable: false,
     enumerable: false,
   });
-} else if (typeof global !== undefined) {
+} else if (typeof global !== 'undefined') {
   Object.defineProperty(global, REFERENCES_KEY, {
     value: INV_REFERENCE,
     configurable: true,

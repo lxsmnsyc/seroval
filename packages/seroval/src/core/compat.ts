@@ -6,19 +6,10 @@
 
 export const enum Feature {
   AggregateError = 0x01,
-  ArrowFunction = 0x04,
-  BigInt = 0x08,
-  ErrorPrototypeStack = 0x10,
-  Map = 0x20,
-  ObjectAssign = 0x80,
-  Promise = 0x100,
-  Set = 0x200,
-  Symbol = 0x400,
-  TypedArray = 0x800,
-  BigIntTypedArray = 0x1000,
-  WebAPI = 0x2000,
+  ArrowFunction = 0x02,
+  ErrorPrototypeStack = 0x04,
+  ObjectAssign = 0x08,
+  BigIntTypedArray = 0x10,
 }
 
-export const ALL_ENABLED = 0x3FFF;
-
-export const BIGINT_FLAG = Feature.BigIntTypedArray | Feature.BigInt;
+export const ALL_ENABLED = 0x1f;

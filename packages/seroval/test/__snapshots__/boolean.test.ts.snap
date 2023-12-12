@@ -10,32 +10,32 @@ exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Promise.
 
 exports[`boolean > crossSerializeStream > supports false value 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`boolean > crossSerializeStream > supports false value 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],!1)"`;
+exports[`boolean > crossSerializeStream > supports false value 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],!1)"`;
 
 exports[`boolean > crossSerializeStream > supports true value 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`boolean > crossSerializeStream > supports true value 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],!0)"`;
+exports[`boolean > crossSerializeStream > supports true value 2`] = `"($R[2]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],!0)"`;
 
-exports[`boolean > toCrossJSON > supports boolean 1`] = `"{\\"t\\":2,\\"s\\":2}"`;
+exports[`boolean > toCrossJSON > supports boolean 1`] = `"{"t":2,"s":2}"`;
 
-exports[`boolean > toCrossJSON > supports boolean 2`] = `"{\\"t\\":2,\\"s\\":3}"`;
+exports[`boolean > toCrossJSON > supports boolean 2`] = `"{"t":2,"s":3}"`;
 
-exports[`boolean > toCrossJSONAsync > supports boolean 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":2}}"`;
+exports[`boolean > toCrossJSONAsync > supports boolean 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":2,"s":2}}"`;
 
-exports[`boolean > toCrossJSONAsync > supports boolean 2`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":3}}"`;
+exports[`boolean > toCrossJSONAsync > supports boolean 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":2,"s":3}}"`;
 
-exports[`boolean > toCrossJSONStream > supports false value 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`boolean > toCrossJSONStream > supports false value 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boolean > toCrossJSONStream > supports false value 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":3}]}"`;
+exports[`boolean > toCrossJSONStream > supports false value 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":2,"s":3}]}"`;
 
-exports[`boolean > toCrossJSONStream > supports true value 1`] = `"{\\"t\\":28,\\"i\\":0,\\"f\\":{\\"t\\":41,\\"i\\":1,\\"s\\":2}}"`;
+exports[`boolean > toCrossJSONStream > supports true value 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boolean > toCrossJSONStream > supports true value 2`] = `"{\\"t\\":29,\\"i\\":0,\\"a\\":[{\\"t\\":41,\\"i\\":2,\\"s\\":3},{\\"t\\":2,\\"s\\":2}]}"`;
+exports[`boolean > toCrossJSONStream > supports true value 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":2,"s":2},{"t":2,"s":2}]}"`;
 
-exports[`boolean > toJSON > supports boolean 1`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":2},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > toJSON > supports boolean 1`] = `"{"t":{"t":2,"s":2},"f":31,"m":[]}"`;
 
-exports[`boolean > toJSON > supports boolean 2`] = `"{\\"t\\":{\\"t\\":2,\\"s\\":3},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > toJSON > supports boolean 2`] = `"{"t":{"t":2,"s":3},"f":31,"m":[]}"`;
 
-exports[`boolean > toJSONAsync > supports boolean 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":2}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > toJSONAsync > supports boolean 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":2}},"f":31,"m":[]}"`;
 
-exports[`boolean > toJSONAsync > supports boolean 2`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":2,\\"s\\":3}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`boolean > toJSONAsync > supports boolean 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":2,"s":3}},"f":31,"m":[]}"`;

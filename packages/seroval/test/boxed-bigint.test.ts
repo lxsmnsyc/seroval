@@ -6,7 +6,6 @@ import {
   serializeAsync,
   toJSONAsync,
   toJSON,
-  Feature,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
@@ -22,13 +21,16 @@ describe('boxed bigint', () => {
   describe('serialize', () => {
     it('supports boxed bigint', () => {
       expect(serialize(Object(EXAMPLE))).toMatchSnapshot();
-      expect(deserialize<object>(serialize(Object(EXAMPLE))).valueOf())
-        .toBe(EXAMPLE);
+      expect(deserialize<object>(serialize(Object(EXAMPLE))).valueOf()).toBe(
+        EXAMPLE,
+      );
     });
   });
   describe('serializeAsync', () => {
     it('supports boxed bigint', async () => {
-      expect(await serializeAsync(Promise.resolve(Object(EXAMPLE)))).toMatchSnapshot();
+      expect(
+        await serializeAsync(Promise.resolve(Object(EXAMPLE))),
+      ).toMatchSnapshot();
     });
   });
   describe('toJSON', () => {
@@ -50,7 +52,9 @@ describe('boxed bigint', () => {
     });
     describe('scoped', () => {
       it('supports boxed bigint', () => {
-        expect(crossSerialize(Object(EXAMPLE), { scopeId: 'example' })).toMatchSnapshot();
+        expect(
+          crossSerialize(Object(EXAMPLE), { scopeId: 'example' }),
+        ).toMatchSnapshot();
       });
     });
   });
@@ -63,29 +67,17 @@ describe('boxed bigint', () => {
     describe('scoped', () => {
       it('supports boxed bigint', async () => {
         expect(
-          await crossSerializeAsync(Promise.resolve(Object(EXAMPLE)), { scopeId: 'example' }),
+          await crossSerializeAsync(Promise.resolve(Object(EXAMPLE)), {
+            scopeId: 'example',
+          }),
         ).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports boxed bigint', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(Object(EXAMPLE)), {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports boxed bigint', async () => new Promise<void>((resolve, reject) => {
+    it('supports boxed bigint', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(Object(EXAMPLE)), {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -97,6 +89,22 @@ describe('boxed bigint', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports boxed bigint', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(Object(EXAMPLE)), {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -112,37 +120,26 @@ describe('boxed bigint', () => {
   describe('toCrossJSONAsync', () => {
     it('supports boxed bigint', async () => {
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(EXAMPLE)))),
+        JSON.stringify(
+          await toCrossJSONAsync(Promise.resolve(Object(EXAMPLE))),
+        ),
       ).toMatchSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports boxed bigint', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(Object(EXAMPLE)), {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-  });
-  describe('compat', () => {
-    it('should throw an error for unsupported target', () => {
-      expect(() => serialize(Object(EXAMPLE), {
-        disabledFeatures: Feature.BigInt,
-      })).toThrowErrorMatchingSnapshot();
-    });
-  });
-  describe('compat#toJSON', () => {
-    it('should throw an error for unsupported target', () => {
-      expect(() => toJSON(Object(EXAMPLE), {
-        disabledFeatures: Feature.BigInt,
-      })).toThrowErrorMatchingSnapshot();
-    });
+    it('supports boxed bigint', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(Object(EXAMPLE)), {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

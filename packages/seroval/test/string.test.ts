@@ -59,37 +59,43 @@ describe('string', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports strings', async () => {
-      expect(await crossSerializeAsync(Promise.resolve(QUOTED))).toMatchSnapshot();
-      expect(await crossSerializeAsync(Promise.resolve(HTML))).toMatchSnapshot();
+      expect(
+        await crossSerializeAsync(Promise.resolve(QUOTED)),
+      ).toMatchSnapshot();
+      expect(
+        await crossSerializeAsync(Promise.resolve(HTML)),
+      ).toMatchSnapshot();
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports strings', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(QUOTED), {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports sanitized strings', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(HTML), {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports strings', async () =>
+      new Promise<void>((resolve, reject) => {
+        crossSerializeStream(Promise.resolve(QUOTED), {
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports sanitized strings', async () =>
+      new Promise<void>((resolve, reject) => {
+        crossSerializeStream(Promise.resolve(HTML), {
+          onSerialize(data) {
+            expect(data).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
   describe('toCrossJSON', () => {
     it('supports strings', () => {
@@ -114,31 +120,33 @@ describe('string', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports strings', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(QUOTED), {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports sanitized strings', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(HTML), {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports strings', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(QUOTED), {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports sanitized strings', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(HTML), {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

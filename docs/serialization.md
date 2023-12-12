@@ -1,124 +1,264 @@
 # Serialization
 
-`seroval` offers different modes of serialization
-
-- `serialize`
-- `serializeAsync`
-- `toJSON`
-- `toJSONAsync`
-- `crossSerialize`
-- `crossSerializeAsync`
-- `crossSerializeStream`
-- `toCrossJSON`
-- `toCrossJSONAsync`
-- `toCrossJSONStream`
+`seroval` offers 3 modes of serialization: sync, async and streaming.
 
 ## Basic serialization
 
-`serialize` and `serializeAsync` offers the basic serialization, with the latter having support for serializing `Promise`, `Blob` and `File`.
+`serialize` offers the basic form of serialization.
 
 ```js
-import { serialize, serializeAsync } from 'seroval';
+import { serialize } from 'seroval';
+
+console.log(serialize({ foo: 'bar' })); // {foo:"bar"}
 ```
 
-Both of these functions return a JS string that one can either run in `eval`, wrap in a `<script>` tag and insert in the HTML output, or use `deserialize`
+## Async serialization
+
+`serializeAsync` is similar to `serialize` except that it supports asynchronous values, such as `Promise` instances.
 
 ```js
-import { deserialize } from 'seroval';
+import { serializeAsync } from 'seroval';
+
+console.log(await serializeAsync(Promise.resolve({ foo: 'bar'}))); // Promise.resolve({foo:"bar"})
 ```
 
-## JSON serialization
+## Deduping references
 
-`serialize` and `serializeAsync` is ideal for server-to-client communication, however, client-to-server communication requires a sanitized data, because the medium is prone to [RCE](https://huntr.dev/bounties/63f1ff91-48f3-4886-a179-103f1ddd8ff8).
-
-`toJSON` and `toJSONAsync` offers an alternative format: instead of returning a JS string, it returns a JSON object that represents the data to be deserialized. This same object is used internally for other serialization methods.
+If the serializer functions encounter multiple instances of the same reference, the reference will get deduped.
 
 ```js
-import { toJSON, toJSONAsync } from 'seroval';
+import { serialize } from 'seroval';
+
+const parent = {};
+
+const a = { parent };
+const b = { parent };
+
+const children = [a, b];
+
+console.log(serialize(children)); // (h=>([{parent:h={}},{parent:h}]))()
 ```
 
-To reconstruct the data from the JSON output, `fromJSON` can be used.
+## Cyclic references
+
+`seroval` also supports cyclic references.
 
 ```js
-import { fromJSON } from 'seroval';
+import { serialize } from 'seroval';
+
+const cyclic = {};
+
+cyclic.self = cyclic;
+
+console.log(serialize(cyclic)); // (h=>(h={},h.self=h,h))()
 ```
 
-To produce the JS string from the JSON output, `compileJSON` can be used.
+It also supports references that are mutually cyclic (e.g. they reference each other)
 
 ```js
-import { compileJSON } from 'seroval';
+import { serialize } from 'seroval';
+
+const nodeA = {};
+const nodeB = {};
+
+nodeA.next = nodeB;
+nodeB.prev = nodeA;
+
+console.log(serialize([nodeA, nodeB])); // ((h,j,k)=>(k=[h={next:j={}},j],j.prev=h,k))()
+```
+
+It can also detect potential temporal dead zone
+
+```js
+import { serialize } from 'seroval';
+
+const root = {};
+
+const nodeA = { parent: root };
+const nodeB = { parent: nodeA };
+
+root.child = nodeA;
+nodeA.child = nodeB;
+
+console.log(serialize(root)); // ((h,j,k)=>(h={child:j={child:k={}}},j.parent=h,k.parent=j,h))()
 ```
 
 ## Cross-reference serialization
 
-`crossSerialize` and `crossSerializeAsync` allows sharing mapped references between multiple calls. This is useful for inserting multiple JS string in HTML output where objects can re-occur at different times.
+`serialize` and `serializeAsync` can only dedupe references within its own script, but what if you want two or more scripts to share the same references?
+
+`crossSerialize` and `crossSerializeAsync` provides the capability
 
 ```js
-import { crossSerialize, crossSerializeAsync } from 'seroval';
+import { crossSerialize } from 'seroval';
+
+const nodeA = {};
+const nodeB = {};
+
+nodeA.next = nodeB;
+nodeB.prev = nodeA;
+
+// keeps track of the shared references
+const refs = new Map();
+console.log(crossSerialize(nodeA, { refs })); // ($R[0]={next:$R[1]={}},$R[1].prev=$R[0],$R[0])
+console.log(crossSerialize(nodeB, { refs })); // $R[1]
 ```
 
-Cross-reference serialization provides a different JS output, and so requires prepending a header script provided by `GLOBAL_CONTEXT_API_SCRIPT` and `getCrossReferenceHeader`.
+Take note that cross-reference scripts relies on the global array variable `$R`, which you can declare either manually, or a script via `getLocalHeaderScript`
+
+```js
+import { getCrossReferenceHeader } from 'seroval';
+
+console.log(getCrossReferenceHeader()) // self.$R=self.$R||[]
+```
+
+## Re-isolating cross-reference
+
+`crossSerialize` and `crossSerializeAsync` can accept a `scopeId` string which allows `$R` to be scoped based on the given `scopeId`.
+
+```js
+import { crossSerialize } from 'seroval';
+
+const nodeA = {};
+const nodeB = {};
+
+nodeA.next = nodeB;
+nodeB.prev = nodeA;
+
+// keeps track of the shared references
+const refsA = new Map();
+const refsB = new Map();
+console.log(crossSerialize(nodeA, { refs: refsA, scopeId: 'A' })); // ($R=>$R[0]={next:$R[1]={}},$R[1].prev=$R[0],$R[0])($R["A"])
+console.log(crossSerialize(nodeA, { refs: refsB, scopeId: 'B' })); // ($R=>$R[0]={next:$R[1]={}},$R[1].prev=$R[0],$R[0])($R["B"])
+console.log(crossSerialize(nodeB, { refs: refsA, scopeId: 'A' })); // ($R=>$R[1])($R["A"])
+console.log(crossSerialize(nodeB, { refs: refsB, scopeId: 'B' })); // ($R=>$R[1])($R["B"])
+```
+
+You can independently initialize the `$R` variable by doing
+
+```js
+import { getCrossReferenceHeader } from 'seroval';
+
+console.log(getCrossReferenceHeader('A')) // (self.$R=self.$R||{})["A"]=[]
+console.log(getCrossReferenceHeader('B')) // (self.$R=self.$R||{})["B"]=[]
+```
 
 ## Streaming serialization
 
-Async serialization allows `Promise` instances to be serialized by `await`-ing it, however, this results in a blocking process. With streaming serialization, `Promise` instances can be streamed later on, while the synchronous values can be emitted immediately.
+`serialize` doesn't support async values, but `serializeAsync` do. However, both methods are "blocking" in a sense that you need to wait the entire value to resolve before you can receive the serialized string.
 
-```js
-import { crossSerializeStream, Serializer } from 'seroval';
-```
+With streaming serialization, you can receive the serialized string immediately for the synchronous part, while receiving the asynchronous part later on.
 
-### `crossSerializeStream`
-
-`crossSerializeStream` is a push-once streaming, cross-reference serialization method. `crossSerializeStream` receives a value, and streams the rest of the deferred values over time. Deferred values may come from various sources, which includes `Promise` values and `ReadableStream`.
+Streaming serialization relies on cross-referencing since you can think of it as multiple `crossSerialize` calls.
 
 ```js
 import { crossSerializeStream } from 'seroval';
 
-const stop = crossSerializeStream(data, {
-  onSerialize(data, isInitial) {
-    // data - the serialized data
-    // isInitial - if data is the first data sent.
-  },
-  onDone() {
-    // Called when there's no more data to send
-    // or when the stream is stopped.
+crossSerializeStream(Promise.resolve({ foo: 'bar'}), {
+  onSerialize(data) {
+    console.log(data);
   },
 });
+
+// Logs:
+$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()
+($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={foo:"bar"})
 ```
 
-Like other cross-reference serialization:
+> **INFO**
+> Much like other cross-reference methods, you can pass a `refs` and `scopeId` option.
 
-- you can define `refs` for mapping cross-referenced values.
-- `crossSerializeStream` would require both `GLOBAL_CONTEXT_API_SCRIPT` and `getCrossReferenceHeader`.
+### `createStream`
 
-### `Serializer`
+Streaming serialization allows pushing values through `Promise` instances. However, `Promise` instances only resolve to a single value, but what if you can resolve multiple values at different times?
+
+`ReadableStream` is capable of doing so, however it's not a JS standard (`seroval` supports it through plugins). `Observable` could have been nice however [it's not a JS standard yet](https://github.com/tc39/proposal-observable)
+
+With two of the optinos not available, `seroval` provides a streaming primitive called `createStream` which is capable of buffering streaming data as well as emitting pushed data.
+
+```js
+import { createStream } from 'seroval';
+
+const stream = createStream();
+
+// Push early
+stream.next('foo');
+stream.next('bar');
+
+// Add a listener
+stream.on({
+  next(data) {
+    console.log('NEXT', data);
+  },
+  throw(data) {
+    console.log('THROW', data);
+  },
+  return(data) {
+    console.log('RETURN', data);
+  },
+});
+// Immediately logs `NEXT foo` and `NEXT bar`
+
+stream.return('baz'); // RETURN baz
+```
+
+`createStream` instances are also serializable for async serialization
+
+```js
+console.log(await serializeAsync(stream));
+
+// which logs
+((h,j)=>((j=((b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],s=0,f=(v,m,x)=>{for(x=0;x<s;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],x===z-1?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),j.next("foo"),j.next("bar"),j.return("baz"),j)))()
+```
+
+Streaming serialization is also supported
+
+```js
+crossSerializeStream(stream, {
+  onSerialize(data) {
+    console.log(data);
+  },
+});
+
+// which logs
+$R[0]=($R[1]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],s=0,f=(v,m,x)=>{for(x=0;x<s;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],x===z-1?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))()
+$R[0].next("foo")
+$R[0].next("bar")
+$R[0].return("baz")
+```
+
+## JSON serialization
+
+The mentioned serialization metohds are ideal for server-to-client communication, however, client-to-server communication requires a sanitized data, because the medium is prone to [RCE](https://huntr.dev/bounties/63f1ff91-48f3-4886-a179-103f1ddd8ff8). `seroval` offers JSON modes as an alternative.
+
+| modes | JS | JSON |
+| --- | --- | --- |
+| sync | `serialize` | `toJSON` |
+| async | `serializeAsync` | `toJSONAsync` |
+| cross-sync | `crossSerialize` | `toCrossJSON` |
+| cross-async | `crossSerializeAsync` | `toCrossJSONAsync` |
+| streaming | `crossSerializeStream` | `toCrossJSONStream` |
+| deserialization | `deserialize` | `fromJSON` |
+| cross-deserialization | `deserialize` | `fromCrossJSON` |
+
+## Push-based streaming serialization
+
+> **INFO**
+> Coming soon.
 
 ## Plugins
 
-```ts
-import { createPlugin, type SerovalNode } from 'seroval';
+All serialization methods can accept plugins. Plugins allows extending the serialization capabilities of `seroval`. You can visit such examples on `seroval-plugins`.
 
-const BufferPlugin = createPlugin<Buffer, SerovalNode>({
-  tag: 'Buffer',
-  test(value) {
-    return value instanceof Buffer;
-  },
-  parse: {
-    sync(value, ctx) {
-      return ctx.parse(value.toString('base64'));
-    },
-    async async(value, ctx) {
-      return ctx.parse(value.toString('base64'));
-    },
-    stream(value, ctx) {
-      return ctx.parse(value.toString('base64'));
-    },
-  },
-  serialize(node, ctx) {
-    return `Buffer.from(${ctx.serialize(node)}, "base64")`;
-  },
-  deserialize(node, ctx) {
-    return Buffer.from(ctx.deserialize(node) as string, 'base64');
-  },
-});
+```js
+
+import { serializeAsync } from 'seroval';
+import { BlobPlugin } from 'seroval-plugins/web';
+
+const example = new Blob(['Hello, World!'], { type: 'text/plain '});
+console.log(await serializeAsync(example, {
+  plugins: [
+    BlobPlugin,
+  ],
+})); // new Blob([new Uint8Array([72,101,108,108,111,44,32,87,111,114,108,100,33]).buffer],{type:"text/plain "})
 ```

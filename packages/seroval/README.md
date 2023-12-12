@@ -59,12 +59,12 @@ console.log(result);
 Output (as a string):
 
 ```js
-((h,j,k,m,o)=>(o={number:[0.3325212548332517,-0,0/0,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,k=(j=[],new Map([["hello","world"],["mutual",m=new Set(["hello","world"])]]))],regexp:/[a-z0-9]+/i,date:new Date("2023-11-19T09:25:24.118Z"),map:k,set:m},h[3]=h,k.set("self",k),m.add(m).add(h),o.self=o,o))()
+((h,j,k,m,o)=>(o={number:[0.5337763749243287,-0,0/0,1/0,-1/0],string:["hello world","\x3Cscript>Hello World\x3C/script>"],boolean:[!0,!1],null:null,undefined:void 0,bigint:9007199254740991n,array:h=[,,,,k=(j=[],new Map([["hello","world"],["mutual",m=new Set(["hello","world"])]]))],regexp:/[a-z0-9]+/i,date:new Date("2023-12-07T17:28:57.909Z"),map:k,set:m},h[3]=h,k.set("self",k),m.add(m).add(h),o.self=o,o))()
 
 // Formatted for readability
 ((h, j, k, m, o) => (
   (o = {
-    number: [0.3325212548332517, -0, 0 / 0, 1 / 0, -1 / 0],
+    number: [0.5337763749243287, -0, 0 / 0, 1 / 0, -1 / 0],
     string: ["hello world", "\x3Cscript>Hello World\x3C/script>"],
     boolean: [!0, !1],
     null: null,
@@ -83,7 +83,7 @@ Output (as a string):
         ]))),
     ]),
     regexp: /[a-z0-9]+/i,
-    date: new Date("2023-11-19T09:25:24.118Z"),
+    date: new Date("2023-12-07T17:28:57.909Z"),
     map: k,
     set: m,
   }),

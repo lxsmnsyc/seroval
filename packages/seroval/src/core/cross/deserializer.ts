@@ -7,10 +7,7 @@ export type CrossDeserializerContextOptions = BaseDeserializerOptions;
 export default class CrossDeserializerContext extends BaseDeserializerContext {
   readonly mode: SerovalMode = 'cross';
 
-  assignIndexedValue<T>(
-    index: number,
-    value: T,
-  ): T {
+  assignIndexedValue<T>(index: number, value: T): T {
     if (!this.refs.has(index)) {
       this.refs.set(index, value);
     }

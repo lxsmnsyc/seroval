@@ -1,9 +1,5 @@
-/* eslint-disable no-void */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import util from 'util';
-import {
-  suite, add, cycle, complete, save,
-} from 'benny';
+import { suite, add, cycle, complete, save } from 'benny';
 
 // fixtures
 import circularDedupe from './fixtures/circular-dedupe';
@@ -43,24 +39,24 @@ const tools = [
 ];
 
 const fixtures = {
-  // 'circular-dedupe': circularDedupe,
-  // 'circular-simple': circularSimple,
-  // 'dedupe-object': dedupeObject,
-  // 'large-circular-collection': largeCircularCollection,
-  // 'large-complex-collection': largeComplexCollection,
-  // 'large-dedupe-collection': largeDedupeCollection,
-  // 'large-invalid-keys-collection': largeInvalidKeysCollection,
-  // 'large-simple-collection': largeSimpleCollection,
-  // 'simple-object': simpleObject,
+  'circular-dedupe': circularDedupe,
+  'circular-simple': circularSimple,
+  'dedupe-object': dedupeObject,
+  'large-circular-collection': largeCircularCollection,
+  'large-complex-collection': largeComplexCollection,
+  'large-dedupe-collection': largeDedupeCollection,
+  'large-invalid-keys-collection': largeInvalidKeysCollection,
+  'large-simple-collection': largeSimpleCollection,
+  'simple-object': simpleObject,
   'small-collection': smallCollection,
 };
 
-Object.entries(fixtures).forEach(([key, value]) => {
+for (const [key, value] of Object.entries(fixtures)) {
   const suiteName = key;
   const getData = value as () => unknown;
 
   // Skip benchmarks that couldn't properly serialize and hydrate the structure.
-  const toolsForFixture = tools.map((tool) => {
+  const toolsForFixture = tools.map(tool => {
     let skip = false;
     try {
       skip = !util.isDeepStrictEqual(
@@ -76,9 +72,11 @@ Object.entries(fixtures).forEach(([key, value]) => {
 
   void suite(
     `${suiteName} to string`,
-    ...toolsForFixture.map(({ name, utils, skip }) => (skip ? add.skip : add)(name, () => {
-      utils.toString(getData());
-    })),
+    ...toolsForFixture.map(({ name, utils, skip }) =>
+      (skip ? add.skip : add)(name, () => {
+        utils.toString(getData());
+      }),
+    ),
     cycle(),
     complete(),
     save({
@@ -99,17 +97,16 @@ Object.entries(fixtures).forEach(([key, value]) => {
 
   void suite(
     `${suiteName} from string`,
-    ...toolsForFixture.map(({ name, utils }) => (
+    ...toolsForFixture.map(({ name, utils }) =>
       // This does not account for parse time since eval is cached.
       // skipped for now because it is not useful until a way to avoid eval cache is found.
       add.skip(name, () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const sampleOutput = utils.toString(getData());
         return (): void => {
           utils.fromString(sampleOutput);
         };
-      })
-    )),
+      }),
+    ),
     cycle(),
     complete(),
     save({
@@ -127,4 +124,4 @@ Object.entries(fixtures).forEach(([key, value]) => {
       format: 'csv',
     }),
   );
-});
+}

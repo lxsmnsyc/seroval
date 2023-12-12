@@ -23,7 +23,7 @@ RECURSIVE.b = RECURSIVE;
 Object.freeze(RECURSIVE);
 
 const ITERABLE = Object.freeze({
-  * [Symbol.iterator]() {
+  *[Symbol.iterator]() {
     yield 1;
     yield 2;
     yield 3;
@@ -36,7 +36,7 @@ ASYNC_RECURSIVE.b = Promise.resolve(ASYNC_RECURSIVE);
 Object.freeze(ASYNC_RECURSIVE);
 
 const ASYNC_ITERABLE = Object.freeze({
-  async* [Symbol.asyncIterator]() {
+  async *[Symbol.asyncIterator]() {
     await Promise.resolve();
     yield 1;
     yield 2;
@@ -167,7 +167,7 @@ describe('frozen object', () => {
   });
   describe('crossSerialize', () => {
     it('supports Objects', () => {
-      const example = ({ hello: 'world' }) as { hello: string };
+      const example = { hello: 'world' } as { hello: string };
       Object.freeze(example);
       const result = crossSerialize(example);
       expect(result).toMatchSnapshot();
@@ -214,86 +214,35 @@ describe('frozen object', () => {
     });
     describe('scoped', () => {
       it('supports Objects', async () => {
-        const result = await crossSerializeAsync(
-          Promise.resolve(EXAMPLE),
-          { scopeId: 'example' },
-        );
+        const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports self-recursion', async () => {
-        const result = await crossSerializeAsync(ASYNC_RECURSIVE, { scopeId: 'example' });
+        const result = await crossSerializeAsync(ASYNC_RECURSIVE, {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports Symbol.iterator', async () => {
-        const result = await crossSerializeAsync(
-          Promise.resolve(ITERABLE),
-          { scopeId: 'example' },
-        );
+        const result = await crossSerializeAsync(Promise.resolve(ITERABLE), {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports Symbol.asyncIterator', async () => {
-        const result = await crossSerializeAsync(ASYNC_ITERABLE, { scopeId: 'example' });
+        const result = await crossSerializeAsync(ASYNC_ITERABLE, {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Objects', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(EXAMPLE), {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(ASYNC_RECURSIVE, {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Symbol.iterator', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(ITERABLE), {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Symbol.asyncIterator', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(ASYNC_ITERABLE, {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports Objects', async () => new Promise<void>((resolve, reject) => {
+    it('supports Objects', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -305,9 +254,9 @@ describe('frozen object', () => {
           },
         });
       }));
-      it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
+    it('supports self-recursion', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(ASYNC_RECURSIVE, {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -319,9 +268,9 @@ describe('frozen object', () => {
           },
         });
       }));
-      it('supports Symbol.iterator', async () => new Promise<void>((resolve, reject) => {
+    it('supports Symbol.iterator', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(ITERABLE), {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -333,9 +282,9 @@ describe('frozen object', () => {
           },
         });
       }));
-      it('supports Symbol.asyncIterator', async () => new Promise<void>((resolve, reject) => {
+    it('supports Symbol.asyncIterator', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(ASYNC_ITERABLE, {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -347,6 +296,67 @@ describe('frozen object', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports Objects', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(EXAMPLE), {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
+      it('supports self-recursion', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(ASYNC_RECURSIVE, {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
+      it('supports Symbol.iterator', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(ITERABLE), {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
+      it('supports Symbol.asyncIterator', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(ASYNC_ITERABLE, {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -424,57 +434,61 @@ describe('frozen object', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Objects', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(EXAMPLE), {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports self-recursion', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(ASYNC_RECURSIVE, {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Symbol.iterator', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(ITERABLE), {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports Symbol.asyncIterator', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(ASYNC_ITERABLE, {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports Objects', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(EXAMPLE), {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports self-recursion', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(ASYNC_RECURSIVE, {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports Symbol.iterator', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(ITERABLE), {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports Symbol.asyncIterator', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(ASYNC_ITERABLE, {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

@@ -28,35 +28,23 @@ export const enum SerovalNodeType {
   TypedArray = 15,
   BigIntTypedArray = 16,
   WKSymbol = 17,
-  URL = 18,
-  URLSearchParams = 19,
-  Reference = 20,
-  ArrayBuffer = 21,
-  DataView = 22,
-  Blob = 23,
-  File = 24,
-  Headers = 25,
-  FormData = 26,
-  Boxed = 27,
-  PromiseConstructor = 28,
-  PromiseResolve = 29,
-  PromiseReject = 30,
-  ReadableStreamConstructor = 31,
-  ReadableStreamEnqueue = 32,
-  ReadableStreamClose = 33,
-  ReadableStreamError = 34,
-  Request = 35,
-  Response = 36,
-  Event = 37,
-  CustomEvent = 38,
-  DOMException = 39,
-  Plugin = 40,
-  SpecialReference = 41,
-  IteratorFactory = 42,
-  IteratorFactoryInstance = 43,
-  AsyncIteratorFactory = 44,
-  AsyncIteratorFactoryInstance = 45,
-  ReadableStream = 46,
+  Reference = 18,
+  ArrayBuffer = 19,
+  DataView = 20,
+  Boxed = 21,
+  PromiseConstructor = 22,
+  PromiseResolve = 23,
+  PromiseReject = 24,
+  Plugin = 25,
+  SpecialReference = 26,
+  IteratorFactory = 27,
+  IteratorFactoryInstance = 28,
+  AsyncIteratorFactory = 29,
+  AsyncIteratorFactoryInstance = 30,
+  StreamConstructor = 31,
+  StreamNext = 32,
+  StreamThrow = 33,
+  StreamReturn = 34,
 }
 
 export const enum SerovalObjectFlags {
@@ -98,7 +86,7 @@ export const SYMBOL_STRING: Record<Symbols, string> = {
   [Symbols.Unscopables]: 'Symbol.unscopables',
 };
 
-export const INV_SYMBOL_REF = {
+export const INV_SYMBOL_REF = /* @__PURE__ */ {
   [Symbol.asyncIterator]: Symbols.AsyncIterator,
   [Symbol.hasInstance]: Symbols.HasInstance,
   [Symbol.isConcatSpreadable]: Symbols.IsConcatSpreadable,
@@ -183,12 +171,13 @@ type ErrorConstructors =
   | TypeErrorConstructor
   | URIErrorConstructor;
 
-export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> = {
-  [ErrorConstructorTag.Error]: Error,
-  [ErrorConstructorTag.EvalError]: EvalError,
-  [ErrorConstructorTag.RangeError]: RangeError,
-  [ErrorConstructorTag.ReferenceError]: ReferenceError,
-  [ErrorConstructorTag.SyntaxError]: SyntaxError,
-  [ErrorConstructorTag.TypeError]: TypeError,
-  [ErrorConstructorTag.URIError]: URIError,
-};
+export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
+  {
+    [ErrorConstructorTag.Error]: Error,
+    [ErrorConstructorTag.EvalError]: EvalError,
+    [ErrorConstructorTag.RangeError]: RangeError,
+    [ErrorConstructorTag.ReferenceError]: ReferenceError,
+    [ErrorConstructorTag.SyntaxError]: SyntaxError,
+    [ErrorConstructorTag.TypeError]: TypeError,
+    [ErrorConstructorTag.URIError]: URIError,
+  };

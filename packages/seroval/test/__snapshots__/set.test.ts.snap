@@ -1,44 +1,36 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Set > compat > should fallback to Symbol.iterator 1`] = `"((h,j)=>(Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3}),[Symbol.toStringTag]:\\"Set\\"})))()"`;
+exports[`Set > crossSerialize > scoped > supports Set 1`] = `"($R=>$R[0]=new Set([1,2,3]))($R["example"])"`;
 
-exports[`Set > compat > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Set]\\""`;
-
-exports[`Set > compat#toJSON > should fallback to Symbol.iterator 1`] = `"{\\"t\\":{\\"t\\":11,\\"i\\":0,\\"p\\":{\\"k\\":[{\\"t\\":17,\\"i\\":1,\\"s\\":3},{\\"t\\":17,\\"i\\":5,\\"s\\":11}],\\"v\\":[{\\"t\\":43,\\"a\\":[{\\"t\\":42,\\"i\\":2,\\"f\\":{\\"t\\":4,\\"i\\":1}},{\\"t\\":10,\\"i\\":3,\\"p\\":{\\"k\\":[\\"v\\",\\"t\\",\\"d\\"],\\"v\\":[{\\"t\\":9,\\"i\\":4,\\"l\\":4,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3},{\\"t\\":2,\\"s\\":1}],\\"o\\":0},{\\"t\\":0,\\"s\\":-1},{\\"t\\":0,\\"s\\":3}],\\"s\\":3},\\"o\\":0}]},{\\"t\\":1,\\"s\\":\\"Set\\"}],\\"s\\":2},\\"o\\":0},\\"f\\":15871,\\"m\\":[1]}"`;
-
-exports[`Set > compat#toJSON > should throw an error for unsupported target 1`] = `"Unsupported type \\"[object Set]\\""`;
-
-exports[`Set > crossSerialize > scoped > supports Set 1`] = `"($R=>$R[0]=new Set([1,2,3]))($R[\\"example\\"])"`;
-
-exports[`Set > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set,$R[0].add($R[0]),$R[0])($R[\\"example\\"])"`;
+exports[`Set > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set,$R[0].add($R[0]),$R[0])($R["example"])"`;
 
 exports[`Set > crossSerialize > supports Set 1`] = `"$R[0]=new Set([1,2,3])"`;
 
 exports[`Set > crossSerialize > supports self-recursion 1`] = `"($R[0]=new Set,$R[0].add($R[0]),$R[0])"`;
 
-exports[`Set > crossSerializeAsync > scoped > supports Set 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Set([1,2,3])))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeAsync > scoped > supports Set 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Set([1,2,3])))($R["example"])"`;
 
-exports[`Set > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])]))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])]))($R["example"])"`;
 
 exports[`Set > crossSerializeAsync > supports Set 1`] = `"$R[0]=Promise.resolve($R[1]=new Set([1,2,3]))"`;
 
 exports[`Set > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports Set 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports Set 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Set([1,2,3])))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Set([1,2,3])))($R["example"])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()]))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()]))($R["example"])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R[\\"example\\"])"`;
+exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[1],$R[0]))($R["example"])"`;
 
 exports[`Set > crossSerializeStream > supports Set 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`Set > crossSerializeStream > supports Set 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Set([1,2,3]))"`;
+exports[`Set > crossSerializeStream > supports Set 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Set([1,2,3]))"`;
 
 exports[`Set > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=($R[2]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()])"`;
 
-exports[`Set > crossSerializeStream > supports self-recursion 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status=\\"success\\",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
+exports[`Set > crossSerializeStream > supports self-recursion 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[1],$R[0])"`;
 
 exports[`Set > serialize > supports Set 1`] = `"new Set([1,2,3])"`;
 
@@ -48,18 +40,18 @@ exports[`Set > serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,
 
 exports[`Set > serializeAsync > supports self-recursion 1`] = `"(h=>(h=new Set([Promise.resolve().then(()=>h)])))()"`;
 
-exports[`Set > toCrossJSON > supports Set 1`] = `"{\\"t\\":7,\\"i\\":0,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}"`;
+exports[`Set > toCrossJSON > supports Set 1`] = `"{"t":7,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}"`;
 
-exports[`Set > toCrossJSON > supports self-recursion 1`] = `"{\\"t\\":7,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]}"`;
+exports[`Set > toCrossJSON > supports self-recursion 1`] = `"{"t":7,"i":0,"l":1,"a":[{"t":4,"i":0}]}"`;
 
-exports[`Set > toCrossJSONAsync > supports Set 1`] = `"{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":7,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}}"`;
+exports[`Set > toCrossJSONAsync > supports Set 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":7,"i":1,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}}"`;
 
-exports[`Set > toCrossJSONAsync > supports self-recursion 1`] = `"{\\"t\\":7,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}]}"`;
+exports[`Set > toCrossJSONAsync > supports self-recursion 1`] = `"{"t":7,"i":0,"l":1,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}]}"`;
 
-exports[`Set > toJSON > supports Set 1`] = `"{\\"t\\":{\\"t\\":7,\\"i\\":0,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Set > toJSON > supports Set 1`] = `"{"t":{"t":7,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]},"f":31,"m":[]}"`;
 
-exports[`Set > toJSON > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":7,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":4,\\"i\\":0}]},\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`Set > toJSON > supports self-recursion 1`] = `"{"t":{"t":7,"i":0,"l":1,"a":[{"t":4,"i":0}]},"f":31,"m":[0]}"`;
 
-exports[`Set > toJSONAsync > supports Set 1`] = `"{\\"t\\":{\\"t\\":12,\\"i\\":0,\\"s\\":1,\\"f\\":{\\"t\\":7,\\"i\\":1,\\"l\\":3,\\"a\\":[{\\"t\\":0,\\"s\\":1},{\\"t\\":0,\\"s\\":2},{\\"t\\":0,\\"s\\":3}]}},\\"f\\":16383,\\"m\\":[]}"`;
+exports[`Set > toJSONAsync > supports Set 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":7,"i":1,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}},"f":31,"m":[]}"`;
 
-exports[`Set > toJSONAsync > supports self-recursion 1`] = `"{\\"t\\":{\\"t\\":7,\\"i\\":0,\\"l\\":1,\\"a\\":[{\\"t\\":12,\\"i\\":1,\\"s\\":1,\\"f\\":{\\"t\\":4,\\"i\\":0}}]},\\"f\\":16383,\\"m\\":[0]}"`;
+exports[`Set > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":7,"i":0,"l":1,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}]},"f":31,"m":[0]}"`;

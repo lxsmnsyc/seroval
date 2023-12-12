@@ -1,4 +1,4 @@
-import type { PluginAccessOptions } from '../plugin';
+import { resolvePlugins, type PluginAccessOptions } from '../plugin';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
 import AsyncParserContext from './async';
@@ -11,13 +11,14 @@ export function serialize<T>(
   source: T,
   options: SyncParserContextOptions = {},
 ): string {
+  const plugins = resolvePlugins(options.plugins);
   const ctx = new SyncParserContext({
-    plugins: options.plugins,
+    plugins,
     disabledFeatures: options.disabledFeatures,
   });
   const tree = ctx.parse(source);
   const serial = new VanillaSerializerContext({
-    plugins: options.plugins,
+    plugins,
     features: ctx.features,
     markedRefs: ctx.marked,
   });
@@ -28,13 +29,14 @@ export async function serializeAsync<T>(
   source: T,
   options: AsyncParserContextOptions = {},
 ): Promise<string> {
+  const plugins = resolvePlugins(options.plugins);
   const ctx = new AsyncParserContext({
-    plugins: options.plugins,
+    plugins,
     disabledFeatures: options.disabledFeatures,
   });
   const tree = await ctx.parse(source);
   const serial = new VanillaSerializerContext({
-    plugins: options.plugins,
+    plugins,
     features: ctx.features,
     markedRefs: ctx.marked,
   });
@@ -42,7 +44,6 @@ export async function serializeAsync<T>(
 }
 
 export function deserialize<T>(source: string): T {
-  // eslint-disable-next-line no-eval
   return (0, eval)(source) as T;
 }
 
@@ -56,8 +57,9 @@ export function toJSON<T>(
   source: T,
   options: SyncParserContextOptions = {},
 ): SerovalJSON {
+  const plugins = resolvePlugins(options.plugins);
   const ctx = new SyncParserContext({
-    plugins: options.plugins,
+    plugins,
     disabledFeatures: options.disabledFeatures,
   });
   return {
@@ -71,8 +73,9 @@ export async function toJSONAsync<T>(
   source: T,
   options: AsyncParserContextOptions = {},
 ): Promise<SerovalJSON> {
+  const plugins = resolvePlugins(options.plugins);
   const ctx = new AsyncParserContext({
-    plugins: options.plugins,
+    plugins,
     disabledFeatures: options.disabledFeatures,
   });
   return {
@@ -83,8 +86,9 @@ export async function toJSONAsync<T>(
 }
 
 export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = {}): string {
+  const plugins = resolvePlugins(options.plugins);
   const ctx = new VanillaSerializerContext({
-    plugins: options.plugins,
+    plugins,
     features: source.f,
     markedRefs: source.m,
   });
@@ -92,8 +96,9 @@ export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = 
 }
 
 export function fromJSON<T>(source: SerovalJSON, options: PluginAccessOptions = {}): T {
+  const plugins = resolvePlugins(options.plugins);
   const ctx = new VanillaDeserializerContext({
-    plugins: options.plugins,
+    plugins,
     markedRefs: source.m,
   });
   return ctx.deserialize(source.t) as T;

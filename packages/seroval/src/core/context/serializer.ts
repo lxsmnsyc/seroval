@@ -30,33 +30,21 @@ import type {
   SerovalErrorNode,
   SerovalPromiseNode,
   SerovalWKSymbolNode,
-  SerovalURLNode,
-  SerovalURLSearchParamsNode,
-  SerovalBlobNode,
-  SerovalFileNode,
-  SerovalHeadersNode,
-  SerovalFormDataNode,
   SerovalBoxedNode,
-  SerovalRequestNode,
-  SerovalResponseNode,
-  SerovalEventNode,
-  SerovalCustomEventNode,
-  SerovalDOMExceptionNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
   SerovalPromiseResolveNode,
   SerovalPromiseRejectNode,
-  SerovalReadableStreamConstructorNode,
-  SerovalReadableStreamEnqueueNode,
-  SerovalReadableStreamErrorNode,
-  SerovalReadableStreamCloseNode,
   SerovalIteratorFactoryInstanceNode,
   SerovalIteratorFactoryNode,
   SerovalAsyncIteratorFactoryInstanceNode,
   SerovalAsyncIteratorFactoryNode,
-  SerovalReadableStreamNode,
   SerovalSpecialReferenceNode,
   SerovalNodeWithID,
+  SerovalStreamConstructorNode,
+  SerovalStreamNextNode,
+  SerovalStreamThrowNode,
+  SerovalStreamReturnNode,
 } from '../types';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
 
@@ -118,7 +106,11 @@ function getAssignmentExpression(assignment: Assignment): string {
 function mergeAssignments(assignments: Assignment[]): Assignment[] {
   const newAssignments: Assignment[] = [];
   let current = assignments[0];
-  for (let i = 1, len = assignments.length, item: Assignment, prev = current; i < len; i++) {
+  for (
+    let i = 1, len = assignments.length, item: Assignment, prev = current;
+    i < len;
+    i++
+  ) {
     item = assignments[i];
     if (item.t === 'index' && item.v === prev.v) {
       // Merge if the right-hand value is the same
@@ -185,26 +177,28 @@ const MAP_CONSTRUCTOR = 'new Map';
 const PROMISE_RESOLVE = 'Promise.resolve';
 const PROMISE_REJECT = 'Promise.reject';
 
-const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> = {
-  [SerovalObjectFlags.Frozen]: 'Object.freeze',
-  [SerovalObjectFlags.Sealed]: 'Object.seal',
-  [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
-  [SerovalObjectFlags.None]: undefined,
-};
+const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> =
+  {
+    [SerovalObjectFlags.Frozen]: 'Object.freeze',
+    [SerovalObjectFlags.Sealed]: 'Object.seal',
+    [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
+    [SerovalObjectFlags.None]: undefined,
+  };
 
 type SerovalNodeWithProperties =
   | SerovalObjectNode
   | SerovalNullConstructorNode
   | SerovalAggregateErrorNode
-  | SerovalErrorNode
-  | SerovalHeadersNode;
+  | SerovalErrorNode;
 
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
   markedRefs: number[] | Set<number>;
 }
 
-export default abstract class BaseSerializerContext implements PluginAccessOptions {
+export default abstract class BaseSerializerContext
+  implements PluginAccessOptions
+{
   /**
    * @private
    */
@@ -244,27 +238,23 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
 
   abstract readonly mode: SerovalMode;
 
-  protected createFunction(
-    parameters: string[],
-    body: string,
-  ): string {
+  createFunction(parameters: string[], body: string): string {
     if (this.features & Feature.ArrowFunction) {
-      const joined = parameters.length === 1
-        ? parameters[0]
-        : '(' + parameters.join(',') + ')';
+      const joined =
+        parameters.length === 1
+          ? parameters[0]
+          : '(' + parameters.join(',') + ')';
       return joined + '=>' + body;
     }
     return 'function(' + parameters.join(',') + '){return ' + body + '}';
   }
 
-  protected createEffectfulFunction(
-    parameters: string[],
-    body: string,
-  ): string {
+  createEffectfulFunction(parameters: string[], body: string): string {
     if (this.features & Feature.ArrowFunction) {
-      const joined = parameters.length === 1
-        ? parameters[0]
-        : '(' + parameters.join(',') + ')';
+      const joined =
+        parameters.length === 1
+          ? parameters[0]
+          : '(' + parameters.join(',') + ')';
       return joined + '=>{' + body + '}';
     }
     return 'function(' + parameters.join(',') + '){' + body + '}';
@@ -289,7 +279,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * that is used to refer to the object instance in the
    * generated script.
    */
-  abstract getRefParam(id: number | string): string;
+  abstract getRefParam(id: number): string;
 
   protected pushObjectFlag(flag: SerovalObjectFlags, id: number): void {
     if (flag !== SerovalObjectFlags.None) {
@@ -327,10 +317,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * This is different from the assignments array as this one
    * signifies creation rather than mutation
    */
-  protected createAssignment(
-    source: string,
-    value: string,
-  ): void {
+  protected createAssignment(source: string, value: string): void {
     this.assignments.push({
       t: 'index',
       s: source,
@@ -339,10 +326,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     });
   }
 
-  protected createAddAssignment(
-    ref: number,
-    value: string,
-  ): void {
+  protected createAddAssignment(ref: number, value: string): void {
     this.assignments.push({
       t: 'add',
       s: this.getRefParam(ref),
@@ -351,11 +335,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     });
   }
 
-  protected createSetAssignment(
-    ref: number,
-    key: string,
-    value: string,
-  ): void {
+  protected createSetAssignment(ref: number, key: string, value: string): void {
     this.assignments.push({
       t: 'set',
       s: this.getRefParam(ref),
@@ -364,10 +344,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     });
   }
 
-  protected createDeleteAssignment(
-    ref: number,
-    key: string,
-  ): void {
+  protected createDeleteAssignment(ref: number, key: string): void {
     this.assignments.push({
       t: 'delete',
       s: this.getRefParam(ref),
@@ -384,11 +361,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     this.createAssignment(this.getRefParam(ref) + '[' + index + ']', value);
   }
 
-  protected createObjectAssign(
-    ref: number,
-    key: string,
-    value: string,
-  ): void {
+  protected createObjectAssign(ref: number, key: string, value: string): void {
     this.createAssignment(this.getRefParam(ref) + '.' + key, value);
   }
 
@@ -396,10 +369,10 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * Checks if the value is in the stack. Stack here is a reference
    * structure to know if a object is to be accessed in a TDZ.
    */
-  isIndexedValueInStack(
-    node: SerovalNode,
-  ): boolean {
-    return node.t === SerovalNodeType.IndexedValue && this.stack.includes(node.i);
+  isIndexedValueInStack(node: SerovalNode): boolean {
+    return (
+      node.t === SerovalNodeType.IndexedValue && this.stack.includes(node.i)
+    );
   }
 
   /**
@@ -408,15 +381,13 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * return the reference parameter directly or assign a value to
    * it.
    */
-  protected abstract assignIndexedValue(
-    id: number,
-    value: string,
-  ): string;
+  protected abstract assignIndexedValue(id: number, value: string): string;
 
-  protected serializeReference(
-    node: SerovalReferenceNode,
-  ): string {
-    return this.assignIndexedValue(node.i, REFERENCES_KEY + '.get("' + node.s + '")');
+  protected serializeReference(node: SerovalReferenceNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      REFERENCES_KEY + '.get("' + node.s + '")',
+    );
   }
 
   protected serializeArrayItem(
@@ -429,7 +400,11 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // Check if item is a parent
       if (this.isIndexedValueInStack(item)) {
         this.markRef(id);
-        this.createArrayAssign(id, index, this.getRefParam((item as SerovalIndexedValueNode).i));
+        this.createArrayAssign(
+          id,
+          index,
+          this.getRefParam((item as SerovalIndexedValueNode).i),
+        );
         return '';
       }
       return this.serialize(item);
@@ -437,9 +412,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return '';
   }
 
-  protected serializeArray(
-    node: SerovalArrayNode,
-  ): string {
+  protected serializeArray(node: SerovalArrayNode): string {
     const id = node.i;
     if (node.l) {
       this.stack.push(id);
@@ -474,15 +447,18 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       if (this.isIndexedValueInStack(val)) {
         const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
         this.markRef(source.i);
-        // eslint-disable-next-line no-self-compare
         if (isIdentifier && check !== check) {
           this.createObjectAssign(source.i, key, refParam);
         } else {
-          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), refParam);
+          this.createArrayAssign(
+            source.i,
+            isIdentifier ? key : '"' + key + '"',
+            refParam,
+          );
         }
         return '';
       }
-      return (isIdentifier ? key : ('"' + key + '"')) + ':' + this.serialize(val);
+      return (isIdentifier ? key : '"' + key + '"') + ':' + this.serialize(val);
     }
     return '[' + this.serialize(key) + ']:' + this.serialize(val);
   }
@@ -507,11 +483,12 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return '{}';
   }
 
-  protected serializeObject(
-    node: SerovalObjectNode,
-  ): string {
+  protected serializeObject(node: SerovalObjectNode): string {
     this.pushObjectFlag(node.o, node.i);
-    return this.assignIndexedValue(node.i, this.serializeProperties(node, node.p));
+    return this.assignIndexedValue(
+      node.i,
+      this.serializeProperties(node, node.p),
+    );
   }
 
   protected serializeWithObjectAssign(
@@ -526,6 +503,43 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return serialized;
   }
 
+  private serializeStringKeyAssignment(
+    source: SerovalNodeWithProperties,
+    mainAssignments: Assignment[],
+    key: string,
+    value: SerovalNode,
+  ): void {
+    const serialized = this.serialize(value);
+    const check = Number(key);
+    // Test if key is a valid number or JS identifier
+    // so that we don't have to serialize the key and wrap with brackets
+    const isIdentifier = check >= 0 || isValidIdentifier(key);
+    if (this.isIndexedValueInStack(value)) {
+      if (isIdentifier && check !== check) {
+        this.createObjectAssign(source.i, key, serialized);
+      } else {
+        this.createArrayAssign(
+          source.i,
+          isIdentifier ? key : '"' + key + '"',
+          serialized,
+        );
+      }
+    } else {
+      const parentAssignment = this.assignments;
+      this.assignments = mainAssignments;
+      if (isIdentifier) {
+        this.createObjectAssign(source.i, key, serialized);
+      } else {
+        this.createArrayAssign(
+          source.i,
+          isIdentifier ? key : '"' + key + '"',
+          serialized,
+        );
+      }
+      this.assignments = parentAssignment;
+    }
+  }
+
   protected serializeAssignment(
     source: SerovalNodeWithProperties,
     mainAssignments: Assignment[],
@@ -533,28 +547,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     value: SerovalNode,
   ): void {
     if (typeof key === 'string') {
-      const serialized = this.serialize(value);
-      const check = Number(key);
-      // Test if key is a valid number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      const isIdentifier = check >= 0 || isValidIdentifier(key);
-      if (this.isIndexedValueInStack(value)) {
-        // eslint-disable-next-line no-self-compare
-        if (isIdentifier && check !== check) {
-          this.createObjectAssign(source.i, key, serialized);
-        } else {
-          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
-        }
-      } else {
-        const parentAssignment = this.assignments;
-        this.assignments = mainAssignments;
-        if (isIdentifier) {
-          this.createObjectAssign(source.i, key, serialized);
-        } else {
-          this.createArrayAssign(source.i, isIdentifier ? key : ('"' + key + '"'), serialized);
-        }
-        this.assignments = parentAssignment;
-      }
+      this.serializeStringKeyAssignment(source, mainAssignments, key, value);
     } else {
       const parent = this.stack;
       this.stack = [];
@@ -562,11 +555,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       this.stack = parent;
       const parentAssignment = this.assignments;
       this.assignments = mainAssignments;
-      this.createArrayAssign(
-        source.i,
-        this.serialize(key),
-        serialized,
-      );
+      this.createArrayAssign(source.i, this.serialize(key), serialized);
       this.assignments = parentAssignment;
     }
   }
@@ -601,47 +590,46 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         this.markRef(node.i);
         const assignments = this.serializeAssignments(node, node.p);
         if (assignments) {
-          return '(' + this.assignIndexedValue(node.i, init) + ',' + assignments + this.getRefParam(node.i) + ')';
+          return (
+            '(' +
+            this.assignIndexedValue(node.i, init) +
+            ',' +
+            assignments +
+            this.getRefParam(node.i) +
+            ')'
+          );
         }
       }
     }
     return this.assignIndexedValue(node.i, init);
   }
 
-  protected serializeNullConstructor(
-    node: SerovalNullConstructorNode,
-  ): string {
+  protected serializeNullConstructor(node: SerovalNullConstructorNode): string {
     this.pushObjectFlag(node.o, node.i);
     return this.serializeDictionary(node, NULL_CONSTRUCTOR);
   }
 
-  protected serializeDate(
-    node: SerovalDateNode,
-  ): string {
+  protected serializeDate(node: SerovalDateNode): string {
     return this.assignIndexedValue(node.i, 'new Date("' + node.s + '")');
   }
 
-  protected serializeRegExp(
-    node: SerovalRegExpNode,
-  ): string {
+  protected serializeRegExp(node: SerovalRegExpNode): string {
     return this.assignIndexedValue(node.i, '/' + node.c + '/' + node.m);
   }
 
-  protected serializeSetItem(
-    id: number,
-    item: SerovalNode,
-  ): string {
+  protected serializeSetItem(id: number, item: SerovalNode): string {
     if (this.isIndexedValueInStack(item)) {
       this.markRef(id);
-      this.createAddAssignment(id, this.getRefParam((item as SerovalIndexedValueNode).i));
+      this.createAddAssignment(
+        id,
+        this.getRefParam((item as SerovalIndexedValueNode).i),
+      );
       return '';
     }
     return this.serialize(item);
   }
 
-  protected serializeSet(
-    node: SerovalSetNode,
-  ): string {
+  protected serializeSet(node: SerovalSetNode): string {
     let serialized = SET_CONSTRUCTOR;
     const size = node.l;
     const id = node.i;
@@ -685,12 +673,17 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // value is no longer part of the expression
       // tree and has been moved to the deferred
       // assignment
-      if (val.t !== SerovalNodeType.IndexedValue && val.i != null && this.isMarked(val.i)) {
+      if (
+        val.t !== SerovalNodeType.IndexedValue &&
+        val.i != null &&
+        this.isMarked(val.i)
+      ) {
         // We use a trick here using sequence (or comma) expressions
         // basically we serialize the intended object in place WITHOUT
         // actually returning it, this is by returning a placeholder
         // value that we will remove sometime after.
-        const serialized = '(' + this.serialize(val) + ',[' + sentinel + ',' + sentinel + '])';
+        const serialized =
+          '(' + this.serialize(val) + ',[' + sentinel + ',' + sentinel + '])';
         this.createSetAssignment(id, keyRef, this.getRefParam(val.i));
         this.createDeleteAssignment(id, sentinel);
         return serialized;
@@ -705,8 +698,13 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       // Create ref for the Map instance
       const valueRef = this.getRefParam((val as SerovalIndexedValueNode).i);
       this.markRef(id);
-      if (key.t !== SerovalNodeType.IndexedValue && key.i != null && this.isMarked(key.i)) {
-        const serialized = '(' + this.serialize(key) + ',[' + sentinel + ',' + sentinel + '])';
+      if (
+        key.t !== SerovalNodeType.IndexedValue &&
+        key.i != null &&
+        this.isMarked(key.i)
+      ) {
+        const serialized =
+          '(' + this.serialize(key) + ',[' + sentinel + ',' + sentinel + '])';
         this.createSetAssignment(id, this.getRefParam(key.i), valueRef);
         this.createDeleteAssignment(id, sentinel);
         return serialized;
@@ -722,21 +720,19 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return '[' + this.serialize(key) + ',' + this.serialize(val) + ']';
   }
 
-  protected serializeMap(
-    node: SerovalMapNode,
-  ): string {
+  protected serializeMap(node: SerovalMapNode): string {
     let serialized = MAP_CONSTRUCTOR;
     const size = node.e.s;
     const id = node.i;
     const sentinel = node.f;
-    const sentinelID = this.getRefParam(sentinel.i);
+    const sentinelId = this.getRefParam(sentinel.i);
     if (size) {
       const keys = node.e.k;
       const vals = node.e.v;
       this.stack.push(id);
-      let result = this.serializeMapEntry(id, keys[0], vals[0], sentinelID);
+      let result = this.serializeMapEntry(id, keys[0], vals[0], sentinelId);
       for (let i = 1, item = result; i < size; i++) {
-        item = this.serializeMapEntry(id, keys[i], vals[i], sentinelID);
+        item = this.serializeMapEntry(id, keys[i], vals[i], sentinelId);
         result += (item && result && ',') + item;
       }
       this.stack.pop();
@@ -754,9 +750,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.assignIndexedValue(id, serialized);
   }
 
-  protected serializeArrayBuffer(
-    node: SerovalArrayBufferNode,
-  ): string {
+  protected serializeArrayBuffer(node: SerovalArrayBufferNode): string {
     let result = 'new Uint8Array(';
     const buffer = node.s;
     const len = buffer.length;
@@ -775,23 +769,33 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   ): string {
     return this.assignIndexedValue(
       node.i,
-      'new ' + node.c + '(' + this.serialize(node.f) + ',' + node.b + ',' + node.l + ')',
+      'new ' +
+        node.c +
+        '(' +
+        this.serialize(node.f) +
+        ',' +
+        node.b +
+        ',' +
+        node.l +
+        ')',
     );
   }
 
-  protected serializeDataView(
-    node: SerovalDataViewNode,
-  ): string {
+  protected serializeDataView(node: SerovalDataViewNode): string {
     return this.assignIndexedValue(
       node.i,
-      'new DataView(' + this.serialize(node.f) + ',' + node.b + ',' + node.l + ')',
+      'new DataView(' +
+        this.serialize(node.f) +
+        ',' +
+        node.b +
+        ',' +
+        node.l +
+        ')',
     );
   }
 
-  protected serializeAggregateError(
-    node: SerovalAggregateErrorNode,
-  ): string {
-  // Serialize the required arguments
+  protected serializeAggregateError(node: SerovalAggregateErrorNode): string {
+    // Serialize the required arguments
     const id = node.i;
     this.stack.push(id);
     const serialized = 'new AggregateError([],"' + node.m + '")';
@@ -802,174 +806,69 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
     return this.serializeDictionary(node, serialized);
   }
 
-  protected serializeError(
-    node: SerovalErrorNode,
-  ): string {
-    return this.serializeDictionary(node, 'new ' + ERROR_CONSTRUCTOR_STRING[node.s] + '("' + node.m + '")');
+  protected serializeError(node: SerovalErrorNode): string {
+    return this.serializeDictionary(
+      node,
+      'new ' + ERROR_CONSTRUCTOR_STRING[node.s] + '("' + node.m + '")',
+    );
   }
 
-  protected serializePromise(
-    node: SerovalPromiseNode,
-  ): string {
+  protected serializePromise(node: SerovalPromiseNode): string {
     let serialized: string;
     // Check if resolved value is a parent expression
     const fulfilled = node.f;
     const id = node.i;
-    const constructor = node.s ? PROMISE_RESOLVE : PROMISE_REJECT;
+    const promiseConstructor = node.s ? PROMISE_RESOLVE : PROMISE_REJECT;
     if (this.isIndexedValueInStack(fulfilled)) {
       // A Promise trick, reference the value
       // inside the `then` expression so that
       // the Promise evaluates after the parent
       // has initialized
       const ref = this.getRefParam((fulfilled as SerovalIndexedValueNode).i);
-      serialized = constructor + (
-        node.s
+      serialized =
+        promiseConstructor +
+        (node.s
           ? '().then(' + this.createFunction([], ref) + ')'
-          : '().catch(' + this.createEffectfulFunction([], 'throw ' + ref) + ')'
-      );
+          : '().catch(' +
+            this.createEffectfulFunction([], 'throw ' + ref) +
+            ')');
     } else {
       this.stack.push(id);
       const result = this.serialize(fulfilled);
       this.stack.pop();
       // just inline the value/reference here
-      serialized = constructor + '(' + result + ')';
+      serialized = promiseConstructor + '(' + result + ')';
     }
     return this.assignIndexedValue(id, serialized);
   }
 
-  protected serializeWKSymbol(
-    node: SerovalWKSymbolNode,
-  ): string {
+  protected serializeWellKnownSymbol(node: SerovalWKSymbolNode): string {
     return this.assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
   }
 
-  protected serializeURL(
-    node: SerovalURLNode,
+  protected serializeFormDataEntry(
+    id: number,
+    key: string,
+    value: SerovalNode,
   ): string {
-    return this.assignIndexedValue(node.i, 'new URL("' + node.s + '")');
-  }
-
-  protected serializeURLSearchParams(
-    node: SerovalURLSearchParamsNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      node.s ? 'new URLSearchParams("' + node.s + '")' : 'new URLSearchParams',
+    return (
+      this.getRefParam(id) +
+      '.append("' +
+      key +
+      '",' +
+      this.serialize(value) +
+      ')'
     );
   }
 
-  protected serializeBlob(
-    node: SerovalBlobNode,
-  ): string {
+  protected serializeBoxed(node: SerovalBoxedNode): string {
     return this.assignIndexedValue(
       node.i,
-      'new Blob([' + this.serialize(node.f) + '],{type:"' + node.c + '"})',
+      'Object(' + this.serialize(node.f) + ')',
     );
   }
 
-  protected serializeFile(
-    node: SerovalFileNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new File([' + this.serialize(node.f) + '],"' + node.m + '",{type:"' + node.c + '",lastModified:' + node.b + '})',
-    );
-  }
-
-  protected serializeHeaders(
-    node: SerovalHeadersNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new Headers(' + this.serializeProperties(node, node.e) + ')',
-    );
-  }
-
-  protected serializeFormDataEntry(id: number, key: string, value: SerovalNode): string {
-    return this.getRefParam(id) + '.append("' + key + '",' + this.serialize(value) + ')';
-  }
-
-  protected serializeFormDataEntries(
-    node: SerovalFormDataNode,
-    size: number,
-  ): string {
-    const keys = node.e.k;
-    const vals = node.e.v;
-    const id = node.i;
-    let result = this.serializeFormDataEntry(id, keys[0], vals[0]);
-    for (let i = 1; i < size; i++) {
-      result += ',' + this.serializeFormDataEntry(id, keys[i], vals[i]);
-    }
-    return result;
-  }
-
-  protected serializeFormData(
-    node: SerovalFormDataNode,
-  ): string {
-    const size = node.e.s;
-    const id = node.i;
-    if (size) {
-      this.markRef(id);
-    }
-    const result = this.assignIndexedValue(id, 'new FormData()');
-    if (size) {
-      const entries = this.serializeFormDataEntries(node, size);
-      return '(' + result + ',' + (entries ? entries + ',' : '') + this.getRefParam(id) + ')';
-    }
-    return result;
-  }
-
-  protected serializeBoxed(
-    node: SerovalBoxedNode,
-  ): string {
-    return this.assignIndexedValue(node.i, 'Object(' + this.serialize(node.f) + ')');
-  }
-
-  protected serializeRequest(
-    node: SerovalRequestNode,
-  ): string {
-    return this.assignIndexedValue(node.i, 'new Request("' + node.s + '",' + this.serialize(node.f) + ')');
-  }
-
-  protected serializeResponse(
-    node: SerovalResponseNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new Response(' + this.serialize(node.a[0]) + ',' + this.serialize(node.a[1]) + ')',
-    );
-  }
-
-  protected serializeEvent(
-    node: SerovalEventNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new Event("' + node.s + '",' + this.serialize(node.f) + ')',
-    );
-  }
-
-  protected serializeCustomEvent(
-    node: SerovalCustomEventNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new CustomEvent("' + node.s + '",' + this.serialize(node.f) + ')',
-    );
-  }
-
-  protected serializeDOMException(
-    node: SerovalDOMExceptionNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      'new DOMException("' + node.s + '","' + node.c + '")',
-    );
-  }
-
-  protected serializePlugin(
-    node: SerovalPluginNode,
-  ): string {
+  protected serializePlugin(node: SerovalPluginNode): string {
     const currentPlugins = this.plugins;
     if (currentPlugins) {
       for (let i = 0, len = currentPlugins.length; i < len; i++) {
@@ -988,77 +887,48 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   }
 
   private getConstructor(node: SerovalNodeWithID): string {
-    const constructor = this.serialize(node);
-    return (constructor === this.getRefParam(node.i)) ? constructor : ('(' + constructor + ')');
+    const current = this.serialize(node);
+    return current === this.getRefParam(node.i) ? current : '(' + current + ')';
   }
 
   protected serializePromiseConstructor(
     node: SerovalPromiseConstructorNode,
   ): string {
-    return this.assignIndexedValue(
-      node.i,
-      this.getConstructor(node.f) + '()',
+    return this.assignIndexedValue(node.i, this.getConstructor(node.f) + '()');
+  }
+
+  protected serializePromiseResolve(node: SerovalPromiseResolveNode): string {
+    return (
+      this.getConstructor(node.a[0]) +
+      '(' +
+      this.getRefParam(node.i) +
+      ',' +
+      this.serialize(node.a[1]) +
+      ')'
     );
   }
 
-  protected serializePromiseResolve(
-    node: SerovalPromiseResolveNode,
-  ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.a[1]) + ')';
-  }
-
-  protected serializePromiseReject(
-    node: SerovalPromiseRejectNode,
-  ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.a[1]) + ')';
-  }
-
-  protected serializeReadableStreamConstructor(
-    node: SerovalReadableStreamConstructorNode,
-  ): string {
-    return this.assignIndexedValue(
-      node.i,
-      this.getConstructor(node.f) + '()',
+  protected serializePromiseReject(node: SerovalPromiseRejectNode): string {
+    return (
+      this.getConstructor(node.a[0]) +
+      '(' +
+      this.getRefParam(node.i) +
+      ',' +
+      this.serialize(node.a[1]) +
+      ')'
     );
-  }
-
-  protected serializeReadableStreamEnqueue(
-    node: SerovalReadableStreamEnqueueNode,
-  ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.a[1]) + ')';
-  }
-
-  protected serializeReadableStreamError(
-    node: SerovalReadableStreamErrorNode,
-  ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.getRefParam(node.i) + ',' + this.serialize(node.a[1]) + ')';
-  }
-
-  protected serializeReadableStreamClose(
-    node: SerovalReadableStreamCloseNode,
-  ): string {
-    return this.getConstructor(node.f) + '(' + this.getRefParam(node.i) + ')';
   }
 
   private serializeSpecialReferenceValue(ref: SpecialReference): string {
     switch (ref) {
       case SpecialReference.MapSentinel:
         return '[]';
-      case SpecialReference.ReadableStream:
-        return this.createFunction(
-          ['s'],
-          'new ReadableStream({start:' + this.createFunction(
-            ['c'],
-            'Promise.resolve().then(' + this.createEffectfulFunction(
-              ['i', 'v'],
-              'for(i=0;i<s.d;i++)c.enqueue(s.v[i]);(s.t===-1)?c.close():c.error(s.v[i])',
-            ) + ')',
-          ) + '})',
-        );
       case SpecialReference.PromiseConstructor:
         return this.createFunction(
           ['s', 'f', 'p'],
-          '((p=new Promise(' + this.createEffectfulFunction(['a', 'b'], 's=a,f=b') + ')).s=s,p.f=f,p)',
+          '((p=new Promise(' +
+            this.createEffectfulFunction(['a', 'b'], 's=a,f=b') +
+            ')).s=s,p.f=f,p)',
         );
       case SpecialReference.PromiseResolve:
         return this.createEffectfulFunction(
@@ -1070,32 +940,50 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
           ['p', 'd'],
           'p.f(d),p.status="failure",p.value=d;delete p.s;delete p.f',
         );
-      case SpecialReference.ReadableStreamConstructor:
+      case SpecialReference.StreamConstructor:
         return this.createFunction(
-          ['s', 'c'],
-          '((s=new ReadableStream({start:' + this.createEffectfulFunction(['x'], 'c=x') + '})).c=c,s)',
-        );
-      case SpecialReference.ReadableStreamEnqueue:
-        return this.createEffectfulFunction(
-          ['s', 'd'],
-          's.c.enqueue(d)',
-        );
-      case SpecialReference.ReadableStreamError:
-        return this.createEffectfulFunction(
-          ['s', 'd'],
-          's.c.error(d);delete s.c',
-        );
-      case SpecialReference.ReadableStreamClose:
-        return this.createEffectfulFunction(
-          ['s'],
-          's.c.close();delete s.c',
+          ['b', 'a', 's', 'l', 'p', 'f', 'e', 'n'],
+          '(b=[],a=!0,s=!1,l=[],s=0,f=' +
+            this.createEffectfulFunction(
+              ['v', 'm', 'x'],
+              'for(x=0;x<s;x++)l[x]&&l[x][m](v)',
+            ) +
+            ',n=' +
+            this.createEffectfulFunction(
+              ['o', 'x', 'z', 'c'],
+              'for(x=0,z=b.length;x<z;x++)(c=b[x],x===z-1?o[s?"return":"throw"](c):o.next(c))',
+            ) +
+            ',e=' +
+            this.createFunction(
+              ['o', 't'],
+              '(a&&(l[t=p++]=o),n(o),' +
+                this.createEffectfulFunction([], 'a&&(l[t]=void 0)') +
+                ')',
+            ) +
+            ',{__SEROVAL_STREAM__:!0,on:' +
+            this.createFunction(['o'], 'e(o)') +
+            ',next:' +
+            this.createEffectfulFunction(['v'], 'a&&(b.push(v),f(v,"next"))') +
+            ',throw:' +
+            this.createEffectfulFunction(
+              ['v'],
+              'a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)',
+            ) +
+            ',return:' +
+            this.createEffectfulFunction(
+              ['v'],
+              'a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)',
+            ) +
+            '})',
         );
       default:
         return '';
     }
   }
 
-  protected serializeSpecialReference(node: SerovalSpecialReferenceNode): string {
+  protected serializeSpecialReference(
+    node: SerovalSpecialReferenceNode,
+  ): string {
     return this.assignIndexedValue(
       node.i,
       this.serializeSpecialReferenceValue(node.s),
@@ -1103,84 +991,151 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
   }
 
   protected serializeIteratorFactory(node: SerovalIteratorFactoryNode): string {
-    return this.assignIndexedValue(
+    let result = '';
+    let initialized = false;
+    if (node.f.t !== SerovalNodeType.IndexedValue) {
+      this.markRef(node.f.i);
+      result = '(' + this.serialize(node.f) + ',';
+      initialized = true;
+    }
+    result += this.assignIndexedValue(
       node.i,
       this.createFunction(
         ['s'],
         this.createFunction(
           ['i', 'c', 'd', 't'],
-          '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
-            + 'next:' + this.createEffectfulFunction([], 'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}') + '})',
+          '(i=0,t={[' +
+            this.getRefParam(node.f.i) +
+            ']:' +
+            this.createFunction([], 't') +
+            ',next:' +
+            this.createEffectfulFunction(
+              [],
+              'if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}',
+            ) +
+            '})',
         ),
       ),
     );
+    if (initialized) {
+      result += ')';
+    }
+    return result;
   }
 
   protected serializeIteratorFactoryInstance(
     node: SerovalIteratorFactoryInstanceNode,
   ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')';
-  }
-
-  private getStreamingAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
-    return this.createFunction(
-      ['s'],
-      this.createFunction(
-        ['b', 't'],
-        '(b=s.tee(),s=b[0],b=b[1].getReader(),t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
-        + 'next:' + this.createFunction(
-          [],
-          'b.read().then(' + this.createEffectfulFunction(
-            ['d'],
-            'if(d.done)return{done:!0,value:void 0};d=d.value;if(d[0]===1)throw d[1];return{done:d[0]===2,value:d[1]}',
-          ) + ')',
-        ) + '})',
-      ),
+    return (
+      this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')'
     );
   }
 
-  private getBlockingAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
-    return this.createFunction(
-      ['s'],
-      this.createFunction(
-        ['i', 't'],
-        '(i=0,t={[' + this.serialize(node.f) + ']:' + this.createFunction([], 't') + ','
-          + 'next:' + this.createFunction(
-          [],
-          'Promise.resolve().then(' + this.createEffectfulFunction(
-            ['c', 'd'],
-            'if(i>s.d)return{done:!0,value:void 0};c=i++,d=s.v[c];if(c===s.t)throw d;return{done:c===s.d,value:d}',
-          ) + ')',
-        ) + '})',
-      ),
-    );
-  }
+  protected serializeAsyncIteratorFactory(
+    node: SerovalAsyncIteratorFactoryNode,
+  ): string {
+    const promise = node.a[0];
+    const symbol = node.a[1];
 
-  protected serializeAsyncIteratorFactory(node: SerovalAsyncIteratorFactoryNode): string {
-    return this.assignIndexedValue(
+    let result = '';
+
+    if (promise.t !== SerovalNodeType.IndexedValue) {
+      this.markRef(promise.i);
+      result += '(' + this.serialize(promise);
+    }
+    if (symbol.t !== SerovalNodeType.IndexedValue) {
+      this.markRef(symbol.i);
+      result += (result ? ',' : '(') + this.serialize(symbol);
+    }
+    if (result) {
+      result += ',';
+    }
+
+    const iterator = this.assignIndexedValue(
       node.i,
-      node.s
-        ? this.getStreamingAsyncIteratorFactory(node)
-        : this.getBlockingAsyncIteratorFactory(node),
+      this.createFunction(
+        ['s'],
+        this.createFunction(
+          ['b', 'c', 'p', 'd', 'e', 't', 'f'],
+          '(b=[],c=0,p=[],d=-1,e=!1,f=' +
+            this.createEffectfulFunction(
+              ['i', 'l'],
+              'for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})',
+            ) +
+            ',s.on({next:' +
+            this.createEffectfulFunction(
+              ['v', 't'],
+              'if(t=p.shift())t.s({done:!1,value:v});b.push(v)',
+            ) +
+            ',throw:' +
+            this.createEffectfulFunction(
+              ['v', 't'],
+              'if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)',
+            ) +
+            ',return:' +
+            this.createEffectfulFunction(
+              ['v', 't'],
+              'if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)',
+            ) +
+            '}),t={[' +
+            this.getRefParam(symbol.i) +
+            ']:' +
+            this.createFunction([], 't') +
+            ',next:' +
+            this.createEffectfulFunction(
+              ['i', 't', 'v'],
+              'if(d===-1){return((i=c++)>=b.length)?(p.push(t=' +
+                this.getRefParam(promise.i) +
+                '()),t):{done:!0,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
+            ) +
+            '})',
+        ),
+      ),
     );
+
+    if (result) {
+      return result + iterator + ')';
+    }
+
+    return iterator;
   }
 
   protected serializeAsyncIteratorFactoryInstance(
     node: SerovalAsyncIteratorFactoryInstanceNode,
   ): string {
-    return this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')';
+    return (
+      this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')'
+    );
   }
 
-  protected serializeReadableStream(
-    node: SerovalReadableStreamNode,
+  protected serializeStreamConstructor(
+    node: SerovalStreamConstructorNode,
   ): string {
-    this.stack.push(node.i);
-    const result = this.getConstructor(node.a[0]) + '(' + this.serialize(node.a[1]) + ')';
-    this.stack.pop();
-    return this.assignIndexedValue(
+    const result = this.assignIndexedValue(
       node.i,
-      result,
+      this.getConstructor(node.f) + '()',
     );
+    const len = node.a.length;
+    if (len) {
+      let values = this.serialize(node.a[0]);
+      for (let i = 1; i < len; i++) {
+        values += ',' + this.serialize(node.a[i]);
+      }
+      return '(' + result + ',' + values + ',' + this.getRefParam(node.i) + ')';
+    }
+    return result;
+  }
+
+  protected serializeStreamNext(node: SerovalStreamNextNode): string {
+    return this.getRefParam(node.i) + '.next(' + this.serialize(node.f) + ')';
+  }
+
+  protected serializeStreamThrow(node: SerovalStreamThrowNode): string {
+    return this.getRefParam(node.i) + '.throw(' + this.serialize(node.f) + ')';
+  }
+
+  protected serializeStreamReturn(node: SerovalStreamReturnNode): string {
+    return this.getRefParam(node.i) + '.return(' + this.serialize(node.f) + ')';
   }
 
   serialize(node: SerovalNode): string {
@@ -1225,19 +1180,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
       case SerovalNodeType.Promise:
         return this.serializePromise(node);
       case SerovalNodeType.WKSymbol:
-        return this.serializeWKSymbol(node);
-      case SerovalNodeType.URL:
-        return this.serializeURL(node);
-      case SerovalNodeType.URLSearchParams:
-        return this.serializeURLSearchParams(node);
-      case SerovalNodeType.Blob:
-        return this.serializeBlob(node);
-      case SerovalNodeType.File:
-        return this.serializeFile(node);
-      case SerovalNodeType.Headers:
-        return this.serializeHeaders(node);
-      case SerovalNodeType.FormData:
-        return this.serializeFormData(node);
+        return this.serializeWellKnownSymbol(node);
       case SerovalNodeType.Boxed:
         return this.serializeBoxed(node);
       case SerovalNodeType.PromiseConstructor:
@@ -1246,24 +1189,6 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializePromiseResolve(node);
       case SerovalNodeType.PromiseReject:
         return this.serializePromiseReject(node);
-      case SerovalNodeType.ReadableStreamConstructor:
-        return this.serializeReadableStreamConstructor(node);
-      case SerovalNodeType.ReadableStreamEnqueue:
-        return this.serializeReadableStreamEnqueue(node);
-      case SerovalNodeType.ReadableStreamError:
-        return this.serializeReadableStreamError(node);
-      case SerovalNodeType.ReadableStreamClose:
-        return this.serializeReadableStreamClose(node);
-      case SerovalNodeType.Request:
-        return this.serializeRequest(node);
-      case SerovalNodeType.Response:
-        return this.serializeResponse(node);
-      case SerovalNodeType.Event:
-        return this.serializeEvent(node);
-      case SerovalNodeType.CustomEvent:
-        return this.serializeCustomEvent(node);
-      case SerovalNodeType.DOMException:
-        return this.serializeDOMException(node);
       case SerovalNodeType.Plugin:
         return this.serializePlugin(node);
       case SerovalNodeType.SpecialReference:
@@ -1276,8 +1201,14 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
         return this.serializeAsyncIteratorFactory(node);
       case SerovalNodeType.AsyncIteratorFactoryInstance:
         return this.serializeAsyncIteratorFactoryInstance(node);
-      case SerovalNodeType.ReadableStream:
-        return this.serializeReadableStream(node);
+      case SerovalNodeType.StreamConstructor:
+        return this.serializeStreamConstructor(node);
+      case SerovalNodeType.StreamNext:
+        return this.serializeStreamNext(node);
+      case SerovalNodeType.StreamThrow:
+        return this.serializeStreamThrow(node);
+      case SerovalNodeType.StreamReturn:
+        return this.serializeStreamReturn(node);
       default:
         throw new Error('invariant');
     }

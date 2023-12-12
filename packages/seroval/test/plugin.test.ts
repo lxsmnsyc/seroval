@@ -27,7 +27,7 @@ const BufferPlugin = createPlugin<Buffer, SerovalNode>({
       return ctx.parse(value.toString('base64'));
     },
     async async(value, ctx) {
-      return ctx.parse(value.toString('base64'));
+      return await ctx.parse(value.toString('base64'));
     },
     stream(value, ctx) {
       return ctx.parse(value.toString('base64'));
@@ -128,25 +128,9 @@ describe('Plugin', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Plugin', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(EXAMPLE, {
-        plugins: [BufferPlugin],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-
-    describe('scoped', () => {
-      it('supports Plugin', async () => new Promise<void>((resolve, reject) => {
+    it('supports Plugin', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(EXAMPLE, {
-          scopeId: 'example',
           plugins: [BufferPlugin],
           onSerialize(data) {
             expect(data).toMatchSnapshot();
@@ -159,6 +143,24 @@ describe('Plugin', () => {
           },
         });
       }));
+
+    describe('scoped', () => {
+      it('supports Plugin', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(EXAMPLE, {
+            scopeId: 'example',
+            plugins: [BufferPlugin],
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -191,19 +193,20 @@ describe('Plugin', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Plugin', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(EXAMPLE, {
-        plugins: [BufferPlugin],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports Plugin', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(EXAMPLE, {
+          plugins: [BufferPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

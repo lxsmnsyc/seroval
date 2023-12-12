@@ -15,7 +15,7 @@ import {
 
 const EXAMPLE = {
   title: 'Hello World',
-  async* [Symbol.asyncIterator](): AsyncIterator<number> {
+  async *[Symbol.asyncIterator](): AsyncIterator<number> {
     await Promise.resolve();
     yield 1;
     yield 2;
@@ -57,29 +57,17 @@ describe('AsyncIterable', () => {
     });
     describe('scoped', () => {
       it('supports AsyncIterables', async () => {
-        const result = await crossSerializeAsync(EXAMPLE, { scopeId: 'example' });
+        const result = await crossSerializeAsync(EXAMPLE, {
+          scopeId: 'example',
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports AsyncIterables', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(EXAMPLE, {
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports AsyncIterables', async () => new Promise<void>((resolve, reject) => {
+    it('supports AsyncIterables', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(EXAMPLE, {
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -91,6 +79,22 @@ describe('AsyncIterable', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports AsyncIterables', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(EXAMPLE, {
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSONAsync', () => {
@@ -109,25 +113,28 @@ describe('AsyncIterable', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports AsyncIterables', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(EXAMPLE, {
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports AsyncIterables', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(EXAMPLE, {
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
   describe('compat', () => {
     it('should use function expressions instead of arrow functions.', async () => {
-      expect(await serializeAsync(EXAMPLE, {
-        disabledFeatures: Feature.ArrowFunction,
-      })).toMatchSnapshot();
+      expect(
+        await serializeAsync(EXAMPLE, {
+          disabledFeatures: Feature.ArrowFunction,
+        }),
+      ).toMatchSnapshot();
     });
   });
   describe('compat#toJSONAsync', () => {

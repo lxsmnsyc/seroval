@@ -20,30 +20,3 @@ export function createDeferred(): Deferred {
     },
   };
 }
-
-export interface DeferredStream {
-  stream: ReadableStream;
-  close(): void;
-  enqueue(chunk?: unknown): void;
-  error(e?: any): void;
-}
-
-export function createDeferredStream(): DeferredStream {
-  let controller: ReadableStreamDefaultController;
-  return {
-    stream: new ReadableStream({
-      start(current): void {
-        controller = current;
-      },
-    }),
-    close(): void {
-      controller.close();
-    },
-    enqueue(data): void {
-      controller.enqueue(data);
-    },
-    error(e): void {
-      controller.error(e);
-    },
-  };
-}

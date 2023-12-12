@@ -1,4 +1,8 @@
-import type { PluginAccessOptions } from './plugin';
+import {
+  resolvePlugins,
+  type Plugin,
+  type PluginAccessOptions,
+} from './plugin';
 import { crossSerializeStream } from './cross';
 import { serializeString } from './string';
 
@@ -24,9 +28,10 @@ export default class Serializer {
 
   private refs = new Map<unknown, number>();
 
-  constructor(
-    private options: SerializerOptions,
-  ) {
+  private plugins?: Plugin<any, any>[];
+
+  constructor(private options: SerializerOptions) {
+    this.plugins = resolvePlugins(options.plugins);
   }
 
   keys = new Set<string>();
@@ -35,31 +40,42 @@ export default class Serializer {
     if (this.alive && !this.flushed) {
       this.pending++;
       this.keys.add(key);
-      this.cleanups.push(crossSerializeStream(value, {
-        plugins: this.options.plugins,
-        scopeId: this.options.scopeId,
-        refs: this.refs,
-        disabledFeatures: this.options.disabledFeatures,
-        onError: this.options.onError,
-        onSerialize: (data, initial) => {
-          if (this.alive) {
-            this.options.onData(
-              initial
-                ? this.options.globalIdentifier + '["' + serializeString(key) + '"]=' + data
-                : data,
-            );
-          }
-        },
-        onDone: () => {
-          if (this.alive) {
-            this.pending--;
-            if (this.pending <= 0 && this.flushed && !this.done && this.options.onDone) {
-              this.options.onDone();
-              this.done = true;
+      this.cleanups.push(
+        crossSerializeStream(value, {
+          plugins: this.plugins,
+          scopeId: this.options.scopeId,
+          refs: this.refs,
+          disabledFeatures: this.options.disabledFeatures,
+          onError: this.options.onError,
+          onSerialize: (data, initial) => {
+            if (this.alive) {
+              this.options.onData(
+                initial
+                  ? this.options.globalIdentifier +
+                    '["' +
+                    serializeString(key) +
+                    '"]=' +
+                    data
+                  : data,
+              );
             }
-          }
-        },
-      }));
+          },
+          onDone: () => {
+            if (this.alive) {
+              this.pending--;
+              if (
+                this.pending <= 0 &&
+                this.flushed &&
+                !this.done &&
+                this.options.onDone
+              ) {
+                this.options.onDone();
+                this.done = true;
+              }
+            }
+          },
+        }),
+      );
     }
   }
 
