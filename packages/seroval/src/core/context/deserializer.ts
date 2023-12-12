@@ -1,5 +1,4 @@
 import { deserializeString } from '../string';
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../types';
 import { getReference } from '../reference';
 import type {
   SerovalAggregateErrorNode,
@@ -46,6 +45,7 @@ import type { Sequence } from '../utils/iterator-to-sequence';
 import {
   sequenceToIterator,
 } from '../utils/iterator-to-sequence';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
 import { getTypedArrayConstructor } from '../utils/typed-array';
 import type { Deferred } from '../utils/deferred';
 import { createDeferred } from '../utils/deferred';

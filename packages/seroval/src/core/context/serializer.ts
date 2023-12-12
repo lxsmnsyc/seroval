@@ -276,7 +276,7 @@ export default abstract class BaseSerializerContext implements PluginAccessOptio
    * that is used to refer to the object instance in the
    * generated script.
    */
-  abstract getRefParam(id: number | string): string;
+  abstract getRefParam(id: number): string;
 
   protected pushObjectFlag(flag: SerovalObjectFlags, id: number): void {
     if (flag !== SerovalObjectFlags.None) {

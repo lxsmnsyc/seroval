@@ -1,5 +1,4 @@
 /* eslint-disable prefer-destructuring */
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
 import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
   createAggregateErrorNode,
@@ -55,6 +54,7 @@ import type {
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStream, isStream } from '../../stream';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../utils/typed-array';
 
 type ObjectLikeNode =
   | SerovalObjectNode

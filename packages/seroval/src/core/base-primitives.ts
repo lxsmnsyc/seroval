@@ -1,4 +1,3 @@
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../types';
 import assert from './utils/assert';
 import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
@@ -42,6 +41,7 @@ import type {
   SerovalWKSymbolNode,
 } from './types';
 import { getObjectFlag } from './utils/get-object-flag';
+import type { BigIntTypedArrayValue, TypedArrayValue } from './utils/typed-array';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
   switch (value) {

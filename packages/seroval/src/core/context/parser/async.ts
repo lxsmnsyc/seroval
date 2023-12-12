@@ -1,6 +1,5 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-await-in-loop */
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../../../types';
 import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
   createPluginNode,
@@ -62,6 +61,7 @@ import type {
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable, isStream } from '../../stream';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../../utils/typed-array';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -74,6 +74,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   ): Promise<SerovalNode[]> {
     const nodes = [];
     for (let i = 0, len = current.length; i < len; i++) {
+      // For consistency in holes
       if (i in current) {
         nodes[i] = await this.parse(current[i]);
       }
