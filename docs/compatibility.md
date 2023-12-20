@@ -117,6 +117,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 ### `seroval-plugins/web`
 
 | Type | sync | async | streaming |
+| --- | --- | --- | --- |
 | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ✅ | ✅ | ✅ |
 | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ✅ | ✅ | ✅ |
 | [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌[^5] |
