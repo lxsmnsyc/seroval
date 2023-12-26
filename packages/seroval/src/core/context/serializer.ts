@@ -846,21 +846,6 @@ export default abstract class BaseSerializerContext
     return this.assignIndexedValue(node.i, SYMBOL_STRING[node.s]);
   }
 
-  protected serializeFormDataEntry(
-    id: number,
-    key: string,
-    value: SerovalNode,
-  ): string {
-    return (
-      this.getRefParam(id) +
-      '.append("' +
-      key +
-      '",' +
-      this.serialize(value) +
-      ')'
-    );
-  }
-
   protected serializeBoxed(node: SerovalBoxedNode): string {
     return this.assignIndexedValue(
       node.i,
