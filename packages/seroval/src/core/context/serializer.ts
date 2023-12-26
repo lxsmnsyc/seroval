@@ -416,11 +416,11 @@ export default abstract class BaseSerializerContext
     const id = node.i;
     if (node.l) {
       this.stack.push(id);
+      const list = node.a;
+      let values = this.serializeArrayItem(id, list[0], 0);
       // This is different than Map and Set
       // because we also need to serialize
       // the holes of the Array
-      const list = node.a;
-      let values = this.serializeArrayItem(id, list[0], 0);
       let isHoley = values === '';
       for (let i = 1, len = node.l, item: string; i < len; i++) {
         item = this.serializeArrayItem(id, list[i], i);
@@ -469,9 +469,9 @@ export default abstract class BaseSerializerContext
   ): string {
     const len = record.s;
     if (len) {
-      this.stack.push(source.i);
       const keys = record.k;
       const values = record.v;
+      this.stack.push(source.i);
       let result = this.serializeProperty(source, keys[0], values[0]);
       for (let i = 1, item = result; i < len; i++) {
         item = this.serializeProperty(source, keys[i], values[i]);
@@ -566,10 +566,10 @@ export default abstract class BaseSerializerContext
   ): string | undefined {
     const len = node.s;
     if (len) {
-      this.stack.push(source.i);
       const mainAssignments: Assignment[] = [];
       const keys = node.k;
       const values = node.v;
+      this.stack.push(source.i);
       for (let i = 0; i < len; i++) {
         this.serializeAssignment(source, mainAssignments, keys[i], values[i]);
       }
@@ -795,15 +795,17 @@ export default abstract class BaseSerializerContext
   }
 
   protected serializeAggregateError(node: SerovalAggregateErrorNode): string {
-    // Serialize the required arguments
     const id = node.i;
-    this.stack.push(id);
-    const serialized = 'new AggregateError([],"' + node.m + '")';
-    this.stack.pop();
     // `AggregateError` might've been extended
     // either through class or custom properties
     // Make sure to assign extra properties
-    return this.serializeDictionary(node, serialized);
+    this.stack.push(id);
+    const serialized = this.serializeDictionary(
+      node,
+      'new AggregateError([],"' + node.m + '")',
+    );
+    this.stack.pop();
+    return serialized;
   }
 
   protected serializeError(node: SerovalErrorNode): string {
