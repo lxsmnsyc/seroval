@@ -211,20 +211,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       },
     );
     this.pushPendingState();
-    return {
-      t: SerovalNodeType.PromiseConstructor,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parseSpecialReference(SpecialReference.PromiseConstructor),
-      b: undefined,
-      o: undefined,
-    };
+    return this.createPromiseConstructorNode(id);
   }
 
   protected parsePlugin(

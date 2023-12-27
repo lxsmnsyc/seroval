@@ -20,7 +20,6 @@ import {
   createTypedArrayNode,
 } from '../../base-primitives';
 import { Feature } from '../../compat';
-import { SerovalNodeType } from '../../constants';
 import {
   FALSE_NODE,
   NULL_NODE,
@@ -238,20 +237,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     _current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
-    return {
-      t: SerovalNodeType.PromiseConstructor,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parseSpecialReference(SpecialReference.PromiseConstructor),
-      b: undefined,
-      o: undefined,
-    };
+    return this.createPromiseConstructorNode(id);
   }
 
   protected parseObject(id: number, current: object): SerovalNode {

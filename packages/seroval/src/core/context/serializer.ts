@@ -48,29 +48,36 @@ import type {
 } from '../types';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
 
+const enum AssignmentType {
+  Index = 0,
+  Add = 1,
+  Set = 2,
+  Delete = 3,
+}
+
 interface IndexAssignment {
-  t: 'index';
+  t: AssignmentType.Index;
   s: string;
   k: undefined;
   v: string;
 }
 
 interface SetAssignment {
-  t: 'set';
+  t: AssignmentType.Set;
   s: string;
   k: string;
   v: string;
 }
 
 interface AddAssignment {
-  t: 'add';
+  t: AssignmentType.Add;
   s: string;
   k: undefined;
   v: string;
 }
 
 interface DeleteAssignment {
-  t: 'delete';
+  t: AssignmentType.Delete;
   s: string;
   k: string;
   v: undefined;
@@ -90,16 +97,14 @@ export interface FlaggedObject {
 
 function getAssignmentExpression(assignment: Assignment): string {
   switch (assignment.t) {
-    case 'index':
+    case AssignmentType.Index:
       return assignment.s + '=' + assignment.v;
-    case 'set':
+    case AssignmentType.Set:
       return assignment.s + '.set(' + assignment.k + ',' + assignment.v + ')';
-    case 'add':
+    case AssignmentType.Add:
       return assignment.s + '.add(' + assignment.v + ')';
-    case 'delete':
+    case AssignmentType.Delete:
       return assignment.s + '.delete(' + assignment.k + ')';
-    default:
-      return '';
   }
 }
 
@@ -112,35 +117,35 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
     i++
   ) {
     item = assignments[i];
-    if (item.t === 'index' && item.v === prev.v) {
+    if (item.t === AssignmentType.Index && item.v === prev.v) {
       // Merge if the right-hand value is the same
       // saves at least 2 chars
       current = {
-        t: 'index',
+        t: AssignmentType.Index,
         s: item.s,
         k: undefined,
         v: getAssignmentExpression(current),
       } as IndexAssignment;
-    } else if (item.t === 'set' && item.s === prev.s) {
+    } else if (item.t === AssignmentType.Set && item.s === prev.s) {
       // Maps has chaining methods, merge if source is the same
       current = {
-        t: 'set',
+        t: AssignmentType.Set,
         s: getAssignmentExpression(current),
         k: item.k,
         v: item.v,
       } as SetAssignment;
-    } else if (item.t === 'add' && item.s === prev.s) {
+    } else if (item.t === AssignmentType.Add && item.s === prev.s) {
       // Sets has chaining methods too
       current = {
-        t: 'add',
+        t: AssignmentType.Add,
         s: getAssignmentExpression(current),
         k: undefined,
         v: item.v,
       } as AddAssignment;
-    } else if (item.t === 'delete' && item.s === prev.s) {
+    } else if (item.t === AssignmentType.Delete && item.s === prev.s) {
       // Maps has chaining methods, merge if source is the same
       current = {
-        t: 'delete',
+        t: AssignmentType.Delete,
         s: getAssignmentExpression(current),
         k: item.k,
         v: undefined,
@@ -319,7 +324,7 @@ export default abstract class BaseSerializerContext
    */
   protected createAssignment(source: string, value: string): void {
     this.assignments.push({
-      t: 'index',
+      t: AssignmentType.Index,
       s: source,
       k: undefined,
       v: value,
@@ -328,7 +333,7 @@ export default abstract class BaseSerializerContext
 
   protected createAddAssignment(ref: number, value: string): void {
     this.assignments.push({
-      t: 'add',
+      t: AssignmentType.Add,
       s: this.getRefParam(ref),
       k: undefined,
       v: value,
@@ -337,7 +342,7 @@ export default abstract class BaseSerializerContext
 
   protected createSetAssignment(ref: number, key: string, value: string): void {
     this.assignments.push({
-      t: 'set',
+      t: AssignmentType.Set,
       s: this.getRefParam(ref),
       k: key,
       v: value,
@@ -346,7 +351,7 @@ export default abstract class BaseSerializerContext
 
   protected createDeleteAssignment(ref: number, key: string): void {
     this.assignments.push({
-      t: 'delete',
+      t: AssignmentType.Delete,
       s: this.getRefParam(ref),
       k: key,
       v: undefined,
