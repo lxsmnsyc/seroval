@@ -935,10 +935,10 @@ export default abstract class BaseSerializerContext
       case SpecialReference.StreamConstructor:
         return this.createFunction(
           ['b', 'a', 's', 'l', 'p', 'f', 'e', 'n'],
-          '(b=[],a=!0,s=!1,l=[],s=0,f=' +
+          '(b=[],a=!0,s=!1,l=[],p=0,f=' +
             this.createEffectfulFunction(
               ['v', 'm', 'x'],
-              'for(x=0;x<s;x++)l[x]&&l[x][m](v)',
+              'for(x=0;x<p;x++)l[x]&&l[x][m](v)',
             ) +
             ',n=' +
             this.createEffectfulFunction(
