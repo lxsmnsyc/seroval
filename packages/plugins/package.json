@@ -23,7 +23,7 @@
     "vitest": "^1.0.1"
   },
   "peerDependencies": {
-    "seroval": ">=0.15"
+    "seroval": "^1.0"
   },
   "scripts": {
     "prepublishOnly": "pridepack clean && pridepack build",
