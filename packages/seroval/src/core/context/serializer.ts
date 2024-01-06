@@ -446,12 +446,24 @@ export default abstract class BaseSerializerContext
   ): string {
     if (typeof key === 'string') {
       const check = Number(key);
-      // Test if key is a valid number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      const isIdentifier = check >= 0 || isValidIdentifier(key);
+      const isIdentifier = (
+        // Test if key is a valid positive number or JS identifier
+        // so that we don't have to serialize the key and wrap with brackets
+        check >= 0
+        // It's also important to consider that if the key is
+        // indeed numeric, we need to make sure that when
+        // converted back into a string, it's still the same
+        // to the original key. This allows us to differentiate
+        // keys that has numeric formats but in a different
+        // format, which can cause unintentional key declaration
+        // Example: { 0x1: 1 } vs { '0x1': 1 }
+        && check.toString() === key
+      ) || isValidIdentifier(key);
       if (this.isIndexedValueInStack(val)) {
         const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
         this.markRef(source.i);
+        // Strict identifier check, make sure
+        // that it isn't numeric (except NaN)
         if (isIdentifier && check !== check) {
           this.createObjectAssign(source.i, key, refParam);
         } else {
@@ -516,10 +528,22 @@ export default abstract class BaseSerializerContext
   ): void {
     const serialized = this.serialize(value);
     const check = Number(key);
-    // Test if key is a valid number or JS identifier
-    // so that we don't have to serialize the key and wrap with brackets
-    const isIdentifier = check >= 0 || isValidIdentifier(key);
+    const isIdentifier = (
+      // Test if key is a valid positive number or JS identifier
+      // so that we don't have to serialize the key and wrap with brackets
+      check >= 0
+      // It's also important to consider that if the key is
+      // indeed numeric, we need to make sure that when
+      // converted back into a string, it's still the same
+      // to the original key. This allows us to differentiate
+      // keys that has numeric formats but in a different
+      // format, which can cause unintentional key declaration
+      // Example: { 0x1: 1 } vs { '0x1': 1 }
+      && check.toString() === key
+    ) || isValidIdentifier(key);
     if (this.isIndexedValueInStack(value)) {
+      // Strict identifier check, make sure
+      // that it isn't numeric (except NaN)
       if (isIdentifier && check !== check) {
         this.createObjectAssign(source.i, key, serialized);
       } else {
@@ -532,7 +556,7 @@ export default abstract class BaseSerializerContext
     } else {
       const parentAssignment = this.assignments;
       this.assignments = mainAssignments;
-      if (isIdentifier) {
+      if (isIdentifier && check !== check) {
         this.createObjectAssign(source.i, key, serialized);
       } else {
         this.createArrayAssign(

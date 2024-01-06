@@ -17,9 +17,15 @@ import {
   toJSONAsync,
 } from '../src';
 
-const EXAMPLE = Object.assign(Object.create(null), { hello: 'world' }) as {
-  hello: string;
-};
+const EXAMPLE = Object.assign(Object.create(null), {
+  example: 'valid identifier',
+  '%example': 'invalid identifier',
+  '0x1': 'hexadecimal',
+  '0b1': 'binary',
+  '0o1': 'octal',
+  '1_000': 'numeric separator',
+  '1.7976931348623157e+308': 'exponentiation',
+});
 
 const RECURSIVE = Object.create(null) as Record<string, unknown>;
 RECURSIVE.a = RECURSIVE;
@@ -53,7 +59,7 @@ describe('null-constructor', () => {
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
     it('supports self-recursion', () => {
       const result = serialize(RECURSIVE);
@@ -76,7 +82,7 @@ describe('null-constructor', () => {
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
     it('supports self-recursion', async () => {
       const result = await serializeAsync(ASYNC_RECURSIVE);
@@ -106,7 +112,7 @@ describe('null-constructor', () => {
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
     it('supports self-recursion', () => {
       const result = toJSON(RECURSIVE);
@@ -129,7 +135,7 @@ describe('null-constructor', () => {
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
     it('supports self-recursion', async () => {
       const result = await toJSONAsync(ASYNC_RECURSIVE);
@@ -155,9 +161,7 @@ describe('null-constructor', () => {
   });
   describe('crossSerialize', () => {
     it('supports Object.create(null)', () => {
-      const example = { hello: 'world' } as { hello: string };
-      Object.freeze(example);
-      const result = crossSerialize(example);
+      const result = crossSerialize(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
     it('supports self-recursion', () => {
@@ -356,7 +360,7 @@ describe('null-constructor', () => {
       });
 
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
     it('supports self-recursion', () => {
       const result = toCrossJSON(RECURSIVE);
@@ -388,7 +392,7 @@ describe('null-constructor', () => {
       });
 
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
     it('supports self-recursion', async () => {
       const result = await toCrossJSONAsync(ASYNC_RECURSIVE);
@@ -485,7 +489,7 @@ describe('null-constructor', () => {
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
   });
   describe('compat#toJSON', () => {
@@ -497,7 +501,7 @@ describe('null-constructor', () => {
       expect(compileJSON(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(back.constructor).toBeUndefined();
-      expect(back.hello).toBe(EXAMPLE.hello);
+      expect(back.example).toBe(EXAMPLE.example);
     });
   });
 });
