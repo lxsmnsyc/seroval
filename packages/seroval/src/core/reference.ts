@@ -1,5 +1,9 @@
 import assert from './utils/assert';
 import { REFERENCES_KEY } from './keys';
+import {
+  SerovalMissingReferenceError,
+  SerovalMissingReferenceForIdError,
+} from '..';
 
 const REFERENCE = new Map<unknown, string>();
 const INV_REFERENCE = new Map<string, unknown>();
@@ -19,12 +23,12 @@ export function hasReference(id: string): boolean {
 }
 
 export function getReferenceID<T>(value: T): string {
-  assert(hasReferenceID(value), new Error('Missing reference id'));
+  assert(hasReferenceID(value), new SerovalMissingReferenceError(value));
   return REFERENCE.get(value)!;
 }
 
 export function getReference<T>(id: string): T {
-  assert(hasReference(id), new Error('Missing reference for id:' + id));
+  assert(hasReference(id), new SerovalMissingReferenceForIdError(id));
   return INV_REFERENCE.get(id) as T;
 }
 

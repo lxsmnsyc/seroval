@@ -1,3 +1,5 @@
+import { SerovalUnknownTypedArrayError } from '../errors';
+
 type TypedArrayConstructor =
   | Int8ArrayConstructor
   | Int16ArrayConstructor
@@ -49,6 +51,6 @@ export function getTypedArrayConstructor(name: string): TypedArrayConstructor {
     case 'BigUint64Array':
       return BigUint64Array;
     default:
-      throw new Error(`Unknown TypedArray "${name}"`);
+      throw new SerovalUnknownTypedArrayError(name);
   }
 }

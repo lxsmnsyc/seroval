@@ -13,3 +13,4 @@ export type { Stream } from './core/stream';
 export { createStream } from './core/stream';
 
 export type { SerovalNode } from './core/types';
+export * from './core/errors';

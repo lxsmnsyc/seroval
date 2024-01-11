@@ -1,4 +1,3 @@
-import UnsupportedTypeError from '../../UnsupportedTypeError';
 import {
   createPluginNode,
   createDateNode,
@@ -61,6 +60,7 @@ import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from '../../utils/typed-array';
+import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -429,36 +429,40 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     if (Symbol.iterator in current || Symbol.asyncIterator in current) {
       return this.parsePlainObject(id, current, !!currentClass);
     }
-    throw new UnsupportedTypeError(current);
+    throw new SerovalUnsupportedTypeError(current);
   }
 
   async parse<T>(current: T): Promise<SerovalNode> {
-    switch (typeof current) {
-      case 'boolean':
-        return current ? TRUE_NODE : FALSE_NODE;
-      case 'undefined':
-        return UNDEFINED_NODE;
-      case 'string':
-        return createStringNode(current as string);
-      case 'number':
-        return createNumberNode(current as number);
-      case 'bigint':
-        return createBigIntNode(current as bigint);
-      case 'object': {
-        if (current) {
-          const ref = this.getReference(current);
-          return ref.type === 0
-            ? await this.parseObject(ref.value, current as object)
-            : ref.value;
+    try {
+      switch (typeof current) {
+        case 'boolean':
+          return current ? TRUE_NODE : FALSE_NODE;
+        case 'undefined':
+          return UNDEFINED_NODE;
+        case 'string':
+          return createStringNode(current as string);
+        case 'number':
+          return createNumberNode(current as number);
+        case 'bigint':
+          return createBigIntNode(current as bigint);
+        case 'object': {
+          if (current) {
+            const ref = this.getReference(current);
+            return ref.type === 0
+              ? await this.parseObject(ref.value, current as object)
+              : ref.value;
+          }
+          return NULL_NODE;
         }
-        return NULL_NODE;
+        case 'symbol':
+          return this.parseWellKnownSymbol(current);
+        case 'function':
+          return this.parseFunction(current as (...args: unknown[]) => unknown);
+        default:
+          throw new SerovalUnsupportedTypeError(current);
       }
-      case 'symbol':
-        return this.parseWellKnownSymbol(current);
-      case 'function':
-        return this.parseFunction(current as (...args: unknown[]) => unknown);
-      default:
-        throw new UnsupportedTypeError(current);
+    } catch (error) {
+      throw new SerovalParserError(error);
     }
   }
 }

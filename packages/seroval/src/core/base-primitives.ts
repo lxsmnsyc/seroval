@@ -1,4 +1,3 @@
-import assert from './utils/assert';
 import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
 import {
@@ -195,10 +194,6 @@ export function createWKSymbolNode(
   id: number,
   current: WellKnownSymbols,
 ): SerovalWKSymbolNode {
-  assert(
-    current in INV_SYMBOL_REF,
-    new Error('Only well-known symbols are supported.'),
-  );
   return {
     t: SerovalNodeType.WKSymbol,
     i: id,
