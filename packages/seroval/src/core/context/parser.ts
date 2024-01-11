@@ -30,6 +30,7 @@ import type {
   SerovalWKSymbolNode,
 } from '../types';
 import { getObjectFlag } from '../utils/get-object-flag';
+import { SerovalUnsupportedTypeError } from '../errors';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
@@ -118,12 +119,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
   protected getStrictReference<T>(
     current: T,
   ): SerovalIndexedValueNode | SerovalReferenceNode {
-    assert(
-      hasReferenceID(current),
-      new Error(
-        'Cannot serialize ' + typeof current + ' without reference ID.',
-      ),
-    );
+    assert(hasReferenceID(current), new SerovalUnsupportedTypeError(current));
     const result = this.getIndexedValue(current);
     if (result.type === NodeType.Indexed) {
       return result.value;
@@ -144,10 +140,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     if (ref.type !== NodeType.Fresh) {
       return ref.value;
     }
-    assert(
-      current in INV_SYMBOL_REF,
-      new Error('Cannot serialized unsupported symbol.'),
-    );
+    assert(current in INV_SYMBOL_REF, new SerovalUnsupportedTypeError(current));
     return createWKSymbolNode(ref.value, current as WellKnownSymbols);
   }
 

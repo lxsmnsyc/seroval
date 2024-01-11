@@ -9,6 +9,7 @@ import BaseSerializerContext from '../context/serializer';
 import getIdentifier from '../utils/get-identifier';
 import type { SerovalMode } from '../plugin';
 import { SerovalNodeType } from '../constants';
+import { SerovalUnsupportedNodeError } from '../errors';
 
 export type VanillaSerializerContextOptions = BaseSerializerContextOptions;
 
@@ -61,15 +62,15 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
   protected serializePromiseConstructor(
     node: SerovalPromiseConstructorNode,
   ): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
+    throw new SerovalUnsupportedNodeError(node);
   }
 
   protected serializePromiseResolve(node: SerovalPromiseResolveNode): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
+    throw new SerovalUnsupportedNodeError(node);
   }
 
   protected serializePromiseReject(node: SerovalPromiseRejectNode): string {
-    throw new Error('Unsupported node type "' + node.t + '".');
+    throw new SerovalUnsupportedNodeError(node);
   }
 
   serializeTop(tree: SerovalNode): string {

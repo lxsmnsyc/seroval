@@ -6,6 +6,11 @@ import {
   SerovalNodeType,
   SerovalObjectFlags,
 } from '../constants';
+import {
+  SerovalMissingPluginError,
+  SerovalSerializationError,
+  SerovalUnsupportedNodeError,
+} from '../errors';
 import { REFERENCES_KEY } from '../keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { SpecialReference } from '../special-reference';
@@ -446,19 +451,19 @@ export default abstract class BaseSerializerContext
   ): string {
     if (typeof key === 'string') {
       const check = Number(key);
-      const isIdentifier = (
+      const isIdentifier =
         // Test if key is a valid positive number or JS identifier
         // so that we don't have to serialize the key and wrap with brackets
-        check >= 0
-        // It's also important to consider that if the key is
-        // indeed numeric, we need to make sure that when
-        // converted back into a string, it's still the same
-        // to the original key. This allows us to differentiate
-        // keys that has numeric formats but in a different
-        // format, which can cause unintentional key declaration
-        // Example: { 0x1: 1 } vs { '0x1': 1 }
-        && check.toString() === key
-      ) || isValidIdentifier(key);
+        (check >= 0 &&
+          // It's also important to consider that if the key is
+          // indeed numeric, we need to make sure that when
+          // converted back into a string, it's still the same
+          // to the original key. This allows us to differentiate
+          // keys that has numeric formats but in a different
+          // format, which can cause unintentional key declaration
+          // Example: { 0x1: 1 } vs { '0x1': 1 }
+          check.toString() === key) ||
+        isValidIdentifier(key);
       if (this.isIndexedValueInStack(val)) {
         const refParam = this.getRefParam((val as SerovalIndexedValueNode).i);
         this.markRef(source.i);
@@ -528,19 +533,19 @@ export default abstract class BaseSerializerContext
   ): void {
     const serialized = this.serialize(value);
     const check = Number(key);
-    const isIdentifier = (
+    const isIdentifier =
       // Test if key is a valid positive number or JS identifier
       // so that we don't have to serialize the key and wrap with brackets
-      check >= 0
-      // It's also important to consider that if the key is
-      // indeed numeric, we need to make sure that when
-      // converted back into a string, it's still the same
-      // to the original key. This allows us to differentiate
-      // keys that has numeric formats but in a different
-      // format, which can cause unintentional key declaration
-      // Example: { 0x1: 1 } vs { '0x1': 1 }
-      && check.toString() === key
-    ) || isValidIdentifier(key);
+      (check >= 0 &&
+        // It's also important to consider that if the key is
+        // indeed numeric, we need to make sure that when
+        // converted back into a string, it's still the same
+        // to the original key. This allows us to differentiate
+        // keys that has numeric formats but in a different
+        // format, which can cause unintentional key declaration
+        // Example: { 0x1: 1 } vs { '0x1': 1 }
+        check.toString() === key) ||
+      isValidIdentifier(key);
     if (this.isIndexedValueInStack(value)) {
       // Strict identifier check, make sure
       // that it isn't numeric (except NaN)
@@ -899,7 +904,7 @@ export default abstract class BaseSerializerContext
         }
       }
     }
-    throw new Error('Missing plugin for tag "' + node.c + '".');
+    throw new SerovalMissingPluginError(node.c);
   }
 
   private getConstructor(node: SerovalNodeWithID): string {
@@ -1155,78 +1160,82 @@ export default abstract class BaseSerializerContext
   }
 
   serialize(node: SerovalNode): string {
-    switch (node.t) {
-      case SerovalNodeType.Constant:
-        return CONSTANT_STRING[node.s];
-      case SerovalNodeType.Number:
-        return '' + node.s;
-      case SerovalNodeType.String:
-        return '"' + node.s + '"';
-      case SerovalNodeType.BigInt:
-        return node.s + 'n';
-      case SerovalNodeType.IndexedValue:
-        return this.getRefParam(node.i);
-      case SerovalNodeType.Reference:
-        return this.serializeReference(node);
-      case SerovalNodeType.Array:
-        return this.serializeArray(node);
-      case SerovalNodeType.Object:
-        return this.serializeObject(node);
-      case SerovalNodeType.NullConstructor:
-        return this.serializeNullConstructor(node);
-      case SerovalNodeType.Date:
-        return this.serializeDate(node);
-      case SerovalNodeType.RegExp:
-        return this.serializeRegExp(node);
-      case SerovalNodeType.Set:
-        return this.serializeSet(node);
-      case SerovalNodeType.Map:
-        return this.serializeMap(node);
-      case SerovalNodeType.ArrayBuffer:
-        return this.serializeArrayBuffer(node);
-      case SerovalNodeType.BigIntTypedArray:
-      case SerovalNodeType.TypedArray:
-        return this.serializeTypedArray(node);
-      case SerovalNodeType.DataView:
-        return this.serializeDataView(node);
-      case SerovalNodeType.AggregateError:
-        return this.serializeAggregateError(node);
-      case SerovalNodeType.Error:
-        return this.serializeError(node);
-      case SerovalNodeType.Promise:
-        return this.serializePromise(node);
-      case SerovalNodeType.WKSymbol:
-        return this.serializeWellKnownSymbol(node);
-      case SerovalNodeType.Boxed:
-        return this.serializeBoxed(node);
-      case SerovalNodeType.PromiseConstructor:
-        return this.serializePromiseConstructor(node);
-      case SerovalNodeType.PromiseResolve:
-        return this.serializePromiseResolve(node);
-      case SerovalNodeType.PromiseReject:
-        return this.serializePromiseReject(node);
-      case SerovalNodeType.Plugin:
-        return this.serializePlugin(node);
-      case SerovalNodeType.SpecialReference:
-        return this.serializeSpecialReference(node);
-      case SerovalNodeType.IteratorFactory:
-        return this.serializeIteratorFactory(node);
-      case SerovalNodeType.IteratorFactoryInstance:
-        return this.serializeIteratorFactoryInstance(node);
-      case SerovalNodeType.AsyncIteratorFactory:
-        return this.serializeAsyncIteratorFactory(node);
-      case SerovalNodeType.AsyncIteratorFactoryInstance:
-        return this.serializeAsyncIteratorFactoryInstance(node);
-      case SerovalNodeType.StreamConstructor:
-        return this.serializeStreamConstructor(node);
-      case SerovalNodeType.StreamNext:
-        return this.serializeStreamNext(node);
-      case SerovalNodeType.StreamThrow:
-        return this.serializeStreamThrow(node);
-      case SerovalNodeType.StreamReturn:
-        return this.serializeStreamReturn(node);
-      default:
-        throw new Error('invariant');
+    try {
+      switch (node.t) {
+        case SerovalNodeType.Constant:
+          return CONSTANT_STRING[node.s];
+        case SerovalNodeType.Number:
+          return '' + node.s;
+        case SerovalNodeType.String:
+          return '"' + node.s + '"';
+        case SerovalNodeType.BigInt:
+          return node.s + 'n';
+        case SerovalNodeType.IndexedValue:
+          return this.getRefParam(node.i);
+        case SerovalNodeType.Reference:
+          return this.serializeReference(node);
+        case SerovalNodeType.Array:
+          return this.serializeArray(node);
+        case SerovalNodeType.Object:
+          return this.serializeObject(node);
+        case SerovalNodeType.NullConstructor:
+          return this.serializeNullConstructor(node);
+        case SerovalNodeType.Date:
+          return this.serializeDate(node);
+        case SerovalNodeType.RegExp:
+          return this.serializeRegExp(node);
+        case SerovalNodeType.Set:
+          return this.serializeSet(node);
+        case SerovalNodeType.Map:
+          return this.serializeMap(node);
+        case SerovalNodeType.ArrayBuffer:
+          return this.serializeArrayBuffer(node);
+        case SerovalNodeType.BigIntTypedArray:
+        case SerovalNodeType.TypedArray:
+          return this.serializeTypedArray(node);
+        case SerovalNodeType.DataView:
+          return this.serializeDataView(node);
+        case SerovalNodeType.AggregateError:
+          return this.serializeAggregateError(node);
+        case SerovalNodeType.Error:
+          return this.serializeError(node);
+        case SerovalNodeType.Promise:
+          return this.serializePromise(node);
+        case SerovalNodeType.WKSymbol:
+          return this.serializeWellKnownSymbol(node);
+        case SerovalNodeType.Boxed:
+          return this.serializeBoxed(node);
+        case SerovalNodeType.PromiseConstructor:
+          return this.serializePromiseConstructor(node);
+        case SerovalNodeType.PromiseResolve:
+          return this.serializePromiseResolve(node);
+        case SerovalNodeType.PromiseReject:
+          return this.serializePromiseReject(node);
+        case SerovalNodeType.Plugin:
+          return this.serializePlugin(node);
+        case SerovalNodeType.SpecialReference:
+          return this.serializeSpecialReference(node);
+        case SerovalNodeType.IteratorFactory:
+          return this.serializeIteratorFactory(node);
+        case SerovalNodeType.IteratorFactoryInstance:
+          return this.serializeIteratorFactoryInstance(node);
+        case SerovalNodeType.AsyncIteratorFactory:
+          return this.serializeAsyncIteratorFactory(node);
+        case SerovalNodeType.AsyncIteratorFactoryInstance:
+          return this.serializeAsyncIteratorFactoryInstance(node);
+        case SerovalNodeType.StreamConstructor:
+          return this.serializeStreamConstructor(node);
+        case SerovalNodeType.StreamNext:
+          return this.serializeStreamNext(node);
+        case SerovalNodeType.StreamThrow:
+          return this.serializeStreamThrow(node);
+        case SerovalNodeType.StreamReturn:
+          return this.serializeStreamReturn(node);
+        default:
+          throw new SerovalUnsupportedNodeError(node);
+      }
+    } catch (error) {
+      throw new SerovalSerializationError(error);
     }
   }
 }
