@@ -165,7 +165,7 @@ $R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()
 ($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={foo:"bar"})
 ```
 
-> **INFO**
+> [!INFO]
 > Much like other cross-reference methods, you can pass a `refs` and `scopeId` option.
 
 ### `createStream`
@@ -243,7 +243,7 @@ The mentioned serialization metohds are ideal for server-to-client communication
 
 ## Push-based streaming serialization
 
-> **INFO**
+> [!INFO]
 > Coming soon.
 
 ## Plugins
