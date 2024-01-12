@@ -2,17 +2,12 @@
   "name": "seroval-plugins",
   "type": "module",
   "version": "1.0.4",
-  "files": [
-    "dist",
-    "web"
-  ],
+  "files": ["dist", "web"],
   "engines": {
     "node": ">=10"
   },
   "license": "MIT",
-  "keywords": [
-    "pridepack"
-  ],
+  "keywords": ["pridepack"],
   "devDependencies": {
     "@types/node": "^20.8.3",
     "@vitest/ui": "^1.0.1",
@@ -64,9 +59,7 @@
   },
   "typesVersions": {
     "*": {
-      "web": [
-        "./dist/types/web/index.d.ts"
-      ]
+      "web": ["./dist/types/web/index.d.ts"]
     }
   }
 }

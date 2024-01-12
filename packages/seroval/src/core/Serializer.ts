@@ -52,10 +52,10 @@ export default class Serializer {
               this.options.onData(
                 initial
                   ? this.options.globalIdentifier +
-                    '["' +
-                    serializeString(key) +
-                    '"]=' +
-                    data
+                      '["' +
+                      serializeString(key) +
+                      '"]=' +
+                      data
                   : data,
               );
             }

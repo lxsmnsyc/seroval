@@ -49,9 +49,9 @@ export function createNumberNode(
   value: number,
 ): SerovalConstantNode | SerovalNumberNode {
   switch (value) {
-    case Infinity:
+    case Number.POSITIVE_INFINITY:
       return INFINITY_NODE;
-    case -Infinity:
+    case Number.NEGATIVE_INFINITY:
       return NEG_INFINITY_NODE;
   }
   if (value !== value) {

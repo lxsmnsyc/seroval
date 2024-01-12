@@ -1,5 +1,5 @@
 import { serializeString } from './string';
-import { SerovalNode } from './types';
+import type { SerovalNode } from './types';
 
 const { toString: objectToString } = /* @__PURE__ */ Object.prototype;
 
@@ -21,7 +21,10 @@ For more information, please check the "cause" property of this error.`;
 }
 
 export class SerovalError extends Error {
-  constructor(type: string, public cause: any) {
+  constructor(
+    type: string,
+    public cause: any,
+  ) {
     super(getErrorMessage(type, cause));
   }
 }

@@ -1,21 +1,18 @@
 {
   "$schema": "https://unpkg.com/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": [
-      "node_modules/**/*"
-    ]
+    "ignore": ["node_modules/**/*"]
   },
   "vcs": {
     "useIgnoreFile": true
   },
   "linter": {
     "enabled": true,
-    "ignore": [
-      "node_modules/**/*"
-    ],
+    "ignore": ["node_modules/**/*"],
     "rules": {
       "a11y": {
         "noAccessKey": "error",
+        "noAriaHiddenOnFocusable": "off",
         "noAriaUnsupportedElements": "error",
         "noAutofocus": "error",
         "noBlankTarget": "error",
@@ -41,6 +38,7 @@
         "useMediaCaption": "error",
         "useValidAnchor": "error",
         "useValidAriaProps": "error",
+        "useValidAriaRole": "error",
         "useValidAriaValues": "error",
         "useValidLang": "error"
       },
@@ -67,6 +65,7 @@
         "useFlatMap": "error",
         "useLiteralKeys": "error",
         "useOptionalChain": "warn",
+        "useRegexLiterals": "error",
         "useSimpleNumberKeys": "error",
         "useSimplifiedLogicExpression": "error"
       },
@@ -116,6 +115,7 @@
       "style": {
         "noArguments": "error",
         "noCommaOperator": "off",
+        "noDefaultExport": "off",
         "noImplicitBoolean": "error",
         "noInferrableTypes": "error",
         "noNamespace": "error",
@@ -175,6 +175,7 @@
         "noFunctionAssign": "error",
         "noGlobalIsFinite": "error",
         "noGlobalIsNan": "error",
+        "noImplicitAnyLet": "off",
         "noImportAssign": "error",
         "noLabelVar": "error",
         "noMisleadingInstantiator": "error",
@@ -194,27 +195,36 @@
         "useValidTypeof": "error"
       },
       "nursery": {
-        "noAriaHiddenOnFocusable": "off",
-        "noDefaultExport": "off",
         "noDuplicateJsonKeys": "off",
         "noEmptyBlockStatements": "error",
-        "noImplicitAnyLet": "off",
+        "noEmptyTypeParameters": "error",
+        "noGlobalEval": "off",
+        "noGlobalAssign": "error",
+        "noInvalidUseBeforeDeclaration": "error",
+        "noMisleadingCharacterClass": "error",
+        "noNodejsModules": "off",
+        "noThenProperty": "warn",
         "noUnusedImports": "error",
         "noUnusedPrivateClassMembers": "error",
         "noUselessLoneBlockStatements": "error",
+        "noUselessTernary": "error",
         "useAwait": "error",
+        "useConsistentArrayType": "error",
+        "useExportType": "error",
+        "useFilenamingConvention": "off",
+        "useForOf": "warn",
         "useGroupedTypeImport": "error",
         "useImportRestrictions": "off",
-        "useRegexLiterals": "error",
-        "useValidAriaRole": "error"
+        "useImportType": "error",
+        "useNodejsImportProtocol": "warn",
+        "useNumberNamespace": "error",
+        "useShorthandFunctionType": "warn"
       }
     }
   },
   "formatter": {
     "enabled": true,
-    "ignore": [
-      "node_modules/**/*"
-    ],
+    "ignore": ["node_modules/**/*"],
     "formatWithErrors": false,
     "indentWidth": 2,
     "indentStyle": "space",
@@ -223,9 +233,7 @@
   },
   "organizeImports": {
     "enabled": true,
-    "ignore": [
-      "node_modules/**/*"
-    ]
+    "ignore": ["node_modules/**/*"]
   },
   "javascript": {
     "formatter": {

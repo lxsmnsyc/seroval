@@ -1,17 +1,11 @@
 {
-  "packages": [
-    "packages/*",
-    "benchmark"
-  ],
+  "packages": ["packages/*", "benchmark"],
   "command": {
     "version": {
       "exact": true
     },
     "publish": {
-      "allowBranch": [
-        "main",
-        "next"
-      ],
+      "allowBranch": ["main", "next"],
       "registry": "https://registry.npmjs.org/"
     }
   },

@@ -85,7 +85,10 @@ export async function toJSONAsync<T>(
   };
 }
 
-export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = {}): string {
+export function compileJSON(
+  source: SerovalJSON,
+  options: PluginAccessOptions = {},
+): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = new VanillaSerializerContext({
     plugins,
@@ -95,7 +98,10 @@ export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = 
   return ctx.serializeTop(source.t);
 }
 
-export function fromJSON<T>(source: SerovalJSON, options: PluginAccessOptions = {}): T {
+export function fromJSON<T>(
+  source: SerovalJSON,
+  options: PluginAccessOptions = {},
+): T {
   const plugins = resolvePlugins(options.plugins);
   const ctx = new VanillaDeserializerContext({
     plugins,

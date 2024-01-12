@@ -137,9 +137,9 @@ export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.Undefined]: undefined,
   [SerovalConstant.Null]: null,
   [SerovalConstant.NegativeZero]: -0,
-  [SerovalConstant.Infinity]: Infinity,
-  [SerovalConstant.NegativeInfinity]: -Infinity,
-  [SerovalConstant.NaN]: NaN,
+  [SerovalConstant.Infinity]: Number.POSITIVE_INFINITY,
+  [SerovalConstant.NegativeInfinity]: Number.NEGATIVE_INFINITY,
+  [SerovalConstant.NaN]: Number.NaN,
 };
 
 export const enum ErrorConstructorTag {
