@@ -1,15 +1,15 @@
+import { SerovalNodeType } from '../constants';
+import type { BaseSerializerContextOptions } from '../context/serializer';
+import BaseSerializerContext from '../context/serializer';
+import { SerovalUnsupportedNodeError } from '../errors';
+import type { SerovalMode } from '../plugin';
 import type {
   SerovalNode,
   SerovalPromiseConstructorNode,
   SerovalPromiseRejectNode,
   SerovalPromiseResolveNode,
 } from '../types';
-import type { BaseSerializerContextOptions } from '../context/serializer';
-import BaseSerializerContext from '../context/serializer';
 import getIdentifier from '../utils/get-identifier';
-import type { SerovalMode } from '../plugin';
-import { SerovalNodeType } from '../constants';
-import { SerovalUnsupportedNodeError } from '../errors';
 
 export type VanillaSerializerContextOptions = BaseSerializerContextOptions;
 

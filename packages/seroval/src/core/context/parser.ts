@@ -1,4 +1,3 @@
-import assert from '../utils/assert';
 import {
   createIndexedValueNode,
   createReferenceNode,
@@ -7,13 +6,14 @@ import {
 import { ALL_ENABLED } from '../compat';
 import type { WellKnownSymbols } from '../constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from '../constants';
+import { SerovalUnsupportedTypeError } from '../errors';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { hasReferenceID } from '../reference';
 import {
-  SpecialReference,
   ASYNC_ITERATOR,
   ITERATOR,
   SPECIAL_REFS,
+  SpecialReference,
 } from '../special-reference';
 import type {
   SerovalAsyncIteratorFactoryNode,
@@ -29,8 +29,8 @@ import type {
   SerovalSpecialReferenceNode,
   SerovalWKSymbolNode,
 } from '../types';
+import assert from '../utils/assert';
 import { getObjectFlag } from '../utils/get-object-flag';
-import { SerovalUnsupportedTypeError } from '../errors';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;

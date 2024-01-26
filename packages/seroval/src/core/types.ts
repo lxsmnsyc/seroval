@@ -1,9 +1,9 @@
 import type {
+  ErrorConstructorTag,
+  SerovalConstant,
   SerovalNodeType,
   SerovalObjectFlags,
-  SerovalConstant,
   Symbols,
-  ErrorConstructorTag,
 } from './constants';
 import type { SpecialReference } from './special-reference';
 

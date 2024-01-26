@@ -8,10 +8,11 @@ import {
   createStreamThrowNode,
   createStringNode,
 } from '../../base-primitives';
-import type { BaseSyncParserContextOptions } from './sync';
-import BaseSyncParserContext from './sync';
 import { SerovalNodeType } from '../../constants';
 import { FALSE_NODE, TRUE_NODE } from '../../literals';
+import { SpecialReference } from '../../special-reference';
+import type { Stream } from '../../stream';
+import { createStreamFromAsyncIterable } from '../../stream';
 import { serializeString } from '../../string';
 import type {
   SerovalNode,
@@ -21,9 +22,8 @@ import type {
   SerovalPromiseConstructorNode,
 } from '../../types';
 import { iteratorToSequence } from '../../utils/iterator-to-sequence';
-import { SpecialReference } from '../../special-reference';
-import type { Stream } from '../../stream';
-import { createStreamFromAsyncIterable } from '../../stream';
+import type { BaseSyncParserContextOptions } from './sync';
+import BaseSyncParserContext from './sync';
 
 export interface BaseStreamParserContextOptions
   extends BaseSyncParserContextOptions {

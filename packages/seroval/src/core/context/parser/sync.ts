@@ -19,43 +19,43 @@ import {
   createTypedArrayNode,
 } from '../../base-primitives';
 import { Feature } from '../../compat';
+import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
 import {
   FALSE_NODE,
   NULL_NODE,
   TRUE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
-import { iteratorToSequence } from '../../utils/iterator-to-sequence';
-import type { BaseParserContextOptions } from '../parser';
-import { BaseParserContext } from '../parser';
-import { getErrorOptions } from '../../utils/error';
+import { SpecialReference } from '../../special-reference';
+import type { Stream } from '../../stream';
+import { createStream, isStream } from '../../stream';
 import { serializeString } from '../../string';
 import type {
-  SerovalBoxedNode,
+  SerovalAggregateErrorNode,
   SerovalArrayNode,
+  SerovalBigIntTypedArrayNode,
+  SerovalBoxedNode,
+  SerovalDataViewNode,
+  SerovalErrorNode,
+  SerovalMapNode,
   SerovalNode,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
-  SerovalErrorNode,
-  SerovalMapNode,
-  SerovalSetNode,
   SerovalPluginNode,
-  SerovalAggregateErrorNode,
-  SerovalTypedArrayNode,
-  SerovalBigIntTypedArrayNode,
-  SerovalDataViewNode,
   SerovalPromiseConstructorNode,
+  SerovalSetNode,
+  SerovalTypedArrayNode,
 } from '../../types';
-import { SpecialReference } from '../../special-reference';
-import type { Stream } from '../../stream';
-import { createStream, isStream } from '../../stream';
+import { getErrorOptions } from '../../utils/error';
+import { iteratorToSequence } from '../../utils/iterator-to-sequence';
 import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from '../../utils/typed-array';
-import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
+import type { BaseParserContextOptions } from '../parser';
+import { BaseParserContext } from '../parser';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 

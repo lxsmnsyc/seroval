@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerializeAsync,
   crossSerializeStream,
@@ -10,6 +9,7 @@ import {
   toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import ReadableStreamPlugin from '../../web/readable-stream';
 
 describe('ReadableStream', () => {
@@ -24,9 +24,7 @@ describe('ReadableStream', () => {
         },
       });
       const result = await serializeAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof example>(result);
@@ -58,15 +56,15 @@ describe('ReadableStream', () => {
         },
       });
       const result = await serializeAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof example>(result);
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () =>
+        reader.read(),
+      ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('toJSONAsync', () => {
@@ -80,15 +78,11 @@ describe('ReadableStream', () => {
         },
       });
       const result = await toJSONAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof example>(result, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
@@ -118,19 +112,17 @@ describe('ReadableStream', () => {
         },
       });
       const result = await toJSONAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof example>(result, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () =>
+        reader.read(),
+      ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('crossSerializeAsync', () => {
@@ -144,9 +136,7 @@ describe('ReadableStream', () => {
         },
       });
       const result = await crossSerializeAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(result).toMatchSnapshot();
     });
@@ -159,9 +149,7 @@ describe('ReadableStream', () => {
         },
       });
       const result = await crossSerializeAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(result).toMatchSnapshot();
     });
@@ -176,9 +164,7 @@ describe('ReadableStream', () => {
           },
         });
         const result = await crossSerializeAsync(example, {
-          plugins: [
-            ReadableStreamPlugin,
-          ],
+          plugins: [ReadableStreamPlugin],
           scopeId: 'example',
         });
         expect(result).toMatchSnapshot();
@@ -192,9 +178,7 @@ describe('ReadableStream', () => {
           },
         });
         const result = await crossSerializeAsync(example, {
-          plugins: [
-            ReadableStreamPlugin,
-          ],
+          plugins: [ReadableStreamPlugin],
           scopeId: 'example',
         });
         expect(result).toMatchSnapshot();
@@ -202,55 +186,8 @@ describe('ReadableStream', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports ReadableStream', async () => new Promise<void>((resolve, reject) => {
-      const example = new ReadableStream({
-        start(controller): void {
-          controller.enqueue('foo');
-          controller.enqueue('bar');
-          controller.enqueue('baz');
-          controller.close();
-        },
-      });
-      crossSerializeStream(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports ReadableStream errors', async () => new Promise<void>((resolve, reject) => {
-      const example = new ReadableStream({
-        start(controller): void {
-          const error = new Error('Oops!');
-          error.stack = '';
-          controller.error(error);
-        },
-      });
-      crossSerializeStream(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports ReadableStream', async () => new Promise<void>((resolve, reject) => {
+    it('supports ReadableStream', async () =>
+      new Promise<void>((resolve, reject) => {
         const example = new ReadableStream({
           start(controller): void {
             controller.enqueue('foo');
@@ -260,10 +197,7 @@ describe('ReadableStream', () => {
           },
         });
         crossSerializeStream(example, {
-          plugins: [
-            ReadableStreamPlugin,
-          ],
-          scopeId: 'example',
+          plugins: [ReadableStreamPlugin],
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -275,7 +209,8 @@ describe('ReadableStream', () => {
           },
         });
       }));
-      it('supports ReadableStream errors', async () => new Promise<void>((resolve, reject) => {
+    it('supports ReadableStream errors', async () =>
+      new Promise<void>((resolve, reject) => {
         const example = new ReadableStream({
           start(controller): void {
             const error = new Error('Oops!');
@@ -284,10 +219,7 @@ describe('ReadableStream', () => {
           },
         });
         crossSerializeStream(example, {
-          plugins: [
-            ReadableStreamPlugin,
-          ],
-          scopeId: 'example',
+          plugins: [ReadableStreamPlugin],
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -299,6 +231,54 @@ describe('ReadableStream', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports ReadableStream', async () =>
+        new Promise<void>((resolve, reject) => {
+          const example = new ReadableStream({
+            start(controller): void {
+              controller.enqueue('foo');
+              controller.enqueue('bar');
+              controller.enqueue('baz');
+              controller.close();
+            },
+          });
+          crossSerializeStream(example, {
+            plugins: [ReadableStreamPlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
+      it('supports ReadableStream errors', async () =>
+        new Promise<void>((resolve, reject) => {
+          const example = new ReadableStream({
+            start(controller): void {
+              const error = new Error('Oops!');
+              error.stack = '';
+              controller.error(error);
+            },
+          });
+          crossSerializeStream(example, {
+            plugins: [ReadableStreamPlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSONAsync', () => {
@@ -312,15 +292,11 @@ describe('ReadableStream', () => {
         },
       });
       const result = await toCrossJSONAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof example>(result, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(ReadableStream);
@@ -351,69 +327,65 @@ describe('ReadableStream', () => {
         },
       });
       const result = await toCrossJSONAsync(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
       });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof example>(result, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
+        plugins: [ReadableStreamPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () =>
+        reader.read(),
+      ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports ReadableStream', async () => new Promise<void>((resolve, reject) => {
-      const example = new ReadableStream({
-        start(controller): void {
-          controller.enqueue('foo');
-          controller.enqueue('bar');
-          controller.enqueue('baz');
-          controller.close();
-        },
-      });
-      toCrossJSONStream(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    it('supports ReadableStream errors', async () => new Promise<void>((resolve, reject) => {
-      const example = new ReadableStream({
-        start(controller): void {
-          const error = new Error('Oops!');
-          error.stack = '';
-          controller.error(error);
-        },
-      });
-      toCrossJSONStream(example, {
-        plugins: [
-          ReadableStreamPlugin,
-        ],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports ReadableStream', async () =>
+      new Promise<void>((resolve, reject) => {
+        const example = new ReadableStream({
+          start(controller): void {
+            controller.enqueue('foo');
+            controller.enqueue('bar');
+            controller.enqueue('baz');
+            controller.close();
+          },
+        });
+        toCrossJSONStream(example, {
+          plugins: [ReadableStreamPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
+    it('supports ReadableStream errors', async () =>
+      new Promise<void>((resolve, reject) => {
+        const example = new ReadableStream({
+          start(controller): void {
+            const error = new Error('Oops!');
+            error.stack = '';
+            controller.error(error);
+          },
+        });
+        toCrossJSONStream(example, {
+          plugins: [ReadableStreamPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

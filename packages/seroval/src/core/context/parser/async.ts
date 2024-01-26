@@ -1,66 +1,66 @@
 import {
-  createPluginNode,
-  createDateNode,
-  createRegExpNode,
-  createArrayBufferNode,
-  createBigIntNode,
-  createStringNode,
-  createNumberNode,
-  createArrayNode,
-  createBoxedNode,
-  createTypedArrayNode,
-  createBigIntTypedArrayNode,
-  createDataViewNode,
-  createErrorNode,
-  createSetNode,
   createAggregateErrorNode,
-  createIteratorFactoryInstanceNode,
+  createArrayBufferNode,
+  createArrayNode,
   createAsyncIteratorFactoryInstanceNode,
+  createBigIntNode,
+  createBigIntTypedArrayNode,
+  createBoxedNode,
+  createDataViewNode,
+  createDateNode,
+  createErrorNode,
+  createIteratorFactoryInstanceNode,
+  createNumberNode,
+  createPluginNode,
+  createRegExpNode,
+  createSetNode,
   createStreamConstructorNode,
   createStreamNextNode,
-  createStreamThrowNode,
   createStreamReturnNode,
+  createStreamThrowNode,
+  createStringNode,
+  createTypedArrayNode,
 } from '../../base-primitives';
 import { Feature } from '../../compat';
 import { SerovalNodeType } from '../../constants';
+import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
 import {
+  FALSE_NODE,
   NULL_NODE,
   TRUE_NODE,
-  FALSE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
-import { iteratorToSequence } from '../../utils/iterator-to-sequence';
-import { BaseParserContext } from '../parser';
-import promiseToResult from '../../utils/promise-to-result';
-import { getErrorOptions } from '../../utils/error';
+import { SpecialReference } from '../../special-reference';
+import type { Stream } from '../../stream';
+import { createStreamFromAsyncIterable, isStream } from '../../stream';
 import { serializeString } from '../../string';
 import type {
-  SerovalErrorNode,
+  SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
   SerovalBoxedNode,
+  SerovalDataViewNode,
+  SerovalErrorNode,
+  SerovalMapNode,
   SerovalNode,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
-  SerovalPromiseNode,
-  SerovalTypedArrayNode,
-  SerovalAggregateErrorNode,
-  SerovalMapNode,
   SerovalPluginNode,
+  SerovalPromiseNode,
   SerovalSetNode,
-  SerovalDataViewNode,
   SerovalStreamConstructorNode,
+  SerovalTypedArrayNode,
 } from '../../types';
-import { SpecialReference } from '../../special-reference';
-import type { Stream } from '../../stream';
-import { createStreamFromAsyncIterable, isStream } from '../../stream';
+import { getErrorOptions } from '../../utils/error';
+import { iteratorToSequence } from '../../utils/iterator-to-sequence';
+import promiseToResult from '../../utils/promise-to-result';
 import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from '../../utils/typed-array';
-import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
+import { BaseParserContext } from '../parser';
 
 type ObjectLikeNode =
   | SerovalObjectNode

@@ -1,8 +1,8 @@
+import type BaseDeserializerContext from './context/deserializer';
 import type BaseAsyncParserContext from './context/parser/async';
 import type BaseStreamParserContext from './context/parser/stream';
 import type BaseSyncParserContext from './context/parser/sync';
 import type BaseSerializerContext from './context/serializer';
-import type BaseDeserializerContext from './context/deserializer';
 
 export type SerovalMode = 'vanilla' | 'cross';
 

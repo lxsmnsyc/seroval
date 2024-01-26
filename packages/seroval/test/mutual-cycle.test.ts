@@ -1,18 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  serialize,
-  deserialize,
-  serializeAsync,
-  fromJSON,
-  toJSON,
-  toJSONAsync,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
+  deserialize,
+  fromCrossJSON,
+  fromJSON,
+  serialize,
+  serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  fromCrossJSON,
   toCrossJSONStream,
+  toJSON,
+  toJSONAsync,
 } from '../src';
 
 describe('mutual cyclic references', () => {

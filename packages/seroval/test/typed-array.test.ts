@@ -1,18 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  deserialize,
-  fromJSON,
-  serialize,
-  serializeAsync,
-  toJSONAsync,
-  toJSON,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
-  toCrossJSON,
+  deserialize,
   fromCrossJSON,
+  fromJSON,
+  serialize,
+  serializeAsync,
+  toCrossJSON,
   toCrossJSONAsync,
   toCrossJSONStream,
+  toJSON,
+  toJSONAsync,
 } from '../src';
 
 const EXAMPLE = new Uint32Array([

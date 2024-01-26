@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -14,6 +13,7 @@ import {
   toJSON,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import { DOMExceptionPlugin } from '../../web';
 
 const EXAMPLE_MESSAGE = 'This is an example message.';
@@ -108,25 +108,10 @@ describe('DOMException', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports DOMException', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(EXAMPLE), {
-        plugins: [DOMExceptionPlugin],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports DOMException', async () => new Promise<void>((resolve, reject) => {
+    it('supports DOMException', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           plugins: [DOMExceptionPlugin],
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -138,6 +123,23 @@ describe('DOMException', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports DOMException', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(EXAMPLE), {
+            plugins: [DOMExceptionPlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -168,19 +170,20 @@ describe('DOMException', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports DOMException', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(EXAMPLE), {
-        plugins: [DOMExceptionPlugin],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports DOMException', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(EXAMPLE), {
+          plugins: [DOMExceptionPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

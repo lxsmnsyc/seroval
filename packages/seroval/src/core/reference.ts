@@ -1,9 +1,9 @@
-import assert from './utils/assert';
-import { REFERENCES_KEY } from './keys';
 import {
   SerovalMissingReferenceError,
   SerovalMissingReferenceForIdError,
 } from '..';
+import { REFERENCES_KEY } from './keys';
+import assert from './utils/assert';
 
 const REFERENCE = new Map<unknown, string>();
 const INV_REFERENCE = new Map<string, unknown>();

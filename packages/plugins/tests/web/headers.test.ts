@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -14,6 +13,7 @@ import {
   toJSON,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import HeadersPlugin from '../../web/headers';
 
 const EXAMPLE = new Headers([
@@ -105,25 +105,10 @@ describe('Headers', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Headers', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(EXAMPLE), {
-        plugins: [HeadersPlugin],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports Headers', async () => new Promise<void>((resolve, reject) => {
+    it('supports Headers', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           plugins: [HeadersPlugin],
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -135,6 +120,23 @@ describe('Headers', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports Headers', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(EXAMPLE), {
+            plugins: [HeadersPlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -165,19 +167,20 @@ describe('Headers', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Headers', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(EXAMPLE), {
-        plugins: [HeadersPlugin],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports Headers', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(EXAMPLE), {
+          plugins: [HeadersPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

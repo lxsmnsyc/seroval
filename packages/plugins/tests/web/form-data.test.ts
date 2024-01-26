@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -14,6 +13,7 @@ import {
   toJSON,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import { FormDataPlugin } from '../../web';
 
 const SYNC_EXAMPLE = new FormData();
@@ -21,14 +21,20 @@ SYNC_EXAMPLE.set('hello', 'world');
 SYNC_EXAMPLE.set('foo', 'bar');
 
 const ASYNC_EXAMPLE = new FormData();
-ASYNC_EXAMPLE.set('hello-world', new File(['Hello World'], 'hello.txt', {
-  type: 'text/plain',
-  lastModified: 1681027542680,
-}));
-ASYNC_EXAMPLE.set('foo-bar', new File(['Foo Bar'], 'foo-bar.txt', {
-  type: 'text/plain',
-  lastModified: 1681027542680,
-}));
+ASYNC_EXAMPLE.set(
+  'hello-world',
+  new File(['Hello World'], 'hello.txt', {
+    type: 'text/plain',
+    lastModified: 1681027542680,
+  }),
+);
+ASYNC_EXAMPLE.set(
+  'foo-bar',
+  new File(['Foo Bar'], 'foo-bar.txt', {
+    type: 'text/plain',
+    lastModified: 1681027542680,
+  }),
+);
 
 describe('FormData', () => {
   describe('serialize', () => {
@@ -110,25 +116,10 @@ describe('FormData', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports FormData', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
-        plugins: [FormDataPlugin],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports FormData', async () => new Promise<void>((resolve, reject) => {
+    it('supports FormData', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
           plugins: [FormDataPlugin],
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -140,6 +131,23 @@ describe('FormData', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports FormData', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
+            plugins: [FormDataPlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -169,19 +177,20 @@ describe('FormData', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports FormData', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(SYNC_EXAMPLE), {
-        plugins: [FormDataPlugin],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports FormData', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(SYNC_EXAMPLE), {
+          plugins: [FormDataPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

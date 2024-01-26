@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -17,9 +17,9 @@ describe('boxed number', () => {
     it('supports boxed numbers', () => {
       const value = 0xdeadbeef;
       expect(serialize(Object(value))).toBe(`Object(${value})`);
-      expect(serialize(Object(NaN))).toBe('Object(0/0)');
-      expect(serialize(Object(Infinity))).toBe('Object(1/0)');
-      expect(serialize(Object(-Infinity))).toBe('Object(-1/0)');
+      expect(serialize(Object(Number.NaN))).toBe('Object(0/0)');
+      expect(serialize(Object(Number.POSITIVE_INFINITY))).toBe('Object(1/0)');
+      expect(serialize(Object(Number.NEGATIVE_INFINITY))).toBe('Object(-1/0)');
       expect(serialize(Object(-0))).toBe('Object(-0)');
     });
   });
@@ -29,15 +29,15 @@ describe('boxed number', () => {
       expect(await serializeAsync(Promise.resolve(Object(value)))).toBe(
         `Promise.resolve(Object(${value}))`,
       );
-      expect(await serializeAsync(Promise.resolve(Object(NaN)))).toBe(
+      expect(await serializeAsync(Promise.resolve(Object(Number.NaN)))).toBe(
         'Promise.resolve(Object(0/0))',
       );
-      expect(await serializeAsync(Promise.resolve(Object(Infinity)))).toBe(
-        'Promise.resolve(Object(1/0))',
-      );
-      expect(await serializeAsync(Promise.resolve(Object(-Infinity)))).toBe(
-        'Promise.resolve(Object(-1/0))',
-      );
+      expect(
+        await serializeAsync(Promise.resolve(Object(Number.POSITIVE_INFINITY))),
+      ).toBe('Promise.resolve(Object(1/0))');
+      expect(
+        await serializeAsync(Promise.resolve(Object(Number.NEGATIVE_INFINITY))),
+      ).toBe('Promise.resolve(Object(-1/0))');
       expect(await serializeAsync(Promise.resolve(Object(-0)))).toBe(
         'Promise.resolve(Object(-0))',
       );
@@ -47,9 +47,13 @@ describe('boxed number', () => {
     it('supports boxed numbers', () => {
       const value = 0xdeadbeef;
       expect(JSON.stringify(toJSON(Object(value)))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Object(NaN)))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Object(Infinity)))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Object(-Infinity)))).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(Object(Number.NaN)))).toMatchSnapshot();
+      expect(
+        JSON.stringify(toJSON(Object(Number.POSITIVE_INFINITY))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(toJSON(Object(Number.NEGATIVE_INFINITY))),
+      ).toMatchSnapshot();
       expect(JSON.stringify(toJSON(Object(-0)))).toMatchSnapshot();
     });
   });
@@ -60,13 +64,17 @@ describe('boxed number', () => {
         JSON.stringify(await toJSONAsync(Promise.resolve(Object(value)))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(NaN)))),
+        JSON.stringify(await toJSONAsync(Promise.resolve(Object(Number.NaN)))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(Infinity)))),
+        JSON.stringify(
+          await toJSONAsync(Promise.resolve(Object(Number.POSITIVE_INFINITY))),
+        ),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(-Infinity)))),
+        JSON.stringify(
+          await toJSONAsync(Promise.resolve(Object(Number.NEGATIVE_INFINITY))),
+        ),
       ).toMatchSnapshot();
       expect(
         JSON.stringify(await toJSONAsync(Promise.resolve(Object(-0)))),
@@ -77,9 +85,13 @@ describe('boxed number', () => {
     it('supports boxed numbers', () => {
       const value = 0xdeadbeef;
       expect(crossSerialize(Object(value))).toMatchSnapshot();
-      expect(crossSerialize(Object(NaN))).toMatchSnapshot();
-      expect(crossSerialize(Object(Infinity))).toMatchSnapshot();
-      expect(crossSerialize(Object(-Infinity))).toMatchSnapshot();
+      expect(crossSerialize(Object(Number.NaN))).toMatchSnapshot();
+      expect(
+        crossSerialize(Object(Number.POSITIVE_INFINITY)),
+      ).toMatchSnapshot();
+      expect(
+        crossSerialize(Object(Number.NEGATIVE_INFINITY)),
+      ).toMatchSnapshot();
       expect(crossSerialize(Object(-0))).toMatchSnapshot();
     });
     describe('scoped', () => {
@@ -89,13 +101,17 @@ describe('boxed number', () => {
           crossSerialize(Object(value), { scopeId: 'example' }),
         ).toMatchSnapshot();
         expect(
-          crossSerialize(Object(NaN), { scopeId: 'example' }),
+          crossSerialize(Object(Number.NaN), { scopeId: 'example' }),
         ).toMatchSnapshot();
         expect(
-          crossSerialize(Object(Infinity), { scopeId: 'example' }),
+          crossSerialize(Object(Number.POSITIVE_INFINITY), {
+            scopeId: 'example',
+          }),
         ).toMatchSnapshot();
         expect(
-          crossSerialize(Object(-Infinity), { scopeId: 'example' }),
+          crossSerialize(Object(Number.NEGATIVE_INFINITY), {
+            scopeId: 'example',
+          }),
         ).toMatchSnapshot();
         expect(
           crossSerialize(Object(-0), { scopeId: 'example' }),
@@ -110,13 +126,17 @@ describe('boxed number', () => {
         await crossSerializeAsync(Promise.resolve(Object(value))),
       ).toMatchSnapshot();
       expect(
-        await crossSerializeAsync(Promise.resolve(Object(NaN))),
+        await crossSerializeAsync(Promise.resolve(Object(Number.NaN))),
       ).toMatchSnapshot();
       expect(
-        await crossSerializeAsync(Promise.resolve(Object(Infinity))),
+        await crossSerializeAsync(
+          Promise.resolve(Object(Number.POSITIVE_INFINITY)),
+        ),
       ).toMatchSnapshot();
       expect(
-        await crossSerializeAsync(Promise.resolve(Object(-Infinity))),
+        await crossSerializeAsync(
+          Promise.resolve(Object(Number.NEGATIVE_INFINITY)),
+        ),
       ).toMatchSnapshot();
       expect(
         await crossSerializeAsync(Promise.resolve(Object(-0))),
@@ -131,19 +151,25 @@ describe('boxed number', () => {
           }),
         ).toMatchSnapshot();
         expect(
-          await crossSerializeAsync(Promise.resolve(Object(NaN)), {
+          await crossSerializeAsync(Promise.resolve(Object(Number.NaN)), {
             scopeId: 'example',
           }),
         ).toMatchSnapshot();
         expect(
-          await crossSerializeAsync(Promise.resolve(Object(Infinity)), {
-            scopeId: 'example',
-          }),
+          await crossSerializeAsync(
+            Promise.resolve(Object(Number.POSITIVE_INFINITY)),
+            {
+              scopeId: 'example',
+            },
+          ),
         ).toMatchSnapshot();
         expect(
-          await crossSerializeAsync(Promise.resolve(Object(-Infinity)), {
-            scopeId: 'example',
-          }),
+          await crossSerializeAsync(
+            Promise.resolve(Object(Number.NEGATIVE_INFINITY)),
+            {
+              scopeId: 'example',
+            },
+          ),
         ).toMatchSnapshot();
         expect(
           await crossSerializeAsync(Promise.resolve(Object(-0)), {
@@ -169,9 +195,9 @@ describe('boxed number', () => {
           },
         });
       }));
-    it('supports boxed NaN', async () =>
+    it('supports boxed Number.NaN', async () =>
       new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Object(NaN)), {
+        crossSerializeStream(Promise.resolve(Object(Number.NaN)), {
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -183,33 +209,39 @@ describe('boxed number', () => {
           },
         });
       }));
-    it('supports boxed Infinity', async () =>
+    it('supports boxed Number.POSITIVE_INFINITY', async () =>
       new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Object(Infinity)), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
+        crossSerializeStream(
+          Promise.resolve(Object(Number.POSITIVE_INFINITY)),
+          {
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
           },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
+        );
       }));
-    it('supports boxed -Infinity', async () =>
+    it('supports boxed Number.NEGATIVE_INFINITY', async () =>
       new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Object(-Infinity)), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
+        crossSerializeStream(
+          Promise.resolve(Object(Number.NEGATIVE_INFINITY)),
+          {
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
           },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
+        );
       }));
     it('supports boxed -0', async () =>
       new Promise<void>((resolve, reject) => {
@@ -241,9 +273,9 @@ describe('boxed number', () => {
             },
           });
         }));
-      it('supports boxed NaN', async () =>
+      it('supports boxed Number.NaN', async () =>
         new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Object(NaN)), {
+          crossSerializeStream(Promise.resolve(Object(Number.NaN)), {
             scopeId: 'example',
             onSerialize(data) {
               expect(data).toMatchSnapshot();
@@ -256,35 +288,41 @@ describe('boxed number', () => {
             },
           });
         }));
-      it('supports boxed Infinity', async () =>
+      it('supports boxed Number.POSITIVE_INFINITY', async () =>
         new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Object(Infinity)), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
+          crossSerializeStream(
+            Promise.resolve(Object(Number.POSITIVE_INFINITY)),
+            {
+              scopeId: 'example',
+              onSerialize(data) {
+                expect(data).toMatchSnapshot();
+              },
+              onDone() {
+                resolve();
+              },
+              onError(error) {
+                reject(error);
+              },
             },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
+          );
         }));
-      it('supports boxed -Infinity', async () =>
+      it('supports boxed Number.NEGATIVE_INFINITY', async () =>
         new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Object(-Infinity)), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
+          crossSerializeStream(
+            Promise.resolve(Object(Number.NEGATIVE_INFINITY)),
+            {
+              scopeId: 'example',
+              onSerialize(data) {
+                expect(data).toMatchSnapshot();
+              },
+              onDone() {
+                resolve();
+              },
+              onError(error) {
+                reject(error);
+              },
             },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
+          );
         }));
       it('supports boxed -0', async () =>
         new Promise<void>((resolve, reject) => {
@@ -307,9 +345,13 @@ describe('boxed number', () => {
     it('supports boxed numbers', () => {
       const value = 0xdeadbeef;
       expect(JSON.stringify(toCrossJSON(Object(value)))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Object(NaN)))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Object(Infinity)))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Object(-Infinity)))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Object(Number.NaN)))).toMatchSnapshot();
+      expect(
+        JSON.stringify(toCrossJSON(Object(Number.POSITIVE_INFINITY))),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(toCrossJSON(Object(Number.NEGATIVE_INFINITY))),
+      ).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(Object(-0)))).toMatchSnapshot();
     });
   });
@@ -320,16 +362,22 @@ describe('boxed number', () => {
         JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(value)))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(NaN)))),
-      ).toMatchSnapshot();
-      expect(
         JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Object(Infinity))),
+          await toCrossJSONAsync(Promise.resolve(Object(Number.NaN))),
         ),
       ).toMatchSnapshot();
       expect(
         JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Object(-Infinity))),
+          await toCrossJSONAsync(
+            Promise.resolve(Object(Number.POSITIVE_INFINITY)),
+          ),
+        ),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(
+          await toCrossJSONAsync(
+            Promise.resolve(Object(Number.NEGATIVE_INFINITY)),
+          ),
         ),
       ).toMatchSnapshot();
       expect(
@@ -352,9 +400,9 @@ describe('boxed number', () => {
           },
         });
       }));
-    it('supports boxed NaN', async () =>
+    it('supports boxed Number.NaN', async () =>
       new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Object(NaN)), {
+        toCrossJSONStream(Promise.resolve(Object(Number.NaN)), {
           onParse(data) {
             expect(JSON.stringify(data)).toMatchSnapshot();
           },
@@ -366,9 +414,9 @@ describe('boxed number', () => {
           },
         });
       }));
-    it('supports boxed Infinity', async () =>
+    it('supports boxed Number.POSITIVE_INFINITY', async () =>
       new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Object(Infinity)), {
+        toCrossJSONStream(Promise.resolve(Object(Number.POSITIVE_INFINITY)), {
           onParse(data) {
             expect(JSON.stringify(data)).toMatchSnapshot();
           },
@@ -380,9 +428,9 @@ describe('boxed number', () => {
           },
         });
       }));
-    it('supports boxed -Infinity', async () =>
+    it('supports boxed Number.NEGATIVE_INFINITY', async () =>
       new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Object(-Infinity)), {
+        toCrossJSONStream(Promise.resolve(Object(Number.NEGATIVE_INFINITY)), {
           onParse(data) {
             expect(JSON.stringify(data)).toMatchSnapshot();
           },

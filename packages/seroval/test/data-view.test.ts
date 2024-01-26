@@ -1,18 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  deserialize,
-  fromJSON,
-  serialize,
-  serializeAsync,
-  toJSONAsync,
-  toJSON,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
+  deserialize,
+  fromCrossJSON,
+  fromJSON,
+  serialize,
+  serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  fromCrossJSON,
   toCrossJSONStream,
+  toJSON,
+  toJSONAsync,
 } from '../src';
 
 const BUFFER = new ArrayBuffer(16);

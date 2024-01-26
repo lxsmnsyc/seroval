@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerializeAsync,
   crossSerializeStream,
@@ -10,6 +9,7 @@ import {
   toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import ResponsePlugin from '../../web/response';
 
 const EXAMPLE_BODY = 'Hello World!';
@@ -62,27 +62,11 @@ describe('Response', () => {
   });
 
   describe('crossSerializeStream', () => {
-    it('supports Response', async () => new Promise<void>((resolve, reject) => {
-      const example = new Response(EXAMPLE_BODY);
-      crossSerializeStream(example, {
-        plugins: [ResponsePlugin],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports Response', async () => new Promise<void>((resolve, reject) => {
+    it('supports Response', async () =>
+      new Promise<void>((resolve, reject) => {
         const example = new Response(EXAMPLE_BODY);
         crossSerializeStream(example, {
           plugins: [ResponsePlugin],
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -94,6 +78,24 @@ describe('Response', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports Response', async () =>
+        new Promise<void>((resolve, reject) => {
+          const example = new Response(EXAMPLE_BODY);
+          crossSerializeStream(example, {
+            plugins: [ResponsePlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toJSONAsync', () => {
@@ -112,20 +114,21 @@ describe('Response', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Response', async () => new Promise<void>((resolve, reject) => {
-      const example = new Response(EXAMPLE_BODY);
-      toCrossJSONStream(example, {
-        plugins: [ResponsePlugin],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports Response', async () =>
+      new Promise<void>((resolve, reject) => {
+        const example = new Response(EXAMPLE_BODY);
+        toCrossJSONStream(example, {
+          plugins: [ResponsePlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

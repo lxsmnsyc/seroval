@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerializeAsync,
   deserialize,
@@ -8,6 +7,7 @@ import {
   toCrossJSONAsync,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import BlobPlugin from '../../web/blob';
 
 const EXAMPLE = new Blob(['Hello World'], {

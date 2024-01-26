@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerializeAsync,
   crossSerializeStream,
@@ -10,6 +9,7 @@ import {
   toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import RequestPlugin from '../../web/request';
 
 const EXAMPLE_URL = 'http://localhost:3000';
@@ -78,33 +78,14 @@ describe('Request', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Request', async () => new Promise<void>((resolve, reject) => {
-      const example = new Request(EXAMPLE_URL, {
-        method: 'POST',
-        body: EXAMPLE_BODY,
-      });
-      crossSerializeStream(example, {
-        plugins: [RequestPlugin],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports Request', async () => new Promise<void>((resolve, reject) => {
+    it('supports Request', async () =>
+      new Promise<void>((resolve, reject) => {
         const example = new Request(EXAMPLE_URL, {
           method: 'POST',
           body: EXAMPLE_BODY,
         });
         crossSerializeStream(example, {
           plugins: [RequestPlugin],
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -116,6 +97,27 @@ describe('Request', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports Request', async () =>
+        new Promise<void>((resolve, reject) => {
+          const example = new Request(EXAMPLE_URL, {
+            method: 'POST',
+            body: EXAMPLE_BODY,
+          });
+          crossSerializeStream(example, {
+            plugins: [RequestPlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toJSONAsync', () => {
@@ -139,23 +141,24 @@ describe('Request', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Request', async () => new Promise<void>((resolve, reject) => {
-      const example = new Request(EXAMPLE_URL, {
-        method: 'POST',
-        body: EXAMPLE_BODY,
-      });
-      toCrossJSONStream(example, {
-        plugins: [RequestPlugin],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports Request', async () =>
+      new Promise<void>((resolve, reject) => {
+        const example = new Request(EXAMPLE_URL, {
+          method: 'POST',
+          body: EXAMPLE_BODY,
+        });
+        toCrossJSONStream(example, {
+          plugins: [RequestPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

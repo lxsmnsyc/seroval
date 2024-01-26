@@ -1,9 +1,9 @@
+import { crossSerializeStream } from './cross';
 import {
   resolvePlugins,
   type Plugin,
   type PluginAccessOptions,
 } from './plugin';
-import { crossSerializeStream } from './cross';
 import { serializeString } from './string';
 
 export interface SerializerOptions extends PluginAccessOptions {

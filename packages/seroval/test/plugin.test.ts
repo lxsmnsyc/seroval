@@ -2,19 +2,19 @@ import { describe, expect, it } from 'vitest';
 import type { SerovalNode } from '../src';
 import {
   createPlugin,
-  serialize,
-  deserialize,
-  toJSON,
-  fromJSON,
-  toJSONAsync,
   crossSerialize,
-  serializeAsync,
   crossSerializeAsync,
   crossSerializeStream,
-  toCrossJSON,
+  deserialize,
   fromCrossJSON,
+  fromJSON,
+  serialize,
+  serializeAsync,
+  toCrossJSON,
   toCrossJSONAsync,
   toCrossJSONStream,
+  toJSON,
+  toJSONAsync,
 } from '../src';
 
 const BufferPlugin = createPlugin<Buffer, SerovalNode>({

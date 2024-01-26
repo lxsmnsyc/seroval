@@ -2,12 +2,11 @@ import type { WellKnownSymbols } from './constants';
 import { INV_SYMBOL_REF, SerovalNodeType } from './constants';
 import {
   INFINITY_NODE,
-  NEG_INFINITY_NODE,
   NAN_NODE,
+  NEG_INFINITY_NODE,
   NEG_ZERO_NODE,
 } from './literals';
 import { getReferenceID } from './reference';
-import { getErrorConstructor } from './utils/error';
 import { serializeString } from './string';
 import type {
   SerovalAggregateErrorNode,
@@ -39,6 +38,7 @@ import type {
   SerovalTypedArrayNode,
   SerovalWKSymbolNode,
 } from './types';
+import { getErrorConstructor } from './utils/error';
 import { getObjectFlag } from './utils/get-object-flag';
 import type {
   BigIntTypedArrayValue,

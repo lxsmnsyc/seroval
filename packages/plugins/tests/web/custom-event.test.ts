@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -14,6 +13,7 @@ import {
   toJSON,
   toJSONAsync,
 } from 'seroval';
+import { describe, expect, it } from 'vitest';
 import CustomEventPlugin from '../../web/custom-event';
 
 const EXAMPLE_EVENT_TYPE = 'example';
@@ -103,25 +103,10 @@ describe('CustomEvent', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports CustomEvent', async () => new Promise<void>((resolve, reject) => {
-      crossSerializeStream(Promise.resolve(EXAMPLE), {
-        plugins: [CustomEventPlugin],
-        onSerialize(data) {
-          expect(data).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
-    describe('scoped', () => {
-      it('supports CustomEvent', async () => new Promise<void>((resolve, reject) => {
+    it('supports CustomEvent', async () =>
+      new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           plugins: [CustomEventPlugin],
-          scopeId: 'example',
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -133,6 +118,23 @@ describe('CustomEvent', () => {
           },
         });
       }));
+    describe('scoped', () => {
+      it('supports CustomEvent', async () =>
+        new Promise<void>((resolve, reject) => {
+          crossSerializeStream(Promise.resolve(EXAMPLE), {
+            plugins: [CustomEventPlugin],
+            scopeId: 'example',
+            onSerialize(data) {
+              expect(data).toMatchSnapshot();
+            },
+            onDone() {
+              resolve();
+            },
+            onError(error) {
+              reject(error);
+            },
+          });
+        }));
     });
   });
   describe('toCrossJSON', () => {
@@ -163,19 +165,20 @@ describe('CustomEvent', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports CustomEvent', async () => new Promise<void>((resolve, reject) => {
-      toCrossJSONStream(Promise.resolve(EXAMPLE), {
-        plugins: [CustomEventPlugin],
-        onParse(data) {
-          expect(JSON.stringify(data)).toMatchSnapshot();
-        },
-        onDone() {
-          resolve();
-        },
-        onError(error) {
-          reject(error);
-        },
-      });
-    }));
+    it('supports CustomEvent', async () =>
+      new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(Promise.resolve(EXAMPLE), {
+          plugins: [CustomEventPlugin],
+          onParse(data) {
+            expect(JSON.stringify(data)).toMatchSnapshot();
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      }));
   });
 });

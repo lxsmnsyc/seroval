@@ -1,5 +1,5 @@
-import BaseDeserializerContext from '../context/deserializer';
 import type { BaseDeserializerOptions } from '../context/deserializer';
+import BaseDeserializerContext from '../context/deserializer';
 import type { SerovalMode } from '../plugin';
 
 export interface VanillaDeserializerContextOptions

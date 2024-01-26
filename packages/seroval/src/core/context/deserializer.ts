@@ -1,5 +1,21 @@
-import { deserializeString } from '../string';
+import {
+  CONSTANT_VAL,
+  ERROR_CONSTRUCTOR,
+  SYMBOL_REF,
+  SerovalNodeType,
+  SerovalObjectFlags,
+} from '../constants';
+import {
+  SerovalDeserializationError,
+  SerovalMissingInstanceError,
+  SerovalMissingPluginError,
+  SerovalUnsupportedNodeError,
+} from '../errors';
+import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { getReference } from '../reference';
+import type { Stream } from '../stream';
+import { createStream, streamToAsyncIterable } from '../stream';
+import { deserializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
@@ -33,14 +49,9 @@ import type {
   SerovalStreamThrowNode,
   SerovalTypedArrayNode,
 } from '../types';
-import {
-  CONSTANT_VAL,
-  ERROR_CONSTRUCTOR,
-  SYMBOL_REF,
-  SerovalNodeType,
-  SerovalObjectFlags,
-} from '../constants';
-import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
+import assert from '../utils/assert';
+import type { Deferred } from '../utils/deferred';
+import { createDeferred } from '../utils/deferred';
 import type { Sequence } from '../utils/iterator-to-sequence';
 import { sequenceToIterator } from '../utils/iterator-to-sequence';
 import type {
@@ -48,17 +59,6 @@ import type {
   TypedArrayValue,
 } from '../utils/typed-array';
 import { getTypedArrayConstructor } from '../utils/typed-array';
-import type { Deferred } from '../utils/deferred';
-import { createDeferred } from '../utils/deferred';
-import assert from '../utils/assert';
-import type { Stream } from '../stream';
-import { createStream, streamToAsyncIterable } from '../stream';
-import {
-  SerovalMissingInstanceError,
-  SerovalMissingPluginError,
-  SerovalDeserializationError,
-  SerovalUnsupportedNodeError,
-} from '../errors';
 
 function applyObjectFlag(obj: unknown, flag: SerovalObjectFlags): unknown {
   switch (flag) {

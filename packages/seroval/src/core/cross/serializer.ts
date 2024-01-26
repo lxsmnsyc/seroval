@@ -1,9 +1,9 @@
-import type { SerovalNode } from '../types';
-import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import type { BaseSerializerContextOptions } from '../context/serializer';
 import BaseSerializerContext from '../context/serializer';
+import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
 import type { SerovalMode } from '../plugin';
 import { serializeString } from '../string';
+import type { SerovalNode } from '../types';
 import type { CrossContextOptions } from './parser';
 
 export interface CrossSerializerContextOptions
