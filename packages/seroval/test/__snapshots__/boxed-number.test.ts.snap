@@ -44,17 +44,17 @@ exports[`boxed number > crossSerializeStream > scoped > supports boxed -0 1`] = 
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed -0 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(-0)))($R["example"])"`;
 
-exports[`boxed number > crossSerializeStream > scoped > supports boxed -Infinity 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NEGATIVE_INFINITY 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`boxed number > crossSerializeStream > scoped > supports boxed -Infinity 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(-1/0)))($R["example"])"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NEGATIVE_INFINITY 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(-1/0)))($R["example"])"`;
 
-exports[`boxed number > crossSerializeStream > scoped > supports boxed Infinity 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NaN 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`boxed number > crossSerializeStream > scoped > supports boxed Infinity 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(1/0)))($R["example"])"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NaN 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(0/0)))($R["example"])"`;
 
-exports[`boxed number > crossSerializeStream > scoped > supports boxed NaN 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.POSITIVE_INFINITY 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
-exports[`boxed number > crossSerializeStream > scoped > supports boxed NaN 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(0/0)))($R["example"])"`;
+exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.POSITIVE_INFINITY 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(1/0)))($R["example"])"`;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed numbers 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
 
@@ -64,17 +64,17 @@ exports[`boxed number > crossSerializeStream > supports boxed -0 1`] = `"$R[0]=(
 
 exports[`boxed number > crossSerializeStream > supports boxed -0 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(-0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -Infinity 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boxed number > crossSerializeStream > supports boxed Number.NEGATIVE_INFINITY 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed -Infinity 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(-1/0))"`;
+exports[`boxed number > crossSerializeStream > supports boxed Number.NEGATIVE_INFINITY 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(-1/0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed Infinity 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boxed number > crossSerializeStream > supports boxed Number.NaN 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed Infinity 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(1/0))"`;
+exports[`boxed number > crossSerializeStream > supports boxed Number.NaN 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(0/0))"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed NaN 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boxed number > crossSerializeStream > supports boxed Number.POSITIVE_INFINITY 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
-exports[`boxed number > crossSerializeStream > supports boxed NaN 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(0/0))"`;
+exports[`boxed number > crossSerializeStream > supports boxed Number.POSITIVE_INFINITY 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(1/0))"`;
 
 exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
 
@@ -104,17 +104,17 @@ exports[`boxed number > toCrossJSONStream > supports boxed -0 1`] = `"{"t":22,"i
 
 exports[`boxed number > toCrossJSONStream > supports boxed -0 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":4}}]}"`;
 
-exports[`boxed number > toCrossJSONStream > supports boxed -Infinity 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`boxed number > toCrossJSONStream > supports boxed Number.NEGATIVE_INFINITY 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boxed number > toCrossJSONStream > supports boxed -Infinity 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":6}}]}"`;
+exports[`boxed number > toCrossJSONStream > supports boxed Number.NEGATIVE_INFINITY 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":6}}]}"`;
 
-exports[`boxed number > toCrossJSONStream > supports boxed Infinity 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`boxed number > toCrossJSONStream > supports boxed Number.NaN 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boxed number > toCrossJSONStream > supports boxed Infinity 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":5}}]}"`;
+exports[`boxed number > toCrossJSONStream > supports boxed Number.NaN 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":7}}]}"`;
 
-exports[`boxed number > toCrossJSONStream > supports boxed NaN 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`boxed number > toCrossJSONStream > supports boxed Number.POSITIVE_INFINITY 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
-exports[`boxed number > toCrossJSONStream > supports boxed NaN 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":7}}]}"`;
+exports[`boxed number > toCrossJSONStream > supports boxed Number.POSITIVE_INFINITY 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":5}}]}"`;
 
 exports[`boxed number > toCrossJSONStream > supports boxed numbers 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
 
