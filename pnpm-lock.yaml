@@ -79,7 +79,7 @@ importers:
         specifier: 2.6.0
         version: 2.6.0(tslib@2.6.2)(typescript@5.4.2)
       seroval:
-        specifier: 1.0.4
+        specifier: 1.0.5
         version: link:../seroval
       tslib:
         specifier: ^2.6.2
