@@ -3,8 +3,8 @@
   "private": true,
   "workspaces": ["packages/*", "benchmark"],
   "devDependencies": {
-    "@biomejs/biome": "^1.5.1",
-    "lerna": "^7.3.0",
-    "typescript": "^5.3.2"
+    "@biomejs/biome": "^1.6.0",
+    "lerna": "^8.1.2",
+    "typescript": "^5.4.2"
   }
 }

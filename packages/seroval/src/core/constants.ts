@@ -3,10 +3,10 @@ export const enum SerovalConstant {
   Undefined = 1,
   True = 2,
   False = 3,
-  NegativeZero = 4,
-  Infinity = 5,
-  NegativeInfinity = 6,
-  NaN = 7,
+  NegZero = 4,
+  Inf = 5,
+  NegInf = 6,
+  Nan = 7,
 }
 
 export const enum SerovalNodeType {
@@ -125,10 +125,10 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.False]: '!1',
   [SerovalConstant.Undefined]: 'void 0',
   [SerovalConstant.Null]: 'null',
-  [SerovalConstant.NegativeZero]: '-0',
-  [SerovalConstant.Infinity]: '1/0',
-  [SerovalConstant.NegativeInfinity]: '-1/0',
-  [SerovalConstant.NaN]: '0/0',
+  [SerovalConstant.NegZero]: '-0',
+  [SerovalConstant.Inf]: '1/0',
+  [SerovalConstant.NegInf]: '-1/0',
+  [SerovalConstant.Nan]: '0/0',
 };
 
 export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
@@ -136,10 +136,10 @@ export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.False]: false,
   [SerovalConstant.Undefined]: undefined,
   [SerovalConstant.Null]: null,
-  [SerovalConstant.NegativeZero]: -0,
-  [SerovalConstant.Infinity]: Number.POSITIVE_INFINITY,
-  [SerovalConstant.NegativeInfinity]: Number.NEGATIVE_INFINITY,
-  [SerovalConstant.NaN]: Number.NaN,
+  [SerovalConstant.NegZero]: -0,
+  [SerovalConstant.Inf]: Number.POSITIVE_INFINITY,
+  [SerovalConstant.NegInf]: Number.NEGATIVE_INFINITY,
+  [SerovalConstant.Nan]: Number.NaN,
 };
 
 export const enum ErrorConstructorTag {

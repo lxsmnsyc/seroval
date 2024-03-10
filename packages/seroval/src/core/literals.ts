@@ -31,12 +31,12 @@ export const NULL_NODE = /* @__PURE__ */ createConstantNode(
   SerovalConstant.Null,
 );
 export const NEG_ZERO_NODE = /* @__PURE__ */ createConstantNode(
-  SerovalConstant.NegativeZero,
+  SerovalConstant.NegZero,
 );
 export const INFINITY_NODE = /* @__PURE__ */ createConstantNode(
-  SerovalConstant.Infinity,
+  SerovalConstant.Inf,
 );
 export const NEG_INFINITY_NODE = /* @__PURE__ */ createConstantNode(
-  SerovalConstant.NegativeInfinity,
+  SerovalConstant.NegInf,
 );
-export const NAN_NODE = /* @__PURE__ */ createConstantNode(SerovalConstant.NaN);
+export const NAN_NODE = /* @__PURE__ */ createConstantNode(SerovalConstant.Nan);
