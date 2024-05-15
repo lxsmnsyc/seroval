@@ -25,7 +25,7 @@ export function createStream<T>(): Stream<T> {
   const listeners = new Set<StreamListener<T>>();
   const buffer: unknown[] = [];
   let alive = true;
-  let success = false;
+  let success = true;
 
   function flushNext(value: T): void {
     for (const listener of listeners.keys()) {
@@ -53,7 +53,7 @@ export function createStream<T>(): Stream<T> {
       }
       for (let i = 0, len = buffer.length; i < len; i++) {
         const value = buffer[i];
-        if (i === len - 1) {
+        if (i === len - 1 && !alive) {
           if (success) {
             listener.return(value as T);
           } else {

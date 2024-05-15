@@ -972,7 +972,7 @@ export default abstract class BaseSerializerContext
             ',n=' +
             this.createEffectfulFunction(
               ['o', 'x', 'z', 'c'],
-              'for(x=0,z=b.length;x<z;x++)(c=b[x],x===z-1?o[s?"return":"throw"](c):o.next(c))',
+              'for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))',
             ) +
             ',e=' +
             this.createFunction(
