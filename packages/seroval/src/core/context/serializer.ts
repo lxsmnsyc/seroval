@@ -1107,7 +1107,7 @@ export default abstract class BaseSerializerContext
               ['i', 't', 'v'],
               'if(d===-1){return((i=c++)>=b.length)?(p.push(t=' +
                 this.getRefParam(promise.i) +
-                '()),t):{done:!0,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
+                '()),t):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
             ) +
             '})',
         ),
