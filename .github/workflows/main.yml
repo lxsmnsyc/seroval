@@ -10,8 +10,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 8
-          run_install: |
-            - args: [--frozen-lockfile]
+          run_install: true
 
       - uses: actions/setup-node@v4
         with:
