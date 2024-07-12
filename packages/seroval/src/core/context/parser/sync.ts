@@ -26,6 +26,7 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
+import { OpaqueReference } from '../../opaque-reference';
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStream, isStream } from '../../stream';
@@ -240,6 +241,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return this.createPromiseConstructorNode(id);
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation>
   protected parseObject(id: number, current: object): SerovalNode {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
@@ -247,11 +249,16 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     if (isStream(current)) {
       return this.parseStream(id, current);
     }
+    const currentClass = current.constructor;
+    if (currentClass === OpaqueReference) {
+      return this.parse(
+        (current as OpaqueReference<unknown, unknown>).replacement,
+      );
+    }
     const parsed = this.parsePlugin(id, current);
     if (parsed) {
       return parsed;
     }
-    const currentClass = current.constructor;
     switch (currentClass) {
       case Object:
         return this.parsePlainObject(

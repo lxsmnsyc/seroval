@@ -1,16 +1,18 @@
 export { Feature } from './core/compat';
 export { createReference } from './core/reference';
 
-export * from './core/tree';
 export * from './core/cross';
+export * from './core/tree';
 
 export { getCrossReferenceHeader } from './core/keys';
 
-export { default as Serializer } from './core/Serializer';
 export * from './core/plugin';
+export { default as Serializer } from './core/Serializer';
 
-export type { Stream } from './core/stream';
 export { createStream } from './core/stream';
+export type { Stream } from './core/stream';
 
-export type { SerovalNode } from './core/types';
 export * from './core/errors';
+export type { SerovalNode } from './core/types';
+
+export { OpaqueReference } from './core/opaque-reference';
