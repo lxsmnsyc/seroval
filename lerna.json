@@ -1,5 +1,5 @@
 {
-  "npmClient": "pnpm",
+  "npmClient": "npm",
   "packages": [
     "packages/*",
     "benchmark"
@@ -16,5 +16,6 @@
       "registry": "https://registry.npmjs.org/"
     }
   },
-  "version": "1.0.7"
+  "version": "1.0.7",
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json"
 }
