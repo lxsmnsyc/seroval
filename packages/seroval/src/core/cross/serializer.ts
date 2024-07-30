@@ -1,3 +1,4 @@
+import { SerovalNodeType } from '../constants';
 import type { BaseSerializerContextOptions } from '../context/serializer';
 import BaseSerializerContext from '../context/serializer';
 import { GLOBAL_CONTEXT_REFERENCES } from '../keys';
@@ -48,10 +49,13 @@ export default class CrossSerializerContext extends BaseSerializerContext {
     // Parameters needed for scoping
     const params = this.scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
     // If there are patches, append it after the result
-    const body = patches ? result + ',' + patches + ref : result;
+    const body = patches ? '(' + result + ',' + patches + ref + ')' : result;
     // If there are no params, there's no need to generate a function
     if (params === '') {
-      return patches ? '(' + body + ')' : body;
+      if (tree.t === SerovalNodeType.Object && !patches) {
+        return '(' + body + ')';
+      }
+      return body;
     }
     // Get the arguments for the IIFE
     const args =

@@ -2,27 +2,27 @@
 
 exports[`OpaqueReference > crossSerialize > scoped > supports OpaqueReference 1`] = `"($R=>$R[0]={transparent:"This is transparent",opaque:void 0})($R["example"])"`;
 
-exports[`OpaqueReference > crossSerialize > scoped > supports OpaqueReference with replacement 1`] = `"$R[0]={transparent:"This is transparent",opaque:"This is a dummy value."}"`;
+exports[`OpaqueReference > crossSerialize > scoped > supports OpaqueReference with replacement 1`] = `"($R[0]={transparent:"This is transparent",opaque:"This is a dummy value."})"`;
 
-exports[`OpaqueReference > crossSerialize > supports OpaqueReference 1`] = `"$R[0]={transparent:"This is transparent",opaque:void 0}"`;
+exports[`OpaqueReference > crossSerialize > supports OpaqueReference 1`] = `"($R[0]={transparent:"This is transparent",opaque:void 0})"`;
 
-exports[`OpaqueReference > crossSerialize > supports OpaqueReference with replacement 1`] = `"$R[0]={transparent:"This is transparent",opaque:"This is a dummy value."}"`;
+exports[`OpaqueReference > crossSerialize > supports OpaqueReference with replacement 1`] = `"($R[0]={transparent:"This is transparent",opaque:"This is a dummy value."})"`;
 
 exports[`OpaqueReference > crossSerializeAsync > scoped > supports OpaqueReference 1`] = `"($R=>$R[0]={transparent:"This is transparent",opaque:void 0})($R["example"])"`;
 
 exports[`OpaqueReference > crossSerializeAsync > scoped > supports OpaqueReference with replacement 1`] = `"($R=>$R[0]={transparent:"This is transparent",opaque:"This is a dummy value."})($R["example"])"`;
 
-exports[`OpaqueReference > crossSerializeAsync > supports OpaqueReference 1`] = `"$R[0]={transparent:"This is transparent",opaque:void 0}"`;
+exports[`OpaqueReference > crossSerializeAsync > supports OpaqueReference 1`] = `"($R[0]={transparent:"This is transparent",opaque:void 0})"`;
 
-exports[`OpaqueReference > crossSerializeAsync > supports OpaqueReference with replacement 1`] = `"$R[0]={transparent:"This is transparent",opaque:"This is a dummy value."}"`;
+exports[`OpaqueReference > crossSerializeAsync > supports OpaqueReference with replacement 1`] = `"($R[0]={transparent:"This is transparent",opaque:"This is a dummy value."})"`;
 
 exports[`OpaqueReference > crossSerializeStream > scoped > supports OpaqueReference 1`] = `"($R=>$R[0]={transparent:"This is transparent",opaque:void 0})($R["example"])"`;
 
 exports[`OpaqueReference > crossSerializeStream > scoped > supports OpaqueReference with replacement 1`] = `"($R=>$R[0]={transparent:"This is transparent",opaque:"This is a dummy value."})($R["example"])"`;
 
-exports[`OpaqueReference > crossSerializeStream > supports OpaqueReference 1`] = `"$R[0]={transparent:"This is transparent",opaque:void 0}"`;
+exports[`OpaqueReference > crossSerializeStream > supports OpaqueReference 1`] = `"($R[0]={transparent:"This is transparent",opaque:void 0})"`;
 
-exports[`OpaqueReference > crossSerializeStream > supports OpaqueReference with replacement 1`] = `"$R[0]={transparent:"This is transparent",opaque:"This is a dummy value."}"`;
+exports[`OpaqueReference > crossSerializeStream > supports OpaqueReference with replacement 1`] = `"($R[0]={transparent:"This is transparent",opaque:"This is a dummy value."})"`;
 
 exports[`OpaqueReference > serialize > supports OpaqueReference 1`] = `"({transparent:"This is transparent",opaque:void 0})"`;
 

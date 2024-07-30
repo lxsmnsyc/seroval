@@ -86,8 +86,9 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
         if (!result.startsWith(index + '=')) {
           body = index + '=' + body;
         }
+        body = '(' + body + ')';
       }
-      return '(' + this.createFunction(this.vars, '(' + body + ')') + ')()';
+      return '(' + this.createFunction(this.vars, body) + ')()';
     }
     if (tree.t === SerovalNodeType.Object) {
       return '(' + result + ')';

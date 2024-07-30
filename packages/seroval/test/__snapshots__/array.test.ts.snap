@@ -2,7 +2,7 @@
 
 exports[`arrays > crossSerialize > scoped > supports Arrays 1`] = `"($R=>$R[0]=[1,2,3])($R["example"])"`;
 
-exports[`arrays > crossSerialize > scoped > supports self recursion 1`] = `"($R=>$R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0])($R["example"])"`;
+exports[`arrays > crossSerialize > scoped > supports self recursion 1`] = `"($R=>($R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0]))($R["example"])"`;
 
 exports[`arrays > crossSerialize > supports Arrays 1`] = `"$R[0]=[1,2,3]"`;
 
@@ -42,7 +42,7 @@ exports[`arrays > serialize > supports self recursion 1`] = `"(h=>(h=[,,],h[1]=h
 
 exports[`arrays > serializeAsync > supports Arrays 1`] = `"Promise.resolve([1,2,3])"`;
 
-exports[`arrays > serializeAsync > supports self recursion 1`] = `"(h=>(h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)]))()"`;
+exports[`arrays > serializeAsync > supports self recursion 1`] = `"(h=>h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)])()"`;
 
 exports[`arrays > toCrossJSON > supports Arrays 1`] = `"{"t":9,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}"`;
 

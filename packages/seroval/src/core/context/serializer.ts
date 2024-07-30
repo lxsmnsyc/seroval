@@ -254,7 +254,7 @@ export default abstract class BaseSerializerContext
         parameters.length === 1
           ? parameters[0]
           : '(' + parameters.join(',') + ')';
-      return joined + '=>' + body;
+      return joined + '=>' + (body.startsWith('{') ? '(' + body + ')' : body);
     }
     return 'function(' + parameters.join(',') + '){return ' + body + '}';
   }
