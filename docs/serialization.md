@@ -104,7 +104,7 @@ console.log(crossSerialize(nodeA, { refs })); // ($R[0]={next:$R[1]={}},$R[1].pr
 console.log(crossSerialize(nodeB, { refs })); // $R[1]
 ```
 
-Take note that cross-reference scripts relies on the global array variable `$R`, which you can declare either manually, or a script via `getLocalHeaderScript`
+Take note that cross-reference scripts relies on the global array variable `$R`, which you can declare either manually, or a script via `getCrossReferenceHeader`
 
 ```js
 import { getCrossReferenceHeader } from 'seroval';
@@ -174,7 +174,7 @@ Streaming serialization allows pushing values through `Promise` instances. Howev
 
 `ReadableStream` is capable of doing so, however it's not a JS standard (`seroval` supports it through plugins). `Observable` could have been nice however [it's not a JS standard yet](https://github.com/tc39/proposal-observable)
 
-With two of the optinos not available, `seroval` provides a streaming primitive called `createStream` which is capable of buffering streaming data as well as emitting pushed data.
+With two of the options not available, `seroval` provides a streaming primitive called `createStream` which is capable of buffering streaming data as well as emitting pushed data.
 
 ```js
 import { createStream } from 'seroval';
@@ -229,7 +229,7 @@ $R[0].return("baz")
 
 ## JSON serialization
 
-The mentioned serialization metohds are ideal for server-to-client communication, however, client-to-server communication requires a sanitized data, because the medium is prone to [RCE](https://huntr.dev/bounties/63f1ff91-48f3-4886-a179-103f1ddd8ff8). `seroval` offers JSON modes as an alternative.
+The mentioned serialization methods are ideal for server-to-client communication, however, client-to-server communication requires a sanitized data, because the medium is prone to [RCE](https://huntr.dev/bounties/63f1ff91-48f3-4886-a179-103f1ddd8ff8). `seroval` offers JSON modes as an alternative.
 
 | modes | JS | JSON |
 | --- | --- | --- |
