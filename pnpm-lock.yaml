@@ -79,8 +79,8 @@ importers:
         specifier: 2.6.1
         version: 2.6.1(tslib@2.6.3)(typescript@5.5.3)
       seroval:
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.1.1
+        version: link:../seroval
       tslib:
         specifier: ^2.6.3
         version: 2.6.3
@@ -2702,10 +2702,6 @@ packages:
 
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
-
-  seroval@1.0.7:
-    resolution: {integrity: sha512-n6ZMQX5q0Vn19Zq7CIKNIo7E75gPkGCFUEqDpa8jgwpYr/vScjqnQ6H09t1uIiZ0ZSK0ypEGvrYK2bhBGWsGdw==}
-    engines: {node: '>=10'}
 
   set-blocking@2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
@@ -6011,8 +6007,6 @@ snapshots:
   serialize-javascript@6.0.2:
     dependencies:
       randombytes: 2.1.0
-
-  seroval@1.0.7: {}
 
   set-blocking@2.0.0: {}
 
