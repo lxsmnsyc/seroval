@@ -28,6 +28,6 @@ exports[`Event > toCrossJSONStream > supports Event 1`] = `"{"t":22,"i":0,"f":{"
 
 exports[`Event > toCrossJSONStream > supports Event 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":4,"s":2},{"t":25,"i":2,"s":{"type":{"t":1,"s":"example"},"options":{"t":10,"i":3,"p":{"k":["bubbles","cancelable","composed"],"v":[{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":3},"o":0}},"c":"seroval-plugins/web/Event"}]}"`;
 
-exports[`Event > toJSON > supports Event 1`] = `"{"t":{"t":25,"i":0,"s":{"type":{"t":1,"s":"example"},"options":{"t":10,"i":1,"p":{"k":["bubbles","cancelable","composed"],"v":[{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":3},"o":0}},"c":"seroval-plugins/web/Event"},"f":31,"m":[]}"`;
+exports[`Event > toJSON > supports Event 1`] = `"{"t":{"t":25,"i":0,"s":{"type":{"t":1,"s":"example"},"options":{"t":10,"i":1,"p":{"k":["bubbles","cancelable","composed"],"v":[{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":3},"o":0}},"c":"seroval-plugins/web/Event"},"f":47,"m":[]}"`;
 
-exports[`Event > toJSONAsync > supports Event 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"type":{"t":1,"s":"example"},"options":{"t":10,"i":2,"p":{"k":["bubbles","cancelable","composed"],"v":[{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":3},"o":0}},"c":"seroval-plugins/web/Event"}},"f":31,"m":[]}"`;
+exports[`Event > toJSONAsync > supports Event 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"type":{"t":1,"s":"example"},"options":{"t":10,"i":2,"p":{"k":["bubbles","cancelable","composed"],"v":[{"t":2,"s":3},{"t":2,"s":3},{"t":2,"s":3}],"s":3},"o":0}},"c":"seroval-plugins/web/Event"}},"f":47,"m":[]}"`;
