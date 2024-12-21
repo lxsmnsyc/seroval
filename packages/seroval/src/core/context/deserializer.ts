@@ -201,7 +201,7 @@ export default abstract class BaseDeserializerContext
   private deserializeTypedArray(
     node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
   ): TypedArrayValue | BigIntTypedArrayValue {
-    const construct = getTypedArrayConstructor(node.c);
+    const construct = getTypedArrayConstructor(node.c) as Int8ArrayConstructor;
     const source = this.deserialize(node.f) as ArrayBuffer;
     const result = this.assignIndexedValue(
       node.i,
