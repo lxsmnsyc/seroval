@@ -8,13 +8,16 @@ import {
   createStreamThrowNode,
   createStringNode,
 } from '../../base-primitives';
-import { SerovalNodeType } from '../../constants';
+import { NIL, SerovalNodeType } from '../../constants';
 import { FALSE_NODE, TRUE_NODE } from '../../literals';
+import { createSerovalNode } from '../../node';
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable } from '../../stream';
 import { serializeString } from '../../string';
 import type {
+  SerovalAbortSignalConstructorNode,
+  SerovalAbortSignalSyncNode,
   SerovalNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
@@ -164,23 +167,25 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       data => {
         const parsed = this.parseWithError(data);
         if (parsed) {
-          this.onParse({
-            t: SerovalNodeType.PromiseResolve,
-            i: id,
-            s: undefined,
-            l: undefined,
-            c: undefined,
-            m: undefined,
-            p: undefined,
-            e: undefined,
-            a: [
-              this.parseSpecialReference(SpecialReference.PromiseResolve),
-              parsed,
-            ],
-            f: undefined,
-            b: undefined,
-            o: undefined,
-          });
+          this.onParse(
+            createSerovalNode(
+              SerovalNodeType.PromiseResolve,
+              id,
+              NIL,
+              NIL,
+              NIL,
+              NIL,
+              NIL,
+              NIL,
+              [
+                this.parseSpecialReference(SpecialReference.PromiseResolve),
+                parsed,
+              ],
+              NIL,
+              NIL,
+              NIL,
+            ),
+          );
         }
         this.popPendingState();
       },
@@ -188,23 +193,25 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         if (this.alive) {
           const parsed = this.parseWithError(data);
           if (parsed) {
-            this.onParse({
-              t: SerovalNodeType.PromiseReject,
-              i: id,
-              s: undefined,
-              l: undefined,
-              c: undefined,
-              m: undefined,
-              p: undefined,
-              e: undefined,
-              a: [
-                this.parseSpecialReference(SpecialReference.PromiseReject),
-                parsed,
-              ],
-              f: undefined,
-              b: undefined,
-              o: undefined,
-            });
+            this.onParse(
+              createSerovalNode(
+                SerovalNodeType.PromiseReject,
+                id,
+                NIL,
+                NIL,
+                NIL,
+                NIL,
+                NIL,
+                NIL,
+                [
+                  this.parseSpecialReference(SpecialReference.PromiseReject),
+                  parsed,
+                ],
+                NIL,
+                NIL,
+                NIL,
+              ),
+            );
           }
         }
         this.popPendingState();
@@ -233,7 +240,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
         }
       }
     }
-    return undefined;
+    return NIL;
   }
 
   protected parseStream(id: number, current: Stream<unknown>): SerovalNode {
@@ -274,12 +281,57 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     return result;
   }
 
+  protected parseAbortSignal(
+    id: number,
+    current: AbortSignal,
+  ): SerovalAbortSignalConstructorNode | SerovalAbortSignalSyncNode {
+    if (current.aborted) {
+      return this.parseAbortSignalSync(id, current);
+    }
+
+    this.pushPendingState();
+
+    current.addEventListener(
+      'abort',
+      () => {
+        if (this.alive) {
+          const parsed = this.parseWithError(current.reason);
+          if (parsed) {
+            this.onParse(
+              createSerovalNode(
+                SerovalNodeType.AbortSignalAbort,
+                id,
+                NIL,
+                NIL,
+                NIL,
+                NIL,
+                NIL,
+                NIL,
+                [
+                  this.parseSpecialReference(SpecialReference.AbortSignalAbort),
+                  parsed,
+                ],
+                NIL,
+                NIL,
+                NIL,
+              ),
+            );
+          }
+        }
+        this.popPendingState();
+      },
+      { once: true },
+    );
+
+    return this.createAbortSignalConstructorNode(id);
+  }
+
   private parseWithError<T>(current: T): SerovalNode | undefined {
     try {
       return this.parse(current);
     } catch (err) {
       this.onError(err);
-      return undefined;
+      return NIL;
     }
   }
 

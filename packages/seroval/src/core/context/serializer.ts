@@ -2,6 +2,7 @@ import { Feature } from '../compat';
 import {
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
+  NIL,
   SYMBOL_STRING,
   SerovalNodeType,
   SerovalObjectFlags,
@@ -15,6 +16,9 @@ import { REFERENCES_KEY } from '../keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { SpecialReference } from '../special-reference';
 import type {
+  SerovalAbortSignalAbortNode,
+  SerovalAbortSignalConstructorNode,
+  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
@@ -128,7 +132,7 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
       current = {
         t: AssignmentType.Index,
         s: item.s,
-        k: undefined,
+        k: NIL,
         v: getAssignmentExpression(current),
       } as IndexAssignment;
     } else if (item.t === AssignmentType.Set && item.s === prev.s) {
@@ -144,7 +148,7 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
       current = {
         t: AssignmentType.Add,
         s: getAssignmentExpression(current),
-        k: undefined,
+        k: NIL,
         v: item.v,
       } as AddAssignment;
     } else if (item.t === AssignmentType.Delete && item.s === prev.s) {
@@ -153,7 +157,7 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
         t: AssignmentType.Delete,
         s: getAssignmentExpression(current),
         k: item.k,
-        v: undefined,
+        v: NIL,
       } as DeleteAssignment;
     } else {
       // Different assignment, push current
@@ -177,7 +181,7 @@ function resolveAssignments(assignments: Assignment[]): string | undefined {
     }
     return result;
   }
-  return undefined;
+  return NIL;
 }
 
 const NULL_CONSTRUCTOR = 'Object.create(null)';
@@ -192,7 +196,7 @@ const OBJECT_FLAG_CONSTRUCTOR: Record<SerovalObjectFlags, string | undefined> =
     [SerovalObjectFlags.Frozen]: 'Object.freeze',
     [SerovalObjectFlags.Sealed]: 'Object.seal',
     [SerovalObjectFlags.NonExtensible]: 'Object.preventExtensions',
-    [SerovalObjectFlags.None]: undefined,
+    [SerovalObjectFlags.None]: NIL,
   };
 
 type SerovalNodeWithProperties =
@@ -331,7 +335,7 @@ export default abstract class BaseSerializerContext
     this.assignments.push({
       t: AssignmentType.Index,
       s: source,
-      k: undefined,
+      k: NIL,
       v: value,
     });
   }
@@ -340,7 +344,7 @@ export default abstract class BaseSerializerContext
     this.assignments.push({
       t: AssignmentType.Add,
       s: this.getRefParam(ref),
-      k: undefined,
+      k: NIL,
       v: value,
     });
   }
@@ -359,7 +363,7 @@ export default abstract class BaseSerializerContext
       t: AssignmentType.Delete,
       s: this.getRefParam(ref),
       k: key,
-      v: undefined,
+      v: NIL,
     });
   }
 
@@ -610,7 +614,7 @@ export default abstract class BaseSerializerContext
       this.stack.pop();
       return resolveAssignments(mainAssignments);
     }
-    return undefined;
+    return NIL;
   }
 
   protected serializeDictionary(
@@ -997,6 +1001,16 @@ export default abstract class BaseSerializerContext
             ) +
             '})',
         );
+      case SpecialReference.AbortSignalConstructor:
+        return this.createFunction(
+          ['a', 's'],
+          '((s=(a=new AbortController).signal).a=a,s)',
+        );
+      case SpecialReference.AbortSignalAbort:
+        return this.createEffectfulFunction(
+          ['s', 'r'],
+          's.a.abort(r);delete s.a',
+        );
       default:
         return '';
     }
@@ -1159,6 +1173,32 @@ export default abstract class BaseSerializerContext
     return this.getRefParam(node.i) + '.return(' + this.serialize(node.f) + ')';
   }
 
+  protected serializeAbortSignalSync(node: SerovalAbortSignalSyncNode): string {
+    return this.assignIndexedValue(
+      node.i,
+      'AbortSignal.abort(' + this.serialize(node.f) + ')',
+    );
+  }
+
+  protected serializeAbortSignalConstructor(
+    node: SerovalAbortSignalConstructorNode,
+  ): string {
+    return this.assignIndexedValue(node.i, this.getConstructor(node.f) + '()');
+  }
+
+  protected serializeAbortSignalAbort(
+    node: SerovalAbortSignalAbortNode,
+  ): string {
+    return (
+      this.getConstructor(node.a[0]) +
+      '(' +
+      this.getRefParam(node.i) +
+      ',' +
+      this.serialize(node.a[1]) +
+      ')'
+    );
+  }
+
   serialize(node: SerovalNode): string {
     try {
       switch (node.t) {
@@ -1231,6 +1271,12 @@ export default abstract class BaseSerializerContext
           return this.serializeStreamThrow(node);
         case SerovalNodeType.StreamReturn:
           return this.serializeStreamReturn(node);
+        case SerovalNodeType.AbortSignalAbort:
+          return this.serializeAbortSignalAbort(node);
+        case SerovalNodeType.AbortSignalConstructor:
+          return this.serializeAbortSignalConstructor(node);
+        case SerovalNodeType.AbortSignalSync:
+          return this.serializeAbortSignalSync(node);
         default:
           throw new SerovalUnsupportedNodeError(node);
       }

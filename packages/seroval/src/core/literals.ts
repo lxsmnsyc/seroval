@@ -1,21 +1,22 @@
-import { SerovalConstant, SerovalNodeType } from './constants';
+import { NIL, SerovalConstant, SerovalNodeType } from './constants';
+import { createSerovalNode } from './node';
 import type { SerovalConstantNode } from './types';
 
 function createConstantNode(value: SerovalConstant): SerovalConstantNode {
-  return {
-    t: SerovalNodeType.Constant,
-    i: undefined,
-    s: value,
-    l: undefined,
-    c: undefined,
-    m: undefined,
-    p: undefined,
-    e: undefined,
-    a: undefined,
-    f: undefined,
-    b: undefined,
-    o: undefined,
-  };
+  return createSerovalNode(
+    SerovalNodeType.Constant,
+    NIL,
+    value,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
 }
 
 export const TRUE_NODE = /* @__PURE__ */ createConstantNode(

@@ -1,3 +1,4 @@
+import { abortSignalToPromise } from '../../abort-signal';
 import {
   createAggregateErrorNode,
   createArrayBufferNode,
@@ -22,7 +23,7 @@ import {
   createTypedArrayNode,
 } from '../../base-primitives';
 import { Feature } from '../../compat';
-import { SerovalNodeType } from '../../constants';
+import { NIL, SerovalNodeType } from '../../constants';
 import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
 import {
   FALSE_NODE,
@@ -30,12 +31,14 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
+import { createSerovalNode } from '../../node';
 import { OpaqueReference } from '../../opaque-reference';
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable, isStream } from '../../stream';
 import { serializeString } from '../../string';
 import type {
+  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
@@ -194,7 +197,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     return createErrorNode(
       id,
       current,
-      options ? await this.parseProperties(options) : undefined,
+      options ? await this.parseProperties(options) : NIL,
     );
   }
 
@@ -206,7 +209,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     return createAggregateErrorNode(
       id,
       current,
-      options ? await this.parseProperties(options) : undefined,
+      options ? await this.parseProperties(options) : NIL,
     );
   }
 
@@ -239,20 +242,21 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     current: Promise<unknown>,
   ): Promise<SerovalPromiseNode> {
     const [status, result] = await promiseToResult(current);
-    return {
-      t: SerovalNodeType.Promise,
-      i: id,
-      s: status,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: await this.parse(result),
-      b: undefined,
-      o: undefined,
-    };
+
+    return createSerovalNode(
+      SerovalNodeType.Promise,
+      id,
+      status,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      await this.parse(result),
+      NIL,
+      NIL,
+    );
   }
 
   private async parsePlugin(
@@ -274,7 +278,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         }
       }
     }
-    return undefined;
+    return NIL;
   }
 
   private async parseStream(
@@ -332,7 +336,37 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     );
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation>
+  private async parseAbortSignalSync(
+    id: number,
+    current: AbortSignal,
+  ): Promise<SerovalAbortSignalSyncNode> {
+    return createSerovalNode(
+      SerovalNodeType.AbortSignalSync,
+      id,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      await this.parse(current.reason),
+      NIL,
+      NIL,
+    );
+  }
+
+  private async parseAbortSignal(
+    id: number,
+    current: AbortSignal,
+  ): Promise<SerovalAbortSignalSyncNode> {
+    if (!current.aborted) {
+      await abortSignalToPromise(current);
+    }
+    return this.parseAbortSignalSync(id, current);
+  }
+
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: ehh
   private async parseObject(id: number, current: object): Promise<SerovalNode> {
     if (Array.isArray(current)) {
       return this.parseArray(id, current);
@@ -357,7 +391,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           current as Record<string, unknown>,
           false,
         );
-      case undefined:
+      case NIL:
         return this.parsePlainObject(
           id,
           current as Record<string, unknown>,
@@ -406,6 +440,13 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
     const currentFeatures = this.features;
+    if (
+      currentFeatures & Feature.AbortSignal &&
+      typeof AbortSignal !== 'undefined' &&
+      currentClass === AbortSignal
+    ) {
+      return this.parseAbortSignal(id, current as unknown as AbortSignal);
+    }
     // BigInt Typed Arrays
     if (currentFeatures & Feature.BigIntTypedArray) {
       switch (currentClass) {
