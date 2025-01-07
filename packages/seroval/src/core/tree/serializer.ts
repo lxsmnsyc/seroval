@@ -4,6 +4,7 @@ import BaseSerializerContext from '../context/serializer';
 import { SerovalUnsupportedNodeError } from '../errors';
 import type { SerovalMode } from '../plugin';
 import type {
+  SerovalAbortSignalAbortNode,
   SerovalNode,
   SerovalPromiseConstructorNode,
   SerovalPromiseRejectNode,
@@ -70,6 +71,12 @@ export default class VanillaSerializerContext extends BaseSerializerContext {
   }
 
   protected serializePromiseReject(node: SerovalPromiseRejectNode): string {
+    throw new SerovalUnsupportedNodeError(node);
+  }
+
+  protected serializeAbortSignalAbort(
+    node: SerovalAbortSignalAbortNode,
+  ): string {
     throw new SerovalUnsupportedNodeError(node);
   }
 

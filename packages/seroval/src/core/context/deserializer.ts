@@ -17,6 +17,9 @@ import type { Stream } from '../stream';
 import { createStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import type {
+  SerovalAbortSignalAbortNode,
+  SerovalAbortSignalConstructorNode,
+  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
@@ -198,7 +201,7 @@ export default abstract class BaseDeserializerContext
   private deserializeTypedArray(
     node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
   ): TypedArrayValue | BigIntTypedArrayValue {
-    const construct = getTypedArrayConstructor(node.c);
+    const construct = getTypedArrayConstructor(node.c) as Int8ArrayConstructor;
     const source = this.deserialize(node.f) as ArrayBuffer;
     const result = this.assignIndexedValue(
       node.i,
@@ -369,6 +372,30 @@ export default abstract class BaseDeserializerContext
     return undefined;
   }
 
+  private deserializeAbortSignalConstructor(
+    node: SerovalAbortSignalConstructorNode,
+  ): unknown {
+    return this.assignIndexedValue(node.i, new AbortController()).signal;
+  }
+
+  private deserializeAbortSignalAbort(
+    node: SerovalAbortSignalAbortNode,
+  ): unknown {
+    const controller = this.refs.get(node.i) as AbortController | undefined;
+    assert(controller, new SerovalMissingInstanceError('AbortSignal'));
+    controller.abort(this.deserialize(node.a[1]));
+    return undefined;
+  }
+
+  private deserializeAbortSignalSync(
+    node: SerovalAbortSignalSyncNode,
+  ): unknown {
+    return this.assignIndexedValue(
+      node.i,
+      AbortSignal.abort(this.deserialize(node.f)),
+    );
+  }
+
   deserialize(node: SerovalNode): unknown {
     try {
       switch (node.t) {
@@ -438,6 +465,12 @@ export default abstract class BaseDeserializerContext
           return this.deserializeIteratorFactory(node);
         case SerovalNodeType.AsyncIteratorFactory:
           return this.deserializeAsyncIteratorFactory(node);
+        case SerovalNodeType.AbortSignalAbort:
+          return this.deserializeAbortSignalAbort(node);
+        case SerovalNodeType.AbortSignalConstructor:
+          return this.deserializeAbortSignalConstructor(node);
+        case SerovalNodeType.AbortSignalSync:
+          return this.deserializeAbortSignalSync(node);
         // case SerovalNodeType.SpecialReference:
         default:
           throw new SerovalUnsupportedNodeError(node);

@@ -1,3 +1,5 @@
+import { NIL } from "../constants";
+
 export interface Sequence {
   v: unknown[];
   t: number;
@@ -46,7 +48,7 @@ export function sequenceToIterator<T>(
         if (index > sequence.d) {
           return {
             done: true,
-            value: undefined,
+            value: NIL,
           };
         }
         const currentIndex = index++;

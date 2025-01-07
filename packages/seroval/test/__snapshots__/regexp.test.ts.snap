@@ -28,6 +28,6 @@ exports[`RegExp > toCrossJSONStream > supports RegExp 1`] = `"{"t":22,"i":0,"f":
 
 exports[`RegExp > toCrossJSONStream > supports RegExp 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":6,"i":2,"c":"[a-z0-9]+","m":"i"}]}"`;
 
-exports[`RegExp > toJSON > supports RegExp 1`] = `"{"t":{"t":6,"i":0,"c":"[a-z0-9]+","m":"i"},"f":31,"m":[]}"`;
+exports[`RegExp > toJSON > supports RegExp 1`] = `"{"t":{"t":6,"i":0,"c":"[a-z0-9]+","m":"i"},"f":47,"m":[]}"`;
 
-exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":6,"i":1,"c":"[a-z0-9]+","m":"i"}},"f":31,"m":[]}"`;
+exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":6,"i":1,"c":"[a-z0-9]+","m":"i"}},"f":47,"m":[]}"`;

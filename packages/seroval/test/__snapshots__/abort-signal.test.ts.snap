@@ -1,0 +1,65 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AbortSignal > crossSerialize > scoped > supports aborted AbortSignal 1`] = `"($R=>$R[0]=AbortSignal.abort("aborted!"))($R["example"])"`;
+
+exports[`AbortSignal > crossSerialize > scoped > supports future AbortSignal 1`] = `"($R=>$R[0]=($R[1]=(a,s)=>((s=(a=new AbortController).signal).a=a,s))())($R["example"])"`;
+
+exports[`AbortSignal > crossSerialize > supports aborted AbortSignal 1`] = `"$R[0]=AbortSignal.abort("aborted!")"`;
+
+exports[`AbortSignal > crossSerialize > supports future AbortSignal 1`] = `"$R[0]=($R[1]=(a,s)=>((s=(a=new AbortController).signal).a=a,s))()"`;
+
+exports[`AbortSignal > crossSerializeAsync > scoped > supports aborted AbortSignal 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=AbortSignal.abort("aborted!")))($R["example"])"`;
+
+exports[`AbortSignal > crossSerializeAsync > scoped > supports future AbortSignal 1`] = `"($R=>$R[0]=AbortSignal.abort("aborted!"))($R["example"])"`;
+
+exports[`AbortSignal > crossSerializeAsync > supports aborted AbortSignal 1`] = `"$R[0]=Promise.resolve($R[1]=AbortSignal.abort("aborted!"))"`;
+
+exports[`AbortSignal > crossSerializeAsync > supports future AbortSignal 1`] = `"$R[0]=AbortSignal.abort("aborted!")"`;
+
+exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+
+exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=AbortSignal.abort("aborted!")))($R["example"])"`;
+
+exports[`AbortSignal > crossSerializeStream > scoped > supports future AbortSignal 1`] = `"($R=>$R[0]=($R[1]=(a,s)=>((s=(a=new AbortController).signal).a=a,s))())($R["example"])"`;
+
+exports[`AbortSignal > crossSerializeStream > scoped > supports future AbortSignal 2`] = `"($R=>($R[2]=(s,r)=>{s.a.abort(r);delete s.a})($R[0],"aborted!"))($R["example"])"`;
+
+exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+
+exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=AbortSignal.abort("aborted!"))"`;
+
+exports[`AbortSignal > crossSerializeStream > supports future AbortSignal 1`] = `"$R[0]=($R[1]=(a,s)=>((s=(a=new AbortController).signal).a=a,s))()"`;
+
+exports[`AbortSignal > crossSerializeStream > supports future AbortSignal 2`] = `"($R[2]=(s,r)=>{s.a.abort(r);delete s.a})($R[0],"aborted!")"`;
+
+exports[`AbortSignal > serialize > supports aborted AbortSignal 1`] = `"AbortSignal.abort("aborted!")"`;
+
+exports[`AbortSignal > serialize > supports future AbortSignal 1`] = `"(h=>((a,s)=>((s=(a=new AbortController).signal).a=a,s))())()"`;
+
+exports[`AbortSignal > serializeAsync > supports aborted AbortSignal 1`] = `"Promise.resolve(AbortSignal.abort("aborted!"))"`;
+
+exports[`AbortSignal > serializeAsync > supports future AbortSignal 1`] = `"AbortSignal.abort("aborted!")"`;
+
+exports[`AbortSignal > toCrossJSON > supports aborted AbortSignal 1`] = `"{"t":37,"i":0,"f":{"t":1,"s":"aborted!"}}"`;
+
+exports[`AbortSignal > toCrossJSON > supports future AbortSignal 1`] = `"{"t":35,"i":0,"f":{"t":26,"i":1,"s":5}}"`;
+
+exports[`AbortSignal > toCrossJSONAsync > supports aborted AbortSignal 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":37,"i":1,"f":{"t":1,"s":"aborted!"}}}"`;
+
+exports[`AbortSignal > toCrossJSONAsync > supports future AbortSignal 1`] = `"{"t":37,"i":0,"f":{"t":1,"s":"aborted!"}}"`;
+
+exports[`AbortSignal > toCrossJSONStream > supports aborted AbortSignal 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+
+exports[`AbortSignal > toCrossJSONStream > supports aborted AbortSignal 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":37,"i":2,"f":{"t":1,"s":"aborted!"}}]}"`;
+
+exports[`AbortSignal > toCrossJSONStream > supports future AbortSignal 1`] = `"{"t":35,"i":0,"f":{"t":26,"i":1,"s":5}}"`;
+
+exports[`AbortSignal > toCrossJSONStream > supports future AbortSignal 2`] = `"{"t":36,"i":0,"a":[{"t":26,"i":2,"s":6},{"t":1,"s":"aborted!"}]}"`;
+
+exports[`AbortSignal > toJSON > supports aborted AbortSignal 1`] = `"{"t":{"t":37,"i":0,"f":{"t":1,"s":"aborted!"}},"f":47,"m":[]}"`;
+
+exports[`AbortSignal > toJSON > supports future AbortSignal 1`] = `"{"t":{"t":35,"i":0,"f":{"t":26,"i":1,"s":5}},"f":47,"m":[]}"`;
+
+exports[`AbortSignal > toJSONAsync > supports aborted AbortSignal 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":37,"i":1,"f":{"t":1,"s":"aborted!"}}},"f":47,"m":[]}"`;
+
+exports[`AbortSignal > toJSONAsync > supports future AbortSignal 1`] = `"{"t":{"t":37,"i":0,"f":{"t":1,"s":"aborted!"}},"f":47,"m":[]}"`;

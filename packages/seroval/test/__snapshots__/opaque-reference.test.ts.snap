@@ -44,10 +44,10 @@ exports[`OpaqueReference > toCrossJSONStream > supports OpaqueReference 1`] = `"
 
 exports[`OpaqueReference > toCrossJSONStream > supports OpaqueReference with replacement 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0}"`;
 
-exports[`OpaqueReference > toJSON > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSON > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0},"f":47,"m":[]}"`;
 
-exports[`OpaqueReference > toJSON > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSON > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0},"f":47,"m":[]}"`;
 
-exports[`OpaqueReference > toJSONAsync > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSONAsync > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0},"f":47,"m":[]}"`;
 
-exports[`OpaqueReference > toJSONAsync > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSONAsync > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0},"f":47,"m":[]}"`;

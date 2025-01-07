@@ -5,8 +5,9 @@ import {
 } from '../base-primitives';
 import { ALL_ENABLED } from '../compat';
 import type { WellKnownSymbols } from '../constants';
-import { INV_SYMBOL_REF, SerovalNodeType } from '../constants';
+import { INV_SYMBOL_REF, NIL, SerovalNodeType } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
+import { createSerovalNode } from '../node';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { hasReferenceID } from '../reference';
 import {
@@ -16,6 +17,7 @@ import {
   SpecialReference,
 } from '../special-reference';
 import type {
+  SerovalAbortSignalConstructorNode,
   SerovalAsyncIteratorFactoryNode,
   SerovalIndexedValueNode,
   SerovalIteratorFactoryNode,
@@ -151,20 +153,20 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     if (result.type === NodeType.Indexed) {
       return result.value;
     }
-    return {
-      t: SerovalNodeType.SpecialReference,
-      i: result.value,
-      s: ref,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
+    return createSerovalNode(
+      SerovalNodeType.SpecialReference,
+      result.value,
+      ref,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+    );
   }
 
   protected parseIteratorFactory():
@@ -174,20 +176,20 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     if (result.type === NodeType.Indexed) {
       return result.value;
     }
-    return {
-      t: SerovalNodeType.IteratorFactory,
-      i: result.value,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parseWellKnownSymbol(Symbol.iterator),
-      b: undefined,
-      o: undefined,
-    };
+    return createSerovalNode(
+      SerovalNodeType.IteratorFactory,
+      result.value,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      this.parseWellKnownSymbol(Symbol.iterator),
+      NIL,
+      NIL,
+    );
   }
 
   protected parseAsyncIteratorFactory():
@@ -197,23 +199,23 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     if (result.type === NodeType.Indexed) {
       return result.value;
     }
-    return {
-      t: SerovalNodeType.AsyncIteratorFactory,
-      i: result.value,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: [
+    return createSerovalNode(
+      SerovalNodeType.AsyncIteratorFactory,
+      result.value,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      [
         this.parseSpecialReference(SpecialReference.PromiseConstructor),
         this.parseWellKnownSymbol(Symbol.asyncIterator),
       ],
-      f: undefined,
-      b: undefined,
-      o: undefined,
-    };
+      NIL,
+      NIL,
+      NIL,
+    );
   }
 
   protected createObjectNode(
@@ -222,20 +224,20 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     empty: boolean,
     record: SerovalObjectRecordNode,
   ): SerovalObjectNode | SerovalNullConstructorNode {
-    return {
-      t: empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: record,
-      e: undefined,
-      a: undefined,
-      f: undefined,
-      b: undefined,
-      o: getObjectFlag(current),
-    };
+    return createSerovalNode(
+      empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+      id,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      record,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      getObjectFlag(current),
+    );
   }
 
   protected createMapNode(
@@ -244,38 +246,57 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     v: SerovalNode[],
     s: number,
   ): SerovalMapNode {
-    return {
-      t: SerovalNodeType.Map,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: { k, v, s },
-      a: undefined,
-      f: this.parseSpecialReference(SpecialReference.MapSentinel),
-      b: undefined,
-      o: undefined,
-    };
+    return createSerovalNode(
+      SerovalNodeType.Map,
+      id,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      { k, v, s },
+      NIL,
+      this.parseSpecialReference(SpecialReference.MapSentinel),
+      NIL,
+      NIL,
+    );
   }
 
   protected createPromiseConstructorNode(
     id: number,
   ): SerovalPromiseConstructorNode {
-    return {
-      t: SerovalNodeType.PromiseConstructor,
-      i: id,
-      s: undefined,
-      l: undefined,
-      c: undefined,
-      m: undefined,
-      p: undefined,
-      e: undefined,
-      a: undefined,
-      f: this.parseSpecialReference(SpecialReference.PromiseConstructor),
-      b: undefined,
-      o: undefined,
-    };
+    return createSerovalNode(
+      SerovalNodeType.PromiseConstructor,
+      id,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      this.parseSpecialReference(SpecialReference.PromiseConstructor),
+      NIL,
+      NIL,
+    );
+  }
+
+  protected createAbortSignalConstructorNode(
+    id: number,
+  ): SerovalAbortSignalConstructorNode {
+    return createSerovalNode(
+      SerovalNodeType.AbortSignalConstructor,
+      id,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      NIL,
+      this.parseSpecialReference(SpecialReference.AbortSignalConstructor),
+      NIL,
+      NIL,
+    );
   }
 }

@@ -10,6 +10,7 @@ export const enum Feature {
   ErrorPrototypeStack = 0x04,
   ObjectAssign = 0x08,
   BigIntTypedArray = 0x10,
+  AbortSignal = 0x20,
 }
 
-export const ALL_ENABLED = 0x1f;
+export const ALL_ENABLED = 0x2f;

@@ -45,6 +45,9 @@ export const enum SerovalNodeType {
   StreamNext = 32,
   StreamThrow = 33,
   StreamReturn = 34,
+  AbortSignalConstructor = 35,
+  AbortSignalAbort = 36,
+  AbortSignalSync = 37,
 }
 
 export const enum SerovalObjectFlags {
@@ -181,3 +184,5 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
     [ErrorConstructorTag.TypeError]: TypeError,
     [ErrorConstructorTag.URIError]: URIError,
   };
+
+export const NIL = undefined;
