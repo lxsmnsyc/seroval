@@ -426,7 +426,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         case 'symbol':
           return this.parseWellKnownSymbol(current);
         case 'function': {
-          return this.parseFunction(current as unknown);
+          return this.parseFunction(current);
         }
         default:
           throw new SerovalUnsupportedTypeError(current);

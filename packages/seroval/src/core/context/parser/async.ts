@@ -64,7 +64,7 @@ import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from '../../utils/typed-array';
-import { BaseParserContext } from '../parser';
+import { BaseParserContext, ParserNodeType } from '../parser';
 
 type ObjectLikeNode =
   | SerovalObjectNode
@@ -480,6 +480,18 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     throw new SerovalUnsupportedTypeError(current);
   }
 
+  protected async parseFunction(current: unknown): Promise<SerovalNode> {
+    const ref = this.getReference(current);
+    if (ref.type !== ParserNodeType.Fresh) {
+      return ref.value;
+    }
+    const plugin = await this.parsePlugin(ref.value, current);
+    if (plugin) {
+      return plugin;
+    }
+    throw new SerovalUnsupportedTypeError(current);
+  }
+
   async parse<T>(current: T): Promise<SerovalNode> {
     try {
       switch (typeof current) {
@@ -505,7 +517,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         case 'symbol':
           return this.parseWellKnownSymbol(current);
         case 'function':
-          return this.parseFunction(current as (...args: unknown[]) => unknown);
+          return this.parseFunction(current);
         default:
           throw new SerovalUnsupportedTypeError(current);
       }
