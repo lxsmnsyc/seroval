@@ -60,7 +60,7 @@ import type {
   TypedArrayValue,
 } from '../../utils/typed-array';
 import type { BaseParserContextOptions } from '../parser';
-import { BaseParserContext } from '../parser';
+import { BaseParserContext, ParserNodeType } from '../parser';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
@@ -389,6 +389,18 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     throw new SerovalUnsupportedTypeError(current);
   }
 
+  protected parseFunction(current: unknown): SerovalNode {
+    const ref = this.getReference(current);
+    if (ref.type !== ParserNodeType.Fresh) {
+      return ref.value;
+    }
+    const plugin = this.parsePlugin(ref.value, current);
+    if (plugin) {
+      return plugin;
+    }
+    throw new SerovalUnsupportedTypeError(current);
+  }
+
   parse<T>(current: T): SerovalNode {
     try {
       switch (typeof current) {
@@ -405,7 +417,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         case 'object': {
           if (current) {
             const ref = this.getReference(current);
-            return ref.type === 0
+            return ref.type === ParserNodeType.Fresh
               ? this.parseObject(ref.value, current as object)
               : ref.value;
           }
@@ -413,8 +425,9 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
         }
         case 'symbol':
           return this.parseWellKnownSymbol(current);
-        case 'function':
-          return this.parseFunction(current as (...args: unknown[]) => unknown);
+        case 'function': {
+          return this.parseFunction(current as unknown);
+        }
         default:
           throw new SerovalUnsupportedTypeError(current);
       }
