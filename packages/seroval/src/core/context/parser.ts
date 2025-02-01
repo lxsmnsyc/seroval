@@ -39,24 +39,24 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
   refs?: Map<unknown, number>;
 }
 
-const enum NodeType {
+export const enum ParserNodeType {
   Fresh = 0,
   Indexed = 1,
   Referenced = 2,
 }
 
-interface FreshNode {
-  type: NodeType.Fresh;
+export interface FreshNode {
+  type: ParserNodeType.Fresh;
   value: number;
 }
 
-interface IndexedNode {
-  type: NodeType.Indexed;
+export interface IndexedNode {
+  type: ParserNodeType.Indexed;
   value: SerovalIndexedValueNode;
 }
 
-interface ReferencedNode {
-  type: NodeType.Referenced;
+export interface ReferencedNode {
+  type: ParserNodeType.Referenced;
   value: SerovalReferenceNode;
 }
 
@@ -92,54 +92,37 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     if (registeredId != null) {
       this.markRef(registeredId);
       return {
-        type: NodeType.Indexed,
+        type: ParserNodeType.Indexed,
         value: createIndexedValueNode(registeredId),
       };
     }
     const id = this.refs.size;
     this.refs.set(current, id);
     return {
-      type: NodeType.Fresh,
+      type: ParserNodeType.Fresh,
       value: id,
     };
   }
 
   protected getReference<T>(current: T): ObjectNode {
     const indexed = this.getIndexedValue(current);
-    if (indexed.type === NodeType.Indexed) {
+    if (indexed.type === ParserNodeType.Indexed) {
       return indexed;
     }
     if (hasReferenceID(current)) {
       return {
-        type: NodeType.Referenced,
+        type: ParserNodeType.Referenced,
         value: createReferenceNode(indexed.value, current),
       };
     }
     return indexed;
   }
 
-  protected getStrictReference<T>(
-    current: T,
-  ): SerovalIndexedValueNode | SerovalReferenceNode {
-    assert(hasReferenceID(current), new SerovalUnsupportedTypeError(current));
-    const result = this.getIndexedValue(current);
-    if (result.type === NodeType.Indexed) {
-      return result.value;
-    }
-    return createReferenceNode(result.value, current);
-  }
-
-  protected parseFunction(
-    current: (...args: unknown[]) => unknown,
-  ): SerovalNode {
-    return this.getStrictReference(current);
-  }
-
   protected parseWellKnownSymbol(
     current: symbol,
   ): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
     const ref = this.getReference(current);
-    if (ref.type !== NodeType.Fresh) {
+    if (ref.type !== ParserNodeType.Fresh) {
       return ref.value;
     }
     assert(current in INV_SYMBOL_REF, new SerovalUnsupportedTypeError(current));
@@ -150,7 +133,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     ref: SpecialReference,
   ): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
     const result = this.getIndexedValue(SPECIAL_REFS[ref]);
-    if (result.type === NodeType.Indexed) {
+    if (result.type === ParserNodeType.Indexed) {
       return result.value;
     }
     return createSerovalNode(
@@ -173,7 +156,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     | SerovalIndexedValueNode
     | SerovalIteratorFactoryNode {
     const result = this.getIndexedValue(ITERATOR);
-    if (result.type === NodeType.Indexed) {
+    if (result.type === ParserNodeType.Indexed) {
       return result.value;
     }
     return createSerovalNode(
@@ -196,7 +179,7 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     | SerovalIndexedValueNode
     | SerovalAsyncIteratorFactoryNode {
     const result = this.getIndexedValue(ASYNC_ITERATOR);
-    if (result.type === NodeType.Indexed) {
+    if (result.type === ParserNodeType.Indexed) {
       return result.value;
     }
     return createSerovalNode(

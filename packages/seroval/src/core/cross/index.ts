@@ -131,9 +131,7 @@ export function crossSerializeStream<T>(
 
   ctx.start(source);
 
-  return () => {
-    ctx.destroy();
-  };
+  return ctx.destroy.bind(ctx);
 }
 
 export type ToCrossJSONStreamOptions = CrossStreamParserContextOptions;
@@ -154,9 +152,7 @@ export function toCrossJSONStream<T>(
 
   ctx.start(source);
 
-  return () => {
-    ctx.destroy();
-  };
+  return ctx.destroy.bind(ctx);
 }
 
 export type FromCrossJSONOptions = CrossDeserializerContextOptions;

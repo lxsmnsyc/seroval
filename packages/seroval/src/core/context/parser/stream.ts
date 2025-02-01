@@ -281,6 +281,34 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     return result;
   }
 
+  protected handleAbortSignal(id: number, current: AbortSignal): void {
+    if (this.alive) {
+      const parsed = this.parseWithError(current.reason);
+      if (parsed) {
+        this.onParse(
+          createSerovalNode(
+            SerovalNodeType.AbortSignalAbort,
+            id,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            [
+              this.parseSpecialReference(SpecialReference.AbortSignalAbort),
+              parsed,
+            ],
+            NIL,
+            NIL,
+            NIL,
+          ),
+        );
+      }
+    }
+    this.popPendingState();
+  }
+
   protected parseAbortSignal(
     id: number,
     current: AbortSignal,
@@ -293,33 +321,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
 
     current.addEventListener(
       'abort',
-      () => {
-        if (this.alive) {
-          const parsed = this.parseWithError(current.reason);
-          if (parsed) {
-            this.onParse(
-              createSerovalNode(
-                SerovalNodeType.AbortSignalAbort,
-                id,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                [
-                  this.parseSpecialReference(SpecialReference.AbortSignalAbort),
-                  parsed,
-                ],
-                NIL,
-                NIL,
-                NIL,
-              ),
-            );
-          }
-        }
-        this.popPendingState();
-      },
+      this.handleAbortSignal.bind(this, id, current),
       { once: true },
     );
 
