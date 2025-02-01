@@ -1,13 +1,18 @@
 {
   "name": "seroval",
   "type": "module",
-  "version": "1.2.0",
-  "files": ["dist", "src"],
+  "version": "1.2.1",
+  "files": [
+    "dist",
+    "src"
+  ],
   "engines": {
     "node": ">=10"
   },
   "license": "MIT",
-  "keywords": ["pridepack"],
+  "keywords": [
+    "pridepack"
+  ],
   "devDependencies": {
     "@types/node": "^22.10.10",
     "@vitest/ui": "^3.0.4",
