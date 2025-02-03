@@ -25,6 +25,6 @@ const serialized = toJSON(thisIsAnIsomorphicFunction); // or any of the serializ
 thisIsAnIsomorphicFunction === fromJSON(serialized); // true
 ```
 
-> **INFO**
+> [!NOTE]
 > It can only accept objects, functions and symbols and it doesn't actually
 > serialize their values but only the string you used to identify the reference
