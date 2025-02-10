@@ -242,7 +242,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     id: number,
     _current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
-    return this.createPromiseConstructorNode(id);
+    return this.createPromiseConstructorNode(id, this.createIndex({}));
   }
 
   protected parseAbortSignalSync(

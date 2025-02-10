@@ -159,66 +159,68 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     };
   }
 
+  protected handlePromiseSuccess(id: number, data: unknown): void {
+    const parsed = this.parseWithError(data);
+    if (parsed) {
+      this.onParse(
+        createSerovalNode(
+          SerovalNodeType.PromiseSuccess,
+          id,
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          [this.parseSpecialReference(SpecialReference.PromiseSuccess), parsed],
+          NIL,
+          NIL,
+          NIL,
+        ),
+      );
+    }
+    this.popPendingState();
+  }
+
+  protected handlePromiseFailure(id: number, data: unknown): void {
+    if (this.alive) {
+      const parsed = this.parseWithError(data);
+      if (parsed) {
+        this.onParse(
+          createSerovalNode(
+            SerovalNodeType.PromiseFailure,
+            id,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            [
+              this.parseSpecialReference(SpecialReference.PromiseFailure),
+              parsed,
+            ],
+            NIL,
+            NIL,
+            NIL,
+          ),
+        );
+      }
+    }
+    this.popPendingState();
+  }
+
   protected parsePromise(
     id: number,
     current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
+    const resolver = this.createIndex({});
     current.then(
-      data => {
-        const parsed = this.parseWithError(data);
-        if (parsed) {
-          this.onParse(
-            createSerovalNode(
-              SerovalNodeType.PromiseResolve,
-              id,
-              NIL,
-              NIL,
-              NIL,
-              NIL,
-              NIL,
-              NIL,
-              [
-                this.parseSpecialReference(SpecialReference.PromiseResolve),
-                parsed,
-              ],
-              NIL,
-              NIL,
-              NIL,
-            ),
-          );
-        }
-        this.popPendingState();
-      },
-      data => {
-        if (this.alive) {
-          const parsed = this.parseWithError(data);
-          if (parsed) {
-            this.onParse(
-              createSerovalNode(
-                SerovalNodeType.PromiseReject,
-                id,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                [
-                  this.parseSpecialReference(SpecialReference.PromiseReject),
-                  parsed,
-                ],
-                NIL,
-                NIL,
-                NIL,
-              ),
-            );
-          }
-        }
-        this.popPendingState();
-      },
+      this.handlePromiseSuccess.bind(this, resolver),
+      this.handlePromiseFailure.bind(this, resolver),
     );
     this.pushPendingState();
-    return this.createPromiseConstructorNode(id);
+    return this.createPromiseConstructorNode(id, resolver);
   }
 
   protected parsePlugin(

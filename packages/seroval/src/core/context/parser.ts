@@ -87,6 +87,12 @@ export abstract class BaseParserContext implements PluginAccessOptions {
     return this.marked.has(id);
   }
 
+  protected createIndex<T>(current: T): number {
+    const id = this.refs.size;
+    this.refs.set(current, id);
+    return id;
+  }
+
   protected getIndexedValue<T>(current: T): FreshNode | IndexedNode {
     const registeredId = this.refs.get(current);
     if (registeredId != null) {
@@ -96,11 +102,9 @@ export abstract class BaseParserContext implements PluginAccessOptions {
         value: createIndexedValueNode(registeredId),
       };
     }
-    const id = this.refs.size;
-    this.refs.set(current, id);
     return {
       type: ParserNodeType.Fresh,
-      value: id,
+      value: this.createIndex(current),
     };
   }
 
@@ -247,11 +251,12 @@ export abstract class BaseParserContext implements PluginAccessOptions {
 
   protected createPromiseConstructorNode(
     id: number,
+    resolver: number,
   ): SerovalPromiseConstructorNode {
     return createSerovalNode(
       SerovalNodeType.PromiseConstructor,
       id,
-      NIL,
+      resolver,
       NIL,
       NIL,
       NIL,

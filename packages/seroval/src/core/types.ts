@@ -245,17 +245,18 @@ export interface SerovalBoxedNode extends SerovalBaseNode {
 export interface SerovalPromiseConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.PromiseConstructor;
   i: number;
+  s: number;
   f: SerovalNodeWithID;
 }
 
 export interface SerovalPromiseResolveNode extends SerovalBaseNode {
-  t: SerovalNodeType.PromiseResolve;
+  t: SerovalNodeType.PromiseSuccess;
   i: number;
   a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
 }
 
 export interface SerovalPromiseRejectNode extends SerovalBaseNode {
-  t: SerovalNodeType.PromiseReject;
+  t: SerovalNodeType.PromiseFailure;
   i: number;
   a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
 }

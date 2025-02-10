@@ -919,7 +919,11 @@ export default abstract class BaseSerializerContext
   protected serializePromiseConstructor(
     node: SerovalPromiseConstructorNode,
   ): string {
-    return this.assignIndexedValue(node.i, this.getConstructor(node.f) + '()');
+    const resolver = this.assignIndexedValue(node.s, '{p:0,s:0,f:0}');
+    return this.assignIndexedValue(
+      node.i,
+      this.getConstructor(node.f) + '(' + resolver + ')',
+    );
   }
 
   protected serializePromiseResolve(node: SerovalPromiseResolveNode): string {
@@ -950,20 +954,20 @@ export default abstract class BaseSerializerContext
         return '[]';
       case SpecialReference.PromiseConstructor:
         return this.createFunction(
-          ['s', 'f', 'p'],
-          '((p=new Promise(' +
-            this.createEffectfulFunction(['a', 'b'], 's=a,f=b') +
-            ')).s=s,p.f=f,p)',
+          ['r'],
+          '(r.p=new Promise(' +
+            this.createEffectfulFunction(['s', 'f'], 'r.s=s,r.f=f') +
+            '))',
         );
-      case SpecialReference.PromiseResolve:
+      case SpecialReference.PromiseSuccess:
         return this.createEffectfulFunction(
-          ['p', 'd'],
-          'p.s(d),p.status="success",p.value=d;delete p.s;delete p.f',
+          ['r', 'd'],
+          'r.s(d),r.p.status="success",r.p.value=d',
         );
-      case SpecialReference.PromiseReject:
+      case SpecialReference.PromiseFailure:
         return this.createEffectfulFunction(
-          ['p', 'd'],
-          'p.f(d),p.status="failure",p.value=d;delete p.s;delete p.f',
+          ['r', 'd'],
+          'r.f(d),r.p.status="failure",r.p.value=d',
         );
       case SpecialReference.StreamConstructor:
         return this.createFunction(
@@ -1247,9 +1251,9 @@ export default abstract class BaseSerializerContext
           return this.serializeBoxed(node);
         case SerovalNodeType.PromiseConstructor:
           return this.serializePromiseConstructor(node);
-        case SerovalNodeType.PromiseResolve:
+        case SerovalNodeType.PromiseSuccess:
           return this.serializePromiseResolve(node);
-        case SerovalNodeType.PromiseReject:
+        case SerovalNodeType.PromiseFailure:
           return this.serializePromiseReject(node);
         case SerovalNodeType.Plugin:
           return this.serializePlugin(node);

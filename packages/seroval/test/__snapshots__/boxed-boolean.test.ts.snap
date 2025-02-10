@@ -16,21 +16,21 @@ exports[`boxed boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Ob
 
 exports[`boxed boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Object(!1)"`;
 
-exports[`boxed boolean > crossSerializeStream > scoped > supports boxed false 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`boxed boolean > crossSerializeStream > scoped > supports boxed false 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`boxed boolean > crossSerializeStream > scoped > supports boxed false 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(!1)))($R["example"])"`;
+exports[`boxed boolean > crossSerializeStream > scoped > supports boxed false 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object(!1)))($R["example"])"`;
 
-exports[`boxed boolean > crossSerializeStream > scoped > supports boxed true 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`boxed boolean > crossSerializeStream > scoped > supports boxed true 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`boxed boolean > crossSerializeStream > scoped > supports boxed true 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(!0)))($R["example"])"`;
+exports[`boxed boolean > crossSerializeStream > scoped > supports boxed true 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object(!0)))($R["example"])"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed false 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed false 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed false 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(!1))"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed false 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object(!1))"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed true 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed true 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`boxed boolean > crossSerializeStream > supports boxed true 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object(!0))"`;
+exports[`boxed boolean > crossSerializeStream > supports boxed true 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object(!0))"`;
 
 exports[`boxed boolean > toCrossJSON > supports boolean 1`] = `"{"t":21,"i":0,"f":{"t":2,"s":2}}"`;
 
@@ -40,13 +40,13 @@ exports[`boxed boolean > toCrossJSONAsync > supports boolean 1`] = `"{"t":12,"i"
 
 exports[`boxed boolean > toCrossJSONAsync > supports boolean 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":3}}}"`;
 
-exports[`boxed boolean > toCrossJSONStream > supports boxed false 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`boxed boolean > toCrossJSONStream > supports boxed false 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`boxed boolean > toCrossJSONStream > supports boxed false 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":3}}]}"`;
+exports[`boxed boolean > toCrossJSONStream > supports boxed false 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":21,"i":3,"f":{"t":2,"s":3}}]}"`;
 
-exports[`boxed boolean > toCrossJSONStream > supports boxed true 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`boxed boolean > toCrossJSONStream > supports boxed true 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`boxed boolean > toCrossJSONStream > supports boxed true 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":2,"s":2}}]}"`;
+exports[`boxed boolean > toCrossJSONStream > supports boxed true 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":21,"i":3,"f":{"t":2,"s":2}}]}"`;
 
 exports[`boxed boolean > toJSON > supports boolean 1`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":2}},"f":47,"m":[]}"`;
 

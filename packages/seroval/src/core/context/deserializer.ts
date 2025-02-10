@@ -445,9 +445,9 @@ export default abstract class BaseDeserializerContext
           return this.deserializePlugin(node);
         case SerovalNodeType.PromiseConstructor:
           return this.deserializePromiseConstructor(node);
-        case SerovalNodeType.PromiseResolve:
+        case SerovalNodeType.PromiseSuccess:
           return this.deserializePromiseResolve(node);
-        case SerovalNodeType.PromiseReject:
+        case SerovalNodeType.PromiseFailure:
           return this.deserializePromiseReject(node);
         case SerovalNodeType.IteratorFactoryInstance:
           return this.deserializeIteratorFactoryInstance(node);
