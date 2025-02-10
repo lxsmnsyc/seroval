@@ -271,10 +271,12 @@ export abstract class BaseParserContext implements PluginAccessOptions {
 
   protected createAbortSignalConstructorNode(
     id: number,
+    controller: number,
   ): SerovalAbortSignalConstructorNode {
     return createSerovalNode(
       SerovalNodeType.AbortSignalConstructor,
       id,
+      controller,
       NIL,
       NIL,
       NIL,
@@ -282,7 +284,6 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       NIL,
       NIL,
       NIL,
-      this.parseSpecialReference(SpecialReference.AbortSignalConstructor),
       NIL,
       NIL,
     );

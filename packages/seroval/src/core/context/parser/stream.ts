@@ -297,11 +297,8 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
             NIL,
             NIL,
             NIL,
-            [
-              this.parseSpecialReference(SpecialReference.AbortSignalAbort),
-              parsed,
-            ],
             NIL,
+            parsed,
             NIL,
             NIL,
           ),
@@ -319,15 +316,17 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       return this.parseAbortSignalSync(id, current);
     }
 
+    const controller = this.createIndex({});
+
     this.pushPendingState();
 
     current.addEventListener(
       'abort',
-      this.handleAbortSignal.bind(this, id, current),
+      this.handleAbortSignal.bind(this, controller, current),
       { once: true },
     );
 
-    return this.createAbortSignalConstructorNode(id);
+    return this.createAbortSignalConstructorNode(id, controller);
   }
 
   private parseWithError<T>(current: T): SerovalNode | undefined {

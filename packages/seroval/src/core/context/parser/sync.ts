@@ -272,7 +272,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     if (current.aborted) {
       return this.parseAbortSignalSync(id, current);
     }
-    return this.createAbortSignalConstructorNode(id);
+    return this.createAbortSignalConstructorNode(id, this.createIndex({}));
   }
 
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: ehh

@@ -12,9 +12,10 @@ import {
   SerovalSerializationError,
   SerovalUnsupportedNodeError,
 } from '../errors';
+import { createEffectfulFunction, createFunction } from '../function-string';
 import { REFERENCES_KEY } from '../keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
-import { SpecialReference } from '../special-reference';
+import { serializeSpecialReferenceValue } from '../special-reference';
 import type {
   SerovalAbortSignalAbortNode,
   SerovalAbortSignalConstructorNode,
@@ -253,25 +254,11 @@ export default abstract class BaseSerializerContext
   abstract readonly mode: SerovalMode;
 
   createFunction(parameters: string[], body: string): string {
-    if (this.features & Feature.ArrowFunction) {
-      const joined =
-        parameters.length === 1
-          ? parameters[0]
-          : '(' + parameters.join(',') + ')';
-      return joined + '=>' + (body.startsWith('{') ? '(' + body + ')' : body);
-    }
-    return 'function(' + parameters.join(',') + '){return ' + body + '}';
+    return createFunction(this.features, parameters, body);
   }
 
   createEffectfulFunction(parameters: string[], body: string): string {
-    if (this.features & Feature.ArrowFunction) {
-      const joined =
-        parameters.length === 1
-          ? parameters[0]
-          : '(' + parameters.join(',') + ')';
-      return joined + '=>{' + body + '}';
-    }
-    return 'function(' + parameters.join(',') + '){' + body + '}';
+    return createEffectfulFunction(this.features, parameters, body);
   }
 
   /**
@@ -948,84 +935,12 @@ export default abstract class BaseSerializerContext
     );
   }
 
-  private serializeSpecialReferenceValue(ref: SpecialReference): string {
-    switch (ref) {
-      case SpecialReference.MapSentinel:
-        return '[]';
-      case SpecialReference.PromiseConstructor:
-        return this.createFunction(
-          ['r'],
-          '(r.p=new Promise(' +
-            this.createEffectfulFunction(['s', 'f'], 'r.s=s,r.f=f') +
-            '))',
-        );
-      case SpecialReference.PromiseSuccess:
-        return this.createEffectfulFunction(
-          ['r', 'd'],
-          'r.s(d),r.p.status="success",r.p.value=d',
-        );
-      case SpecialReference.PromiseFailure:
-        return this.createEffectfulFunction(
-          ['r', 'd'],
-          'r.f(d),r.p.status="failure",r.p.value=d',
-        );
-      case SpecialReference.StreamConstructor:
-        return this.createFunction(
-          ['b', 'a', 's', 'l', 'p', 'f', 'e', 'n'],
-          '(b=[],a=!0,s=!1,l=[],p=0,f=' +
-            this.createEffectfulFunction(
-              ['v', 'm', 'x'],
-              'for(x=0;x<p;x++)l[x]&&l[x][m](v)',
-            ) +
-            ',n=' +
-            this.createEffectfulFunction(
-              ['o', 'x', 'z', 'c'],
-              'for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))',
-            ) +
-            ',e=' +
-            this.createFunction(
-              ['o', 't'],
-              '(a&&(l[t=p++]=o),n(o),' +
-                this.createEffectfulFunction([], 'a&&(l[t]=void 0)') +
-                ')',
-            ) +
-            ',{__SEROVAL_STREAM__:!0,on:' +
-            this.createFunction(['o'], 'e(o)') +
-            ',next:' +
-            this.createEffectfulFunction(['v'], 'a&&(b.push(v),f(v,"next"))') +
-            ',throw:' +
-            this.createEffectfulFunction(
-              ['v'],
-              'a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)',
-            ) +
-            ',return:' +
-            this.createEffectfulFunction(
-              ['v'],
-              'a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)',
-            ) +
-            '})',
-        );
-      case SpecialReference.AbortSignalConstructor:
-        return this.createFunction(
-          ['a', 's'],
-          '((s=(a=new AbortController).signal).a=a,s)',
-        );
-      case SpecialReference.AbortSignalAbort:
-        return this.createEffectfulFunction(
-          ['s', 'r'],
-          's.a.abort(r);delete s.a',
-        );
-      default:
-        return '';
-    }
-  }
-
   protected serializeSpecialReference(
     node: SerovalSpecialReferenceNode,
   ): string {
     return this.assignIndexedValue(
       node.i,
-      this.serializeSpecialReferenceValue(node.s),
+      serializeSpecialReferenceValue(this.features, node.s),
     );
   }
 
@@ -1187,20 +1102,14 @@ export default abstract class BaseSerializerContext
   protected serializeAbortSignalConstructor(
     node: SerovalAbortSignalConstructorNode,
   ): string {
-    return this.assignIndexedValue(node.i, this.getConstructor(node.f) + '()');
+    const controller = this.assignIndexedValue(node.s, 'new AbortController');
+    return this.assignIndexedValue(node.i, '(' + controller + ')' + '.signal');
   }
 
   protected serializeAbortSignalAbort(
     node: SerovalAbortSignalAbortNode,
   ): string {
-    return (
-      this.getConstructor(node.a[0]) +
-      '(' +
-      this.getRefParam(node.i) +
-      ',' +
-      this.serialize(node.a[1]) +
-      ')'
-    );
+    return this.getRefParam(node.i) + '.abort(' + this.serialize(node.f) + ')';
   }
 
   serialize(node: SerovalNode): string {

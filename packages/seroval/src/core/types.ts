@@ -334,14 +334,14 @@ export interface SerovalStreamReturnNode extends SerovalBaseNode {
 export interface SerovalAbortSignalConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.AbortSignalConstructor;
   i: number;
-  // special reference to the constructor
-  f: SerovalNodeWithID;
+  // controller id
+  s: number;
 }
 
 export interface SerovalAbortSignalAbortNode extends SerovalBaseNode {
   t: SerovalNodeType.AbortSignalAbort;
   i: number;
-  a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
+  f: SerovalNode;
 }
 
 export interface SerovalAbortSignalSyncNode extends SerovalBaseNode {

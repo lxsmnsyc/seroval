@@ -383,7 +383,7 @@ export default abstract class BaseDeserializerContext
   ): unknown {
     const controller = this.refs.get(node.i) as AbortController | undefined;
     assert(controller, new SerovalMissingInstanceError('AbortSignal'));
-    controller.abort(this.deserialize(node.a[1]));
+    controller.abort(this.deserialize(node.f));
     return undefined;
   }
 
