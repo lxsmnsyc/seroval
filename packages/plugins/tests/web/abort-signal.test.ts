@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -13,13 +12,15 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
-} from '../src';
+} from 'seroval';
+import { describe, expect, it } from 'vitest';
+import { AbortSignalPlugin } from '../../web';
 
 const delayedAbortSignal = () => {
   const controller = new AbortController();
   setTimeout(() => {
     controller.abort('aborted!');
-  }, 100);
+  });
   return controller.signal;
 };
 
@@ -28,7 +29,9 @@ const SYNC_EXAMPLE = AbortSignal.abort('aborted!');
 describe('AbortSignal', () => {
   describe('serialize', () => {
     it('supports aborted AbortSignal', () => {
-      const result = serialize(SYNC_EXAMPLE);
+      const result = serialize(SYNC_EXAMPLE, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof SYNC_EXAMPLE>(result);
       expect(back).toBeInstanceOf(AbortSignal);
@@ -36,7 +39,9 @@ describe('AbortSignal', () => {
     });
     it('supports future AbortSignal', () => {
       const instance = delayedAbortSignal();
-      const result = serialize(instance);
+      const result = serialize(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof instance>(result);
       expect(back).toBeInstanceOf(AbortSignal);
@@ -44,7 +49,9 @@ describe('AbortSignal', () => {
   });
   describe('serializeAsync', () => {
     it('supports aborted AbortSignal', async () => {
-      const result = await serializeAsync(Promise.resolve(SYNC_EXAMPLE));
+      const result = await serializeAsync(Promise.resolve(SYNC_EXAMPLE), {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof SYNC_EXAMPLE>>(result);
       expect(back).toBeInstanceOf(AbortSignal);
@@ -52,7 +59,9 @@ describe('AbortSignal', () => {
     });
     it('supports future AbortSignal', async () => {
       const instance = delayedAbortSignal();
-      const result = await serializeAsync(instance);
+      const result = await serializeAsync(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof instance>>(result);
       expect(back).toBeInstanceOf(AbortSignal);
@@ -60,67 +69,97 @@ describe('AbortSignal', () => {
   });
   describe('toJSON', () => {
     it('supports aborted AbortSignal', () => {
-      const result = toJSON(SYNC_EXAMPLE);
+      const result = toJSON(SYNC_EXAMPLE, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof SYNC_EXAMPLE>(result);
+      const back = fromJSON<typeof SYNC_EXAMPLE>(result, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(back).toBeInstanceOf(AbortSignal);
       expect(back.reason).toBe(SYNC_EXAMPLE.reason);
     });
     it('supports future AbortSignal', () => {
       const instance = delayedAbortSignal();
-      const result = toJSON(instance);
+      const result = toJSON(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof instance>(result);
+      const back = fromJSON<typeof instance>(result, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(back).toBeInstanceOf(AbortSignal);
     });
   });
   describe('toJSONAsync', () => {
     it('supports aborted AbortSignal', async () => {
-      const result = await toJSONAsync(Promise.resolve(SYNC_EXAMPLE));
+      const result = await toJSONAsync(Promise.resolve(SYNC_EXAMPLE), {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromJSON<Promise<typeof SYNC_EXAMPLE>>(result);
+      const back = await fromJSON<Promise<typeof SYNC_EXAMPLE>>(result, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(back).toBeInstanceOf(AbortSignal);
       expect(back.reason).toBe(SYNC_EXAMPLE.reason);
     });
     it('supports future AbortSignal', async () => {
       const instance = delayedAbortSignal();
-      const result = await toJSONAsync(instance);
+      const result = await toJSONAsync(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = fromJSON<typeof instance>(result);
+      const back = fromJSON<typeof instance>(result, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(back).toBeInstanceOf(AbortSignal);
     });
   });
 
   describe('crossSerialize', () => {
     it('supports aborted AbortSignal', () => {
-      const result = crossSerialize(SYNC_EXAMPLE);
+      const result = crossSerialize(SYNC_EXAMPLE, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     it('supports future AbortSignal', () => {
       const instance = delayedAbortSignal();
-      const result = crossSerialize(instance);
+      const result = crossSerialize(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports aborted AbortSignal', () => {
-        const result = crossSerialize(SYNC_EXAMPLE, { scopeId: 'example' });
+        const result = crossSerialize(SYNC_EXAMPLE, {
+          scopeId: 'example',
+          plugins: [AbortSignalPlugin],
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports future AbortSignal', () => {
         const instance = delayedAbortSignal();
-        const result = crossSerialize(instance, { scopeId: 'example' });
+        const result = crossSerialize(instance, {
+          scopeId: 'example',
+          plugins: [AbortSignalPlugin],
+        });
         expect(result).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports aborted AbortSignal', async () => {
-      const result = await crossSerializeAsync(Promise.resolve(SYNC_EXAMPLE));
+      const result = await crossSerializeAsync(Promise.resolve(SYNC_EXAMPLE), {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     it('supports future AbortSignal', async () => {
       const instance = delayedAbortSignal();
-      const result = await crossSerializeAsync(instance);
+      const result = await crossSerializeAsync(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(result).toMatchSnapshot();
     });
     describe('scoped', () => {
@@ -129,6 +168,7 @@ describe('AbortSignal', () => {
           Promise.resolve(SYNC_EXAMPLE),
           {
             scopeId: 'example',
+            plugins: [AbortSignalPlugin],
           },
         );
         expect(result).toMatchSnapshot();
@@ -137,6 +177,7 @@ describe('AbortSignal', () => {
         const instance = delayedAbortSignal();
         const result = await crossSerializeAsync(instance, {
           scopeId: 'example',
+          plugins: [AbortSignalPlugin],
         });
         expect(result).toMatchSnapshot();
       });
@@ -146,6 +187,7 @@ describe('AbortSignal', () => {
     it('supports aborted AbortSignal', async () =>
       new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
+          plugins: [AbortSignalPlugin],
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -161,6 +203,7 @@ describe('AbortSignal', () => {
       new Promise<void>((resolve, reject) => {
         const instance = delayedAbortSignal();
         crossSerializeStream(instance, {
+          plugins: [AbortSignalPlugin],
           onSerialize(data) {
             expect(data).toMatchSnapshot();
           },
@@ -176,6 +219,7 @@ describe('AbortSignal', () => {
       it('supports aborted AbortSignal', async () =>
         new Promise<void>((resolve, reject) => {
           crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
+            plugins: [AbortSignalPlugin],
             scopeId: 'example',
             onSerialize(data) {
               expect(data).toMatchSnapshot();
@@ -192,6 +236,7 @@ describe('AbortSignal', () => {
         new Promise<void>((resolve, reject) => {
           const instance = delayedAbortSignal();
           crossSerializeStream(instance, {
+            plugins: [AbortSignalPlugin],
             scopeId: 'example',
             onSerialize(data) {
               expect(data).toMatchSnapshot();
@@ -208,9 +253,12 @@ describe('AbortSignal', () => {
   });
   describe('toCrossJSON', () => {
     it('supports aborted AbortSignal', () => {
-      const result = toCrossJSON(SYNC_EXAMPLE);
+      const result = toCrossJSON(SYNC_EXAMPLE, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof SYNC_EXAMPLE>(result, {
+        plugins: [AbortSignalPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(AbortSignal);
@@ -218,9 +266,12 @@ describe('AbortSignal', () => {
     });
     it('supports future AbortSignal', () => {
       const instance = delayedAbortSignal();
-      const result = toCrossJSON(instance);
+      const result = toCrossJSON(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof instance>(result, {
+        plugins: [AbortSignalPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(AbortSignal);
@@ -228,19 +279,25 @@ describe('AbortSignal', () => {
   });
   describe('toCrossJSONAsync', () => {
     it('supports aborted AbortSignal', async () => {
-      const result = await toCrossJSONAsync(Promise.resolve(SYNC_EXAMPLE));
+      const result = await toCrossJSONAsync(Promise.resolve(SYNC_EXAMPLE), {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof SYNC_EXAMPLE>>(result, {
         refs: new Map(),
+        plugins: [AbortSignalPlugin],
       });
       expect(back).toBeInstanceOf(AbortSignal);
       expect(back.reason).toBe(SYNC_EXAMPLE.reason);
     });
     it('supports future AbortSignal', async () => {
       const instance = delayedAbortSignal();
-      const result = await toCrossJSONAsync(instance);
+      const result = await toCrossJSONAsync(instance, {
+        plugins: [AbortSignalPlugin],
+      });
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof SYNC_EXAMPLE>(result, {
+        plugins: [AbortSignalPlugin],
         refs: new Map(),
       });
       expect(back).toBeInstanceOf(AbortSignal);
@@ -250,6 +307,7 @@ describe('AbortSignal', () => {
     it('supports aborted AbortSignal', async () =>
       new Promise<void>((resolve, reject) => {
         toCrossJSONStream(Promise.resolve(SYNC_EXAMPLE), {
+          plugins: [AbortSignalPlugin],
           onParse(data) {
             expect(JSON.stringify(data)).toMatchSnapshot();
           },
@@ -265,6 +323,7 @@ describe('AbortSignal', () => {
       new Promise<void>((resolve, reject) => {
         const instance = delayedAbortSignal();
         toCrossJSONStream(instance, {
+          plugins: [AbortSignalPlugin],
           onParse(data) {
             expect(JSON.stringify(data)).toMatchSnapshot();
           },
