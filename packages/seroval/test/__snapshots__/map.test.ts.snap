@@ -62,10 +62,10 @@ exports[`Map > toCrossJSONAsync > supports Map 1`] = `"{"t":12,"i":0,"s":1,"f":{
 
 exports[`Map > toCrossJSONAsync > supports self-recursion 1`] = `"{"t":8,"i":0,"e":{"k":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}],"v":[{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"s":1},"f":{"t":26,"i":3,"s":0}}"`;
 
-exports[`Map > toJSON > supports Map 1`] = `"{"t":{"t":8,"i":0,"e":{"k":[{"t":0,"s":1},{"t":0,"s":3}],"v":[{"t":0,"s":2},{"t":0,"s":4}],"s":2},"f":{"t":26,"i":1,"s":0}},"f":47,"m":[]}"`;
+exports[`Map > toJSON > supports Map 1`] = `"{"t":{"t":8,"i":0,"e":{"k":[{"t":0,"s":1},{"t":0,"s":3}],"v":[{"t":0,"s":2},{"t":0,"s":4}],"s":2},"f":{"t":26,"i":1,"s":0}},"f":31,"m":[]}"`;
 
-exports[`Map > toJSON > supports self-recursion 1`] = `"{"t":{"t":8,"i":0,"e":{"k":[{"t":4,"i":0}],"v":[{"t":4,"i":0}],"s":1},"f":{"t":26,"i":1,"s":0}},"f":47,"m":[0]}"`;
+exports[`Map > toJSON > supports self-recursion 1`] = `"{"t":{"t":8,"i":0,"e":{"k":[{"t":4,"i":0}],"v":[{"t":4,"i":0}],"s":1},"f":{"t":26,"i":1,"s":0}},"f":31,"m":[0]}"`;
 
-exports[`Map > toJSONAsync > supports Map 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":8,"i":1,"e":{"k":[{"t":0,"s":1},{"t":0,"s":3}],"v":[{"t":0,"s":2},{"t":0,"s":4}],"s":2},"f":{"t":26,"i":2,"s":0}}},"f":47,"m":[]}"`;
+exports[`Map > toJSONAsync > supports Map 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":8,"i":1,"e":{"k":[{"t":0,"s":1},{"t":0,"s":3}],"v":[{"t":0,"s":2},{"t":0,"s":4}],"s":2},"f":{"t":26,"i":2,"s":0}}},"f":31,"m":[]}"`;
 
-exports[`Map > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":8,"i":0,"e":{"k":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}],"v":[{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"s":1},"f":{"t":26,"i":3,"s":0}},"f":47,"m":[0]}"`;
+exports[`Map > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":8,"i":0,"e":{"k":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}],"v":[{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"s":1},"f":{"t":26,"i":3,"s":0}},"f":31,"m":[0]}"`;
