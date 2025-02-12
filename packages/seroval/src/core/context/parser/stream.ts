@@ -73,7 +73,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
   }
 
-  private onParse(node: SerovalNode): void {
+  onParse(node: SerovalNode): void {
     if (this.initial) {
       this.buffer.push(node);
     } else {
@@ -81,7 +81,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
   }
 
-  private onError(error: unknown): void {
+  onError(error: unknown): void {
     if (this.onErrorCallback) {
       this.onErrorCallback(error);
     } else {
@@ -95,11 +95,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
   }
 
-  private pushPendingState(): void {
+  pushPendingState(): void {
     this.pending++;
   }
 
-  private popPendingState(): void {
+  popPendingState(): void {
     if (--this.pending <= 0) {
       this.onDone();
     }
@@ -329,7 +329,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     return this.createAbortSignalConstructorNode(id, controller);
   }
 
-  private parseWithError<T>(current: T): SerovalNode | undefined {
+  parseWithError<T>(current: T): SerovalNode | undefined {
     try {
       return this.parse(current);
     } catch (err) {
