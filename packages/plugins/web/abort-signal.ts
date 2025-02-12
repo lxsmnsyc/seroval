@@ -31,6 +31,8 @@ const AbortSignalControllerPlugin = createPlugin<
 >({
   tag: 'seroval-plugins/web/AbortSignalController',
   test(value) {
+    // We didn't actually use the AbortController class
+    // directly because of some assumptions
     return value instanceof AbortSignalController;
   },
   parse: {
