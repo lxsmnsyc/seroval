@@ -331,26 +331,6 @@ export interface SerovalStreamReturnNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
-export interface SerovalAbortSignalConstructorNode extends SerovalBaseNode {
-  t: SerovalNodeType.AbortSignalConstructor;
-  i: number;
-  // controller id
-  s: number;
-}
-
-export interface SerovalAbortSignalAbortNode extends SerovalBaseNode {
-  t: SerovalNodeType.AbortSignalAbort;
-  i: number;
-  f: SerovalNode;
-}
-
-export interface SerovalAbortSignalSyncNode extends SerovalBaseNode {
-  t: SerovalNodeType.AbortSignalSync;
-  i: number;
-  // Abort reason
-  f: SerovalNode;
-}
-
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -373,8 +353,7 @@ export type SerovalSyncNode =
   | SerovalIteratorFactoryNode
   | SerovalIteratorFactoryInstanceNode
   | SerovalAsyncIteratorFactoryNode
-  | SerovalAsyncIteratorFactoryInstanceNode
-  | SerovalAbortSignalSyncNode;
+  | SerovalAsyncIteratorFactoryInstanceNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode
@@ -384,9 +363,7 @@ export type SerovalAsyncNode =
   | SerovalStreamConstructorNode
   | SerovalStreamNextNode
   | SerovalStreamThrowNode
-  | SerovalStreamReturnNode
-  | SerovalAbortSignalConstructorNode
-  | SerovalAbortSignalAbortNode;
+  | SerovalStreamReturnNode;
 
 export type SerovalNode = SerovalSyncNode | SerovalAsyncNode;
 

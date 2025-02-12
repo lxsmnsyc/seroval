@@ -16,8 +16,6 @@ import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable } from '../../stream';
 import { serializeString } from '../../string';
 import type {
-  SerovalAbortSignalConstructorNode,
-  SerovalAbortSignalSyncNode,
   SerovalNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
@@ -281,52 +279,6 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       },
     });
     return result;
-  }
-
-  protected handleAbortSignal(id: number, current: AbortSignal): void {
-    if (this.alive) {
-      const parsed = this.parseWithError(current.reason);
-      if (parsed) {
-        this.onParse(
-          createSerovalNode(
-            SerovalNodeType.AbortSignalAbort,
-            id,
-            NIL,
-            NIL,
-            NIL,
-            NIL,
-            NIL,
-            NIL,
-            NIL,
-            parsed,
-            NIL,
-            NIL,
-          ),
-        );
-      }
-    }
-    this.popPendingState();
-  }
-
-  protected parseAbortSignal(
-    id: number,
-    current: AbortSignal,
-  ): SerovalAbortSignalConstructorNode | SerovalAbortSignalSyncNode {
-    if (current.aborted) {
-      return this.parseAbortSignalSync(id, current);
-    }
-
-    const controller = this.createIndex({});
-
-    this.pushPendingState();
-
-    current.addEventListener(
-      'abort',
-      this.handleAbortSignal.bind(this, controller, current),
-      { once: true },
-    );
-
-    return this.createAbortSignalConstructorNode(id, controller);
   }
 
   parseWithError<T>(current: T): SerovalNode | undefined {

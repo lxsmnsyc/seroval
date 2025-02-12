@@ -17,7 +17,6 @@ import {
   SpecialReference,
 } from '../special-reference';
 import type {
-  SerovalAbortSignalConstructorNode,
   SerovalAsyncIteratorFactoryNode,
   SerovalIndexedValueNode,
   SerovalIteratorFactoryNode,
@@ -264,26 +263,6 @@ export abstract class BaseParserContext implements PluginAccessOptions {
       NIL,
       NIL,
       this.parseSpecialReference(SpecialReference.PromiseConstructor),
-      NIL,
-      NIL,
-    );
-  }
-
-  protected createAbortSignalConstructorNode(
-    id: number,
-    controller: number,
-  ): SerovalAbortSignalConstructorNode {
-    return createSerovalNode(
-      SerovalNodeType.AbortSignalConstructor,
-      id,
-      controller,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
       NIL,
       NIL,
     );

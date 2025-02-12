@@ -19,7 +19,7 @@ import {
   createTypedArrayNode,
 } from '../../base-primitives';
 import { Feature } from '../../compat';
-import { NIL, SerovalNodeType } from '../../constants';
+import { NIL } from '../../constants';
 import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
 import {
   FALSE_NODE,
@@ -27,15 +27,12 @@ import {
   TRUE_NODE,
   UNDEFINED_NODE,
 } from '../../literals';
-import { createSerovalNode } from '../../node';
 import { OpaqueReference } from '../../opaque-reference';
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import { createStream, isStream } from '../../stream';
 import { serializeString } from '../../string';
 import type {
-  SerovalAbortSignalConstructorNode,
-  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
@@ -245,36 +242,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     return this.createPromiseConstructorNode(id, this.createIndex({}));
   }
 
-  protected parseAbortSignalSync(
-    id: number,
-    current: AbortSignal,
-  ): SerovalAbortSignalSyncNode {
-    return createSerovalNode(
-      SerovalNodeType.AbortSignalSync,
-      id,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      this.parse(current.reason),
-      NIL,
-      NIL,
-    );
-  }
-
-  protected parseAbortSignal(
-    id: number,
-    current: AbortSignal,
-  ): SerovalAbortSignalConstructorNode | SerovalAbortSignalSyncNode {
-    if (current.aborted) {
-      return this.parseAbortSignalSync(id, current);
-    }
-    return this.createAbortSignalConstructorNode(id, this.createIndex({}));
-  }
-
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: ehh
   protected parseObject(id: number, current: object): SerovalNode {
     if (Array.isArray(current)) {
@@ -349,13 +316,6 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
     const currentFeatures = this.features;
-    if (
-      currentFeatures & Feature.AbortSignal &&
-      typeof AbortSignal !== 'undefined' &&
-      currentClass === AbortSignal
-    ) {
-      return this.parseAbortSignal(id, current as unknown as AbortSignal);
-    }
     // BigInt Typed Arrays
     if (currentFeatures & Feature.BigIntTypedArray) {
       switch (currentClass) {

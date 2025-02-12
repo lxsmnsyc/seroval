@@ -17,9 +17,6 @@ import { REFERENCES_KEY } from '../keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
 import { serializeSpecialReferenceValue } from '../special-reference';
 import type {
-  SerovalAbortSignalAbortNode,
-  SerovalAbortSignalConstructorNode,
-  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
@@ -1092,26 +1089,6 @@ export default abstract class BaseSerializerContext
     return this.getRefParam(node.i) + '.return(' + this.serialize(node.f) + ')';
   }
 
-  protected serializeAbortSignalSync(node: SerovalAbortSignalSyncNode): string {
-    return this.assignIndexedValue(
-      node.i,
-      'AbortSignal.abort(' + this.serialize(node.f) + ')',
-    );
-  }
-
-  protected serializeAbortSignalConstructor(
-    node: SerovalAbortSignalConstructorNode,
-  ): string {
-    const controller = this.assignIndexedValue(node.s, 'new AbortController');
-    return this.assignIndexedValue(node.i, '(' + controller + ')' + '.signal');
-  }
-
-  protected serializeAbortSignalAbort(
-    node: SerovalAbortSignalAbortNode,
-  ): string {
-    return this.getRefParam(node.i) + '.abort(' + this.serialize(node.f) + ')';
-  }
-
   serialize(node: SerovalNode): string {
     try {
       switch (node.t) {
@@ -1184,12 +1161,6 @@ export default abstract class BaseSerializerContext
           return this.serializeStreamThrow(node);
         case SerovalNodeType.StreamReturn:
           return this.serializeStreamReturn(node);
-        case SerovalNodeType.AbortSignalAbort:
-          return this.serializeAbortSignalAbort(node);
-        case SerovalNodeType.AbortSignalConstructor:
-          return this.serializeAbortSignalConstructor(node);
-        case SerovalNodeType.AbortSignalSync:
-          return this.serializeAbortSignalSync(node);
         default:
           throw new SerovalUnsupportedNodeError(node);
       }
