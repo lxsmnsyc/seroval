@@ -1,51 +1,45 @@
 {
   "name": "circular-dedupe to string",
-  "date": "2023-10-14T10:23:04.761Z",
+  "date": "2025-02-19T14:34:26.839Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 221044,
-      "margin": 1.83,
-      "percentSlower": 51.62
+      "ops": 218245,
+      "margin": 1.37,
+      "percentSlower": 53.13
     },
     {
       "name": "flatted",
-      "ops": 217073,
-      "margin": 0.67,
-      "percentSlower": 52.49
-    },
-    {
-      "name": "next-json",
-      "ops": 170506,
-      "margin": 0.24,
-      "percentSlower": 62.68
+      "ops": 219004,
+      "margin": 0.39,
+      "percentSlower": 52.96
     },
     {
       "name": "o-son",
-      "ops": 294296,
-      "margin": 1.28,
-      "percentSlower": 35.58
+      "ops": 291843,
+      "margin": 1.68,
+      "percentSlower": 37.32
     },
     {
       "name": "seroval",
-      "ops": 292022,
-      "margin": 0.35,
-      "percentSlower": 36.08
+      "ops": 280595,
+      "margin": 0.52,
+      "percentSlower": 39.74
     },
     {
       "name": "warp10",
-      "ops": 456874,
+      "ops": 465606,
       "margin": 0.26,
       "percentSlower": 0
     }
   ],
   "fastest": {
     "name": "warp10",
-    "index": 5
+    "index": 4
   },
   "slowest": {
-    "name": "next-json",
-    "index": 2
+    "name": "devalue",
+    "index": 0
   }
 }
