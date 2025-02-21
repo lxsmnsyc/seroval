@@ -33,8 +33,8 @@ export const enum SerovalNodeType {
   DataView = 20,
   Boxed = 21,
   PromiseConstructor = 22,
-  PromiseResolve = 23,
-  PromiseReject = 24,
+  PromiseSuccess = 23,
+  PromiseFailure = 24,
   Plugin = 25,
   SpecialReference = 26,
   IteratorFactory = 27,
@@ -45,9 +45,6 @@ export const enum SerovalNodeType {
   StreamNext = 32,
   StreamThrow = 33,
   StreamReturn = 34,
-  AbortSignalConstructor = 35,
-  AbortSignalAbort = 36,
-  AbortSignalSync = 37,
 }
 
 export const enum SerovalObjectFlags {

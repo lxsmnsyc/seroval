@@ -1,4 +1,3 @@
-import { abortSignalToPromise } from '../../abort-signal';
 import {
   createAggregateErrorNode,
   createArrayBufferNode,
@@ -38,7 +37,6 @@ import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable, isStream } from '../../stream';
 import { serializeString } from '../../string';
 import type {
-  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayNode,
   SerovalBigIntTypedArrayNode,
@@ -336,36 +334,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     );
   }
 
-  private async parseAbortSignalSync(
-    id: number,
-    current: AbortSignal,
-  ): Promise<SerovalAbortSignalSyncNode> {
-    return createSerovalNode(
-      SerovalNodeType.AbortSignalSync,
-      id,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      await this.parse(current.reason),
-      NIL,
-      NIL,
-    );
-  }
-
-  private async parseAbortSignal(
-    id: number,
-    current: AbortSignal,
-  ): Promise<SerovalAbortSignalSyncNode> {
-    if (!current.aborted) {
-      await abortSignalToPromise(current);
-    }
-    return this.parseAbortSignalSync(id, current);
-  }
-
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: ehh
   private async parseObject(id: number, current: object): Promise<SerovalNode> {
     if (Array.isArray(current)) {
@@ -440,13 +408,6 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       return this.parsePromise(id, current as unknown as Promise<unknown>);
     }
     const currentFeatures = this.features;
-    if (
-      currentFeatures & Feature.AbortSignal &&
-      typeof AbortSignal !== 'undefined' &&
-      currentClass === AbortSignal
-    ) {
-      return this.parseAbortSignal(id, current as unknown as AbortSignal);
-    }
     // BigInt Typed Arrays
     if (currentFeatures & Feature.BigIntTypedArray) {
       switch (currentClass) {
