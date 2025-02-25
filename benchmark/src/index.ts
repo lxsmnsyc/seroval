@@ -23,6 +23,7 @@ import * as serializeJS from './tools/serialize-javascript';
 import * as seroval from './tools/seroval';
 import * as superjson from './tools/superjson';
 import * as tosource from './tools/tosource';
+import * as turboStream from './tools/turbo-stream';
 import * as warp10 from './tools/warp10';
 
 const tools = [
@@ -35,6 +36,7 @@ const tools = [
   seroval,
   superjson,
   tosource,
+  turboStream,
   warp10,
 ];
 
