@@ -51,77 +51,83 @@ const fixtures = {
   'small-collection': smallCollection,
 };
 
-for (const [key, value] of Object.entries(fixtures)) {
-  const suiteName = key;
-  const getData = value as () => unknown;
+async function run() {
+  for (const [key, value] of Object.entries(fixtures)) {
+    const suiteName = key;
+    const getData = value as () => unknown;
 
-  // Skip benchmarks that couldn't properly serialize and hydrate the structure.
-  const toolsForFixture = tools.map(tool => {
-    let skip = false;
-    try {
-      skip = !util.isDeepStrictEqual(
-        tool.fromString(tool.toString(getData())),
-        getData(),
-      );
-    } catch {
-      skip = true;
-    }
+    // Skip benchmarks that couldn't properly serialize and hydrate the structure.
+    const toolsForFixture = await Promise.all(
+      tools.map(async tool => {
+        let skip = false;
+        try {
+          skip = !util.isDeepStrictEqual(
+            await tool.fromString(await tool.toString(getData())),
+            getData(),
+          );
+        } catch {
+          skip = true;
+        }
 
-    return { ...tool, utils: tool, skip };
-  });
-
-  void suite(
-    `${suiteName} to string`,
-    ...toolsForFixture.map(({ name, utils, skip }) =>
-      (skip ? add.skip : add)(name, () => {
-        utils.toString(getData());
+        return { ...tool, utils: tool, skip };
       }),
-    ),
-    cycle(),
-    complete(),
-    save({
-      file: `${suiteName} to string`,
-      folder: 'results/json',
-    }),
-    save({
-      file: `${suiteName} to string`,
-      folder: 'results/charts',
-      format: 'chart.html',
-    }),
-    save({
-      file: `${suiteName} to string`,
-      folder: 'results/csv',
-      format: 'csv',
-    }),
-  );
+    );
 
-  void suite(
-    `${suiteName} from string`,
-    ...toolsForFixture.map(({ name, utils }) =>
-      // This does not account for parse time since eval is cached.
-      // skipped for now because it is not useful until a way to avoid eval cache is found.
-      add.skip(name, () => {
-        const sampleOutput = utils.toString(getData());
-        return (): void => {
-          utils.fromString(sampleOutput);
-        };
+    void suite(
+      `${suiteName} to string`,
+      ...toolsForFixture.map(({ name, utils, skip }) =>
+        (skip ? add.skip : add)(name, () => {
+          utils.toString(getData());
+        }),
+      ),
+      cycle(),
+      complete(),
+      save({
+        file: `${suiteName} to string`,
+        folder: 'results/json',
       }),
-    ),
-    cycle(),
-    complete(),
-    save({
-      file: `${suiteName} from string`,
-      folder: 'results/json',
-    }),
-    save({
-      file: `${suiteName} from string`,
-      folder: 'results/charts',
-      format: 'chart.html',
-    }),
-    save({
-      file: `${suiteName} from string`,
-      folder: 'results/csv',
-      format: 'csv',
-    }),
-  );
+      save({
+        file: `${suiteName} to string`,
+        folder: 'results/charts',
+        format: 'chart.html',
+      }),
+      save({
+        file: `${suiteName} to string`,
+        folder: 'results/csv',
+        format: 'csv',
+      }),
+    );
+
+    void suite(
+      `${suiteName} from string`,
+      ...toolsForFixture.map(({ name, utils }) =>
+        // This does not account for parse time since eval is cached.
+        // skipped for now because it is not useful until a way to avoid eval cache is found.
+        add.skip(name, () => {
+          const sampleOutput = utils.toString(getData());
+          return (): void => {
+            utils.fromString(sampleOutput);
+          };
+        }),
+      ),
+      cycle(),
+      complete(),
+      save({
+        file: `${suiteName} from string`,
+        folder: 'results/json',
+      }),
+      save({
+        file: `${suiteName} from string`,
+        folder: 'results/charts',
+        format: 'chart.html',
+      }),
+      save({
+        file: `${suiteName} from string`,
+        folder: 'results/csv',
+        format: 'csv',
+      }),
+    );
+  }
 }
+
+void run();
