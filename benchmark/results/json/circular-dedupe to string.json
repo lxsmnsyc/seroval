@@ -1,45 +1,51 @@
 {
   "name": "circular-dedupe to string",
-  "date": "2025-02-19T14:34:26.839Z",
+  "date": "2025-02-25T08:49:00.450Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 218245,
-      "margin": 1.37,
-      "percentSlower": 53.13
+      "ops": 219823,
+      "margin": 7.46,
+      "percentSlower": 54.37
     },
     {
       "name": "flatted",
-      "ops": 219004,
-      "margin": 0.39,
-      "percentSlower": 52.96
+      "ops": 268047,
+      "margin": 2.07,
+      "percentSlower": 44.36
     },
     {
       "name": "o-son",
-      "ops": 291843,
-      "margin": 1.68,
-      "percentSlower": 37.32
+      "ops": 448549,
+      "margin": 2.02,
+      "percentSlower": 6.89
     },
     {
       "name": "seroval",
-      "ops": 280595,
-      "margin": 0.52,
-      "percentSlower": 39.74
+      "ops": 315383,
+      "margin": 0.22,
+      "percentSlower": 34.54
+    },
+    {
+      "name": "turbo-stream",
+      "ops": 87216,
+      "margin": 6.18,
+      "percentSlower": 81.9
     },
     {
       "name": "warp10",
-      "ops": 465606,
-      "margin": 0.26,
+      "ops": 481766,
+      "margin": 2.97,
       "percentSlower": 0
     }
   ],
   "fastest": {
     "name": "warp10",
-    "index": 4
+    "index": 5
   },
   "slowest": {
-    "name": "devalue",
-    "index": 0
+    "name": "turbo-stream",
+    "index": 4
   }
 }

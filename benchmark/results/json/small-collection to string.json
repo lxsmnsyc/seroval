@@ -1,67 +1,73 @@
 {
   "name": "small-collection to string",
-  "date": "2025-02-19T14:43:40.009Z",
+  "date": "2025-02-25T08:56:50.692Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 258879,
-      "margin": 1.16,
-      "percentSlower": 71.57
+      "ops": 195427,
+      "margin": 8.94,
+      "percentSlower": 83.7
     },
     {
       "name": "flatted",
-      "ops": 166521,
-      "margin": 0.34,
-      "percentSlower": 81.71
+      "ops": 146661,
+      "margin": 4.31,
+      "percentSlower": 87.77
     },
     {
       "name": "JSON",
-      "ops": 910633,
-      "margin": 1.24,
+      "ops": 1198704,
+      "margin": 2.25,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 238470,
-      "margin": 0.29,
-      "percentSlower": 73.81
+      "ops": 164459,
+      "margin": 2.59,
+      "percentSlower": 86.28
     },
     {
       "name": "o-son",
-      "ops": 297480,
-      "margin": 1.07,
-      "percentSlower": 67.33
+      "ops": 210654,
+      "margin": 1.77,
+      "percentSlower": 82.43
     },
     {
       "name": "serialize-javascript",
-      "ops": 461792,
-      "margin": 0.74,
-      "percentSlower": 49.29
+      "ops": 565628,
+      "margin": 0.53,
+      "percentSlower": 52.81
     },
     {
       "name": "seroval",
-      "ops": 332173,
-      "margin": 7.45,
-      "percentSlower": 63.52
+      "ops": 271654,
+      "margin": 0.98,
+      "percentSlower": 77.34
     },
     {
       "name": "superjson",
-      "ops": 155013,
-      "margin": 1.41,
-      "percentSlower": 82.98
+      "ops": 119836,
+      "margin": 1.07,
+      "percentSlower": 90
     },
     {
       "name": "tosource",
-      "ops": 316302,
-      "margin": 1.2,
-      "percentSlower": 65.27
+      "ops": 259888,
+      "margin": 1.01,
+      "percentSlower": 78.32
+    },
+    {
+      "name": "turbo-stream",
+      "ops": 84889,
+      "margin": 28.01,
+      "percentSlower": 92.92
     },
     {
       "name": "warp10",
-      "ops": 678162,
-      "margin": 1.17,
-      "percentSlower": 25.53
+      "ops": 801806,
+      "margin": 0.71,
+      "percentSlower": 33.11
     }
   ],
   "fastest": {
@@ -69,7 +75,7 @@
     "index": 2
   },
   "slowest": {
-    "name": "superjson",
-    "index": 7
+    "name": "turbo-stream",
+    "index": 9
   }
 }

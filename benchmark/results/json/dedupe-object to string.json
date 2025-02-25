@@ -1,57 +1,63 @@
 {
   "name": "dedupe-object to string",
-  "date": "2025-02-19T14:36:04.000Z",
+  "date": "2025-02-25T08:50:28.807Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 486960,
-      "margin": 1.42,
-      "percentSlower": 59.36
+      "ops": 378078,
+      "margin": 2.11,
+      "percentSlower": 69.1
     },
     {
       "name": "flatted",
-      "ops": 388267,
-      "margin": 15.78,
-      "percentSlower": 67.6
+      "ops": 474644,
+      "margin": 0.46,
+      "percentSlower": 61.21
     },
     {
       "name": "next-json",
-      "ops": 374738,
-      "margin": 2.03,
-      "percentSlower": 68.73
+      "ops": 296957,
+      "margin": 1.45,
+      "percentSlower": 75.73
     },
     {
       "name": "o-son",
-      "ops": 641041,
-      "margin": 1.18,
-      "percentSlower": 46.5
+      "ops": 780330,
+      "margin": 1.24,
+      "percentSlower": 36.23
     },
     {
       "name": "seroval",
-      "ops": 713945,
-      "margin": 1.3,
-      "percentSlower": 40.42
+      "ops": 524487,
+      "margin": 0.54,
+      "percentSlower": 57.14
     },
     {
       "name": "superjson",
-      "ops": 289420,
-      "margin": 0.41,
-      "percentSlower": 75.85
+      "ops": 264776,
+      "margin": 0.42,
+      "percentSlower": 78.36
+    },
+    {
+      "name": "turbo-stream",
+      "ops": 121732,
+      "margin": 25.85,
+      "percentSlower": 90.05
     },
     {
       "name": "warp10",
-      "ops": 1198274,
-      "margin": 3.83,
+      "ops": 1223643,
+      "margin": 0.48,
       "percentSlower": 0
     }
   ],
   "fastest": {
     "name": "warp10",
-    "index": 6
+    "index": 7
   },
   "slowest": {
-    "name": "superjson",
-    "index": 5
+    "name": "turbo-stream",
+    "index": 6
   }
 }
