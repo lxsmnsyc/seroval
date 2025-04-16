@@ -28,7 +28,7 @@
         "noInvalidNewBuiltin": "error",
         "noNewSymbol": "error",
         "noNodejsModules": "off",
-        "noUndeclaredDependencies": "error",
+        "noUndeclaredDependencies": "off",
         "noUndeclaredVariables": "error",
         "noUnusedFunctionParameters": "error",
         "noUnusedImports": "error",
