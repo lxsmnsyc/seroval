@@ -392,7 +392,9 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
           throw new SerovalUnsupportedTypeError(current);
       }
     } catch (error) {
-      throw new SerovalParserError(error);
+      throw error instanceof SerovalParserError
+        ? error
+        : new SerovalParserError(error);
     }
   }
 }
