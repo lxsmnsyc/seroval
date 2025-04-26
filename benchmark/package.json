@@ -7,22 +7,23 @@
     "start": "node build-src && node build/index.cjs"
   },
   "devDependencies": {
-    "@types/node": "^20.8.3",
-    "esbuild": "^0.19.4",
+    "@types/node": "^22.13.10",
+    "esbuild": "^0.25.1",
     "tslib": "^2.6.2",
-    "typescript": "^5.4.2"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "benny": "^3.7.1",
-    "devalue": "^5.0.0",
-    "flatted": "^3.3.1",
-    "next-json": "^0.3.2",
+    "devalue": "^5.1.1",
+    "flatted": "^3.3.3",
+    "next-json": "^0.4.0",
     "o-son": "^1.0.4",
     "serialize-javascript": "^6.0.2",
     "seroval": "workspace:*",
     "seroval-plugins": "workspace:*",
-    "superjson": "^2.0.0",
+    "superjson": "^2.2.2",
     "tosource": "2.0.0-alpha.3",
+    "turbo-stream": "^3.1.0",
     "warp10": "^2.1.0"
   },
   "types": "./dist/types/index.d.ts",

@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="container">
-      <canvas id="chart1696923296481" width="16" height="9"></canvas>
+      <canvas id="chart1740473590216" width="16" height="9"></canvas>
     </div>
     <script>
       const format = (num) => {
@@ -51,18 +51,18 @@
           chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
         )
       }
-      const ctx1696923296481 = document
-        .getElementById('chart1696923296481')
+      const ctx1740473590216 = document
+        .getElementById('chart1740473590216')
         .getContext('2d')
-      const chart1696923296481 = new Chart(ctx1696923296481, {
+      const chart1740473590216 = new Chart(ctx1740473590216, {
         type: 'bar',
         data: {
-          labels: ["devalue","flatted","JSON","next-json","o-son","serialize-javascript","seroval","superjson","tosource","warp10"],
+          labels: ["devalue","flatted","JSON","next-json","o-son","serialize-javascript","seroval","superjson","tosource","turbo-stream","warp10"],
           datasets: [
             {
-              data: [2332,2058,3462,1555,3178,1728,2924,910,928,5035],
-              backgroundColor: ["hsl(55.584, 85%, 55%)","hsl(49.044, 85%, 55%)","hsl(82.51200000000001, 85%, 55%)","hsl(37.056, 85%, 55%)","hsl(75.744, 85%, 55%)","hsl(41.184, 85%, 55%)","hsl(69.684, 85%, 55%)","hsl(21.683999999999994, 85%, 55%)","hsl(22.11600000000001, 85%, 55%)","hsl(120, 85%, 55%)"],
-              borderColor: ["hsl(55.584, 85%, 55%)","hsl(49.044, 85%, 55%)","hsl(82.51200000000001, 85%, 55%)","hsl(37.056, 85%, 55%)","hsl(75.744, 85%, 55%)","hsl(41.184, 85%, 55%)","hsl(69.684, 85%, 55%)","hsl(21.683999999999994, 85%, 55%)","hsl(22.11600000000001, 85%, 55%)","hsl(120, 85%, 55%)"],
+              data: [2508,2462,3811,2263,4545,1419,2828,942,1001,1964,6205],
+              backgroundColor: ["hsl(48.504, 85%, 55%)","hsl(47.616, 85%, 55%)","hsl(73.704, 85%, 55%)","hsl(43.763999999999996, 85%, 55%)","hsl(87.9, 85%, 55%)","hsl(27.444000000000006, 85%, 55%)","hsl(54.696, 85%, 55%)","hsl(18.216000000000008, 85%, 55%)","hsl(19.355999999999995, 85%, 55%)","hsl(37.980000000000004, 85%, 55%)","hsl(120, 85%, 55%)"],
+              borderColor: ["hsl(48.504, 85%, 55%)","hsl(47.616, 85%, 55%)","hsl(73.704, 85%, 55%)","hsl(43.763999999999996, 85%, 55%)","hsl(87.9, 85%, 55%)","hsl(27.444000000000006, 85%, 55%)","hsl(54.696, 85%, 55%)","hsl(18.216000000000008, 85%, 55%)","hsl(19.355999999999995, 85%, 55%)","hsl(37.980000000000004, 85%, 55%)","hsl(120, 85%, 55%)"],
               borderWidth: 2,
             },
           ],
