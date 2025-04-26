@@ -129,10 +129,11 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
 }
 
 export function createDateNode(id: number, current: Date): SerovalDateNode {
+  const timestamp = current.valueOf();
   return createSerovalNode(
     SerovalNodeType.Date,
     id,
-    current.toISOString(),
+    timestamp !== timestamp ? '' : current.toISOString(),
     NIL,
     NIL,
     NIL,
