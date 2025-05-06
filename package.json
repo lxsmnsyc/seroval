@@ -4,7 +4,7 @@
   "workspaces": ["packages/*", "benchmark"],
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "lerna": "^8.1.9",
-    "typescript": "^5.8.2"
+    "lerna": "^8.2.2",
+    "typescript": "^5.8.3"
   }
 }
