@@ -26,31 +26,31 @@ exports[`Error > crossSerializeAsync > supports other Error classes 1`] = `"$R[0
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=$R[2]($R[5]={p:0,s:0,f:0})})))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=$R[2]($R[5]={p:0,s:0,f:0})})))($R["example"])"`;
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 3`] = `"($R=>$R[6]($R[5],$R[7]=Object.assign(new Error("A"),{stack:""})))($R["example"])"`;
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""})))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""})))($R["example"])"`;
 
 exports[`Error > crossSerializeStream > scoped > supports other Error classes 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Error > crossSerializeStream > scoped > supports other Error classes 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""})))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports other Error classes 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""})))($R["example"])"`;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=$R[2]($R[5]={p:0,s:0,f:0})}))"`;
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=$R[2]($R[5]={p:0,s:0,f:0})}))"`;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"$R[6]($R[5],$R[7]=Object.assign(new Error("A"),{stack:""}))"`;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""}))"`;
+exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""}))"`;
 
 exports[`Error > crossSerializeStream > supports other Error classes 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Error > crossSerializeStream > supports other Error classes 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""}))"`;
+exports[`Error > crossSerializeStream > supports other Error classes 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""}))"`;
 
 exports[`Error > serialize > supports Error.prototype.cause 1`] = `"Object.assign(new Error("B"),{stack:"",cause:Object.assign(new Error("A"),{stack:""})})"`;
 

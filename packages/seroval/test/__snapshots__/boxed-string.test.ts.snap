@@ -18,19 +18,19 @@ exports[`boxed string > crossSerializeAsync > supports boxed strings 2`] = `"$R[
 
 exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>")))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>")))($R["example"])"`;
 
 exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object("\\"hello\\"")))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\"hello\\"")))($R["example"])"`;
 
 exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>"))"`;
+exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>"))"`;
 
 exports[`boxed string > crossSerializeStream > supports boxed strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object("\\"hello\\""))"`;
+exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\"hello\\""))"`;
 
 exports[`boxed string > serialize > supports boxed strings 1`] = `"Object("\\"hello\\"")"`;
 

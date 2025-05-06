@@ -8,13 +8,13 @@ exports[`Headers > crossSerializeAsync > scoped > supports Headers 1`] = `"($R=>
 
 exports[`Headers > crossSerializeAsync > supports Headers 1`] = `"$R[0]=Promise.resolve($R[1]=new Headers($R[2]=[$R[3]=["content-encoding","gzip"],$R[4]=["content-type","text/plain"]]))"`;
 
-exports[`Headers > crossSerializeStream > scoped > supports Headers 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`Headers > crossSerializeStream > scoped > supports Headers 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Headers > crossSerializeStream > scoped > supports Headers 2`] = `"($R=>($R[6]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Headers($R[3]=[$R[4]=["content-encoding","gzip"],$R[5]=["content-type","text/plain"]])))($R["example"])"`;
+exports[`Headers > crossSerializeStream > scoped > supports Headers 2`] = `"($R=>($R[7]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Headers($R[4]=[$R[5]=["content-encoding","gzip"],$R[6]=["content-type","text/plain"]])))($R["example"])"`;
 
-exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Headers > crossSerializeStream > supports Headers 2`] = `"($R[6]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Headers($R[3]=[$R[4]=["content-encoding","gzip"],$R[5]=["content-type","text/plain"]]))"`;
+exports[`Headers > crossSerializeStream > supports Headers 2`] = `"($R[7]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Headers($R[4]=[$R[5]=["content-encoding","gzip"],$R[6]=["content-type","text/plain"]]))"`;
 
 exports[`Headers > serialize > supports Headers 1`] = `"new Headers([["content-encoding","gzip"],["content-type","text/plain"]])"`;
 
@@ -24,10 +24,10 @@ exports[`Headers > toCrossJSON > supports Headers 1`] = `"{"t":25,"i":0,"s":{"t"
 
 exports[`Headers > toCrossJSONAsync > supports Headers 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":9,"i":2,"l":2,"a":[{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"content-encoding"},{"t":1,"s":"gzip"}],"o":0},{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"}}"`;
 
-exports[`Headers > toCrossJSONStream > supports Headers 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`Headers > toCrossJSONStream > supports Headers 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Headers > toCrossJSONStream > supports Headers 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":6,"s":2},{"t":25,"i":2,"s":{"t":9,"i":3,"l":2,"a":[{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"content-encoding"},{"t":1,"s":"gzip"}],"o":0},{"t":9,"i":5,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"}]}"`;
+exports[`Headers > toCrossJSONStream > supports Headers 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":7,"s":2},{"t":25,"i":3,"s":{"t":9,"i":4,"l":2,"a":[{"t":9,"i":5,"l":2,"a":[{"t":1,"s":"content-encoding"},{"t":1,"s":"gzip"}],"o":0},{"t":9,"i":6,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"}]}"`;
 
-exports[`Headers > toJSON > supports Headers 1`] = `"{"t":{"t":25,"i":0,"s":{"t":9,"i":1,"l":2,"a":[{"t":9,"i":2,"l":2,"a":[{"t":1,"s":"content-encoding"},{"t":1,"s":"gzip"}],"o":0},{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},"f":47,"m":[]}"`;
+exports[`Headers > toJSON > supports Headers 1`] = `"{"t":{"t":25,"i":0,"s":{"t":9,"i":1,"l":2,"a":[{"t":9,"i":2,"l":2,"a":[{"t":1,"s":"content-encoding"},{"t":1,"s":"gzip"}],"o":0},{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},"f":31,"m":[]}"`;
 
-exports[`Headers > toJSONAsync > supports Headers 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":9,"i":2,"l":2,"a":[{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"content-encoding"},{"t":1,"s":"gzip"}],"o":0},{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"}},"f":47,"m":[]}"`;
+exports[`Headers > toJSONAsync > supports Headers 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":9,"i":2,"l":2,"a":[{"t":9,"i":3,"l":2,"a":[{"t":1,"s":"content-encoding"},{"t":1,"s":"gzip"}],"o":0},{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"}},"f":31,"m":[]}"`;

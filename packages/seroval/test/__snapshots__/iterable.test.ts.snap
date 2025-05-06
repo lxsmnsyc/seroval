@@ -16,11 +16,11 @@ exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `"$R[0]=Promi
 
 exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `"($R=>($R[8]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"`;
+exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `"($R=>($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"`;
 
 exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `"($R[8]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})"`;
+exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `"($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})"`;
 
 exports[`Iterable > serialize > supports Iterables 1`] = `"((h,j)=>({title:"Hello World",[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3})}))()"`;
 

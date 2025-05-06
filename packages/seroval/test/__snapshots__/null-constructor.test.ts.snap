@@ -36,7 +36,7 @@ exports[`null-constructor > crossSerializeAsync > supports self-recursion 1`] = 
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})))($R["example"])"`;
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})),$R[2]=s=>(b,c,p,d,e,t,f)=>(b=[],c=0,p=[],d=-1,e=!1,f=(i,l)=>{for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})},s.on({next:(v,t)=>{if(t=p.shift())t.s({done:!1,value:v});b.push(v)},throw:(v,t)=>{if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)},return:(v,t)=>{if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)}}),t={[$R[1]]:()=>t,next:(i,t,v)=>{if(d===-1){return((i=c++)>=b.length)?(p.push(t=$R[3]()),t):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}}})))($R[4]=($R[5]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))())}))($R["example"])"`;
 
@@ -50,17 +50,17 @@ exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyn
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[8]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})))($R["example"])"`;
 
 exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{a:$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),b:$R[4]=$R[3]($R[5]={p:0,s:0,f:0})}))($R["example"])"`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[2],$R[0]))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0]))($R["example"])"`;
 
 exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>$R[6]($R[5],$R[0]))($R["example"])"`;
 
 exports[`null-constructor > crossSerializeStream > supports Object.create(null) 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`null-constructor > crossSerializeStream > supports Object.create(null) 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))"`;
+exports[`null-constructor > crossSerializeStream > supports Object.create(null) 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))"`;
 
 exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})),$R[2]=s=>(b,c,p,d,e,t,f)=>(b=[],c=0,p=[],d=-1,e=!1,f=(i,l)=>{for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})},s.on({next:(v,t)=>{if(t=p.shift())t.s({done:!1,value:v});b.push(v)},throw:(v,t)=>{if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)},return:(v,t)=>{if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)}}),t={[$R[1]]:()=>t,next:(i,t,v)=>{if(d===-1){return((i=c++)>=b.length)?(p.push(t=$R[3]()),t):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}}})))($R[4]=($R[5]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))())})"`;
 
@@ -74,11 +74,11 @@ exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator
 
 exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `"($R[8]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))"`;
+exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `"($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))"`;
 
 exports[`null-constructor > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=Object.assign(Object.create(null),{a:$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),b:$R[4]=$R[3]($R[5]={p:0,s:0,f:0})})"`;
 
-exports[`null-constructor > crossSerializeStream > supports self-recursion 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[2],$R[0])"`;
+exports[`null-constructor > crossSerializeStream > supports self-recursion 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0])"`;
 
 exports[`null-constructor > crossSerializeStream > supports self-recursion 3`] = `"$R[6]($R[5],$R[0])"`;
 

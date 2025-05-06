@@ -37,7 +37,7 @@ function serializePromiseSuccess(features: number): string {
   return createEffectfulFunction(
     features,
     ['r', 'd'],
-    'r.s(d),r.p.status="success",r.p.value=d',
+    'r.s(d),r.p.s=1,r.p.v=d',
   );
 }
 
@@ -45,7 +45,7 @@ function serializePromiseFailure(features: number): string {
   return createEffectfulFunction(
     features,
     ['r', 'd'],
-    'r.f(d),r.p.status="failure",r.p.value=d',
+    'r.f(d),r.p.s=2,r.p.v=d',
   );
 }
 
