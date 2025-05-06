@@ -8,13 +8,13 @@ exports[`Date > crossSerializeAsync > scoped > supports Date 1`] = `"($R=>$R[0]=
 
 exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=Promise.resolve($R[1]=new Date("2023-03-14T11:16:24.879Z"))"`;
 
-exports[`Date > crossSerializeStream > scoped > supports Date 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`Date > crossSerializeStream > scoped > supports Date 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Date > crossSerializeStream > scoped > supports Date 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Date("2023-03-14T11:16:24.879Z")))($R["example"])"`;
+exports[`Date > crossSerializeStream > scoped > supports Date 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Date("2023-03-14T11:16:24.879Z")))($R["example"])"`;
 
-exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`Date > crossSerializeStream > supports Date 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Date > crossSerializeStream > supports Date 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=new Date("2023-03-14T11:16:24.879Z"))"`;
+exports[`Date > crossSerializeStream > supports Date 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Date("2023-03-14T11:16:24.879Z"))"`;
 
 exports[`Date > serialize > supports Date 1`] = `"new Date("2023-03-14T11:16:24.879Z")"`;
 
@@ -24,10 +24,10 @@ exports[`Date > toCrossJSON > supports Date 1`] = `"{"t":5,"i":0,"s":"2023-03-14
 
 exports[`Date > toCrossJSONAsync > supports Date 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":5,"i":1,"s":"2023-03-14T11:16:24.879Z"}}"`;
 
-exports[`Date > toCrossJSONStream > supports Date 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`Date > toCrossJSONStream > supports Date 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Date > toCrossJSONStream > supports Date 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":5,"i":2,"s":"2023-03-14T11:16:24.879Z"}]}"`;
+exports[`Date > toCrossJSONStream > supports Date 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":5,"i":3,"s":"2023-03-14T11:16:24.879Z"}]}"`;
 
-exports[`Date > toJSON > supports Date 1`] = `"{"t":{"t":5,"i":0,"s":"2023-03-14T11:16:24.879Z"},"f":47,"m":[]}"`;
+exports[`Date > toJSON > supports Date 1`] = `"{"t":{"t":5,"i":0,"s":"2023-03-14T11:16:24.879Z"},"f":31,"m":[]}"`;
 
-exports[`Date > toJSONAsync > supports Date 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":5,"i":1,"s":"2023-03-14T11:16:24.879Z"}},"f":47,"m":[]}"`;
+exports[`Date > toJSONAsync > supports Date 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":5,"i":1,"s":"2023-03-14T11:16:24.879Z"}},"f":31,"m":[]}"`;

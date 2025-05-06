@@ -2,7 +2,7 @@
 
 exports[`Iterable > compat > should use function expression instead of arrow functions. 1`] = `"(function(h,j){return {title:"Hello World",[h=Symbol.iterator]:(function(s){return function(i,c,d,t){return (i=0,t={[h]:function(){return t},next:function(){if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}})}})({v:[1,2,3,void 0],t:-1,d:3})}})()"`;
 
-exports[`Iterable > compat#toJSON > should use function expression instead of arrow functions. 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0},"f":45,"m":[1]}"`;
+exports[`Iterable > compat#toJSON > should use function expression instead of arrow functions. 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0},"f":29,"m":[1]}"`;
 
 exports[`Iterable > compat#toJSON > should use function expression instead of arrow functions. 2`] = `"(function(h,j){return {title:"Hello World",[h=Symbol.iterator]:(function(s){return function(i,c,d,t){return (i=0,t={[h]:function(){return t},next:function(){if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}})}})({v:[1,2,3,void 0],t:-1,d:3})}})()"`;
 
@@ -14,13 +14,13 @@ exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `"($
 
 exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `"$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})"`;
 
-exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `"($R=>($R[7]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={title:"Hello World",[$R[3]=Symbol.iterator]:($R[4]=s=>(i,c,d,t)=>(i=0,t={[$R[3]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[5]={v:$R[6]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"`;
+exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `"($R=>($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"`;
 
-exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `"($R[7]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]={title:"Hello World",[$R[3]=Symbol.iterator]:($R[4]=s=>(i,c,d,t)=>(i=0,t={[$R[3]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[5]={v:$R[6]=[1,2,3,void 0],t:-1,d:3})})"`;
+exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `"($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})"`;
 
 exports[`Iterable > serialize > supports Iterables 1`] = `"((h,j)=>({title:"Hello World",[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3})}))()"`;
 
@@ -30,10 +30,10 @@ exports[`Iterable > toCrossJSON > supports Iterables 1`] = `"{"t":10,"i":0,"p":{
 
 exports[`Iterable > toCrossJSONAsync > supports Iterables 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":10,"i":1,"p":{"k":["title",{"t":17,"i":2,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0}}"`;
 
-exports[`Iterable > toCrossJSONStream > supports Iterables 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`Iterable > toCrossJSONStream > supports Iterables 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Iterable > toCrossJSONStream > supports Iterables 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":7,"s":2},{"t":10,"i":2,"p":{"k":["title",{"t":17,"i":3,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":4,"f":{"t":4,"i":3}},{"t":10,"i":5,"p":{"k":["v","t","d"],"v":[{"t":9,"i":6,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0}]}"`;
+exports[`Iterable > toCrossJSONStream > supports Iterables 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":8,"s":2},{"t":10,"i":3,"p":{"k":["title",{"t":17,"i":4,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":5,"f":{"t":4,"i":4}},{"t":10,"i":6,"p":{"k":["v","t","d"],"v":[{"t":9,"i":7,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0}]}"`;
 
-exports[`Iterable > toJSON > supports Iterables 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0},"f":47,"m":[1]}"`;
+exports[`Iterable > toJSON > supports Iterables 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0},"f":31,"m":[1]}"`;
 
-exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":10,"i":1,"p":{"k":["title",{"t":17,"i":2,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0}},"f":47,"m":[2]}"`;
+exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":10,"i":1,"p":{"k":["title",{"t":17,"i":2,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":2},"o":0}},"f":31,"m":[2]}"`;

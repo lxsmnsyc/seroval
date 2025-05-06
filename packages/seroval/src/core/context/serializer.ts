@@ -12,13 +12,11 @@ import {
   SerovalSerializationError,
   SerovalUnsupportedNodeError,
 } from '../errors';
+import { createEffectfulFunction, createFunction } from '../function-string';
 import { REFERENCES_KEY } from '../keys';
 import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
-import { SpecialReference } from '../special-reference';
+import { serializeSpecialReferenceValue } from '../special-reference';
 import type {
-  SerovalAbortSignalAbortNode,
-  SerovalAbortSignalConstructorNode,
-  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
@@ -253,25 +251,11 @@ export default abstract class BaseSerializerContext
   abstract readonly mode: SerovalMode;
 
   createFunction(parameters: string[], body: string): string {
-    if (this.features & Feature.ArrowFunction) {
-      const joined =
-        parameters.length === 1
-          ? parameters[0]
-          : '(' + parameters.join(',') + ')';
-      return joined + '=>' + (body.startsWith('{') ? '(' + body + ')' : body);
-    }
-    return 'function(' + parameters.join(',') + '){return ' + body + '}';
+    return createFunction(this.features, parameters, body);
   }
 
   createEffectfulFunction(parameters: string[], body: string): string {
-    if (this.features & Feature.ArrowFunction) {
-      const joined =
-        parameters.length === 1
-          ? parameters[0]
-          : '(' + parameters.join(',') + ')';
-      return joined + '=>{' + body + '}';
-    }
-    return 'function(' + parameters.join(',') + '){' + body + '}';
+    return createEffectfulFunction(this.features, parameters, body);
   }
 
   /**
@@ -919,7 +903,11 @@ export default abstract class BaseSerializerContext
   protected serializePromiseConstructor(
     node: SerovalPromiseConstructorNode,
   ): string {
-    return this.assignIndexedValue(node.i, this.getConstructor(node.f) + '()');
+    const resolver = this.assignIndexedValue(node.s, '{p:0,s:0,f:0}');
+    return this.assignIndexedValue(
+      node.i,
+      this.getConstructor(node.f) + '(' + resolver + ')',
+    );
   }
 
   protected serializePromiseResolve(node: SerovalPromiseResolveNode): string {
@@ -944,84 +932,12 @@ export default abstract class BaseSerializerContext
     );
   }
 
-  private serializeSpecialReferenceValue(ref: SpecialReference): string {
-    switch (ref) {
-      case SpecialReference.MapSentinel:
-        return '[]';
-      case SpecialReference.PromiseConstructor:
-        return this.createFunction(
-          ['s', 'f', 'p'],
-          '((p=new Promise(' +
-            this.createEffectfulFunction(['a', 'b'], 's=a,f=b') +
-            ')).s=s,p.f=f,p)',
-        );
-      case SpecialReference.PromiseResolve:
-        return this.createEffectfulFunction(
-          ['p', 'd'],
-          'p.s(d),p.status="success",p.value=d;delete p.s;delete p.f',
-        );
-      case SpecialReference.PromiseReject:
-        return this.createEffectfulFunction(
-          ['p', 'd'],
-          'p.f(d),p.status="failure",p.value=d;delete p.s;delete p.f',
-        );
-      case SpecialReference.StreamConstructor:
-        return this.createFunction(
-          ['b', 'a', 's', 'l', 'p', 'f', 'e', 'n'],
-          '(b=[],a=!0,s=!1,l=[],p=0,f=' +
-            this.createEffectfulFunction(
-              ['v', 'm', 'x'],
-              'for(x=0;x<p;x++)l[x]&&l[x][m](v)',
-            ) +
-            ',n=' +
-            this.createEffectfulFunction(
-              ['o', 'x', 'z', 'c'],
-              'for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))',
-            ) +
-            ',e=' +
-            this.createFunction(
-              ['o', 't'],
-              '(a&&(l[t=p++]=o),n(o),' +
-                this.createEffectfulFunction([], 'a&&(l[t]=void 0)') +
-                ')',
-            ) +
-            ',{__SEROVAL_STREAM__:!0,on:' +
-            this.createFunction(['o'], 'e(o)') +
-            ',next:' +
-            this.createEffectfulFunction(['v'], 'a&&(b.push(v),f(v,"next"))') +
-            ',throw:' +
-            this.createEffectfulFunction(
-              ['v'],
-              'a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)',
-            ) +
-            ',return:' +
-            this.createEffectfulFunction(
-              ['v'],
-              'a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)',
-            ) +
-            '})',
-        );
-      case SpecialReference.AbortSignalConstructor:
-        return this.createFunction(
-          ['a', 's'],
-          '((s=(a=new AbortController).signal).a=a,s)',
-        );
-      case SpecialReference.AbortSignalAbort:
-        return this.createEffectfulFunction(
-          ['s', 'r'],
-          's.a.abort(r);delete s.a',
-        );
-      default:
-        return '';
-    }
-  }
-
   protected serializeSpecialReference(
     node: SerovalSpecialReferenceNode,
   ): string {
     return this.assignIndexedValue(
       node.i,
-      this.serializeSpecialReferenceValue(node.s),
+      serializeSpecialReferenceValue(this.features, node.s),
     );
   }
 
@@ -1173,32 +1089,6 @@ export default abstract class BaseSerializerContext
     return this.getRefParam(node.i) + '.return(' + this.serialize(node.f) + ')';
   }
 
-  protected serializeAbortSignalSync(node: SerovalAbortSignalSyncNode): string {
-    return this.assignIndexedValue(
-      node.i,
-      'AbortSignal.abort(' + this.serialize(node.f) + ')',
-    );
-  }
-
-  protected serializeAbortSignalConstructor(
-    node: SerovalAbortSignalConstructorNode,
-  ): string {
-    return this.assignIndexedValue(node.i, this.getConstructor(node.f) + '()');
-  }
-
-  protected serializeAbortSignalAbort(
-    node: SerovalAbortSignalAbortNode,
-  ): string {
-    return (
-      this.getConstructor(node.a[0]) +
-      '(' +
-      this.getRefParam(node.i) +
-      ',' +
-      this.serialize(node.a[1]) +
-      ')'
-    );
-  }
-
   serialize(node: SerovalNode): string {
     try {
       switch (node.t) {
@@ -1247,9 +1137,9 @@ export default abstract class BaseSerializerContext
           return this.serializeBoxed(node);
         case SerovalNodeType.PromiseConstructor:
           return this.serializePromiseConstructor(node);
-        case SerovalNodeType.PromiseResolve:
+        case SerovalNodeType.PromiseSuccess:
           return this.serializePromiseResolve(node);
-        case SerovalNodeType.PromiseReject:
+        case SerovalNodeType.PromiseFailure:
           return this.serializePromiseReject(node);
         case SerovalNodeType.Plugin:
           return this.serializePlugin(node);
@@ -1271,12 +1161,6 @@ export default abstract class BaseSerializerContext
           return this.serializeStreamThrow(node);
         case SerovalNodeType.StreamReturn:
           return this.serializeStreamReturn(node);
-        case SerovalNodeType.AbortSignalAbort:
-          return this.serializeAbortSignalAbort(node);
-        case SerovalNodeType.AbortSignalConstructor:
-          return this.serializeAbortSignalConstructor(node);
-        case SerovalNodeType.AbortSignalSync:
-          return this.serializeAbortSignalSync(node);
         default:
           throw new SerovalUnsupportedNodeError(node);
       }

@@ -245,17 +245,18 @@ export interface SerovalBoxedNode extends SerovalBaseNode {
 export interface SerovalPromiseConstructorNode extends SerovalBaseNode {
   t: SerovalNodeType.PromiseConstructor;
   i: number;
+  s: number;
   f: SerovalNodeWithID;
 }
 
 export interface SerovalPromiseResolveNode extends SerovalBaseNode {
-  t: SerovalNodeType.PromiseResolve;
+  t: SerovalNodeType.PromiseSuccess;
   i: number;
   a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
 }
 
 export interface SerovalPromiseRejectNode extends SerovalBaseNode {
-  t: SerovalNodeType.PromiseReject;
+  t: SerovalNodeType.PromiseFailure;
   i: number;
   a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
 }
@@ -330,26 +331,6 @@ export interface SerovalStreamReturnNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
-export interface SerovalAbortSignalConstructorNode extends SerovalBaseNode {
-  t: SerovalNodeType.AbortSignalConstructor;
-  i: number;
-  // special reference to the constructor
-  f: SerovalNodeWithID;
-}
-
-export interface SerovalAbortSignalAbortNode extends SerovalBaseNode {
-  t: SerovalNodeType.AbortSignalAbort;
-  i: number;
-  a: [resolver: SerovalNodeWithID, resolved: SerovalNode];
-}
-
-export interface SerovalAbortSignalSyncNode extends SerovalBaseNode {
-  t: SerovalNodeType.AbortSignalSync;
-  i: number;
-  // Abort reason
-  f: SerovalNode;
-}
-
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -372,8 +353,7 @@ export type SerovalSyncNode =
   | SerovalIteratorFactoryNode
   | SerovalIteratorFactoryInstanceNode
   | SerovalAsyncIteratorFactoryNode
-  | SerovalAsyncIteratorFactoryInstanceNode
-  | SerovalAbortSignalSyncNode;
+  | SerovalAsyncIteratorFactoryInstanceNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode
@@ -383,9 +363,7 @@ export type SerovalAsyncNode =
   | SerovalStreamConstructorNode
   | SerovalStreamNextNode
   | SerovalStreamThrowNode
-  | SerovalStreamReturnNode
-  | SerovalAbortSignalConstructorNode
-  | SerovalAbortSignalAbortNode;
+  | SerovalStreamReturnNode;
 
 export type SerovalNode = SerovalSyncNode | SerovalAsyncNode;
 

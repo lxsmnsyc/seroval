@@ -16,21 +16,21 @@ exports[`boxed string > crossSerializeAsync > supports boxed strings 1`] = `"$R[
 
 exports[`boxed string > crossSerializeAsync > supports boxed strings 2`] = `"$R[0]=Promise.resolve($R[1]=Object("\\x3Cscript>\\x3C/script>"))"`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object("\\x3Cscript>\\x3C/script>")))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>")))($R["example"])"`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object("\\"hello\\"")))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\"hello\\"")))($R["example"])"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object("\\x3Cscript>\\x3C/script>"))"`;
+exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>"))"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed strings 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`boxed string > crossSerializeStream > supports boxed strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=Object("\\"hello\\""))"`;
+exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\"hello\\""))"`;
 
 exports[`boxed string > serialize > supports boxed strings 1`] = `"Object("\\"hello\\"")"`;
 
@@ -48,18 +48,18 @@ exports[`boxed string > toCrossJSONAsync > supports boxed strings 1`] = `"{"t":1
 
 exports[`boxed string > toCrossJSONAsync > supports boxed strings 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}]}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed sanitized strings 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":21,"i":3,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}]}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed strings 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed strings 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`boxed string > toCrossJSONStream > supports boxed strings 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":21,"i":2,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}]}"`;
+exports[`boxed string > toCrossJSONStream > supports boxed strings 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":21,"i":3,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}]}"`;
 
-exports[`boxed string > toJSON > supports boxed strings 1`] = `"{"t":{"t":21,"i":0,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":47,"m":[]}"`;
+exports[`boxed string > toJSON > supports boxed strings 1`] = `"{"t":{"t":21,"i":0,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":31,"m":[]}"`;
 
-exports[`boxed string > toJSON > supports boxed strings 2`] = `"{"t":{"t":21,"i":0,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":47,"m":[]}"`;
+exports[`boxed string > toJSON > supports boxed strings 2`] = `"{"t":{"t":21,"i":0,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":31,"m":[]}"`;
 
-exports[`boxed string > toJSONAsync > supports boxed strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}},"f":47,"m":[]}"`;
+exports[`boxed string > toJSONAsync > supports boxed strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}}},"f":31,"m":[]}"`;
 
-exports[`boxed string > toJSONAsync > supports boxed strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}},"f":47,"m":[]}"`;
+exports[`boxed string > toJSONAsync > supports boxed strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}}},"f":31,"m":[]}"`;

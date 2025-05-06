@@ -22,12 +22,14 @@ pnpm add seroval-plugins
 
 ### `seroval-plugins/web`
 
+- [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 - [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
 - [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
 - [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException)
 - [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 - [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)
 - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
+- [`ImageData`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData)
 - [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
 - [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
 - [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)

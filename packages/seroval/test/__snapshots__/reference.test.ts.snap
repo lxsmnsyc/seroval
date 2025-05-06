@@ -8,13 +8,13 @@ exports[`Reference > crossSerializeAsync > scoped > supports Reference 1`] = `"(
 
 exports[`Reference > crossSerializeAsync > supports Reference 1`] = `"$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get("example"))"`;
 
-exports[`Reference > crossSerializeStream > scoped > supports Reference 1`] = `"($R=>$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))())($R["example"])"`;
+exports[`Reference > crossSerializeStream > scoped > supports Reference 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
 
-exports[`Reference > crossSerializeStream > scoped > supports Reference 2`] = `"($R=>($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=__SEROVAL_REFS__.get("example")))($R["example"])"`;
+exports[`Reference > crossSerializeStream > scoped > supports Reference 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=__SEROVAL_REFS__.get("example")))($R["example"])"`;
 
-exports[`Reference > crossSerializeStream > supports Reference 1`] = `"$R[0]=($R[1]=(s,f,p)=>((p=new Promise((a,b)=>{s=a,f=b})).s=s,p.f=f,p))()"`;
+exports[`Reference > crossSerializeStream > supports Reference 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
 
-exports[`Reference > crossSerializeStream > supports Reference 2`] = `"($R[3]=(p,d)=>{p.s(d),p.status="success",p.value=d;delete p.s;delete p.f})($R[0],$R[2]=__SEROVAL_REFS__.get("example"))"`;
+exports[`Reference > crossSerializeStream > supports Reference 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=__SEROVAL_REFS__.get("example"))"`;
 
 exports[`Reference > serialize > supports Reference 1`] = `"__SEROVAL_REFS__.get("example")"`;
 
@@ -24,10 +24,10 @@ exports[`Reference > toCrossJSON > supports Reference 1`] = `"{"t":18,"i":0,"s":
 
 exports[`Reference > toCrossJSONAsync > supports Reference 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":18,"i":1,"s":"example"}}"`;
 
-exports[`Reference > toCrossJSONStream > supports Reference 1`] = `"{"t":22,"i":0,"f":{"t":26,"i":1,"s":1}}"`;
+exports[`Reference > toCrossJSONStream > supports Reference 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Reference > toCrossJSONStream > supports Reference 2`] = `"{"t":23,"i":0,"a":[{"t":26,"i":3,"s":2},{"t":18,"i":2,"s":"example"}]}"`;
+exports[`Reference > toCrossJSONStream > supports Reference 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":18,"i":3,"s":"example"}]}"`;
 
-exports[`Reference > toJSON > supports Reference 1`] = `"{"t":{"t":18,"i":0,"s":"example"},"f":47,"m":[]}"`;
+exports[`Reference > toJSON > supports Reference 1`] = `"{"t":{"t":18,"i":0,"s":"example"},"f":31,"m":[]}"`;
 
-exports[`Reference > toJSONAsync > supports Reference 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":18,"i":1,"s":"example"}},"f":47,"m":[]}"`;
+exports[`Reference > toJSONAsync > supports Reference 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":18,"i":1,"s":"example"}},"f":31,"m":[]}"`;

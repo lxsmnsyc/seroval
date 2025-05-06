@@ -16,8 +16,6 @@ import type { Stream } from '../../stream';
 import { createStreamFromAsyncIterable } from '../../stream';
 import { serializeString } from '../../string';
 import type {
-  SerovalAbortSignalConstructorNode,
-  SerovalAbortSignalSyncNode,
   SerovalNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
@@ -73,7 +71,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
   }
 
-  private onParse(node: SerovalNode): void {
+  onParse(node: SerovalNode): void {
     if (this.initial) {
       this.buffer.push(node);
     } else {
@@ -81,7 +79,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
   }
 
-  private onError(error: unknown): void {
+  onError(error: unknown): void {
     if (this.onErrorCallback) {
       this.onErrorCallback(error);
     } else {
@@ -95,11 +93,11 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     }
   }
 
-  private pushPendingState(): void {
+  pushPendingState(): void {
     this.pending++;
   }
 
-  private popPendingState(): void {
+  popPendingState(): void {
     if (--this.pending <= 0) {
       this.onDone();
     }
@@ -113,7 +111,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     const valueNodes: SerovalNode[] = [];
     for (let i = 0, len = entries.length; i < len; i++) {
       keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(this.parse(entries[i][1]));
+      valueNodes.push(this.parseTop(entries[i][1]));
     }
     // Check special properties, symbols in this case
     let symbol = Symbol.iterator;
@@ -122,7 +120,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       valueNodes.push(
         createIteratorFactoryInstanceNode(
           this.parseIteratorFactory(),
-          this.parse(
+          this.parseTop(
             iteratorToSequence(properties as unknown as Iterable<unknown>),
           ),
         ),
@@ -134,7 +132,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       valueNodes.push(
         createAsyncIteratorFactoryInstanceNode(
           this.parseAsyncIteratorFactory(),
-          this.parse(
+          this.parseTop(
             createStreamFromAsyncIterable(
               properties as unknown as AsyncIterable<unknown>,
             ),
@@ -159,66 +157,68 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     };
   }
 
+  protected handlePromiseSuccess(id: number, data: unknown): void {
+    const parsed = this.parseWithError(data);
+    if (parsed) {
+      this.onParse(
+        createSerovalNode(
+          SerovalNodeType.PromiseSuccess,
+          id,
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          [this.parseSpecialReference(SpecialReference.PromiseSuccess), parsed],
+          NIL,
+          NIL,
+          NIL,
+        ),
+      );
+    }
+    this.popPendingState();
+  }
+
+  protected handlePromiseFailure(id: number, data: unknown): void {
+    if (this.alive) {
+      const parsed = this.parseWithError(data);
+      if (parsed) {
+        this.onParse(
+          createSerovalNode(
+            SerovalNodeType.PromiseFailure,
+            id,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            NIL,
+            [
+              this.parseSpecialReference(SpecialReference.PromiseFailure),
+              parsed,
+            ],
+            NIL,
+            NIL,
+            NIL,
+          ),
+        );
+      }
+    }
+    this.popPendingState();
+  }
+
   protected parsePromise(
     id: number,
     current: Promise<unknown>,
   ): SerovalPromiseConstructorNode {
+    const resolver = this.createIndex({});
     current.then(
-      data => {
-        const parsed = this.parseWithError(data);
-        if (parsed) {
-          this.onParse(
-            createSerovalNode(
-              SerovalNodeType.PromiseResolve,
-              id,
-              NIL,
-              NIL,
-              NIL,
-              NIL,
-              NIL,
-              NIL,
-              [
-                this.parseSpecialReference(SpecialReference.PromiseResolve),
-                parsed,
-              ],
-              NIL,
-              NIL,
-              NIL,
-            ),
-          );
-        }
-        this.popPendingState();
-      },
-      data => {
-        if (this.alive) {
-          const parsed = this.parseWithError(data);
-          if (parsed) {
-            this.onParse(
-              createSerovalNode(
-                SerovalNodeType.PromiseReject,
-                id,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                NIL,
-                [
-                  this.parseSpecialReference(SpecialReference.PromiseReject),
-                  parsed,
-                ],
-                NIL,
-                NIL,
-                NIL,
-              ),
-            );
-          }
-        }
-        this.popPendingState();
-      },
+      this.handlePromiseSuccess.bind(this, resolver),
+      this.handlePromiseFailure.bind(this, resolver),
     );
     this.pushPendingState();
-    return this.createPromiseConstructorNode(id);
+    return this.createPromiseConstructorNode(id, resolver);
   }
 
   protected parsePlugin(
@@ -281,56 +281,9 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     return result;
   }
 
-  protected handleAbortSignal(id: number, current: AbortSignal): void {
-    if (this.alive) {
-      const parsed = this.parseWithError(current.reason);
-      if (parsed) {
-        this.onParse(
-          createSerovalNode(
-            SerovalNodeType.AbortSignalAbort,
-            id,
-            NIL,
-            NIL,
-            NIL,
-            NIL,
-            NIL,
-            NIL,
-            [
-              this.parseSpecialReference(SpecialReference.AbortSignalAbort),
-              parsed,
-            ],
-            NIL,
-            NIL,
-            NIL,
-          ),
-        );
-      }
-    }
-    this.popPendingState();
-  }
-
-  protected parseAbortSignal(
-    id: number,
-    current: AbortSignal,
-  ): SerovalAbortSignalConstructorNode | SerovalAbortSignalSyncNode {
-    if (current.aborted) {
-      return this.parseAbortSignalSync(id, current);
-    }
-
-    this.pushPendingState();
-
-    current.addEventListener(
-      'abort',
-      this.handleAbortSignal.bind(this, id, current),
-      { once: true },
-    );
-
-    return this.createAbortSignalConstructorNode(id);
-  }
-
-  private parseWithError<T>(current: T): SerovalNode | undefined {
+  parseWithError<T>(current: T): SerovalNode | undefined {
     try {
-      return this.parse(current);
+      return this.parseTop(current);
     } catch (err) {
       this.onError(err);
       return NIL;

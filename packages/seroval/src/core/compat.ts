@@ -10,7 +10,11 @@ export const enum Feature {
   ErrorPrototypeStack = 0x04,
   ObjectAssign = 0x08,
   BigIntTypedArray = 0x10,
-  AbortSignal = 0x20,
 }
 
-export const ALL_ENABLED = 0x2f;
+export const ALL_ENABLED =
+  Feature.AggregateError |
+  Feature.ArrowFunction |
+  Feature.ErrorPrototypeStack |
+  Feature.ObjectAssign |
+  Feature.BigIntTypedArray;

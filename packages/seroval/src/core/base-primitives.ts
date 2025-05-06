@@ -10,7 +10,6 @@ import { createSerovalNode } from './node';
 import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
-  SerovalAbortSignalSyncNode,
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
   SerovalArrayNode,
@@ -130,10 +129,11 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
 }
 
 export function createDateNode(id: number, current: Date): SerovalDateNode {
+  const timestamp = current.valueOf();
   return createSerovalNode(
     SerovalNodeType.Date,
     id,
-    current.toISOString(),
+    timestamp !== timestamp ? '' : current.toISOString(),
     NIL,
     NIL,
     NIL,
@@ -527,26 +527,6 @@ export function createStreamReturnNode(
 ): SerovalStreamReturnNode {
   return createSerovalNode(
     SerovalNodeType.StreamReturn,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    parsed,
-    NIL,
-    NIL,
-  );
-}
-
-export function createAbortSignalSyncNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalAbortSignalSyncNode {
-  return createSerovalNode(
-    SerovalNodeType.AbortSignalSync,
     id,
     NIL,
     NIL,
