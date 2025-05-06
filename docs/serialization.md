@@ -162,7 +162,7 @@ crossSerializeStream(Promise.resolve({ foo: 'bar'}), {
 
 // Logs:
 $R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})
-($R[4]=(r,d)=>{r.s(d),r.p.status="success",r.p.value=d})($R[1],$R[3]={foo:"bar"})
+($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]={foo:"bar"})
 ```
 
 > [!NOTE]
