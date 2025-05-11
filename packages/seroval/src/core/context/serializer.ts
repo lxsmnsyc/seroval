@@ -1008,6 +1008,15 @@ export default abstract class BaseSerializerContext
         ['s'],
         this.createFunction(
           ['b', 'c', 'p', 'd', 'e', 't', 'f'],
+          /**
+           * b = resolved values
+           * c = b size
+           * p = pending promises
+           * d = index where the resolved value stops
+           * e = if the last value is a throw
+           * t = placeholder variable
+           * f = finalize
+           */
           '(b=[],c=0,p=[],d=-1,e=!1,f=' +
             this.createEffectfulFunction(
               ['i', 'l'],
@@ -1031,13 +1040,13 @@ export default abstract class BaseSerializerContext
             '}),t={[' +
             this.getRefParam(symbol.i) +
             ']:' +
-            this.createFunction([], 't') +
+            this.createFunction([], 't.p') +
             ',next:' +
             this.createEffectfulFunction(
               ['i', 't', 'v'],
-              'if(d===-1){return((i=c++)>=b.length)?(p.push(t=' +
+              'if(d===-1){return((i=c++)>=b.length)?(' +
                 this.getRefParam(promise.i) +
-                '()),t):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
+                '(t={p:0,s:0,f:0}),p.push(t),t.p):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}',
             ) +
             '})',
         ),
