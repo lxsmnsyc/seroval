@@ -369,81 +369,85 @@ export default abstract class BaseDeserializerContext
     return undefined;
   }
 
-  deserialize(node: SerovalNode): unknown {
+  deserializeTop(node: SerovalNode): unknown {
     try {
-      switch (node.t) {
-        case SerovalNodeType.Constant:
-          return CONSTANT_VAL[node.s];
-        case SerovalNodeType.Number:
-          return node.s;
-        case SerovalNodeType.String:
-          return deserializeString(node.s);
-        case SerovalNodeType.BigInt:
-          return BigInt(node.s);
-        case SerovalNodeType.IndexedValue:
-          return this.refs.get(node.i);
-        case SerovalNodeType.Reference:
-          return this.deserializeReference(node);
-        case SerovalNodeType.Array:
-          return this.deserializeArray(node);
-        case SerovalNodeType.Object:
-        case SerovalNodeType.NullConstructor:
-          return this.deserializeObject(node);
-        case SerovalNodeType.Date:
-          return this.deserializeDate(node);
-        case SerovalNodeType.RegExp:
-          return this.deserializeRegExp(node);
-        case SerovalNodeType.Set:
-          return this.deserializeSet(node);
-        case SerovalNodeType.Map:
-          return this.deserializeMap(node);
-        case SerovalNodeType.ArrayBuffer:
-          return this.deserializeArrayBuffer(node);
-        case SerovalNodeType.BigIntTypedArray:
-        case SerovalNodeType.TypedArray:
-          return this.deserializeTypedArray(node);
-        case SerovalNodeType.DataView:
-          return this.deserializeDataView(node);
-        case SerovalNodeType.AggregateError:
-          return this.deserializeAggregateError(node);
-        case SerovalNodeType.Error:
-          return this.deserializeError(node);
-        case SerovalNodeType.Promise:
-          return this.deserializePromise(node);
-        case SerovalNodeType.WKSymbol:
-          return SYMBOL_REF[node.s];
-        case SerovalNodeType.Boxed:
-          return this.deserializeBoxed(node);
-        case SerovalNodeType.Plugin:
-          return this.deserializePlugin(node);
-        case SerovalNodeType.PromiseConstructor:
-          return this.deserializePromiseConstructor(node);
-        case SerovalNodeType.PromiseSuccess:
-          return this.deserializePromiseResolve(node);
-        case SerovalNodeType.PromiseFailure:
-          return this.deserializePromiseReject(node);
-        case SerovalNodeType.IteratorFactoryInstance:
-          return this.deserializeIteratorFactoryInstance(node);
-        case SerovalNodeType.AsyncIteratorFactoryInstance:
-          return this.deserializeAsyncIteratorFactoryInstance(node);
-        case SerovalNodeType.StreamConstructor:
-          return this.deserializeStreamConstructor(node);
-        case SerovalNodeType.StreamNext:
-          return this.deserializeStreamNext(node);
-        case SerovalNodeType.StreamThrow:
-          return this.deserializeStreamThrow(node);
-        case SerovalNodeType.StreamReturn:
-          return this.deserializeStreamReturn(node);
-        case SerovalNodeType.IteratorFactory:
-          return this.deserializeIteratorFactory(node);
-        case SerovalNodeType.AsyncIteratorFactory:
-          return this.deserializeAsyncIteratorFactory(node);
-        // case SerovalNodeType.SpecialReference:
-        default:
-          throw new SerovalUnsupportedNodeError(node);
-      }
+      return this.deserialize(node);
     } catch (error) {
       throw new SerovalDeserializationError(error);
+    }
+  }
+
+  deserialize(node: SerovalNode): unknown {
+    switch (node.t) {
+      case SerovalNodeType.Constant:
+        return CONSTANT_VAL[node.s];
+      case SerovalNodeType.Number:
+        return node.s;
+      case SerovalNodeType.String:
+        return deserializeString(node.s);
+      case SerovalNodeType.BigInt:
+        return BigInt(node.s);
+      case SerovalNodeType.IndexedValue:
+        return this.refs.get(node.i);
+      case SerovalNodeType.Reference:
+        return this.deserializeReference(node);
+      case SerovalNodeType.Array:
+        return this.deserializeArray(node);
+      case SerovalNodeType.Object:
+      case SerovalNodeType.NullConstructor:
+        return this.deserializeObject(node);
+      case SerovalNodeType.Date:
+        return this.deserializeDate(node);
+      case SerovalNodeType.RegExp:
+        return this.deserializeRegExp(node);
+      case SerovalNodeType.Set:
+        return this.deserializeSet(node);
+      case SerovalNodeType.Map:
+        return this.deserializeMap(node);
+      case SerovalNodeType.ArrayBuffer:
+        return this.deserializeArrayBuffer(node);
+      case SerovalNodeType.BigIntTypedArray:
+      case SerovalNodeType.TypedArray:
+        return this.deserializeTypedArray(node);
+      case SerovalNodeType.DataView:
+        return this.deserializeDataView(node);
+      case SerovalNodeType.AggregateError:
+        return this.deserializeAggregateError(node);
+      case SerovalNodeType.Error:
+        return this.deserializeError(node);
+      case SerovalNodeType.Promise:
+        return this.deserializePromise(node);
+      case SerovalNodeType.WKSymbol:
+        return SYMBOL_REF[node.s];
+      case SerovalNodeType.Boxed:
+        return this.deserializeBoxed(node);
+      case SerovalNodeType.Plugin:
+        return this.deserializePlugin(node);
+      case SerovalNodeType.PromiseConstructor:
+        return this.deserializePromiseConstructor(node);
+      case SerovalNodeType.PromiseSuccess:
+        return this.deserializePromiseResolve(node);
+      case SerovalNodeType.PromiseFailure:
+        return this.deserializePromiseReject(node);
+      case SerovalNodeType.IteratorFactoryInstance:
+        return this.deserializeIteratorFactoryInstance(node);
+      case SerovalNodeType.AsyncIteratorFactoryInstance:
+        return this.deserializeAsyncIteratorFactoryInstance(node);
+      case SerovalNodeType.StreamConstructor:
+        return this.deserializeStreamConstructor(node);
+      case SerovalNodeType.StreamNext:
+        return this.deserializeStreamNext(node);
+      case SerovalNodeType.StreamThrow:
+        return this.deserializeStreamThrow(node);
+      case SerovalNodeType.StreamReturn:
+        return this.deserializeStreamReturn(node);
+      case SerovalNodeType.IteratorFactory:
+        return this.deserializeIteratorFactory(node);
+      case SerovalNodeType.AsyncIteratorFactory:
+        return this.deserializeAsyncIteratorFactory(node);
+      // case SerovalNodeType.SpecialReference:
+      default:
+        throw new SerovalUnsupportedNodeError(node);
     }
   }
 }

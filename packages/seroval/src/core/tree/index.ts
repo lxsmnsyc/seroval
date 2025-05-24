@@ -107,5 +107,5 @@ export function fromJSON<T>(
     plugins,
     markedRefs: source.m,
   });
-  return ctx.deserialize(source.t) as T;
+  return ctx.deserializeTop(source.t) as T;
 }

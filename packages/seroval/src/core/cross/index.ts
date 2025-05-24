@@ -166,5 +166,5 @@ export function fromCrossJSON<T>(
     plugins,
     refs: options.refs,
   });
-  return ctx.deserialize(source) as T;
+  return ctx.deserializeTop(source) as T;
 }
