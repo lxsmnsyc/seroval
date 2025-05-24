@@ -52,13 +52,13 @@
   "author": "Alexis Munsayac",
   "exports": {
     "./web": {
+      "types": "./dist/types/web/index.d.ts",
       "development": {
         "require": "./dist/cjs/development/web.cjs",
         "import": "./dist/esm/development/web.mjs"
       },
       "require": "./dist/cjs/production/web.cjs",
-      "import": "./dist/esm/production/web.mjs",
-      "types": "./dist/types/web/index.d.ts"
+      "import": "./dist/esm/production/web.mjs"
     }
   },
   "typesVersions": {
