@@ -25,7 +25,7 @@ export function crossSerialize<T>(
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  const tree = ctx.parse(source);
+  const tree = ctx.parseTop(source);
   const serial = new CrossSerializerContext({
     plugins,
     features: ctx.features,
@@ -49,7 +49,7 @@ export async function crossSerializeAsync<T>(
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  const tree = await ctx.parse(source);
+  const tree = await ctx.parseTop(source);
   const serial = new CrossSerializerContext({
     plugins,
     features: ctx.features,
@@ -71,7 +71,7 @@ export function toCrossJSON<T>(
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  return ctx.parse(source);
+  return ctx.parseTop(source);
 }
 
 export type ToCrossJSONAsyncOptions = CrossParserContextOptions;
@@ -86,7 +86,7 @@ export async function toCrossJSONAsync<T>(
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  return await ctx.parse(source);
+  return await ctx.parseTop(source);
 }
 
 export interface CrossSerializeStreamOptions

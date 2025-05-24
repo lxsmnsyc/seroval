@@ -1,4 +1,4 @@
-import { resolvePlugins, type PluginAccessOptions } from '../plugin';
+import { type PluginAccessOptions, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
 import AsyncParserContext from './async';
@@ -16,7 +16,7 @@ export function serialize<T>(
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
-  const tree = ctx.parse(source);
+  const tree = ctx.parseTop(source);
   const serial = new VanillaSerializerContext({
     plugins,
     features: ctx.features,
@@ -34,7 +34,7 @@ export async function serializeAsync<T>(
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
-  const tree = await ctx.parse(source);
+  const tree = await ctx.parseTop(source);
   const serial = new VanillaSerializerContext({
     plugins,
     features: ctx.features,
@@ -63,7 +63,7 @@ export function toJSON<T>(
     disabledFeatures: options.disabledFeatures,
   });
   return {
-    t: ctx.parse(source),
+    t: ctx.parseTop(source),
     f: ctx.features,
     m: Array.from(ctx.marked),
   };
@@ -79,7 +79,7 @@ export async function toJSONAsync<T>(
     disabledFeatures: options.disabledFeatures,
   });
   return {
-    t: await ctx.parse(source),
+    t: await ctx.parseTop(source),
     f: ctx.features,
     m: Array.from(ctx.marked),
   };

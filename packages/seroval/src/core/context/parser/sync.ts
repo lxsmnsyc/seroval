@@ -68,7 +68,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     const nodes = [];
     for (let i = 0, len = current.length; i < len; i++) {
       if (i in current) {
-        nodes[i] = this.parseTop(current[i]);
+        nodes[i] = this.parse(current[i]);
       }
     }
     return nodes;
@@ -86,7 +86,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     const valueNodes: SerovalNode[] = [];
     for (let i = 0, len = entries.length; i < len; i++) {
       keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(this.parseTop(entries[i][1]));
+      valueNodes.push(this.parse(entries[i][1]));
     }
     // Check special properties, symbols in this case
     let symbol = Symbol.iterator;
@@ -95,7 +95,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       valueNodes.push(
         createIteratorFactoryInstanceNode(
           this.parseIteratorFactory(),
-          this.parseTop(
+          this.parse(
             iteratorToSequence(properties as unknown as Iterable<unknown>),
           ),
         ),
@@ -107,7 +107,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
       valueNodes.push(
         createAsyncIteratorFactoryInstanceNode(
           this.parseAsyncIteratorFactory(),
-          this.parseTop(createStream()),
+          this.parse(createStream()),
         ),
       );
     }
@@ -142,29 +142,25 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
   }
 
   protected parseBoxed(id: number, current: object): SerovalBoxedNode {
-    return createBoxedNode(id, this.parseTop(current.valueOf()));
+    return createBoxedNode(id, this.parse(current.valueOf()));
   }
 
   protected parseTypedArray(
     id: number,
     current: TypedArrayValue,
   ): SerovalTypedArrayNode {
-    return createTypedArrayNode(id, current, this.parseTop(current.buffer));
+    return createTypedArrayNode(id, current, this.parse(current.buffer));
   }
 
   protected parseBigIntTypedArray(
     id: number,
     current: BigIntTypedArrayValue,
   ): SerovalBigIntTypedArrayNode {
-    return createBigIntTypedArrayNode(
-      id,
-      current,
-      this.parseTop(current.buffer),
-    );
+    return createBigIntTypedArrayNode(id, current, this.parse(current.buffer));
   }
 
   protected parseDataView(id: number, current: DataView): SerovalDataViewNode {
-    return createDataViewNode(id, current, this.parseTop(current.buffer));
+    return createDataViewNode(id, current, this.parse(current.buffer));
   }
 
   protected parseError(id: number, current: Error): SerovalErrorNode {
@@ -195,8 +191,8 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     const keyNodes: SerovalNode[] = [];
     const valueNodes: SerovalNode[] = [];
     for (const [key, value] of current.entries()) {
-      keyNodes.push(this.parseTop(key));
-      valueNodes.push(this.parseTop(value));
+      keyNodes.push(this.parse(key));
+      valueNodes.push(this.parse(value));
     }
     return this.createMapNode(id, keyNodes, valueNodes, current.size);
   }
@@ -204,7 +200,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
   protected parseSet(id: number, current: Set<unknown>): SerovalSetNode {
     const items: SerovalNode[] = [];
     for (const item of current.keys()) {
-      items.push(this.parseTop(item));
+      items.push(this.parse(item));
     }
     return createSetNode(id, current.size, items);
   }
@@ -256,7 +252,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
     const currentClass = current.constructor;
     if (currentClass === OpaqueReference) {
-      return this.parseTop(
+      return this.parse(
         (current as OpaqueReference<unknown, unknown>).replacement,
       );
     }
@@ -365,7 +361,7 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     throw new SerovalUnsupportedTypeError(current);
   }
 
-  parseTop<T>(current: T): SerovalNode {
+  parse<T>(current: T): SerovalNode {
     switch (typeof current) {
       case 'boolean':
         return current ? TRUE_NODE : FALSE_NODE;
@@ -396,9 +392,9 @@ export default abstract class BaseSyncParserContext extends BaseParserContext {
     }
   }
 
-  parse<T>(current: T): SerovalNode {
+  parseTop<T>(current: T): SerovalNode {
     try {
-      return this.parseTop(current);
+      return this.parse(current);
     } catch (error) {
       throw error instanceof SerovalParserError
         ? error

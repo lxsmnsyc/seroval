@@ -75,7 +75,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     for (let i = 0, len = current.length; i < len; i++) {
       // For consistency in holes
       if (i in current) {
-        nodes[i] = await this.parseTop(current[i]);
+        nodes[i] = await this.parse(current[i]);
       }
     }
     return nodes;
@@ -96,7 +96,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     const valueNodes: SerovalNode[] = [];
     for (let i = 0, len = entries.length; i < len; i++) {
       keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(await this.parseTop(entries[i][1]));
+      valueNodes.push(await this.parse(entries[i][1]));
     }
     // Check special properties
     let symbol = Symbol.iterator;
@@ -105,7 +105,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       valueNodes.push(
         createIteratorFactoryInstanceNode(
           this.parseIteratorFactory(),
-          await this.parseTop(
+          await this.parse(
             iteratorToSequence(properties as unknown as Iterable<unknown>),
           ),
         ),
@@ -117,7 +117,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       valueNodes.push(
         createAsyncIteratorFactoryInstanceNode(
           this.parseAsyncIteratorFactory(),
-          await this.parseTop(
+          await this.parse(
             createStreamFromAsyncIterable(
               properties as unknown as AsyncIterable<unknown>,
             ),
@@ -159,18 +159,14 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: object,
   ): Promise<SerovalBoxedNode> {
-    return createBoxedNode(id, await this.parseTop(current.valueOf()));
+    return createBoxedNode(id, await this.parse(current.valueOf()));
   }
 
   private async parseTypedArray(
     id: number,
     current: TypedArrayValue,
   ): Promise<SerovalTypedArrayNode> {
-    return createTypedArrayNode(
-      id,
-      current,
-      await this.parseTop(current.buffer),
-    );
+    return createTypedArrayNode(id, current, await this.parse(current.buffer));
   }
 
   private async parseBigIntTypedArray(
@@ -180,7 +176,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     return createBigIntTypedArrayNode(
       id,
       current,
-      await this.parseTop(current.buffer),
+      await this.parse(current.buffer),
     );
   }
 
@@ -188,7 +184,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     id: number,
     current: DataView,
   ): Promise<SerovalDataViewNode> {
-    return createDataViewNode(id, current, await this.parseTop(current.buffer));
+    return createDataViewNode(id, current, await this.parse(current.buffer));
   }
 
   private async parseError(
@@ -222,8 +218,8 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     const keyNodes: SerovalNode[] = [];
     const valueNodes: SerovalNode[] = [];
     for (const [key, value] of current.entries()) {
-      keyNodes.push(await this.parseTop(key));
-      valueNodes.push(await this.parseTop(value));
+      keyNodes.push(await this.parse(key));
+      valueNodes.push(await this.parse(value));
     }
     return this.createMapNode(id, keyNodes, valueNodes, current.size);
   }
@@ -234,7 +230,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
   ): Promise<SerovalSetNode> {
     const items: SerovalNode[] = [];
     for (const item of current.keys()) {
-      items.push(await this.parseTop(item));
+      items.push(await this.parse(item));
     }
     return createSetNode(id, current.size, items);
   }
@@ -255,7 +251,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
       NIL,
       NIL,
       NIL,
-      await this.parseTop(result),
+      await this.parse(result),
       NIL,
       NIL,
     );
@@ -295,7 +291,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
         const cleanup = current.on({
           next: value => {
             this.markRef(id);
-            this.parseTop(value).then(
+            this.parse(value).then(
               data => {
                 sequence.push(createStreamNextNode(id, data));
               },
@@ -307,7 +303,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           },
           throw: value => {
             this.markRef(id);
-            this.parseTop(value).then(
+            this.parse(value).then(
               data => {
                 sequence.push(createStreamThrowNode(id, data));
                 resolve(sequence);
@@ -321,7 +317,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
           },
           return: value => {
             this.markRef(id);
-            this.parseTop(value).then(
+            this.parse(value).then(
               data => {
                 sequence.push(createStreamReturnNode(id, data));
                 resolve(sequence);
@@ -348,7 +344,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     }
     const currentClass = current.constructor;
     if (currentClass === OpaqueReference) {
-      return this.parseTop(
+      return this.parse(
         (current as OpaqueReference<unknown, unknown>).replacement,
       );
     }
@@ -457,7 +453,7 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     throw new SerovalUnsupportedTypeError(current);
   }
 
-  async parseTop<T>(current: T): Promise<SerovalNode> {
+  async parse<T>(current: T): Promise<SerovalNode> {
     switch (typeof current) {
       case 'boolean':
         return current ? TRUE_NODE : FALSE_NODE;
@@ -487,9 +483,9 @@ export default abstract class BaseAsyncParserContext extends BaseParserContext {
     }
   }
 
-  async parse<T>(current: T): Promise<SerovalNode> {
+  async parseTop<T>(current: T): Promise<SerovalNode> {
     try {
-      return await this.parseTop(current);
+      return await this.parse(current);
     } catch (error) {
       throw error instanceof SerovalParserError
         ? error

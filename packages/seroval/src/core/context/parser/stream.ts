@@ -111,7 +111,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
     const valueNodes: SerovalNode[] = [];
     for (let i = 0, len = entries.length; i < len; i++) {
       keyNodes.push(serializeString(entries[i][0]));
-      valueNodes.push(this.parseTop(entries[i][1]));
+      valueNodes.push(this.parse(entries[i][1]));
     }
     // Check special properties, symbols in this case
     let symbol = Symbol.iterator;
@@ -120,7 +120,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       valueNodes.push(
         createIteratorFactoryInstanceNode(
           this.parseIteratorFactory(),
-          this.parseTop(
+          this.parse(
             iteratorToSequence(properties as unknown as Iterable<unknown>),
           ),
         ),
@@ -132,7 +132,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
       valueNodes.push(
         createAsyncIteratorFactoryInstanceNode(
           this.parseAsyncIteratorFactory(),
-          this.parseTop(
+          this.parse(
             createStreamFromAsyncIterable(
               properties as unknown as AsyncIterable<unknown>,
             ),
@@ -283,7 +283,7 @@ export default abstract class BaseStreamParserContext extends BaseSyncParserCont
 
   parseWithError<T>(current: T): SerovalNode | undefined {
     try {
-      return this.parseTop(current);
+      return this.parse(current);
     } catch (err) {
       this.onError(err);
       return NIL;
