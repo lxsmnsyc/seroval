@@ -288,7 +288,10 @@ export default abstract class BaseDeserializerContext
   private deserializePromiseConstructor(
     node: SerovalPromiseConstructorNode,
   ): unknown {
-    return this.assignIndexedValue(node.i, createDeferred()).promise;
+    return this.assignIndexedValue(
+      node.i,
+      this.assignIndexedValue(node.s, createDeferred()).promise,
+    );
   }
 
   private deserializePromiseResolve(node: SerovalPromiseResolveNode): unknown {
