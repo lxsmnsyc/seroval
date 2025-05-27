@@ -69,7 +69,6 @@ By default, all feature flags are enabled. The following are the feature flags a
 | `NaN`                                                                                                                                                    | ✅         | ✅         | ✅         |
 | `Infinity`                                                                                                                                               | ✅         | ✅         | ✅         |
 | `-Infinity`                                                                                                                                              | ✅         | ✅         | ✅         |
-| `-Infinity`                                                                                                                                              | ✅         | ✅         | ✅         |
 | `-0`                                                                                                                                                     | ✅         | ✅         | ✅         |
 | `number`                                                                                                                                                 | ✅         | ✅         | ✅         |
 | `string`                                                                                                                                                 | ✅         | ✅         | ✅         |
