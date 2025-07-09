@@ -40,7 +40,22 @@ describe('Response', () => {
       expect(back).toBeInstanceOf(Response);
       expect(await back.text()).toBe(await example.text());
     });
+
+    it('supports already read Response', async () => {
+      const example = new Response(EXAMPLE_BODY);
+      await example.text();
+      const result = await toJSONAsync(example, {
+        plugins: [ResponsePlugin],
+      });
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromJSON<typeof example>(result, {
+        plugins: [ResponsePlugin],
+      });
+      expect(back).toBeInstanceOf(Response);
+      expect(back.body).toBe(null);
+    });
   });
+
   describe('crossSerializeAsync', () => {
     it('supports Response', async () => {
       const example = new Response(EXAMPLE_BODY);
