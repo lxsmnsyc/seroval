@@ -32,6 +32,23 @@ describe('Request', () => {
       expect(back.url).toBe(example.url);
       expect(back.method).toBe(example.method);
     });
+
+    it('supports already read Request', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      await example.text();
+      const result = await serializeAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      expect(result).toMatchSnapshot();
+      const back = deserialize<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(back.body).toBe(null);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
   });
   describe('toJSONAsync', () => {
     it('supports Request', async () => {

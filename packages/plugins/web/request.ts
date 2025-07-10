@@ -43,7 +43,9 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
         options: await ctx.parse(
           createRequestOptions(
             value,
-            value.body ? await value.clone().arrayBuffer() : null,
+            value.body && !value.bodyUsed
+              ? await value.clone().arrayBuffer()
+              : null,
           ),
         ),
       };
