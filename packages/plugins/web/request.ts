@@ -53,7 +53,12 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
     stream(value, ctx) {
       return {
         url: ctx.parse(value.url),
-        options: ctx.parse(createRequestOptions(value, value.clone().body)),
+        options: ctx.parse(
+          createRequestOptions(
+            value,
+            value.body && !value.bodyUsed ? value.clone().body : null,
+          ),
+        ),
       };
     },
   },
