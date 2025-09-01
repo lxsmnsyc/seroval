@@ -29,11 +29,11 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
         ctx.createEffectfulFunction(
           ['c'],
           'd.on({next:' +
-            ctx.createEffectfulFunction(['v'], 'c.enqueue(v)') +
+            ctx.createEffectfulFunction(['v'], 'try{c.enqueue(v)}catch{}') +
             ',throw:' +
             ctx.createEffectfulFunction(['v'], 'c.error(v)') +
             ',return:' +
-            ctx.createEffectfulFunction([], 'c.close()') +
+            ctx.createEffectfulFunction([], 'try{c.close()}catch{}') +
             '})',
         ) +
         '})',
@@ -122,13 +122,17 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
       start(controller): void {
         stream.on({
           next(value) {
-            controller.enqueue(value);
+            try {
+              controller.enqueue(value);
+            } catch {}
           },
           throw(value) {
             controller.error(value);
           },
           return() {
-            controller.close();
+            try {
+              controller.close();
+            } catch {}
           },
         });
       },
