@@ -43,7 +43,9 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
         options: await ctx.parse(
           createRequestOptions(
             value,
-            value.body ? await value.clone().arrayBuffer() : null,
+            value.body && !value.bodyUsed
+              ? await value.clone().arrayBuffer()
+              : null,
           ),
         ),
       };
@@ -51,7 +53,12 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
     stream(value, ctx) {
       return {
         url: ctx.parse(value.url),
-        options: ctx.parse(createRequestOptions(value, value.clone().body)),
+        options: ctx.parse(
+          createRequestOptions(
+            value,
+            value.body && !value.bodyUsed ? value.clone().body : null,
+          ),
+        ),
       };
     },
   },

@@ -32,6 +32,23 @@ describe('Request', () => {
       expect(back.url).toBe(example.url);
       expect(back.method).toBe(example.method);
     });
+
+    it('supports already read Request', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      await example.text();
+      const result = await serializeAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      expect(result).toMatchSnapshot();
+      const back = deserialize<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(back.body).toBe(null);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
   });
   describe('toJSONAsync', () => {
     it('supports Request', async () => {
@@ -54,6 +71,17 @@ describe('Request', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports Request', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const result = await crossSerializeAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      expect(result).toMatchSnapshot();
+    });
+
+    it('supports already read Request', async () => {
       const example = new Request(EXAMPLE_URL, {
         method: 'POST',
         body: EXAMPLE_BODY,
@@ -136,6 +164,26 @@ describe('Request', () => {
       });
       expect(back).toBeInstanceOf(Request);
       expect(await back.text()).toBe(await example.text());
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
+
+    it('supports already read Request', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      await example.text();
+      const result = await toCrossJSONAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof example>(result, {
+        plugins: [RequestPlugin],
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Request);
+      expect(back.body).toBe(null);
       expect(back.url).toBe(example.url);
       expect(back.method).toBe(example.method);
     });
