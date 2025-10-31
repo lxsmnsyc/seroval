@@ -8,7 +8,7 @@ import type { WellKnownSymbols } from '../constants';
 import { INV_SYMBOL_REF, NIL, SerovalNodeType } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
-import type { Plugin, PluginAccessOptions, SerovalMode } from '../plugin';
+import type { PluginAccessOptions, SerovalMode } from '../plugin';
 import { hasReferenceID } from '../reference';
 import {
   ASYNC_ITERATOR,
@@ -61,210 +61,242 @@ export interface ReferencedNode {
 
 type ObjectNode = FreshNode | IndexedNode | ReferencedNode;
 
-export abstract class BaseParserContext implements PluginAccessOptions {
-  abstract readonly mode: SerovalMode;
+export interface BaseParserContext extends PluginAccessOptions {
+  readonly mode: SerovalMode;
 
-  features: number;
-
-  marked = new Set<number>();
+  marked: Set<number>;
 
   refs: Map<unknown, number>;
 
-  plugins?: Plugin<any, any>[] | undefined;
+  features: number;
+}
 
-  constructor(options: BaseParserContextOptions) {
-    this.plugins = options.plugins;
-    this.features = ALL_ENABLED ^ (options.disabledFeatures || 0);
-    this.refs = options.refs || new Map<unknown, number>();
-  }
+export function createBaseParserContext(
+  mode: SerovalMode,
+  options: BaseParserContextOptions,
+): BaseParserContext {
+  return {
+    plugins: options.plugins,
+    mode,
+    marked: new Set(),
+    features: ALL_ENABLED ^ (options.disabledFeatures || 0),
+    refs: options.refs || new Map(),
+  };
+}
 
-  protected markRef(id: number): void {
-    this.marked.add(id);
-  }
+/**
+ * Ensures that the value (based on an identifier) has been visited by the parser.
+ * @param ctx
+ * @param id
+ */
+export function markRef(ctx: BaseParserContext, id: number): void {
+  ctx.marked.add(id);
+}
 
-  protected isMarked(id: number): boolean {
-    return this.marked.has(id);
-  }
+export function isMarked(ctx: BaseParserContext, id: number): boolean {
+  return ctx.marked.has(id);
+}
 
-  protected createIndex<T>(current: T): number {
-    const id = this.refs.size;
-    this.refs.set(current, id);
-    return id;
-  }
+/**
+ * Creates an identifier for a value
+ * @param ctx
+ * @param current
+ */
+export function createIndexForValue<T>(
+  ctx: BaseParserContext,
+  current: T,
+): number {
+  const id = ctx.refs.size;
+  ctx.refs.set(current, id);
+  return id;
+}
 
-  protected getIndexedValue<T>(current: T): FreshNode | IndexedNode {
-    const registeredId = this.refs.get(current);
-    if (registeredId != null) {
-      this.markRef(registeredId);
-      return {
-        type: ParserNodeType.Indexed,
-        value: createIndexedValueNode(registeredId),
-      };
-    }
+export function getNodeForIndexedValue<T>(
+  ctx: BaseParserContext,
+  current: T,
+): FreshNode | IndexedNode {
+  const registeredId = ctx.refs.get(current);
+  if (registeredId != null) {
+    markRef(ctx, registeredId);
     return {
-      type: ParserNodeType.Fresh,
-      value: this.createIndex(current),
+      type: ParserNodeType.Indexed,
+      value: createIndexedValueNode(registeredId),
     };
   }
+  return {
+    type: ParserNodeType.Fresh,
+    value: createIndexForValue(ctx, current),
+  };
+}
 
-  protected getReference<T>(current: T): ObjectNode {
-    const indexed = this.getIndexedValue(current);
-    if (indexed.type === ParserNodeType.Indexed) {
-      return indexed;
-    }
-    if (hasReferenceID(current)) {
-      return {
-        type: ParserNodeType.Referenced,
-        value: createReferenceNode(indexed.value, current),
-      };
-    }
+export function getReferenceNode<T>(
+  ctx: BaseParserContext,
+  current: T,
+): ObjectNode {
+  const indexed = getNodeForIndexedValue(ctx, current);
+  if (indexed.type === ParserNodeType.Indexed) {
     return indexed;
   }
-
-  protected parseWellKnownSymbol(
-    current: symbol,
-  ): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
-    const ref = this.getReference(current);
-    if (ref.type !== ParserNodeType.Fresh) {
-      return ref.value;
-    }
-    assert(current in INV_SYMBOL_REF, new SerovalUnsupportedTypeError(current));
-    return createWKSymbolNode(ref.value, current as WellKnownSymbols);
+  // Special references are special ;)
+  if (hasReferenceID(current)) {
+    return {
+      type: ParserNodeType.Referenced,
+      value: createReferenceNode(indexed.value, current),
+    };
   }
+  return indexed;
+}
 
-  protected parseSpecialReference(
-    ref: SpecialReference,
-  ): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
-    const result = this.getIndexedValue(SPECIAL_REFS[ref]);
-    if (result.type === ParserNodeType.Indexed) {
-      return result.value;
-    }
-    return createSerovalNode(
-      SerovalNodeType.SpecialReference,
-      result.value,
-      ref,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-    );
+/**
+ * Parsing methods
+ */
+export function parseWellKnownSymbol(
+  ctx: BaseParserContext,
+  current: symbol,
+): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
+  const ref = getReferenceNode(ctx, current);
+  if (ref.type !== ParserNodeType.Fresh) {
+    return ref.value;
   }
+  assert(current in INV_SYMBOL_REF, new SerovalUnsupportedTypeError(current));
+  return createWKSymbolNode(ref.value, current as WellKnownSymbols);
+}
 
-  protected parseIteratorFactory():
-    | SerovalIndexedValueNode
-    | SerovalIteratorFactoryNode {
-    const result = this.getIndexedValue(ITERATOR);
-    if (result.type === ParserNodeType.Indexed) {
-      return result.value;
-    }
-    return createSerovalNode(
-      SerovalNodeType.IteratorFactory,
-      result.value,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      this.parseWellKnownSymbol(Symbol.iterator),
-      NIL,
-      NIL,
-    );
+export function parseSpecialReference(
+  ctx: BaseParserContext,
+  ref: SpecialReference,
+): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
+  const result = getNodeForIndexedValue(ctx, SPECIAL_REFS[ref]);
+  if (result.type === ParserNodeType.Indexed) {
+    return result.value;
   }
+  return createSerovalNode(
+    SerovalNodeType.SpecialReference,
+    result.value,
+    ref,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
 
-  protected parseAsyncIteratorFactory():
-    | SerovalIndexedValueNode
-    | SerovalAsyncIteratorFactoryNode {
-    const result = this.getIndexedValue(ASYNC_ITERATOR);
-    if (result.type === ParserNodeType.Indexed) {
-      return result.value;
-    }
-    return createSerovalNode(
-      SerovalNodeType.AsyncIteratorFactory,
-      result.value,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      [
-        this.parseSpecialReference(SpecialReference.PromiseConstructor),
-        this.parseWellKnownSymbol(Symbol.asyncIterator),
-      ],
-      NIL,
-      NIL,
-      NIL,
-    );
+export function parseIteratorFactory(
+  ctx: BaseParserContext,
+): SerovalIndexedValueNode | SerovalIteratorFactoryNode {
+  const result = getNodeForIndexedValue(ctx, ITERATOR);
+  if (result.type === ParserNodeType.Indexed) {
+    return result.value;
   }
+  return createSerovalNode(
+    SerovalNodeType.IteratorFactory,
+    result.value,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    parseWellKnownSymbol(ctx, Symbol.iterator),
+    NIL,
+    NIL,
+  );
+}
 
-  protected createObjectNode(
-    id: number,
-    current: Record<string, unknown>,
-    empty: boolean,
-    record: SerovalObjectRecordNode,
-  ): SerovalObjectNode | SerovalNullConstructorNode {
-    return createSerovalNode(
-      empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
-      id,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      record,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      getObjectFlag(current),
-    );
+export function parseAsyncIteratorFactory(
+  ctx: BaseParserContext,
+): SerovalIndexedValueNode | SerovalAsyncIteratorFactoryNode {
+  const result = getNodeForIndexedValue(ctx, ASYNC_ITERATOR);
+  if (result.type === ParserNodeType.Indexed) {
+    return result.value;
   }
+  return createSerovalNode(
+    SerovalNodeType.AsyncIteratorFactory,
+    result.value,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    [
+      parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
+      parseWellKnownSymbol(ctx, Symbol.asyncIterator),
+    ],
+    NIL,
+    NIL,
+    NIL,
+  );
+}
 
-  protected createMapNode(
-    id: number,
-    k: SerovalNode[],
-    v: SerovalNode[],
-    s: number,
-  ): SerovalMapNode {
-    return createSerovalNode(
-      SerovalNodeType.Map,
-      id,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      { k, v, s },
-      NIL,
-      this.parseSpecialReference(SpecialReference.MapSentinel),
-      NIL,
-      NIL,
-    );
-  }
+export function createObjectNode(
+  id: number,
+  current: Record<string, unknown>,
+  empty: boolean,
+  record: SerovalObjectRecordNode,
+): SerovalObjectNode | SerovalNullConstructorNode {
+  return createSerovalNode(
+    empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+    id,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    record,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    getObjectFlag(current),
+  );
+}
 
-  protected createPromiseConstructorNode(
-    id: number,
-    resolver: number,
-  ): SerovalPromiseConstructorNode {
-    return createSerovalNode(
-      SerovalNodeType.PromiseConstructor,
-      id,
-      resolver,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      NIL,
-      this.parseSpecialReference(SpecialReference.PromiseConstructor),
-      NIL,
-      NIL,
-    );
-  }
+export function createMapNode(
+  ctx: BaseParserContext,
+  id: number,
+  k: SerovalNode[],
+  v: SerovalNode[],
+  s: number,
+): SerovalMapNode {
+  return createSerovalNode(
+    SerovalNodeType.Map,
+    id,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    { k, v, s },
+    NIL,
+    parseSpecialReference(ctx, SpecialReference.MapSentinel),
+    NIL,
+    NIL,
+  );
+}
+
+export function createPromiseConstructorNode(
+  ctx: BaseParserContext,
+  id: number,
+  resolver: number,
+): SerovalPromiseConstructorNode {
+  return createSerovalNode(
+    SerovalNodeType.PromiseConstructor,
+    id,
+    resolver,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
+    NIL,
+    NIL,
+  );
 }

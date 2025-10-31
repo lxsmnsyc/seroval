@@ -1,26 +1,29 @@
+import {
+  createAsyncParserContext,
+  parseTopAsync,
+} from '../context/parser/async';
+import { createSyncParserContext, parseTop } from '../context/parser/sync';
 import { type PluginAccessOptions, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 import type { AsyncParserContextOptions } from './async';
-import AsyncParserContext from './async';
 import VanillaDeserializerContext from './deserializer';
 import VanillaSerializerContext from './serializer';
 import type { SyncParserContextOptions } from './sync';
-import SyncParserContext from './sync';
 
 export function serialize<T>(
   source: T,
   options: SyncParserContextOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new SyncParserContext({
+  const ctx = createSyncParserContext('vanilla', {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
-  const tree = ctx.parseTop(source);
+  const tree = parseTop(ctx, source);
   const serial = new VanillaSerializerContext({
     plugins,
-    features: ctx.features,
-    markedRefs: ctx.marked,
+    features: ctx.base.features,
+    markedRefs: ctx.base.marked,
   });
   return serial.serializeTop(tree);
 }
@@ -30,15 +33,15 @@ export async function serializeAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new AsyncParserContext({
+  const ctx = createAsyncParserContext('vanilla', {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
-  const tree = await ctx.parseTop(source);
+  const tree = await parseTopAsync(ctx, source);
   const serial = new VanillaSerializerContext({
     plugins,
-    features: ctx.features,
-    markedRefs: ctx.marked,
+    features: ctx.base.features,
+    markedRefs: ctx.base.marked,
   });
   return serial.serializeTop(tree);
 }
@@ -58,14 +61,14 @@ export function toJSON<T>(
   options: SyncParserContextOptions = {},
 ): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new SyncParserContext({
+  const ctx = createSyncParserContext('vanilla', {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
   return {
-    t: ctx.parseTop(source),
-    f: ctx.features,
-    m: Array.from(ctx.marked),
+    t: parseTop(ctx, source),
+    f: ctx.base.features,
+    m: Array.from(ctx.base.marked),
   };
 }
 
@@ -74,14 +77,14 @@ export async function toJSONAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<SerovalJSON> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new AsyncParserContext({
+  const ctx = createAsyncParserContext('vanilla', {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
   return {
-    t: await ctx.parseTop(source),
-    f: ctx.features,
-    m: Array.from(ctx.marked),
+    t: await parseTopAsync(ctx, source),
+    f: ctx.base.features,
+    m: Array.from(ctx.base.marked),
   };
 }
 

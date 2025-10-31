@@ -1,7 +1,9 @@
 import type BaseDeserializerContext from './context/deserializer';
-import type BaseAsyncParserContext from './context/parser/async';
-import type BaseStreamParserContext from './context/parser/stream';
-import type BaseSyncParserContext from './context/parser/sync';
+import type { AsyncParsePluginContext } from './context/parser/async';
+import type {
+  StreamParsePluginContext,
+  SyncParsePluginContext,
+} from './context/parser/sync';
 import type BaseSerializerContext from './context/serializer';
 
 export type SerovalMode = 'vanilla' | 'cross';
@@ -28,15 +30,19 @@ export interface Plugin<Value, Node> {
    * Parsing modes
    */
   parse: {
-    sync?: (value: Value, ctx: BaseSyncParserContext, data: PluginData) => Node;
+    sync?: (
+      value: Value,
+      ctx: SyncParsePluginContext,
+      data: PluginData,
+    ) => Node;
     async?: (
       value: Value,
-      ctx: BaseAsyncParserContext,
+      ctx: AsyncParsePluginContext,
       data: PluginData,
     ) => Promise<Node>;
     stream?: (
       value: Value,
-      ctx: BaseStreamParserContext,
+      ctx: StreamParsePluginContext,
       data: PluginData,
     ) => Node;
   };
