@@ -49,20 +49,24 @@ interface StreamListener<T> {
   return(value: T): void;
 }
 
-export const STREAM_CONSTRUCTOR = (
-  buffer: unknown[] = [],
-  alive = true,
-  success = false,
-  listeners: StreamListener<unknown>[] = [],
-  count = 0,
-  flush = (value: unknown, mode: keyof StreamListener<unknown>, x?: number) => {
+export const STREAM_CONSTRUCTOR = () => {
+  const buffer: unknown[] = [];
+  const listeners: StreamListener<unknown>[] = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (
+    value: unknown,
+    mode: keyof StreamListener<unknown>,
+    x?: number,
+  ) => {
     for (x = 0; x < count; x++) {
       if (listeners[x]) {
         listeners[x][mode](value);
       }
     }
-  },
-  up = (
+  };
+  const up = (
     listener: StreamListener<unknown>,
     x?: number,
     z?: number,
@@ -76,8 +80,8 @@ export const STREAM_CONSTRUCTOR = (
         listener.next(current);
       }
     }
-  },
-  on = (listener: StreamListener<unknown>, temp?: number) => {
+  };
+  const on = (listener: StreamListener<unknown>, temp?: number) => {
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
@@ -89,35 +93,36 @@ export const STREAM_CONSTRUCTOR = (
         listeners[count--] = undefined as any;
       }
     };
-  },
-) => ({
-  __SEROVAL_STREAM__: true,
-  on: (listener: StreamListener<unknown>) => on(listener),
-  next: (value: unknown) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, 'next');
-    }
-  },
-  throw: (value: unknown) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, 'throw');
-      alive = false;
-      success = false;
-      listeners.length = 0;
-    }
-  },
-  return: (value: unknown) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, 'return');
-      alive = false;
-      success = true;
-      listeners.length = 0;
-    }
-  },
-});
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener: StreamListener<unknown>) => on(listener),
+    next: (value: unknown) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, 'next');
+      }
+    },
+    throw: (value: unknown) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, 'throw');
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value: unknown) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, 'return');
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    },
+  };
+};
 
 export const SERIALIZED_STREAM_CONSTRUCTOR =
   /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
@@ -129,11 +134,9 @@ export interface Sequence {
 }
 
 export const ITERATOR_CONSTRUCTOR =
-  (symbol: symbol) =>
-  (sequence: Sequence) =>
-  (index: number, currentIndex: number, instance: unknown, data: unknown) => {
-    index = 0;
-    instance = {
+  (symbol: symbol) => (sequence: Sequence) => () => {
+    let index = 0;
+    const instance = {
       [symbol]: () => instance,
       next: () => {
         if (index > sequence.d) {
@@ -142,8 +145,8 @@ export const ITERATOR_CONSTRUCTOR =
             value: undefined,
           };
         }
-        currentIndex = index++;
-        data = sequence.v[currentIndex];
+        const currentIndex = index++;
+        const data = sequence.v[currentIndex];
         if (currentIndex === sequence.t) {
           throw data;
         }
@@ -161,22 +164,20 @@ export const SERIALIZED_ITERATOR_CONSTRUCTOR = ITERATOR_CONSTRUCTOR.toString();
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
   (stream: Stream<unknown>) =>
-  (
-    instance: unknown,
-    buffer: unknown[] = [],
-    count = 0,
-    pending: PromiseConstructorResolver[] = [],
-    doneAt = -1,
-    isThrow = false,
-    finalize = (i = 0, len = pending.length) => {
+  () => {
+    let count = 0;
+    let doneAt = -1;
+    let isThrow = false;
+    const buffer: unknown[] = [];
+    const pending: PromiseConstructorResolver[] = [];
+    const finalize = (i = 0, len = pending.length) => {
       for (; i < len; i++) {
         pending[i].s({
           done: true,
           value: undefined,
         });
       }
-    },
-  ) => {
+    };
     stream.on({
       next: value => {
         const temp = pending.shift();
@@ -206,17 +207,13 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
       },
     });
 
-    instance = {
+    const instance = {
       [symbol]: () => instance,
-      next: (
-        index: number,
-        temp: PromiseConstructorResolver,
-        value: unknown,
-      ) => {
+      next: () => {
         if (doneAt === -1) {
-          index = count++;
+          const index = count++;
           if (index >= buffer.length) {
-            temp = {
+            const temp = {
               p: 0,
               s: 0,
               f: 0,
@@ -236,8 +233,8 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
             value: undefined,
           };
         }
-        index = count++;
-        value = buffer[index];
+        const index = count++;
+        const value = buffer[index];
         if (index !== doneAt) {
           return {
             done: false,

@@ -7,14 +7,20 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
     resolver.f = reject;
   });
   return resolver.p;
-},$R[2]=((symbol, createPromise) => (stream) => (instance, buffer = [], count = 0, pending = [], doneAt = -1, isThrow = false, finalize = (i = 0, len = pending.length) => {
-  for (; i < len; i++) {
-    pending[i].s({
-      done: true,
-      value: void 0
-    });
-  }
-}) => {
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
   stream.on({
     next: (value) => {
       const temp = pending.shift();
@@ -43,13 +49,13 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
       buffer.push(value);
     }
   });
-  instance = {
+  const instance = {
     [symbol]: () => instance,
-    next: (index, temp, value) => {
+    next: () => {
       if (doneAt === -1) {
-        index = count++;
-        if (index >= buffer.length) {
-          temp = {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = {
             p: 0,
             s: 0,
             f: 0
@@ -60,7 +66,7 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
         }
         return {
           done: false,
-          value: buffer[index]
+          value: buffer[index2]
         };
       }
       if (count > doneAt) {
@@ -69,8 +75,8 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
           value: void 0
         };
       }
-      index = count++;
-      value = buffer[index];
+      const index = count++;
+      const value = buffer[index];
       if (index !== doneAt) {
         return {
           done: false,
@@ -87,61 +93,71 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
     }
   };
   return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=(buffer = [], alive = true, success = false, listeners = [], count = 0, flush = (value, mode, x) => {
-  for (x = 0; x < count; x++) {
-    if (listeners[x]) {
-      listeners[x][mode](value);
-    }
-  }
-}, up = (listener, x, z, current) => {
-  for (x = 0, z = buffer.length; x < z; x++) {
-    current = buffer[x];
-    if (!alive && x === z - 1) {
-      listener[success ? "return" : "throw"](current);
-    } else {
-      listener.next(current);
-    }
-  }
-}, on = (listener, temp) => {
-  if (alive) {
-    temp = count++;
-    listeners[temp] = listener;
-  }
-  up(listener);
-  return () => {
-    if (alive) {
-      listeners[temp] = listeners[count];
-      listeners[count--] = void 0;
+})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
     }
   };
-}) => ({
-  __SEROVAL_STREAM__: true,
-  on: (listener) => on(listener),
-  next: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "next");
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
     }
-  },
-  throw: (value) => {
+  };
+  const on = (listener, temp) => {
     if (alive) {
-      buffer.push(value);
-      flush(value, "throw");
-      alive = false;
-      success = false;
-      listeners.length = 0;
+      temp = count++;
+      listeners[temp] = listener;
     }
-  },
-  return: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "return");
-      alive = false;
-      success = true;
-      listeners.length = 0;
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
     }
-  }
-}))(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))})($R["example"])"
+  };
+})(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))})($R["example"])"
 `;
 
 exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
@@ -151,14 +167,20 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
     resolver.f = reject;
   });
   return resolver.p;
-},$R[2]=((symbol, createPromise) => (stream) => (instance, buffer = [], count = 0, pending = [], doneAt = -1, isThrow = false, finalize = (i = 0, len = pending.length) => {
-  for (; i < len; i++) {
-    pending[i].s({
-      done: true,
-      value: void 0
-    });
-  }
-}) => {
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
   stream.on({
     next: (value) => {
       const temp = pending.shift();
@@ -187,13 +209,13 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
       buffer.push(value);
     }
   });
-  instance = {
+  const instance = {
     [symbol]: () => instance,
-    next: (index, temp, value) => {
+    next: () => {
       if (doneAt === -1) {
-        index = count++;
-        if (index >= buffer.length) {
-          temp = {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = {
             p: 0,
             s: 0,
             f: 0
@@ -204,7 +226,7 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
         }
         return {
           done: false,
-          value: buffer[index]
+          value: buffer[index2]
         };
       }
       if (count > doneAt) {
@@ -213,8 +235,8 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
           value: void 0
         };
       }
-      index = count++;
-      value = buffer[index];
+      const index = count++;
+      const value = buffer[index];
       if (index !== doneAt) {
         return {
           done: false,
@@ -231,61 +253,71 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
     }
   };
   return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=(buffer = [], alive = true, success = false, listeners = [], count = 0, flush = (value, mode, x) => {
-  for (x = 0; x < count; x++) {
-    if (listeners[x]) {
-      listeners[x][mode](value);
-    }
-  }
-}, up = (listener, x, z, current) => {
-  for (x = 0, z = buffer.length; x < z; x++) {
-    current = buffer[x];
-    if (!alive && x === z - 1) {
-      listener[success ? "return" : "throw"](current);
-    } else {
-      listener.next(current);
-    }
-  }
-}, on = (listener, temp) => {
-  if (alive) {
-    temp = count++;
-    listeners[temp] = listener;
-  }
-  up(listener);
-  return () => {
-    if (alive) {
-      listeners[temp] = listeners[count];
-      listeners[count--] = void 0;
+})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
     }
   };
-}) => ({
-  __SEROVAL_STREAM__: true,
-  on: (listener) => on(listener),
-  next: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "next");
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
     }
-  },
-  throw: (value) => {
+  };
+  const on = (listener, temp) => {
     if (alive) {
-      buffer.push(value);
-      flush(value, "throw");
-      alive = false;
-      success = false;
-      listeners.length = 0;
+      temp = count++;
+      listeners[temp] = listener;
     }
-  },
-  return: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "return");
-      alive = false;
-      success = true;
-      listeners.length = 0;
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
     }
-  }
-}))(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))})"
+  };
+})(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))})"
 `;
 
 exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables 1`] = `
@@ -295,14 +327,20 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
     resolver.f = reject;
   });
   return resolver.p;
-},$R[2]=((symbol, createPromise) => (stream) => (instance, buffer = [], count = 0, pending = [], doneAt = -1, isThrow = false, finalize = (i = 0, len = pending.length) => {
-  for (; i < len; i++) {
-    pending[i].s({
-      done: true,
-      value: void 0
-    });
-  }
-}) => {
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
   stream.on({
     next: (value) => {
       const temp = pending.shift();
@@ -331,13 +369,13 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
       buffer.push(value);
     }
   });
-  instance = {
+  const instance = {
     [symbol]: () => instance,
-    next: (index, temp, value) => {
+    next: () => {
       if (doneAt === -1) {
-        index = count++;
-        if (index >= buffer.length) {
-          temp = {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = {
             p: 0,
             s: 0,
             f: 0
@@ -348,7 +386,7 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
         }
         return {
           done: false,
-          value: buffer[index]
+          value: buffer[index2]
         };
       }
       if (count > doneAt) {
@@ -357,8 +395,8 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
           value: void 0
         };
       }
-      index = count++;
-      value = buffer[index];
+      const index = count++;
+      const value = buffer[index];
       if (index !== doneAt) {
         return {
           done: false,
@@ -375,61 +413,71 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
     }
   };
   return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=(buffer = [], alive = true, success = false, listeners = [], count = 0, flush = (value, mode, x) => {
-  for (x = 0; x < count; x++) {
-    if (listeners[x]) {
-      listeners[x][mode](value);
-    }
-  }
-}, up = (listener, x, z, current) => {
-  for (x = 0, z = buffer.length; x < z; x++) {
-    current = buffer[x];
-    if (!alive && x === z - 1) {
-      listener[success ? "return" : "throw"](current);
-    } else {
-      listener.next(current);
-    }
-  }
-}, on = (listener, temp) => {
-  if (alive) {
-    temp = count++;
-    listeners[temp] = listener;
-  }
-  up(listener);
-  return () => {
-    if (alive) {
-      listeners[temp] = listeners[count];
-      listeners[count--] = void 0;
+})($R[1],$R[3])))($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
     }
   };
-}) => ({
-  __SEROVAL_STREAM__: true,
-  on: (listener) => on(listener),
-  next: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "next");
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
     }
-  },
-  throw: (value) => {
+  };
+  const on = (listener, temp) => {
     if (alive) {
-      buffer.push(value);
-      flush(value, "throw");
-      alive = false;
-      success = false;
-      listeners.length = 0;
+      temp = count++;
+      listeners[temp] = listener;
     }
-  },
-  return: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "return");
-      alive = false;
-      success = true;
-      listeners.length = 0;
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
     }
-  }
-}))())})($R["example"])"
+  };
+})())})($R["example"])"
 `;
 
 exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables 2`] = `"($R=>$R[4].next(1))($R["example"])"`;
@@ -447,14 +495,20 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
     resolver.f = reject;
   });
   return resolver.p;
-},$R[2]=((symbol, createPromise) => (stream) => (instance, buffer = [], count = 0, pending = [], doneAt = -1, isThrow = false, finalize = (i = 0, len = pending.length) => {
-  for (; i < len; i++) {
-    pending[i].s({
-      done: true,
-      value: void 0
-    });
-  }
-}) => {
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
   stream.on({
     next: (value) => {
       const temp = pending.shift();
@@ -483,13 +537,13 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
       buffer.push(value);
     }
   });
-  instance = {
+  const instance = {
     [symbol]: () => instance,
-    next: (index, temp, value) => {
+    next: () => {
       if (doneAt === -1) {
-        index = count++;
-        if (index >= buffer.length) {
-          temp = {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = {
             p: 0,
             s: 0,
             f: 0
@@ -500,7 +554,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
         }
         return {
           done: false,
-          value: buffer[index]
+          value: buffer[index2]
         };
       }
       if (count > doneAt) {
@@ -509,8 +563,8 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
           value: void 0
         };
       }
-      index = count++;
-      value = buffer[index];
+      const index = count++;
+      const value = buffer[index];
       if (index !== doneAt) {
         return {
           done: false,
@@ -527,61 +581,71 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
     }
   };
   return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=(buffer = [], alive = true, success = false, listeners = [], count = 0, flush = (value, mode, x) => {
-  for (x = 0; x < count; x++) {
-    if (listeners[x]) {
-      listeners[x][mode](value);
-    }
-  }
-}, up = (listener, x, z, current) => {
-  for (x = 0, z = buffer.length; x < z; x++) {
-    current = buffer[x];
-    if (!alive && x === z - 1) {
-      listener[success ? "return" : "throw"](current);
-    } else {
-      listener.next(current);
-    }
-  }
-}, on = (listener, temp) => {
-  if (alive) {
-    temp = count++;
-    listeners[temp] = listener;
-  }
-  up(listener);
-  return () => {
-    if (alive) {
-      listeners[temp] = listeners[count];
-      listeners[count--] = void 0;
+})($R[1],$R[3])))($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
     }
   };
-}) => ({
-  __SEROVAL_STREAM__: true,
-  on: (listener) => on(listener),
-  next: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "next");
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
     }
-  },
-  throw: (value) => {
+  };
+  const on = (listener, temp) => {
     if (alive) {
-      buffer.push(value);
-      flush(value, "throw");
-      alive = false;
-      success = false;
-      listeners.length = 0;
+      temp = count++;
+      listeners[temp] = listener;
     }
-  },
-  return: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "return");
-      alive = false;
-      success = true;
-      listeners.length = 0;
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
     }
-  }
-}))())})"
+  };
+})())})"
 `;
 
 exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 2`] = `"$R[4].next(1)"`;
@@ -599,14 +663,20 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
     resolver.f = reject;
   });
   return resolver.p;
-},((symbol, createPromise) => (stream) => (instance, buffer = [], count = 0, pending = [], doneAt = -1, isThrow = false, finalize = (i = 0, len = pending.length) => {
-  for (; i < len; i++) {
-    pending[i].s({
-      done: true,
-      value: void 0
-    });
-  }
-}) => {
+},((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
   stream.on({
     next: (value) => {
       const temp = pending.shift();
@@ -635,13 +705,13 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
       buffer.push(value);
     }
   });
-  instance = {
+  const instance = {
     [symbol]: () => instance,
-    next: (index, temp, value) => {
+    next: () => {
       if (doneAt === -1) {
-        index = count++;
-        if (index >= buffer.length) {
-          temp = {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = {
             p: 0,
             s: 0,
             f: 0
@@ -652,7 +722,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
         }
         return {
           done: false,
-          value: buffer[index]
+          value: buffer[index2]
         };
       }
       if (count > doneAt) {
@@ -661,8 +731,8 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
           value: void 0
         };
       }
-      index = count++;
-      value = buffer[index];
+      const index = count++;
+      const value = buffer[index];
       if (index !== doneAt) {
         return {
           done: false,
@@ -679,61 +749,71 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
     }
   };
   return instance;
-})(h,j)))((o=((buffer = [], alive = true, success = false, listeners = [], count = 0, flush = (value, mode, x) => {
-  for (x = 0; x < count; x++) {
-    if (listeners[x]) {
-      listeners[x][mode](value);
-    }
-  }
-}, up = (listener, x, z, current) => {
-  for (x = 0, z = buffer.length; x < z; x++) {
-    current = buffer[x];
-    if (!alive && x === z - 1) {
-      listener[success ? "return" : "throw"](current);
-    } else {
-      listener.next(current);
-    }
-  }
-}, on = (listener, temp) => {
-  if (alive) {
-    temp = count++;
-    listeners[temp] = listener;
-  }
-  up(listener);
-  return () => {
-    if (alive) {
-      listeners[temp] = listeners[count];
-      listeners[count--] = void 0;
+})(h,j)))((o=(() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
     }
   };
-}) => ({
-  __SEROVAL_STREAM__: true,
-  on: (listener) => on(listener),
-  next: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "next");
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
     }
-  },
-  throw: (value) => {
+  };
+  const on = (listener, temp) => {
     if (alive) {
-      buffer.push(value);
-      flush(value, "throw");
-      alive = false;
-      success = false;
-      listeners.length = 0;
+      temp = count++;
+      listeners[temp] = listener;
     }
-  },
-  return: (value) => {
-    if (alive) {
-      buffer.push(value);
-      flush(value, "return");
-      alive = false;
-      success = true;
-      listeners.length = 0;
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
     }
-  }
-}))(),o.next(1),o.next(2),o.next(3),o.return(void 0),o))}))()"
+  };
+})(),o.next(1),o.next(2),o.next(3),o.return(void 0),o))}))()"
 `;
 
 exports[`AsyncIterable > toCrossJSONAsync > supports AsyncIterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":2},"o":0}"`;
