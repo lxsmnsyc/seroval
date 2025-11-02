@@ -4,9 +4,12 @@ import type {
   StreamParsePluginContext,
   SyncParsePluginContext,
 } from './context/parser/sync';
-import type BaseSerializerContext from './context/serializer';
+import type { SerializePluginContext } from './context/serializer';
 
-export type SerovalMode = 'vanilla' | 'cross';
+export const enum SerovalMode {
+  Vanilla = 1,
+  Cross = 2,
+}
 
 export interface PluginData {
   id: number;
@@ -49,7 +52,7 @@ export interface Plugin<Value, Node> {
   /**
    * Convert the parsed node into a JS string
    */
-  serialize(node: Node, ctx: BaseSerializerContext, data: PluginData): string;
+  serialize(node: Node, ctx: SerializePluginContext, data: PluginData): string;
   /**
    * Convert the parsed node into its runtime equivalent.
    */

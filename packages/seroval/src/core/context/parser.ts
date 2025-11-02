@@ -89,11 +89,11 @@ export function createBaseParserContext(
  * @param ctx
  * @param id
  */
-export function markRef(ctx: BaseParserContext, id: number): void {
+export function markParserRef(ctx: BaseParserContext, id: number): void {
   ctx.marked.add(id);
 }
 
-export function isMarked(ctx: BaseParserContext, id: number): boolean {
+export function isParserRefMarked(ctx: BaseParserContext, id: number): boolean {
   return ctx.marked.has(id);
 }
 
@@ -117,7 +117,7 @@ export function getNodeForIndexedValue<T>(
 ): FreshNode | IndexedNode {
   const registeredId = ctx.refs.get(current);
   if (registeredId != null) {
-    markRef(ctx, registeredId);
+    markParserRef(ctx, registeredId);
     return {
       type: ParserNodeType.Indexed,
       value: createIndexedValueNode(registeredId),

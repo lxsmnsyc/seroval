@@ -4,17 +4,45 @@ exports[`DataView > crossSerialize > scoped > supports DataView 1`] = `"($R=>$R[
 
 exports[`DataView > crossSerialize > supports DataView 1`] = `"$R[0]=new DataView($R[1]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
 
-exports[`DataView > crossSerializeAsync > scoped > supports DataView 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R["example"])"`;
+exports[`DataView > crossSerializeAsync > scoped > supports DataView 1`] = `"($R=>$R[0]=$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R["example"])"`;
 
-exports[`DataView > crossSerializeAsync > supports DataView 1`] = `"$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
+exports[`DataView > crossSerializeAsync > supports DataView 1`] = `"$R[0]=$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
 
-exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `
+"($R=>$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0}))($R["example"])"
+`;
 
-exports[`DataView > crossSerializeStream > scoped > supports DataView 2`] = `"($R=>($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new DataView($R[4]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R["example"])"`;
+exports[`DataView > crossSerializeStream > scoped > supports DataView 2`] = `
+"($R=>($R[5]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new DataView($R[4]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R["example"])"
+`;
 
-exports[`DataView > crossSerializeStream > supports DataView 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`DataView > crossSerializeStream > supports DataView 1`] = `
+"$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0})"
+`;
 
-exports[`DataView > crossSerializeStream > supports DataView 2`] = `"($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new DataView($R[4]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
+exports[`DataView > crossSerializeStream > supports DataView 2`] = `
+"($R[5]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new DataView($R[4]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"
+`;
 
 exports[`DataView > serialize > supports DataView 1`] = `"new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
 

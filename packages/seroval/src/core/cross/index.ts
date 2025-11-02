@@ -14,11 +14,11 @@ import {
   parseTop,
   startStreamParse,
 } from '../context/parser/sync';
-import { resolvePlugins } from '../plugin';
+import { createCrossSerializerContext, serializeTopCross } from '../context/serializer';
+import { resolvePlugins, SerovalMode } from '../plugin';
 import type { SerovalNode } from '../types';
 import type { CrossDeserializerContextOptions } from './deserializer';
 import CrossDeserializerContext from './deserializer';
-import CrossSerializerContext from './serializer';
 import type { CrossContextOptions } from './utils';
 
 export interface CrossSerializeOptions
@@ -30,19 +30,19 @@ export function crossSerialize<T>(
   options: CrossSerializeOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext('cross', {
+  const ctx = createSyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
   const tree = parseTop(ctx, source);
-  const serial = new CrossSerializerContext({
+  const serial = createCrossSerializerContext({
     plugins,
     features: ctx.base.features,
     scopeId: options.scopeId,
     markedRefs: ctx.base.marked,
   });
-  return serial.serializeTop(tree);
+  return serializeTopCross(serial, tree);
 }
 
 export interface CrossSerializeAsyncOptions
@@ -54,19 +54,19 @@ export async function crossSerializeAsync<T>(
   options: CrossSerializeAsyncOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext('cross', {
+  const ctx = createAsyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
   const tree = await parseTopAsync(ctx, source);
-  const serial = new CrossSerializerContext({
+  const serial = createCrossSerializerContext({
     plugins,
     features: ctx.base.features,
     scopeId: options.scopeId,
     markedRefs: ctx.base.marked,
   });
-  return serial.serializeTop(tree);
+  return serializeTopCross(serial, tree);
 }
 
 export type ToCrossJSONOptions = SyncParserContextOptions;
@@ -76,7 +76,7 @@ export function toCrossJSON<T>(
   options: ToCrossJSONOptions = {},
 ): SerovalNode {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext('cross', {
+  const ctx = createSyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -91,7 +91,7 @@ export async function toCrossJSONAsync<T>(
   options: ToCrossJSONAsyncOptions = {},
 ): Promise<SerovalNode> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext('cross', {
+  const ctx = createAsyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -115,7 +115,7 @@ export function crossSerializeStream<T>(
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial): void {
-      const serial = new CrossSerializerContext({
+      const serial = createCrossSerializerContext({
         plugins,
         features: ctx.base.features,
         scopeId: options.scopeId,
@@ -125,7 +125,7 @@ export function crossSerializeStream<T>(
       let serialized: string;
 
       try {
-        serialized = serial.serializeTop(node);
+        serialized = serializeTopCross(serial, node);
       } catch (err) {
         if (options.onError) {
           options.onError(err);

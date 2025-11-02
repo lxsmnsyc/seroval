@@ -1,31 +1,33 @@
+import type { BaseParserContextOptions } from '../context/parser';
 import {
   createAsyncParserContext,
   parseTopAsync,
 } from '../context/parser/async';
 import { createSyncParserContext, parseTop } from '../context/parser/sync';
-import { type PluginAccessOptions, resolvePlugins } from '../plugin';
+import { createVanillaSerializerContext, serializeTopVanilla } from '../context/serializer';
+import { type PluginAccessOptions, resolvePlugins, SerovalMode } from '../plugin';
 import type { SerovalNode } from '../types';
-import type { AsyncParserContextOptions } from './async';
 import VanillaDeserializerContext from './deserializer';
-import VanillaSerializerContext from './serializer';
-import type { SyncParserContextOptions } from './sync';
+
+export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
+export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 
 export function serialize<T>(
   source: T,
   options: SyncParserContextOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext('vanilla', {
+  const ctx = createSyncParserContext(SerovalMode.Vanilla, {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
   const tree = parseTop(ctx, source);
-  const serial = new VanillaSerializerContext({
+  const serial = createVanillaSerializerContext({
     plugins,
     features: ctx.base.features,
     markedRefs: ctx.base.marked,
   });
-  return serial.serializeTop(tree);
+  return serializeTopVanilla(serial, tree);
 }
 
 export async function serializeAsync<T>(
@@ -33,17 +35,17 @@ export async function serializeAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext('vanilla', {
+  const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
   const tree = await parseTopAsync(ctx, source);
-  const serial = new VanillaSerializerContext({
+  const serial = createVanillaSerializerContext({
     plugins,
     features: ctx.base.features,
     markedRefs: ctx.base.marked,
   });
-  return serial.serializeTop(tree);
+  return serializeTopVanilla(serial, tree);
 }
 
 export function deserialize<T>(source: string): T {
@@ -61,7 +63,7 @@ export function toJSON<T>(
   options: SyncParserContextOptions = {},
 ): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext('vanilla', {
+  const ctx = createSyncParserContext(SerovalMode.Vanilla, {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -77,7 +79,7 @@ export async function toJSONAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<SerovalJSON> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext('vanilla', {
+  const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -93,12 +95,12 @@ export function compileJSON(
   options: PluginAccessOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new VanillaSerializerContext({
+  const ctx = createVanillaSerializerContext({
     plugins,
     features: source.f,
     markedRefs: source.m,
   });
-  return ctx.serializeTop(source.t);
+  return serializeTopVanilla(ctx, source.t);
 }
 
 export function fromJSON<T>(

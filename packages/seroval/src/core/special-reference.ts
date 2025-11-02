@@ -1,4 +1,9 @@
-import { createEffectfulFunction, createFunction } from './function-string';
+import {
+  SERIALIZED_PROMISE_CONSTRUCTOR,
+  SERIALIZED_PROMISE_FAILURE,
+  SERIALIZED_PROMISE_SUCCESS,
+  SERIALIZED_STREAM_CONSTRUCTOR,
+} from './constructors';
 
 export const ITERATOR = {};
 
@@ -23,91 +28,18 @@ export const SPECIAL_REFS: Record<SpecialReference, unknown> = {
   [SpecialReference.StreamConstructor]: {},
 };
 
-function serializePromiseConstructor(features: number): string {
-  return createFunction(
-    features,
-    ['r'],
-    '(r.p=new Promise(' +
-      createEffectfulFunction(features, ['s', 'f'], 'r.s=s,r.f=f') +
-      '))',
-  );
-}
-
-function serializePromiseSuccess(features: number): string {
-  return createEffectfulFunction(
-    features,
-    ['r', 'd'],
-    'r.s(d),r.p.s=1,r.p.v=d',
-  );
-}
-
-function serializePromiseFailure(features: number): string {
-  return createEffectfulFunction(
-    features,
-    ['r', 'd'],
-    'r.f(d),r.p.s=2,r.p.v=d',
-  );
-}
-
-function serializeStreamConstructor(features: number): string {
-  return createFunction(
-    features,
-    ['b', 'a', 's', 'l', 'p', 'f', 'e', 'n'],
-    '(b=[],a=!0,s=!1,l=[],p=0,f=' +
-      createEffectfulFunction(
-        features,
-        ['v', 'm', 'x'],
-        'for(x=0;x<p;x++)l[x]&&l[x][m](v)',
-      ) +
-      ',n=' +
-      createEffectfulFunction(
-        features,
-        ['o', 'x', 'z', 'c'],
-        'for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))',
-      ) +
-      ',e=' +
-      createFunction(
-        features,
-        ['o', 't'],
-        '(a&&(l[t=p++]=o),n(o),' +
-          createEffectfulFunction(features, [], 'a&&(l[t]=void 0)') +
-          ')',
-      ) +
-      ',{__SEROVAL_STREAM__:!0,on:' +
-      createFunction(features, ['o'], 'e(o)') +
-      ',next:' +
-      createEffectfulFunction(features, ['v'], 'a&&(b.push(v),f(v,"next"))') +
-      ',throw:' +
-      createEffectfulFunction(
-        features,
-        ['v'],
-        'a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)',
-      ) +
-      ',return:' +
-      createEffectfulFunction(
-        features,
-        ['v'],
-        'a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)',
-      ) +
-      '})',
-  );
-}
-
-export function serializeSpecialReferenceValue(
-  features: number,
-  ref: SpecialReference,
-): string {
+export function serializeSpecialReferenceValue(ref: SpecialReference): string {
   switch (ref) {
     case SpecialReference.MapSentinel:
       return '[]';
     case SpecialReference.PromiseConstructor:
-      return serializePromiseConstructor(features);
+      return SERIALIZED_PROMISE_CONSTRUCTOR;
     case SpecialReference.PromiseSuccess:
-      return serializePromiseSuccess(features);
+      return SERIALIZED_PROMISE_SUCCESS;
     case SpecialReference.PromiseFailure:
-      return serializePromiseFailure(features);
+      return SERIALIZED_PROMISE_FAILURE;
     case SpecialReference.StreamConstructor:
-      return serializeStreamConstructor(features);
+      return SERIALIZED_STREAM_CONSTRUCTOR;
     default:
       return '';
   }

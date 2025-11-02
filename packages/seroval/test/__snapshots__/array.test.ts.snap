@@ -8,31 +8,87 @@ exports[`arrays > crossSerialize > supports Arrays 1`] = `"$R[0]=[1,2,3]"`;
 
 exports[`arrays > crossSerialize > supports self recursion 1`] = `"($R[0]=[,,],$R[0][1]=$R[0][0]=$R[0],$R[0])"`;
 
-exports[`arrays > crossSerializeAsync > scoped > supports Arrays 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=[1,2,3]))($R["example"])"`;
+exports[`arrays > crossSerializeAsync > scoped > supports Arrays 1`] = `"($R=>$R[0]=$R[0]=Promise.resolve($R[1]=[1,2,3]))($R["example"])"`;
 
-exports[`arrays > crossSerializeAsync > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])])($R["example"])"`;
+exports[`arrays > crossSerializeAsync > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=$R[2]=Promise.resolve().then(()=>$R[0])])($R["example"])"`;
 
-exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[1,2,3])"`;
+exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=$R[0]=Promise.resolve($R[1]=[1,2,3])"`;
 
-exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]"`;
+exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=$R[2]=Promise.resolve().then(()=>$R[0])]"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `
+"($R=>$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0}))($R["example"])"
+`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=[1,2,3]))($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=[1,2,3]))($R["example"])"
+`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})])($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `
+"($R=>$R[0]=[$R[1]=($R[3]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})])($R["example"])"
+`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0]))($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `
+"($R=>($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0]))($R["example"])"
+`;
 
 exports[`arrays > crossSerializeStream > scoped > supports self recursion 3`] = `"($R=>$R[6]($R[5],$R[0]))($R["example"])"`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`arrays > crossSerializeStream > supports Arrays 1`] = `
+"$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0})"
+`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=[1,2,3])"`;
+exports[`arrays > crossSerializeStream > supports Arrays 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=[1,2,3])"
+`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})]"`;
+exports[`arrays > crossSerializeStream > supports self recursion 1`] = `
+"$R[0]=[$R[1]=($R[3]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})]"
+`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0])"`;
+exports[`arrays > crossSerializeStream > supports self recursion 2`] = `
+"($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0])"
+`;
 
 exports[`arrays > crossSerializeStream > supports self recursion 3`] = `"$R[6]($R[5],$R[0])"`;
 

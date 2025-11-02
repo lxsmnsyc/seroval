@@ -32,7 +32,7 @@ import {
 } from '../../literals';
 import { createSerovalNode } from '../../node';
 import { OpaqueReference } from '../../opaque-reference';
-import type { SerovalMode } from '../../plugin';
+import { type Plugin, SerovalMode } from '../../plugin';
 import { SpecialReference } from '../../special-reference';
 import type { Stream } from '../../stream';
 import {
@@ -84,8 +84,13 @@ type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
 export type SyncParserContextOptions = BaseParserContextOptions;
 
+const enum ParserMode {
+  Sync = 1,
+  Stream = 2,
+}
+
 export interface SyncParserContext {
-  type: 'sync';
+  type: ParserMode.Sync;
   base: BaseParserContext;
   child: SyncParsePluginContext | undefined;
 }
@@ -95,7 +100,7 @@ export function createSyncParserContext(
   options: SyncParserContextOptions,
 ): SyncParserContext {
   return {
-    type: 'sync',
+    type: ParserMode.Sync,
     base: createBaseParserContext(mode, options),
     child: undefined,
   };
@@ -116,7 +121,7 @@ export interface StreamParserContextOptions extends SyncParserContextOptions {
 }
 
 export interface StreamParserContext {
-  type: 'stream';
+  type: ParserMode.Stream;
   base: BaseParserContext;
   child: StreamParsePluginContext | undefined;
   state: StreamParserState;
@@ -186,8 +191,8 @@ export function createStreamParserContext(
   options: StreamParserContextOptions,
 ): StreamParserContext {
   return {
-    type: 'stream',
-    base: createBaseParserContext('cross', options),
+    type: ParserMode.Stream,
+    base: createBaseParserContext(SerovalMode.Cross, options),
     child: undefined,
     state: createStreamParserState(options),
   };
@@ -246,7 +251,7 @@ function parseProperties(
         parseAsyncIteratorFactory(ctx.base),
         parseSOS(
           ctx,
-          ctx.type === 'sync'
+          ctx.type === ParserMode.Sync
             ? createStream()
             : createStreamFromAsyncIterable(
                 properties as unknown as AsyncIterable<unknown>,
@@ -375,7 +380,7 @@ function parseStream(
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
   );
-  if (ctx.type === 'sync') {
+  if (ctx.type === ParserMode.Sync) {
     return result;
   }
   pushPendingState(ctx);
@@ -483,7 +488,7 @@ function parsePromise(
 ): SerovalPromiseConstructorNode {
   // Creates a unique reference for the promise resolver
   const resolver = createIndexForValue(ctx.base, {});
-  if (ctx.type === 'stream') {
+  if (ctx.type === ParserMode.Stream) {
     pushPendingState(ctx);
     current.then(
       handlePromiseSuccess.bind(ctx, resolver),
@@ -493,6 +498,54 @@ function parsePromise(
   return createPromiseConstructorNode(ctx.base, id, resolver);
 }
 
+function parsePluginSync(
+  ctx: SyncParserContext,
+  id: number,
+  current: unknown,
+  currentPlugins: Plugin<any, any>[],
+): SerovalPluginNode | undefined {
+  for (let i = 0, len = currentPlugins.length; i < len; i++) {
+    const plugin = currentPlugins[i];
+    if (plugin.parse.sync && plugin.test(current)) {
+      if (ctx.child == null) {
+        ctx.child = new SyncParsePluginContext(ctx);
+      }
+      return createPluginNode(
+        id,
+        plugin.tag,
+        plugin.parse.sync(current, ctx.child, {
+          id,
+        }),
+      );
+    }
+  }
+  return undefined;
+}
+
+function parsePluginStream(
+  ctx: StreamParserContext,
+  id: number,
+  current: unknown,
+  currentPlugins: Plugin<any, any>[],
+): SerovalPluginNode | undefined {
+  for (let i = 0, len = currentPlugins.length; i < len; i++) {
+    const plugin = currentPlugins[i];
+    if (plugin.parse.stream && plugin.test(current)) {
+      if (ctx.child == null) {
+        ctx.child = new StreamParsePluginContext(ctx);
+      }
+      return createPluginNode(
+        id,
+        plugin.tag,
+        plugin.parse.stream(current, ctx.child, {
+          id,
+        }),
+      );
+    }
+  }
+  return undefined;
+}
+
 function parsePlugin(
   ctx: SOSParserContext,
   id: number,
@@ -500,40 +553,9 @@ function parsePlugin(
 ): SerovalPluginNode | undefined {
   const currentPlugins = ctx.base.plugins;
   if (currentPlugins) {
-    if (ctx.type === 'sync') {
-      for (let i = 0, len = currentPlugins.length; i < len; i++) {
-        const plugin = currentPlugins[i];
-        if (plugin.parse.sync && plugin.test(current)) {
-          if (ctx.child == null) {
-            ctx.child = new SyncParsePluginContext(ctx);
-          }
-          return createPluginNode(
-            id,
-            plugin.tag,
-            plugin.parse.sync(current, ctx.child, {
-              id,
-            }),
-          );
-        }
-      }
-    }
-    if (ctx.type === 'stream') {
-      for (let i = 0, len = currentPlugins.length; i < len; i++) {
-        const plugin = currentPlugins[i];
-        if (plugin.parse.stream && plugin.test(current)) {
-          if (ctx.child == null) {
-            ctx.child = new StreamParsePluginContext(ctx);
-          }
-          return createPluginNode(
-            id,
-            plugin.tag,
-            plugin.parse.stream(current, ctx.child, {
-              id,
-            }),
-          );
-        }
-      }
-    }
+    return ctx.type === ParserMode.Sync
+      ? parsePluginSync(ctx, id, current, currentPlugins)
+      : parsePluginStream(ctx, id, current, currentPlugins);
   }
   return undefined;
 }
@@ -782,7 +804,7 @@ export function startStreamParse<T>(
   if (parsed) {
     onParseInternal(ctx, parsed, true);
     ctx.state.initial = false;
-    flushStreamParse(ctx);
+    flushStreamParse(ctx, ctx.state);
 
     // Check if there's any pending pushes
     if (ctx.state.pending <= 0) {
@@ -791,9 +813,9 @@ export function startStreamParse<T>(
   }
 }
 
-function flushStreamParse(ctx: StreamParserContext): void {
-  for (let i = 0, len = ctx.state.buffer.length; i < len; i++) {
-    onParseInternal(ctx, ctx.state.buffer[i], false);
+function flushStreamParse(ctx: StreamParserContext, state: StreamParserState): void {
+  for (let i = 0, len = state.buffer.length; i < len; i++) {
+    onParseInternal(ctx, state.buffer[i], false);
   }
 }
 

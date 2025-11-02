@@ -69,7 +69,7 @@ import {
   createMapNode,
   createObjectNode,
   getReferenceNode,
-  markRef,
+  markParserRef,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   ParserNodeType,
@@ -353,7 +353,7 @@ function parseStreamHandle<T>(
   // TODO Optimizable
   const cleanup = current.on({
     next: value => {
-      markRef(this.base, id);
+      markParserRef(this.base, id);
       parseAsync(this, value).then(
         data => {
           sequence.push(createStreamNextNode(id, data));
@@ -365,7 +365,7 @@ function parseStreamHandle<T>(
       );
     },
     throw: value => {
-      markRef(this.base, id);
+      markParserRef(this.base, id);
       parseAsync(this, value).then(
         data => {
           sequence.push(createStreamThrowNode(id, data));
@@ -379,7 +379,7 @@ function parseStreamHandle<T>(
       );
     },
     return: value => {
-      markRef(this.base, id);
+      markParserRef(this.base, id);
       parseAsync(this, value).then(
         data => {
           sequence.push(createStreamReturnNode(id, data));
