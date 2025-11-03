@@ -1,10 +1,10 @@
+import type { AsyncParsePluginContext } from './context/async-parser';
 import type { DeserializePluginContext } from './context/deserializer';
-import type { AsyncParsePluginContext } from './context/parser/async';
+import type { SerializePluginContext } from './context/serializer';
 import type {
   StreamParsePluginContext,
   SyncParsePluginContext,
-} from './context/parser/sync';
-import type { SerializePluginContext } from './context/serializer';
+} from './context/sync-parser';
 
 export const enum SerovalMode {
   Vanilla = 1,
