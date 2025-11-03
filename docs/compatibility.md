@@ -16,7 +16,7 @@ function serializeWithTarget(value, disabledFeatures) {
   console.log(result);
 }
 
-serializeWithTarget(y, Feature.ArrowFunction | Feature.ObjectAssign);
+serializeWithTarget(y, Feature.ObjectAssign);
 serializeWithTarget(y, 0);
 ```
 
@@ -45,10 +45,6 @@ By default, all feature flags are enabled. The following are the feature flags a
 
 - [`AggregateError`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError)
   - Compiles down to `Error` instead.
-- [`ArrowFunction`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
-  - Uses function expressions for top-level and for deferred `Promise` values
-  - Uses function expressions for `Iterable`
-  - Uses function expressions for `AsyncIterable`
 - [`ErrorPrototypeStack`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack)
   - Skipped when detected.
   - Affects both `Error` and `AggregateError`
