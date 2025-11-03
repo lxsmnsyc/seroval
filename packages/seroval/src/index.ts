@@ -1,12 +1,28 @@
 export { Feature } from './core/compat';
 export type {
+  AsyncParsePluginContext,
+  AsyncParserContextOptions,
+} from './core/context/async-parser';
+export type {
+  BaseDeserializerContextOptions,
+  CrossDeserializerContextOptions,
+  DeserializePluginContext,
+  VanillaDeserializerContextOptions,
+} from './core/context/deserializer';
+export type { BaseParserContextOptions } from './core/context/parser';
+export type {
   BaseSerializerContextOptions,
+  CrossContextOptions,
   CrossSerializerContextOptions,
   SerializePluginContext,
   VanillaSerializerContextOptions,
 } from './core/context/serializer';
 export type {
-} from './core/context/parser';
+  StreamParsePluginContext,
+  StreamParserContextOptions,
+  SyncParsePluginContext,
+  SyncParserContextOptions,
+} from './core/context/sync-parser';
 export * from './core/cross';
 export * from './core/errors';
 export { getCrossReferenceHeader } from './core/keys';
