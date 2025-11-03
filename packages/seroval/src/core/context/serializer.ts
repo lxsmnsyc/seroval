@@ -1036,7 +1036,7 @@ function serializePromise(
     // just inline the value/reference here
     serialized = promiseConstructor + '(' + result + ')';
   }
-  return assignIndexedValue(ctx, id, serialized);
+  return serialized;
 }
 
 function serializeBoxed(

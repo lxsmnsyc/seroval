@@ -8,13 +8,41 @@ exports[`Headers > crossSerializeAsync > scoped > supports Headers 1`] = `"($R=>
 
 exports[`Headers > crossSerializeAsync > supports Headers 1`] = `"$R[0]=Promise.resolve($R[1]=new Headers($R[2]=[$R[3]=["content-encoding","gzip"],$R[4]=["content-type","text/plain"]]))"`;
 
-exports[`Headers > crossSerializeStream > scoped > supports Headers 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`Headers > crossSerializeStream > scoped > supports Headers 1`] = `
+"($R=>$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0}))($R["example"])"
+`;
 
-exports[`Headers > crossSerializeStream > scoped > supports Headers 2`] = `"($R=>($R[7]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Headers($R[4]=[$R[5]=["content-encoding","gzip"],$R[6]=["content-type","text/plain"]])))($R["example"])"`;
+exports[`Headers > crossSerializeStream > scoped > supports Headers 2`] = `
+"($R=>($R[7]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Headers($R[4]=[$R[5]=["content-encoding","gzip"],$R[6]=["content-type","text/plain"]])))($R["example"])"
+`;
 
-exports[`Headers > crossSerializeStream > supports Headers 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`Headers > crossSerializeStream > supports Headers 1`] = `
+"$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0})"
+`;
 
-exports[`Headers > crossSerializeStream > supports Headers 2`] = `"($R[7]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Headers($R[4]=[$R[5]=["content-encoding","gzip"],$R[6]=["content-type","text/plain"]]))"`;
+exports[`Headers > crossSerializeStream > supports Headers 2`] = `
+"($R[7]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Headers($R[4]=[$R[5]=["content-encoding","gzip"],$R[6]=["content-type","text/plain"]]))"
+`;
 
 exports[`Headers > serialize > supports Headers 1`] = `"new Headers([["content-encoding","gzip"],["content-type","text/plain"]])"`;
 

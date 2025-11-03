@@ -13,12 +13,12 @@ exports[`sealed object > crossSerialize > scoped > supports Symbol.iterator 1`] 
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -44,12 +44,12 @@ exports[`sealed object > crossSerialize > supports Symbol.iterator 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -90,14 +90,14 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -107,7 +107,7 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -127,18 +127,18 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -146,10 +146,10 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -184,7 +184,7 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -235,12 +235,12 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.iterator
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -281,14 +281,14 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -298,7 +298,7 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -318,18 +318,18 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -337,10 +337,10 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -375,7 +375,7 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -426,12 +426,12 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.iterator 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -488,14 +488,14 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -505,7 +505,7 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -525,18 +525,18 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -544,10 +544,10 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -582,7 +582,7 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -655,12 +655,12 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.iterato
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -735,14 +735,14 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -752,7 +752,7 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -772,18 +772,18 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -791,10 +791,10 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -829,7 +829,7 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -902,12 +902,12 @@ exports[`sealed object > crossSerializeStream > supports Symbol.iterator 2`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -951,12 +951,12 @@ exports[`sealed object > serialize > supports Symbol.iterator 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -997,14 +997,14 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -1014,7 +1014,7 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -1034,18 +1034,18 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -1053,10 +1053,10 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -1091,7 +1091,7 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -1142,12 +1142,12 @@ exports[`sealed object > serializeAsync > supports Symbol.iterator 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data

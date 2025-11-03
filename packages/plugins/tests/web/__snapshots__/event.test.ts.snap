@@ -8,13 +8,41 @@ exports[`Event > crossSerializeAsync > scoped > supports Event 1`] = `"($R=>$R[0
 
 exports[`Event > crossSerializeAsync > supports Event 1`] = `"$R[0]=Promise.resolve($R[1]=new Event("example",$R[2]={bubbles:!1,cancelable:!1,composed:!1}))"`;
 
-exports[`Event > crossSerializeStream > scoped > supports Event 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`Event > crossSerializeStream > scoped > supports Event 1`] = `
+"($R=>$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0}))($R["example"])"
+`;
 
-exports[`Event > crossSerializeStream > scoped > supports Event 2`] = `"($R=>($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Event("example",$R[4]={bubbles:!1,cancelable:!1,composed:!1})))($R["example"])"`;
+exports[`Event > crossSerializeStream > scoped > supports Event 2`] = `
+"($R=>($R[5]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Event("example",$R[4]={bubbles:!1,cancelable:!1,composed:!1})))($R["example"])"
+`;
 
-exports[`Event > crossSerializeStream > supports Event 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`Event > crossSerializeStream > supports Event 1`] = `
+"$R[0]=($R[2]=(resolver) => {
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver.p;
+})($R[1]={p:0,s:0,f:0})"
+`;
 
-exports[`Event > crossSerializeStream > supports Event 2`] = `"($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Event("example",$R[4]={bubbles:!1,cancelable:!1,composed:!1}))"`;
+exports[`Event > crossSerializeStream > supports Event 2`] = `
+"($R[5]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Event("example",$R[4]={bubbles:!1,cancelable:!1,composed:!1}))"
+`;
 
 exports[`Event > serialize > supports Event 1`] = `"new Event("example",{bubbles:!1,cancelable:!1,composed:!1})"`;
 

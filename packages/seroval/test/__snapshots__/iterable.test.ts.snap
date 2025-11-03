@@ -11,12 +11,12 @@ exports[`Iterable > crossSerialize > scoped > supports Iterables 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -38,12 +38,12 @@ exports[`Iterable > crossSerialize > supports Iterables 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -65,12 +65,12 @@ exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -92,12 +92,12 @@ exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -133,12 +133,12 @@ exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -174,12 +174,12 @@ exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -201,12 +201,12 @@ exports[`Iterable > serialize > supports Iterables 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data
@@ -228,12 +228,12 @@ exports[`Iterable > serializeAsync > supports Iterables 1`] = `
           done: true,
           value: void 0
         };
-      }
+      };
       const currentIndex = index++;
       const data = sequence.v[currentIndex];
       if (currentIndex === sequence.t) {
         throw data;
-      }
+      };
       return {
         done: currentIndex === sequence.d,
         value: data

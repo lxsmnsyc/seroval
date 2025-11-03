@@ -26,14 +26,14 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -43,7 +43,7 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -63,18 +63,18 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -82,10 +82,10 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -120,7 +120,7 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -186,14 +186,14 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -203,7 +203,7 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -223,18 +223,18 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -242,10 +242,10 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -280,7 +280,7 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -346,14 +346,14 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -363,7 +363,7 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -383,18 +383,18 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -402,10 +402,10 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -440,7 +440,7 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -514,14 +514,14 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -531,7 +531,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -551,18 +551,18 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -570,10 +570,10 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -608,7 +608,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
@@ -682,14 +682,14 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
-      }
+      };
       buffer.push(value);
     },
     throw: (value) => {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
-      }
+      };
       finalize();
       doneAt = buffer.length;
       isThrow = true;
@@ -699,7 +699,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
-      }
+      };
       finalize();
       doneAt = buffer.length;
       buffer.push(value);
@@ -719,18 +719,18 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
           createPromise(temp);
           pending.push(temp);
           return temp.p;
-        }
+        };
         return {
           done: false,
           value: buffer[index2]
         };
-      }
+      };
       if (count > doneAt) {
         return {
           done: true,
           value: void 0
         };
-      }
+      };
       const index = count++;
       const value = buffer[index];
       if (index !== doneAt) {
@@ -738,10 +738,10 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
           done: false,
           value
         };
-      }
+      };
       if (isThrow) {
         throw value;
-      }
+      };
       return {
         done: true,
         value
@@ -776,7 +776,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    }
+    };
     up(listener);
     return () => {
       if (alive) {
