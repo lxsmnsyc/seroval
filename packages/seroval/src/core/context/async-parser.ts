@@ -20,23 +20,23 @@ import {
   createStreamThrowNode,
   createStringNode,
   createTypedArrayNode,
-} from '../../base-primitives';
-import { Feature } from '../../compat';
-import { NIL, SerovalNodeType } from '../../constants';
-import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
+} from '../base-primitives';
+import { Feature } from '../compat';
+import { NIL, SerovalNodeType } from '../constants';
+import { SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
 import {
   FALSE_NODE,
   NULL_NODE,
   TRUE_NODE,
   UNDEFINED_NODE,
-} from '../../literals';
-import { createSerovalNode } from '../../node';
-import { OpaqueReference } from '../../opaque-reference';
-import type { SerovalMode } from '../../plugin';
-import { SpecialReference } from '../../special-reference';
-import type { Stream } from '../../stream';
-import { createStreamFromAsyncIterable, isStream } from '../../stream';
-import { serializeString } from '../../string';
+} from '../literals';
+import { createSerovalNode } from '../node';
+import { OpaqueReference } from '../opaque-reference';
+import type { SerovalMode } from '../plugin';
+import { SpecialReference } from '../special-reference';
+import type { Stream } from '../stream';
+import { createStreamFromAsyncIterable, isStream } from '../stream';
+import { serializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -55,15 +55,15 @@ import type {
   SerovalSetNode,
   SerovalStreamConstructorNode,
   SerovalTypedArrayNode,
-} from '../../types';
-import { getErrorOptions } from '../../utils/error';
-import { iteratorToSequence } from '../../utils/iterator-to-sequence';
-import promiseToResult from '../../utils/promise-to-result';
+} from '../types';
+import { getErrorOptions } from '../utils/error';
+import { iteratorToSequence } from '../utils/iterator-to-sequence';
+import promiseToResult from '../utils/promise-to-result';
 import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
-} from '../../utils/typed-array';
-import type { BaseParserContext, BaseParserContextOptions } from '../parser';
+} from '../utils/typed-array';
+import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createBaseParserContext,
   createMapNode,
@@ -75,7 +75,7 @@ import {
   ParserNodeType,
   parseSpecialReference,
   parseWellKnownSymbol,
-} from '../parser';
+} from './parser';
 
 type ObjectLikeNode =
   | SerovalObjectNode

@@ -1,14 +1,23 @@
-import type { BaseParserContextOptions } from '../context/parser';
 import {
   createAsyncParserContext,
   parseTopAsync,
-} from '../context/parser/async';
-import { createSyncParserContext, parseTop } from '../context/parser/sync';
-import { createVanillaSerializerContext, serializeTopVanilla } from '../context/serializer';
-import { type PluginAccessOptions, resolvePlugins, SerovalMode } from '../plugin';
+} from '../context/async-parser';
+import {
+  createVanillaDeserializerContext,
+  deserializeTop,
+} from '../context/deserializer';
+import type { BaseParserContextOptions } from '../context/parser';
+import {
+  createVanillaSerializerContext,
+  serializeTopVanilla,
+} from '../context/serializer';
+import { createSyncParserContext, parseTop } from '../context/sync-parser';
+import {
+  type PluginAccessOptions,
+  resolvePlugins,
+  SerovalMode,
+} from '../plugin';
 import type { SerovalNode } from '../types';
-import VanillaDeserializerContext from './deserializer';
-
 export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 
@@ -108,9 +117,9 @@ export function fromJSON<T>(
   options: PluginAccessOptions = {},
 ): T {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new VanillaDeserializerContext({
+  const ctx = createVanillaDeserializerContext({
     plugins,
     markedRefs: source.m,
   });
-  return ctx.deserializeTop(source.t) as T;
+  return deserializeTop(ctx, source.t) as T;
 }

@@ -11,7 +11,6 @@ import {
   SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR,
   SERIALIZED_ITERATOR_CONSTRUCTOR,
 } from '../constructors';
-import type { CrossContextOptions } from '../cross/utils';
 import {
   SerovalMissingPluginError,
   SerovalSerializationError,
@@ -234,6 +233,10 @@ export interface BaseSerializerContext extends PluginAccessOptions {
    * Refs that are...referenced
    */
   marked: Set<number>;
+}
+
+export interface CrossContextOptions {
+  scopeId?: string;
 }
 
 export function createBaseSerializerContext(

@@ -20,27 +20,22 @@ import {
   createStreamThrowNode,
   createStringNode,
   createTypedArrayNode,
-} from '../../base-primitives';
-import { Feature } from '../../compat';
-import { NIL, SerovalNodeType } from '../../constants';
-import { SerovalParserError, SerovalUnsupportedTypeError } from '../../errors';
-import {
-  FALSE_NODE,
-  NULL_NODE,
-  TRUE_NODE,
-  UNDEFINED_NODE,
-} from '../../literals';
-import { createSerovalNode } from '../../node';
-import { OpaqueReference } from '../../opaque-reference';
-import { type Plugin, SerovalMode } from '../../plugin';
-import { SpecialReference } from '../../special-reference';
-import type { Stream } from '../../stream';
+} from '../base-primitives';
+import { Feature } from '../compat';
+import { NIL, SerovalNodeType } from '../constants';
+import { SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
+import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
+import { createSerovalNode } from '../node';
+import { OpaqueReference } from '../opaque-reference';
+import { type Plugin, SerovalMode } from '../plugin';
+import { SpecialReference } from '../special-reference';
+import type { Stream } from '../stream';
 import {
   createStream,
   createStreamFromAsyncIterable,
   isStream,
-} from '../../stream';
-import { serializeString } from '../../string';
+} from '../stream';
+import { serializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -58,14 +53,14 @@ import type {
   SerovalPromiseConstructorNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
-} from '../../types';
-import { getErrorOptions } from '../../utils/error';
-import { iteratorToSequence } from '../../utils/iterator-to-sequence';
+} from '../types';
+import { getErrorOptions } from '../utils/error';
+import { iteratorToSequence } from '../utils/iterator-to-sequence';
 import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
-} from '../../utils/typed-array';
-import type { BaseParserContext, BaseParserContextOptions } from '../parser';
+} from '../utils/typed-array';
+import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createBaseParserContext,
   createIndexForValue,
@@ -78,7 +73,7 @@ import {
   ParserNodeType,
   parseSpecialReference,
   parseWellKnownSymbol,
-} from '../parser';
+} from './parser';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
@@ -813,7 +808,10 @@ export function startStreamParse<T>(
   }
 }
 
-function flushStreamParse(ctx: StreamParserContext, state: StreamParserState): void {
+function flushStreamParse(
+  ctx: StreamParserContext,
+  state: StreamParserState,
+): void {
   for (let i = 0, len = state.buffer.length; i < len; i++) {
     onParseInternal(ctx, state.buffer[i], false);
   }

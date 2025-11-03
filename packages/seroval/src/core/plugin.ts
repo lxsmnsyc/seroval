@@ -1,4 +1,4 @@
-import type BaseDeserializerContext from './context/deserializer';
+import type { DeserializePluginContext } from './context/deserializer';
 import type { AsyncParsePluginContext } from './context/parser/async';
 import type {
   StreamParsePluginContext,
@@ -58,7 +58,7 @@ export interface Plugin<Value, Node> {
    */
   deserialize(
     node: Node,
-    ctx: BaseDeserializerContext,
+    ctx: DeserializePluginContext,
     data: PluginData,
   ): Value;
 }

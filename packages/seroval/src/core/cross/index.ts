@@ -1,25 +1,31 @@
-import type { AsyncParserContextOptions } from '../context/parser/async';
+import type { AsyncParserContextOptions } from '../context/async-parser';
 import {
   createAsyncParserContext,
   parseTopAsync,
-} from '../context/parser/async';
+} from '../context/async-parser';
+import type { CrossDeserializerContextOptions } from '../context/deserializer';
+import {
+  createCrossDeserializerContext,
+  deserializeTop,
+} from '../context/deserializer';
+import type { CrossContextOptions } from '../context/serializer';
+import {
+  createCrossSerializerContext,
+  serializeTopCross,
+} from '../context/serializer';
 import type {
   StreamParserContextOptions,
   SyncParserContextOptions,
-} from '../context/parser/sync';
+} from '../context/sync-parser';
 import {
   createStreamParserContext,
   createSyncParserContext,
   destroyStreamParse,
   parseTop,
   startStreamParse,
-} from '../context/parser/sync';
-import { createCrossSerializerContext, serializeTopCross } from '../context/serializer';
+} from '../context/sync-parser';
 import { resolvePlugins, SerovalMode } from '../plugin';
 import type { SerovalNode } from '../types';
-import type { CrossDeserializerContextOptions } from './deserializer';
-import CrossDeserializerContext from './deserializer';
-import type { CrossContextOptions } from './utils';
 
 export interface CrossSerializeOptions
   extends SyncParserContextOptions,
@@ -172,9 +178,9 @@ export function fromCrossJSON<T>(
   options: FromCrossJSONOptions,
 ): T {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new CrossDeserializerContext({
+  const ctx = createCrossDeserializerContext({
     plugins,
     refs: options.refs,
   });
-  return ctx.deserializeTop(source) as T;
+  return deserializeTop(ctx, source) as T;
 }
