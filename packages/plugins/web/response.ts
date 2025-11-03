@@ -29,14 +29,18 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
     async async(value, ctx) {
       return {
         body: await ctx.parse(
-          value.body ? await value.clone().arrayBuffer() : null,
+          value.body && !value.bodyUsed
+            ? await value.clone().arrayBuffer()
+            : null,
         ),
         options: await ctx.parse(createResponseOptions(value)),
       };
     },
     stream(value, ctx) {
       return {
-        body: ctx.parse(value.clone().body),
+        body: ctx.parse(
+          value.body && !value.bodyUsed ? value.clone().body : null,
+        ),
         options: ctx.parse(createResponseOptions(value)),
       };
     },
