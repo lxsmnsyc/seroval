@@ -8,7 +8,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.2",
     "@changesets/cli": "^2.29.7",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "cs:ver": "changeset version",
