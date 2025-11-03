@@ -4,9 +4,9 @@ exports[`sparse arrays > crossSerialize > scoped > supports sparse arrays 1`] = 
 
 exports[`sparse arrays > crossSerialize > supports sparse arrays 1`] = `"$R[0]=[,,,,,,,,,,]"`;
 
-exports[`sparse arrays > crossSerializeAsync > scoped > supports sparse arrays 1`] = `"($R=>$R[0]=$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,]))($R["example"])"`;
+exports[`sparse arrays > crossSerializeAsync > scoped > supports sparse arrays 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,]))($R["example"])"`;
 
-exports[`sparse arrays > crossSerializeAsync > supports sparse arrays 1`] = `"$R[0]=$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,])"`;
+exports[`sparse arrays > crossSerializeAsync > supports sparse arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,])"`;
 
 exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 1`] = `
 "($R=>$R[0]=($R[2]=(resolver) => {

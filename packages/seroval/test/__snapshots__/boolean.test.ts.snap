@@ -4,9 +4,9 @@ exports[`boolean > crossSerialize > supports boolean 1`] = `"!0"`;
 
 exports[`boolean > crossSerialize > supports boolean 2`] = `"!1"`;
 
-exports[`boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=$R[0]=Promise.resolve(!0)"`;
+exports[`boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Promise.resolve(!0)"`;
 
-exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=$R[0]=Promise.resolve(!1)"`;
+exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Promise.resolve(!1)"`;
 
 exports[`boolean > crossSerializeStream > supports false value 1`] = `
 "$R[0]=($R[2]=(resolver) => {

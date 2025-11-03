@@ -55,7 +55,7 @@ exports[`Iterable > crossSerialize > supports Iterables 1`] = `
 `;
 
 exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `
-"($R=>$R[0]=$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
+"($R=>$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,
@@ -82,7 +82,7 @@ exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `
 `;
 
 exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `
-"$R[0]=$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
+"$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,

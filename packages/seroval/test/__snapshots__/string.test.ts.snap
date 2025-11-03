@@ -4,9 +4,9 @@ exports[`string > crossSerialize > supports strings 1`] = `""\\"hello\\"""`;
 
 exports[`string > crossSerialize > supports strings 2`] = `""\\x3Cscript>\\x3C/script>""`;
 
-exports[`string > crossSerializeAsync > supports strings 1`] = `"$R[0]=$R[0]=Promise.resolve("\\"hello\\"")"`;
+exports[`string > crossSerializeAsync > supports strings 1`] = `"$R[0]=Promise.resolve("\\"hello\\"")"`;
 
-exports[`string > crossSerializeAsync > supports strings 2`] = `"$R[0]=$R[0]=Promise.resolve("\\x3Cscript>\\x3C/script>")"`;
+exports[`string > crossSerializeAsync > supports strings 2`] = `"$R[0]=Promise.resolve("\\x3Cscript>\\x3C/script>")"`;
 
 exports[`string > crossSerializeStream > supports sanitized strings 1`] = `
 "$R[0]=($R[2]=(resolver) => {

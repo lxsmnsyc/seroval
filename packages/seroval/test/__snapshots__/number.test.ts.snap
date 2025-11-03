@@ -10,15 +10,15 @@ exports[`number > crossSerialize > supports numbers 4`] = `"-1/0"`;
 
 exports[`number > crossSerialize > supports numbers 5`] = `"-0"`;
 
-exports[`number > crossSerializeAsync > supports numbers 1`] = `"$R[0]=$R[0]=Promise.resolve(3735928559)"`;
+exports[`number > crossSerializeAsync > supports numbers 1`] = `"$R[0]=Promise.resolve(3735928559)"`;
 
-exports[`number > crossSerializeAsync > supports numbers 2`] = `"$R[0]=$R[0]=Promise.resolve(0/0)"`;
+exports[`number > crossSerializeAsync > supports numbers 2`] = `"$R[0]=Promise.resolve(0/0)"`;
 
-exports[`number > crossSerializeAsync > supports numbers 3`] = `"$R[0]=$R[0]=Promise.resolve(1/0)"`;
+exports[`number > crossSerializeAsync > supports numbers 3`] = `"$R[0]=Promise.resolve(1/0)"`;
 
-exports[`number > crossSerializeAsync > supports numbers 4`] = `"$R[0]=$R[0]=Promise.resolve(-1/0)"`;
+exports[`number > crossSerializeAsync > supports numbers 4`] = `"$R[0]=Promise.resolve(-1/0)"`;
 
-exports[`number > crossSerializeAsync > supports numbers 5`] = `"$R[0]=$R[0]=Promise.resolve(-0)"`;
+exports[`number > crossSerializeAsync > supports numbers 5`] = `"$R[0]=Promise.resolve(-0)"`;
 
 exports[`number > crossSerializeStream > supports -0 1`] = `
 "$R[0]=($R[2]=(resolver) => {

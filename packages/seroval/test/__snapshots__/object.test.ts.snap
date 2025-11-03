@@ -68,7 +68,7 @@ exports[`objects > crossSerialize > supports Symbol.iterator 1`] = `
 
 exports[`objects > crossSerialize > supports self-recursion 1`] = `"($R[0]={},$R[0].b=$R[0].a=$R[0],$R[0])"`;
 
-exports[`objects > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>$R[0]=$R[0]=Promise.resolve($R[1]={example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))($R["example"])"`;
+exports[`objects > crossSerializeAsync > scoped > supports Objects 1`] = `"($R=>$R[0]=Promise.resolve($R[1]={example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))($R["example"])"`;
 
 exports[`objects > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `
 "($R=>$R[0]={[$R[1]=Symbol.asyncIterator]:(($R[3]=(resolver) => {
@@ -231,7 +231,7 @@ exports[`objects > crossSerializeAsync > scoped > supports Symbol.asyncIterator 
 `;
 
 exports[`objects > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `
-"($R=>$R[0]=$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
+"($R=>$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,
@@ -257,9 +257,9 @@ exports[`objects > crossSerializeAsync > scoped > supports Symbol.iterator 1`] =
 })($R[2]))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
 `;
 
-exports[`objects > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]={a:$R[1]=$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=$R[2]=Promise.resolve().then(()=>$R[0])})($R["example"])"`;
+exports[`objects > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])})($R["example"])"`;
 
-exports[`objects > crossSerializeAsync > supports Objects 1`] = `"$R[0]=$R[0]=Promise.resolve($R[1]={example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})"`;
+exports[`objects > crossSerializeAsync > supports Objects 1`] = `"$R[0]=Promise.resolve($R[1]={example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})"`;
 
 exports[`objects > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `
 "($R[0]={[$R[1]=Symbol.asyncIterator]:(($R[3]=(resolver) => {
@@ -422,7 +422,7 @@ exports[`objects > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `
 `;
 
 exports[`objects > crossSerializeAsync > supports Symbol.iterator 1`] = `
-"$R[0]=$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
+"$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,
@@ -448,7 +448,7 @@ exports[`objects > crossSerializeAsync > supports Symbol.iterator 1`] = `
 })($R[2]))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})"
 `;
 
-exports[`objects > crossSerializeAsync > supports self-recursion 1`] = `"($R[0]={a:$R[1]=$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=$R[2]=Promise.resolve().then(()=>$R[0])})"`;
+exports[`objects > crossSerializeAsync > supports self-recursion 1`] = `"($R[0]={a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])})"`;
 
 exports[`objects > crossSerializeStream > scoped > supports Objects 1`] = `
 "($R=>$R[0]=($R[2]=(resolver) => {

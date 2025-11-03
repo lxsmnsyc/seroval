@@ -4,9 +4,9 @@ exports[`RegExp > crossSerialize > scoped > supports RegExp 1`] = `"($R=>$R[0]=/
 
 exports[`RegExp > crossSerialize > supports RegExp 1`] = `"$R[0]=/[a-z0-9]+/i"`;
 
-exports[`RegExp > crossSerializeAsync > scoped > supports RegExp 1`] = `"($R=>$R[0]=$R[0]=Promise.resolve($R[1]=/[a-z0-9]+/i))($R["example"])"`;
+exports[`RegExp > crossSerializeAsync > scoped > supports RegExp 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=/[a-z0-9]+/i))($R["example"])"`;
 
-exports[`RegExp > crossSerializeAsync > supports RegExp 1`] = `"$R[0]=$R[0]=Promise.resolve($R[1]=/[a-z0-9]+/i)"`;
+exports[`RegExp > crossSerializeAsync > supports RegExp 1`] = `"$R[0]=Promise.resolve($R[1]=/[a-z0-9]+/i)"`;
 
 exports[`RegExp > crossSerializeStream > scoped > supports RegExp 1`] = `
 "($R=>$R[0]=($R[2]=(resolver) => {

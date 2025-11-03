@@ -4,9 +4,9 @@ exports[`Plugin > crossSerialize > scoped > supports Plugin 1`] = `"($R=>$R[0]=B
 
 exports[`Plugin > crossSerialize > supports Plugin 1`] = `"$R[0]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64")"`;
 
-exports[`Plugin > crossSerializeAsync > scoped > supports Plugin 1`] = `"($R=>$R[0]=$R[0]=Promise.resolve($R[1]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64")))($R["example"])"`;
+exports[`Plugin > crossSerializeAsync > scoped > supports Plugin 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64")))($R["example"])"`;
 
-exports[`Plugin > crossSerializeAsync > supports Plugin 1`] = `"$R[0]=$R[0]=Promise.resolve($R[1]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64"))"`;
+exports[`Plugin > crossSerializeAsync > supports Plugin 1`] = `"$R[0]=Promise.resolve($R[1]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64"))"`;
 
 exports[`Plugin > crossSerializeStream > scoped > supports Plugin 1`] = `"($R=>$R[0]=Buffer.from("SGVsbG8sIFdvcmxkIQ==", "base64"))($R["example"])"`;
 

@@ -2,7 +2,7 @@
 
 exports[`bigint > crossSerialize > supports bigint 1`] = `"9007199254740991n"`;
 
-exports[`bigint > crossSerializeAsync > supports bigint 1`] = `"$R[0]=$R[0]=Promise.resolve(9007199254740991n)"`;
+exports[`bigint > crossSerializeAsync > supports bigint 1`] = `"$R[0]=Promise.resolve(9007199254740991n)"`;
 
 exports[`bigint > crossSerializeStream > supports bigint 1`] = `
 "$R[0]=($R[2]=(resolver) => {

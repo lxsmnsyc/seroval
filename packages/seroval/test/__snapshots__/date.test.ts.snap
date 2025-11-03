@@ -4,9 +4,9 @@ exports[`Date > crossSerialize > scoped > supports Date 1`] = `"($R=>$R[0]=new D
 
 exports[`Date > crossSerialize > supports Date 1`] = `"$R[0]=new Date("2023-03-14T11:16:24.879Z")"`;
 
-exports[`Date > crossSerializeAsync > scoped > supports Date 1`] = `"($R=>$R[0]=$R[0]=Promise.resolve($R[1]=new Date("2023-03-14T11:16:24.879Z")))($R["example"])"`;
+exports[`Date > crossSerializeAsync > scoped > supports Date 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Date("2023-03-14T11:16:24.879Z")))($R["example"])"`;
 
-exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=$R[0]=Promise.resolve($R[1]=new Date("2023-03-14T11:16:24.879Z"))"`;
+exports[`Date > crossSerializeAsync > supports Date 1`] = `"$R[0]=Promise.resolve($R[1]=new Date("2023-03-14T11:16:24.879Z"))"`;
 
 exports[`Date > crossSerializeStream > scoped > supports Date 1`] = `
 "($R=>$R[0]=($R[2]=(resolver) => {
