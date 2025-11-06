@@ -3,10 +3,10 @@ import type { SerovalNode } from './types';
 
 const { toString: objectToString } = /* @__PURE__ */ Object.prototype;
 
-function getErrorMessage(type: string, cause: any): string {
+function getErrorMessage(type: string, cause: unknown): string {
   if (cause instanceof Error) {
     return `Seroval caught an error during the ${type} process.
-  
+
 ${cause.name}
 ${cause.message}
 
@@ -23,26 +23,26 @@ For more information, please check the "cause" property of this error.`;
 export class SerovalError extends Error {
   constructor(
     type: string,
-    public cause: any,
+    public cause: unknown,
   ) {
     super(getErrorMessage(type, cause));
   }
 }
 
 export class SerovalParserError extends SerovalError {
-  constructor(cause: any) {
+  constructor(cause: unknown) {
     super('parsing', cause);
   }
 }
 
 export class SerovalSerializationError extends SerovalError {
-  constructor(cause: any) {
+  constructor(cause: unknown) {
     super('serialization', cause);
   }
 }
 
 export class SerovalDeserializationError extends SerovalError {
-  constructor(cause: any) {
+  constructor(cause: unknown) {
     super('deserialization', cause);
   }
 }

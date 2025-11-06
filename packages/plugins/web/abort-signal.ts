@@ -3,21 +3,21 @@ import { createPlugin } from 'seroval';
 
 function resolveAbortSignalResult(
   this: AbortSignal,
-  resolve: (value: any) => void,
+  resolve: (value: unknown) => void,
 ): void {
   resolve(this.reason);
 }
 
 function resolveAbortSignal(
   this: AbortSignal,
-  resolve: (value: any) => void,
+  resolve: (value: unknown) => void,
 ): void {
   this.addEventListener('abort', resolveAbortSignalResult.bind(this, resolve), {
     once: true,
   });
 }
 
-export function abortSignalToPromise(signal: AbortSignal): Promise<any> {
+export function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
   return new Promise(resolveAbortSignal.bind(signal));
 }
 
