@@ -725,7 +725,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""}))"`;
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
-"((h,j)=>((stream) => new ReadableStream({
+"(h=>((stream) => new ReadableStream({
   start: (controller) => {
     stream.on({
       next: (value) => {
@@ -745,7 +745,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
       }
     });
   }
-}))((j=(() => {
+}))((h=(() => {
   const buffer = [];
   const listeners = [];
   let alive = true;
@@ -809,11 +809,11 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
       }
     }
   };
-})(),j.next("foo"),j.next("bar"),j.next("baz"),j.return(void 0),j)))()"
+})(),h.next("foo"),h.next("bar"),h.next("baz"),h.return(void 0),h)))()"
 `;
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = `
-"((h,j)=>((stream) => new ReadableStream({
+"(h=>((stream) => new ReadableStream({
   start: (controller) => {
     stream.on({
       next: (value) => {
@@ -833,7 +833,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
       }
     });
   }
-}))((j=(() => {
+}))((h=(() => {
   const buffer = [];
   const listeners = [];
   let alive = true;
@@ -897,7 +897,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
       }
     }
   };
-})(),j.throw(Object.assign(new Error("Oops!"),{stack:""})),j)))()"
+})(),h.throw(Object.assign(new Error("Oops!"),{stack:""})),h)))()"
 `;
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream errors 2`] = `[Error: Oops!]`;
