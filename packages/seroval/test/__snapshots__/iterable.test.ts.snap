@@ -191,7 +191,7 @@ exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `
 `;
 
 exports[`Iterable > serialize > supports Iterables 1`] = `
-"((h,j)=>({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+"(h=>({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,
@@ -218,7 +218,7 @@ exports[`Iterable > serialize > supports Iterables 1`] = `
 `;
 
 exports[`Iterable > serializeAsync > supports Iterables 1`] = `
-"((h,j)=>Promise.resolve({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+"(h=>Promise.resolve({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,

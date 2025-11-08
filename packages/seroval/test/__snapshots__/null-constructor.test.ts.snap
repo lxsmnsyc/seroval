@@ -947,7 +947,7 @@ exports[`null-constructor > crossSerializeStream > supports self-recursion 3`] =
 exports[`null-constructor > serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})"`;
 
 exports[`null-constructor > serialize > supports Symbol.iterator 1`] = `
-"((h,j)=>Object.assign(Object.create(null),{[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+"(h=>Object.assign(Object.create(null),{[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,
@@ -978,7 +978,7 @@ exports[`null-constructor > serialize > supports self-recursion 1`] = `"(h=>(h=O
 exports[`null-constructor > serializeAsync > supports Object.create(null) 1`] = `"Promise.resolve(Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))"`;
 
 exports[`null-constructor > serializeAsync > supports Symbol.asyncIterator 1`] = `
-"((h,j,k,m,o)=>Object.assign(Object.create(null),{[h=Symbol.asyncIterator]:((j=(resolver) => {
+"((h,j,k)=>Object.assign(Object.create(null),{[h=Symbol.asyncIterator]:((j=(resolver) => {
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -1070,7 +1070,7 @@ exports[`null-constructor > serializeAsync > supports Symbol.asyncIterator 1`] =
     }
   };
   return instance;
-})(h,j)))((o=(() => {
+})(h,j)))((k=(() => {
   const buffer = [];
   const listeners = [];
   let alive = true;
@@ -1134,11 +1134,11 @@ exports[`null-constructor > serializeAsync > supports Symbol.asyncIterator 1`] =
       }
     }
   };
-})(),o.next(1),o.next(2),o.next(3),o.return(void 0),o))}))()"
+})(),k.next(1),k.next(2),k.next(3),k.return(void 0),k))}))()"
 `;
 
 exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `
-"((h,j)=>Promise.resolve(Object.assign(Object.create(null),{[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+"(h=>Promise.resolve(Object.assign(Object.create(null),{[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,

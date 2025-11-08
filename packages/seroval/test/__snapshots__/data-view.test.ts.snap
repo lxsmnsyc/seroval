@@ -1,12 +1,48 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`DataView > crossSerialize > scoped > supports DataView 1`] = `"($R=>$R[0]=new DataView($R[1]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))($R["example"])"`;
+exports[`DataView > crossSerialize > scoped > supports DataView 1`] = `
+"($R=>$R[0]=new DataView($R[1]=($R[2]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16))($R["example"])"
+`;
 
-exports[`DataView > crossSerialize > supports DataView 1`] = `"$R[0]=new DataView($R[1]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
+exports[`DataView > crossSerialize > supports DataView 1`] = `
+"$R[0]=new DataView($R[1]=($R[2]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16)"
+`;
 
-exports[`DataView > crossSerializeAsync > scoped > supports DataView 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R["example"])"`;
+exports[`DataView > crossSerializeAsync > scoped > supports DataView 1`] = `
+"($R=>$R[0]=Promise.resolve($R[1]=new DataView($R[2]=($R[3]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16)))($R["example"])"
+`;
 
-exports[`DataView > crossSerializeAsync > supports DataView 1`] = `"$R[0]=Promise.resolve($R[1]=new DataView($R[2]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
+exports[`DataView > crossSerializeAsync > supports DataView 1`] = `
+"$R[0]=Promise.resolve($R[1]=new DataView($R[2]=($R[3]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16))"
+`;
 
 exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `
 "($R=>$R[0]=($R[2]=(resolver) => {
@@ -19,11 +55,18 @@ exports[`DataView > crossSerializeStream > scoped > supports DataView 1`] = `
 `;
 
 exports[`DataView > crossSerializeStream > scoped > supports DataView 2`] = `
-"($R=>($R[5]=(resolver, data) => {
+"($R=>($R[6]=(resolver, data) => {
   resolver.s(data);
   resolver.p.s = 1;
   resolver.p.v = data;
-})($R[1],$R[3]=new DataView($R[4]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)))($R["example"])"
+})($R[1],$R[3]=new DataView($R[4]=($R[5]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16)))($R["example"])"
 `;
 
 exports[`DataView > crossSerializeStream > supports DataView 1`] = `
@@ -37,25 +80,50 @@ exports[`DataView > crossSerializeStream > supports DataView 1`] = `
 `;
 
 exports[`DataView > crossSerializeStream > supports DataView 2`] = `
-"($R[5]=(resolver, data) => {
+"($R[6]=(resolver, data) => {
   resolver.s(data);
   resolver.p.s = 1;
   resolver.p.v = data;
-})($R[1],$R[3]=new DataView($R[4]=new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"
+})($R[1],$R[3]=new DataView($R[4]=($R[5]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16))"
 `;
 
-exports[`DataView > serialize > supports DataView 1`] = `"new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16)"`;
+exports[`DataView > serialize > supports DataView 1`] = `
+"new DataView(((length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16)"
+`;
 
-exports[`DataView > serializeAsync > supports DataView 1`] = `"Promise.resolve(new DataView(new Uint8Array([0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]).buffer,0,16))"`;
+exports[`DataView > serializeAsync > supports DataView 1`] = `
+"Promise.resolve(new DataView(((length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(16,"AAAqAAAAAAAAAAAAAAAAAA=="),0,16))"
+`;
 
-exports[`DataView > toCrossJSON > supports DataView 1`] = `"{"t":20,"i":0,"l":16,"f":{"t":19,"i":1,"s":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},"b":0}"`;
+exports[`DataView > toCrossJSON > supports DataView 1`] = `"{"t":20,"i":0,"l":16,"f":{"t":19,"i":1,"s":"AAAqAAAAAAAAAAAAAAAAAA==","l":16,"f":{"t":26,"i":2,"s":5}},"b":0}"`;
 
-exports[`DataView > toCrossJSONAsync > supports DataView 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":20,"i":1,"l":16,"f":{"t":19,"i":2,"s":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},"b":0}}"`;
+exports[`DataView > toCrossJSONAsync > supports DataView 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":20,"i":1,"l":16,"f":{"t":19,"i":2,"s":"AAAqAAAAAAAAAAAAAAAAAA==","l":16,"f":{"t":26,"i":3,"s":5}},"b":0}}"`;
 
 exports[`DataView > toCrossJSONStream > supports DataView 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`DataView > toCrossJSONStream > supports DataView 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":5,"s":2},{"t":20,"i":3,"l":16,"f":{"t":19,"i":4,"s":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},"b":0}]}"`;
+exports[`DataView > toCrossJSONStream > supports DataView 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":20,"i":3,"l":16,"f":{"t":19,"i":4,"s":"AAAqAAAAAAAAAAAAAAAAAA==","l":16,"f":{"t":26,"i":5,"s":5}},"b":0}]}"`;
 
-exports[`DataView > toJSON > supports DataView 1`] = `"{"t":{"t":20,"i":0,"l":16,"f":{"t":19,"i":1,"s":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},"b":0},"f":31,"m":[]}"`;
+exports[`DataView > toJSON > supports DataView 1`] = `"{"t":{"t":20,"i":0,"l":16,"f":{"t":19,"i":1,"s":"AAAqAAAAAAAAAAAAAAAAAA==","l":16,"f":{"t":26,"i":2,"s":5}},"b":0},"f":31,"m":[]}"`;
 
-exports[`DataView > toJSONAsync > supports DataView 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":20,"i":1,"l":16,"f":{"t":19,"i":2,"s":[0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0]},"b":0}},"f":31,"m":[]}"`;
+exports[`DataView > toJSONAsync > supports DataView 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":20,"i":1,"l":16,"f":{"t":19,"i":2,"s":"AAAqAAAAAAAAAAAAAAAAAA==","l":16,"f":{"t":26,"i":3,"s":5}},"b":0}},"f":31,"m":[]}"`;

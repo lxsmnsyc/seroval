@@ -657,7 +657,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 4`] = `"
 exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 5`] = `"$R[4].return(void 0)"`;
 
 exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
-"((h,j,k,m,o)=>({title:"Hello World",[h=Symbol.asyncIterator]:((j=(resolver) => {
+"((h,j,k)=>({title:"Hello World",[h=Symbol.asyncIterator]:((j=(resolver) => {
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -749,7 +749,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
     }
   };
   return instance;
-})(h,j)))((o=(() => {
+})(h,j)))((k=(() => {
   const buffer = [];
   const listeners = [];
   let alive = true;
@@ -813,7 +813,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
       }
     }
   };
-})(),o.next(1),o.next(2),o.next(3),o.return(void 0),o))}))()"
+})(),k.next(1),k.next(2),k.next(3),k.return(void 0),k))}))()"
 `;
 
 exports[`AsyncIterable > toCrossJSONAsync > supports AsyncIterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":2},"o":0}"`;

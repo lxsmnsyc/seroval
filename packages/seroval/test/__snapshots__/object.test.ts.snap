@@ -947,7 +947,7 @@ exports[`objects > crossSerializeStream > supports self-recursion 3`] = `"$R[6](
 exports[`objects > serialize > supports Objects 1`] = `"({example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})"`;
 
 exports[`objects > serialize > supports Symbol.iterator 1`] = `
-"((h,j)=>({[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+"(h=>({[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,
@@ -978,7 +978,7 @@ exports[`objects > serialize > supports self-recursion 1`] = `"(h=>(h={},h.b=h.a
 exports[`objects > serializeAsync > supports Objects 1`] = `"Promise.resolve({example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})"`;
 
 exports[`objects > serializeAsync > supports Symbol.asyncIterator 1`] = `
-"((h,j,k,m,o)=>({[h=Symbol.asyncIterator]:((j=(resolver) => {
+"((h,j,k)=>({[h=Symbol.asyncIterator]:((j=(resolver) => {
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -1070,7 +1070,7 @@ exports[`objects > serializeAsync > supports Symbol.asyncIterator 1`] = `
     }
   };
   return instance;
-})(h,j)))((o=(() => {
+})(h,j)))((k=(() => {
   const buffer = [];
   const listeners = [];
   let alive = true;
@@ -1134,11 +1134,11 @@ exports[`objects > serializeAsync > supports Symbol.asyncIterator 1`] = `
       }
     }
   };
-})(),o.next(1),o.next(2),o.next(3),o.return(void 0),o))}))()"
+})(),k.next(1),k.next(2),k.next(3),k.return(void 0),k))}))()"
 `;
 
 exports[`objects > serializeAsync > supports Symbol.iterator 1`] = `
-"((h,j)=>Promise.resolve({[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+"(h=>Promise.resolve({[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
     [symbol]: () => instance,
