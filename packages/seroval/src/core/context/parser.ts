@@ -16,8 +16,10 @@ import {
   SPECIAL_REFS,
   SpecialReference,
 } from '../special-reference';
+import { serializeString } from '../string';
 import { SYM_ASYNC_ITERATOR, SYM_ITERATOR } from '../symbols';
 import type {
+  SerovalArrayBufferNode,
   SerovalAsyncIteratorFactoryNode,
   SerovalIndexedValueNode,
   SerovalIteratorFactoryNode,
@@ -31,7 +33,6 @@ import type {
   SerovalSpecialReferenceNode,
   SerovalWKSymbolNode,
 } from '../types';
-import assert from '../utils/assert';
 import { getObjectFlag } from '../utils/get-object-flag';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
@@ -159,8 +160,10 @@ export function parseWellKnownSymbol(
   if (ref.type !== ParserNodeType.Fresh) {
     return ref.value;
   }
-  assert(current in INV_SYMBOL_REF, new SerovalUnsupportedTypeError(current));
-  return createWKSymbolNode(ref.value, current as WellKnownSymbols);
+  if (current in INV_SYMBOL_REF) {
+    return createWKSymbolNode(ref.value, current as WellKnownSymbols);
+  }
+  throw new SerovalUnsupportedTypeError(current);
 }
 
 export function parseSpecialReference(
@@ -297,6 +300,33 @@ export function createPromiseConstructorNode(
     NIL,
     NIL,
     parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
+    NIL,
+    NIL,
+  );
+}
+
+export function createArrayBufferNode(
+  ctx: BaseParserContext,
+  id: number,
+  current: ArrayBuffer,
+): SerovalArrayBufferNode {
+  const bytes = new Uint8Array(current);
+  const len = bytes.length;
+  let result = '';
+  for (let i = 0; i < len; i++) {
+    result += String.fromCharCode(bytes[i]);
+  }
+  return createSerovalNode(
+    SerovalNodeType.ArrayBuffer,
+    id,
+    serializeString(btoa(result)),
+    len,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    parseSpecialReference(ctx, SpecialReference.ArrayBufferConstructor),
     NIL,
     NIL,
   );

@@ -20,7 +20,7 @@ import { createFunction } from '../function-string';
 import { GLOBAL_CONTEXT_REFERENCES, REFERENCES_KEY } from '../keys';
 import type { PluginAccessOptions } from '../plugin';
 import { SerovalMode } from '../plugin';
-import { serializeSpecialReferenceValue } from '../special-reference';
+import { SPECIAL_REF_STRING } from '../special-reference';
 import { serializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
@@ -942,18 +942,8 @@ function serializeMap(ctx: SerializerContext, node: SerovalMapNode): string {
   return serialized;
 }
 
-function serializeArrayBuffer(node: SerovalArrayBufferNode): string {
-  let result = 'new Uint8Array(';
-  const buffer = node.s;
-  const len = buffer.length;
-  if (len) {
-    result += '[' + buffer[0];
-    for (let i = 1; i < len; i++) {
-      result += ',' + buffer[i];
-    }
-    result += ']';
-  }
-  return result + ').buffer';
+function serializeArrayBuffer(ctx: SerializerContext, node: SerovalArrayBufferNode): string {
+  return getConstructor(ctx, node.f) + '(' + node.l + ',"' + node.s + '")'
 }
 
 function serializeTypedArray(
@@ -1054,7 +1044,7 @@ function getConstructor(
   node: SerovalNodeWithID,
 ): string {
   const current = serialize(ctx, node);
-  return current === getRefParam(ctx, node.i) ? current : '(' + current + ')';
+  return node.t === SerovalNodeType.IndexedValue ? current : '(' + current + ')';
 }
 
 function serializePromiseConstructor(
@@ -1269,7 +1259,7 @@ function serializeAssignable(
     case SerovalNodeType.Map:
       return serializeMap(ctx, node);
     case SerovalNodeType.ArrayBuffer:
-      return serializeArrayBuffer(node);
+      return serializeArrayBuffer(ctx, node);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
       return serializeTypedArray(ctx, node);
@@ -1288,7 +1278,7 @@ function serializeAssignable(
     case SerovalNodeType.Plugin:
       return serializePlugin(ctx, node);
     case SerovalNodeType.SpecialReference:
-      return serializeSpecialReferenceValue(node.s);
+      return SPECIAL_REF_STRING[node.s];
     default:
       throw new SerovalUnsupportedNodeError(node);
   }

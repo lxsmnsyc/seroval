@@ -1,6 +1,5 @@
 import {
   createAggregateErrorNode,
-  createArrayBufferNode,
   createArrayNode,
   createAsyncIteratorFactoryInstanceNode,
   createBigIntNode,
@@ -36,7 +35,12 @@ import {
   isStream,
 } from '../stream';
 import { serializeString } from '../string';
-import { SYM_ASYNC_ITERATOR, SYM_IS_CONCAT_SPREADABLE, SYM_ITERATOR, SYM_TO_STRING_TAG } from '../symbols';
+import {
+  SYM_ASYNC_ITERATOR,
+  SYM_IS_CONCAT_SPREADABLE,
+  SYM_ITERATOR,
+  SYM_TO_STRING_TAG,
+} from '../symbols';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -63,6 +67,7 @@ import type {
 } from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
+  createArrayBufferNode,
   createBaseParserContext,
   createIndexForValue,
   createMapNode,
@@ -260,7 +265,9 @@ function parseProperties(
   }
   if (SYM_IS_CONCAT_SPREADABLE in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_IS_CONCAT_SPREADABLE));
-    valueNodes.push(properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE);
+    valueNodes.push(
+      properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE,
+    );
   }
   return {
     k: keyNodes,
@@ -591,7 +598,11 @@ function parseObjectPhase2(
     case BigInt:
       return parseBoxed(ctx, id, current);
     case ArrayBuffer:
-      return createArrayBufferNode(id, current as unknown as ArrayBuffer);
+      return createArrayBufferNode(
+        ctx.base,
+        id,
+        current as unknown as ArrayBuffer,
+      );
     case Int8Array:
     case Int16Array:
     case Int32Array:

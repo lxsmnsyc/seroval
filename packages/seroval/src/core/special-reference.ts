@@ -1,4 +1,5 @@
 import {
+  SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR,
   SERIALIZED_PROMISE_CONSTRUCTOR,
   SERIALIZED_PROMISE_FAILURE,
   SERIALIZED_PROMISE_SUCCESS,
@@ -15,6 +16,7 @@ export const enum SpecialReference {
   PromiseSuccess = 2,
   PromiseFailure = 3,
   StreamConstructor = 4,
+  ArrayBufferConstructor = 5,
 }
 
 /**
@@ -26,21 +28,15 @@ export const SPECIAL_REFS: Record<SpecialReference, unknown> = {
   [SpecialReference.PromiseSuccess]: {},
   [SpecialReference.PromiseFailure]: {},
   [SpecialReference.StreamConstructor]: {},
+  [SpecialReference.ArrayBufferConstructor]: {},
 };
 
-export function serializeSpecialReferenceValue(ref: SpecialReference): string {
-  switch (ref) {
-    case SpecialReference.MapSentinel:
-      return '[]';
-    case SpecialReference.PromiseConstructor:
-      return SERIALIZED_PROMISE_CONSTRUCTOR;
-    case SpecialReference.PromiseSuccess:
-      return SERIALIZED_PROMISE_SUCCESS;
-    case SpecialReference.PromiseFailure:
-      return SERIALIZED_PROMISE_FAILURE;
-    case SpecialReference.StreamConstructor:
-      return SERIALIZED_STREAM_CONSTRUCTOR;
-    default:
-      return '';
-  }
-}
+export const SPECIAL_REF_STRING: Record<SpecialReference, string> = {
+  [SpecialReference.MapSentinel]: '[]',
+  [SpecialReference.PromiseConstructor]: SERIALIZED_PROMISE_CONSTRUCTOR,
+  [SpecialReference.PromiseSuccess]: SERIALIZED_PROMISE_SUCCESS,
+  [SpecialReference.PromiseFailure]: SERIALIZED_PROMISE_FAILURE,
+  [SpecialReference.StreamConstructor]: SERIALIZED_STREAM_CONSTRUCTOR,
+  [SpecialReference.ArrayBufferConstructor]:
+    SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR,
+};

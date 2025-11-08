@@ -5,6 +5,7 @@ import {
   SerovalObjectFlags,
   SYMBOL_REF,
 } from '../constants';
+import { ARRAY_BUFFER_CONSTRUCTOR } from '../constructors';
 import {
   SerovalDeserializationError,
   SerovalMissingInstanceError,
@@ -50,7 +51,6 @@ import type {
   SerovalStreamThrowNode,
   SerovalTypedArrayNode,
 } from '../types';
-import assert from '../utils/assert';
 import type { Deferred } from '../utils/deferred';
 import { createDeferred } from '../utils/deferred';
 import type { Sequence } from '../utils/iterator-to-sequence';
@@ -137,7 +137,6 @@ export interface CrossDeserializerContext {
 
 export type CrossDeserializerContextOptions = BaseDeserializerContextOptions;
 
-
 export function createCrossDeserializerContext(
   options: CrossDeserializerContextOptions,
 ): CrossDeserializerContext {
@@ -153,9 +152,7 @@ type DeserializerContext =
   | CrossDeserializerContext;
 
 export class DeserializePluginContext {
-  constructor(private _p: DeserializerContext) {
-
-  }
+  constructor(private _p: DeserializerContext) {}
 
   deserialize<T>(node: SerovalNode): T {
     return deserialize(this._p, node) as T;
@@ -311,8 +308,11 @@ function deserializeArrayBuffer(
   ctx: DeserializerContext,
   node: SerovalArrayBufferNode,
 ): ArrayBuffer {
-  const bytes = new Uint8Array(node.s);
-  const result = assignIndexedValue(ctx, node.i, bytes.buffer);
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    ARRAY_BUFFER_CONSTRUCTOR(node.l, deserializeString(node.s)),
+  );
   return result;
 }
 
@@ -449,9 +449,11 @@ function deserializePromiseResolve(
   node: SerovalPromiseResolveNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Deferred | undefined;
-  assert(deferred, new SerovalMissingInstanceError('Promise'));
-  deferred.resolve(deserialize(ctx, node.a[1]));
-  return undefined;
+  if (deferred) {
+    deferred.resolve(deserialize(ctx, node.a[1]));
+    return undefined;
+  }
+  throw new SerovalMissingInstanceError('Promise');
 }
 
 function deserializePromiseReject(
@@ -459,9 +461,11 @@ function deserializePromiseReject(
   node: SerovalPromiseRejectNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Deferred | undefined;
-  assert(deferred, new SerovalMissingInstanceError('Promise'));
-  deferred.reject(deserialize(ctx, node.a[1]));
-  return undefined;
+  if (deferred) {
+    deferred.reject(deserialize(ctx, node.a[1]));
+    return undefined;
+  }
+  throw new SerovalMissingInstanceError('Promise');
 }
 
 function deserializeIteratorFactoryInstance(
@@ -501,9 +505,11 @@ function deserializeStreamNext(
   node: SerovalStreamNextNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  assert(deferred, new SerovalMissingInstanceError('Stream'));
-  deferred.next(deserialize(ctx, node.f));
-  return undefined;
+  if (deferred) {
+    deferred.next(deserialize(ctx, node.f));
+    return undefined;
+  }
+  throw new SerovalMissingInstanceError('Stream');
 }
 
 function deserializeStreamThrow(
@@ -511,9 +517,11 @@ function deserializeStreamThrow(
   node: SerovalStreamThrowNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  assert(deferred, new SerovalMissingInstanceError('Stream'));
-  deferred.throw(deserialize(ctx, node.f));
-  return undefined;
+  if (deferred) {
+    deferred.throw(deserialize(ctx, node.f));
+    return undefined;
+  }
+  throw new SerovalMissingInstanceError('Stream');
 }
 
 function deserializeStreamReturn(
@@ -521,9 +529,11 @@ function deserializeStreamReturn(
   node: SerovalStreamReturnNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  assert(deferred, new SerovalMissingInstanceError('Stream'));
-  deferred.return(deserialize(ctx, node.f));
-  return undefined;
+  if (deferred) {
+    deferred.return(deserialize(ctx, node.f));
+    return undefined;
+  }
+  throw new SerovalMissingInstanceError('Stream');
 }
 
 function deserializeIteratorFactory(
