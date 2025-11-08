@@ -37,6 +37,7 @@ import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
 import { createStreamFromAsyncIterable, isStream } from '../stream';
 import { serializeString } from '../string';
+import { SYM_ASYNC_ITERATOR, SYM_IS_CONCAT_SPREADABLE, SYM_ITERATOR, SYM_TO_STRING_TAG } from '../symbols';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayNode,
@@ -141,9 +142,8 @@ async function parseProperties(
     valueNodes.push(await parseAsync(ctx, entries[i][1]));
   }
   // Check special properties
-  let symbol = Symbol.iterator;
-  if (symbol in properties) {
-    keyNodes.push(parseWellKnownSymbol(ctx.base, symbol));
+  if (SYM_ITERATOR in properties) {
+    keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ITERATOR));
     valueNodes.push(
       createIteratorFactoryInstanceNode(
         parseIteratorFactory(ctx.base),
@@ -154,9 +154,8 @@ async function parseProperties(
       ),
     );
   }
-  symbol = Symbol.asyncIterator;
-  if (symbol in properties) {
-    keyNodes.push(parseWellKnownSymbol(ctx.base, symbol));
+  if (SYM_ASYNC_ITERATOR in properties) {
+    keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ASYNC_ITERATOR));
     valueNodes.push(
       createAsyncIteratorFactoryInstanceNode(
         parseAsyncIteratorFactory(ctx.base),
@@ -169,15 +168,13 @@ async function parseProperties(
       ),
     );
   }
-  symbol = Symbol.toStringTag;
-  if (symbol in properties) {
-    keyNodes.push(parseWellKnownSymbol(ctx.base, symbol));
-    valueNodes.push(createStringNode(properties[symbol] as string));
+  if (SYM_TO_STRING_TAG in properties) {
+    keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_TO_STRING_TAG));
+    valueNodes.push(createStringNode(properties[SYM_TO_STRING_TAG] as string));
   }
-  symbol = Symbol.isConcatSpreadable;
-  if (symbol in properties) {
-    keyNodes.push(parseWellKnownSymbol(ctx.base, symbol));
-    valueNodes.push(properties[symbol] ? TRUE_NODE : FALSE_NODE);
+  if (SYM_IS_CONCAT_SPREADABLE in properties) {
+    keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_IS_CONCAT_SPREADABLE));
+    valueNodes.push(properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE);
   }
   return {
     k: keyNodes,
@@ -515,7 +512,7 @@ export async function parseObjectAsync(
   }
   // Generator functions don't have a global constructor
   // despite existing
-  if (Symbol.iterator in current || Symbol.asyncIterator in current) {
+  if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) {
     return parsePlainObject(ctx, id, current, !!currentClass);
   }
   throw new SerovalUnsupportedTypeError(current);

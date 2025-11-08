@@ -1,4 +1,5 @@
 import { ITERATOR_CONSTRUCTOR } from '../constructors';
+import { SYM_ITERATOR } from '../symbols';
 
 export interface Sequence {
   v: unknown[];
@@ -11,7 +12,7 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
   let throwsAt = -1;
   let doneAt = -1;
 
-  const iterator = source[Symbol.iterator]();
+  const iterator = source[SYM_ITERATOR]();
 
   while (true) {
     try {
@@ -34,7 +35,7 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
   };
 }
 
-const createIterator = ITERATOR_CONSTRUCTOR(Symbol.iterator);
+const createIterator = ITERATOR_CONSTRUCTOR(SYM_ITERATOR);
 
 export function sequenceToIterator<T>(
   sequence: Sequence,

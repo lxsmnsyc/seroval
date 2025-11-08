@@ -16,6 +16,7 @@ import {
   SPECIAL_REFS,
   SpecialReference,
 } from '../special-reference';
+import { SYM_ASYNC_ITERATOR, SYM_ITERATOR } from '../symbols';
 import type {
   SerovalAsyncIteratorFactoryNode,
   SerovalIndexedValueNode,
@@ -203,7 +204,7 @@ export function parseIteratorFactory(
     NIL,
     NIL,
     NIL,
-    parseWellKnownSymbol(ctx, Symbol.iterator),
+    parseWellKnownSymbol(ctx, SYM_ITERATOR),
     NIL,
     NIL,
   );
@@ -227,7 +228,7 @@ export function parseAsyncIteratorFactory(
     NIL,
     [
       parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
-      parseWellKnownSymbol(ctx, Symbol.asyncIterator),
+      parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR),
     ],
     NIL,
     NIL,

@@ -3,6 +3,7 @@ import {
   PROMISE_CONSTRUCTOR,
   STREAM_CONSTRUCTOR,
 } from './constructors';
+import { SYM_ASYNC_ITERATOR } from './symbols';
 
 export interface StreamListener<T> {
   next(value: T): void;
@@ -33,7 +34,7 @@ export function createStreamFromAsyncIterable<T>(
 ): Stream<T> {
   const stream = createStream<T>();
 
-  const iterator = iterable[Symbol.asyncIterator]();
+  const iterator = iterable[SYM_ASYNC_ITERATOR]();
 
   async function push(): Promise<void> {
     try {
@@ -57,7 +58,7 @@ export function createStreamFromAsyncIterable<T>(
 }
 
 const createAsyncIterable = ASYNC_ITERATOR_CONSTRUCTOR(
-  Symbol.asyncIterator,
+  SYM_ASYNC_ITERATOR,
   PROMISE_CONSTRUCTOR,
 );
 
