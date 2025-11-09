@@ -1,8 +1,11 @@
-import { serialize } from "./dist/esm/development/index.mjs";
+import { fromJSON, toJSONAsync } from "./dist/esm/development/index.mjs";
 
+const p = Promise.resolve('hello');
 
-const BUFFER = new ArrayBuffer(16);
-const EXAMPLE = new DataView(BUFFER, 0);
-EXAMPLE.setUint8(1, 42);
+const json = await toJSONAsync([p, p]);
 
-console.log(serialize(EXAMPLE));
+console.log(json);
+
+const reconst = fromJSON(json);
+
+console.log(reconst, reconst[0] === reconst[1]);

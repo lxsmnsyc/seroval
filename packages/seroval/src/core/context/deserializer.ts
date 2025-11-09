@@ -5,7 +5,11 @@ import {
   SerovalObjectFlags,
   SYMBOL_REF,
 } from '../constants';
-import { ARRAY_BUFFER_CONSTRUCTOR } from '../constructors';
+import {
+  ARRAY_BUFFER_CONSTRUCTOR,
+  PROMISE_CONSTRUCTOR,
+  type PromiseConstructorResolver,
+} from '../constructors';
 import {
   SerovalDeserializationError,
   SerovalMissingInstanceError,
@@ -51,8 +55,6 @@ import type {
   SerovalStreamThrowNode,
   SerovalTypedArrayNode,
 } from '../types';
-import type { Deferred } from '../utils/deferred';
-import { createDeferred } from '../utils/deferred';
 import type { Sequence } from '../utils/iterator-to-sequence';
 import { sequenceToIterator } from '../utils/iterator-to-sequence';
 import type {
@@ -388,15 +390,15 @@ function deserializePromise(
   ctx: DeserializerContext,
   node: SerovalPromiseNode,
 ): Promise<unknown> {
-  const deferred = createDeferred();
-  const result = assignIndexedValue(ctx, node.i, deferred);
+  const deferred = PROMISE_CONSTRUCTOR();
+  const result = assignIndexedValue(ctx, node.i, deferred.p);
   const deserialized = deserialize(ctx, node.f);
   if (node.s) {
-    deferred.resolve(deserialized);
+    deferred.s(deserialized);
   } else {
-    deferred.reject(deserialized);
+    deferred.f(deserialized);
   }
-  return result.promise;
+  return result;
 }
 
 function deserializeBoxed(
@@ -440,7 +442,7 @@ function deserializePromiseConstructor(
   return assignIndexedValue(
     ctx,
     node.i,
-    assignIndexedValue(ctx, node.s, createDeferred()).promise,
+    assignIndexedValue(ctx, node.s, PROMISE_CONSTRUCTOR()).p,
   );
 }
 
@@ -448,9 +450,11 @@ function deserializePromiseResolve(
   ctx: DeserializerContext,
   node: SerovalPromiseResolveNode,
 ): unknown {
-  const deferred = ctx.base.refs.get(node.i) as Deferred | undefined;
+  const deferred = ctx.base.refs.get(node.i) as
+    | PromiseConstructorResolver
+    | undefined;
   if (deferred) {
-    deferred.resolve(deserialize(ctx, node.a[1]));
+    deferred.s(deserialize(ctx, node.a[1]));
     return undefined;
   }
   throw new SerovalMissingInstanceError('Promise');
@@ -460,9 +464,11 @@ function deserializePromiseReject(
   ctx: DeserializerContext,
   node: SerovalPromiseRejectNode,
 ): unknown {
-  const deferred = ctx.base.refs.get(node.i) as Deferred | undefined;
+  const deferred = ctx.base.refs.get(node.i) as
+    | PromiseConstructorResolver
+    | undefined;
   if (deferred) {
-    deferred.reject(deserialize(ctx, node.a[1]));
+    deferred.f(deserialize(ctx, node.a[1]));
     return undefined;
   }
   throw new SerovalMissingInstanceError('Promise');

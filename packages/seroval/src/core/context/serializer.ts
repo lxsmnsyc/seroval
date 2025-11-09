@@ -1054,8 +1054,8 @@ function serializePromiseConstructor(
   if (ctx.mode === SerovalMode.Vanilla) {
     throw new SerovalUnsupportedNodeError(node);
   }
-  const resolver = assignIndexedValue(ctx, node.s, '{p:0,s:0,f:0}');
-  return getConstructor(ctx, node.f) + '(' + resolver + ')';
+  const resolver = assignIndexedValue(ctx, node.s, getConstructor(ctx, node.f) + '()');
+  return '(' + resolver + ').p';
 }
 
 function serializePromiseResolve(

@@ -2,20 +2,19 @@ import type { Stream } from './stream';
 
 type SpecialPromise = Promise<unknown> & { s?: 1 | 2; v?: unknown };
 
-interface PromiseConstructorResolver {
+export interface PromiseConstructorResolver {
   p: SpecialPromise;
   s: (value: unknown) => void;
   f: (value: unknown) => void;
 }
 
-export const PROMISE_CONSTRUCTOR = (
-  resolver: PromiseConstructorResolver,
-): Promise<unknown> => {
+export const PROMISE_CONSTRUCTOR = (): PromiseConstructorResolver => {
+  const resolver = { p: 0, s: 0, f: 0} as unknown as PromiseConstructorResolver
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
+  return resolver;
 };
 
 export const PROMISE_SUCCESS = (
@@ -23,8 +22,8 @@ export const PROMISE_SUCCESS = (
   data: unknown,
 ): void => {
   resolver.s(data);
-  resolver.p!.s = 1;
-  resolver.p!.v = data;
+  resolver.p.s = 1;
+  resolver.p.v = data;
 };
 
 export const PROMISE_FAILURE = (
@@ -32,8 +31,8 @@ export const PROMISE_FAILURE = (
   data: unknown,
 ): void => {
   resolver.f(data);
-  resolver.p!.s = 2;
-  resolver.p!.v = data;
+  resolver.p.s = 2;
+  resolver.p.v = data;
 };
 
 export const SERIALIZED_PROMISE_CONSTRUCTOR =
@@ -213,12 +212,7 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
         if (doneAt === -1) {
           const index = count++;
           if (index >= buffer.length) {
-            const temp = {
-              p: 0,
-              s: 0,
-              f: 0,
-            } as unknown as PromiseConstructorResolver;
-            createPromise(temp);
+            const temp = createPromise();
             pending.push(temp);
             return temp.p;
           }
