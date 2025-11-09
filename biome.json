@@ -119,7 +119,8 @@
       "quoteProperties": "asNeeded",
       "quoteStyle": "single",
       "semicolons": "always",
-      "trailingCommas": "all"
+      "trailingCommas": "all",
+      "expand": "auto"
     },
     "globals": [],
     "parser": {

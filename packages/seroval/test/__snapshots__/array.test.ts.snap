@@ -10,15 +10,19 @@ exports[`arrays > crossSerialize > supports self recursion 1`] = `"($R[0]=[,,],$
 
 exports[`arrays > crossSerializeAsync > scoped > supports Arrays 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=[1,2,3]))($R["example"])"`;
 
-exports[`arrays > crossSerializeAsync > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=Promise.resolve().then(() => $R[0]),$R[2]=Promise.resolve().then(() => $R[0])])($R["example"])"`;
+exports[`arrays > crossSerializeAsync > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])])($R["example"])"`;
 
 exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[1,2,3])"`;
 
-exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(() => $R[0]),$R[2]=Promise.resolve().then(() => $R[0])]"`;
+exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]"`;
 
 exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -37,7 +41,11 @@ exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `
 
 exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `
 "($R=>$R[0]=[$R[1]=($R[2]=($R[3]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -58,7 +66,11 @@ exports[`arrays > crossSerializeStream > scoped > supports self recursion 3`] = 
 
 exports[`arrays > crossSerializeStream > supports Arrays 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -77,7 +89,11 @@ exports[`arrays > crossSerializeStream > supports Arrays 2`] = `
 
 exports[`arrays > crossSerializeStream > supports self recursion 1`] = `
 "$R[0]=[$R[1]=($R[2]=($R[3]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -102,7 +118,7 @@ exports[`arrays > serialize > supports self recursion 1`] = `"(h=>(h=[,,],h[1]=h
 
 exports[`arrays > serializeAsync > supports Arrays 1`] = `"Promise.resolve([1,2,3])"`;
 
-exports[`arrays > serializeAsync > supports self recursion 1`] = `"(h=>h=[Promise.resolve().then(() => h),Promise.resolve().then(() => h)])()"`;
+exports[`arrays > serializeAsync > supports self recursion 1`] = `"(h=>h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)])()"`;
 
 exports[`arrays > toCrossJSON > supports Arrays 1`] = `"{"t":9,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}"`;
 

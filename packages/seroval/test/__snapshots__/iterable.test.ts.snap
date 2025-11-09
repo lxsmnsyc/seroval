@@ -110,7 +110,11 @@ exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `
 
 exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -152,7 +156,11 @@ exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `
 
 exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;

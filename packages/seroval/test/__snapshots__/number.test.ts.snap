@@ -22,7 +22,11 @@ exports[`number > crossSerializeAsync > supports numbers 5`] = `"$R[0]=Promise.r
 
 exports[`number > crossSerializeStream > supports -0 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -41,7 +45,11 @@ exports[`number > crossSerializeStream > supports -0 2`] = `
 
 exports[`number > crossSerializeStream > supports Number.NEGATIVE_INFINITY 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -60,7 +68,11 @@ exports[`number > crossSerializeStream > supports Number.NEGATIVE_INFINITY 2`] =
 
 exports[`number > crossSerializeStream > supports Number.NaN 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -79,7 +91,11 @@ exports[`number > crossSerializeStream > supports Number.NaN 2`] = `
 
 exports[`number > crossSerializeStream > supports Number.POSITIVE_INFINITY 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -98,7 +114,11 @@ exports[`number > crossSerializeStream > supports Number.POSITIVE_INFINITY 2`] =
 
 exports[`number > crossSerializeStream > supports numbers 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;

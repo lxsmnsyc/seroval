@@ -46,7 +46,11 @@ exports[`typed arrays > crossSerializeAsync > supports typed arrays 1`] = `
 
 exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -72,7 +76,11 @@ exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 2`
 
 exports[`typed arrays > crossSerializeStream > supports typed arrays 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;

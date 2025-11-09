@@ -1,15 +1,5 @@
 import type { Stream } from './stream';
 
-declare const T: unknown;
-
-export const RETURN = () => T;
-export const THROW = () => {
-  throw T;
-};
-
-export const SERIALIZED_RETURN = RETURN.toString();
-export const SERIALIZED_THROW = THROW.toString();
-
 type SpecialPromise = Promise<unknown> & { s?: 1 | 2; v?: unknown };
 
 export interface PromiseConstructorResolver {
@@ -19,7 +9,11 @@ export interface PromiseConstructorResolver {
 }
 
 export const PROMISE_CONSTRUCTOR = (): PromiseConstructorResolver => {
-  const resolver = { p: 0, s: 0, f: 0} as unknown as PromiseConstructorResolver
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0,
+  } as unknown as PromiseConstructorResolver;
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -168,7 +162,8 @@ export const ITERATOR_CONSTRUCTOR =
     return instance;
   };
 
-export const SERIALIZED_ITERATOR_CONSTRUCTOR = ITERATOR_CONSTRUCTOR.toString();
+export const SERIALIZED_ITERATOR_CONSTRUCTOR =
+  /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
 
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
@@ -259,18 +254,16 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
   };
 
 export const SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR =
-  ASYNC_ITERATOR_CONSTRUCTOR.toString();
+  /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR.toString();
 
-export const ARRAY_BUFFER_CONSTRUCTOR = (
-  length: number,
-  b64: string,
-) => {
+export const ARRAY_BUFFER_CONSTRUCTOR = (length: number, b64: string) => {
   const decoded = atob(b64);
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
   }
   return arr.buffer;
-}
+};
 
-export const SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR = ARRAY_BUFFER_CONSTRUCTOR.toString();
+export const SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR =
+  /* @__PURE__ */ ARRAY_BUFFER_CONSTRUCTOR.toString();

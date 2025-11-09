@@ -10,15 +10,13 @@ import {
 import {
   SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR,
   SERIALIZED_ITERATOR_CONSTRUCTOR,
-  SERIALIZED_RETURN,
-  SERIALIZED_THROW,
 } from '../constructors';
 import {
   SerovalMissingPluginError,
   SerovalSerializationError,
   SerovalUnsupportedNodeError,
 } from '../errors';
-import { createFunction } from '../function-string';
+import { createEffectfulFunction, createFunction } from '../function-string';
 import { GLOBAL_CONTEXT_REFERENCES, REFERENCES_KEY } from '../keys';
 import type { PluginAccessOptions } from '../plugin';
 import { SerovalMode } from '../plugin';
@@ -944,8 +942,11 @@ function serializeMap(ctx: SerializerContext, node: SerovalMapNode): string {
   return serialized;
 }
 
-function serializeArrayBuffer(ctx: SerializerContext, node: SerovalArrayBufferNode): string {
-  return getConstructor(ctx, node.f) + '(' + node.l + ',"' + node.s + '")'
+function serializeArrayBuffer(
+  ctx: SerializerContext,
+  node: SerovalArrayBufferNode,
+): string {
+  return getConstructor(ctx, node.f) + '(' + node.l + ',"' + node.s + '")';
 }
 
 function serializeTypedArray(
@@ -1022,8 +1023,8 @@ function serializePromise(
     serialized =
       promiseConstructor +
       (node.s
-        ? '().then(' + SERIALIZED_RETURN.replace('T', ref) + ')'
-        : '().catch(' + SERIALIZED_THROW.replace('T', ref) + ')');
+        ? '().then(' + createFunction([], ref) + ')'
+        : '().catch(' + createEffectfulFunction([], 'throw ' + ref) + ')');
   } else {
     base.stack.push(id);
     const result = serialize(ctx, fulfilled);
@@ -1046,7 +1047,9 @@ function getConstructor(
   node: SerovalNodeWithID,
 ): string {
   const current = serialize(ctx, node);
-  return node.t === SerovalNodeType.IndexedValue ? current : '(' + current + ')';
+  return node.t === SerovalNodeType.IndexedValue
+    ? current
+    : '(' + current + ')';
 }
 
 function serializePromiseConstructor(
@@ -1056,7 +1059,11 @@ function serializePromiseConstructor(
   if (ctx.mode === SerovalMode.Vanilla) {
     throw new SerovalUnsupportedNodeError(node);
   }
-  const resolver = assignIndexedValue(ctx, node.s, getConstructor(ctx, node.f) + '()');
+  const resolver = assignIndexedValue(
+    ctx,
+    node.s,
+    getConstructor(ctx, node.f) + '()',
+  );
   return '(' + resolver + ').p';
 }
 

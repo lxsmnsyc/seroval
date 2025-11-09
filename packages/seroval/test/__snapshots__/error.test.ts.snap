@@ -26,7 +26,11 @@ exports[`Error > crossSerializeAsync > supports other Error classes 1`] = `"$R[0
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -47,7 +51,11 @@ exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -66,7 +74,11 @@ exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 2
 
 exports[`Error > crossSerializeStream > scoped > supports other Error classes 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -85,7 +97,11 @@ exports[`Error > crossSerializeStream > scoped > supports other Error classes 2`
 
 exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -106,7 +122,11 @@ exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"$
 
 exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -125,7 +145,11 @@ exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `
 
 exports[`Error > crossSerializeStream > supports other Error classes 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;

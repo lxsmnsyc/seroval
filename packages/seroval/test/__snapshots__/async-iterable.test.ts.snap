@@ -2,7 +2,11 @@
 
 exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 1`] = `
 "($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -158,7 +162,11 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 
 exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 "($R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -314,7 +322,11 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 
 exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables 1`] = `
 "($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -478,7 +490,11 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 
 exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 "($R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -642,7 +658,11 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 5`] = `"
 
 exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 "((h,j,k)=>({title:"Hello World",[h=Symbol.asyncIterator]:((j=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;

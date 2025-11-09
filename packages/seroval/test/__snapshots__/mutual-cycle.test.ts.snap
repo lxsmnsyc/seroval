@@ -12,21 +12,25 @@ exports[`mutual cyclic references > crossSerialize > supports Arrays and Objects
 
 exports[`mutual cyclic references > crossSerialize > supports Objects and Objects 1`] = `"($R[0]=[$R[1]={0:$R[2]={}},$R[2]],$R[2][0]=$R[1],$R[0])"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Arrays 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]=[$R[4]=Promise.resolve().then(() => $R[1])])],$R[3]])($R["example"])"`;
+exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Arrays 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]=[$R[4]=Promise.resolve().then(()=>$R[1])])],$R[3]])($R["example"])"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Objects 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(() => $R[1])})],$R[3]])($R["example"])"`;
+exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Arrays and Objects 1`] = `"($R=>$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})],$R[3]])($R["example"])"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Objects and Objects 1`] = `"($R=>$R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(() => $R[1])})},$R[3]])($R["example"])"`;
+exports[`mutual cyclic references > crossSerializeAsync > scoped > supports Objects and Objects 1`] = `"($R=>$R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})},$R[3]])($R["example"])"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > supports Arrays and Arrays 1`] = `"$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]=[$R[4]=Promise.resolve().then(() => $R[1])])],$R[3]]"`;
+exports[`mutual cyclic references > crossSerializeAsync > supports Arrays and Arrays 1`] = `"$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]=[$R[4]=Promise.resolve().then(()=>$R[1])])],$R[3]]"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > supports Arrays and Objects 1`] = `"$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(() => $R[1])})],$R[3]]"`;
+exports[`mutual cyclic references > crossSerializeAsync > supports Arrays and Objects 1`] = `"$R[0]=[$R[1]=[$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})],$R[3]]"`;
 
-exports[`mutual cyclic references > crossSerializeAsync > supports Objects and Objects 1`] = `"$R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(() => $R[1])})},$R[3]]"`;
+exports[`mutual cyclic references > crossSerializeAsync > supports Objects and Objects 1`] = `"$R[0]=[$R[1]={0:$R[2]=Promise.resolve($R[3]={0:$R[4]=Promise.resolve().then(()=>$R[1])})},$R[3]]"`;
 
 exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Arrays 1`] = `
 "($R=>$R[0]=[$R[1]=[$R[2]=($R[3]=($R[4]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -47,7 +51,11 @@ exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arr
 
 exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arrays and Objects 1`] = `
 "($R=>$R[0]=[$R[1]=[$R[2]=($R[3]=($R[4]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -68,7 +76,11 @@ exports[`mutual cyclic references > crossSerializeStream > scoped > supports Arr
 
 exports[`mutual cyclic references > crossSerializeStream > scoped > supports Objects and Objects 1`] = `
 "($R=>$R[0]=[$R[1]={0:$R[2]=($R[3]=($R[4]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -89,7 +101,11 @@ exports[`mutual cyclic references > crossSerializeStream > scoped > supports Obj
 
 exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Arrays 1`] = `
 "$R[0]=[$R[1]=[$R[2]=($R[3]=($R[4]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -110,7 +126,11 @@ exports[`mutual cyclic references > crossSerializeStream > supports Arrays and A
 
 exports[`mutual cyclic references > crossSerializeStream > supports Arrays and Objects 1`] = `
 "$R[0]=[$R[1]=[$R[2]=($R[3]=($R[4]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -131,7 +151,11 @@ exports[`mutual cyclic references > crossSerializeStream > supports Arrays and O
 
 exports[`mutual cyclic references > crossSerializeStream > supports Objects and Objects 1`] = `
 "$R[0]=[$R[1]={0:$R[2]=($R[3]=($R[4]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -156,11 +180,11 @@ exports[`mutual cyclic references > serialize > supports Arrays and Objects 1`] 
 
 exports[`mutual cyclic references > serialize > supports Objects and Objects 1`] = `"((h,j,k)=>(k=[h={0:j={}},j],j[0]=h,k))()"`;
 
-exports[`mutual cyclic references > serializeAsync > supports Arrays and Arrays 1`] = `"((h,j)=>[h=[Promise.resolve(j=[Promise.resolve().then(() => h)])],j])()"`;
+exports[`mutual cyclic references > serializeAsync > supports Arrays and Arrays 1`] = `"((h,j)=>[h=[Promise.resolve(j=[Promise.resolve().then(()=>h)])],j])()"`;
 
-exports[`mutual cyclic references > serializeAsync > supports Arrays and Objects 1`] = `"((h,j)=>[h=[Promise.resolve(j={0:Promise.resolve().then(() => h)})],j])()"`;
+exports[`mutual cyclic references > serializeAsync > supports Arrays and Objects 1`] = `"((h,j)=>[h=[Promise.resolve(j={0:Promise.resolve().then(()=>h)})],j])()"`;
 
-exports[`mutual cyclic references > serializeAsync > supports Objects and Objects 1`] = `"((h,j)=>[h={0:Promise.resolve(j={0:Promise.resolve().then(() => h)})},j])()"`;
+exports[`mutual cyclic references > serializeAsync > supports Objects and Objects 1`] = `"((h,j)=>[h={0:Promise.resolve(j={0:Promise.resolve().then(()=>h)})},j])()"`;
 
 exports[`mutual cyclic references > toCrossJSON > supports Arrays and Arrays 1`] = `"{"t":9,"i":0,"l":2,"a":[{"t":9,"i":1,"l":1,"a":[{"t":9,"i":2,"l":1,"a":[{"t":4,"i":1}],"o":0}],"o":0},{"t":4,"i":2}],"o":0}"`;
 

@@ -106,7 +106,11 @@ exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -125,7 +129,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.as
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -144,7 +152,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.ha
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -163,7 +175,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.is
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -182,7 +198,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.it
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -201,7 +221,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.ma
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -220,7 +244,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.ma
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -239,7 +267,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.re
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -258,7 +290,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.se
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -277,7 +313,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.sp
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -296,7 +336,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.sp
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -315,7 +359,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.to
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -334,7 +382,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.to
 
 exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -353,7 +405,11 @@ exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.un
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -372,7 +428,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterat
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -391,7 +451,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -410,7 +474,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpr
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -429,7 +497,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 2`
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.match 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -448,7 +520,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.match 2`] =
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -467,7 +543,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 2`
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -486,7 +566,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 2`]
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.search 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -505,7 +589,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.search 2`] 
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.species 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -524,7 +612,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.species 2`]
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.split 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -543,7 +635,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.split 2`] =
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -562,7 +658,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -581,7 +681,11 @@ exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag
 
 exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
