@@ -17,13 +17,14 @@ exports[`AbortSignal > crossSerializeAsync > supports aborted AbortSignal 1`] = 
 exports[`AbortSignal > crossSerializeAsync > supports future AbortSignal 1`] = `"$R[0]=AbortSignal.abort("aborted!")"`;
 
 exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 2`] = `
@@ -39,13 +40,14 @@ exports[`AbortSignal > crossSerializeStream > scoped > supports future AbortSign
 exports[`AbortSignal > crossSerializeStream > scoped > supports future AbortSignal 2`] = `"($R=>$R[2]=$R[1].abort("aborted!"))($R["example"])"`;
 
 exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 2`] = `

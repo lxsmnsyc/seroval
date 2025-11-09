@@ -10,20 +10,21 @@ exports[`Set > crossSerialize > supports self-recursion 1`] = `"($R[0]=new Set,$
 
 exports[`Set > crossSerializeAsync > scoped > supports Set 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Set([1,2,3])))($R["example"])"`;
 
-exports[`Set > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])]))($R["example"])"`;
+exports[`Set > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=Promise.resolve().then(() => $R[0])]))($R["example"])"`;
 
 exports[`Set > crossSerializeAsync > supports Set 1`] = `"$R[0]=Promise.resolve($R[1]=new Set([1,2,3]))"`;
 
-exports[`Set > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])])"`;
+exports[`Set > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=Promise.resolve().then(() => $R[0])])"`;
 
 exports[`Set > crossSerializeStream > scoped > supports Set 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `
@@ -35,13 +36,14 @@ exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `
 `;
 
 exports[`Set > crossSerializeStream > scoped > supports self-recursion 1`] = `
-"($R=>$R[0]=new Set([$R[1]=($R[3]=(resolver) => {
+"($R=>$R[0]=new Set([$R[1]=($R[2]=($R[3]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[2]={p:0,s:0,f:0})]))($R["example"])"
+  return resolver;
+})()).p]))($R["example"])"
 `;
 
 exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `
@@ -53,13 +55,14 @@ exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `
 `;
 
 exports[`Set > crossSerializeStream > supports Set 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`Set > crossSerializeStream > supports Set 2`] = `
@@ -71,13 +74,14 @@ exports[`Set > crossSerializeStream > supports Set 2`] = `
 `;
 
 exports[`Set > crossSerializeStream > supports self-recursion 1`] = `
-"$R[0]=new Set([$R[1]=($R[3]=(resolver) => {
+"$R[0]=new Set([$R[1]=($R[2]=($R[3]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[2]={p:0,s:0,f:0})])"
+  return resolver;
+})()).p])"
 `;
 
 exports[`Set > crossSerializeStream > supports self-recursion 2`] = `
@@ -94,7 +98,7 @@ exports[`Set > serialize > supports self-recursion 1`] = `"(h=>(h=new Set,h.add(
 
 exports[`Set > serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,2,3]))"`;
 
-exports[`Set > serializeAsync > supports self-recursion 1`] = `"(h=>h=new Set([Promise.resolve().then(()=>h)]))()"`;
+exports[`Set > serializeAsync > supports self-recursion 1`] = `"(h=>h=new Set([Promise.resolve().then(() => h)]))()"`;
 
 exports[`Set > toCrossJSON > supports Set 1`] = `"{"t":7,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}"`;
 

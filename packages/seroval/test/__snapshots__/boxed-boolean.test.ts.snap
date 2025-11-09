@@ -17,13 +17,14 @@ exports[`boxed boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Ob
 exports[`boxed boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Object(!1)"`;
 
 exports[`boxed boolean > crossSerializeStream > scoped > supports boxed false 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`boxed boolean > crossSerializeStream > scoped > supports boxed false 2`] = `
@@ -35,13 +36,14 @@ exports[`boxed boolean > crossSerializeStream > scoped > supports boxed false 2`
 `;
 
 exports[`boxed boolean > crossSerializeStream > scoped > supports boxed true 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`boxed boolean > crossSerializeStream > scoped > supports boxed true 2`] = `
@@ -53,13 +55,14 @@ exports[`boxed boolean > crossSerializeStream > scoped > supports boxed true 2`]
 `;
 
 exports[`boxed boolean > crossSerializeStream > supports boxed false 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boxed boolean > crossSerializeStream > supports boxed false 2`] = `
@@ -71,13 +74,14 @@ exports[`boxed boolean > crossSerializeStream > supports boxed false 2`] = `
 `;
 
 exports[`boxed boolean > crossSerializeStream > supports boxed true 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boxed boolean > crossSerializeStream > supports boxed true 2`] = `

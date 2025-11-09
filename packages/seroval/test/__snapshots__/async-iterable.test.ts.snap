@@ -1,12 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 1`] = `
-"($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=(resolver) => {
+"($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
+  return resolver;
 },$R[2]=((symbol, createPromise) => (stream) => () => {
   let count = 0;
   let doneAt = -1;
@@ -55,12 +56,7 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
-          const temp = {
-            p: 0,
-            s: 0,
-            f: 0
-          };
-          createPromise(temp);
+          const temp = createPromise();
           pending.push(temp);
           return temp.p;
         };
@@ -161,12 +157,13 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 `;
 
 exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
-"($R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=(resolver) => {
+"($R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
+  return resolver;
 },$R[2]=((symbol, createPromise) => (stream) => () => {
   let count = 0;
   let doneAt = -1;
@@ -215,12 +212,7 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
-          const temp = {
-            p: 0,
-            s: 0,
-            f: 0
-          };
-          createPromise(temp);
+          const temp = createPromise();
           pending.push(temp);
           return temp.p;
         };
@@ -321,12 +313,13 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 `;
 
 exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables 1`] = `
-"($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=(resolver) => {
+"($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
+  return resolver;
 },$R[2]=((symbol, createPromise) => (stream) => () => {
   let count = 0;
   let doneAt = -1;
@@ -375,12 +368,7 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
-          const temp = {
-            p: 0,
-            s: 0,
-            f: 0
-          };
-          createPromise(temp);
+          const temp = createPromise();
           pending.push(temp);
           return temp.p;
         };
@@ -489,12 +477,13 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables 5`] = `"($R=>$R[4].return(void 0))($R["example"])"`;
 
 exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
-"($R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=(resolver) => {
+"($R[0]={title:"Hello World",[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
+  return resolver;
 },$R[2]=((symbol, createPromise) => (stream) => () => {
   let count = 0;
   let doneAt = -1;
@@ -543,12 +532,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
-          const temp = {
-            p: 0,
-            s: 0,
-            f: 0
-          };
-          createPromise(temp);
+          const temp = createPromise();
           pending.push(temp);
           return temp.p;
         };
@@ -657,12 +641,13 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 4`] = `"
 exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 5`] = `"$R[4].return(void 0)"`;
 
 exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
-"((h,j,k)=>({title:"Hello World",[h=Symbol.asyncIterator]:((j=(resolver) => {
+"((h,j,k)=>({title:"Hello World",[h=Symbol.asyncIterator]:((j=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
+  return resolver;
 },((symbol, createPromise) => (stream) => () => {
   let count = 0;
   let doneAt = -1;
@@ -711,12 +696,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
-          const temp = {
-            p: 0,
-            s: 0,
-            f: 0
-          };
-          createPromise(temp);
+          const temp = createPromise();
           pending.push(temp);
           return temp.p;
         };

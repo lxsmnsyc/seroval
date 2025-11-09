@@ -1,5 +1,15 @@
 import type { Stream } from './stream';
 
+declare const T: unknown;
+
+export const RETURN = () => T;
+export const THROW = () => {
+  throw T;
+};
+
+export const SERIALIZED_RETURN = RETURN.toString();
+export const SERIALIZED_THROW = THROW.toString();
+
 type SpecialPromise = Promise<unknown> & { s?: 1 | 2; v?: unknown };
 
 export interface PromiseConstructorResolver {

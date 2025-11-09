@@ -10,6 +10,8 @@ import {
 import {
   SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR,
   SERIALIZED_ITERATOR_CONSTRUCTOR,
+  SERIALIZED_RETURN,
+  SERIALIZED_THROW,
 } from '../constructors';
 import {
   SerovalMissingPluginError,
@@ -1020,8 +1022,8 @@ function serializePromise(
     serialized =
       promiseConstructor +
       (node.s
-        ? '().then(' + createFunction([], ref) + ')'
-        : '().catch(' + createFunction([], 'throw ' + ref) + ')');
+        ? '().then(' + SERIALIZED_RETURN.replace('T', ref) + ')'
+        : '().catch(' + SERIALIZED_THROW.replace('T', ref) + ')');
   } else {
     base.stack.push(id);
     const result = serialize(ctx, fulfilled);

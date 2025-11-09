@@ -9,13 +9,14 @@ exports[`Reference > crossSerializeAsync > scoped > supports Reference 1`] = `"(
 exports[`Reference > crossSerializeAsync > supports Reference 1`] = `"$R[0]=Promise.resolve($R[1]=__SEROVAL_REFS__.get("example"))"`;
 
 exports[`Reference > crossSerializeStream > scoped > supports Reference 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`Reference > crossSerializeStream > scoped > supports Reference 2`] = `
@@ -27,13 +28,14 @@ exports[`Reference > crossSerializeStream > scoped > supports Reference 2`] = `
 `;
 
 exports[`Reference > crossSerializeStream > supports Reference 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`Reference > crossSerializeStream > supports Reference 2`] = `

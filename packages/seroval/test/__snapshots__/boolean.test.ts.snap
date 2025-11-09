@@ -9,13 +9,14 @@ exports[`boolean > crossSerializeAsync > supports boolean 1`] = `"$R[0]=Promise.
 exports[`boolean > crossSerializeAsync > supports boolean 2`] = `"$R[0]=Promise.resolve(!1)"`;
 
 exports[`boolean > crossSerializeStream > supports false value 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boolean > crossSerializeStream > supports false value 2`] = `
@@ -27,13 +28,14 @@ exports[`boolean > crossSerializeStream > supports false value 2`] = `
 `;
 
 exports[`boolean > crossSerializeStream > supports true value 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boolean > crossSerializeStream > supports true value 2`] = `

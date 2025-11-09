@@ -5,13 +5,14 @@ exports[`bigint > crossSerialize > supports bigint 1`] = `"9007199254740991n"`;
 exports[`bigint > crossSerializeAsync > supports bigint 1`] = `"$R[0]=Promise.resolve(9007199254740991n)"`;
 
 exports[`bigint > crossSerializeStream > supports bigint 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`bigint > crossSerializeStream > supports bigint 2`] = `

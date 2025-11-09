@@ -41,13 +41,14 @@ exports[`boxed number > crossSerializeAsync > supports boxed numbers 4`] = `"$R[
 exports[`boxed number > crossSerializeAsync > supports boxed numbers 5`] = `"$R[0]=Promise.resolve($R[1]=Object(-0))"`;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed -0 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed -0 2`] = `
@@ -59,13 +60,14 @@ exports[`boxed number > crossSerializeStream > scoped > supports boxed -0 2`] = 
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NEGATIVE_INFINITY 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NEGATIVE_INFINITY 2`] = `
@@ -77,13 +79,14 @@ exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NE
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NaN 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.NaN 2`] = `
@@ -95,13 +98,14 @@ exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.Na
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.POSITIVE_INFINITY 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.POSITIVE_INFINITY 2`] = `
@@ -113,13 +117,14 @@ exports[`boxed number > crossSerializeStream > scoped > supports boxed Number.PO
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed numbers 1`] = `
-"($R=>$R[0]=($R[2]=(resolver) => {
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0}))($R["example"])"
+  return resolver;
+})()).p)($R["example"])"
 `;
 
 exports[`boxed number > crossSerializeStream > scoped > supports boxed numbers 2`] = `
@@ -131,13 +136,14 @@ exports[`boxed number > crossSerializeStream > scoped > supports boxed numbers 2
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed -0 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed -0 2`] = `
@@ -149,13 +155,14 @@ exports[`boxed number > crossSerializeStream > supports boxed -0 2`] = `
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed Number.NEGATIVE_INFINITY 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed Number.NEGATIVE_INFINITY 2`] = `
@@ -167,13 +174,14 @@ exports[`boxed number > crossSerializeStream > supports boxed Number.NEGATIVE_IN
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed Number.NaN 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed Number.NaN 2`] = `
@@ -185,13 +193,14 @@ exports[`boxed number > crossSerializeStream > supports boxed Number.NaN 2`] = `
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed Number.POSITIVE_INFINITY 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed Number.POSITIVE_INFINITY 2`] = `
@@ -203,13 +212,14 @@ exports[`boxed number > crossSerializeStream > supports boxed Number.POSITIVE_IN
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed numbers 1`] = `
-"$R[0]=($R[2]=(resolver) => {
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
   });
-  return resolver.p;
-})($R[1]={p:0,s:0,f:0})"
+  return resolver;
+})()).p"
 `;
 
 exports[`boxed number > crossSerializeStream > supports boxed numbers 2`] = `
