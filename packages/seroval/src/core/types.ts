@@ -102,9 +102,14 @@ export interface SerovalArrayBufferNode extends SerovalBaseNode {
   t: SerovalNodeType.ArrayBuffer;
   // id
   i: number;
-  // sequence in bytes
-  s: number[];
+  // byte string
+  s: string;
+  // length
+  l: number;
+  // array buffer constructor
+  f: SerovalNodeWithID;
 }
+
 
 export interface SerovalTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.TypedArray;

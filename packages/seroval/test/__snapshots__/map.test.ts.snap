@@ -16,27 +16,103 @@ exports[`Map > crossSerializeAsync > supports Map 1`] = `"$R[0]=Promise.resolve(
 
 exports[`Map > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=($R[3]=[],new Map([[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]]))"`;
 
-exports[`Map > crossSerializeStream > scoped > supports Map 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`Map > crossSerializeStream > scoped > supports Map 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`Map > crossSerializeStream > scoped > supports Map 2`] = `"($R=>($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=($R[4]=[],new Map([[1,2],[3,4]]))))($R["example"])"`;
+exports[`Map > crossSerializeStream > scoped > supports Map 2`] = `
+"($R=>($R[5]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=($R[4]=[],new Map([[1,2],[3,4]]))))($R["example"])"
+`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=($R[6]=[],new Map([[$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})]])))($R["example"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 1`] = `
+"($R=>$R[0]=($R[6]=[],new Map([[$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p,$R[4]=($R[5]=$R[3]()).p]])))($R["example"])"
+`;
 
-exports[`Map > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[7]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0]))($R["example"])"`;
+exports[`Map > crossSerializeStream > scoped > supports self-recursion 2`] = `
+"($R=>($R[7]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0]))($R["example"])"
+`;
 
 exports[`Map > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>$R[7]($R[5],$R[0]))($R["example"])"`;
 
-exports[`Map > crossSerializeStream > supports Map 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`Map > crossSerializeStream > supports Map 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`Map > crossSerializeStream > supports Map 2`] = `"($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=($R[4]=[],new Map([[1,2],[3,4]])))"`;
+exports[`Map > crossSerializeStream > supports Map 2`] = `
+"($R[5]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=($R[4]=[],new Map([[1,2],[3,4]])))"
+`;
 
 exports[`Map > crossSerializeStream > supports Map 3`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
 exports[`Map > crossSerializeStream > supports Map 4`] = `"{"t":23,"i":1,"a":[{"t":26,"i":5,"s":2},{"t":8,"i":3,"e":{"k":[{"t":0,"s":1},{"t":0,"s":3}],"v":[{"t":0,"s":2},{"t":0,"s":4}],"s":2},"f":{"t":26,"i":4,"s":0}}]}"`;
 
-exports[`Map > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=($R[6]=[],new Map([[$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})]]))"`;
+exports[`Map > crossSerializeStream > supports self-recursion 1`] = `
+"$R[0]=($R[6]=[],new Map([[$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p,$R[4]=($R[5]=$R[3]()).p]]))"
+`;
 
-exports[`Map > crossSerializeStream > supports self-recursion 2`] = `"($R[7]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0])"`;
+exports[`Map > crossSerializeStream > supports self-recursion 2`] = `
+"($R[7]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0])"
+`;
 
 exports[`Map > crossSerializeStream > supports self-recursion 3`] = `"$R[7]($R[5],$R[0])"`;
 

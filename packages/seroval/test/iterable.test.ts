@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  Feature,
-  compileJSON,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
@@ -136,24 +134,6 @@ describe('Iterable', () => {
             },
           });
         }));
-    });
-  });
-  describe('compat', () => {
-    it('should use function expression instead of arrow functions.', () => {
-      expect(
-        serialize(EXAMPLE, {
-          disabledFeatures: Feature.ArrowFunction,
-        }),
-      ).toMatchSnapshot();
-    });
-  });
-  describe('compat#toJSON', () => {
-    it('should use function expression instead of arrow functions.', () => {
-      const result = toJSON(EXAMPLE, {
-        disabledFeatures: Feature.ArrowFunction,
-      });
-      expect(JSON.stringify(result)).toMatchSnapshot();
-      expect(compileJSON(result)).toMatchSnapshot();
     });
   });
   describe('toCrossJSON', () => {

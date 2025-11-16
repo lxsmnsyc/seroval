@@ -16,21 +16,97 @@ exports[`boxed string > crossSerializeAsync > supports boxed strings 1`] = `"$R[
 
 exports[`boxed string > crossSerializeAsync > supports boxed strings 2`] = `"$R[0]=Promise.resolve($R[1]=Object("\\x3Cscript>\\x3C/script>"))"`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>")))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed sanitized strings 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>")))($R["example"])"
+`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\"hello\\"")))($R["example"])"`;
+exports[`boxed string > crossSerializeStream > scoped > supports boxed strings 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object("\\"hello\\"")))($R["example"])"
+`;
 
-exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>"))"`;
+exports[`boxed string > crossSerializeStream > supports boxed sanitized strings 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object("\\x3Cscript>\\x3C/script>"))"
+`;
 
-exports[`boxed string > crossSerializeStream > supports boxed strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`boxed string > crossSerializeStream > supports boxed strings 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object("\\"hello\\""))"`;
+exports[`boxed string > crossSerializeStream > supports boxed strings 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object("\\"hello\\""))"
+`;
 
 exports[`boxed string > serialize > supports boxed strings 1`] = `"Object("\\"hello\\"")"`;
 

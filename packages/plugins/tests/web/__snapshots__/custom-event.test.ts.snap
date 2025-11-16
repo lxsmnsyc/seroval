@@ -8,13 +8,43 @@ exports[`CustomEvent > crossSerializeAsync > scoped > supports CustomEvent 1`] =
 
 exports[`CustomEvent > crossSerializeAsync > supports CustomEvent 1`] = `"($R[0]=Promise.resolve($R[1]=new CustomEvent("example",$R[2]={detail:$R[3]={},bubbles:!1,cancelable:!1,composed:!1})),$R[3].self=$R[3],$R[0])"`;
 
-exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 2`] = `"($R=>(($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new CustomEvent("example",$R[4]={detail:$R[5]={},bubbles:!1,cancelable:!1,composed:!1})),$R[5].self=$R[5],$R[1]))($R["example"])"`;
+exports[`CustomEvent > crossSerializeStream > scoped > supports CustomEvent 2`] = `
+"($R=>(($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new CustomEvent("example",$R[4]={detail:$R[5]={},bubbles:!1,cancelable:!1,composed:!1})),$R[5].self=$R[5],$R[1]))($R["example"])"
+`;
 
-exports[`CustomEvent > crossSerializeStream > supports CustomEvent 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`CustomEvent > crossSerializeStream > supports CustomEvent 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`CustomEvent > crossSerializeStream > supports CustomEvent 2`] = `"(($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new CustomEvent("example",$R[4]={detail:$R[5]={},bubbles:!1,cancelable:!1,composed:!1})),$R[5].self=$R[5],$R[1])"`;
+exports[`CustomEvent > crossSerializeStream > supports CustomEvent 2`] = `
+"(($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new CustomEvent("example",$R[4]={detail:$R[5]={},bubbles:!1,cancelable:!1,composed:!1})),$R[5].self=$R[5],$R[1])"
+`;
 
 exports[`CustomEvent > serialize > supports CustomEvent 1`] = `"((h,j)=>(j=new CustomEvent("example",{detail:h={},bubbles:!1,cancelable:!1,composed:!1}),h.self=h,j))()"`;
 

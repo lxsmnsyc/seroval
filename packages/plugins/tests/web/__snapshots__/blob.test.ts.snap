@@ -1,11 +1,38 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Blob > crossSerializeAsync > scoped > supports Blob 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Blob([$R[2]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:"text/plain"})))($R["example"])"`;
+exports[`Blob > crossSerializeAsync > scoped > supports Blob 1`] = `
+"($R=>$R[0]=Promise.resolve($R[1]=new Blob([$R[2]=($R[3]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(11,"SGVsbG8gV29ybGQ=")],{type:"text/plain"})))($R["example"])"
+`;
 
-exports[`Blob > crossSerializeAsync > supports Blob 1`] = `"$R[0]=new Blob([$R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:"text/plain"})"`;
+exports[`Blob > crossSerializeAsync > supports Blob 1`] = `
+"$R[0]=new Blob([$R[1]=($R[2]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(11,"SGVsbG8gV29ybGQ=")],{type:"text/plain"})"
+`;
 
-exports[`Blob > serializeAsync > supports Blob 1`] = `"new Blob([new Uint8Array([72,101,108,108,111,32,87,111,114,108,100]).buffer],{type:"text/plain"})"`;
+exports[`Blob > serializeAsync > supports Blob 1`] = `
+"new Blob([((length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(11,"SGVsbG8gV29ybGQ=")],{type:"text/plain"})"
+`;
 
-exports[`Blob > toCrossJSONAsync > supports Blob 1`] = `"{"t":25,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":19,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/Blob"}"`;
+exports[`Blob > toCrossJSONAsync > supports Blob 1`] = `"{"t":25,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":19,"i":1,"s":"SGVsbG8gV29ybGQ=","l":11,"f":{"t":26,"i":2,"s":5}}},"c":"seroval-plugins/web/Blob"}"`;
 
-exports[`Blob > toJSONAsync > supports Blob 1`] = `"{"t":{"t":25,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":19,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100]}},"c":"seroval-plugins/web/Blob"},"f":31,"m":[]}"`;
+exports[`Blob > toJSONAsync > supports Blob 1`] = `"{"t":{"t":25,"i":0,"s":{"type":{"t":1,"s":"text/plain"},"buffer":{"t":19,"i":1,"s":"SGVsbG8gV29ybGQ=","l":11,"f":{"t":26,"i":2,"s":5}}},"c":"seroval-plugins/web/Blob"},"f":31,"m":[]}"`;

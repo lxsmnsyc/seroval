@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  Feature,
-  compileJSON,
   crossSerializeAsync,
   crossSerializeStream,
   deserialize,
@@ -127,23 +125,5 @@ describe('AsyncIterable', () => {
           },
         });
       }));
-  });
-  describe('compat', () => {
-    it('should use function expressions instead of arrow functions.', async () => {
-      expect(
-        await serializeAsync(EXAMPLE, {
-          disabledFeatures: Feature.ArrowFunction,
-        }),
-      ).toMatchSnapshot();
-    });
-  });
-  describe('compat#toJSONAsync', () => {
-    it('should use function expression instead of arrow functions.', async () => {
-      const result = await toJSONAsync(EXAMPLE, {
-        disabledFeatures: Feature.ArrowFunction,
-      });
-      expect(JSON.stringify(result)).toMatchSnapshot();
-      expect(compileJSON(result)).toMatchSnapshot();
-    });
   });
 });

@@ -104,109 +104,603 @@ exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 
 
 exports[`well-known symbols > crossSerializeAsync > supports well-known symbols 13`] = `"$R[0]=Promise.resolve($R[1]=Symbol.unscopables)"`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.asyncIterator))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.asyncIterator))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.hasInstance))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.hasInstance 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.hasInstance))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.isConcatSpreadable))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.isConcatSpreadable 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.isConcatSpreadable))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.iterator))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.iterator))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.match))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.match 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.match))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.matchAll))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.matchAll 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.matchAll))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.replace))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.replace 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.replace))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.search))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.search 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.search))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.species))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.species 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.species))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.split))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.split 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.split))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.toPrimitive))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toPrimitive 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.toPrimitive))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.toStringTag))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.toStringTag 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.toStringTag))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.unscopables))($R["example"])"`;
+exports[`well-known symbols > crossSerializeStream > scoped > supports Symbol.unscopables 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.unscopables))($R["example"])"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.asyncIterator)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.asyncIterator 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.asyncIterator)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.hasInstance)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.hasInstance 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.hasInstance)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.isConcatSpreadable)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.isConcatSpreadable 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.isConcatSpreadable)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.iterator)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.iterator 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.iterator)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.match 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.match 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.match 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.match)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.match 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.match)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.matchAll)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.matchAll 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.matchAll)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.replace)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.replace 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.replace)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.search 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.search 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.search 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.search)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.search 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.search)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.species 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.species 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.species 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.species)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.species 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.species)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.split 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.split 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.split 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.split)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.split 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.split)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.toPrimitive)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toPrimitive 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.toPrimitive)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.toStringTag)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.toStringTag 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.toStringTag)"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Symbol.unscopables)"`;
+exports[`well-known symbols > crossSerializeStream > supports Symbol.unscopables 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Symbol.unscopables)"
+`;
 
 exports[`well-known symbols > serialize > supports well-known symbols 1`] = `"Symbol.asyncIterator"`;
 

@@ -1,14 +1,14 @@
 {
   "$schema": "https://unpkg.com/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": ["node_modules/**/*"]
+    "includes": ["**", "!**/node_modules/**/*"]
   },
   "vcs": {
     "useIgnoreFile": true
   },
   "linter": {
     "enabled": true,
-    "ignore": ["node_modules/**/*"],
+    "includes": ["**", "!**/node_modules/**/*"],
     "rules": {
       "recommended": true,
       "a11y": {
@@ -21,12 +21,13 @@
         "noForEach": "error",
         "noVoid": "off",
         "useOptionalChain": "warn",
-        "useSimplifiedLogicExpression": "error"
+        "useSimplifiedLogicExpression": "error",
+        "noArguments": "error",
+        "useNumericLiterals": "error",
+        "useWhile": "error"
       },
       "correctness": {
         "noConstantMathMinMaxClamp": "error",
-        "noInvalidNewBuiltin": "error",
-        "noNewSymbol": "error",
         "noNodejsModules": "off",
         "noUndeclaredDependencies": "off",
         "noUndeclaredVariables": "error",
@@ -34,7 +35,8 @@
         "noUnusedImports": "error",
         "noUnusedPrivateClassMembers": "error",
         "noUnusedVariables": "error",
-        "useArrayLiterals": "error"
+        "noInvalidBuiltinInstantiation": "error",
+        "noSwitchDeclarations": "error"
       },
       "performance": {
         "noAccumulatingSpread": "error",
@@ -44,7 +46,6 @@
         "noGlobalEval": "off"
       },
       "style": {
-        "noArguments": "error",
         "noImplicitBoolean": "error",
         "noInferrableTypes": "error",
         "noNamespace": "error",
@@ -53,7 +54,6 @@
         "noShoutyConstants": "error",
         "noUnusedTemplateLiteral": "error",
         "noUselessElse": "error",
-        "noVar": "error",
         "noYodaExpression": "error",
         "useAsConstAssertion": "error",
         "useBlockStatements": "error",
@@ -71,18 +71,14 @@
         "useLiteralEnumMembers": "error",
         "useNodejsImportProtocol": "warn",
         "useNumberNamespace": "error",
-        "useNumericLiterals": "error",
         "useSelfClosingElements": "error",
-        "useShorthandArrayType": "error",
         "useShorthandAssign": "error",
         "useShorthandFunctionType": "warn",
-        "useSingleCaseStatement": "error",
         "useSingleVarDeclarator": "error",
         "useTemplate": "off",
-        "useWhile": "error"
+        "useArrayLiterals": "error"
       },
       "suspicious": {
-        "noConsoleLog": "warn",
         "noConstEnum": "off",
         "noDebugger": "off",
         "noEmptyBlockStatements": "error",
@@ -93,23 +89,22 @@
         "noSparseArray": "off",
         "noThenProperty": "warn",
         "useAwait": "error",
-        "useErrorMessage": "error"
+        "useErrorMessage": "error",
+        "noVar": "error",
+        "noConsole": { "level": "warn", "options": { "allow": ["log"] } }
       }
     }
   },
   "formatter": {
     "enabled": true,
-    "ignore": ["node_modules/**/*"],
+    "includes": ["**", "!**/node_modules/**/*"],
     "formatWithErrors": false,
     "indentWidth": 2,
     "indentStyle": "space",
     "lineEnding": "lf",
     "lineWidth": 80
   },
-  "organizeImports": {
-    "enabled": true,
-    "ignore": ["node_modules/**/*"]
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "javascript": {
     "formatter": {
       "enabled": true,
@@ -124,7 +119,8 @@
       "quoteProperties": "asNeeded",
       "quoteStyle": "single",
       "semicolons": "always",
-      "trailingCommas": "all"
+      "trailingCommas": "all",
+      "expand": "auto"
     },
     "globals": [],
     "parser": {

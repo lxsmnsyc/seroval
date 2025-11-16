@@ -8,13 +8,51 @@ exports[`sparse arrays > crossSerializeAsync > scoped > supports sparse arrays 1
 
 exports[`sparse arrays > crossSerializeAsync > supports sparse arrays 1`] = `"$R[0]=Promise.resolve($R[1]=[,,,,,,,,,,])"`;
 
-exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=[,,,,,,,,,,]))($R["example"])"`;
+exports[`sparse arrays > crossSerializeStream > scoped > supports sparse arrays 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=[,,,,,,,,,,]))($R["example"])"
+`;
 
-exports[`sparse arrays > crossSerializeStream > supports sparse arrays 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`sparse arrays > crossSerializeStream > supports sparse arrays 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`sparse arrays > crossSerializeStream > supports sparse arrays 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=[,,,,,,,,,,])"`;
+exports[`sparse arrays > crossSerializeStream > supports sparse arrays 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=[,,,,,,,,,,])"
+`;
 
 exports[`sparse arrays > serialize > supports sparse arrays 1`] = `"[,,,,,,,,,,]"`;
 

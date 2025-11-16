@@ -1,14 +1,444 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream 1`] = `"($R=>$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))(($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),$R[2].next("foo"),$R[2].next("bar"),$R[2].next("baz"),$R[2].return(void 0),$R[2])))($R["example"])"`;
+exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream 1`] = `
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))(($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),$R[2].next("foo"),$R[2].next("bar"),$R[2].next("baz"),$R[2].return(void 0),$R[2])))($R["example"])"
+`;
 
-exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream errors 1`] = `"($R=>$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))(($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})),$R[2])))($R["example"])"`;
+exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream errors 1`] = `
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))(($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})),$R[2])))($R["example"])"
+`;
 
-exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `"$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))(($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),$R[2].next("foo"),$R[2].next("bar"),$R[2].next("baz"),$R[2].return(void 0),$R[2]))"`;
+exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
+"$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))(($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),$R[2].next("foo"),$R[2].next("bar"),$R[2].next("baz"),$R[2].return(void 0),$R[2]))"
+`;
 
-exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1`] = `"$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))(($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})),$R[2]))"`;
+exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1`] = `
+"$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))(($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})),$R[2]))"
+`;
 
-exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `"($R=>$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))()))($R["example"])"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})()))($R["example"])"
+`;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 2`] = `"($R=>$R[2].next("foo"))($R["example"])"`;
 
@@ -18,11 +448,183 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 5`] = `"($R=>$R[2].return(void 0))($R["example"])"`;
 
-exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 1`] = `"($R=>$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))()))($R["example"])"`;
+exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 1`] = `
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})()))($R["example"])"
+`;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 2`] = `"($R=>$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})))($R["example"])"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `"$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))())"`;
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
+"$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})())"
+`;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 2`] = `"$R[2].next("foo")"`;
 
@@ -32,13 +634,271 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 4`] = `
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `"$R[2].return(void 0)"`;
 
-exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `"$R[0]=($R[1]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))($R[2]=($R[3]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))())"`;
+exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `
+"$R[0]=($R[1]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))($R[2]=($R[3]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})())"
+`;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""}))"`;
 
-exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `"((h,j)=>(d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))((j=((b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),j.next("foo"),j.next("bar"),j.next("baz"),j.return(void 0),j)))()"`;
+exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
+"(h=>((stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))((h=(() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),h.next("foo"),h.next("bar"),h.next("baz"),h.return(void 0),h)))()"
+`;
 
-exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = `"((h,j)=>(d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))((j=((b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),j.throw(Object.assign(new Error("Oops!"),{stack:""})),j)))()"`;
+exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = `
+"(h=>((stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))((h=(() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),h.throw(Object.assign(new Error("Oops!"),{stack:""})),h)))()"
+`;
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream errors 2`] = `[Error: Oops!]`;
 

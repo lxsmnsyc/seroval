@@ -11,7 +11,6 @@ import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
   SerovalAggregateErrorNode,
-  SerovalArrayBufferNode,
   SerovalArrayNode,
   SerovalAsyncIteratorFactoryInstanceNode,
   SerovalBigIntNode,
@@ -157,32 +156,6 @@ export function createRegExpNode(
     NIL,
     serializeString(current.source),
     current.flags,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
-}
-
-export function createArrayBufferNode(
-  id: number,
-  current: ArrayBuffer,
-): SerovalArrayBufferNode {
-  const bytes = new Uint8Array(current);
-  const len = bytes.length;
-  const values = new Array<number>(len);
-  for (let i = 0; i < len; i++) {
-    values[i] = bytes[i];
-  }
-  return createSerovalNode(
-    SerovalNodeType.ArrayBuffer,
-    id,
-    values,
-    NIL,
-    NIL,
-    NIL,
     NIL,
     NIL,
     NIL,

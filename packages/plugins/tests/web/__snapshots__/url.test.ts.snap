@@ -8,13 +8,43 @@ exports[`URL > crossSerializeAsync > scoped > supports URL 1`] = `"($R=>$R[0]=Pr
 
 exports[`URL > crossSerializeAsync > supports URL 1`] = `"$R[0]=Promise.resolve($R[1]=new URL("https://github.com/lxsmnsyc/seroval?hello=world"))"`;
 
-exports[`URL > crossSerializeStream > scoped > supports URL 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`URL > crossSerializeStream > scoped > supports URL 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`URL > crossSerializeStream > scoped > supports URL 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new URL("https://github.com/lxsmnsyc/seroval?hello=world")))($R["example"])"`;
+exports[`URL > crossSerializeStream > scoped > supports URL 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new URL("https://github.com/lxsmnsyc/seroval?hello=world")))($R["example"])"
+`;
 
-exports[`URL > crossSerializeStream > supports URL 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`URL > crossSerializeStream > supports URL 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = { p: 0, s: 0, f: 0 };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`URL > crossSerializeStream > supports URL 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new URL("https://github.com/lxsmnsyc/seroval?hello=world"))"`;
+exports[`URL > crossSerializeStream > supports URL 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new URL("https://github.com/lxsmnsyc/seroval?hello=world"))"
+`;
 
 exports[`URL > serialize > supports URL 1`] = `"new URL("https://github.com/lxsmnsyc/seroval?hello=world")"`;
 

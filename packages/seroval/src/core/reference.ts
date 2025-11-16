@@ -3,7 +3,6 @@ import {
   SerovalMissingReferenceForIdError,
 } from '..';
 import { REFERENCES_KEY } from './keys';
-import assert from './utils/assert';
 
 const REFERENCE = new Map<unknown, string>();
 const INV_REFERENCE = new Map<string, unknown>();
@@ -23,13 +22,17 @@ export function hasReference(id: string): boolean {
 }
 
 export function getReferenceID<T>(value: T): string {
-  assert(hasReferenceID(value), new SerovalMissingReferenceError(value));
-  return REFERENCE.get(value)!;
+  if (hasReferenceID(value)) {
+    return REFERENCE.get(value)!;
+  }
+  throw new SerovalMissingReferenceError(value);
 }
 
 export function getReference<T>(id: string): T {
-  assert(hasReference(id), new SerovalMissingReferenceForIdError(id));
-  return INV_REFERENCE.get(id) as T;
+  if (hasReference(id)) {
+    return INV_REFERENCE.get(id) as T;
+  }
+  throw new SerovalMissingReferenceForIdError(id);
 }
 
 if (typeof globalThis !== 'undefined') {

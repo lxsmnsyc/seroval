@@ -1,9 +1,9 @@
 "name","ops","margin","percentSlower"
-"devalue",2062,0.6,71.92
-"flatted",2380,0.56,67.59
-"next-json",1541,0.43,79.01
-"o-son",3880,0.42,47.16
-"seroval",2098,0.5,71.43
-"superjson",1017,0.71,86.15
-"turbo-stream",1625,23.7,77.87
-"warp10",7343,0.13,0
+"devalue",1788,2.52,70.81
+"flatted",2142,0.73,65.03
+"next-json",1550,0.98,74.69
+"o-son",3630,1.88,40.73
+"seroval",1917,2.13,68.7
+"superjson",1160,3.2,81.06
+"turbo-stream",1730,1.38,71.76
+"warp10",6125,0.5,0

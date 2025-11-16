@@ -1,35 +1,252 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Response > crossSerializeAsync > scoped > supports Response 1`] = `"($R=>$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers($R[4]=[$R[5]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""}))($R["example"])"`;
+exports[`Response > crossSerializeAsync > scoped > supports Response 1`] = `
+"($R=>$R[0]=new Response($R[1]=($R[2]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(12,"SGVsbG8gV29ybGQh"),$R[3]={headers:$R[4]=new Headers($R[5]=[$R[6]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""}))($R["example"])"
+`;
 
-exports[`Response > crossSerializeAsync > supports Response 1`] = `"$R[0]=new Response($R[1]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,$R[2]={headers:$R[3]=new Headers($R[4]=[$R[5]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"`;
+exports[`Response > crossSerializeAsync > supports Response 1`] = `
+"$R[0]=new Response($R[1]=($R[2]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(12,"SGVsbG8gV29ybGQh"),$R[3]={headers:$R[4]=new Headers($R[5]=[$R[6]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"
+`;
 
-exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `"($R=>$R[0]=new Response($R[1]=($R[2]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))($R[3]=($R[4]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))()),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""}))($R["example"])"`;
+exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
+"($R=>$R[0]=new Response($R[1]=($R[2]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))($R[3]=($R[4]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})()),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""}))($R["example"])"
+`;
 
-exports[`Response > crossSerializeStream > scoped > supports Response 2`] = `"($R=>$R[3].next($R[9]=new Uint8Array($R[10]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,0,12)))($R["example"])"`;
+exports[`Response > crossSerializeStream > scoped > supports Response 2`] = `
+"($R=>$R[3].next($R[9]=new Uint8Array($R[10]=($R[11]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(12,"SGVsbG8gV29ybGQh"),0,12)))($R["example"])"
+`;
 
 exports[`Response > crossSerializeStream > scoped > supports Response 3`] = `"($R=>$R[3].return(void 0))($R["example"])"`;
 
-exports[`Response > crossSerializeStream > supports Response 1`] = `"$R[0]=new Response($R[1]=($R[2]=d=>new ReadableStream({start:c=>{d.on({next:v=>{c.enqueue(v)},throw:v=>{c.error(v)},return:()=>{c.close()}})}}))($R[3]=($R[4]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))()),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"`;
+exports[`Response > crossSerializeStream > supports Response 1`] = `
+"$R[0]=new Response($R[1]=($R[2]=(stream) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value);
+        } catch (_error) {
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+        }
+      }
+    });
+  }
+}))($R[3]=($R[4]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})()),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"
+`;
 
-exports[`Response > crossSerializeStream > supports Response 2`] = `"$R[3].next($R[9]=new Uint8Array($R[10]=new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,0,12))"`;
+exports[`Response > crossSerializeStream > supports Response 2`] = `
+"$R[3].next($R[9]=new Uint8Array($R[10]=($R[11]=(length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(12,"SGVsbG8gV29ybGQh"),0,12))"
+`;
 
 exports[`Response > crossSerializeStream > supports Response 3`] = `"$R[3].return(void 0)"`;
 
 exports[`Response > crossSerializeStream > supports already read Response 1`] = `"$R[0]=new Response(null,$R[1]={headers:$R[2]=new Headers($R[3]=[$R[4]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"`;
 
-exports[`Response > serializeAsync > supports Response 1`] = `"new Response(new Uint8Array([72,101,108,108,111,32,87,111,114,108,100,33]).buffer,{headers:new Headers([["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"`;
+exports[`Response > serializeAsync > supports Response 1`] = `
+"new Response(((length, b64) => {
+  const decoded = atob(b64);
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})(12,"SGVsbG8gV29ybGQh"),{headers:new Headers([["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"
+`;
 
 exports[`Response > supports already read Response 1`] = `"{"t":25,"i":0,"s":{"body":{"t":2,"s":0},"options":{"t":10,"i":1,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":2,"s":{"t":9,"i":3,"l":1,"a":[{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}],"s":3},"o":0}},"c":"seroval-plugins/web/Response"}"`;
 
 exports[`Response > toCrossJSONStream > supports Response 1`] = `"{"t":25,"i":0,"s":{"body":{"t":25,"i":1,"s":{"factory":{"t":25,"i":2,"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":3,"a":[],"f":{"t":26,"i":4,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"options":{"t":10,"i":5,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":6,"s":{"t":9,"i":7,"l":1,"a":[{"t":9,"i":8,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}],"s":3},"o":0}},"c":"seroval-plugins/web/Response"}"`;
 
-exports[`Response > toCrossJSONStream > supports Response 2`] = `"{"t":32,"i":3,"f":{"t":15,"i":9,"l":12,"c":"Uint8Array","f":{"t":19,"i":10,"s":[72,101,108,108,111,32,87,111,114,108,100,33]},"b":0}}"`;
+exports[`Response > toCrossJSONStream > supports Response 2`] = `"{"t":32,"i":3,"f":{"t":15,"i":9,"l":12,"c":"Uint8Array","f":{"t":19,"i":10,"s":"SGVsbG8gV29ybGQh","l":12,"f":{"t":26,"i":11,"s":5}},"b":0}}"`;
 
 exports[`Response > toCrossJSONStream > supports Response 3`] = `"{"t":34,"i":3,"f":{"t":2,"s":1}}"`;
 
-exports[`Response > toJSONAsync > supports Response 1`] = `"{"t":{"t":25,"i":0,"s":{"body":{"t":19,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100,33]},"options":{"t":10,"i":2,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":3,"s":{"t":9,"i":4,"l":1,"a":[{"t":9,"i":5,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}],"s":3},"o":0}},"c":"seroval-plugins/web/Response"},"f":31,"m":[]}"`;
+exports[`Response > toJSONAsync > supports Response 1`] = `"{"t":{"t":25,"i":0,"s":{"body":{"t":19,"i":1,"s":"SGVsbG8gV29ybGQh","l":12,"f":{"t":26,"i":2,"s":5}},"options":{"t":10,"i":3,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":4,"s":{"t":9,"i":5,"l":1,"a":[{"t":9,"i":6,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}],"s":3},"o":0}},"c":"seroval-plugins/web/Response"},"f":31,"m":[]}"`;
 
-exports[`Response > toJSONAsync > supports Response 2`] = `"{"t":25,"i":0,"s":{"body":{"t":19,"i":1,"s":[72,101,108,108,111,32,87,111,114,108,100,33]},"options":{"t":10,"i":2,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":3,"s":{"t":9,"i":4,"l":1,"a":[{"t":9,"i":5,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}],"s":3},"o":0}},"c":"seroval-plugins/web/Response"}"`;
+exports[`Response > toJSONAsync > supports Response 2`] = `"{"t":25,"i":0,"s":{"body":{"t":19,"i":1,"s":"SGVsbG8gV29ybGQh","l":12,"f":{"t":26,"i":2,"s":5}},"options":{"t":10,"i":3,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":4,"s":{"t":9,"i":5,"l":1,"a":[{"t":9,"i":6,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}],"s":3},"o":0}},"c":"seroval-plugins/web/Response"}"`;
 
 exports[`Response > toJSONAsync > supports already read Response 1`] = `"{"t":{"t":25,"i":0,"s":{"body":{"t":2,"s":0},"options":{"t":10,"i":1,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":2,"s":{"t":9,"i":3,"l":1,"a":[{"t":9,"i":4,"l":2,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}],"s":3},"o":0}},"c":"seroval-plugins/web/Response"},"f":31,"m":[]}"`;

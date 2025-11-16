@@ -3,6 +3,30 @@ import { createPlugin, createStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
+const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) => new ReadableStream({
+  start: (controller) => {
+    stream.on({
+      next: (value) => {
+        try {
+          controller.enqueue(value)
+        } catch (_error) {
+          // no-op
+        }
+      },
+      throw: (value) => {
+        controller.error(value);
+      },
+      return: () => {
+        try {
+          controller.close();
+        } catch (_error) {
+          // no-op
+        }
+      },
+    })
+  },
+});
+
 const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
   object,
   undefined
@@ -22,22 +46,8 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
       return undefined;
     },
   },
-  serialize(_node, ctx) {
-    return ctx.createFunction(
-      ['d'],
-      'new ReadableStream({start:' +
-        ctx.createEffectfulFunction(
-          ['c'],
-          'd.on({next:' +
-            ctx.createEffectfulFunction(['v'], 'try{c.enqueue(v)}catch{}') +
-            ',throw:' +
-            ctx.createEffectfulFunction(['v'], 'c.error(v)') +
-            ',return:' +
-            ctx.createEffectfulFunction([], 'try{c.close()}catch{}') +
-            '})',
-        ) +
-        '})',
-    );
+  serialize() {
+    return READABLE_STREAM_FACTORY_CONSTRUCTOR.toString();
   },
   deserialize() {
     return READABLE_STREAM_FACTORY;
@@ -118,25 +128,7 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   },
   deserialize(node, ctx) {
     const stream = ctx.deserialize(node.stream) as Stream<any>;
-    return new ReadableStream({
-      start(controller): void {
-        stream.on({
-          next(value) {
-            try {
-              controller.enqueue(value);
-            } catch {}
-          },
-          throw(value) {
-            controller.error(value);
-          },
-          return() {
-            try {
-              controller.close();
-            } catch {}
-          },
-        });
-      },
-    });
+    return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);
   },
 });
 

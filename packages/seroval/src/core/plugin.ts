@@ -1,10 +1,15 @@
-import type BaseDeserializerContext from './context/deserializer';
-import type BaseAsyncParserContext from './context/parser/async';
-import type BaseStreamParserContext from './context/parser/stream';
-import type BaseSyncParserContext from './context/parser/sync';
-import type BaseSerializerContext from './context/serializer';
+import type { AsyncParsePluginContext } from './context/async-parser';
+import type { DeserializePluginContext } from './context/deserializer';
+import type { SerializePluginContext } from './context/serializer';
+import type {
+  StreamParsePluginContext,
+  SyncParsePluginContext,
+} from './context/sync-parser';
 
-export type SerovalMode = 'vanilla' | 'cross';
+export const enum SerovalMode {
+  Vanilla = 1,
+  Cross = 2,
+}
 
 export interface PluginData {
   id: number;
@@ -28,28 +33,32 @@ export interface Plugin<Value, Node> {
    * Parsing modes
    */
   parse: {
-    sync?: (value: Value, ctx: BaseSyncParserContext, data: PluginData) => Node;
+    sync?: (
+      value: Value,
+      ctx: SyncParsePluginContext,
+      data: PluginData,
+    ) => Node;
     async?: (
       value: Value,
-      ctx: BaseAsyncParserContext,
+      ctx: AsyncParsePluginContext,
       data: PluginData,
     ) => Promise<Node>;
     stream?: (
       value: Value,
-      ctx: BaseStreamParserContext,
+      ctx: StreamParsePluginContext,
       data: PluginData,
     ) => Node;
   };
   /**
    * Convert the parsed node into a JS string
    */
-  serialize(node: Node, ctx: BaseSerializerContext, data: PluginData): string;
+  serialize(node: Node, ctx: SerializePluginContext, data: PluginData): string;
   /**
    * Convert the parsed node into its runtime equivalent.
    */
   deserialize(
     node: Node,
-    ctx: BaseDeserializerContext,
+    ctx: DeserializePluginContext,
     data: PluginData,
   ): Value;
 }

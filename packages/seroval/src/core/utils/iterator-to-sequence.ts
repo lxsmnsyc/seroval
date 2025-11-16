@@ -1,4 +1,5 @@
-import { NIL } from "../constants";
+import { ITERATOR_CONSTRUCTOR } from '../constructors';
+import { SYM_ITERATOR } from '../symbols';
 
 export interface Sequence {
   v: unknown[];
@@ -11,7 +12,7 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
   let throwsAt = -1;
   let doneAt = -1;
 
-  const iterator = source[Symbol.iterator]();
+  const iterator = source[SYM_ITERATOR]();
 
   while (true) {
     try {
@@ -34,33 +35,10 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
   };
 }
 
+const createIterator = ITERATOR_CONSTRUCTOR(SYM_ITERATOR);
+
 export function sequenceToIterator<T>(
   sequence: Sequence,
 ): () => IterableIterator<T> {
-  return (): IterableIterator<T> => {
-    let index = 0;
-
-    return {
-      [Symbol.iterator](): IterableIterator<T> {
-        return this;
-      },
-      next(): IteratorResult<T> {
-        if (index > sequence.d) {
-          return {
-            done: true,
-            value: NIL,
-          };
-        }
-        const currentIndex = index++;
-        const currentItem = sequence.v[currentIndex];
-        if (currentIndex === sequence.t) {
-          throw currentItem;
-        }
-        return {
-          done: currentIndex === sequence.d,
-          value: currentItem as T,
-        };
-      },
-    };
-  };
+  return createIterator(sequence) as unknown as () => IterableIterator<T>;
 }
