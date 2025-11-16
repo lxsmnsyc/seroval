@@ -18,7 +18,11 @@ exports[`AbortSignal > crossSerializeAsync > supports future AbortSignal 1`] = `
 
 exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -41,7 +45,11 @@ exports[`AbortSignal > crossSerializeStream > scoped > supports future AbortSign
 
 exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;

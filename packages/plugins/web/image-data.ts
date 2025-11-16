@@ -63,7 +63,7 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
   },
   deserialize(node, ctx) {
     return new ImageData(
-      ctx.deserialize(node.data) as Uint8ClampedArray,
+      ctx.deserialize(node.data) as Uint8ClampedArray<ArrayBuffer>,
       ctx.deserialize(node.width) as number,
       ctx.deserialize(node.height) as number,
       ctx.deserialize(node.options) as ImageDataSettings,

@@ -56,7 +56,11 @@ exports[`FormData > crossSerializeAsync > supports FormData 1`] = `
 
 exports[`FormData > crossSerializeStream > scoped > supports FormData 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
@@ -81,7 +85,11 @@ exports[`FormData > crossSerializeStream > scoped > supports FormData 2`] = `
 
 exports[`FormData > crossSerializeStream > supports FormData 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = { p: 0, s: 0, f: 0 };
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
   resolver.p = new Promise((resolve, reject) => {
     resolver.s = resolve;
     resolver.f = reject;
