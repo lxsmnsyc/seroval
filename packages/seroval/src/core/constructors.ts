@@ -256,8 +256,9 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
 export const SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR =
   /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR.toString();
 
-export const ARRAY_BUFFER_CONSTRUCTOR = (length: number, b64: string) => {
+export const ARRAY_BUFFER_CONSTRUCTOR = (b64: string) => {
   const decoded = atob(b64);
+  const length = decoded.length;
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);

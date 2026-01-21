@@ -816,9 +816,9 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 })(),k.next(1),k.next(2),k.next(3),k.return(void 0),k))}))()"
 `;
 
-exports[`AsyncIterable > toCrossJSONAsync > supports AsyncIterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":2},"o":0}"`;
+exports[`AsyncIterable > toCrossJSONAsync > supports AsyncIterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}]},"o":0}"`;
 
-exports[`AsyncIterable > toCrossJSONStream > supports AsyncIterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[],"f":{"t":26,"i":5,"s":4}}]}],"s":2},"o":0}"`;
+exports[`AsyncIterable > toCrossJSONStream > supports AsyncIterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[],"f":{"t":26,"i":5,"s":4}}]}]},"o":0}"`;
 
 exports[`AsyncIterable > toCrossJSONStream > supports AsyncIterables 2`] = `"{"t":32,"i":4,"f":{"t":0,"s":1}}"`;
 
@@ -828,4 +828,4 @@ exports[`AsyncIterable > toCrossJSONStream > supports AsyncIterables 4`] = `"{"t
 
 exports[`AsyncIterable > toCrossJSONStream > supports AsyncIterables 5`] = `"{"t":34,"i":4,"f":{"t":2,"s":1}}"`;
 
-exports[`AsyncIterable > toJSONAsync > supports AsyncIterables 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":2},"o":0},"f":31,"m":[1,4]}"`;
+exports[`AsyncIterable > toJSONAsync > supports AsyncIterables 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":0}],"v":[{"t":1,"s":"Hello World"},{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}]},"o":0},"f":63,"m":[1,4]}"`;

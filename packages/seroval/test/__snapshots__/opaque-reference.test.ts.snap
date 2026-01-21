@@ -32,22 +32,22 @@ exports[`OpaqueReference > serializeAsync > supports OpaqueReference 1`] = `"({t
 
 exports[`OpaqueReference > serializeAsync > supports OpaqueReference with replacement 1`] = `"({transparent:"This is transparent",opaque:"This is a dummy value."})"`;
 
-exports[`OpaqueReference > toCrossJSON > supports OpaqueReference 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0}"`;
+exports[`OpaqueReference > toCrossJSON > supports OpaqueReference 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}]},"o":0}"`;
 
-exports[`OpaqueReference > toCrossJSON > supports OpaqueReference with replacement 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0}"`;
+exports[`OpaqueReference > toCrossJSON > supports OpaqueReference with replacement 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}]},"o":0}"`;
 
-exports[`OpaqueReference > toCrossJSONAsync > supports OpaqueReference 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0}"`;
+exports[`OpaqueReference > toCrossJSONAsync > supports OpaqueReference 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}]},"o":0}"`;
 
-exports[`OpaqueReference > toCrossJSONAsync > supports OpaqueReference with replacement 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0}"`;
+exports[`OpaqueReference > toCrossJSONAsync > supports OpaqueReference with replacement 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}]},"o":0}"`;
 
-exports[`OpaqueReference > toCrossJSONStream > supports OpaqueReference 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0}"`;
+exports[`OpaqueReference > toCrossJSONStream > supports OpaqueReference 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}]},"o":0}"`;
 
-exports[`OpaqueReference > toCrossJSONStream > supports OpaqueReference with replacement 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0}"`;
+exports[`OpaqueReference > toCrossJSONStream > supports OpaqueReference with replacement 1`] = `"{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}]},"o":0}"`;
 
-exports[`OpaqueReference > toJSON > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSON > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}]},"o":0},"f":63,"m":[]}"`;
 
-exports[`OpaqueReference > toJSON > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSON > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}]},"o":0},"f":63,"m":[]}"`;
 
-exports[`OpaqueReference > toJSONAsync > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSONAsync > supports OpaqueReference 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":2,"s":1}]},"o":0},"f":63,"m":[]}"`;
 
-exports[`OpaqueReference > toJSONAsync > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}],"s":2},"o":0},"f":31,"m":[]}"`;
+exports[`OpaqueReference > toJSONAsync > supports OpaqueReference with replacement 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["transparent","opaque"],"v":[{"t":1,"s":"This is transparent"},{"t":1,"s":"This is a dummy value."}]},"o":0},"f":63,"m":[]}"`;

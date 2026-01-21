@@ -58,14 +58,14 @@ exports[`sparse arrays > serialize > supports sparse arrays 1`] = `"[,,,,,,,,,,]
 
 exports[`sparse arrays > serializeAsync > supports sparse arrays 1`] = `"Promise.resolve([,,,,,,,,,,])"`;
 
-exports[`sparse arrays > toCrossJSON > supports sparse arrays 1`] = `"{"t":9,"i":0,"l":10,"a":[],"o":0}"`;
+exports[`sparse arrays > toCrossJSON > supports sparse arrays 1`] = `"{"t":9,"i":0,"a":[0,0,0,0,0,0,0,0,0,0],"o":0}"`;
 
-exports[`sparse arrays > toCrossJSONAsync > supports sparse arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"l":10,"a":[],"o":0}}"`;
+exports[`sparse arrays > toCrossJSONAsync > supports sparse arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"a":[0,0,0,0,0,0,0,0,0,0],"o":0}}"`;
 
 exports[`sparse arrays > toCrossJSONStream > supports sparse arrays 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`sparse arrays > toCrossJSONStream > supports sparse arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":9,"i":3,"l":10,"a":[],"o":0}]}"`;
+exports[`sparse arrays > toCrossJSONStream > supports sparse arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":9,"i":3,"a":[0,0,0,0,0,0,0,0,0,0],"o":0}]}"`;
 
-exports[`sparse arrays > toJSON > supports sparse arrays 1`] = `"{"t":{"t":9,"i":0,"l":10,"a":[],"o":0},"f":31,"m":[]}"`;
+exports[`sparse arrays > toJSON > supports sparse arrays 1`] = `"{"t":{"t":9,"i":0,"a":[0,0,0,0,0,0,0,0,0,0],"o":0},"f":63,"m":[]}"`;
 
-exports[`sparse arrays > toJSONAsync > supports sparse arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"l":10,"a":[],"o":0}},"f":31,"m":[]}"`;
+exports[`sparse arrays > toJSONAsync > supports sparse arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"a":[0,0,0,0,0,0,0,0,0,0],"o":0}},"f":63,"m":[]}"`;

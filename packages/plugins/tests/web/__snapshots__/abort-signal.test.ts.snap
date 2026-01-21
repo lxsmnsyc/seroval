@@ -94,10 +94,10 @@ exports[`AbortSignal > toCrossJSONStream > supports future AbortSignal 1`] = `"{
 
 exports[`AbortSignal > toCrossJSONStream > supports future AbortSignal 2`] = `"{"t":25,"i":2,"s":{"controller":{"t":4,"i":1},"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignalAbort"}"`;
 
-exports[`AbortSignal > toJSON > supports aborted AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSON > supports aborted AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":63,"m":[]}"`;
 
-exports[`AbortSignal > toJSON > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":0},"c":"seroval-plugins/web/AbortSignal"},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSON > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":0},"c":"seroval-plugins/web/AbortSignal"},"f":63,"m":[]}"`;
 
-exports[`AbortSignal > toJSONAsync > supports aborted AbortSignal 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"}},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSONAsync > supports aborted AbortSignal 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"}},"f":63,"m":[]}"`;
 
-exports[`AbortSignal > toJSONAsync > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSONAsync > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":63,"m":[]}"`;

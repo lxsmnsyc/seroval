@@ -11,6 +11,7 @@ export enum Feature {
   ErrorPrototypeStack = 0x04,
   ObjectAssign = 0x08,
   BigIntTypedArray = 0x10,
+  RegExp = 0x20,
 }
 
 export const ALL_ENABLED =
@@ -18,4 +19,5 @@ export const ALL_ENABLED =
   Feature.ArrowFunction |
   Feature.ErrorPrototypeStack |
   Feature.ObjectAssign |
-  Feature.BigIntTypedArray;
+  Feature.BigIntTypedArray |
+  Feature.RegExp;

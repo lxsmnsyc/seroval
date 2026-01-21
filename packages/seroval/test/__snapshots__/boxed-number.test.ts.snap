@@ -310,22 +310,22 @@ exports[`boxed number > toCrossJSONStream > supports boxed numbers 1`] = `"{"t":
 
 exports[`boxed number > toCrossJSONStream > supports boxed numbers 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":21,"i":3,"f":{"t":0,"s":3735928559}}]}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{"t":{"t":21,"i":0,"f":{"t":0,"s":3735928559}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 1`] = `"{"t":{"t":21,"i":0,"f":{"t":0,"s":3735928559}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 2`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":7}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 2`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":7}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 3`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":5}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 3`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":5}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 4`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":6}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 4`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":6}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSON > supports boxed numbers 5`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":4}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSON > supports boxed numbers 5`] = `"{"t":{"t":21,"i":0,"f":{"t":2,"s":4}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":0,"s":3735928559}}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":0,"s":3735928559}}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":7}}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":7}}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 3`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":5}}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 3`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":5}}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 4`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":6}}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 4`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":6}}},"f":63,"m":[]}"`;
 
-exports[`boxed number > toJSONAsync > supports boxed numbers 5`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":4}}},"f":31,"m":[]}"`;
+exports[`boxed number > toJSONAsync > supports boxed numbers 5`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":21,"i":1,"f":{"t":2,"s":4}}},"f":63,"m":[]}"`;

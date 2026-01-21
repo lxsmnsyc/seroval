@@ -22,6 +22,6 @@ exports[`Plugin > toCrossJSONAsync > supports Plugin 1`] = `"{"t":12,"i":0,"s":1
 
 exports[`Plugin > toCrossJSONStream > supports Plugin 1`] = `"{"t":25,"i":0,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"}"`;
 
-exports[`Plugin > toJSON > supports Plugin 1`] = `"{"t":{"t":25,"i":0,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"},"f":31,"m":[]}"`;
+exports[`Plugin > toJSON > supports Plugin 1`] = `"{"t":{"t":25,"i":0,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"},"f":63,"m":[]}"`;
 
-exports[`Plugin > toJSONAsync > supports Plugin 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"}},"f":31,"m":[]}"`;
+exports[`Plugin > toJSONAsync > supports Plugin 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"SGVsbG8sIFdvcmxkIQ=="},"c":"Buffer"}},"f":63,"m":[]}"`;

@@ -53,6 +53,8 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Affects `Iterable`, `Error`, `AggregateError` and `Object.create(null)`
 - [`BigIntTypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array)
   - Disables serialization of `BigInt64Array` and `BigUint64Array`
+- `RegExp`
+  - Disables serialization (and deserialization) of `RegExp`
 
 ## Supported Types
 
@@ -75,7 +77,7 @@ By default, all feature flags are enabled. The following are the feature flags a
 | `Array`                                                                                                                                                  | ✅         | ✅         | ✅         |
 | sparse (holey) `Arrays`                                                                                                                                  | ✅         | ✅         | ✅         |
 | `Object`                                                                                                                                                 | ✅         | ✅         | ✅         |
-| `RegExp`                                                                                                                                                 | ✅         | ✅         | ✅         |
+| `RegExp`                                                                                                                                                 | ❓[^6]     | ❓[^6]     | ❓[^6]     |
 | `Date`                                                                                                                                                   | ✅         | ✅         | ✅         |
 | `Map`                                                                                                                                                    | ✅         | ✅         | ✅         |
 | `Set`                                                                                                                                                    | ✅         | ✅         | ✅         |
@@ -133,3 +135,4 @@ By default, all feature flags are enabled. The following are the feature flags a
 [^3]: `Feature.AggregateError` must be enabled, otherwise `AggregateError` is serialized into an `Error` instance.
 [^4]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
 [^5]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data) while having a sync constructor, it cannot be represented in a way that the type is consistent to its original declaration.
+[^6]: `Feature.RegExp` must be enabled, otherwise throws an `SerovalUnsupportedTypeError` and `SerovalUnsupportedNodeError`.

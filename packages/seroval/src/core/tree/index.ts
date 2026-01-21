@@ -18,6 +18,7 @@ import {
   SerovalMode,
 } from '../plugin';
 import type { SerovalNode } from '../types';
+import { ALL_ENABLED } from '../compat';
 export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 
@@ -67,6 +68,10 @@ export interface SerovalJSON {
   m: number[];
 }
 
+export interface FromJSONOptions extends PluginAccessOptions {
+  disabledFeatures?: number;
+}
+
 export function toJSON<T>(
   source: T,
   options: SyncParserContextOptions = {},
@@ -114,12 +119,16 @@ export function compileJSON(
 
 export function fromJSON<T>(
   source: SerovalJSON,
-  options: PluginAccessOptions = {},
+  options: FromJSONOptions = {},
 ): T {
   const plugins = resolvePlugins(options.plugins);
+  const disabledFeatures = options.disabledFeatures || 0;
+  const sourceFeatures = source.f ?? ALL_ENABLED;
   const ctx = createVanillaDeserializerContext({
     plugins,
     markedRefs: source.m,
+    features: sourceFeatures & ~disabledFeatures,
+    disabledFeatures,
   });
   return deserializeTop(ctx, source.t) as T;
 }

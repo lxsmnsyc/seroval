@@ -181,6 +181,8 @@ export function fromCrossJSON<T>(
   const ctx = createCrossDeserializerContext({
     plugins,
     refs: options.refs,
+    features: options.features,
+    disabledFeatures: options.disabledFeatures,
   });
   return deserializeTop(ctx, source) as T;
 }

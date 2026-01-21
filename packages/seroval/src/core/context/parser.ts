@@ -38,6 +38,7 @@ import { getObjectFlag } from '../utils/get-object-flag';
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
   refs?: Map<unknown, number>;
+  depthLimit?: number;
 }
 
 export const enum ParserNodeType {
@@ -71,6 +72,8 @@ export interface BaseParserContext extends PluginAccessOptions {
   refs: Map<unknown, number>;
 
   features: number;
+
+  depthLimit: number;
 }
 
 export function createBaseParserContext(
@@ -83,6 +86,7 @@ export function createBaseParserContext(
     marked: new Set(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     refs: options.refs || new Map(),
+    depthLimit: options.depthLimit || 1000,
   };
 }
 
@@ -206,8 +210,8 @@ export function parseIteratorFactory(
     NIL,
     NIL,
     NIL,
-    NIL,
     parseWellKnownSymbol(ctx, SYM_ITERATOR),
+    NIL,
     NIL,
     NIL,
   );
@@ -228,11 +232,11 @@ export function parseAsyncIteratorFactory(
     NIL,
     NIL,
     NIL,
-    NIL,
     [
       parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
       parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR),
     ],
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -251,13 +255,13 @@ export function createObjectNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     record,
     NIL,
     NIL,
     NIL,
     NIL,
     getObjectFlag(current),
+    NIL,
   );
 }
 
@@ -266,7 +270,6 @@ export function createMapNode(
   id: number,
   k: SerovalNode[],
   v: SerovalNode[],
-  s: number,
 ): SerovalMapNode {
   return createSerovalNode(
     SerovalNodeType.Map,
@@ -275,10 +278,10 @@ export function createMapNode(
     NIL,
     NIL,
     NIL,
-    NIL,
-    { k, v, s },
+    { k, v },
     NIL,
     parseSpecialReference(ctx, SpecialReference.MapSentinel),
+    NIL,
     NIL,
     NIL,
   );
@@ -298,8 +301,8 @@ export function createPromiseConstructorNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
+    NIL,
     NIL,
     NIL,
   );
@@ -311,22 +314,21 @@ export function createArrayBufferNode(
   current: ArrayBuffer,
 ): SerovalArrayBufferNode {
   const bytes = new Uint8Array(current);
-  const len = bytes.length;
   let result = '';
-  for (let i = 0; i < len; i++) {
+  for (let i = 0, len = bytes.length; i < len; i++) {
     result += String.fromCharCode(bytes[i]);
   }
   return createSerovalNode(
     SerovalNodeType.ArrayBuffer,
     id,
     serializeString(btoa(result)),
-    len,
     NIL,
     NIL,
     NIL,
     NIL,
     NIL,
     parseSpecialReference(ctx, SpecialReference.ArrayBufferConstructor),
+    NIL,
     NIL,
     NIL,
   );

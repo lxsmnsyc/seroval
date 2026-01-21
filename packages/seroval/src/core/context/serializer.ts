@@ -282,7 +282,7 @@ export function createVanillaSerializerContext(
     mode: SerovalMode.Vanilla,
     base: createBaseSerializerContext(SerovalMode.Vanilla, options),
     state: createVanillaSerializerState(),
-    child: undefined,
+    child: NIL,
   };
 }
 
@@ -306,7 +306,7 @@ export function createCrossSerializerContext(
     mode: SerovalMode.Cross,
     base: createBaseSerializerContext(SerovalMode.Cross, options),
     state: options,
-    child: undefined,
+    child: NIL,
   };
 }
 
@@ -531,7 +531,7 @@ function serializeReference(node: SerovalReferenceNode): string {
 function serializeArrayItem(
   ctx: SerializerContext,
   id: number,
-  item: SerovalNode | undefined,
+  item: SerovalNode | 0,
   index: number,
 ): string {
   // Check if index is a hole
@@ -557,15 +557,16 @@ function serializeArray(
   node: SerovalArrayNode,
 ): string {
   const id = node.i;
-  if (node.l) {
+  const list = node.a;
+  const len = list.length;
+  if (len > 0) {
     ctx.base.stack.push(id);
-    const list = node.a;
     let values = serializeArrayItem(ctx, id, list[0], 0);
     // This is different than Map and Set
     // because we also need to serialize
     // the holes of the Array
     let isHoley = values === '';
-    for (let i = 1, len = node.l, item: string; i < len; i++) {
+    for (let i = 1, item: string; i < len; i++) {
       item = serializeArrayItem(ctx, id, list[i], i);
       values += ',' + item;
       isHoley = item === '';
@@ -625,9 +626,9 @@ function serializeProperties(
   source: SerovalNodeWithProperties,
   record: SerovalObjectRecordNode,
 ): string {
-  const len = record.s;
-  if (len) {
-    const keys = record.k;
+  const keys = record.k;
+  const len = keys.length;
+  if (len > 0) {
     const values = record.v;
     ctx.base.stack.push(source.i);
     let result = serializeProperty(ctx, source, keys[0], values[0]);
@@ -742,10 +743,10 @@ function serializeAssignments(
   source: SerovalNodeWithProperties,
   node: SerovalObjectRecordNode,
 ): string | undefined {
-  const len = node.s;
-  if (len) {
+  const keys = node.k;
+  const len = keys.length;
+  if (len > 0) {
     const mainAssignments: Assignment[] = [];
-    const keys = node.k;
     const values = node.v;
     ctx.base.stack.push(source.i);
     for (let i = 0; i < len; i++) {
@@ -796,8 +797,14 @@ function serializeDate(node: SerovalDateNode): string {
   return 'new Date("' + node.s + '")';
 }
 
-function serializeRegExp(node: SerovalRegExpNode): string {
-  return '/' + node.c + '/' + node.m;
+function serializeRegExp(
+  ctx: SerializerContext,
+  node: SerovalRegExpNode,
+): string {
+  if (ctx.base.features & Feature.RegExp) {
+    return '/' + node.c + '/' + node.m;
+  }
+  throw new SerovalUnsupportedNodeError(node);
 }
 
 function serializeSetItem(
@@ -820,10 +827,10 @@ function serializeSetItem(
 
 function serializeSet(ctx: SerializerContext, node: SerovalSetNode): string {
   let serialized = SET_CONSTRUCTOR;
-  const size = node.l;
+  const items = node.a;
+  const size = items.length;
   const id = node.i;
-  if (size) {
-    const items = node.a;
+  if (size > 0) {
     ctx.base.stack.push(id);
     let result = serializeSetItem(ctx, id, items[0]);
     for (let i = 1, item = result; i < size; i++) {
@@ -913,13 +920,13 @@ function serializeMapEntry(
 
 function serializeMap(ctx: SerializerContext, node: SerovalMapNode): string {
   let serialized = MAP_CONSTRUCTOR;
-  const size = node.e.s;
+  const keys = node.e.k;
+  const size = keys.length;
   const id = node.i;
   const sentinel = node.f;
   const sentinelId = getRefParam(ctx, sentinel.i);
   const base = ctx.base;
-  if (size) {
-    const keys = node.e.k;
+  if (size > 0) {
     const vals = node.e.v;
     base.stack.push(id);
     let result = serializeMapEntry(ctx, id, keys[0], vals[0], sentinelId);
@@ -946,33 +953,21 @@ function serializeArrayBuffer(
   ctx: SerializerContext,
   node: SerovalArrayBufferNode,
 ): string {
-  return getConstructor(ctx, node.f) + '(' + node.l + ',"' + node.s + '")';
+  return getConstructor(ctx, node.f) + '("' + node.s + '")';
 }
 
 function serializeTypedArray(
   ctx: SerializerContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ): string {
-  return (
-    'new ' +
-    node.c +
-    '(' +
-    serialize(ctx, node.f) +
-    ',' +
-    node.b +
-    ',' +
-    node.l +
-    ')'
-  );
+  return 'new ' + node.c + '(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
 }
 
 function serializeDataView(
   ctx: SerializerContext,
   node: SerovalDataViewNode,
 ): string {
-  return (
-    'new DataView(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')'
-  );
+  return 'new DataView(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
 }
 
 function serializeAggregateError(
@@ -1262,7 +1257,7 @@ function serializeAssignable(
     case SerovalNodeType.Date:
       return serializeDate(node);
     case SerovalNodeType.RegExp:
-      return serializeRegExp(node);
+      return serializeRegExp(ctx, node);
     case SerovalNodeType.Set:
       return serializeSet(ctx, node);
     case SerovalNodeType.Map:

@@ -153,9 +153,9 @@ export function createRegExpNode(
     SerovalNodeType.RegExp,
     id,
     NIL,
-    NIL,
     serializeString(current.source),
     current.flags,
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -214,8 +214,8 @@ export function createPluginNode(
     SerovalNodeType.Plugin,
     id,
     value,
-    NIL,
     serializeString(tag),
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -229,13 +229,12 @@ export function createPluginNode(
 export function createArrayNode(
   id: number,
   current: unknown[],
-  parsedItems: SerovalNode[],
+  parsedItems: SerovalArrayNode['a'],
 ): SerovalArrayNode {
   return createSerovalNode(
     SerovalNodeType.Array,
     id,
     NIL,
-    current.length,
     NIL,
     NIL,
     NIL,
@@ -244,6 +243,7 @@ export function createArrayNode(
     NIL,
     NIL,
     getObjectFlag(current),
+    NIL,
   );
 }
 
@@ -260,8 +260,8 @@ export function createBoxedNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     boxed,
+    NIL,
     NIL,
     NIL,
   );
@@ -276,7 +276,6 @@ export function createTypedArrayNode(
     SerovalNodeType.TypedArray,
     id,
     NIL,
-    current.length,
     current.constructor.name,
     NIL,
     NIL,
@@ -285,6 +284,7 @@ export function createTypedArrayNode(
     buffer,
     current.byteOffset,
     NIL,
+    current.length,
   );
 }
 
@@ -297,7 +297,6 @@ export function createBigIntTypedArrayNode(
     SerovalNodeType.BigIntTypedArray,
     id,
     NIL,
-    current.length,
     current.constructor.name,
     NIL,
     NIL,
@@ -306,6 +305,7 @@ export function createBigIntTypedArrayNode(
     buffer,
     current.byteOffset,
     NIL,
+    current.byteLength,
   );
 }
 
@@ -318,7 +318,6 @@ export function createDataViewNode(
     SerovalNodeType.DataView,
     id,
     NIL,
-    current.byteLength,
     NIL,
     NIL,
     NIL,
@@ -327,6 +326,7 @@ export function createDataViewNode(
     buffer,
     current.byteOffset,
     NIL,
+    current.byteLength,
   );
 }
 
@@ -340,9 +340,9 @@ export function createErrorNode(
     id,
     getErrorConstructor(current),
     NIL,
-    NIL,
     serializeString(current.message),
     options,
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -361,9 +361,9 @@ export function createAggregateErrorNode(
     id,
     getErrorConstructor(current),
     NIL,
-    NIL,
     serializeString(current.message),
     options,
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -374,19 +374,18 @@ export function createAggregateErrorNode(
 
 export function createSetNode(
   id: number,
-  size: number,
   items: SerovalNode[],
 ): SerovalSetNode {
   return createSerovalNode(
     SerovalNodeType.Set,
     id,
     NIL,
-    size,
     NIL,
     NIL,
     NIL,
     NIL,
     items,
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -405,8 +404,8 @@ export function createIteratorFactoryInstanceNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     [factory, items],
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -425,8 +424,8 @@ export function createAsyncIteratorFactoryInstanceNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     [factory, items],
+    NIL,
     NIL,
     NIL,
     NIL,
@@ -446,9 +445,9 @@ export function createStreamConstructorNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     sequence,
     factory,
+    NIL,
     NIL,
     NIL,
   );
@@ -467,8 +466,8 @@ export function createStreamNextNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     parsed,
+    NIL,
     NIL,
     NIL,
   );
@@ -487,8 +486,8 @@ export function createStreamThrowNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     parsed,
+    NIL,
     NIL,
     NIL,
   );
@@ -507,8 +506,8 @@ export function createStreamReturnNode(
     NIL,
     NIL,
     NIL,
-    NIL,
     parsed,
+    NIL,
     NIL,
     NIL,
   );

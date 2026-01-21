@@ -1,4 +1,18 @@
-import { SYM_ASYNC_ITERATOR, SYM_HAS_INSTANCE, SYM_IS_CONCAT_SPREADABLE, SYM_ITERATOR, SYM_MATCH, SYM_MATCH_ALL, SYM_REPLACE, SYM_SEARCH, SYM_SPECIES, SYM_SPLIT, SYM_TO_PRIMITIVE, SYM_TO_STRING_TAG, SYM_UNSCOPABLES } from "./symbols";
+import {
+  SYM_ASYNC_ITERATOR,
+  SYM_HAS_INSTANCE,
+  SYM_IS_CONCAT_SPREADABLE,
+  SYM_ITERATOR,
+  SYM_MATCH,
+  SYM_MATCH_ALL,
+  SYM_REPLACE,
+  SYM_SEARCH,
+  SYM_SPECIES,
+  SYM_SPLIT,
+  SYM_TO_PRIMITIVE,
+  SYM_TO_STRING_TAG,
+  SYM_UNSCOPABLES,
+} from './symbols';
 
 export const enum SerovalConstant {
   Null = 0,
@@ -133,10 +147,12 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.Nan]: '0/0',
 };
 
+export const NIL = void 0;
+
 export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.True]: true,
   [SerovalConstant.False]: false,
-  [SerovalConstant.Undefined]: undefined,
+  [SerovalConstant.Undefined]: NIL,
   [SerovalConstant.Null]: null,
   [SerovalConstant.NegZero]: -0,
   [SerovalConstant.Inf]: Number.POSITIVE_INFINITY,
@@ -183,5 +199,3 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
     [ErrorConstructorTag.TypeError]: TypeError,
     [ErrorConstructorTag.URIError]: URIError,
   };
-
-export const NIL = undefined;

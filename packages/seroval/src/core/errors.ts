@@ -78,6 +78,9 @@ const enum SpecificErrorCodes {
   MissingReference = 5,
   MissingReferenceForId = 6,
   UnknownTypedArray = 7,
+  MalformedNode = 8,
+  ConflictedNodeId = 9,
+  DepthLimit = 10,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -158,6 +161,36 @@ export class SerovalUnknownTypedArrayError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnknownTypedArray)
         : 'Unknown TypedArray "' + name + '"',
+    );
+  }
+}
+
+export class SerovalMalformedNodeError extends Error {
+  constructor(node: SerovalNode) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedNode)
+        : 'Malformed node type "' + node.t + '".',
+    );
+  }
+}
+
+export class SerovalConflictedNodeIdError extends Error {
+  constructor(node: SerovalNode) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.ConflictedNodeId)
+        : 'Conflicted node id "' + node.i + '".',
+    );
+  }
+}
+
+export class SerovalDepthLimitError extends Error {
+  constructor(limit: number) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.ConflictedNodeId)
+        : 'Depth limit of ' + limit + ' reached',
     );
   }
 }
