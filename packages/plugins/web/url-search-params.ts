@@ -3,7 +3,7 @@ import { createPlugin } from 'seroval';
 
 const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<
   URLSearchParams,
-  SerovalNode
+  { value: SerovalNode }
 >({
   tag: 'seroval-plugins/web/URLSearchParams',
   test(value) {
@@ -14,20 +14,26 @@ const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<
   },
   parse: {
     sync(value, ctx) {
-      return ctx.parse(value.toString());
+      return {
+        value: ctx.parse(value.toString()),
+      };
     },
     async async(value, ctx) {
-      return await ctx.parse(value.toString());
+      return {
+        value: await ctx.parse(value.toString()),
+      };
     },
     stream(value, ctx) {
-      return ctx.parse(value.toString());
+      return {
+        value: ctx.parse(value.toString()),
+      };
     },
   },
   serialize(node, ctx) {
-    return 'new URLSearchParams(' + ctx.serialize(node) + ')';
+    return 'new URLSearchParams(' + ctx.serialize(node.value) + ')';
   },
   deserialize(node, ctx) {
-    return new URLSearchParams(ctx.deserialize(node) as string);
+    return new URLSearchParams(ctx.deserialize(node.value) as string);
   },
 });
 

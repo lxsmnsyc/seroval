@@ -25,10 +25,7 @@ class AbortSignalController {
   controller = new AbortController();
 }
 
-const AbortSignalControllerPlugin = createPlugin<
-  AbortSignalController,
-  undefined
->({
+const AbortSignalControllerPlugin = createPlugin<AbortSignalController, {}>({
   tag: 'seroval-plugins/web/AbortSignalController',
   test(value) {
     // We didn't actually use the AbortController class
@@ -37,7 +34,7 @@ const AbortSignalControllerPlugin = createPlugin<
   },
   parse: {
     stream() {
-      return undefined;
+      return {};
     },
   },
   serialize(_node) {
@@ -48,10 +45,10 @@ const AbortSignalControllerPlugin = createPlugin<
   },
 });
 
-interface AbortSignalAbortNode {
+type AbortSignalAbortNode = {
   controller: SerovalNode;
   reason: SerovalNode;
-}
+};
 
 class AbortSignalAbort {
   constructor(
@@ -95,18 +92,10 @@ const AbortSignalAbortPlugin = createPlugin<
   },
 });
 
-const enum AbortSignalState {
-  Pending = 0,
-  Aborted = 1,
-  Streaming = 2,
-}
-
-type AbortSignalNode =
-  | { type: AbortSignalState.Pending }
-  | { type: AbortSignalState.Aborted; reason: SerovalNode }
-  | { type: AbortSignalState.Streaming; controller: SerovalNode };
-
-const AbortSignalPlugin = createPlugin<AbortSignal, AbortSignalNode>({
+const AbortSignalPlugin = createPlugin<
+  AbortSignal,
+  { reason?: SerovalNode; controller?: SerovalNode }
+>({
   tag: 'seroval-plugins/web/AbortSignal',
   extends: [AbortSignalAbortPlugin],
   test(value) {
@@ -119,31 +108,25 @@ const AbortSignalPlugin = createPlugin<AbortSignal, AbortSignalNode>({
     sync(value, ctx) {
       if (value.aborted) {
         return {
-          type: AbortSignalState.Aborted,
           reason: ctx.parse(value.reason),
         };
       }
-      return {
-        type: AbortSignalState.Pending,
-      };
+      return {};
     },
     async async(value, ctx) {
       if (value.aborted) {
         return {
-          type: AbortSignalState.Aborted,
           reason: await ctx.parse(value.reason),
         };
       }
       const result = await abortSignalToPromise(value);
       return {
-        type: AbortSignalState.Aborted,
         reason: await ctx.parse(result),
       };
     },
     stream(value, ctx) {
       if (value.aborted) {
         return {
-          type: AbortSignalState.Aborted,
           reason: ctx.parse(value.reason),
         };
       }
@@ -165,32 +148,31 @@ const AbortSignalPlugin = createPlugin<AbortSignal, AbortSignalNode>({
       );
 
       return {
-        type: AbortSignalState.Streaming,
         controller: ctx.parse(controller),
       };
     },
   },
   serialize(node, ctx) {
-    if (node.type === AbortSignalState.Pending) {
-      return '(new AbortController).signal';
-    }
-    if (node.type === AbortSignalState.Aborted) {
+    if (node.reason) {
       return 'AbortSignal.abort(' + ctx.serialize(node.reason) + ')';
     }
-    return '(' + ctx.serialize(node.controller) + ').signal';
+    if (node.controller) {
+      return '(' + ctx.serialize(node.controller) + ').signal';
+    }
+    return '(new AbortController).signal';
   },
   deserialize(node, ctx) {
-    if (node.type === AbortSignalState.Pending) {
-      const controller = new AbortController();
-      return controller.signal;
-    }
-    if (node.type === AbortSignalState.Aborted) {
+    if (node.reason) {
       return AbortSignal.abort(ctx.deserialize(node.reason));
     }
-    const controller = ctx.deserialize(
-      node.controller,
-    ) as AbortSignalController;
-    return controller.controller.signal;
+    if (node.controller) {
+      const controller = ctx.deserialize(
+        node.controller,
+      ) as AbortSignalController;
+      return controller.controller.signal;
+    }
+    const controller = new AbortController();
+    return controller.signal;
   },
 });
 

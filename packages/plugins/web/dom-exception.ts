@@ -1,10 +1,10 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-interface DOMExceptionNode {
+type DOMExceptionNode = {
   name: SerovalNode;
   message: SerovalNode;
-}
+};
 
 const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<
   DOMException,

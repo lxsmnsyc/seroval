@@ -60,12 +60,12 @@ exports[`URLSearchParams > serializeAsync > supports URLSearchParams 1`] = `"Pro
 
 exports[`URLSearchParams > toCrossJSONStream > supports URLSearchParams 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`URLSearchParams > toCrossJSONStream > supports URLSearchParams 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":25,"i":3,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}]}"`;
+exports[`URLSearchParams > toCrossJSONStream > supports URLSearchParams 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":25,"i":3,"s":{"value":{"t":1,"s":"hello=world&foo=bar"}},"c":"seroval-plugins/web/URLSearchParams"}]}"`;
 
-exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{"t":{"t":25,"i":0,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"},"f":63,"m":[]}"`;
+exports[`URLSearchParams > toJSON > supports URLSearchParams 1`] = `"{"t":{"t":25,"i":0,"s":{"value":{"t":1,"s":"hello=world&foo=bar"}},"c":"seroval-plugins/web/URLSearchParams"},"f":63,"m":[]}"`;
 
-exports[`URLSearchParams > toJSON > supports URLSearchParams 2`] = `"{"t":25,"i":0,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}"`;
+exports[`URLSearchParams > toJSON > supports URLSearchParams 2`] = `"{"t":25,"i":0,"s":{"value":{"t":1,"s":"hello=world&foo=bar"}},"c":"seroval-plugins/web/URLSearchParams"}"`;
 
-exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}},"f":63,"m":[]}"`;
+exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"value":{"t":1,"s":"hello=world&foo=bar"}},"c":"seroval-plugins/web/URLSearchParams"}},"f":63,"m":[]}"`;
 
-exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"t":1,"s":"hello=world&foo=bar"},"c":"seroval-plugins/web/URLSearchParams"}}"`;
+exports[`URLSearchParams > toJSONAsync > supports URLSearchParams 2`] = `"{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"value":{"t":1,"s":"hello=world&foo=bar"}},"c":"seroval-plugins/web/URLSearchParams"}}"`;

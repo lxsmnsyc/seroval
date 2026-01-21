@@ -1,12 +1,12 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-interface ImageDataNode {
+type ImageDataNode = {
   data: SerovalNode;
   width: SerovalNode;
   height: SerovalNode;
   options: SerovalNode;
-}
+};
 
 const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
   tag: 'seroval-plugins/web/ImageData',

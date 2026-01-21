@@ -28,20 +28,20 @@ const FORM_DATA_FACTORY_CONSTRUCTOR = (
   return f;
 };
 
-const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, undefined>({
+const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   tag: 'seroval-plugins/web/FormDataFactory',
   test(value) {
     return value === FORM_DATA_FACTORY;
   },
   parse: {
     sync() {
-      return undefined;
+      return FORM_DATA_FACTORY;
     },
     async async() {
-      return await Promise.resolve(undefined);
+      return await Promise.resolve(FORM_DATA_FACTORY);
     },
     stream() {
-      return undefined;
+      return FORM_DATA_FACTORY;
     },
   },
   serialize() {
@@ -52,10 +52,10 @@ const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, undefined>({
   },
 });
 
-interface FormDataNode {
+type FormDataNode = {
   factory: SerovalNode;
   entries: SerovalNode;
-}
+};
 
 const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
   tag: 'seroval-plugins/web/FormData',

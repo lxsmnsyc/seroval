@@ -261,7 +261,7 @@ export interface SerovalPluginNode extends SerovalBaseNode {
   t: SerovalNodeType.Plugin;
   i: number;
   // value
-  s: unknown;
+  s: Record<string, SerovalNode>;
   // tag name
   c: string;
 }

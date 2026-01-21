@@ -9,10 +9,10 @@ function createEventOptions(current: Event): EventInit {
   };
 }
 
-interface EventNode {
+type EventNode = {
   type: SerovalNode;
   options: SerovalNode;
-}
+};
 
 const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
   tag: 'seroval-plugins/web/Event',

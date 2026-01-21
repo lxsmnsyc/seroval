@@ -1,11 +1,11 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-interface FileNode {
+type FileNode = {
   name: SerovalNode;
   options: SerovalNode;
   buffer: SerovalNode;
-}
+};
 
 const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
   tag: 'seroval-plugins/web/File',

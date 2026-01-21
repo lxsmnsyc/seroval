@@ -5,6 +5,7 @@ import type {
   StreamParsePluginContext,
   SyncParsePluginContext,
 } from './context/sync-parser';
+import type { SerovalNode } from './types';
 
 export const enum SerovalMode {
   Vanilla = 1,
@@ -15,7 +16,11 @@ export interface PluginData {
   id: number;
 }
 
-export interface Plugin<Value, Node> {
+export type PluginInfo = {
+  [key: string]: SerovalNode;
+};
+
+export interface Plugin<Value, Info extends PluginInfo> {
   /**
    * A unique string that helps idenfity the plugin
    */
@@ -37,35 +42,35 @@ export interface Plugin<Value, Node> {
       value: Value,
       ctx: SyncParsePluginContext,
       data: PluginData,
-    ) => Node;
+    ) => Info;
     async?: (
       value: Value,
       ctx: AsyncParsePluginContext,
       data: PluginData,
-    ) => Promise<Node>;
+    ) => Promise<Info>;
     stream?: (
       value: Value,
       ctx: StreamParsePluginContext,
       data: PluginData,
-    ) => Node;
+    ) => Info;
   };
   /**
    * Convert the parsed node into a JS string
    */
-  serialize(node: Node, ctx: SerializePluginContext, data: PluginData): string;
+  serialize(node: Info, ctx: SerializePluginContext, data: PluginData): string;
   /**
    * Convert the parsed node into its runtime equivalent.
    */
   deserialize(
-    node: Node,
+    node: Info,
     ctx: DeserializePluginContext,
     data: PluginData,
   ): Value;
 }
 
-export function createPlugin<Value, Node>(
-  plugin: Plugin<Value, Node>,
-): Plugin<Value, Node> {
+export function createPlugin<Value, Info extends PluginInfo>(
+  plugin: Plugin<Value, Info>,
+): Plugin<Value, Info> {
   return plugin;
 }
 

@@ -3,33 +3,34 @@ import { createPlugin, createStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
-const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) => new ReadableStream({
-  start: (controller) => {
-    stream.on({
-      next: (value) => {
-        try {
-          controller.enqueue(value)
-        } catch (_error) {
-          // no-op
-        }
-      },
-      throw: (value) => {
-        controller.error(value);
-      },
-      return: () => {
-        try {
-          controller.close();
-        } catch (_error) {
-          // no-op
-        }
-      },
-    })
-  },
-});
+const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
+  new ReadableStream({
+    start: controller => {
+      stream.on({
+        next: value => {
+          try {
+            controller.enqueue(value);
+          } catch (_error) {
+            // no-op
+          }
+        },
+        throw: value => {
+          controller.error(value);
+        },
+        return: () => {
+          try {
+            controller.close();
+          } catch (_error) {
+            // no-op
+          }
+        },
+      });
+    },
+  });
 
 const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
   object,
-  undefined
+  {}
 >({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
   test(value) {
@@ -37,13 +38,13 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
   },
   parse: {
     sync() {
-      return undefined;
+      return READABLE_STREAM_FACTORY;
     },
     async async() {
-      return await Promise.resolve(undefined);
+      return await Promise.resolve(READABLE_STREAM_FACTORY);
     },
     stream() {
-      return undefined;
+      return READABLE_STREAM_FACTORY;
     },
   },
   serialize() {
@@ -80,10 +81,10 @@ function toStream<T>(value: ReadableStream<T>): Stream<T | undefined> {
   return stream;
 }
 
-interface ReadableStreamNode {
+type ReadableStreamNode = {
   factory: SerovalNode;
   stream: SerovalNode;
-}
+};
 
 const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   ReadableStream,
