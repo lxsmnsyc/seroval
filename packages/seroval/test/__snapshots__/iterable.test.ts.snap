@@ -24,7 +24,7 @@ exports[`Iterable > crossSerialize > scoped > supports Iterables 1`] = `
     }
   };
   return instance;
-})($R[1]))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})($R["example"])"
+})($R[1]))($R[3]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})($R["example"])"
 `;
 
 exports[`Iterable > crossSerialize > supports Iterables 1`] = `
@@ -51,7 +51,7 @@ exports[`Iterable > crossSerialize > supports Iterables 1`] = `
     }
   };
   return instance;
-})($R[1]))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})"
+})($R[1]))($R[3]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})"
 `;
 
 exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `
@@ -78,7 +78,7 @@ exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `
     }
   };
   return instance;
-})($R[2]))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
+})($R[2]))($R[4]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
 `;
 
 exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `
@@ -105,7 +105,7 @@ exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `
     }
   };
   return instance;
-})($R[2]))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})"
+})($R[2]))($R[4]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})"
 `;
 
 exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `
@@ -124,7 +124,7 @@ exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `
 `;
 
 exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `
-"($R=>($R[8]=(resolver, data) => {
+"($R=>($R[7]=(resolver, data) => {
   resolver.s(data);
   resolver.p.s = 1;
   resolver.p.v = data;
@@ -151,7 +151,7 @@ exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `
     }
   };
   return instance;
-})($R[4]))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
+})($R[4]))($R[6]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
 `;
 
 exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `
@@ -170,7 +170,7 @@ exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `
 `;
 
 exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `
-"($R[8]=(resolver, data) => {
+"($R[7]=(resolver, data) => {
   resolver.s(data);
   resolver.p.s = 1;
   resolver.p.v = data;
@@ -197,7 +197,7 @@ exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `
     }
   };
   return instance;
-})($R[4]))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})"
+})($R[4]))($R[6]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})"
 `;
 
 exports[`Iterable > serialize > supports Iterables 1`] = `
@@ -224,7 +224,7 @@ exports[`Iterable > serialize > supports Iterables 1`] = `
     }
   };
   return instance;
-})(h))({v:[1,2,3,void 0],t:-1,d:3})}))()"
+})(h))({__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))()"
 `;
 
 exports[`Iterable > serializeAsync > supports Iterables 1`] = `
@@ -251,17 +251,17 @@ exports[`Iterable > serializeAsync > supports Iterables 1`] = `
     }
   };
   return instance;
-})(h))({v:[1,2,3,void 0],t:-1,d:3})}))()"
+})(h))({__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))()"
 `;
 
-exports[`Iterable > toCrossJSON > supports Iterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}"`;
+exports[`Iterable > toCrossJSON > supports Iterables 1`] = `"{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":35,"i":3,"s":-1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"l":3}]}]},"o":0}"`;
 
-exports[`Iterable > toCrossJSONAsync > supports Iterables 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":10,"i":1,"p":{"k":["title",{"t":17,"i":2,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}}"`;
+exports[`Iterable > toCrossJSONAsync > supports Iterables 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":10,"i":1,"p":{"k":["title",{"t":17,"i":2,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":35,"i":4,"s":-1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"l":3}]}]},"o":0}}"`;
 
 exports[`Iterable > toCrossJSONStream > supports Iterables 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Iterable > toCrossJSONStream > supports Iterables 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":8,"s":2},{"t":10,"i":3,"p":{"k":["title",{"t":17,"i":4,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":5,"f":{"t":4,"i":4}},{"t":10,"i":6,"p":{"k":["v","t","d"],"v":[{"t":9,"i":7,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}]}"`;
+exports[`Iterable > toCrossJSONStream > supports Iterables 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":7,"s":2},{"t":10,"i":3,"p":{"k":["title",{"t":17,"i":4,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":5,"f":{"t":4,"i":4}},{"t":35,"i":6,"s":-1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"l":3}]}]},"o":0}]}"`;
 
-exports[`Iterable > toJSON > supports Iterables 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0},"f":63,"m":[1]}"`;
+exports[`Iterable > toJSON > supports Iterables 1`] = `"{"t":{"t":10,"i":0,"p":{"k":["title",{"t":17,"i":1,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":35,"i":3,"s":-1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"l":3}]}]},"o":0},"f":63,"m":[1]}"`;
 
-exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":10,"i":1,"p":{"k":["title",{"t":17,"i":2,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}},"f":63,"m":[2]}"`;
+exports[`Iterable > toJSONAsync > supports Iterables 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":10,"i":1,"p":{"k":["title",{"t":17,"i":2,"s":3}],"v":[{"t":1,"s":"Hello World"},{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":35,"i":4,"s":-1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"l":3}]}]},"o":0}},"f":63,"m":[2]}"`;

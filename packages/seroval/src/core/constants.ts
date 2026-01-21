@@ -61,6 +61,7 @@ export const enum SerovalNodeType {
   StreamNext = 32,
   StreamThrow = 33,
   StreamReturn = 34,
+  Sequence = 35,
 }
 
 export const enum SerovalObjectFlags {

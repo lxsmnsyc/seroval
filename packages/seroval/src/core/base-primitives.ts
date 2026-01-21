@@ -29,6 +29,7 @@ import type {
   SerovalPluginNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
+  SerovalSequenceNode,
   SerovalSetNode,
   SerovalStreamConstructorNode,
   SerovalStreamNextNode,
@@ -394,7 +395,7 @@ export function createSetNode(
 
 export function createIteratorFactoryInstanceNode(
   factory: SerovalNodeWithID,
-  items: SerovalNode,
+  items: SerovalNodeWithID,
 ): SerovalIteratorFactoryInstanceNode {
   return createSerovalNode(
     SerovalNodeType.IteratorFactoryInstance,
@@ -414,7 +415,7 @@ export function createIteratorFactoryInstanceNode(
 
 export function createAsyncIteratorFactoryInstanceNode(
   factory: SerovalNodeWithID,
-  items: SerovalNode,
+  items: SerovalNodeWithID,
 ): SerovalAsyncIteratorFactoryInstanceNode {
   return createSerovalNode(
     SerovalNodeType.AsyncIteratorFactoryInstance,
@@ -510,5 +511,27 @@ export function createStreamReturnNode(
     NIL,
     NIL,
     NIL,
+  );
+}
+
+export function createSequenceNode(
+  id: number,
+  sequence: SerovalNode[],
+  throwAt: number,
+  doneAt: number,
+): SerovalSequenceNode {
+  return createSerovalNode(
+    SerovalNodeType.Sequence,
+    id,
+    throwAt,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    sequence,
+    NIL,
+    NIL,
+    NIL,
+    doneAt,
   );
 }
