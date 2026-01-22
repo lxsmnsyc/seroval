@@ -54,7 +54,7 @@ const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   },
 });
 
-const AbortSignalPlugin = createPlugin<
+const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
   AbortSignal,
   { reason?: SerovalNode; controller?: SerovalNode; factory?: SerovalNode }
 >({
