@@ -1,33 +1,147 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`typed arrays > crossSerialize > scoped > supports typed arrays 1`] = `"($R=>$R[0]=new Uint32Array($R[1]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))($R["example"])"`;
+exports[`typed arrays > crossSerialize > scoped > supports typed arrays 1`] = `
+"($R=>$R[0]=new Uint32Array($R[1]=($R[2]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4))($R["example"])"
+`;
 
-exports[`typed arrays > crossSerialize > supports typed arrays 1`] = `"$R[0]=new Uint32Array($R[1]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)"`;
+exports[`typed arrays > crossSerialize > supports typed arrays 1`] = `
+"$R[0]=new Uint32Array($R[1]=($R[2]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4)"
+`;
 
-exports[`typed arrays > crossSerializeAsync > scoped > supports typed arrays 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)))($R["example"])"`;
+exports[`typed arrays > crossSerializeAsync > scoped > supports typed arrays 1`] = `
+"($R=>$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=($R[3]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4)))($R["example"])"
+`;
 
-exports[`typed arrays > crossSerializeAsync > supports typed arrays 1`] = `"$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))"`;
+exports[`typed arrays > crossSerializeAsync > supports typed arrays 1`] = `
+"$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=($R[3]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4))"
+`;
 
-exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 2`] = `"($R=>($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Uint32Array($R[4]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)))($R["example"])"`;
+exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 2`] = `
+"($R=>($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Uint32Array($R[4]=($R[5]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4)))($R["example"])"
+`;
 
-exports[`typed arrays > crossSerializeStream > supports typed arrays 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`typed arrays > crossSerializeStream > supports typed arrays 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`typed arrays > crossSerializeStream > supports typed arrays 2`] = `"($R[5]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Uint32Array($R[4]=new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))"`;
+exports[`typed arrays > crossSerializeStream > supports typed arrays 2`] = `
+"($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Uint32Array($R[4]=($R[5]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4))"
+`;
 
-exports[`typed arrays > serialize > supports typed arrays 1`] = `"new Uint32Array(new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4)"`;
+exports[`typed arrays > serialize > supports typed arrays 1`] = `
+"new Uint32Array(((b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4)"
+`;
 
-exports[`typed arrays > serializeAsync > supports typed arrays 1`] = `"Promise.resolve(new Uint32Array(new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]).buffer,0,4))"`;
+exports[`typed arrays > serializeAsync > supports typed arrays 1`] = `
+"Promise.resolve(new Uint32Array(((b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("/////////////////////w=="),0,4))"
+`;
 
-exports[`typed arrays > toCrossJSON > supports typed arrays 1`] = `"{"t":15,"i":0,"l":4,"c":"Uint32Array","f":{"t":19,"i":1,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0}"`;
+exports[`typed arrays > toCrossJSON > supports typed arrays 1`] = `"{"t":15,"i":0,"c":"Uint32Array","f":{"t":19,"i":1,"s":"/////////////////////w==","f":{"t":26,"i":2,"s":5}},"b":0,"l":4}"`;
 
-exports[`typed arrays > toCrossJSONAsync > supports typed arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"l":4,"c":"Uint32Array","f":{"t":19,"i":2,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0}}"`;
+exports[`typed arrays > toCrossJSONAsync > supports typed arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"c":"Uint32Array","f":{"t":19,"i":2,"s":"/////////////////////w==","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}}"`;
 
 exports[`typed arrays > toCrossJSONStream > supports typed arrays 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`typed arrays > toCrossJSONStream > supports typed arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":5,"s":2},{"t":15,"i":3,"l":4,"c":"Uint32Array","f":{"t":19,"i":4,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0}]}"`;
+exports[`typed arrays > toCrossJSONStream > supports typed arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":15,"i":3,"c":"Uint32Array","f":{"t":19,"i":4,"s":"/////////////////////w==","f":{"t":26,"i":5,"s":5}},"b":0,"l":4}]}"`;
 
-exports[`typed arrays > toJSON > supports typed arrays 1`] = `"{"t":{"t":15,"i":0,"l":4,"c":"Uint32Array","f":{"t":19,"i":1,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0},"f":31,"m":[]}"`;
+exports[`typed arrays > toJSON > supports typed arrays 1`] = `"{"t":{"t":15,"i":0,"c":"Uint32Array","f":{"t":19,"i":1,"s":"/////////////////////w==","f":{"t":26,"i":2,"s":5}},"b":0,"l":4},"f":63,"m":[]}"`;
 
-exports[`typed arrays > toJSONAsync > supports typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"l":4,"c":"Uint32Array","f":{"t":19,"i":2,"s":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},"b":0}},"f":31,"m":[]}"`;
+exports[`typed arrays > toJSONAsync > supports typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"c":"Uint32Array","f":{"t":19,"i":2,"s":"/////////////////////w==","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}},"f":63,"m":[]}"`;

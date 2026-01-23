@@ -1,44 +1,637 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`null-constructor > compat > should use manual assignment instead of Object.assign 1`] = `"(h=>(h=Object.create(null),h.example="valid identifier",h["%example"]="invalid identifier",h["0x1"]="hexadecimal",h["0b1"]="binary",h["0o1"]="octal",h["1_000"]="numeric separator",h[1.7976931348623157e+308]="exponentiation",h))()"`;
+exports[`null-constructor > compat > should use manual assignment instead of Object.assign 1`] = `"(h=>h=(h=Object.create(null),h.example="valid identifier",h["%example"]="invalid identifier",h["0x1"]="hexadecimal",h["0b1"]="binary",h["0o1"]="octal",h["1_000"]="numeric separator",h[1.7976931348623157e+308]="exponentiation",h))()"`;
 
-exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}],"s":7},"o":0},"f":23,"m":[]}"`;
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}]},"o":0},"f":55,"m":[]}"`;
 
-exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"(h=>(h=Object.create(null),h.example="valid identifier",h["%example"]="invalid identifier",h["0x1"]="hexadecimal",h["0b1"]="binary",h["0o1"]="octal",h["1_000"]="numeric separator",h[1.7976931348623157e+308]="exponentiation",h))()"`;
+exports[`null-constructor > compat#toJSON > should use manual assignment instead of Object.assign 2`] = `"(h=>h=(h=Object.create(null),h.example="valid identifier",h["%example"]="invalid identifier",h["0x1"]="hexadecimal",h["0b1"]="binary",h["0o1"]="octal",h["1_000"]="numeric separator",h[1.7976931348623157e+308]="exponentiation",h))()"`;
 
 exports[`null-constructor > crossSerialize > scoped > supports Object.create(null) 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))($R["example"])"`;
 
-exports[`null-constructor > crossSerialize > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"`;
+exports[`null-constructor > crossSerialize > scoped > supports Symbol.iterator 1`] = `
+"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})($R[1]))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
+`;
 
 exports[`null-constructor > crossSerialize > scoped > supports self-recursion 1`] = `"($R=>($R[0]=Object.create(null),$R[0].b=$R[0].a=$R[0],$R[0]))($R["example"])"`;
 
 exports[`null-constructor > crossSerialize > supports Object.create(null) 1`] = `"$R[0]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})"`;
 
-exports[`null-constructor > crossSerialize > supports Symbol.iterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.iterator]:($R[2]=s=>(i,c,d,t)=>(i=0,t={[$R[1]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})"`;
+exports[`null-constructor > crossSerialize > supports Symbol.iterator 1`] = `
+"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})($R[1]))($R[3]={v:$R[4]=[1,2,3,void 0],t:-1,d:3})})"
+`;
 
 exports[`null-constructor > crossSerialize > supports self-recursion 1`] = `"($R[0]=Object.create(null),$R[0].b=$R[0].a=$R[0],$R[0])"`;
 
 exports[`null-constructor > crossSerializeAsync > scoped > supports Object.create(null) 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})))($R["example"])"`;
 
-exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})),$R[2]=s=>(b,c,p,d,e,t,f)=>(b=[],c=0,p=[],d=-1,e=!1,f=(i,l)=>{for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})},s.on({next:(v,t)=>{if(t=p.shift())t.s({done:!1,value:v});b.push(v)},throw:(v,t)=>{if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)},return:(v,t)=>{if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)}}),t={[$R[1]]:()=>t.p,next:(i,t,v)=>{if(d===-1){return((i=c++)>=b.length)?($R[3](t={p:0,s:0,f:0}),p.push(t),t.p):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}}})))(($R[4]=($R[5]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))}))($R["example"])"`;
+exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.asyncIterator 1`] = `
+"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
+  stream.on({
+    next: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: false, value });
+      };
+      buffer.push(value);
+    },
+    throw: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.f(value);
+      };
+      finalize();
+      doneAt = buffer.length;
+      isThrow = true;
+      buffer.push(value);
+    },
+    return: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: true, value });
+      };
+      finalize();
+      doneAt = buffer.length;
+      buffer.push(value);
+    }
+  });
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (doneAt === -1) {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = createPromise();
+          pending.push(temp);
+          return temp.p;
+        };
+        return {
+          done: false,
+          value: buffer[index2]
+        };
+      };
+      if (count > doneAt) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const index = count++;
+      const value = buffer[index];
+      if (index !== doneAt) {
+        return {
+          done: false,
+          value
+        };
+      };
+      if (isThrow) {
+        throw value;
+      };
+      return {
+        done: true,
+        value
+      };
+    }
+  };
+  return instance;
+})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))}))($R["example"])"
+`;
 
-exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})))($R["example"])"`;
+exports[`null-constructor > crossSerializeAsync > scoped > supports Symbol.iterator 1`] = `
+"($R=>$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})($R[2]))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})})))($R["example"])"
+`;
 
 exports[`null-constructor > crossSerializeAsync > scoped > supports self-recursion 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])}))($R["example"])"`;
 
 exports[`null-constructor > crossSerializeAsync > supports Object.create(null) 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))"`;
 
-exports[`null-constructor > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})),$R[2]=s=>(b,c,p,d,e,t,f)=>(b=[],c=0,p=[],d=-1,e=!1,f=(i,l)=>{for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})},s.on({next:(v,t)=>{if(t=p.shift())t.s({done:!1,value:v});b.push(v)},throw:(v,t)=>{if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)},return:(v,t)=>{if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)}}),t={[$R[1]]:()=>t.p,next:(i,t,v)=>{if(d===-1){return((i=c++)>=b.length)?($R[3](t={p:0,s:0,f:0}),p.push(t),t.p):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}}})))(($R[4]=($R[5]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))})"`;
+exports[`null-constructor > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `
+"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
+  stream.on({
+    next: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: false, value });
+      };
+      buffer.push(value);
+    },
+    throw: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.f(value);
+      };
+      finalize();
+      doneAt = buffer.length;
+      isThrow = true;
+      buffer.push(value);
+    },
+    return: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: true, value });
+      };
+      finalize();
+      doneAt = buffer.length;
+      buffer.push(value);
+    }
+  });
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (doneAt === -1) {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = createPromise();
+          pending.push(temp);
+          return temp.p;
+        };
+        return {
+          done: false,
+          value: buffer[index2]
+        };
+      };
+      if (count > doneAt) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const index = count++;
+      const value = buffer[index];
+      if (index !== doneAt) {
+        return {
+          done: false,
+          value
+        };
+      };
+      if (isThrow) {
+        throw value;
+      };
+      return {
+        done: true,
+        value
+      };
+    }
+  };
+  return instance;
+})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),$R[4].next(1),$R[4].next(2),$R[4].next(3),$R[4].return(void 0),$R[4]))})"
+`;
 
-exports[`null-constructor > crossSerializeAsync > supports Symbol.iterator 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R[2]=Symbol.iterator]:($R[3]=s=>(i,c,d,t)=>(i=0,t={[$R[2]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))"`;
+exports[`null-constructor > crossSerializeAsync > supports Symbol.iterator 1`] = `
+"$R[0]=Promise.resolve($R[1]=Object.assign(Object.create(null),{[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})($R[2]))($R[4]={v:$R[5]=[1,2,3,void 0],t:-1,d:3})}))"
+`;
 
 exports[`null-constructor > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=Object.assign(Object.create(null),{a:$R[1]=Promise.resolve().then(()=>$R[0]),b:$R[2]=Promise.resolve().then(()=>$R[0])})"`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Object.create(null) 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})))($R["example"])"
+`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})),$R[2]=s=>(b,c,p,d,e,t,f)=>(b=[],c=0,p=[],d=-1,e=!1,f=(i,l)=>{for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})},s.on({next:(v,t)=>{if(t=p.shift())t.s({done:!1,value:v});b.push(v)},throw:(v,t)=>{if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)},return:(v,t)=>{if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)}}),t={[$R[1]]:()=>t.p,next:(i,t,v)=>{if(d===-1){return((i=c++)>=b.length)?($R[3](t={p:0,s:0,f:0}),p.push(t),t.p):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}}})))($R[4]=($R[5]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))())}))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 1`] = `
+"($R=>$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
+  stream.on({
+    next: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: false, value });
+      };
+      buffer.push(value);
+    },
+    throw: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.f(value);
+      };
+      finalize();
+      doneAt = buffer.length;
+      isThrow = true;
+      buffer.push(value);
+    },
+    return: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: true, value });
+      };
+      finalize();
+      doneAt = buffer.length;
+      buffer.push(value);
+    }
+  });
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (doneAt === -1) {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = createPromise();
+          pending.push(temp);
+          return temp.p;
+        };
+        return {
+          done: false,
+          value: buffer[index2]
+        };
+      };
+      if (count > doneAt) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const index = count++;
+      const value = buffer[index];
+      if (index !== doneAt) {
+        return {
+          done: false,
+          value
+        };
+      };
+      if (isThrow) {
+        throw value;
+      };
+      return {
+        done: true,
+        value
+      };
+    }
+  };
+  return instance;
+})($R[1],$R[3])))($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})())}))($R["example"])"
+`;
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 2`] = `"($R=>$R[4].next(1))($R["example"])"`;
 
@@ -48,21 +641,259 @@ exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyn
 
 exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.asyncIterator 5`] = `"($R=>$R[4].return(void 0))($R["example"])"`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `"($R=>($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports Symbol.iterator 2`] = `
+"($R=>($R[8]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})($R[4]))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})})))($R["example"])"
+`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=Object.assign(Object.create(null),{a:$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),b:$R[4]=$R[3]($R[5]={p:0,s:0,f:0})}))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 1`] = `
+"($R=>$R[0]=Object.assign(Object.create(null),{a:$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p,b:$R[4]=($R[5]=$R[3]()).p}))($R["example"])"
+`;
 
-exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0]))($R["example"])"`;
+exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 2`] = `
+"($R=>($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0]))($R["example"])"
+`;
 
 exports[`null-constructor > crossSerializeStream > scoped > supports self-recursion 3`] = `"($R=>$R[6]($R[5],$R[0]))($R["example"])"`;
 
-exports[`null-constructor > crossSerializeStream > supports Object.create(null) 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`null-constructor > crossSerializeStream > supports Object.create(null) 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`null-constructor > crossSerializeStream > supports Object.create(null) 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))"`;
+exports[`null-constructor > crossSerializeStream > supports Object.create(null) 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))"
+`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 1`] = `"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})),$R[2]=s=>(b,c,p,d,e,t,f)=>(b=[],c=0,p=[],d=-1,e=!1,f=(i,l)=>{for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})},s.on({next:(v,t)=>{if(t=p.shift())t.s({done:!1,value:v});b.push(v)},throw:(v,t)=>{if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)},return:(v,t)=>{if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)}}),t={[$R[1]]:()=>t.p,next:(i,t,v)=>{if(d===-1){return((i=c++)>=b.length)?($R[3](t={p:0,s:0,f:0}),p.push(t),t.p):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}}})))($R[4]=($R[5]=(b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))())})"`;
+exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 1`] = `
+"$R[0]=Object.assign(Object.create(null),{[$R[1]=Symbol.asyncIterator]:(($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+},$R[2]=((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
+  stream.on({
+    next: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: false, value });
+      };
+      buffer.push(value);
+    },
+    throw: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.f(value);
+      };
+      finalize();
+      doneAt = buffer.length;
+      isThrow = true;
+      buffer.push(value);
+    },
+    return: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: true, value });
+      };
+      finalize();
+      doneAt = buffer.length;
+      buffer.push(value);
+    }
+  });
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (doneAt === -1) {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = createPromise();
+          pending.push(temp);
+          return temp.p;
+        };
+        return {
+          done: false,
+          value: buffer[index2]
+        };
+      };
+      if (count > doneAt) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const index = count++;
+      const value = buffer[index];
+      if (index !== doneAt) {
+        return {
+          done: false,
+          value
+        };
+      };
+      if (isThrow) {
+        throw value;
+      };
+      return {
+        done: true,
+        value
+      };
+    }
+  };
+  return instance;
+})($R[1],$R[3])))($R[4]=($R[5]=() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})())})"
+`;
 
 exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 2`] = `"$R[4].next(1)"`;
 
@@ -72,49 +903,318 @@ exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator
 
 exports[`null-constructor > crossSerializeStream > supports Symbol.asyncIterator 5`] = `"$R[4].return(void 0)"`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `"($R[8]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=s=>(i,c,d,t)=>(i=0,t={[$R[4]]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))"`;
+exports[`null-constructor > crossSerializeStream > supports Symbol.iterator 2`] = `
+"($R[8]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(Object.create(null),{[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})($R[4]))($R[6]={v:$R[7]=[1,2,3,void 0],t:-1,d:3})}))"
+`;
 
-exports[`null-constructor > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=Object.assign(Object.create(null),{a:$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),b:$R[4]=$R[3]($R[5]={p:0,s:0,f:0})})"`;
+exports[`null-constructor > crossSerializeStream > supports self-recursion 1`] = `
+"$R[0]=Object.assign(Object.create(null),{a:$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p,b:$R[4]=($R[5]=$R[3]()).p})"
+`;
 
-exports[`null-constructor > crossSerializeStream > supports self-recursion 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0])"`;
+exports[`null-constructor > crossSerializeStream > supports self-recursion 2`] = `
+"($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0])"
+`;
 
 exports[`null-constructor > crossSerializeStream > supports self-recursion 3`] = `"$R[6]($R[5],$R[0])"`;
 
 exports[`null-constructor > serialize > supports Object.create(null) 1`] = `"Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"})"`;
 
-exports[`null-constructor > serialize > supports Symbol.iterator 1`] = `"((h,j)=>Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3})}))()"`;
+exports[`null-constructor > serialize > supports Symbol.iterator 1`] = `
+"(h=>Object.assign(Object.create(null),{[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})(h))({v:[1,2,3,void 0],t:-1,d:3})}))()"
+`;
 
 exports[`null-constructor > serialize > supports self-recursion 1`] = `"(h=>(h=Object.create(null),h.b=h.a=h,h))()"`;
 
 exports[`null-constructor > serializeAsync > supports Object.create(null) 1`] = `"Promise.resolve(Object.assign(Object.create(null),{example:"valid identifier","%example":"invalid identifier","0x1":"hexadecimal","0b1":"binary","0o1":"octal","1_000":"numeric separator",1.7976931348623157e+308:"exponentiation"}))"`;
 
-exports[`null-constructor > serializeAsync > supports Symbol.asyncIterator 1`] = `"((h,j,k,m,o)=>Object.assign(Object.create(null),{[h=Symbol.asyncIterator]:((j=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})),s=>(b,c,p,d,e,t,f)=>(b=[],c=0,p=[],d=-1,e=!1,f=(i,l)=>{for(i=0,l=p.length;i<l;i++)p[i].s({done:!0,value:void 0})},s.on({next:(v,t)=>{if(t=p.shift())t.s({done:!1,value:v});b.push(v)},throw:(v,t)=>{if(t=p.shift())t.f(v);f(),d=b.length,e=!0,b.push(v)},return:(v,t)=>{if(t=p.shift())t.s({done:!0,value:v});f(),d=b.length,b.push(v)}}),t={[h]:()=>t.p,next:(i,t,v)=>{if(d===-1){return((i=c++)>=b.length)?(j(t={p:0,s:0,f:0}),p.push(t),t.p):{done:!1,value:b[i]}}if(c>d)return{done:!0,value:void 0};if(v=b[i=c++],i!==d)return{done:!1,value:v};if(e)throw v;return{done:!0,value:v}}})))((o=((b,a,s,l,p,f,e,n)=>(b=[],a=!0,s=!1,l=[],p=0,f=(v,m,x)=>{for(x=0;x<p;x++)l[x]&&l[x][m](v)},n=(o,x,z,c)=>{for(x=0,z=b.length;x<z;x++)(c=b[x],(!a&&x===z-1)?o[s?"return":"throw"](c):o.next(c))},e=(o,t)=>(a&&(l[t=p++]=o),n(o),()=>{a&&(l[t]=void 0)}),{__SEROVAL_STREAM__:!0,on:o=>e(o),next:v=>{a&&(b.push(v),f(v,"next"))},throw:v=>{a&&(b.push(v),f(v,"throw"),a=s=!1,l.length=0)},return:v=>{a&&(b.push(v),f(v,"return"),a=!1,s=!0,l.length=0)}}))(),o.next(1),o.next(2),o.next(3),o.return(void 0),o))}))()"`;
+exports[`null-constructor > serializeAsync > supports Symbol.asyncIterator 1`] = `
+"((h,j,k)=>Object.assign(Object.create(null),{[h=Symbol.asyncIterator]:((j=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+},((symbol, createPromise) => (stream) => () => {
+  let count = 0;
+  let doneAt = -1;
+  let isThrow = false;
+  const buffer = [];
+  const pending = [];
+  const finalize = (i = 0, len = pending.length) => {
+    for (; i < len; i++) {
+      pending[i].s({
+        done: true,
+        value: void 0
+      });
+    }
+  };
+  stream.on({
+    next: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: false, value });
+      };
+      buffer.push(value);
+    },
+    throw: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.f(value);
+      };
+      finalize();
+      doneAt = buffer.length;
+      isThrow = true;
+      buffer.push(value);
+    },
+    return: (value) => {
+      const temp = pending.shift();
+      if (temp) {
+        temp.s({ done: true, value });
+      };
+      finalize();
+      doneAt = buffer.length;
+      buffer.push(value);
+    }
+  });
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (doneAt === -1) {
+        const index2 = count++;
+        if (index2 >= buffer.length) {
+          const temp = createPromise();
+          pending.push(temp);
+          return temp.p;
+        };
+        return {
+          done: false,
+          value: buffer[index2]
+        };
+      };
+      if (count > doneAt) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const index = count++;
+      const value = buffer[index];
+      if (index !== doneAt) {
+        return {
+          done: false,
+          value
+        };
+      };
+      if (isThrow) {
+        throw value;
+      };
+      return {
+        done: true,
+        value
+      };
+    }
+  };
+  return instance;
+})(h,j)))((k=(() => {
+  const buffer = [];
+  const listeners = [];
+  let alive = true;
+  let success = false;
+  let count = 0;
+  const flush = (value, mode, x) => {
+    for (x = 0; x < count; x++) {
+      if (listeners[x]) {
+        listeners[x][mode](value);
+      }
+    }
+  };
+  const up = (listener, x, z, current) => {
+    for (x = 0, z = buffer.length; x < z; x++) {
+      current = buffer[x];
+      if (!alive && x === z - 1) {
+        listener[success ? "return" : "throw"](current);
+      } else {
+        listener.next(current);
+      }
+    }
+  };
+  const on = (listener, temp) => {
+    if (alive) {
+      temp = count++;
+      listeners[temp] = listener;
+    };
+    up(listener);
+    return () => {
+      if (alive) {
+        listeners[temp] = listeners[count];
+        listeners[count--] = void 0;
+      }
+    };
+  };
+  return {
+    __SEROVAL_STREAM__: true,
+    on: (listener) => on(listener),
+    next: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "next");
+      }
+    },
+    throw: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "throw");
+        alive = false;
+        success = false;
+        listeners.length = 0;
+      }
+    },
+    return: (value) => {
+      if (alive) {
+        buffer.push(value);
+        flush(value, "return");
+        alive = false;
+        success = true;
+        listeners.length = 0;
+      }
+    }
+  };
+})(),k.next(1),k.next(2),k.next(3),k.return(void 0),k))}))()"
+`;
 
-exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `"((h,j)=>Promise.resolve(Object.assign(Object.create(null),{[h=Symbol.iterator]:(s=>(i,c,d,t)=>(i=0,t={[h]:()=>t,next:()=>{if(i>s.d)return{done:!0,value:void 0};if(d=s.v[c=i++],c===s.t)throw d;return{done:c===s.d,value:d}}}))({v:[1,2,3,void 0],t:-1,d:3})})))()"`;
+exports[`null-constructor > serializeAsync > supports Symbol.iterator 1`] = `
+"(h=>Promise.resolve(Object.assign(Object.create(null),{[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
+  let index = 0;
+  const instance = {
+    [symbol]: () => instance,
+    next: () => {
+      if (index > sequence.d) {
+        return {
+          done: true,
+          value: void 0
+        };
+      };
+      const currentIndex = index++;
+      const data = sequence.v[currentIndex];
+      if (currentIndex === sequence.t) {
+        throw data;
+      };
+      return {
+        done: currentIndex === sequence.d,
+        value: data
+      };
+    }
+  };
+  return instance;
+})(h))({v:[1,2,3,void 0],t:-1,d:3})})))()"
+`;
 
 exports[`null-constructor > serializeAsync > supports self-recursion 1`] = `"(h=>h=Object.assign(Object.create(null),{a:Promise.resolve().then(()=>h),b:Promise.resolve().then(()=>h)}))()"`;
 
-exports[`null-constructor > toCrossJSON > supports Object.create(null) 1`] = `"{"t":11,"i":0,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}],"s":7},"o":0}"`;
+exports[`null-constructor > toCrossJSON > supports Object.create(null) 1`] = `"{"t":11,"i":0,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}]},"o":0}"`;
 
-exports[`null-constructor > toCrossJSON > supports Symbol.iterator 1`] = `"{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0}"`;
+exports[`null-constructor > toCrossJSON > supports Symbol.iterator 1`] = `"{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}"`;
 
-exports[`null-constructor > toCrossJSON > supports self-recursion 1`] = `"{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":4,"i":0},{"t":4,"i":0}],"s":2},"o":0}"`;
+exports[`null-constructor > toCrossJSON > supports self-recursion 1`] = `"{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":4,"i":0},{"t":4,"i":0}]},"o":0}"`;
 
-exports[`null-constructor > toCrossJSONAsync > supports Object.create(null) 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}],"s":7},"o":0}}"`;
+exports[`null-constructor > toCrossJSONAsync > supports Object.create(null) 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}]},"o":0}}"`;
 
-exports[`null-constructor > toCrossJSONAsync > supports Symbol.asyncIterator 1`] = `"{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":1},"o":0}"`;
+exports[`null-constructor > toCrossJSONAsync > supports Symbol.asyncIterator 1`] = `"{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}]},"o":0}"`;
 
-exports[`null-constructor > toCrossJSONAsync > supports Symbol.iterator 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":[{"t":17,"i":2,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0}}"`;
+exports[`null-constructor > toCrossJSONAsync > supports Symbol.iterator 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":[{"t":17,"i":2,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}}"`;
 
-exports[`null-constructor > toCrossJSONAsync > supports self-recursion 1`] = `"{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"s":2},"o":0}"`;
+exports[`null-constructor > toCrossJSONAsync > supports self-recursion 1`] = `"{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}]},"o":0}"`;
 
 exports[`null-constructor > toCrossJSONStream > supports Object.create(null) 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`null-constructor > toCrossJSONStream > supports Object.create(null) 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":11,"i":3,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}],"s":7},"o":0}]}"`;
+exports[`null-constructor > toCrossJSONStream > supports Object.create(null) 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":11,"i":3,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}]},"o":0}]}"`;
 
-exports[`null-constructor > toCrossJSONStream > supports Symbol.asyncIterator 1`] = `"{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[],"f":{"t":26,"i":5,"s":4}}]}],"s":1},"o":0}"`;
+exports[`null-constructor > toCrossJSONStream > supports Symbol.asyncIterator 1`] = `"{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[],"f":{"t":26,"i":5,"s":4}}]}]},"o":0}"`;
 
 exports[`null-constructor > toCrossJSONStream > supports Symbol.asyncIterator 2`] = `"{"t":32,"i":4,"f":{"t":0,"s":1}}"`;
 
@@ -126,24 +1226,24 @@ exports[`null-constructor > toCrossJSONStream > supports Symbol.asyncIterator 5`
 
 exports[`null-constructor > toCrossJSONStream > supports Symbol.iterator 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`null-constructor > toCrossJSONStream > supports Symbol.iterator 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":8,"s":2},{"t":11,"i":3,"p":{"k":[{"t":17,"i":4,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":5,"f":{"t":4,"i":4}},{"t":10,"i":6,"p":{"k":["v","t","d"],"v":[{"t":9,"i":7,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0}]}"`;
+exports[`null-constructor > toCrossJSONStream > supports Symbol.iterator 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":8,"s":2},{"t":11,"i":3,"p":{"k":[{"t":17,"i":4,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":5,"f":{"t":4,"i":4}},{"t":10,"i":6,"p":{"k":["v","t","d"],"v":[{"t":9,"i":7,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}]}"`;
 
-exports[`null-constructor > toCrossJSONStream > supports self-recursion 1`] = `"{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":22,"i":1,"s":2,"f":{"t":26,"i":3,"s":1}},{"t":22,"i":4,"s":5,"f":{"t":4,"i":3}}],"s":2},"o":0}"`;
+exports[`null-constructor > toCrossJSONStream > supports self-recursion 1`] = `"{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":22,"i":1,"s":2,"f":{"t":26,"i":3,"s":1}},{"t":22,"i":4,"s":5,"f":{"t":4,"i":3}}]},"o":0}"`;
 
 exports[`null-constructor > toCrossJSONStream > supports self-recursion 2`] = `"{"t":23,"i":2,"a":[{"t":26,"i":6,"s":2},{"t":4,"i":0}]}"`;
 
 exports[`null-constructor > toCrossJSONStream > supports self-recursion 3`] = `"{"t":23,"i":5,"a":[{"t":4,"i":6},{"t":4,"i":0}]}"`;
 
-exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}],"s":7},"o":0},"f":31,"m":[]}"`;
+exports[`null-constructor > toJSON > supports Object.create(null) 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}]},"o":0},"f":63,"m":[]}"`;
 
-exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0},"f":31,"m":[1]}"`;
+exports[`null-constructor > toJSON > supports Symbol.iterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":2,"f":{"t":4,"i":1}},{"t":10,"i":3,"p":{"k":["v","t","d"],"v":[{"t":9,"i":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0},"f":63,"m":[1]}"`;
 
-exports[`null-constructor > toJSON > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":4,"i":0},{"t":4,"i":0}],"s":2},"o":0},"f":31,"m":[0]}"`;
+exports[`null-constructor > toJSON > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":4,"i":0},{"t":4,"i":0}]},"o":0},"f":63,"m":[0]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}],"s":7},"o":0}},"f":31,"m":[]}"`;
+exports[`null-constructor > toJSONAsync > supports Object.create(null) 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":["example","%example","0x1","0b1","0o1","1_000","1.7976931348623157e+308"],"v":[{"t":1,"s":"valid identifier"},{"t":1,"s":"invalid identifier"},{"t":1,"s":"hexadecimal"},{"t":1,"s":"binary"},{"t":1,"s":"octal"},{"t":1,"s":"numeric separator"},{"t":1,"s":"exponentiation"}]},"o":0}},"f":63,"m":[]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Symbol.asyncIterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}],"s":1},"o":0},"f":31,"m":[1,4]}"`;
+exports[`null-constructor > toJSONAsync > supports Symbol.asyncIterator 1`] = `"{"t":{"t":11,"i":0,"p":{"k":[{"t":17,"i":1,"s":0}],"v":[{"t":30,"a":[{"t":29,"i":2,"a":[{"t":26,"i":3,"s":1},{"t":4,"i":1}]},{"t":31,"i":4,"a":[{"t":32,"i":4,"f":{"t":0,"s":1}},{"t":32,"i":4,"f":{"t":0,"s":2}},{"t":32,"i":4,"f":{"t":0,"s":3}},{"t":34,"i":4,"f":{"t":2,"s":1}}],"f":{"t":26,"i":5,"s":4}}]}]},"o":0},"f":63,"m":[1,4]}"`;
 
-exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":[{"t":17,"i":2,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"l":4,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}],"s":3},"o":0}]}],"s":1},"o":0}},"f":31,"m":[2]}"`;
+exports[`null-constructor > toJSONAsync > supports Symbol.iterator 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":11,"i":1,"p":{"k":[{"t":17,"i":2,"s":3}],"v":[{"t":28,"a":[{"t":27,"i":3,"f":{"t":4,"i":2}},{"t":10,"i":4,"p":{"k":["v","t","d"],"v":[{"t":9,"i":5,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3},{"t":2,"s":1}],"o":0},{"t":0,"s":-1},{"t":0,"s":3}]},"o":0}]}]},"o":0}},"f":63,"m":[2]}"`;
 
-exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"s":2},"o":0},"f":31,"m":[0]}"`;
+exports[`null-constructor > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":11,"i":0,"p":{"k":["a","b"],"v":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}]},"o":0},"f":63,"m":[0]}"`;

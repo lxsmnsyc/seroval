@@ -14,8 +14,6 @@ export interface SerovalBaseNode {
   i: number | undefined;
   // Serialized value
   s: unknown;
-  // size/length
-  l: number | undefined;
   // Constructor name / RegExp source
   c: string | undefined;
   // message/flags
@@ -25,13 +23,15 @@ export interface SerovalBaseNode {
   // entries (for Map, etc.)
   e: SerovalMapRecordNode | undefined;
   // array of nodes
-  a: (SerovalNode | undefined)[] | undefined;
+  a: (SerovalNode | 0)[] | undefined;
   // fulfilled node
   f: SerovalNode | undefined;
   // byte offset/object flags
   b: number | undefined;
   // object flag
   o: SerovalObjectFlags | undefined;
+  // length
+  l: number | undefined;
 }
 
 export type SerovalObjectRecordKey = string | SerovalNode;
@@ -39,13 +39,11 @@ export type SerovalObjectRecordKey = string | SerovalNode;
 export interface SerovalObjectRecordNode {
   k: SerovalObjectRecordKey[];
   v: SerovalNode[];
-  s: number;
 }
 
 export interface SerovalMapRecordNode {
   k: SerovalNode[];
   v: SerovalNode[];
-  s: number;
 }
 
 export interface SerovalNumberNode extends SerovalBaseNode {
@@ -102,35 +100,37 @@ export interface SerovalArrayBufferNode extends SerovalBaseNode {
   t: SerovalNodeType.ArrayBuffer;
   // id
   i: number;
-  // sequence in bytes
-  s: number[];
+  // byte string
+  s: string;
+  // array buffer constructor
+  f: SerovalNodeWithID;
 }
 
 export interface SerovalTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.TypedArray;
   // id
   i: number;
-  // length
-  l: number;
   // TypedArray Constructor
   c: string;
   // ArrayBuffer reference
   f: SerovalNode;
   // Byte Offset
   b: number;
+  // length
+  l: number;
 }
 
 export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.BigIntTypedArray;
   i: number;
-  // length
-  l: number;
   // TypedArray Constructor
   c: string;
   // ArrayBuffer reference
   f: SerovalNode;
   // Byte Offset
   b: number;
+  // length
+  l: number;
 }
 
 export type SerovalSemiPrimitiveNode =
@@ -144,8 +144,6 @@ export interface SerovalSetNode extends SerovalBaseNode {
   t: SerovalNodeType.Set;
   // id
   i: number;
-  // Size of Set
-  l: number;
   // Items in Set (as array)
   a: SerovalNode[];
 }
@@ -160,10 +158,8 @@ export interface SerovalMapNode extends SerovalBaseNode {
 
 export interface SerovalArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.Array;
-  // size of array
-  l: number;
   // items
-  a: (SerovalNode | undefined)[];
+  a: (SerovalNode | 0)[];
   i: number;
   o: SerovalObjectFlags;
 }
@@ -228,12 +224,12 @@ export interface SerovalReferenceNode extends SerovalBaseNode {
 export interface SerovalDataViewNode extends SerovalBaseNode {
   t: SerovalNodeType.DataView;
   i: number;
-  // byte length
-  l: number;
   // reference to array buffer
   f: SerovalNode;
   // byte offset
   b: number;
+  // byte length
+  l: number;
 }
 
 export interface SerovalBoxedNode extends SerovalBaseNode {

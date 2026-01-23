@@ -8,13 +8,51 @@ exports[`string > crossSerializeAsync > supports strings 1`] = `"$R[0]=Promise.r
 
 exports[`string > crossSerializeAsync > supports strings 2`] = `"$R[0]=Promise.resolve("\\x3Cscript>\\x3C/script>")"`;
 
-exports[`string > crossSerializeStream > supports sanitized strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`string > crossSerializeStream > supports sanitized strings 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`string > crossSerializeStream > supports sanitized strings 2`] = `"($R[3]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],"\\x3Cscript>\\x3C/script>")"`;
+exports[`string > crossSerializeStream > supports sanitized strings 2`] = `
+"($R[3]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],"\\x3Cscript>\\x3C/script>")"
+`;
 
-exports[`string > crossSerializeStream > supports strings 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`string > crossSerializeStream > supports strings 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`string > crossSerializeStream > supports strings 2`] = `"($R[3]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],"\\"hello\\"")"`;
+exports[`string > crossSerializeStream > supports strings 2`] = `
+"($R[3]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],"\\"hello\\"")"
+`;
 
 exports[`string > serialize > supports strings 1`] = `""\\"hello\\"""`;
 
@@ -40,10 +78,10 @@ exports[`string > toCrossJSONStream > supports strings 1`] = `"{"t":22,"i":0,"s"
 
 exports[`string > toCrossJSONStream > supports strings 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":3,"s":2},{"t":1,"s":"\\\\\\"hello\\\\\\""}]}"`;
 
-exports[`string > toJSON > supports strings 1`] = `"{"t":{"t":1,"s":"\\\\\\"hello\\\\\\""},"f":31,"m":[]}"`;
+exports[`string > toJSON > supports strings 1`] = `"{"t":{"t":1,"s":"\\\\\\"hello\\\\\\""},"f":63,"m":[]}"`;
 
-exports[`string > toJSON > supports strings 2`] = `"{"t":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"},"f":31,"m":[]}"`;
+exports[`string > toJSON > supports strings 2`] = `"{"t":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"},"f":63,"m":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":31,"m":[]}"`;
+exports[`string > toJSONAsync > supports strings 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\\\"hello\\\\\\""}},"f":63,"m":[]}"`;
 
-exports[`string > toJSONAsync > supports strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":31,"m":[]}"`;
+exports[`string > toJSONAsync > supports strings 2`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":1,"s":"\\\\x3Cscript>\\\\x3C/script>"}},"f":63,"m":[]}"`;

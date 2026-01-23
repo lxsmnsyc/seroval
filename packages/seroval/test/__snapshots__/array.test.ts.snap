@@ -16,23 +16,99 @@ exports[`arrays > crossSerializeAsync > supports Arrays 1`] = `"$R[0]=Promise.re
 
 exports[`arrays > crossSerializeAsync > supports self recursion 1`] = `"$R[0]=[$R[1]=Promise.resolve().then(()=>$R[0]),$R[2]=Promise.resolve().then(()=>$R[0])]"`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=[1,2,3]))($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports Arrays 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=[1,2,3]))($R["example"])"
+`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `"($R=>$R[0]=[$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})])($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 1`] = `
+"($R=>$R[0]=[$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p,$R[4]=($R[5]=$R[3]()).p])($R["example"])"
+`;
 
-exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0]))($R["example"])"`;
+exports[`arrays > crossSerializeStream > scoped > supports self recursion 2`] = `
+"($R=>($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0]))($R["example"])"
+`;
 
 exports[`arrays > crossSerializeStream > scoped > supports self recursion 3`] = `"($R=>$R[6]($R[5],$R[0]))($R["example"])"`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`arrays > crossSerializeStream > supports Arrays 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`arrays > crossSerializeStream > supports Arrays 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=[1,2,3])"`;
+exports[`arrays > crossSerializeStream > supports Arrays 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=[1,2,3])"
+`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 1`] = `"$R[0]=[$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0}),$R[4]=$R[3]($R[5]={p:0,s:0,f:0})]"`;
+exports[`arrays > crossSerializeStream > supports self recursion 1`] = `
+"$R[0]=[$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p,$R[4]=($R[5]=$R[3]()).p]"
+`;
 
-exports[`arrays > crossSerializeStream > supports self recursion 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0])"`;
+exports[`arrays > crossSerializeStream > supports self recursion 2`] = `
+"($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0])"
+`;
 
 exports[`arrays > crossSerializeStream > supports self recursion 3`] = `"$R[6]($R[5],$R[0])"`;
 
@@ -44,28 +120,28 @@ exports[`arrays > serializeAsync > supports Arrays 1`] = `"Promise.resolve([1,2,
 
 exports[`arrays > serializeAsync > supports self recursion 1`] = `"(h=>h=[Promise.resolve().then(()=>h),Promise.resolve().then(()=>h)])()"`;
 
-exports[`arrays > toCrossJSON > supports Arrays 1`] = `"{"t":9,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}"`;
+exports[`arrays > toCrossJSON > supports Arrays 1`] = `"{"t":9,"i":0,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}"`;
 
-exports[`arrays > toCrossJSON > supports self recursion 1`] = `"{"t":9,"i":0,"l":2,"a":[{"t":4,"i":0},{"t":4,"i":0}],"o":0}"`;
+exports[`arrays > toCrossJSON > supports self recursion 1`] = `"{"t":9,"i":0,"a":[{"t":4,"i":0},{"t":4,"i":0}],"o":0}"`;
 
-exports[`arrays > toCrossJSONAsync > supports Arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}}"`;
+exports[`arrays > toCrossJSONAsync > supports Arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}}"`;
 
-exports[`arrays > toCrossJSONAsync > supports self recursion 1`] = `"{"t":9,"i":0,"l":2,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"o":0}"`;
+exports[`arrays > toCrossJSONAsync > supports self recursion 1`] = `"{"t":9,"i":0,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"o":0}"`;
 
 exports[`arrays > toCrossJSONStream > supports Arrays 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`arrays > toCrossJSONStream > supports Arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":9,"i":3,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}]}"`;
+exports[`arrays > toCrossJSONStream > supports Arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":9,"i":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}]}"`;
 
-exports[`arrays > toCrossJSONStream > supports self recursion 1`] = `"{"t":9,"i":0,"l":2,"a":[{"t":22,"i":1,"s":2,"f":{"t":26,"i":3,"s":1}},{"t":22,"i":4,"s":5,"f":{"t":4,"i":3}}],"o":0}"`;
+exports[`arrays > toCrossJSONStream > supports self recursion 1`] = `"{"t":9,"i":0,"a":[{"t":22,"i":1,"s":2,"f":{"t":26,"i":3,"s":1}},{"t":22,"i":4,"s":5,"f":{"t":4,"i":3}}],"o":0}"`;
 
 exports[`arrays > toCrossJSONStream > supports self recursion 2`] = `"{"t":23,"i":2,"a":[{"t":26,"i":6,"s":2},{"t":4,"i":0}]}"`;
 
 exports[`arrays > toCrossJSONStream > supports self recursion 3`] = `"{"t":23,"i":5,"a":[{"t":4,"i":6},{"t":4,"i":0}]}"`;
 
-exports[`arrays > toJSON > supports Arrays 1`] = `"{"t":{"t":9,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0},"f":31,"m":[]}"`;
+exports[`arrays > toJSON > supports Arrays 1`] = `"{"t":{"t":9,"i":0,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0},"f":63,"m":[]}"`;
 
-exports[`arrays > toJSON > supports self recursion 1`] = `"{"t":{"t":9,"i":0,"l":2,"a":[{"t":4,"i":0},{"t":4,"i":0}],"o":0},"f":31,"m":[0]}"`;
+exports[`arrays > toJSON > supports self recursion 1`] = `"{"t":{"t":9,"i":0,"a":[{"t":4,"i":0},{"t":4,"i":0}],"o":0},"f":63,"m":[0]}"`;
 
-exports[`arrays > toJSONAsync > supports Arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}},"f":31,"m":[]}"`;
+exports[`arrays > toJSONAsync > supports Arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":9,"i":1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}],"o":0}},"f":63,"m":[]}"`;
 
-exports[`arrays > toJSONAsync > supports self recursion 1`] = `"{"t":{"t":9,"i":0,"l":2,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"o":0},"f":31,"m":[0]}"`;
+exports[`arrays > toJSONAsync > supports self recursion 1`] = `"{"t":{"t":9,"i":0,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}},{"t":12,"i":2,"s":1,"f":{"t":4,"i":0}}],"o":0},"f":63,"m":[0]}"`;

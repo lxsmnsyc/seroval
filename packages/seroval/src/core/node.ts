@@ -13,7 +13,6 @@ export function createSerovalNode<
   t: T,
   i: N['i'],
   s: N['s'],
-  l: N['l'],
   c: N['c'],
   m: N['m'],
   p: N['p'],
@@ -22,12 +21,12 @@ export function createSerovalNode<
   f: N['f'],
   b: N['b'],
   o: N['o'],
+  l: N['l'],
 ): N {
   return {
     t,
     i,
     s,
-    l,
     c,
     m,
     p,
@@ -36,5 +35,6 @@ export function createSerovalNode<
     f,
     b,
     o,
+    l,
   } as N;
 }

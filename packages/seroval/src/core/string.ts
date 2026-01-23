@@ -1,3 +1,5 @@
+import { NIL } from './constants';
+
 export function serializeChar(str: string): string | undefined {
   switch (str) {
     case '"':
@@ -21,7 +23,7 @@ export function serializeChar(str: string): string | undefined {
     case '\u2029':
       return '\\u2029';
     default:
-      return undefined;
+      return NIL;
   }
 }
 

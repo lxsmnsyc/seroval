@@ -16,21 +16,97 @@ exports[`Set > crossSerializeAsync > supports Set 1`] = `"$R[0]=Promise.resolve(
 
 exports[`Set > crossSerializeAsync > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=Promise.resolve().then(()=>$R[0])])"`;
 
-exports[`Set > crossSerializeStream > scoped > supports Set 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`Set > crossSerializeStream > scoped > supports Set 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Set([1,2,3])))($R["example"])"`;
+exports[`Set > crossSerializeStream > scoped > supports Set 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Set([1,2,3])))($R["example"])"
+`;
 
-exports[`Set > crossSerializeStream > scoped > supports self-recursion 1`] = `"($R=>$R[0]=new Set([$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0})]))($R["example"])"`;
+exports[`Set > crossSerializeStream > scoped > supports self-recursion 1`] = `
+"($R=>$R[0]=new Set([$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p]))($R["example"])"
+`;
 
-exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0]))($R["example"])"`;
+exports[`Set > crossSerializeStream > scoped > supports self-recursion 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0]))($R["example"])"
+`;
 
-exports[`Set > crossSerializeStream > supports Set 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`Set > crossSerializeStream > supports Set 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`Set > crossSerializeStream > supports Set 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=new Set([1,2,3]))"`;
+exports[`Set > crossSerializeStream > supports Set 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new Set([1,2,3]))"
+`;
 
-exports[`Set > crossSerializeStream > supports self-recursion 1`] = `"$R[0]=new Set([$R[1]=($R[3]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[2]={p:0,s:0,f:0})])"`;
+exports[`Set > crossSerializeStream > supports self-recursion 1`] = `
+"$R[0]=new Set([$R[1]=($R[2]=($R[3]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p])"
+`;
 
-exports[`Set > crossSerializeStream > supports self-recursion 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[2],$R[0])"`;
+exports[`Set > crossSerializeStream > supports self-recursion 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[2],$R[0])"
+`;
 
 exports[`Set > serialize > supports Set 1`] = `"new Set([1,2,3])"`;
 
@@ -40,18 +116,18 @@ exports[`Set > serializeAsync > supports Set 1`] = `"Promise.resolve(new Set([1,
 
 exports[`Set > serializeAsync > supports self-recursion 1`] = `"(h=>h=new Set([Promise.resolve().then(()=>h)]))()"`;
 
-exports[`Set > toCrossJSON > supports Set 1`] = `"{"t":7,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}"`;
+exports[`Set > toCrossJSON > supports Set 1`] = `"{"t":7,"i":0,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}"`;
 
-exports[`Set > toCrossJSON > supports self-recursion 1`] = `"{"t":7,"i":0,"l":1,"a":[{"t":4,"i":0}]}"`;
+exports[`Set > toCrossJSON > supports self-recursion 1`] = `"{"t":7,"i":0,"a":[{"t":4,"i":0}]}"`;
 
-exports[`Set > toCrossJSONAsync > supports Set 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":7,"i":1,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}}"`;
+exports[`Set > toCrossJSONAsync > supports Set 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":7,"i":1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}}"`;
 
-exports[`Set > toCrossJSONAsync > supports self-recursion 1`] = `"{"t":7,"i":0,"l":1,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}]}"`;
+exports[`Set > toCrossJSONAsync > supports self-recursion 1`] = `"{"t":7,"i":0,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}]}"`;
 
-exports[`Set > toJSON > supports Set 1`] = `"{"t":{"t":7,"i":0,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]},"f":31,"m":[]}"`;
+exports[`Set > toJSON > supports Set 1`] = `"{"t":{"t":7,"i":0,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]},"f":63,"m":[]}"`;
 
-exports[`Set > toJSON > supports self-recursion 1`] = `"{"t":{"t":7,"i":0,"l":1,"a":[{"t":4,"i":0}]},"f":31,"m":[0]}"`;
+exports[`Set > toJSON > supports self-recursion 1`] = `"{"t":{"t":7,"i":0,"a":[{"t":4,"i":0}]},"f":63,"m":[0]}"`;
 
-exports[`Set > toJSONAsync > supports Set 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":7,"i":1,"l":3,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}},"f":31,"m":[]}"`;
+exports[`Set > toJSONAsync > supports Set 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":7,"i":1,"a":[{"t":0,"s":1},{"t":0,"s":2},{"t":0,"s":3}]}},"f":63,"m":[]}"`;
 
-exports[`Set > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":7,"i":0,"l":1,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}]},"f":31,"m":[0]}"`;
+exports[`Set > toJSONAsync > supports self-recursion 1`] = `"{"t":{"t":7,"i":0,"a":[{"t":12,"i":1,"s":1,"f":{"t":4,"i":0}}]},"f":63,"m":[0]}"`;

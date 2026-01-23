@@ -1,3 +1,19 @@
+import {
+  SYM_ASYNC_ITERATOR,
+  SYM_HAS_INSTANCE,
+  SYM_IS_CONCAT_SPREADABLE,
+  SYM_ITERATOR,
+  SYM_MATCH,
+  SYM_MATCH_ALL,
+  SYM_REPLACE,
+  SYM_SEARCH,
+  SYM_SPECIES,
+  SYM_SPLIT,
+  SYM_TO_PRIMITIVE,
+  SYM_TO_STRING_TAG,
+  SYM_UNSCOPABLES,
+} from './symbols';
+
 export const enum SerovalConstant {
   Null = 0,
   Undefined = 1,
@@ -87,37 +103,37 @@ export const SYMBOL_STRING: Record<Symbols, string> = {
 };
 
 export const INV_SYMBOL_REF = /* @__PURE__ */ {
-  [Symbol.asyncIterator]: Symbols.AsyncIterator,
-  [Symbol.hasInstance]: Symbols.HasInstance,
-  [Symbol.isConcatSpreadable]: Symbols.IsConcatSpreadable,
-  [Symbol.iterator]: Symbols.Iterator,
-  [Symbol.match]: Symbols.Match,
-  [Symbol.matchAll]: Symbols.MatchAll,
-  [Symbol.replace]: Symbols.Replace,
-  [Symbol.search]: Symbols.Search,
-  [Symbol.species]: Symbols.Species,
-  [Symbol.split]: Symbols.Split,
-  [Symbol.toPrimitive]: Symbols.ToPrimitive,
-  [Symbol.toStringTag]: Symbols.ToStringTag,
-  [Symbol.unscopables]: Symbols.Unscopables,
+  [SYM_ASYNC_ITERATOR]: Symbols.AsyncIterator,
+  [SYM_HAS_INSTANCE]: Symbols.HasInstance,
+  [SYM_IS_CONCAT_SPREADABLE]: Symbols.IsConcatSpreadable,
+  [SYM_ITERATOR]: Symbols.Iterator,
+  [SYM_MATCH]: Symbols.Match,
+  [SYM_MATCH_ALL]: Symbols.MatchAll,
+  [SYM_REPLACE]: Symbols.Replace,
+  [SYM_SEARCH]: Symbols.Search,
+  [SYM_SPECIES]: Symbols.Species,
+  [SYM_SPLIT]: Symbols.Split,
+  [SYM_TO_PRIMITIVE]: Symbols.ToPrimitive,
+  [SYM_TO_STRING_TAG]: Symbols.ToStringTag,
+  [SYM_UNSCOPABLES]: Symbols.Unscopables,
 };
 
 export type WellKnownSymbols = keyof typeof INV_SYMBOL_REF;
 
 export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
-  [Symbols.AsyncIterator]: Symbol.asyncIterator,
-  [Symbols.HasInstance]: Symbol.hasInstance,
-  [Symbols.IsConcatSpreadable]: Symbol.isConcatSpreadable,
-  [Symbols.Iterator]: Symbol.iterator,
-  [Symbols.Match]: Symbol.match,
-  [Symbols.MatchAll]: Symbol.matchAll,
-  [Symbols.Replace]: Symbol.replace,
-  [Symbols.Search]: Symbol.search,
-  [Symbols.Species]: Symbol.species,
-  [Symbols.Split]: Symbol.split,
-  [Symbols.ToPrimitive]: Symbol.toPrimitive,
-  [Symbols.ToStringTag]: Symbol.toStringTag,
-  [Symbols.Unscopables]: Symbol.unscopables,
+  [Symbols.AsyncIterator]: SYM_ASYNC_ITERATOR,
+  [Symbols.HasInstance]: SYM_HAS_INSTANCE,
+  [Symbols.IsConcatSpreadable]: SYM_IS_CONCAT_SPREADABLE,
+  [Symbols.Iterator]: SYM_ITERATOR,
+  [Symbols.Match]: SYM_MATCH,
+  [Symbols.MatchAll]: SYM_MATCH_ALL,
+  [Symbols.Replace]: SYM_REPLACE,
+  [Symbols.Search]: SYM_SEARCH,
+  [Symbols.Species]: SYM_SPECIES,
+  [Symbols.Split]: SYM_SPLIT,
+  [Symbols.ToPrimitive]: SYM_TO_PRIMITIVE,
+  [Symbols.ToStringTag]: SYM_TO_STRING_TAG,
+  [Symbols.Unscopables]: SYM_UNSCOPABLES,
 };
 
 export const CONSTANT_STRING: Record<SerovalConstant, string> = {
@@ -131,10 +147,12 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.Nan]: '0/0',
 };
 
+export const NIL = void 0;
+
 export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.True]: true,
   [SerovalConstant.False]: false,
-  [SerovalConstant.Undefined]: undefined,
+  [SerovalConstant.Undefined]: NIL,
   [SerovalConstant.Null]: null,
   [SerovalConstant.NegZero]: -0,
   [SerovalConstant.Inf]: Number.POSITIVE_INFINITY,
@@ -181,5 +199,3 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
     [ErrorConstructorTag.TypeError]: TypeError,
     [ErrorConstructorTag.URIError]: URIError,
   };
-
-export const NIL = undefined;

@@ -1,11 +1,13 @@
-import { Feature } from './compat';
 
-export function createFunction(
-  features: number,
-  parameters: string[],
-  body: string,
-): string {
-  if (features & Feature.ArrowFunction) {
+declare const T: unknown;
+
+const RETURN = () => T;
+const SERIALIZED_RETURN = /* @__PURE__ */ RETURN.toString();
+
+const IS_MODERN = /* @__PURE__ */ /=>/.test(SERIALIZED_RETURN);
+
+export function createFunction(parameters: string[], body: string): string {
+  if (IS_MODERN) {
     const joined =
       parameters.length === 1
         ? parameters[0]
@@ -16,11 +18,10 @@ export function createFunction(
 }
 
 export function createEffectfulFunction(
-  features: number,
   parameters: string[],
   body: string,
 ): string {
-  if (features & Feature.ArrowFunction) {
+  if (IS_MODERN) {
     const joined =
       parameters.length === 1
         ? parameters[0]

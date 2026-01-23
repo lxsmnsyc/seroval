@@ -16,17 +16,55 @@ exports[`AbortSignal > crossSerializeAsync > supports aborted AbortSignal 1`] = 
 
 exports[`AbortSignal > crossSerializeAsync > supports future AbortSignal 1`] = `"$R[0]=AbortSignal.abort("aborted!")"`;
 
-exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=AbortSignal.abort("aborted!")))($R["example"])"`;
+exports[`AbortSignal > crossSerializeStream > scoped > supports aborted AbortSignal 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=AbortSignal.abort("aborted!")))($R["example"])"
+`;
 
 exports[`AbortSignal > crossSerializeStream > scoped > supports future AbortSignal 1`] = `"($R=>$R[0]=($R[1]=new AbortController).signal)($R["example"])"`;
 
 exports[`AbortSignal > crossSerializeStream > scoped > supports future AbortSignal 2`] = `"($R=>$R[2]=$R[1].abort("aborted!"))($R["example"])"`;
 
-exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=AbortSignal.abort("aborted!"))"`;
+exports[`AbortSignal > crossSerializeStream > supports aborted AbortSignal 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=AbortSignal.abort("aborted!"))"
+`;
 
 exports[`AbortSignal > crossSerializeStream > supports future AbortSignal 1`] = `"$R[0]=($R[1]=new AbortController).signal"`;
 
@@ -56,10 +94,10 @@ exports[`AbortSignal > toCrossJSONStream > supports future AbortSignal 1`] = `"{
 
 exports[`AbortSignal > toCrossJSONStream > supports future AbortSignal 2`] = `"{"t":25,"i":2,"s":{"controller":{"t":4,"i":1},"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignalAbort"}"`;
 
-exports[`AbortSignal > toJSON > supports aborted AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSON > supports aborted AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":63,"m":[]}"`;
 
-exports[`AbortSignal > toJSON > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":0},"c":"seroval-plugins/web/AbortSignal"},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSON > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":0},"c":"seroval-plugins/web/AbortSignal"},"f":63,"m":[]}"`;
 
-exports[`AbortSignal > toJSONAsync > supports aborted AbortSignal 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"}},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSONAsync > supports aborted AbortSignal 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":25,"i":1,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"}},"f":63,"m":[]}"`;
 
-exports[`AbortSignal > toJSONAsync > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":31,"m":[]}"`;
+exports[`AbortSignal > toJSONAsync > supports future AbortSignal 1`] = `"{"t":{"t":25,"i":0,"s":{"type":1,"reason":{"t":1,"s":"aborted!"}},"c":"seroval-plugins/web/AbortSignal"},"f":63,"m":[]}"`;

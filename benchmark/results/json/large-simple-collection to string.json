@@ -1,73 +1,73 @@
 {
   "name": "large-simple-collection to string",
-  "date": "2025-02-25T08:55:07.350Z",
+  "date": "2025-11-03T03:20:49.473Z",
   "version": null,
   "results": [
     {
       "name": "devalue",
-      "ops": 742,
-      "margin": 2.24,
-      "percentSlower": 77.16
+      "ops": 719,
+      "margin": 0.65,
+      "percentSlower": 76.21
     },
     {
       "name": "flatted",
-      "ops": 739,
-      "margin": 1.77,
-      "percentSlower": 77.25
+      "ops": 645,
+      "margin": 7.63,
+      "percentSlower": 78.66
     },
     {
       "name": "JSON",
-      "ops": 3248,
-      "margin": 1.31,
+      "ops": 3022,
+      "margin": 1.53,
       "percentSlower": 0
     },
     {
       "name": "next-json",
-      "ops": 484,
-      "margin": 2.19,
-      "percentSlower": 85.1
+      "ops": 557,
+      "margin": 1.29,
+      "percentSlower": 81.57
     },
     {
       "name": "o-son",
-      "ops": 1025,
-      "margin": 5.16,
-      "percentSlower": 68.44
+      "ops": 1094,
+      "margin": 0.83,
+      "percentSlower": 63.8
     },
     {
       "name": "serialize-javascript",
-      "ops": 1266,
-      "margin": 4.64,
-      "percentSlower": 61.02
+      "ops": 1605,
+      "margin": 1.15,
+      "percentSlower": 46.89
     },
     {
       "name": "seroval",
-      "ops": 764,
-      "margin": 4.24,
-      "percentSlower": 76.48
+      "ops": 850,
+      "margin": 1.13,
+      "percentSlower": 71.87
     },
     {
       "name": "superjson",
-      "ops": 415,
-      "margin": 1.88,
-      "percentSlower": 87.22
+      "ops": 389,
+      "margin": 5.83,
+      "percentSlower": 87.13
     },
     {
       "name": "tosource",
-      "ops": 685,
-      "margin": 4.61,
-      "percentSlower": 78.91
+      "ops": 841,
+      "margin": 0.83,
+      "percentSlower": 72.17
     },
     {
       "name": "turbo-stream",
-      "ops": 500,
-      "margin": 4.68,
-      "percentSlower": 84.61
+      "ops": 496,
+      "margin": 5.49,
+      "percentSlower": 83.59
     },
     {
       "name": "warp10",
-      "ops": 2365,
-      "margin": 0.73,
-      "percentSlower": 27.19
+      "ops": 2125,
+      "margin": 1.15,
+      "percentSlower": 29.68
     }
   ],
   "fastest": {

@@ -1,18 +1,34 @@
-import { resolvePlugins } from '../plugin';
+import type { AsyncParserContextOptions } from '../context/async-parser';
+import {
+  createAsyncParserContext,
+  parseTopAsync,
+} from '../context/async-parser';
+import type { CrossDeserializerContextOptions } from '../context/deserializer';
+import {
+  createCrossDeserializerContext,
+  deserializeTop,
+} from '../context/deserializer';
+import type { CrossContextOptions } from '../context/serializer';
+import {
+  createCrossSerializerContext,
+  serializeTopCross,
+} from '../context/serializer';
+import type {
+  StreamParserContextOptions,
+  SyncParserContextOptions,
+} from '../context/sync-parser';
+import {
+  createStreamParserContext,
+  createSyncParserContext,
+  destroyStreamParse,
+  parseTop,
+  startStreamParse,
+} from '../context/sync-parser';
+import { resolvePlugins, SerovalMode } from '../plugin';
 import type { SerovalNode } from '../types';
-import type { CrossAsyncParserContextOptions } from './async';
-import AsyncCrossParserContext from './async';
-import type { CrossDeserializerContextOptions } from './deserializer';
-import CrossDeserializerContext from './deserializer';
-import type { CrossContextOptions, CrossParserContextOptions } from './parser';
-import CrossSerializerContext from './serializer';
-import type { CrossStreamParserContextOptions } from './stream';
-import StreamCrossParserContext from './stream';
-import type { CrossSyncParserContextOptions } from './sync';
-import SyncCrossParserContext from './sync';
 
 export interface CrossSerializeOptions
-  extends CrossSyncParserContextOptions,
+  extends SyncParserContextOptions,
     CrossContextOptions {}
 
 export function crossSerialize<T>(
@@ -20,23 +36,23 @@ export function crossSerialize<T>(
   options: CrossSerializeOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new SyncCrossParserContext({
+  const ctx = createSyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  const tree = ctx.parseTop(source);
-  const serial = new CrossSerializerContext({
+  const tree = parseTop(ctx, source);
+  const serial = createCrossSerializerContext({
     plugins,
-    features: ctx.features,
+    features: ctx.base.features,
     scopeId: options.scopeId,
-    markedRefs: ctx.marked,
+    markedRefs: ctx.base.marked,
   });
-  return serial.serializeTop(tree);
+  return serializeTopCross(serial, tree);
 }
 
 export interface CrossSerializeAsyncOptions
-  extends CrossAsyncParserContextOptions,
+  extends AsyncParserContextOptions,
     CrossContextOptions {}
 
 export async function crossSerializeAsync<T>(
@@ -44,53 +60,53 @@ export async function crossSerializeAsync<T>(
   options: CrossSerializeAsyncOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new AsyncCrossParserContext({
+  const ctx = createAsyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  const tree = await ctx.parseTop(source);
-  const serial = new CrossSerializerContext({
+  const tree = await parseTopAsync(ctx, source);
+  const serial = createCrossSerializerContext({
     plugins,
-    features: ctx.features,
+    features: ctx.base.features,
     scopeId: options.scopeId,
-    markedRefs: ctx.marked,
+    markedRefs: ctx.base.marked,
   });
-  return serial.serializeTop(tree);
+  return serializeTopCross(serial, tree);
 }
 
-export type ToCrossJSONOptions = CrossParserContextOptions;
+export type ToCrossJSONOptions = SyncParserContextOptions;
 
 export function toCrossJSON<T>(
   source: T,
-  options: CrossParserContextOptions = {},
+  options: ToCrossJSONOptions = {},
 ): SerovalNode {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new SyncCrossParserContext({
+  const ctx = createSyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  return ctx.parseTop(source);
+  return parseTop(ctx, source);
 }
 
-export type ToCrossJSONAsyncOptions = CrossParserContextOptions;
+export type ToCrossJSONAsyncOptions = AsyncParserContextOptions;
 
 export async function toCrossJSONAsync<T>(
   source: T,
-  options: CrossParserContextOptions = {},
+  options: ToCrossJSONAsyncOptions = {},
 ): Promise<SerovalNode> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new AsyncCrossParserContext({
+  const ctx = createAsyncParserContext(SerovalMode.Cross, {
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
   });
-  return await ctx.parseTop(source);
+  return await parseTopAsync(ctx, source);
 }
 
 export interface CrossSerializeStreamOptions
-  extends Omit<CrossStreamParserContextOptions, 'onParse'>,
+  extends Omit<StreamParserContextOptions, 'onParse'>,
     CrossContextOptions {
   onSerialize: (data: string, initial: boolean) => void;
 }
@@ -100,22 +116,22 @@ export function crossSerializeStream<T>(
   options: CrossSerializeStreamOptions,
 ): () => void {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new StreamCrossParserContext({
+  const ctx = createStreamParserContext({
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
     onParse(node, initial): void {
-      const serial = new CrossSerializerContext({
+      const serial = createCrossSerializerContext({
         plugins,
-        features: ctx.features,
+        features: ctx.base.features,
         scopeId: options.scopeId,
-        markedRefs: ctx.marked,
+        markedRefs: ctx.base.marked,
       });
 
       let serialized: string;
 
       try {
-        serialized = serial.serializeTop(node);
+        serialized = serializeTopCross(serial, node);
       } catch (err) {
         if (options.onError) {
           options.onError(err);
@@ -129,19 +145,19 @@ export function crossSerializeStream<T>(
     onDone: options.onDone,
   });
 
-  ctx.start(source);
+  startStreamParse(ctx, source);
 
-  return ctx.destroy.bind(ctx);
+  return destroyStreamParse.bind(null, ctx);
 }
 
-export type ToCrossJSONStreamOptions = CrossStreamParserContextOptions;
+export type ToCrossJSONStreamOptions = StreamParserContextOptions;
 
 export function toCrossJSONStream<T>(
   source: T,
   options: ToCrossJSONStreamOptions,
 ): () => void {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new StreamCrossParserContext({
+  const ctx = createStreamParserContext({
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
@@ -150,9 +166,9 @@ export function toCrossJSONStream<T>(
     onDone: options.onDone,
   });
 
-  ctx.start(source);
+  startStreamParse(ctx, source);
 
-  return ctx.destroy.bind(ctx);
+  return destroyStreamParse.bind(null, ctx);
 }
 
 export type FromCrossJSONOptions = CrossDeserializerContextOptions;
@@ -162,9 +178,11 @@ export function fromCrossJSON<T>(
   options: FromCrossJSONOptions,
 ): T {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = new CrossDeserializerContext({
+  const ctx = createCrossDeserializerContext({
     plugins,
     refs: options.refs,
+    features: options.features,
+    disabledFeatures: options.disabledFeatures,
   });
-  return ctx.deserializeTop(source) as T;
+  return deserializeTop(ctx, source) as T;
 }

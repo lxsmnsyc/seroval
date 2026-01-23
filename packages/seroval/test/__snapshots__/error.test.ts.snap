@@ -24,33 +24,147 @@ exports[`Error > crossSerializeAsync > supports Error.prototype.name 1`] = `"$R[
 
 exports[`Error > crossSerializeAsync > supports other Error classes 1`] = `"$R[0]=Promise.resolve($R[1]=Object.assign(new ReferenceError("A"),{stack:""}))"`;
 
-exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 2`] = `"($R=>($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=$R[2]($R[5]={p:0,s:0,f:0})})))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 2`] = `
+"($R=>($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=($R[5]=$R[2]()).p})))($R["example"])"
+`;
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 3`] = `"($R=>$R[6]($R[5],$R[7]=Object.assign(new Error("A"),{stack:""})))($R["example"])"`;
 
-exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""})))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""})))($R["example"])"
+`;
 
-exports[`Error > crossSerializeStream > scoped > supports other Error classes 1`] = `"($R=>$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0}))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports other Error classes 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
 
-exports[`Error > crossSerializeStream > scoped > supports other Error classes 2`] = `"($R=>($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""})))($R["example"])"`;
+exports[`Error > crossSerializeStream > scoped > supports other Error classes 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""})))($R["example"])"
+`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `"($R[6]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=$R[2]($R[5]={p:0,s:0,f:0})}))"`;
+exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `
+"($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=($R[5]=$R[2]()).p}))"
+`;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"$R[6]($R[5],$R[7]=Object.assign(new Error("A"),{stack:""}))"`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""}))"`;
+exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""}))"
+`;
 
-exports[`Error > crossSerializeStream > supports other Error classes 1`] = `"$R[0]=($R[2]=r=>(r.p=new Promise((s,f)=>{r.s=s,r.f=f})))($R[1]={p:0,s:0,f:0})"`;
+exports[`Error > crossSerializeStream > supports other Error classes 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
 
-exports[`Error > crossSerializeStream > supports other Error classes 2`] = `"($R[4]=(r,d)=>{r.s(d),r.p.s=1,r.p.v=d})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""}))"`;
+exports[`Error > crossSerializeStream > supports other Error classes 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""}))"
+`;
 
 exports[`Error > serialize > supports Error.prototype.cause 1`] = `"Object.assign(new Error("B"),{stack:"",cause:Object.assign(new Error("A"),{stack:""})})"`;
 
@@ -64,40 +178,40 @@ exports[`Error > serializeAsync > supports Error.prototype.name 1`] = `"Promise.
 
 exports[`Error > serializeAsync > supports other Error classes 1`] = `"Promise.resolve(Object.assign(new ReferenceError("A"),{stack:""}))"`;
 
-exports[`Error > toCrossJSON > supports Error.prototype.cause 1`] = `"{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":13,"i":1,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}],"s":2}}"`;
+exports[`Error > toCrossJSON > supports Error.prototype.cause 1`] = `"{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":13,"i":1,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}]}}"`;
 
-exports[`Error > toCrossJSON > supports Error.prototype.name 1`] = `"{"t":13,"i":0,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}],"s":2}}"`;
+exports[`Error > toCrossJSON > supports Error.prototype.name 1`] = `"{"t":13,"i":0,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}]}}"`;
 
-exports[`Error > toCrossJSON > supports other Error classes 1`] = `"{"t":13,"i":0,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}"`;
+exports[`Error > toCrossJSON > supports other Error classes 1`] = `"{"t":13,"i":0,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}"`;
 
-exports[`Error > toCrossJSONAsync > supports Error.prototype.cause 1`] = `"{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":12,"i":1,"s":1,"f":{"t":13,"i":2,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}}],"s":2}}"`;
+exports[`Error > toCrossJSONAsync > supports Error.prototype.cause 1`] = `"{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":12,"i":1,"s":1,"f":{"t":13,"i":2,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}]}}"`;
 
-exports[`Error > toCrossJSONAsync > supports Error.prototype.name 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}],"s":2}}}"`;
+exports[`Error > toCrossJSONAsync > supports Error.prototype.name 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}]}}}"`;
 
-exports[`Error > toCrossJSONAsync > supports other Error classes 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}}"`;
+exports[`Error > toCrossJSONAsync > supports other Error classes 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}"`;
 
 exports[`Error > toCrossJSONStream > supports Error.prototype.cause 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Error > toCrossJSONStream > supports Error.prototype.cause 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":13,"i":3,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":22,"i":4,"s":5,"f":{"t":4,"i":2}}],"s":2}}]}"`;
+exports[`Error > toCrossJSONStream > supports Error.prototype.cause 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":13,"i":3,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":22,"i":4,"s":5,"f":{"t":4,"i":2}}]}}]}"`;
 
-exports[`Error > toCrossJSONStream > supports Error.prototype.cause 3`] = `"{"t":23,"i":5,"a":[{"t":4,"i":6},{"t":13,"i":7,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}]}"`;
+exports[`Error > toCrossJSONStream > supports Error.prototype.cause 3`] = `"{"t":23,"i":5,"a":[{"t":4,"i":6},{"t":13,"i":7,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}]}"`;
 
 exports[`Error > toCrossJSONStream > supports Error.prototype.name 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Error > toCrossJSONStream > supports Error.prototype.name 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":13,"i":3,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}],"s":2}}]}"`;
+exports[`Error > toCrossJSONStream > supports Error.prototype.name 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":13,"i":3,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}]}}]}"`;
 
 exports[`Error > toCrossJSONStream > supports other Error classes 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Error > toCrossJSONStream > supports other Error classes 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":13,"i":3,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}]}"`;
+exports[`Error > toCrossJSONStream > supports other Error classes 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":13,"i":3,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}]}"`;
 
-exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"{"t":{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":13,"i":1,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}],"s":2}},"f":31,"m":[]}"`;
+exports[`Error > toJSON > supports Error.prototype.cause 1`] = `"{"t":{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":13,"i":1,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}]}},"f":63,"m":[]}"`;
 
-exports[`Error > toJSON > supports Error.prototype.name 1`] = `"{"t":{"t":13,"i":0,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}],"s":2}},"f":31,"m":[]}"`;
+exports[`Error > toJSON > supports Error.prototype.name 1`] = `"{"t":{"t":13,"i":0,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}]}},"f":63,"m":[]}"`;
 
-exports[`Error > toJSON > supports other Error classes 1`] = `"{"t":{"t":13,"i":0,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}},"f":31,"m":[]}"`;
+exports[`Error > toJSON > supports other Error classes 1`] = `"{"t":{"t":13,"i":0,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}},"f":63,"m":[]}"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"{"t":{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":12,"i":1,"s":1,"f":{"t":13,"i":2,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}}],"s":2}},"f":31,"m":[]}"`;
+exports[`Error > toJSONAsync > supports Error.prototype.cause 1`] = `"{"t":{"t":13,"i":0,"s":0,"m":"B","p":{"k":["stack","cause"],"v":[{"t":1,"s":""},{"t":12,"i":1,"s":1,"f":{"t":13,"i":2,"s":0,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}]}},"f":63,"m":[]}"`;
 
-exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}],"s":2}}},"f":31,"m":[]}"`;
+exports[`Error > toJSONAsync > supports Error.prototype.name 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":0,"m":"A","p":{"k":["name","stack"],"v":[{"t":1,"s":"ExampleError"},{"t":1,"s":""}]}}},"f":63,"m":[]}"`;
 
-exports[`Error > toJSONAsync > supports other Error classes 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}],"s":1}}},"f":31,"m":[]}"`;
+exports[`Error > toJSONAsync > supports other Error classes 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":13,"i":1,"s":3,"m":"A","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}},"f":63,"m":[]}"`;

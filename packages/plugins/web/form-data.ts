@@ -6,7 +6,6 @@ type FormDataInit = [key: string, value: FormDataEntryValue][];
 
 function convertFormData(instance: FormData): FormDataInit {
   const items: FormDataInit = [];
-  // biome-ignore lint/complexity/noForEach: <explanation>
   instance.forEach((value, key) => {
     items.push([key, value]);
   });
@@ -14,6 +13,20 @@ function convertFormData(instance: FormData): FormDataInit {
 }
 
 const FORM_DATA_FACTORY = {};
+
+const FORM_DATA_FACTORY_CONSTRUCTOR = (
+  e: [key: string, value: FormDataEntryValue][],
+  f = new FormData(),
+  i = 0,
+  s = e.length,
+  t?: [key: string, value: FormDataEntryValue],
+) => {
+  for (; i < s; i++) {
+    t = e[i];
+    f.append(t[0], t[1]);
+  }
+  return f;
+};
 
 const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, undefined>({
   tag: 'seroval-plugins/web/FormDataFactory',
@@ -31,11 +44,8 @@ const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, undefined>({
       return undefined;
     },
   },
-  serialize(_node, ctx) {
-    return ctx.createEffectfulFunction(
-      ['e', 'f', 'i', 's', 't'],
-      'f=new FormData;for(i=0,s=e.length;i<s;i++)f.append((t=e[i])[0],t[1]);return f',
-    );
+  serialize() {
+    return FORM_DATA_FACTORY_CONSTRUCTOR.toString();
   },
   deserialize() {
     return FORM_DATA_FACTORY;
@@ -86,13 +96,9 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
     );
   },
   deserialize(node, ctx) {
-    const instance = new FormData();
-    const entries = ctx.deserialize(node.entries) as FormDataInit;
-    for (let i = 0, len = entries.length; i < len; i++) {
-      const entry = entries[i];
-      instance.append(entry[0], entry[1]);
-    }
-    return instance;
+    return FORM_DATA_FACTORY_CONSTRUCTOR(
+      ctx.deserialize(node.entries) as FormDataInit,
+    );
   },
 });
 
