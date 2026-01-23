@@ -10,10 +10,10 @@ function createCustomEventOptions(current: CustomEvent): CustomEventInit {
   };
 }
 
-interface CustomEventNode {
+type CustomEventNode = {
   type: SerovalNode;
   options: SerovalNode;
-}
+};
 
 const CustomEventPlugin = /* @__PURE__ */ createPlugin<
   CustomEvent,

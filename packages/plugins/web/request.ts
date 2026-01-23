@@ -1,7 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import ReadableStreamPlugin from './readable-stream';
 import HeadersPlugin from './headers';
+import ReadableStreamPlugin from './readable-stream';
 
 function createRequestOptions(
   current: Request,
@@ -22,10 +22,10 @@ function createRequestOptions(
   };
 }
 
-interface RequestNode {
+type RequestNode = {
   url: SerovalNode;
   options: SerovalNode;
-}
+};
 
 const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   tag: 'seroval-plugins/web/Request',

@@ -209,7 +209,7 @@ export function createReferenceNode<T>(
 export function createPluginNode(
   id: number,
   tag: string,
-  value: unknown,
+  value: Record<string, SerovalNode>,
 ): SerovalPluginNode {
   return createSerovalNode(
     SerovalNodeType.Plugin,

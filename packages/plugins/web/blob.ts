@@ -1,10 +1,10 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-interface BlobNode {
+type BlobNode = {
   type: SerovalNode;
   buffer: SerovalNode;
-}
+};
 
 const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
   tag: 'seroval-plugins/web/Blob',

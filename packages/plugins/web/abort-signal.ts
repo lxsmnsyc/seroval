@@ -1,6 +1,13 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
+const PROMISE_TO_ABORT_SIGNAL = (promise: Promise<unknown>) => {
+  const controller = new AbortController();
+  const abort = controller.abort.bind(controller);
+  promise.then(abort, abort);
+  return controller;
+};
+
 function resolveAbortSignalResult(
   this: AbortSignal,
   resolve: (value: unknown) => void,
@@ -17,98 +24,42 @@ function resolveAbortSignal(
   });
 }
 
-export function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
+function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
   return new Promise(resolveAbortSignal.bind(signal));
 }
 
-class AbortSignalController {
-  controller = new AbortController();
-}
+const ABORT_CONTROLLER = {};
 
-const AbortSignalControllerPlugin = createPlugin<
-  AbortSignalController,
-  undefined
->({
-  tag: 'seroval-plugins/web/AbortSignalController',
+const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
+  tag: 'seroval-plugins/web/AbortControllerFactoryPlugin',
   test(value) {
-    // We didn't actually use the AbortController class
-    // directly because of some assumptions
-    return value instanceof AbortSignalController;
+    return value === ABORT_CONTROLLER;
   },
   parse: {
+    sync() {
+      return ABORT_CONTROLLER;
+    },
+    async async() {
+      return await Promise.resolve(ABORT_CONTROLLER);
+    },
     stream() {
-      return undefined;
+      return ABORT_CONTROLLER;
     },
   },
-  serialize(_node) {
-    return 'new AbortController';
+  serialize() {
+    return PROMISE_TO_ABORT_SIGNAL.toString();
   },
-  deserialize(_node) {
-    return new AbortSignalController();
+  deserialize() {
+    return PROMISE_TO_ABORT_SIGNAL;
   },
 });
 
-interface AbortSignalAbortNode {
-  controller: SerovalNode;
-  reason: SerovalNode;
-}
-
-class AbortSignalAbort {
-  constructor(
-    public controller: AbortSignalController,
-    public reason: unknown,
-  ) {}
-}
-
-const AbortSignalAbortPlugin = createPlugin<
-  AbortSignalAbort,
-  AbortSignalAbortNode
+const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
+  AbortSignal,
+  { reason?: SerovalNode; controller?: SerovalNode; factory?: SerovalNode }
 >({
-  extends: [AbortSignalControllerPlugin],
-  tag: 'seroval-plugins/web/AbortSignalAbort',
-  test(value) {
-    return value instanceof AbortSignalAbort;
-  },
-  parse: {
-    stream(value, ctx) {
-      return {
-        controller: ctx.parse(value.controller),
-        reason: ctx.parse(value.reason),
-      };
-    },
-  },
-  serialize(node, ctx) {
-    return (
-      ctx.serialize(node.controller) +
-      '.abort(' +
-      ctx.serialize(node.reason) +
-      ')'
-    );
-  },
-  deserialize(node, ctx) {
-    const controller = ctx.deserialize(
-      node.controller,
-    ) as AbortSignalController;
-    const reason = ctx.deserialize(node.reason);
-    controller.controller.abort(reason);
-    return new AbortSignalAbort(controller, reason);
-  },
-});
-
-const enum AbortSignalState {
-  Pending = 0,
-  Aborted = 1,
-  Streaming = 2,
-}
-
-type AbortSignalNode =
-  | { type: AbortSignalState.Pending }
-  | { type: AbortSignalState.Aborted; reason: SerovalNode }
-  | { type: AbortSignalState.Streaming; controller: SerovalNode };
-
-const AbortSignalPlugin = createPlugin<AbortSignal, AbortSignalNode>({
   tag: 'seroval-plugins/web/AbortSignal',
-  extends: [AbortSignalAbortPlugin],
+  extends: [AbortControllerFactoryPlugin],
   test(value) {
     if (typeof AbortSignal === 'undefined') {
       return false;
@@ -119,78 +70,61 @@ const AbortSignalPlugin = createPlugin<AbortSignal, AbortSignalNode>({
     sync(value, ctx) {
       if (value.aborted) {
         return {
-          type: AbortSignalState.Aborted,
           reason: ctx.parse(value.reason),
         };
       }
-      return {
-        type: AbortSignalState.Pending,
-      };
+      return {};
     },
     async async(value, ctx) {
       if (value.aborted) {
         return {
-          type: AbortSignalState.Aborted,
           reason: await ctx.parse(value.reason),
         };
       }
       const result = await abortSignalToPromise(value);
       return {
-        type: AbortSignalState.Aborted,
         reason: await ctx.parse(result),
       };
     },
     stream(value, ctx) {
       if (value.aborted) {
         return {
-          type: AbortSignalState.Aborted,
           reason: ctx.parse(value.reason),
         };
       }
-      const controller = new AbortSignalController();
 
-      ctx.pushPendingState();
-      value.addEventListener(
-        'abort',
-        () => {
-          const result = ctx.parseWithError(
-            new AbortSignalAbort(controller, value.reason),
-          );
-          if (result) {
-            ctx.onParse(result);
-          }
-          ctx.popPendingState();
-        },
-        { once: true },
-      );
+      const promise = abortSignalToPromise(value);
 
       return {
-        type: AbortSignalState.Streaming,
-        controller: ctx.parse(controller),
+        factory: ctx.parse(ABORT_CONTROLLER),
+        controller: ctx.parse(promise),
       };
     },
   },
   serialize(node, ctx) {
-    if (node.type === AbortSignalState.Pending) {
-      return '(new AbortController).signal';
-    }
-    if (node.type === AbortSignalState.Aborted) {
+    if (node.reason) {
       return 'AbortSignal.abort(' + ctx.serialize(node.reason) + ')';
     }
-    return '(' + ctx.serialize(node.controller) + ').signal';
+    if (node.controller && node.factory) {
+      return (
+        '(' +
+        ctx.serialize(node.factory) +
+        ')(' +
+        ctx.serialize(node.controller) +
+        ').signal'
+      );
+    }
+    return '(new AbortController).signal';
   },
   deserialize(node, ctx) {
-    if (node.type === AbortSignalState.Pending) {
-      const controller = new AbortController();
-      return controller.signal;
-    }
-    if (node.type === AbortSignalState.Aborted) {
+    if (node.reason) {
       return AbortSignal.abort(ctx.deserialize(node.reason));
     }
-    const controller = ctx.deserialize(
-      node.controller,
-    ) as AbortSignalController;
-    return controller.controller.signal;
+    if (node.controller) {
+      return PROMISE_TO_ABORT_SIGNAL(ctx.deserialize(node.controller)).signal;
+    }
+    const controller = new AbortController();
+    return controller.signal;
   },
 });
 

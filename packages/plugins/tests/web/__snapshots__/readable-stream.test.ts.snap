@@ -902,13 +902,13 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream errors 2`] = `[Error: Oops!]`;
 
-exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":32,"i":2,"f":{"t":1,"s":"foo"}},{"t":32,"i":2,"f":{"t":1,"s":"bar"}},{"t":32,"i":2,"f":{"t":1,"s":"baz"}},{"t":34,"i":2,"f":{"t":2,"s":1}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
+exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":32,"i":2,"f":{"t":1,"s":"foo"}},{"t":32,"i":2,"f":{"t":1,"s":"bar"}},{"t":32,"i":2,"f":{"t":1,"s":"baz"}},{"t":34,"i":2,"f":{"t":2,"s":1}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
 
-exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream errors 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
+exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream errors 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
 
 exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream errors 2`] = `[Error: Oops!]`;
 
-exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 2`] = `"{"t":32,"i":2,"f":{"t":1,"s":"foo"}}"`;
 
@@ -918,12 +918,12 @@ exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 4`] = `"{"
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 5`] = `"{"t":34,"i":2,"f":{"t":2,"s":1}}"`;
 
-exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 2`] = `"{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}"`;
 
-exports[`ReadableStream > toJSONAsync > supports ReadableStream 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":32,"i":2,"f":{"t":1,"s":"foo"}},{"t":32,"i":2,"f":{"t":1,"s":"bar"}},{"t":32,"i":2,"f":{"t":1,"s":"baz"}},{"t":34,"i":2,"f":{"t":2,"s":1}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":63,"m":[2]}"`;
+exports[`ReadableStream > toJSONAsync > supports ReadableStream 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":32,"i":2,"f":{"t":1,"s":"foo"}},{"t":32,"i":2,"f":{"t":1,"s":"bar"}},{"t":32,"i":2,"f":{"t":1,"s":"baz"}},{"t":34,"i":2,"f":{"t":2,"s":1}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":63,"m":[2]}"`;
 
-exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":63,"m":[2]}"`;
+exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":63,"m":[2]}"`;
 
 exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 2`] = `[Error: Oops!]`;

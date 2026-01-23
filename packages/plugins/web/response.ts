@@ -1,7 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import ReadableStreamPlugin from './readable-stream';
 import HeadersPlugin from './headers';
+import ReadableStreamPlugin from './readable-stream';
 
 function createResponseOptions(current: Response): ResponseInit {
   return {
@@ -11,10 +11,10 @@ function createResponseOptions(current: Response): ResponseInit {
   };
 }
 
-interface ResponseNode {
+type ResponseNode = {
   body: SerovalNode;
   options: SerovalNode;
-}
+};
 
 const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
   tag: 'seroval-plugins/web/Response',
