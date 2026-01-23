@@ -1,3 +1,4 @@
+import { Sequence } from './sequence';
 import type { Stream } from './stream';
 
 type SpecialPromise = Promise<unknown> & { s?: 1 | 2; v?: unknown };
@@ -129,12 +130,6 @@ export const STREAM_CONSTRUCTOR = () => {
 
 export const SERIALIZED_STREAM_CONSTRUCTOR =
   /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
-
-export interface Sequence {
-  v: unknown[];
-  t: number;
-  d: number;
-}
 
 export const ITERATOR_CONSTRUCTOR =
   (symbol: symbol) => (sequence: Sequence) => () => {

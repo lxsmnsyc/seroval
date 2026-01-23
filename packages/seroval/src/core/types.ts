@@ -283,7 +283,7 @@ export interface SerovalIteratorFactoryNode extends SerovalBaseNode {
 
 export interface SerovalIteratorFactoryInstanceNode extends SerovalBaseNode {
   t: SerovalNodeType.IteratorFactoryInstance;
-  a: [instance: SerovalNodeWithID, sequence: SerovalNode];
+  a: [instance: SerovalNodeWithID, sequence: SerovalNodeWithID];
 }
 
 export interface SerovalAsyncIteratorFactoryNode extends SerovalBaseNode {
@@ -295,7 +295,7 @@ export interface SerovalAsyncIteratorFactoryNode extends SerovalBaseNode {
 export interface SerovalAsyncIteratorFactoryInstanceNode
   extends SerovalBaseNode {
   t: SerovalNodeType.AsyncIteratorFactoryInstance;
-  a: [instance: SerovalNodeWithID, sequence: SerovalNode];
+  a: [instance: SerovalNodeWithID, sequence: SerovalNodeWithID];
 }
 
 export interface SerovalStreamConstructorNode extends SerovalBaseNode {
@@ -327,6 +327,16 @@ export interface SerovalStreamReturnNode extends SerovalBaseNode {
   f: SerovalNode;
 }
 
+export interface SerovalSequenceNode extends SerovalBaseNode {
+  t: SerovalNodeType.Sequence;
+  i: number;
+  // Throw at
+  s: number;
+  a: SerovalNode[];
+  // Done at
+  l: number;
+}
+
 export type SerovalSyncNode =
   | SerovalPrimitiveNode
   | SerovalIndexedValueNode
@@ -349,7 +359,8 @@ export type SerovalSyncNode =
   | SerovalIteratorFactoryNode
   | SerovalIteratorFactoryInstanceNode
   | SerovalAsyncIteratorFactoryNode
-  | SerovalAsyncIteratorFactoryInstanceNode;
+  | SerovalAsyncIteratorFactoryInstanceNode
+  | SerovalSequenceNode;
 
 export type SerovalAsyncNode =
   | SerovalPromiseNode

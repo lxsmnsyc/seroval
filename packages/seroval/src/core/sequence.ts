@@ -1,17 +1,32 @@
-import { ITERATOR_CONSTRUCTOR } from '../constructors';
-import { SYM_ITERATOR } from '../symbols';
+import { ITERATOR_CONSTRUCTOR } from "./constructors";
+import { SYM_ITERATOR } from "./symbols";
 
 export interface Sequence {
+  __SEROVAL_SEQUENCE__: true;
+
   v: unknown[];
   t: number;
   d: number;
 }
 
-export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
+export function isSequence(value: object): value is Sequence {
+  return '__SEROVAL_SEQUENCE__' in value;
+}
+
+export function createSequence(values: unknown[], throwAt: number, doneAt: number): Sequence {
+  return {
+    __SEROVAL_SEQUENCE__: true,
+
+    v: values,
+    t: throwAt,
+    d: doneAt,
+  };
+}
+
+export function createSequenceFromIterable<T>(source: Iterable<T>): Sequence {
   const values: unknown[] = [];
   let throwsAt = -1;
   let doneAt = -1;
-
   const iterator = source[SYM_ITERATOR]();
 
   while (true) {
@@ -28,11 +43,7 @@ export function iteratorToSequence<T>(source: Iterable<T>): Sequence {
     }
   }
 
-  return {
-    v: values,
-    t: throwsAt,
-    d: doneAt,
-  };
+  return createSequence(values, throwsAt, doneAt);
 }
 
 const createIterator = ITERATOR_CONSTRUCTOR(SYM_ITERATOR);

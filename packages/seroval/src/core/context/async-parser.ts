@@ -12,6 +12,7 @@ import {
   createNumberNode,
   createPluginNode,
   createRegExpNode,
+  createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
   createStreamNextNode,
@@ -27,6 +28,11 @@ import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
 import type { SerovalMode } from '../plugin';
+import {
+  createSequenceFromIterable,
+  isSequence,
+  type Sequence,
+} from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
 import { createStreamFromAsyncIterable, isStream } from '../stream';
@@ -46,18 +52,19 @@ import type {
   SerovalErrorNode,
   SerovalMapNode,
   SerovalNode,
+  SerovalNodeWithID,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalPromiseNode,
+  SerovalSequenceNode,
   SerovalSetNode,
   SerovalStreamConstructorNode,
   SerovalTypedArrayNode,
 } from '../types';
 import { getErrorOptions } from '../utils/error';
-import { iteratorToSequence } from '../utils/iterator-to-sequence';
 import promiseToResult from '../utils/promise-to-result';
 import type {
   BigIntTypedArrayValue,
@@ -155,11 +162,13 @@ async function parseProperties(
     valueNodes.push(
       createIteratorFactoryInstanceNode(
         parseIteratorFactory(ctx.base),
-        await parseAsync(
+        (await parseAsync(
           ctx,
           depth,
-          iteratorToSequence(properties as unknown as Iterable<unknown>),
-        ),
+          createSequenceFromIterable(
+            properties as unknown as Iterable<unknown>,
+          ),
+        )) as SerovalNodeWithID,
       ),
     );
   }
@@ -168,13 +177,13 @@ async function parseProperties(
     valueNodes.push(
       createAsyncIteratorFactoryInstanceNode(
         parseAsyncIteratorFactory(ctx.base),
-        await parseAsync(
+        (await parseAsync(
           ctx,
           depth,
           createStreamFromAsyncIterable(
             properties as unknown as AsyncIterable<unknown>,
           ),
-        ),
+        )) as SerovalNodeWithID,
       ),
     );
   }
@@ -435,6 +444,19 @@ async function parseStream(
   );
 }
 
+async function parseSequence(
+  ctx: AsyncParserContext,
+  depth: number,
+  id: number,
+  current: Sequence,
+): Promise<SerovalSequenceNode> {
+  const nodes: SerovalNode[] = [];
+  for (let i = 0, len = current.v.length; i < len; i++) {
+    nodes[i] = await parseAsync(ctx, depth, current.v[i]);
+  }
+  return createSequenceNode(id, nodes, current.t, current.d);
+}
+
 export async function parseObjectAsync(
   ctx: AsyncParserContext,
   depth: number,
@@ -446,6 +468,9 @@ export async function parseObjectAsync(
   }
   if (isStream(current)) {
     return parseStream(ctx, depth, id, current);
+  }
+  if (isSequence(current)) {
+    return parseSequence(ctx, depth, id, current);
   }
   const currentClass = current.constructor;
   if (currentClass === OpaqueReference) {

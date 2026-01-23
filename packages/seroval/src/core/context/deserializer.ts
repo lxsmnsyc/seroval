@@ -23,6 +23,7 @@ import {
 import type { PluginAccessOptions } from '../plugin';
 import { SerovalMode } from '../plugin';
 import { getReference } from '../reference';
+import { createSequence, type Sequence, sequenceToIterator } from '../sequence';
 import type { Stream } from '../stream';
 import { createStream, isStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
@@ -57,6 +58,7 @@ import type {
   SerovalPromiseResolveNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
+  SerovalSequenceNode,
   SerovalSetNode,
   SerovalStreamConstructorNode,
   SerovalStreamNextNode,
@@ -64,8 +66,6 @@ import type {
   SerovalStreamThrowNode,
   SerovalTypedArrayNode,
 } from '../types';
-import type { Sequence } from '../utils/iterator-to-sequence';
-import { sequenceToIterator } from '../utils/iterator-to-sequence';
 import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
@@ -713,6 +713,22 @@ function deserializeAsyncIteratorFactory(
   return NIL;
 }
 
+function deserializeSequence(
+  ctx: DeserializerContext,
+  depth: number,
+  node: SerovalSequenceNode,
+): Sequence {
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    createSequence([], node.s, node.l),
+  );
+  for (let i = 0, len = node.a.length; i < len; i++) {
+    result.v[i] = deserialize(ctx, depth, node.a[i]);
+  }
+  return result;
+}
+
 function deserialize(
   ctx: DeserializerContext,
   depth: number,
@@ -793,6 +809,8 @@ function deserialize(
     case SerovalNodeType.AsyncIteratorFactory:
       return deserializeAsyncIteratorFactory(ctx, depth, node);
     // case SerovalNodeType.SpecialReference:
+    case SerovalNodeType.Sequence:
+      return deserializeSequence(ctx, depth, node);
     default:
       throw new SerovalUnsupportedNodeError(node);
   }

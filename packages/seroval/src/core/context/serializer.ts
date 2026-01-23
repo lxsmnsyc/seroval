@@ -50,6 +50,7 @@ import type {
   SerovalPromiseResolveNode,
   SerovalReferenceNode,
   SerovalRegExpNode,
+  SerovalSequenceNode,
   SerovalSetNode,
   SerovalStreamConstructorNode,
   SerovalStreamNextNode,
@@ -482,6 +483,15 @@ function createObjectAssign(
   value: string,
 ): void {
   createAssignment(ctx.base, getRefParam(ctx, ref) + '.' + key, value);
+}
+
+function createSequenceAssign(
+  ctx: SerializerContext,
+  ref: number,
+  index: number | string,
+  value: string,
+): void {
+  createAssignment(ctx.base, getRefParam(ctx, ref) + '.v[' + index + ']', value);
 }
 
 /**
@@ -1239,6 +1249,48 @@ function serializeStreamReturn(
   return getRefParam(ctx, node.i) + '.return(' + serialize(ctx, node.f) + ')';
 }
 
+function serializeSequenceItem(
+  ctx: SerializerContext,
+  id: number,
+  index: number,
+  item: SerovalNode,
+): string {
+  const base = ctx.base;
+  if (isIndexedValueInStack(base, item)) {
+    markSerializerRef(base, id);
+    createSequenceAssign(
+      ctx,
+      id,
+      index,
+      getRefParam(ctx, (item as SerovalIndexedValueNode).i),
+    );
+    return '';
+  }
+  return serialize(ctx, item);
+}
+
+function serializeSequence(
+  ctx: SerializerContext,
+  node: SerovalSequenceNode,
+): string {
+  const items = node.a;
+  const size = items.length;
+  const id = node.i;
+  if (size > 0) {
+    ctx.base.stack.push(id);
+    let result = serializeSequenceItem(ctx, id, 0, items[0]);
+    for (let i = 1, item = result; i < size; i++) {
+      item = serializeSequenceItem(ctx, id, i, items[i]);
+      result += (item && result && ',') + item;
+    }
+    ctx.base.stack.pop();
+    if (result) {
+      return '{__SEROVAL_SEQUENCE__:!0,v:[' + result + '],t:' + node.s + ',d:' + node.l + '}';
+    }
+  }
+  return '{__SEROVAL_SEQUENCE__:!0,v:[],t:-1,d:0}';
+}
+
 function serializeAssignable(
   ctx: SerializerContext,
   node: SerovalNode,
@@ -1283,6 +1335,8 @@ function serializeAssignable(
       return serializePlugin(ctx, node);
     case SerovalNodeType.SpecialReference:
       return SPECIAL_REF_STRING[node.s];
+    case SerovalNodeType.Sequence:
+      return serializeSequence(ctx, node);
     default:
       throw new SerovalUnsupportedNodeError(node);
   }

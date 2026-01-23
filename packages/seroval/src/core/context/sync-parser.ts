@@ -12,6 +12,7 @@ import {
   createNumberNode,
   createPluginNode,
   createRegExpNode,
+  createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
   createStreamNextNode,
@@ -31,6 +32,11 @@ import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
 import { type Plugin, SerovalMode } from '../plugin';
+import {
+  createSequenceFromIterable,
+  isSequence,
+  type Sequence,
+} from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
 import {
@@ -54,17 +60,18 @@ import type {
   SerovalErrorNode,
   SerovalMapNode,
   SerovalNode,
+  SerovalNodeWithID,
   SerovalNullConstructorNode,
   SerovalObjectNode,
   SerovalObjectRecordKey,
   SerovalObjectRecordNode,
   SerovalPluginNode,
   SerovalPromiseConstructorNode,
+  SerovalSequenceNode,
   SerovalSetNode,
   SerovalTypedArrayNode,
 } from '../types';
 import { getErrorOptions } from '../utils/error';
-import { iteratorToSequence } from '../utils/iterator-to-sequence';
 import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
@@ -255,8 +262,10 @@ function parseProperties(
         parseSOS(
           ctx,
           depth,
-          iteratorToSequence(properties as unknown as Iterable<unknown>),
-        ),
+          createSequenceFromIterable(
+            properties as unknown as Iterable<unknown>,
+          ),
+        ) as SerovalNodeWithID,
       ),
     );
   }
@@ -273,7 +282,7 @@ function parseProperties(
             : createStreamFromAsyncIterable(
                 properties as unknown as AsyncIterable<unknown>,
               ),
-        ),
+        ) as SerovalNodeWithID,
       ),
     );
   }
@@ -599,6 +608,19 @@ function parsePlugin(
   return NIL;
 }
 
+function parseSequence(
+  ctx: SOSParserContext,
+  depth: number,
+  id: number,
+  current: Sequence,
+): SerovalSequenceNode {
+  const nodes: SerovalNode[] = [];
+  for (let i = 0, len = current.v.length; i < len; i++) {
+    nodes[i] = parseSOS(ctx, depth, current.v[i]);
+  }
+  return createSequenceNode(id, nodes, current.t, current.d);
+}
+
 function parseObjectPhase2(
   ctx: SOSParserContext,
   depth: number,
@@ -732,6 +754,9 @@ function parseObject(
   }
   if (isStream(current)) {
     return parseStream(ctx, depth, id, current);
+  }
+  if (isSequence(current)) {
+    return parseSequence(ctx, depth, id, current);
   }
   const currentClass = current.constructor;
   if (currentClass === OpaqueReference) {
