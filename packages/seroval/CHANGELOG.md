@@ -1,5 +1,12 @@
 # seroval
 
+## 1.5.0
+
+### Minor Changes
+
+- ac27f21: feat: restricted plugin format
+- 1813185: feat: sequence node
+
 ## 1.4.2
 
 ### Patch Changes
