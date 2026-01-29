@@ -156,11 +156,11 @@ export class SerovalMissingReferenceForIdError extends Error {
 }
 
 export class SerovalUnknownTypedArrayError extends Error {
-  constructor(name: string) {
+  constructor() {
     super(
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnknownTypedArray)
-        : 'Unknown TypedArray "' + name + '"',
+        : 'Unknown TypedArray detected',
     );
   }
 }

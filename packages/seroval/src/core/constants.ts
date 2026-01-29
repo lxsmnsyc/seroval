@@ -1,3 +1,4 @@
+import { SerovalUnknownTypedArrayError } from './errors';
 import {
   SYM_ASYNC_ITERATOR,
   SYM_HAS_INSTANCE,
@@ -200,3 +201,120 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
     [ErrorConstructorTag.TypeError]: TypeError,
     [ErrorConstructorTag.URIError]: URIError,
   };
+
+export function isWellKnownSymbol(value: symbol): value is WellKnownSymbols {
+  return value in INV_SYMBOL_REF;
+}
+
+export const DEFAULT_DEPTH_LIMIT = 64;
+
+export const enum TypedArrayTag {
+  Int8Array = 1,
+  Int16Array = 2,
+  Int32Array = 3,
+  Uint8Array = 4,
+  Uint16Array = 5,
+  Uint32Array = 6,
+  Uint8ClampedArray = 7,
+  Float32Array = 8,
+  Float64Array = 9,
+}
+
+export const enum BigIntTypedArrayTag {
+  BigInt64Array = 1,
+  BigUint64Array = 2,
+}
+
+type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Int16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint8ArrayConstructor
+  | Uint16ArrayConstructor
+  | Uint32ArrayConstructor
+  | Uint8ClampedArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
+
+type BigIntTypedArrayConstructor =
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
+
+export const TYPED_ARRAY_CONSTRUCTOR: Record<
+  TypedArrayTag,
+  TypedArrayConstructor
+> = {
+  [TypedArrayTag.Float32Array]: Float32Array,
+  [TypedArrayTag.Float64Array]: Float64Array,
+  [TypedArrayTag.Int16Array]: Int16Array,
+  [TypedArrayTag.Int32Array]: Int32Array,
+  [TypedArrayTag.Int8Array]: Int8Array,
+  [TypedArrayTag.Uint16Array]: Uint16Array,
+  [TypedArrayTag.Uint32Array]: Uint32Array,
+  [TypedArrayTag.Uint8Array]: Uint8Array,
+  [TypedArrayTag.Uint8ClampedArray]: Uint8ClampedArray,
+};
+
+export const BIG_INT_TYPED_ARRAY_CONSTRUCTOR: Record<
+  BigIntTypedArrayTag,
+  BigIntTypedArrayConstructor
+> = {
+  [BigIntTypedArrayTag.BigInt64Array]: BigInt64Array,
+  [BigIntTypedArrayTag.BigUint64Array]: BigUint64Array,
+};
+
+export type TypedArrayValue =
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array;
+
+export type BigIntTypedArrayValue = BigInt64Array | BigUint64Array;
+
+export function getTypedArrayTag(value: TypedArrayValue): TypedArrayTag {
+  if (value instanceof Int8Array) {
+    return TypedArrayTag.Int8Array;
+  }
+  if (value instanceof Int16Array) {
+    return TypedArrayTag.Int16Array;
+  }
+  if (value instanceof Int32Array) {
+    return TypedArrayTag.Int32Array;
+  }
+  if (value instanceof Uint8Array) {
+    return TypedArrayTag.Uint8Array;
+  }
+  if (value instanceof Uint16Array) {
+    return TypedArrayTag.Uint16Array;
+  }
+  if (value instanceof Uint32Array) {
+    return TypedArrayTag.Uint32Array;
+  }
+  if (value instanceof Uint8ClampedArray) {
+    return TypedArrayTag.Uint8ClampedArray;
+  }
+  if (value instanceof Float32Array) {
+    return TypedArrayTag.Float32Array;
+  }
+  if (value instanceof Float64Array) {
+    return TypedArrayTag.Float64Array;
+  }
+  throw new SerovalUnknownTypedArrayError();
+}
+
+export function getBigIntTypedArrayTag(
+  value: BigIntTypedArrayValue,
+): BigIntTypedArrayTag {
+  if (value instanceof BigInt64Array) {
+    return BigIntTypedArrayTag.BigInt64Array;
+  }
+  if (value instanceof BigUint64Array) {
+    return BigIntTypedArrayTag.BigUint64Array;
+  }
+  throw new SerovalUnknownTypedArrayError();
+}
