@@ -22,6 +22,7 @@ import {
   createTypedArrayNode,
 } from '../base-primitives';
 import { Feature } from '../compat';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import { NIL, SerovalNodeType } from '../constants';
 import { SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
@@ -66,10 +67,6 @@ import type {
 } from '../types';
 import { getErrorOptions } from '../utils/error';
 import promiseToResult from '../utils/promise-to-result';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createArrayBufferNode,
