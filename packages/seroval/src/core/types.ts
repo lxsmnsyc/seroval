@@ -1,10 +1,12 @@
 import type {
+  BigIntTypedArrayTag,
   ErrorConstructorTag,
   SerovalConstant,
   SerovalNodeType,
   SerovalObjectFlags,
   SerovalTemporalType,
   Symbols,
+  TypedArrayTag,
 } from './constants';
 import type { SpecialReference } from './special-reference';
 
@@ -112,7 +114,7 @@ export interface SerovalTypedArrayNode extends SerovalBaseNode {
   // id
   i: number;
   // TypedArray Constructor
-  c: string;
+  s: TypedArrayTag;
   // ArrayBuffer reference
   f: SerovalNode;
   // Byte Offset
@@ -125,7 +127,7 @@ export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   t: SerovalNodeType.BigIntTypedArray;
   i: number;
   // TypedArray Constructor
-  c: string;
+  s: BigIntTypedArrayTag;
   // ArrayBuffer reference
   f: SerovalNode;
   // Byte Offset
