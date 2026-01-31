@@ -33,7 +33,13 @@ import {
 } from '../core/symbols';
 import { getErrorConstructor, getErrorOptions } from '../core/utils/error';
 import { getObjectFlag } from '../core/utils/get-object-flag';
-import { type SerovalNode, SerovalNodeType } from './nodes';
+import {
+  encodeInteger,
+  encodeNumber,
+  encodeString,
+  mergeBytes,
+} from './encoder';
+import { SerovalNodeType } from './nodes';
 import type { Plugin } from './plugin';
 import { bigintToBytes } from './utils';
 
@@ -41,10 +47,10 @@ export interface ParserContext {
   alive: boolean;
   pending: number;
   depthLimit: number;
-  refs: Map<unknown, number>;
+  refs: Map<unknown, Uint8Array>;
   features: number;
   plugins?: Plugin<any, any>[];
-  onParse(node: SerovalNode): void;
+  onParse(bytes: Uint8Array): void;
   onDone(): void;
   onError(error: unknown): void;
 }
@@ -53,9 +59,9 @@ export interface ParserContextOptions {
   features?: number;
   disabledFeatures?: number;
   depthLimit?: number;
-  refs: Map<unknown, number>;
+  refs: Map<unknown, Uint8Array>;
   plugins?: Plugin<any, any>[];
-  onParse(node: SerovalNode): void;
+  onParse(bytes: Uint8Array): void;
   onDone(): void;
   onError(error: unknown): void;
 }
@@ -92,7 +98,7 @@ function parseWithError<T>(
   ctx: ParserContext,
   depth: number,
   current: T,
-): number | undefined {
+): Uint8Array | undefined {
   const prevDepth = CURRENT_DEPTH;
   CURRENT_DEPTH = depth;
   try {
@@ -105,15 +111,19 @@ function parseWithError<T>(
   }
 }
 
-function createID(ctx: ParserContext, value: unknown): number {
-  const id = ctx.refs.size + 1;
+function createID(ctx: ParserContext, value: unknown): Uint8Array {
+  const id = encodeInteger(ctx.refs.size + 1);
   ctx.refs.set(value, id);
   return id;
 }
 
+function onParse(ctx: ParserContext, bytes: (number | Uint8Array)[]): void {
+  ctx.onParse(mergeBytes(bytes));
+}
+
 function parseConstant(ctx: ParserContext, value: SerovalConstant) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Constant, id, value]);
+  onParse(ctx, [SerovalNodeType.Constant, id, value]);
   return id;
 }
 
@@ -131,26 +141,32 @@ function parseNumber(ctx: ParserContext, value: number) {
     return parseConstant(ctx, SerovalConstant.NegZero);
   }
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Number, id, value]);
+  onParse(ctx, [SerovalNodeType.Number, id, encodeNumber(value)]);
   return id;
 }
 
 function parseString(ctx: ParserContext, value: string) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.String, id, value]);
+  const bytes = encodeString(value);
+  onParse(ctx, [
+    SerovalNodeType.String,
+    id,
+    encodeInteger(bytes.length),
+    bytes,
+  ]);
   return id;
 }
 
 function parseBigInt(ctx: ParserContext, value: bigint) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.BigInt, id, parse(ctx, bigintToBytes(value))]);
+  onParse(ctx, [SerovalNodeType.BigInt, id, parse(ctx, bigintToBytes(value))]);
   return id;
 }
 
-function parseWellKnownSymbol(ctx: ParserContext, value: symbol): number {
+function parseWellKnownSymbol(ctx: ParserContext, value: symbol) {
   if (isWellKnownSymbol(value)) {
     const id = createID(ctx, value);
-    ctx.onParse([SerovalNodeType.WKSymbol, id, INV_SYMBOL_REF[value]]);
+    onParse(ctx, [SerovalNodeType.WKSymbol, id, INV_SYMBOL_REF[value]]);
     return id;
   }
   // TODO allow plugins to support symbols?
@@ -160,20 +176,30 @@ function parseWellKnownSymbol(ctx: ParserContext, value: symbol): number {
 function parseArray(ctx: ParserContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
-  ctx.onParse([SerovalNodeType.Array, id, getObjectFlag(value), len]);
+  onParse(ctx, [
+    SerovalNodeType.Array,
+    id,
+    getObjectFlag(value),
+    encodeInteger(len),
+  ]);
   for (let i = 0; i < len; i++) {
     if (i in value) {
-      ctx.onParse([SerovalNodeType.ArrayAssign, id, i, parse(ctx, value[i])]);
+      onParse(ctx, [
+        SerovalNodeType.ArrayAssign,
+        id,
+        encodeInteger(i),
+        parse(ctx, value[i]),
+      ]);
     }
   }
-  ctx.onParse([SerovalNodeType.Close, id]);
+  onParse(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
 function parseStream(ctx: ParserContext, current: Stream<unknown>) {
   const id = createID(ctx, current);
   pushPendingState(ctx);
-  ctx.onParse([SerovalNodeType.Stream, id]);
+  onParse(ctx, [SerovalNodeType.Stream, id]);
 
   const prevDepth = CURRENT_DEPTH;
 
@@ -182,7 +208,7 @@ function parseStream(ctx: ParserContext, current: Stream<unknown>) {
       if (ctx.alive) {
         const parsed = parseWithError(ctx, prevDepth, value);
         if (parsed) {
-          ctx.onParse([SerovalNodeType.Add, id, parsed]);
+          onParse(ctx, [SerovalNodeType.Add, id, parsed]);
         }
       }
     },
@@ -190,7 +216,7 @@ function parseStream(ctx: ParserContext, current: Stream<unknown>) {
       if (ctx.alive) {
         const parsed = parseWithError(ctx, prevDepth, value);
         if (parsed) {
-          ctx.onParse([SerovalNodeType.Throw, id, parsed]);
+          onParse(ctx, [SerovalNodeType.Throw, id, parsed]);
         }
       }
       popPendingState(ctx);
@@ -199,7 +225,7 @@ function parseStream(ctx: ParserContext, current: Stream<unknown>) {
       if (ctx.alive) {
         const parsed = parseWithError(ctx, prevDepth, value);
         if (parsed) {
-          ctx.onParse([SerovalNodeType.Return, id, parsed]);
+          onParse(ctx, [SerovalNodeType.Return, id, parsed]);
         }
       }
       popPendingState(ctx);
@@ -210,18 +236,22 @@ function parseStream(ctx: ParserContext, current: Stream<unknown>) {
 
 function parseSequence(ctx: ParserContext, value: Sequence) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Sequence, id, value.t, value.d]);
+  onParse(ctx, [SerovalNodeType.Sequence, id, value.t, value.d]);
   for (let i = 0, len = value.v.length; i < len; i++) {
-    ctx.onParse([SerovalNodeType.Add, id, parse(ctx, value.v[i])]);
+    onParse(ctx, [SerovalNodeType.Add, id, parse(ctx, value.v[i])]);
   }
-  ctx.onParse([SerovalNodeType.Close, id]);
+  onParse(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parseProperties(ctx: ParserContext, id: number, properties: object) {
+function parseProperties(
+  ctx: ParserContext,
+  id: Uint8Array,
+  properties: object,
+) {
   const entries = Object.entries(properties);
   for (let i = 0, len = entries.length; i < len; i++) {
-    ctx.onParse([
+    onParse(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
       parse(ctx, entries[i][0]),
@@ -231,7 +261,7 @@ function parseProperties(ctx: ParserContext, id: number, properties: object) {
 
   // Check special properties, symbols in this case
   if (SYM_ITERATOR in properties) {
-    ctx.onParse([
+    onParse(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
       parse(ctx, SYM_ITERATOR),
@@ -242,7 +272,7 @@ function parseProperties(ctx: ParserContext, id: number, properties: object) {
     ]);
   }
   if (SYM_ASYNC_ITERATOR in properties) {
-    ctx.onParse([
+    onParse(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
       parse(ctx, SYM_ASYNC_ITERATOR),
@@ -255,7 +285,7 @@ function parseProperties(ctx: ParserContext, id: number, properties: object) {
     ]);
   }
   if (SYM_TO_STRING_TAG in properties) {
-    ctx.onParse([
+    onParse(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
       parse(ctx, SYM_TO_STRING_TAG),
@@ -263,7 +293,7 @@ function parseProperties(ctx: ParserContext, id: number, properties: object) {
     ]);
   }
   if (SYM_IS_CONCAT_SPREADABLE in properties) {
-    ctx.onParse([
+    onParse(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
       parse(ctx, SYM_IS_CONCAT_SPREADABLE),
@@ -274,25 +304,25 @@ function parseProperties(ctx: ParserContext, id: number, properties: object) {
 
 function parsePlainObject(ctx: ParserContext, value: object, empty: boolean) {
   const id = createID(ctx, value);
-  ctx.onParse([
+  onParse(ctx, [
     empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
     id,
     getObjectFlag(value),
   ]);
   parseProperties(ctx, id, value);
-  ctx.onParse([SerovalNodeType.Close, id]);
+  onParse(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
 function parseDate(ctx: ParserContext, value: Date) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Date, id, value.getTime()]);
+  onParse(ctx, [SerovalNodeType.Date, id, value.getTime()]);
   return id;
 }
 
 function parseError(ctx: ParserContext, value: Error) {
   const id = createID(ctx, value);
-  ctx.onParse([
+  onParse(ctx, [
     SerovalNodeType.Error,
     id,
     getErrorConstructor(value),
@@ -302,25 +332,25 @@ function parseError(ctx: ParserContext, value: Error) {
   if (properties) {
     parseProperties(ctx, id, properties);
   }
-  ctx.onParse([SerovalNodeType.Close, id]);
+  onParse(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
 function parseBoxed(ctx: ParserContext, value: object) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Boxed, id, parse(ctx, value.valueOf())]);
+  onParse(ctx, [SerovalNodeType.Boxed, id, parse(ctx, value.valueOf())]);
   return id;
 }
 
 function parseArrayBuffer(ctx: ParserContext, value: ArrayBuffer) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.ArrayBuffer, id, new Uint8Array(value)]);
+  onParse(ctx, [SerovalNodeType.ArrayBuffer, id, new Uint8Array(value)]);
   return id;
 }
 
 function parseTypedArray(ctx: ParserContext, value: TypedArrayValue) {
   const id = createID(ctx, value);
-  ctx.onParse([
+  onParse(ctx, [
     SerovalNodeType.TypedArray,
     id,
     getTypedArrayTag(value),
@@ -336,7 +366,7 @@ function parseBigIntTypedArray(
   value: BigIntTypedArrayValue,
 ) {
   const id = createID(ctx, value);
-  ctx.onParse([
+  onParse(ctx, [
     SerovalNodeType.BigIntTypedArray,
     id,
     getBigIntTypedArrayTag(value),
@@ -349,7 +379,7 @@ function parseBigIntTypedArray(
 
 function parseDataView(ctx: ParserContext, value: DataView) {
   const id = createID(ctx, value);
-  ctx.onParse([
+  onParse(ctx, [
     SerovalNodeType.DataView,
     id,
     value.byteOffset,
@@ -361,32 +391,32 @@ function parseDataView(ctx: ParserContext, value: DataView) {
 
 function parseMap(ctx: ParserContext, value: Map<unknown, unknown>) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Map, id]);
+  onParse(ctx, [SerovalNodeType.Map, id]);
   for (const [key, val] of value.entries()) {
-    ctx.onParse([
+    onParse(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
       parse(ctx, key),
       parse(ctx, val),
     ]);
   }
-  ctx.onParse([SerovalNodeType.Close, id]);
+  onParse(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
 function parseSet(ctx: ParserContext, value: Set<unknown>) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Set, id]);
+  onParse(ctx, [SerovalNodeType.Set, id]);
   for (const key of value.keys()) {
-    ctx.onParse([SerovalNodeType.Add, id, parse(ctx, key)]);
+    onParse(ctx, [SerovalNodeType.Add, id, parse(ctx, key)]);
   }
-  ctx.onParse([SerovalNodeType.Close, id]);
+  onParse(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
 function parsePromise(ctx: ParserContext, value: Promise<unknown>) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.Promise, id]);
+  onParse(ctx, [SerovalNodeType.Promise, id]);
   const prevDepth = CURRENT_DEPTH;
   pushPendingState(ctx);
   value.then(
@@ -394,7 +424,7 @@ function parsePromise(ctx: ParserContext, value: Promise<unknown>) {
       if (ctx.alive) {
         const parsed = parseWithError(ctx, prevDepth, val);
         if (parsed) {
-          ctx.onParse([SerovalNodeType.Return, id, parsed]);
+          onParse(ctx, [SerovalNodeType.Return, id, parsed]);
         }
       }
       popPendingState(ctx);
@@ -403,7 +433,7 @@ function parsePromise(ctx: ParserContext, value: Promise<unknown>) {
       if (ctx.alive) {
         const parsed = parseWithError(ctx, prevDepth, val);
         if (parsed) {
-          ctx.onParse([SerovalNodeType.Throw, id, parsed]);
+          onParse(ctx, [SerovalNodeType.Throw, id, parsed]);
         }
       }
       popPendingState(ctx);
@@ -414,7 +444,7 @@ function parsePromise(ctx: ParserContext, value: Promise<unknown>) {
 
 function parseRegExp(ctx: ParserContext, value: RegExp) {
   const id = createID(ctx, value);
-  ctx.onParse([
+  onParse(ctx, [
     SerovalNodeType.RegExp,
     id,
     parse(ctx, value.source),
@@ -425,12 +455,12 @@ function parseRegExp(ctx: ParserContext, value: RegExp) {
 
 function parseAggregateError(ctx: ParserContext, value: AggregateError) {
   const id = createID(ctx, value);
-  ctx.onParse([SerovalNodeType.AggregateError, id, parse(ctx, value.message)]);
+  onParse(ctx, [SerovalNodeType.AggregateError, id, parse(ctx, value.message)]);
   const properties = getErrorOptions(value, ctx.features);
   if (properties) {
     parseProperties(ctx, id, properties);
   }
-  ctx.onParse([SerovalNodeType.Close, id]);
+  onParse(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
@@ -438,7 +468,7 @@ function parseObjectPhase2(
   ctx: ParserContext,
   current: object,
   currentClass: unknown,
-): number {
+): Uint8Array {
   switch (currentClass) {
     case Object:
       return parsePlainObject(ctx, current as Record<string, unknown>, false);
@@ -528,7 +558,7 @@ function parsePlugin(ctx: ParserContext, value: object) {
       const current = plugins[i];
       if (current.test(value)) {
         const id = createID(ctx, value);
-        ctx.onParse([
+        onParse(ctx, [
           SerovalNodeType.Plugin,
           id,
           parse(ctx, current.tag),
@@ -541,7 +571,7 @@ function parsePlugin(ctx: ParserContext, value: object) {
   return undefined;
 }
 
-function parseObject(ctx: ParserContext, value: object) {
+function parseObject(ctx: ParserContext, value: object): Uint8Array {
   const prevDepth = CURRENT_DEPTH;
   CURRENT_DEPTH += 1;
   try {
@@ -579,7 +609,7 @@ function parseFunction(ctx: ParserContext, current: Function) {
   throw new SerovalUnsupportedTypeError(current);
 }
 
-function parse<T>(ctx: ParserContext, current: T): number {
+function parse<T>(ctx: ParserContext, current: T): Uint8Array {
   if (CURRENT_DEPTH >= ctx.depthLimit) {
     throw new SerovalDepthLimitError(ctx.depthLimit);
   }
@@ -620,7 +650,7 @@ function parse<T>(ctx: ParserContext, current: T): number {
 export function startParse<T>(ctx: ParserContext, value: T) {
   const parsed = parseWithError(ctx, 0, value);
   if (parsed) {
-    ctx.onParse([SerovalNodeType.Root, parsed]);
+    onParse(ctx, [SerovalNodeType.Root, parsed]);
 
     if (ctx.pending <= 0) {
       endParse(ctx);
