@@ -3,7 +3,7 @@ import {
   endSerialize,
   type SerializerContextOptions,
   startSerialize,
-} from './parser';
+} from './serializer';
 
 export type SerializeOptions = SerializerContextOptions;
 
