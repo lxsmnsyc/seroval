@@ -81,6 +81,7 @@ const enum SpecificErrorCodes {
   MalformedNode = 8,
   ConflictedNodeId = 9,
   DepthLimit = 10,
+  MalformedBinary = 9,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -191,6 +192,16 @@ export class SerovalDepthLimitError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.ConflictedNodeId)
         : 'Depth limit of ' + limit + ' reached',
+    );
+  }
+}
+
+export class SerovalMalformedBinaryError extends Error {
+  constructor() {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinary)
+        : 'Malformed binary detected.',
     );
   }
 }
