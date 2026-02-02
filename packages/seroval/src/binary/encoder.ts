@@ -31,12 +31,10 @@ export function mergeBytes(bytes: (number | Uint8Array)[]) {
 }
 
 export function encodeInteger(value: number): Uint8Array {
-  const arr = new Uint8Array(4);
-  arr[0] = (value & 0xff000000) >> 24;
-  arr[1] = (value & 0x00ff0000) >> 16;
-  arr[2] = (value & 0x0000ff00) >> 8;
-  arr[3] = value & 0x000000ff;
-  return arr;
+  const buffer = new ArrayBuffer(4);
+  const uint = new Uint32Array(buffer);
+  uint[0] = value;
+  return new Uint8Array(buffer);
 }
 
 export function encodeNumber(value: number): Uint8Array {
@@ -49,4 +47,47 @@ export function encodeNumber(value: number): Uint8Array {
 export function encodeString(value: string): Uint8Array {
   const encoder = new TextEncoder();
   return encoder.encode(value);
+}
+
+export function decodeNumber(value: Uint8Array): number {
+  const float = new Float64Array(value);
+  return float[0];
+}
+
+export function decodeInteger(value: Uint8Array): number {
+  const uint = new Uint32Array(value);
+  return uint[0];
+}
+
+export function decodeString(value: Uint8Array): string {
+  const decoder = new TextDecoder();
+  return decoder.decode(value);
+}
+
+export function encodeBigint(value: bigint): string {
+  // Convert to hex
+  const hex = value.toString(16);
+  // Assume hex is by pairs
+  const size = Math.ceil(hex.length / 2) * 2;
+  // Pad initial
+  const newHex = hex.padStart(size, '0');
+
+  // Encode every pair of hex as a code point
+  let result = '';
+  for (let i = 0; i < size; i += 2) {
+    const sub = newHex.substring(i, i + 2);
+    // parse substring
+    const parsed = Number.parseInt(sub, 16);
+    result += String.fromCharCode(parsed);
+  }
+  return result;
+}
+
+export function decodeBigint(value: string): bigint {
+  let hex = '';
+  for (let i = 0, len = value.length; i < len; i++) {
+    const code = value.charCodeAt(i);
+    hex += code.toString(16);
+  }
+  return BigInt('0x' + hex);
 }

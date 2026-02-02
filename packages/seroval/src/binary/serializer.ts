@@ -34,14 +34,14 @@ import {
 import { getErrorConstructor, getErrorOptions } from '../core/utils/error';
 import { getObjectFlag } from '../core/utils/get-object-flag';
 import {
+  encodeBigint,
   encodeInteger,
   encodeNumber,
   encodeString,
   mergeBytes,
 } from './encoder';
-import { SerovalNodeType } from './nodes';
+import { type SerovalNode, SerovalNodeType } from './nodes';
 import type { Plugin } from './plugin';
-import { bigintToBytes } from './utils';
 
 export interface SerializerContext {
   alive: boolean;
@@ -88,26 +88,36 @@ function pushPendingState(ctx: SerializerContext): void {
 
 function popPendingState(ctx: SerializerContext): void {
   if (--ctx.pending <= 0) {
-    ctx.onDone();
+    endSerialize(ctx);
   }
 }
 
 let CURRENT_DEPTH = 0;
+
+function serializeWithDepth<T>(
+  ctx: SerializerContext,
+  depth: number,
+  current: T,
+): Uint8Array {
+  const prevDepth = CURRENT_DEPTH;
+  CURRENT_DEPTH = depth;
+  try {
+    return serialize(ctx, current);
+  } finally {
+    CURRENT_DEPTH = prevDepth;
+  }
+}
 
 function serializeWithError<T>(
   ctx: SerializerContext,
   depth: number,
   current: T,
 ): Uint8Array | undefined {
-  const prevDepth = CURRENT_DEPTH;
-  CURRENT_DEPTH = depth;
   try {
-    return serialize(ctx, current);
+    return serializeWithDepth(ctx, depth, current);
   } catch (err) {
     ctx.onError(err);
     return NIL;
-  } finally {
-    CURRENT_DEPTH = prevDepth;
   }
 }
 
@@ -117,7 +127,7 @@ function createID(ctx: SerializerContext, value: unknown): Uint8Array {
   return id;
 }
 
-function onSerialize(ctx: SerializerContext, bytes: (number | Uint8Array)[]): void {
+function onSerialize(ctx: SerializerContext, bytes: SerovalNode): void {
   ctx.onSerialize(mergeBytes(bytes));
 }
 
@@ -159,7 +169,11 @@ function serializeString(ctx: SerializerContext, value: string) {
 
 function serializeBigInt(ctx: SerializerContext, value: bigint) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.BigInt, id, serialize(ctx, bigintToBytes(value))]);
+  onSerialize(ctx, [
+    SerovalNodeType.BigInt,
+    id,
+    serialize(ctx, encodeBigint(value)),
+  ]);
   return id;
 }
 
@@ -176,12 +190,7 @@ function serializeWellKnownSymbol(ctx: SerializerContext, value: symbol) {
 function serializeArray(ctx: SerializerContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
-  onSerialize(ctx, [
-    SerovalNodeType.Array,
-    id,
-    getObjectFlag(value),
-    encodeInteger(len),
-  ]);
+  onSerialize(ctx, [SerovalNodeType.Array, id, encodeInteger(len)]);
   for (let i = 0; i < len; i++) {
     if (i in value) {
       onSerialize(ctx, [
@@ -192,7 +201,7 @@ function serializeArray(ctx: SerializerContext, value: unknown[]) {
       ]);
     }
   }
-  onSerialize(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.ObjectFlag, id, getObjectFlag(value)]);
   return id;
 }
 
@@ -208,7 +217,7 @@ function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
       if (ctx.alive) {
         const serialized = serializeWithError(ctx, prevDepth, value);
         if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.Add, id, serialized]);
+          onSerialize(ctx, [SerovalNodeType.StreamNext, id, serialized]);
         }
       }
     },
@@ -216,7 +225,7 @@ function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
       if (ctx.alive) {
         const serialized = serializeWithError(ctx, prevDepth, value);
         if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.Throw, id, serialized]);
+          onSerialize(ctx, [SerovalNodeType.StreamThrow, id, serialized]);
         }
       }
       popPendingState(ctx);
@@ -225,7 +234,7 @@ function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
       if (ctx.alive) {
         const serialized = serializeWithError(ctx, prevDepth, value);
         if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.Return, id, serialized]);
+          onSerialize(ctx, [SerovalNodeType.StreamReturn, id, serialized]);
         }
       }
       popPendingState(ctx);
@@ -236,11 +245,19 @@ function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
 
 function serializeSequence(ctx: SerializerContext, value: Sequence) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Sequence, id, value.t, value.d]);
+  onSerialize(ctx, [
+    SerovalNodeType.Sequence,
+    id,
+    encodeNumber(value.t),
+    encodeNumber(value.d),
+  ]);
   for (let i = 0, len = value.v.length; i < len; i++) {
-    onSerialize(ctx, [SerovalNodeType.Add, id, serialize(ctx, value.v[i])]);
+    onSerialize(ctx, [
+      SerovalNodeType.SequencePush,
+      id,
+      serialize(ctx, value.v[i]),
+    ]);
   }
-  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
@@ -302,21 +319,24 @@ function serializeProperties(
   }
 }
 
-function serializePlainObject(ctx: SerializerContext, value: object, empty: boolean) {
+function serializePlainObject(
+  ctx: SerializerContext,
+  value: object,
+  empty: boolean,
+) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
     empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
     id,
-    getObjectFlag(value),
   ]);
   serializeProperties(ctx, id, value);
-  onSerialize(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.ObjectFlag, id, getObjectFlag(value)]);
   return id;
 }
 
 function serializeDate(ctx: SerializerContext, value: Date) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Date, id, value.getTime()]);
+  onSerialize(ctx, [SerovalNodeType.Date, id, encodeNumber(value.getTime())]);
   return id;
 }
 
@@ -332,19 +352,23 @@ function serializeError(ctx: SerializerContext, value: Error) {
   if (properties) {
     serializeProperties(ctx, id, properties);
   }
-  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
 function serializeBoxed(ctx: SerializerContext, value: object) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Boxed, id, serialize(ctx, value.valueOf())]);
+  onSerialize(ctx, [
+    SerovalNodeType.Boxed,
+    id,
+    serialize(ctx, value.valueOf()),
+  ]);
   return id;
 }
 
 function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.ArrayBuffer, id, new Uint8Array(value)]);
+  const arr = new Uint8Array(value);
+  onSerialize(ctx, [SerovalNodeType.ArrayBuffer, id, encodeInteger(arr.length), arr]);
   return id;
 }
 
@@ -354,8 +378,8 @@ function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
     SerovalNodeType.TypedArray,
     id,
     getTypedArrayTag(value),
-    value.byteOffset,
-    value.byteLength,
+    encodeInteger(value.byteOffset),
+    encodeInteger(value.byteLength),
     serialize(ctx, value.buffer),
   ]);
   return id;
@@ -370,8 +394,8 @@ function serializeBigIntTypedArray(
     SerovalNodeType.BigIntTypedArray,
     id,
     getBigIntTypedArrayTag(value),
-    value.byteOffset,
-    value.byteLength,
+    encodeInteger(value.byteOffset),
+    encodeInteger(value.byteLength),
     serialize(ctx, value.buffer),
   ]);
   return id;
@@ -382,8 +406,8 @@ function serializeDataView(ctx: SerializerContext, value: DataView) {
   onSerialize(ctx, [
     SerovalNodeType.DataView,
     id,
-    value.byteOffset,
-    value.byteLength,
+    encodeInteger(value.byteOffset),
+    encodeInteger(value.byteLength),
     serialize(ctx, value.buffer),
   ]);
   return id;
@@ -394,13 +418,12 @@ function serializeMap(ctx: SerializerContext, value: Map<unknown, unknown>) {
   onSerialize(ctx, [SerovalNodeType.Map, id]);
   for (const [key, val] of value.entries()) {
     onSerialize(ctx, [
-      SerovalNodeType.ObjectAssign,
+      SerovalNodeType.MapSet,
       id,
       serialize(ctx, key),
       serialize(ctx, val),
     ]);
   }
-  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
@@ -408,9 +431,8 @@ function serializeSet(ctx: SerializerContext, value: Set<unknown>) {
   const id = createID(ctx, value);
   onSerialize(ctx, [SerovalNodeType.Set, id]);
   for (const key of value.keys()) {
-    onSerialize(ctx, [SerovalNodeType.Add, id, serialize(ctx, key)]);
+    onSerialize(ctx, [SerovalNodeType.SetAdd, id, serialize(ctx, key)]);
   }
-  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
@@ -424,7 +446,7 @@ function serializePromise(ctx: SerializerContext, value: Promise<unknown>) {
       if (ctx.alive) {
         const serialized = serializeWithError(ctx, prevDepth, val);
         if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.Return, id, serialized]);
+          onSerialize(ctx, [SerovalNodeType.PromiseSuccess, id, serialized]);
         }
       }
       popPendingState(ctx);
@@ -433,7 +455,7 @@ function serializePromise(ctx: SerializerContext, value: Promise<unknown>) {
       if (ctx.alive) {
         const serialized = serializeWithError(ctx, prevDepth, val);
         if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.Throw, id, serialized]);
+          onSerialize(ctx, [SerovalNodeType.PromiseFailure, id, serialized]);
         }
       }
       popPendingState(ctx);
@@ -453,14 +475,20 @@ function serializeRegExp(ctx: SerializerContext, value: RegExp) {
   return id;
 }
 
-function serializeAggregateError(ctx: SerializerContext, value: AggregateError) {
+function serializeAggregateError(
+  ctx: SerializerContext,
+  value: AggregateError,
+) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.AggregateError, id, serialize(ctx, value.message)]);
+  onSerialize(ctx, [
+    SerovalNodeType.AggregateError,
+    id,
+    serialize(ctx, value.message),
+  ]);
   const properties = getErrorOptions(value, ctx.features);
   if (properties) {
     serializeProperties(ctx, id, properties);
   }
-  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
@@ -471,9 +499,17 @@ function serializeObjectPhase2(
 ): Uint8Array {
   switch (currentClass) {
     case Object:
-      return serializePlainObject(ctx, current as Record<string, unknown>, false);
+      return serializePlainObject(
+        ctx,
+        current as Record<string, unknown>,
+        false,
+      );
     case NIL:
-      return serializePlainObject(ctx, current as Record<string, unknown>, true);
+      return serializePlainObject(
+        ctx,
+        current as Record<string, unknown>,
+        true,
+      );
     case Date:
       return serializeDate(ctx, current as Date);
     case Error:
