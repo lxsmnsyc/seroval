@@ -1,5 +1,14 @@
-export type SerializeOptions = ParserContextOptions
+import {
+  createSerializerContext,
+  endSerialize,
+  type SerializerContextOptions,
+  startSerialize,
+} from './parser';
 
-export function serialize(value: unknown, options: ) {
+export type SerializeOptions = SerializerContextOptions;
 
+export function serialize(value: unknown, options: SerializeOptions) {
+  const context = createSerializerContext(options);
+  startSerialize(context, value);
+  return () => endSerialize(context);
 }
