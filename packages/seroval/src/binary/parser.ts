@@ -43,50 +43,50 @@ import { SerovalNodeType } from './nodes';
 import type { Plugin } from './plugin';
 import { bigintToBytes } from './utils';
 
-export interface ParserContext {
+export interface SerializerContext {
   alive: boolean;
   pending: number;
   depthLimit: number;
   refs: Map<unknown, Uint8Array>;
   features: number;
   plugins?: Plugin<any, any>[];
-  onParse(bytes: Uint8Array): void;
+  onSerialize(bytes: Uint8Array): void;
   onDone(): void;
   onError(error: unknown): void;
 }
 
-export interface ParserContextOptions {
+export interface SerializerContextOptions {
   features?: number;
   disabledFeatures?: number;
   depthLimit?: number;
   refs: Map<unknown, Uint8Array>;
   plugins?: Plugin<any, any>[];
-  onParse(bytes: Uint8Array): void;
+  onSerialize(bytes: Uint8Array): void;
   onDone(): void;
   onError(error: unknown): void;
 }
 
-export function createParserContext(
-  options: ParserContextOptions,
-): ParserContext {
+export function createSerializerContext(
+  options: SerializerContextOptions,
+): SerializerContext {
   return {
     alive: true,
     pending: 0,
     refs: options.refs ?? new Map(),
     depthLimit: options.depthLimit ?? DEFAULT_DEPTH_LIMIT,
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
-    onParse: options.onParse,
+    onSerialize: options.onSerialize,
     onDone: options.onDone,
     onError: options.onError,
     plugins: options.plugins,
   };
 }
 
-function pushPendingState(ctx: ParserContext): void {
+function pushPendingState(ctx: SerializerContext): void {
   ctx.pending++;
 }
 
-function popPendingState(ctx: ParserContext): void {
+function popPendingState(ctx: SerializerContext): void {
   if (--ctx.pending <= 0) {
     ctx.onDone();
   }
@@ -94,15 +94,15 @@ function popPendingState(ctx: ParserContext): void {
 
 let CURRENT_DEPTH = 0;
 
-function parseWithError<T>(
-  ctx: ParserContext,
+function serializeWithError<T>(
+  ctx: SerializerContext,
   depth: number,
   current: T,
 ): Uint8Array | undefined {
   const prevDepth = CURRENT_DEPTH;
   CURRENT_DEPTH = depth;
   try {
-    return parse(ctx, current);
+    return serialize(ctx, current);
   } catch (err) {
     ctx.onError(err);
     return NIL;
@@ -111,44 +111,44 @@ function parseWithError<T>(
   }
 }
 
-function createID(ctx: ParserContext, value: unknown): Uint8Array {
+function createID(ctx: SerializerContext, value: unknown): Uint8Array {
   const id = encodeInteger(ctx.refs.size + 1);
   ctx.refs.set(value, id);
   return id;
 }
 
-function onParse(ctx: ParserContext, bytes: (number | Uint8Array)[]): void {
-  ctx.onParse(mergeBytes(bytes));
+function onSerialize(ctx: SerializerContext, bytes: (number | Uint8Array)[]): void {
+  ctx.onSerialize(mergeBytes(bytes));
 }
 
-function parseConstant(ctx: ParserContext, value: SerovalConstant) {
+function serializeConstant(ctx: SerializerContext, value: SerovalConstant) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Constant, id, value]);
+  onSerialize(ctx, [SerovalNodeType.Constant, id, value]);
   return id;
 }
 
-function parseNumber(ctx: ParserContext, value: number) {
+function serializeNumber(ctx: SerializerContext, value: number) {
   switch (value) {
     case Number.POSITIVE_INFINITY:
-      return parseConstant(ctx, SerovalConstant.Inf);
+      return serializeConstant(ctx, SerovalConstant.Inf);
     case Number.NEGATIVE_INFINITY:
-      return parseConstant(ctx, SerovalConstant.NegInf);
+      return serializeConstant(ctx, SerovalConstant.NegInf);
   }
   if (value !== value) {
-    return parseConstant(ctx, SerovalConstant.Nan);
+    return serializeConstant(ctx, SerovalConstant.Nan);
   }
   if (Object.is(value, -0)) {
-    return parseConstant(ctx, SerovalConstant.NegZero);
+    return serializeConstant(ctx, SerovalConstant.NegZero);
   }
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Number, id, encodeNumber(value)]);
+  onSerialize(ctx, [SerovalNodeType.Number, id, encodeNumber(value)]);
   return id;
 }
 
-function parseString(ctx: ParserContext, value: string) {
+function serializeString(ctx: SerializerContext, value: string) {
   const id = createID(ctx, value);
   const bytes = encodeString(value);
-  onParse(ctx, [
+  onSerialize(ctx, [
     SerovalNodeType.String,
     id,
     encodeInteger(bytes.length),
@@ -157,26 +157,26 @@ function parseString(ctx: ParserContext, value: string) {
   return id;
 }
 
-function parseBigInt(ctx: ParserContext, value: bigint) {
+function serializeBigInt(ctx: SerializerContext, value: bigint) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.BigInt, id, parse(ctx, bigintToBytes(value))]);
+  onSerialize(ctx, [SerovalNodeType.BigInt, id, serialize(ctx, bigintToBytes(value))]);
   return id;
 }
 
-function parseWellKnownSymbol(ctx: ParserContext, value: symbol) {
+function serializeWellKnownSymbol(ctx: SerializerContext, value: symbol) {
   if (isWellKnownSymbol(value)) {
     const id = createID(ctx, value);
-    onParse(ctx, [SerovalNodeType.WKSymbol, id, INV_SYMBOL_REF[value]]);
+    onSerialize(ctx, [SerovalNodeType.WKSymbol, id, INV_SYMBOL_REF[value]]);
     return id;
   }
   // TODO allow plugins to support symbols?
   throw new SerovalUnsupportedTypeError(value);
 }
 
-function parseArray(ctx: ParserContext, value: unknown[]) {
+function serializeArray(ctx: SerializerContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
-  onParse(ctx, [
+  onSerialize(ctx, [
     SerovalNodeType.Array,
     id,
     getObjectFlag(value),
@@ -184,48 +184,48 @@ function parseArray(ctx: ParserContext, value: unknown[]) {
   ]);
   for (let i = 0; i < len; i++) {
     if (i in value) {
-      onParse(ctx, [
+      onSerialize(ctx, [
         SerovalNodeType.ArrayAssign,
         id,
         encodeInteger(i),
-        parse(ctx, value[i]),
+        serialize(ctx, value[i]),
       ]);
     }
   }
-  onParse(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parseStream(ctx: ParserContext, current: Stream<unknown>) {
+function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
   const id = createID(ctx, current);
   pushPendingState(ctx);
-  onParse(ctx, [SerovalNodeType.Stream, id]);
+  onSerialize(ctx, [SerovalNodeType.Stream, id]);
 
   const prevDepth = CURRENT_DEPTH;
 
   current.on({
     next: value => {
       if (ctx.alive) {
-        const parsed = parseWithError(ctx, prevDepth, value);
-        if (parsed) {
-          onParse(ctx, [SerovalNodeType.Add, id, parsed]);
+        const serialized = serializeWithError(ctx, prevDepth, value);
+        if (serialized) {
+          onSerialize(ctx, [SerovalNodeType.Add, id, serialized]);
         }
       }
     },
     throw: value => {
       if (ctx.alive) {
-        const parsed = parseWithError(ctx, prevDepth, value);
-        if (parsed) {
-          onParse(ctx, [SerovalNodeType.Throw, id, parsed]);
+        const serialized = serializeWithError(ctx, prevDepth, value);
+        if (serialized) {
+          onSerialize(ctx, [SerovalNodeType.Throw, id, serialized]);
         }
       }
       popPendingState(ctx);
     },
     return: value => {
       if (ctx.alive) {
-        const parsed = parseWithError(ctx, prevDepth, value);
-        if (parsed) {
-          onParse(ctx, [SerovalNodeType.Return, id, parsed]);
+        const serialized = serializeWithError(ctx, prevDepth, value);
+        if (serialized) {
+          onSerialize(ctx, [SerovalNodeType.Return, id, serialized]);
         }
       }
       popPendingState(ctx);
@@ -234,49 +234,49 @@ function parseStream(ctx: ParserContext, current: Stream<unknown>) {
   return id;
 }
 
-function parseSequence(ctx: ParserContext, value: Sequence) {
+function serializeSequence(ctx: SerializerContext, value: Sequence) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Sequence, id, value.t, value.d]);
+  onSerialize(ctx, [SerovalNodeType.Sequence, id, value.t, value.d]);
   for (let i = 0, len = value.v.length; i < len; i++) {
-    onParse(ctx, [SerovalNodeType.Add, id, parse(ctx, value.v[i])]);
+    onSerialize(ctx, [SerovalNodeType.Add, id, serialize(ctx, value.v[i])]);
   }
-  onParse(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parseProperties(
-  ctx: ParserContext,
+function serializeProperties(
+  ctx: SerializerContext,
   id: Uint8Array,
   properties: object,
 ) {
   const entries = Object.entries(properties);
   for (let i = 0, len = entries.length; i < len; i++) {
-    onParse(ctx, [
+    onSerialize(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
-      parse(ctx, entries[i][0]),
-      parse(ctx, entries[i][1]),
+      serialize(ctx, entries[i][0]),
+      serialize(ctx, entries[i][1]),
     ]);
   }
 
   // Check special properties, symbols in this case
   if (SYM_ITERATOR in properties) {
-    onParse(ctx, [
+    onSerialize(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
-      parse(ctx, SYM_ITERATOR),
-      parse(
+      serialize(ctx, SYM_ITERATOR),
+      serialize(
         ctx,
         createSequenceFromIterable(properties as unknown as Iterable<unknown>),
       ),
     ]);
   }
   if (SYM_ASYNC_ITERATOR in properties) {
-    onParse(ctx, [
+    onSerialize(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
-      parse(ctx, SYM_ASYNC_ITERATOR),
-      parse(
+      serialize(ctx, SYM_ASYNC_ITERATOR),
+      serialize(
         ctx,
         createStreamFromAsyncIterable(
           properties as unknown as AsyncIterable<unknown>,
@@ -285,155 +285,155 @@ function parseProperties(
     ]);
   }
   if (SYM_TO_STRING_TAG in properties) {
-    onParse(ctx, [
+    onSerialize(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
-      parse(ctx, SYM_TO_STRING_TAG),
-      parse(ctx, properties[SYM_TO_STRING_TAG]),
+      serialize(ctx, SYM_TO_STRING_TAG),
+      serialize(ctx, properties[SYM_TO_STRING_TAG]),
     ]);
   }
   if (SYM_IS_CONCAT_SPREADABLE in properties) {
-    onParse(ctx, [
+    onSerialize(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
-      parse(ctx, SYM_IS_CONCAT_SPREADABLE),
-      parse(ctx, properties[SYM_IS_CONCAT_SPREADABLE]),
+      serialize(ctx, SYM_IS_CONCAT_SPREADABLE),
+      serialize(ctx, properties[SYM_IS_CONCAT_SPREADABLE]),
     ]);
   }
 }
 
-function parsePlainObject(ctx: ParserContext, value: object, empty: boolean) {
+function serializePlainObject(ctx: SerializerContext, value: object, empty: boolean) {
   const id = createID(ctx, value);
-  onParse(ctx, [
+  onSerialize(ctx, [
     empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
     id,
     getObjectFlag(value),
   ]);
-  parseProperties(ctx, id, value);
-  onParse(ctx, [SerovalNodeType.Close, id]);
+  serializeProperties(ctx, id, value);
+  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parseDate(ctx: ParserContext, value: Date) {
+function serializeDate(ctx: SerializerContext, value: Date) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Date, id, value.getTime()]);
+  onSerialize(ctx, [SerovalNodeType.Date, id, value.getTime()]);
   return id;
 }
 
-function parseError(ctx: ParserContext, value: Error) {
+function serializeError(ctx: SerializerContext, value: Error) {
   const id = createID(ctx, value);
-  onParse(ctx, [
+  onSerialize(ctx, [
     SerovalNodeType.Error,
     id,
     getErrorConstructor(value),
-    parse(ctx, value.message),
+    serialize(ctx, value.message),
   ]);
   const properties = getErrorOptions(value, ctx.features);
   if (properties) {
-    parseProperties(ctx, id, properties);
+    serializeProperties(ctx, id, properties);
   }
-  onParse(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parseBoxed(ctx: ParserContext, value: object) {
+function serializeBoxed(ctx: SerializerContext, value: object) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Boxed, id, parse(ctx, value.valueOf())]);
+  onSerialize(ctx, [SerovalNodeType.Boxed, id, serialize(ctx, value.valueOf())]);
   return id;
 }
 
-function parseArrayBuffer(ctx: ParserContext, value: ArrayBuffer) {
+function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.ArrayBuffer, id, new Uint8Array(value)]);
+  onSerialize(ctx, [SerovalNodeType.ArrayBuffer, id, new Uint8Array(value)]);
   return id;
 }
 
-function parseTypedArray(ctx: ParserContext, value: TypedArrayValue) {
+function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
   const id = createID(ctx, value);
-  onParse(ctx, [
+  onSerialize(ctx, [
     SerovalNodeType.TypedArray,
     id,
     getTypedArrayTag(value),
     value.byteOffset,
     value.byteLength,
-    parse(ctx, value.buffer),
+    serialize(ctx, value.buffer),
   ]);
   return id;
 }
 
-function parseBigIntTypedArray(
-  ctx: ParserContext,
+function serializeBigIntTypedArray(
+  ctx: SerializerContext,
   value: BigIntTypedArrayValue,
 ) {
   const id = createID(ctx, value);
-  onParse(ctx, [
+  onSerialize(ctx, [
     SerovalNodeType.BigIntTypedArray,
     id,
     getBigIntTypedArrayTag(value),
     value.byteOffset,
     value.byteLength,
-    parse(ctx, value.buffer),
+    serialize(ctx, value.buffer),
   ]);
   return id;
 }
 
-function parseDataView(ctx: ParserContext, value: DataView) {
+function serializeDataView(ctx: SerializerContext, value: DataView) {
   const id = createID(ctx, value);
-  onParse(ctx, [
+  onSerialize(ctx, [
     SerovalNodeType.DataView,
     id,
     value.byteOffset,
     value.byteLength,
-    parse(ctx, value.buffer),
+    serialize(ctx, value.buffer),
   ]);
   return id;
 }
 
-function parseMap(ctx: ParserContext, value: Map<unknown, unknown>) {
+function serializeMap(ctx: SerializerContext, value: Map<unknown, unknown>) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Map, id]);
+  onSerialize(ctx, [SerovalNodeType.Map, id]);
   for (const [key, val] of value.entries()) {
-    onParse(ctx, [
+    onSerialize(ctx, [
       SerovalNodeType.ObjectAssign,
       id,
-      parse(ctx, key),
-      parse(ctx, val),
+      serialize(ctx, key),
+      serialize(ctx, val),
     ]);
   }
-  onParse(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parseSet(ctx: ParserContext, value: Set<unknown>) {
+function serializeSet(ctx: SerializerContext, value: Set<unknown>) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Set, id]);
+  onSerialize(ctx, [SerovalNodeType.Set, id]);
   for (const key of value.keys()) {
-    onParse(ctx, [SerovalNodeType.Add, id, parse(ctx, key)]);
+    onSerialize(ctx, [SerovalNodeType.Add, id, serialize(ctx, key)]);
   }
-  onParse(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parsePromise(ctx: ParserContext, value: Promise<unknown>) {
+function serializePromise(ctx: SerializerContext, value: Promise<unknown>) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.Promise, id]);
+  onSerialize(ctx, [SerovalNodeType.Promise, id]);
   const prevDepth = CURRENT_DEPTH;
   pushPendingState(ctx);
   value.then(
     val => {
       if (ctx.alive) {
-        const parsed = parseWithError(ctx, prevDepth, val);
-        if (parsed) {
-          onParse(ctx, [SerovalNodeType.Return, id, parsed]);
+        const serialized = serializeWithError(ctx, prevDepth, val);
+        if (serialized) {
+          onSerialize(ctx, [SerovalNodeType.Return, id, serialized]);
         }
       }
       popPendingState(ctx);
     },
     val => {
       if (ctx.alive) {
-        const parsed = parseWithError(ctx, prevDepth, val);
-        if (parsed) {
-          onParse(ctx, [SerovalNodeType.Throw, id, parsed]);
+        const serialized = serializeWithError(ctx, prevDepth, val);
+        if (serialized) {
+          onSerialize(ctx, [SerovalNodeType.Throw, id, serialized]);
         }
       }
       popPendingState(ctx);
@@ -442,40 +442,40 @@ function parsePromise(ctx: ParserContext, value: Promise<unknown>) {
   return id;
 }
 
-function parseRegExp(ctx: ParserContext, value: RegExp) {
+function serializeRegExp(ctx: SerializerContext, value: RegExp) {
   const id = createID(ctx, value);
-  onParse(ctx, [
+  onSerialize(ctx, [
     SerovalNodeType.RegExp,
     id,
-    parse(ctx, value.source),
-    parse(ctx, value.flags),
+    serialize(ctx, value.source),
+    serialize(ctx, value.flags),
   ]);
   return id;
 }
 
-function parseAggregateError(ctx: ParserContext, value: AggregateError) {
+function serializeAggregateError(ctx: SerializerContext, value: AggregateError) {
   const id = createID(ctx, value);
-  onParse(ctx, [SerovalNodeType.AggregateError, id, parse(ctx, value.message)]);
+  onSerialize(ctx, [SerovalNodeType.AggregateError, id, serialize(ctx, value.message)]);
   const properties = getErrorOptions(value, ctx.features);
   if (properties) {
-    parseProperties(ctx, id, properties);
+    serializeProperties(ctx, id, properties);
   }
-  onParse(ctx, [SerovalNodeType.Close, id]);
+  onSerialize(ctx, [SerovalNodeType.Close, id]);
   return id;
 }
 
-function parseObjectPhase2(
-  ctx: ParserContext,
+function serializeObjectPhase2(
+  ctx: SerializerContext,
   current: object,
   currentClass: unknown,
 ): Uint8Array {
   switch (currentClass) {
     case Object:
-      return parsePlainObject(ctx, current as Record<string, unknown>, false);
+      return serializePlainObject(ctx, current as Record<string, unknown>, false);
     case NIL:
-      return parsePlainObject(ctx, current as Record<string, unknown>, true);
+      return serializePlainObject(ctx, current as Record<string, unknown>, true);
     case Date:
-      return parseDate(ctx, current as Date);
+      return serializeDate(ctx, current as Date);
     case Error:
     case EvalError:
     case RangeError:
@@ -483,14 +483,14 @@ function parseObjectPhase2(
     case SyntaxError:
     case TypeError:
     case URIError:
-      return parseError(ctx, current as unknown as Error);
+      return serializeError(ctx, current as unknown as Error);
     case Number:
     case Boolean:
     case String:
     case BigInt:
-      return parseBoxed(ctx, current);
+      return serializeBoxed(ctx, current);
     case ArrayBuffer:
-      return parseArrayBuffer(ctx, current as unknown as ArrayBuffer);
+      return serializeArrayBuffer(ctx, current as unknown as ArrayBuffer);
     case Int8Array:
     case Int16Array:
     case Int32Array:
@@ -500,30 +500,30 @@ function parseObjectPhase2(
     case Uint8ClampedArray:
     case Float32Array:
     case Float64Array:
-      return parseTypedArray(ctx, current as unknown as TypedArrayValue);
+      return serializeTypedArray(ctx, current as unknown as TypedArrayValue);
     case DataView:
-      return parseDataView(ctx, current as unknown as DataView);
+      return serializeDataView(ctx, current as unknown as DataView);
     case Map:
-      return parseMap(ctx, current as unknown as Map<unknown, unknown>);
+      return serializeMap(ctx, current as unknown as Map<unknown, unknown>);
     case Set:
-      return parseSet(ctx, current as unknown as Set<unknown>);
+      return serializeSet(ctx, current as unknown as Set<unknown>);
     default:
       break;
   }
   // Promises
   if (currentClass === Promise || current instanceof Promise) {
-    return parsePromise(ctx, current as unknown as Promise<unknown>);
+    return serializePromise(ctx, current as unknown as Promise<unknown>);
   }
   const currentFeatures = ctx.features;
   if (currentFeatures & Feature.RegExp && currentClass === RegExp) {
-    return parseRegExp(ctx, current as unknown as RegExp);
+    return serializeRegExp(ctx, current as unknown as RegExp);
   }
   // BigInt Typed Arrays
   if (currentFeatures & Feature.BigIntTypedArray) {
     switch (currentClass) {
       case BigInt64Array:
       case BigUint64Array:
-        return parseBigIntTypedArray(
+        return serializeBigIntTypedArray(
           ctx,
           current as unknown as BigIntTypedArrayValue,
         );
@@ -536,33 +536,33 @@ function parseObjectPhase2(
     typeof AggregateError !== 'undefined' &&
     (currentClass === AggregateError || current instanceof AggregateError)
   ) {
-    return parseAggregateError(ctx, current as unknown as AggregateError);
+    return serializeAggregateError(ctx, current as unknown as AggregateError);
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
   if (current instanceof Error) {
-    return parseError(ctx, current);
+    return serializeError(ctx, current);
   }
   // Generator functions don't have a global constructor
   // despite existing
   if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) {
-    return parsePlainObject(ctx, current, !!currentClass);
+    return serializePlainObject(ctx, current, !!currentClass);
   }
   throw new SerovalUnsupportedTypeError(current);
 }
 
-function parsePlugin(ctx: ParserContext, value: object) {
+function serializePlugin(ctx: SerializerContext, value: object) {
   const plugins = ctx.plugins;
   if (plugins) {
     for (let i = 0, len = plugins.length; i < len; i++) {
       const current = plugins[i];
       if (current.test(value)) {
         const id = createID(ctx, value);
-        onParse(ctx, [
+        onSerialize(ctx, [
           SerovalNodeType.Plugin,
           id,
-          parse(ctx, current.tag),
-          parse(ctx, current.serialize(value)),
+          serialize(ctx, current.tag),
+          serialize(ctx, current.serialize(value)),
         ]);
         return id;
       }
@@ -571,45 +571,45 @@ function parsePlugin(ctx: ParserContext, value: object) {
   return undefined;
 }
 
-function parseObject(ctx: ParserContext, value: object): Uint8Array {
+function serializeObject(ctx: SerializerContext, value: object): Uint8Array {
   const prevDepth = CURRENT_DEPTH;
   CURRENT_DEPTH += 1;
   try {
     if (Array.isArray(value)) {
-      return parseArray(ctx, value);
+      return serializeArray(ctx, value);
     }
     if (isStream(value)) {
-      return parseStream(ctx, value);
+      return serializeStream(ctx, value);
     }
     if (isSequence(value)) {
-      return parseSequence(ctx, value);
+      return serializeSequence(ctx, value);
     }
     const currentClass = value.constructor;
     if (currentClass === OpaqueReference) {
-      return parse(
+      return serialize(
         ctx,
         (value as OpaqueReference<unknown, unknown>).replacement,
       );
     }
-    const parsed = parsePlugin(ctx, value);
-    if (parsed != null) {
-      return parsed;
+    const serialized = serializePlugin(ctx, value);
+    if (serialized != null) {
+      return serialized;
     }
-    return parseObjectPhase2(ctx, value, currentClass);
+    return serializeObjectPhase2(ctx, value, currentClass);
   } finally {
     CURRENT_DEPTH = prevDepth;
   }
 }
 
-function parseFunction(ctx: ParserContext, current: Function) {
-  const plugin = parsePlugin(ctx, current);
+function serializeFunction(ctx: SerializerContext, current: Function) {
+  const plugin = serializePlugin(ctx, current);
   if (plugin) {
     return plugin;
   }
   throw new SerovalUnsupportedTypeError(current);
 }
 
-function parse<T>(ctx: ParserContext, current: T): Uint8Array {
+function serialize<T>(ctx: SerializerContext, current: T): Uint8Array {
   if (CURRENT_DEPTH >= ctx.depthLimit) {
     throw new SerovalDepthLimitError(ctx.depthLimit);
   }
@@ -619,46 +619,46 @@ function parse<T>(ctx: ParserContext, current: T): Uint8Array {
   }
   switch (typeof current) {
     case 'boolean':
-      return parseConstant(
+      return serializeConstant(
         ctx,
         current ? SerovalConstant.True : SerovalConstant.False,
       );
     case 'undefined':
-      return parseConstant(ctx, SerovalConstant.Undefined);
+      return serializeConstant(ctx, SerovalConstant.Undefined);
     case 'number':
-      return parseNumber(ctx, current);
+      return serializeNumber(ctx, current);
     case 'string':
-      return parseString(ctx, current as string);
+      return serializeString(ctx, current as string);
     case 'bigint':
-      return parseBigInt(ctx, current as bigint);
+      return serializeBigInt(ctx, current as bigint);
     case 'object': {
       if (current) {
-        return parseObject(ctx, current);
+        return serializeObject(ctx, current);
       }
-      return parseConstant(ctx, SerovalConstant.Null);
+      return serializeConstant(ctx, SerovalConstant.Null);
     }
     case 'symbol':
-      return parseWellKnownSymbol(ctx, current);
+      return serializeWellKnownSymbol(ctx, current);
     case 'function': {
-      return parseFunction(ctx, current);
+      return serializeFunction(ctx, current);
     }
     default:
       throw new SerovalUnsupportedTypeError(current);
   }
 }
 
-export function startParse<T>(ctx: ParserContext, value: T) {
-  const parsed = parseWithError(ctx, 0, value);
-  if (parsed) {
-    onParse(ctx, [SerovalNodeType.Root, parsed]);
+export function startSerialize<T>(ctx: SerializerContext, value: T) {
+  const serialized = serializeWithError(ctx, 0, value);
+  if (serialized) {
+    onSerialize(ctx, [SerovalNodeType.Root, serialized]);
 
     if (ctx.pending <= 0) {
-      endParse(ctx);
+      endSerialize(ctx);
     }
   }
 }
 
-export function endParse(ctx: ParserContext) {
+export function endSerialize(ctx: SerializerContext) {
   if (ctx.alive) {
     ctx.onDone();
     ctx.alive = false;
