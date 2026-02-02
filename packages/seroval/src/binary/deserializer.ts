@@ -38,13 +38,13 @@ import type { Plugin } from './plugin';
 
 export interface DeserializerContextOptions {
   read(): Promise<Uint8Array | undefined>;
-  refs: Map<number, unknown>;
+  refs: Map<number, { value: unknown }>;
   plugins?: Plugin<any, any>[];
 }
 
 export interface DeserializerContext {
   read(): Promise<Uint8Array | undefined>;
-  refs: Map<number, unknown>;
+  refs: Map<number, { value: unknown }>;
   plugins?: Plugin<any, any>[];
   root: PromiseConstructorResolver;
   done: boolean;
@@ -103,7 +103,7 @@ async function ensureChunk(ctx: DeserializerContext, requiredLength: number) {
 }
 
 function upsert(ctx: DeserializerContext, id: number, value: unknown): unknown {
-  ctx.refs.set(id, value);
+  ctx.refs.set(id, { value });
   return value;
 }
 
@@ -148,7 +148,7 @@ async function deserializeId(
 async function deserializeRef(ctx: DeserializerContext) {
   const ref = await deserializeInteger(ctx);
   if (ctx.refs.has(ref)) {
-    return { value: ctx.refs.get(ref) };
+    return ctx.refs.get(ref)!;
   }
   throw new SerovalMalformedBinaryError();
 }
@@ -161,7 +161,7 @@ async function deserializeConstant(ctx: DeserializerContext) {
 
 async function deserializeNumber(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.Number);
-  upsert(ctx, id, deserializeNumberValue(ctx));
+  upsert(ctx, id, await deserializeNumberValue(ctx));
 }
 
 async function deserializeString(ctx: DeserializerContext) {
@@ -273,7 +273,7 @@ async function deserializeObjectFlag(ctx: DeserializerContext) {
 
 async function deserializeArray(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.Array);
-  const length = await deserializeNumberValue(ctx);
+  const length = await deserializeInteger(ctx);
   upsert(ctx, id, new Array(length));
 }
 
