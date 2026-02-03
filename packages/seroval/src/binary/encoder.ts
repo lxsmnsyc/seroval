@@ -49,14 +49,14 @@ export function encodeString(value: string): Uint8Array {
   return encoder.encode(value);
 }
 
-export function decodeNumber(value: Uint8Array): number {
+export function decodeNumber(value: Uint8Array, littleEndian: boolean): number {
   const view = new DataView(value.buffer, value.byteOffset, value.byteLength);
-  return view.getFloat64(0, true);
+  return view.getFloat64(0, littleEndian);
 }
 
-export function decodeInteger(value: Uint8Array): number {
+export function decodeInteger(value: Uint8Array, littleEndian: boolean): number {
   const view = new DataView(value.buffer, value.byteOffset, value.byteLength);
-  return view.getUint32(0, true);
+  return view.getUint32(0, littleEndian);
 }
 
 export function decodeString(value: Uint8Array): string {

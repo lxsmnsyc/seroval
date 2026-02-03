@@ -8,42 +8,53 @@ import type {
 } from '../core/constants';
 
 export const enum SerovalNodeType {
-  Root = 0,
-  Constant = 1,
-  Number = 2,
-  String = 3,
-  BigInt = 4,
-  WKSymbol = 5,
-  ObjectAssign = 6,
-  ArrayAssign = 7,
-  ObjectFlag = 8,
-  Array = 9,
-  Stream = 10,
-  StreamNext = 11,
-  StreamThrow = 12,
-  StreamReturn = 13,
-  Sequence = 14,
-  SequencePush = 15,
-  Plugin = 16,
-  Object = 17,
-  NullConstructor = 18,
-  Date = 19,
-  Error = 20,
-  Boxed = 21,
-  ArrayBuffer = 22,
-  TypedArray = 23,
-  BigIntTypedArray = 24,
-  DataView = 25,
-  Map = 26,
-  MapSet = 27,
-  Set = 28,
-  SetAdd = 29,
-  Promise = 30,
-  PromiseSuccess = 31,
-  PromiseFailure = 32,
-  RegExp = 33,
-  AggregateError = 34,
+  Preamble = 0,
+  Root = 1 ,
+  Constant = 2 ,
+  Number = 3 ,
+  String = 4 ,
+  BigInt = 5 ,
+  WKSymbol = 6 ,
+  ObjectAssign = 7 ,
+  ArrayAssign = 8 ,
+  ObjectFlag = 9 ,
+  Array = 10 ,
+  Stream = 11 ,
+  StreamNext = 12 ,
+  StreamThrow = 13 ,
+  StreamReturn = 14 ,
+  Sequence = 15 ,
+  SequencePush = 16 ,
+  Plugin = 17 ,
+  Object = 18 ,
+  NullConstructor = 19 ,
+  Date = 20 ,
+  Error = 21 ,
+  Boxed = 22 ,
+  ArrayBuffer = 23 ,
+  TypedArray = 24 ,
+  BigIntTypedArray = 25 ,
+  DataView = 26 ,
+  Map = 27 ,
+  MapSet = 28 ,
+  Set = 29 ,
+  SetAdd = 30 ,
+  Promise = 31 ,
+  PromiseSuccess = 32 ,
+  PromiseFailure = 33 ,
+  RegExp = 34 ,
+  AggregateError = 35 ,
 }
+
+export const enum SerovalEndianness {
+  LE = 1,
+  BE = 2,
+}
+
+export type SerovalPreambleNode = [
+  type: SerovalNodeType.Preamble,
+  endianness: SerovalEndianness,
+];
 
 export type SerovalConstantNode = [
   type: SerovalNodeType.Constant,
@@ -262,6 +273,7 @@ export type SerovalPluginNode = [
 export type SerovalRootNode = [type: SerovalNodeType.Root, id: Uint8Array];
 
 export type SerovalNode =
+  | SerovalPreambleNode
   | SerovalConstantNode
   | SerovalNumberNode
   | SerovalStringNode
