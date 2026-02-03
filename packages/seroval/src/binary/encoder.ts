@@ -29,8 +29,14 @@ export function mergeBytes(bytes: (number | Uint8Array)[]) {
 
   return newArr;
 }
+export function encodeInt(value: number): Uint8Array {
+  const buffer = new ArrayBuffer(4);
+  const uint = new Int32Array(buffer);
+  uint[0] = value;
+  return new Uint8Array(buffer);
+}
 
-export function encodeInteger(value: number): Uint8Array {
+export function encodeUint(value: number): Uint8Array {
   const buffer = new ArrayBuffer(4);
   const uint = new Uint32Array(buffer);
   uint[0] = value;
@@ -54,7 +60,12 @@ export function decodeNumber(value: Uint8Array, littleEndian: boolean): number {
   return view.getFloat64(0, littleEndian);
 }
 
-export function decodeInteger(value: Uint8Array, littleEndian: boolean): number {
+export function decodeInt(value: Uint8Array, littleEndian: boolean): number {
+  const view = new DataView(value.buffer, value.byteOffset, value.byteLength);
+  return view.getInt32(0, littleEndian);
+}
+
+export function decodeUint(value: Uint8Array, littleEndian: boolean): number {
   const view = new DataView(value.buffer, value.byteOffset, value.byteLength);
   return view.getUint32(0, littleEndian);
 }

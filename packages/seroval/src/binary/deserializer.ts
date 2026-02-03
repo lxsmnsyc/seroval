@@ -20,8 +20,8 @@ import {
   SerovalMalformedBinaryError,
   SerovalMissingPluginError,
 } from '../core/errors';
-import { createSequence, type Sequence } from '../core/sequence';
-import { createStream, type Stream } from '../core/stream';
+import { createSequence, sequenceToIterator, type Sequence } from '../core/sequence';
+import { createStream, streamToAsyncIterable, type Stream } from '../core/stream';
 import {
   SYM_ASYNC_ITERATOR,
   SYM_IS_CONCAT_SPREADABLE,
@@ -30,9 +30,10 @@ import {
 } from '../core/symbols';
 import {
   decodeBigint,
-  decodeInteger,
+  decodeInt,
   decodeNumber,
   decodeString,
+  decodeUint,
 } from './encoder';
 import { SerovalEndianness, SerovalNodeType } from './nodes';
 import type { Plugin } from './plugin';
@@ -134,9 +135,14 @@ async function deserializeByte(ctx: DeserializerContext): Promise<number> {
   return bytes[0];
 }
 
-async function deserializeInteger(ctx: DeserializerContext): Promise<number> {
+async function deserializeUint(ctx: DeserializerContext): Promise<number> {
   const bytes = await ensureChunk(ctx, 4);
-  return decodeInteger(bytes, ctx.endianness === SerovalEndianness.LE);
+  return decodeUint(bytes, ctx.endianness === SerovalEndianness.LE);
+}
+
+async function deserializeInt(ctx: DeserializerContext): Promise<number> {
+  const bytes = await ensureChunk(ctx, 4);
+  return decodeInt(bytes, ctx.endianness === SerovalEndianness.LE);
 }
 
 async function deserializeNumberValue(
@@ -155,14 +161,14 @@ async function deserializeId(
   type: SerovalNodeType,
 ): Promise<number> {
   // parse ID
-  const id = await deserializeInteger(ctx);
+  const id = await deserializeUint(ctx);
   // Mark id
   ctx.marker.set(id, type);
   return id;
 }
 
 async function deserializeRef(ctx: DeserializerContext) {
-  const ref = await deserializeInteger(ctx);
+  const ref = await deserializeUint(ctx);
   if (ctx.refs.has(ref)) {
     return ctx.refs.get(ref)!;
   }
@@ -183,7 +189,7 @@ async function deserializeNumber(ctx: DeserializerContext) {
 async function deserializeString(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.String);
   // First, ensure that there's an encoded length
-  const length = await deserializeInteger(ctx);
+  const length = await deserializeUint(ctx);
   // Ensure the next chunk is based on encoded length
   const encodedData = await ensureChunk(ctx, length);
   upsert(ctx, id, decodeString(encodedData));
@@ -264,7 +270,7 @@ async function deserializeObjectAssign(ctx: DeserializerContext) {
 
 async function deserializeArrayAssign(ctx: DeserializerContext) {
   const object = (await deserializeRef(ctx)).value as unknown[];
-  const key = (await deserializeInteger(ctx)) as number;
+  const key = (await deserializeUint(ctx)) as number;
   const value = (await deserializeRef(ctx)).value;
 
   object[key] = value;
@@ -289,7 +295,7 @@ async function deserializeObjectFlag(ctx: DeserializerContext) {
 
 async function deserializeArray(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.Array);
-  const length = await deserializeInteger(ctx);
+  const length = await deserializeUint(ctx);
   upsert(ctx, id, new Array(length));
 }
 
@@ -318,8 +324,8 @@ async function deserializeStreamReturn(ctx: DeserializerContext) {
 
 async function deserializeSequence(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.Sequence);
-  const throwAt = await deserializeNumberValue(ctx);
-  const doneAt = await deserializeNumberValue(ctx);
+  const throwAt = await deserializeInt(ctx);
+  const doneAt = await deserializeInt(ctx);
   upsert(ctx, id, createSequence([], throwAt, doneAt));
 }
 
@@ -341,7 +347,7 @@ async function deserializeNullConstructor(ctx: DeserializerContext) {
 
 async function deserializeDate(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.Date);
-  const timestamp = await deserializeInteger(ctx);
+  const timestamp = await deserializeUint(ctx);
   upsert(ctx, id, new Date(timestamp));
 }
 
@@ -364,7 +370,7 @@ async function deserializeBoxed(ctx: DeserializerContext) {
 
 async function deserializeArrayBuffer(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.ArrayBuffer);
-  const length = await deserializeInteger(ctx);
+  const length = await deserializeUint(ctx);
   const bytes = await ensureChunk(ctx, length);
   upsert(ctx, id, bytes.buffer);
 }
@@ -375,8 +381,8 @@ async function deserializeTypedArray(ctx: DeserializerContext) {
     TYPED_ARRAY_CONSTRUCTOR,
     (await deserializeByte(ctx)) as TypedArrayTag,
   );
-  const offset = await deserializeInteger(ctx);
-  const length = await deserializeInteger(ctx);
+  const offset = await deserializeUint(ctx);
+  const length = await deserializeUint(ctx);
   const buffer = (await deserializeRef(ctx)).value as ArrayBuffer;
   upsert(ctx, id, new construct(buffer, offset, length));
 }
@@ -387,16 +393,16 @@ async function deserializeBigIntTypedArray(ctx: DeserializerContext) {
     BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
     (await deserializeByte(ctx)) as BigIntTypedArrayTag,
   );
-  const offset = await deserializeInteger(ctx);
-  const length = await deserializeInteger(ctx);
+  const offset = await deserializeUint(ctx);
+  const length = await deserializeUint(ctx);
   const buffer = (await deserializeRef(ctx)).value as ArrayBuffer;
   upsert(ctx, id, new construct(buffer, offset, length));
 }
 
 async function deserializeDataView(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalNodeType.DataView);
-  const offset = await deserializeInteger(ctx);
-  const length = await deserializeInteger(ctx);
+  const offset = await deserializeUint(ctx);
+  const length = await deserializeUint(ctx);
   const buffer = (await deserializeRef(ctx)).value as ArrayBuffer;
   upsert(ctx, id, new DataView(buffer, offset, length));
 }
@@ -433,7 +439,7 @@ async function deserializePromise(ctx: DeserializerContext) {
 }
 
 async function deserializePromiseSuccess(ctx: DeserializerContext) {
-  const resolverIndex = await deserializeInteger(ctx);
+  const resolverIndex = await deserializeUint(ctx);
   const currentResolver = ctx.resolvers.get(resolverIndex);
   if (currentResolver == null) {
     throw new SerovalMalformedBinaryError();
@@ -443,7 +449,7 @@ async function deserializePromiseSuccess(ctx: DeserializerContext) {
 }
 
 async function deserializePromiseFailure(ctx: DeserializerContext) {
-  const resolverIndex = await deserializeInteger(ctx);
+  const resolverIndex = await deserializeUint(ctx);
   const currentResolver = ctx.resolvers.get(resolverIndex);
   if (currentResolver == null) {
     throw new SerovalMalformedBinaryError();
@@ -491,6 +497,18 @@ async function deserializePlugin(ctx: DeserializerContext) {
 async function deserializeRoot(ctx: DeserializerContext) {
   const reference = await deserializeRef(ctx);
   ctx.root.s(reference);
+}
+
+async function deserializeIterator(ctx: DeserializerContext) {
+  const id = await deserializeId(ctx, SerovalNodeType.Iterator);
+  const sequence = (await deserializeRef(ctx)).value as Sequence;
+  upsert(ctx, id, sequenceToIterator(sequence));
+}
+
+async function deserializeAsyncIterator(ctx: DeserializerContext) {
+  const id = await deserializeId(ctx, SerovalNodeType.AsyncIterator);
+  const stream = (await deserializeRef(ctx)).value as Stream<unknown>;
+  upsert(ctx, id, streamToAsyncIterable(stream));
 }
 
 async function deserializeChunk(ctx: DeserializerContext) {
@@ -605,6 +623,12 @@ async function deserializeChunk(ctx: DeserializerContext) {
       break;
     case SerovalNodeType.Root:
       await deserializeRoot(ctx);
+      break;
+    case SerovalNodeType.Iterator:
+      await deserializeIterator(ctx);
+      break;
+    case SerovalNodeType.AsyncIterator:
+      await deserializeAsyncIterator(ctx);
       break;
     default:
       throw new SerovalMalformedBinaryError();
