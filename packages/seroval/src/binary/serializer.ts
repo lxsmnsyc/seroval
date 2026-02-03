@@ -35,9 +35,10 @@ import { getErrorConstructor, getErrorOptions } from '../core/utils/error';
 import { getObjectFlag } from '../core/utils/get-object-flag';
 import {
   encodeBigint,
-  encodeInteger,
+  encodeInt,
   encodeNumber,
   encodeString,
+  encodeUint,
   mergeBytes,
 } from './encoder';
 import { SerovalEndianness, type SerovalNode, SerovalNodeType } from './nodes';
@@ -122,7 +123,7 @@ function serializeWithError<T>(
 }
 
 function createID(ctx: SerializerContext, value: unknown): Uint8Array {
-  const id = encodeInteger(ctx.refs.size + 1);
+  const id = encodeUint(ctx.refs.size + 1);
   ctx.refs.set(value, id);
   return id;
 }
@@ -161,7 +162,7 @@ function serializeString(ctx: SerializerContext, value: string) {
   onSerialize(ctx, [
     SerovalNodeType.String,
     id,
-    encodeInteger(bytes.length),
+    encodeUint(bytes.length),
     bytes,
   ]);
   return id;
@@ -190,13 +191,13 @@ function serializeWellKnownSymbol(ctx: SerializerContext, value: symbol) {
 function serializeArray(ctx: SerializerContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
-  onSerialize(ctx, [SerovalNodeType.Array, id, encodeInteger(len)]);
+  onSerialize(ctx, [SerovalNodeType.Array, id, encodeUint(len)]);
   for (let i = 0; i < len; i++) {
     if (i in value) {
       onSerialize(ctx, [
         SerovalNodeType.ArrayAssign,
         id,
-        encodeInteger(i),
+        encodeUint(i),
         serialize(ctx, value[i]),
       ]);
     }
@@ -269,8 +270,8 @@ function serializeSequence(ctx: SerializerContext, value: Sequence) {
   onSerialize(ctx, [
     SerovalNodeType.Sequence,
     id,
-    encodeNumber(value.t),
-    encodeNumber(value.d),
+    encodeInt(value.t),
+    encodeInt(value.d),
   ]);
   for (let i = 0, len = value.v.length; i < len; i++) {
     onSerialize(ctx, [
@@ -279,6 +280,18 @@ function serializeSequence(ctx: SerializerContext, value: Sequence) {
       serialize(ctx, value.v[i]),
     ]);
   }
+  return id;
+}
+
+function serializeIterator(ctx: SerializerContext, sequence: Sequence) {
+  const id = createID(ctx, {});
+  onSerialize(ctx, [SerovalNodeType.Iterator, id, serialize(ctx, sequence)]);
+  return id;
+}
+
+function serializeAsyncIterator(ctx: SerializerContext, stream: Stream<unknown>) {
+  const id = createID(ctx, {});
+  onSerialize(ctx, [SerovalNodeType.AsyncIterator, id, serialize(ctx, stream)]);
   return id;
 }
 
@@ -303,7 +316,7 @@ function serializeProperties(
       SerovalNodeType.ObjectAssign,
       id,
       serialize(ctx, SYM_ITERATOR),
-      serialize(
+      serializeIterator(
         ctx,
         createSequenceFromIterable(properties as unknown as Iterable<unknown>),
       ),
@@ -314,7 +327,7 @@ function serializeProperties(
       SerovalNodeType.ObjectAssign,
       id,
       serialize(ctx, SYM_ASYNC_ITERATOR),
-      serialize(
+      serializeAsyncIterator(
         ctx,
         createStreamFromAsyncIterable(
           properties as unknown as AsyncIterable<unknown>,
@@ -357,7 +370,7 @@ function serializePlainObject(
 
 function serializeDate(ctx: SerializerContext, value: Date) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Date, id, encodeNumber(value.getTime())]);
+  onSerialize(ctx, [SerovalNodeType.Date, id, encodeInt(value.getTime())]);
   return id;
 }
 
@@ -392,7 +405,7 @@ function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
   onSerialize(ctx, [
     SerovalNodeType.ArrayBuffer,
     id,
-    encodeInteger(arr.length),
+    encodeUint(arr.length),
     arr,
   ]);
   return id;
@@ -404,8 +417,8 @@ function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
     SerovalNodeType.TypedArray,
     id,
     getTypedArrayTag(value),
-    encodeInteger(value.byteOffset),
-    encodeInteger(value.byteLength),
+    encodeUint(value.byteOffset),
+    encodeUint(value.byteLength),
     serialize(ctx, value.buffer),
   ]);
   return id;
@@ -420,8 +433,8 @@ function serializeBigIntTypedArray(
     SerovalNodeType.BigIntTypedArray,
     id,
     getBigIntTypedArrayTag(value),
-    encodeInteger(value.byteOffset),
-    encodeInteger(value.byteLength),
+    encodeUint(value.byteOffset),
+    encodeUint(value.byteLength),
     serialize(ctx, value.buffer),
   ]);
   return id;
@@ -432,8 +445,8 @@ function serializeDataView(ctx: SerializerContext, value: DataView) {
   onSerialize(ctx, [
     SerovalNodeType.DataView,
     id,
-    encodeInteger(value.byteOffset),
-    encodeInteger(value.byteLength),
+    encodeUint(value.byteOffset),
+    encodeUint(value.byteLength),
     serialize(ctx, value.buffer),
   ]);
   return id;
@@ -724,7 +737,7 @@ function serialize<T>(ctx: SerializerContext, current: T): Uint8Array {
 }
 
 function getEndianness() {
-  const encoded = encodeInteger(1);
+  const encoded = encodeUint(1);
   if (encoded[0] === 1) {
     return SerovalEndianness.LE;
   }
