@@ -1,3 +1,4 @@
+import { ALL_ENABLED, Feature } from '../core/compat';
 import {
   BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
   type BigIntTypedArrayTag,
@@ -36,11 +37,15 @@ import {
 import { SerovalEndianness, SerovalNodeType } from './nodes';
 import type { Plugin } from './plugin';
 
+const MAX_REGEXP_SOURCE_LENGTH = 20_000;
+
 export interface DeserializerContextOptions {
   read(): Promise<Uint8Array | undefined>;
   onError(error: unknown): void;
   refs: Map<number, { value: unknown }>;
   plugins?: Plugin<any, any>[];
+  disabledFeatures?: number;
+  features?: number;
 }
 
 export interface DeserializerContext {
@@ -54,6 +59,7 @@ export interface DeserializerContext {
   marker: Map<number, SerovalNodeType>;
   resolvers: Map<number, PromiseConstructorResolver>;
   endianness: SerovalEndianness;
+  features: number;
 }
 
 export function createDeserializerContext(
@@ -69,6 +75,7 @@ export function createDeserializerContext(
     marker: new Map(),
     resolvers: new Map(),
     endianness: SerovalEndianness.LE,
+    features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
   };
 }
 
@@ -140,7 +147,7 @@ async function deserializeNumberValue(
 }
 
 async function deserializePreamble(ctx: DeserializerContext) {
-  ctx.endianness = await deserializeByte(ctx) as SerovalEndianness;
+  ctx.endianness = (await deserializeByte(ctx)) as SerovalEndianness;
 }
 
 async function deserializeId(
@@ -446,8 +453,14 @@ async function deserializePromiseFailure(ctx: DeserializerContext) {
 }
 
 async function deserializeRegExp(ctx: DeserializerContext) {
+  if (!(ctx.features & Feature.RegExp)) {
+    throw new SerovalMalformedBinaryError();
+  }
   const id = await deserializeId(ctx, SerovalNodeType.RegExp);
   const pattern = (await deserializeRef(ctx)).value as string;
+  if (pattern.length > MAX_REGEXP_SOURCE_LENGTH) {
+    throw new SerovalMalformedBinaryError();
+  }
   const flags = (await deserializeRef(ctx)).value as string;
   upsert(ctx, id, new RegExp(pattern, flags));
 }
