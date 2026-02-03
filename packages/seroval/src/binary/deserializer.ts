@@ -38,12 +38,14 @@ import type { Plugin } from './plugin';
 
 export interface DeserializerContextOptions {
   read(): Promise<Uint8Array | undefined>;
+  onError(error: unknown): void;
   refs: Map<number, { value: unknown }>;
   plugins?: Plugin<any, any>[];
 }
 
 export interface DeserializerContext {
   read(): Promise<Uint8Array | undefined>;
+  onError(error: unknown): void;
   refs: Map<number, { value: unknown }>;
   plugins?: Plugin<any, any>[];
   root: PromiseConstructorResolver;
@@ -61,6 +63,7 @@ export function createDeserializerContext(
     buffer: new Uint8Array(),
     root: PROMISE_CONSTRUCTOR(),
     read: options.read,
+    onError: options.onError,
     refs: options.refs,
     marker: new Map(),
     resolvers: new Map(),
@@ -600,8 +603,6 @@ async function drain(ctx: DeserializerContext) {
 }
 
 export function deserializeStart(ctx: DeserializerContext) {
-  void drain(ctx).catch(error => {
-    console.error(error);
-  });
+  void drain(ctx).catch(ctx.onError.bind(ctx));
   return ctx.root.p;
 }

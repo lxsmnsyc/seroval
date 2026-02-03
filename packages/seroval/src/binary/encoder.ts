@@ -50,16 +50,12 @@ export function encodeString(value: string): Uint8Array {
 }
 
 export function decodeNumber(value: Uint8Array): number {
-  const view = new DataView(
-    value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength),
-  );
+  const view = new DataView(value.buffer, value.byteOffset, value.byteLength);
   return view.getFloat64(0, true);
 }
 
 export function decodeInteger(value: Uint8Array): number {
-  const view = new DataView(
-    value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength),
-  );
+  const view = new DataView(value.buffer, value.byteOffset, value.byteLength);
   return view.getUint32(0, true);
 }
 
