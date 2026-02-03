@@ -33,7 +33,7 @@ import {
   decodeNumber,
   decodeString,
 } from './encoder';
-import { SerovalNodeType } from './nodes';
+import { SerovalEndianness, SerovalNodeType } from './nodes';
 import type { Plugin } from './plugin';
 
 export interface DeserializerContextOptions {
@@ -53,6 +53,7 @@ export interface DeserializerContext {
   buffer: Uint8Array;
   marker: Map<number, SerovalNodeType>;
   resolvers: Map<number, PromiseConstructorResolver>;
+  endianness: SerovalEndianness;
 }
 
 export function createDeserializerContext(
@@ -67,6 +68,7 @@ export function createDeserializerContext(
     refs: options.refs,
     marker: new Map(),
     resolvers: new Map(),
+    endianness: SerovalEndianness.LE,
   };
 }
 
@@ -127,14 +129,18 @@ async function deserializeByte(ctx: DeserializerContext): Promise<number> {
 
 async function deserializeInteger(ctx: DeserializerContext): Promise<number> {
   const bytes = await ensureChunk(ctx, 4);
-  return decodeInteger(bytes);
+  return decodeInteger(bytes, ctx.endianness === SerovalEndianness.LE);
 }
 
 async function deserializeNumberValue(
   ctx: DeserializerContext,
 ): Promise<number> {
   const bytes = await ensureChunk(ctx, 8);
-  return decodeNumber(bytes);
+  return decodeNumber(bytes, ctx.endianness === SerovalEndianness.LE);
+}
+
+async function deserializePreamble(ctx: DeserializerContext) {
+  ctx.endianness = await deserializeByte(ctx) as SerovalEndianness;
 }
 
 async function deserializeId(
@@ -479,6 +485,9 @@ async function deserializeChunk(ctx: DeserializerContext) {
   const firstByte = (await deserializeByte(ctx)) as SerovalNodeType;
 
   switch (firstByte) {
+    case SerovalNodeType.Preamble:
+      await deserializePreamble(ctx);
+      break;
     case SerovalNodeType.Constant:
       await deserializeConstant(ctx);
       break;
