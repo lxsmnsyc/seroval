@@ -254,6 +254,20 @@ export const TYPED_ARRAY_CONSTRUCTOR: Record<
   [TypedArrayTag.Uint8Array]: Uint8Array,
   [TypedArrayTag.Uint8ClampedArray]: Uint8ClampedArray,
 };
+export const TYPED_ARRAY_CONSTRUCTOR_STRING: Record<
+  TypedArrayTag,
+  string
+> = {
+  [TypedArrayTag.Float32Array]: 'Float32Array',
+  [TypedArrayTag.Float64Array]: 'Float64Array',
+  [TypedArrayTag.Int16Array]: 'Int16Array',
+  [TypedArrayTag.Int32Array]: 'Int32Array',
+  [TypedArrayTag.Int8Array]: 'Int8Array',
+  [TypedArrayTag.Uint16Array]: 'Uint16Array',
+  [TypedArrayTag.Uint32Array]: 'Uint32Array',
+  [TypedArrayTag.Uint8Array]: 'Uint8Array',
+  [TypedArrayTag.Uint8ClampedArray]: 'Uint8ClampedArray',
+};
 
 export const BIG_INT_TYPED_ARRAY_CONSTRUCTOR: Record<
   BigIntTypedArrayTag,
@@ -261,6 +275,14 @@ export const BIG_INT_TYPED_ARRAY_CONSTRUCTOR: Record<
 > = {
   [BigIntTypedArrayTag.BigInt64Array]: BigInt64Array,
   [BigIntTypedArrayTag.BigUint64Array]: BigUint64Array,
+};
+
+export const BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING: Record<
+  BigIntTypedArrayTag,
+  string
+> = {
+  [BigIntTypedArrayTag.BigInt64Array]: 'BigInt64Array',
+  [BigIntTypedArrayTag.BigUint64Array]: 'BigUint64Array',
 };
 
 export type TypedArrayValue =
