@@ -1,11 +1,13 @@
 import { Feature } from '../compat';
 import {
+  BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING,
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
   SYMBOL_STRING,
+  TYPED_ARRAY_CONSTRUCTOR_STRING,
 } from '../constants';
 import {
   SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR,
@@ -491,7 +493,11 @@ function createSequenceAssign(
   index: number | string,
   value: string,
 ): void {
-  createAssignment(ctx.base, getRefParam(ctx, ref) + '.v[' + index + ']', value);
+  createAssignment(
+    ctx.base,
+    getRefParam(ctx, ref) + '.v[' + index + ']',
+    value,
+  );
 }
 
 /**
@@ -970,14 +976,30 @@ function serializeTypedArray(
   ctx: SerializerContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ): string {
-  return 'new ' + node.c + '(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
+  const construct =
+    node.t === SerovalNodeType.BigIntTypedArray
+      ? BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING[node.s]
+      : TYPED_ARRAY_CONSTRUCTOR_STRING[node.s];
+  return (
+    'new ' +
+    construct +
+    '(' +
+    serialize(ctx, node.f) +
+    ',' +
+    node.b +
+    ',' +
+    node.l +
+    ')'
+  );
 }
 
 function serializeDataView(
   ctx: SerializerContext,
   node: SerovalDataViewNode,
 ): string {
-  return 'new DataView(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
+  return (
+    'new DataView(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')'
+  );
 }
 
 function serializeAggregateError(
@@ -1285,7 +1307,15 @@ function serializeSequence(
     }
     ctx.base.stack.pop();
     if (result) {
-      return '{__SEROVAL_SEQUENCE__:!0,v:[' + result + '],t:' + node.s + ',d:' + node.l + '}';
+      return (
+        '{__SEROVAL_SEQUENCE__:!0,v:[' +
+        result +
+        '],t:' +
+        node.s +
+        ',d:' +
+        node.l +
+        '}'
+      );
     }
   }
   return '{__SEROVAL_SEQUENCE__:!0,v:[],t:-1,d:0}';
