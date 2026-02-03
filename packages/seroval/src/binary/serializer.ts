@@ -40,7 +40,7 @@ import {
   encodeString,
   mergeBytes,
 } from './encoder';
-import { type SerovalNode, SerovalNodeType } from './nodes';
+import { SerovalEndianness, type SerovalNode, SerovalNodeType } from './nodes';
 import type { Plugin } from './plugin';
 
 export interface SerializerContext {
@@ -723,7 +723,18 @@ function serialize<T>(ctx: SerializerContext, current: T): Uint8Array {
   }
 }
 
+function getEndianness() {
+  const encoded = encodeInteger(1);
+  if (encoded[0] === 1) {
+    return SerovalEndianness.LE;
+  }
+  return SerovalEndianness.BE;
+}
+
+const ENDIANNESS = /* @__PURE__ */ getEndianness();
+
 export function startSerialize<T>(ctx: SerializerContext, value: T) {
+  onSerialize(ctx, [SerovalNodeType.Preamble, ENDIANNESS]);
   const serialized = serializeWithError(ctx, 0, value);
   if (serialized) {
     onSerialize(ctx, [SerovalNodeType.Root, serialized]);
