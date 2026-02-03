@@ -205,6 +205,50 @@ function serializeArray(ctx: SerializerContext, value: unknown[]) {
   return id;
 }
 
+function serializeStreamNext(
+  ctx: SerializerContext,
+  depth: number,
+  id: Uint8Array,
+  value: unknown,
+) {
+  if (ctx.alive) {
+    const serialized = serializeWithError(ctx, depth, value);
+    if (serialized) {
+      onSerialize(ctx, [SerovalNodeType.StreamNext, id, serialized]);
+    }
+  }
+}
+
+function serializeStreamThrow(
+  ctx: SerializerContext,
+  depth: number,
+  id: Uint8Array,
+  value: unknown,
+) {
+  if (ctx.alive) {
+    const serialized = serializeWithError(ctx, depth, value);
+    if (serialized) {
+      onSerialize(ctx, [SerovalNodeType.StreamThrow, id, serialized]);
+    }
+  }
+  popPendingState(ctx);
+}
+
+function serializeStreamReturn(
+  ctx: SerializerContext,
+  depth: number,
+  id: Uint8Array,
+  value: unknown,
+) {
+  if (ctx.alive) {
+    const serialized = serializeWithError(ctx, depth, value);
+    if (serialized) {
+      onSerialize(ctx, [SerovalNodeType.StreamReturn, id, serialized]);
+    }
+  }
+  popPendingState(ctx);
+}
+
 function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
   const id = createID(ctx, current);
   pushPendingState(ctx);
@@ -213,32 +257,9 @@ function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
   const prevDepth = CURRENT_DEPTH;
 
   current.on({
-    next: value => {
-      if (ctx.alive) {
-        const serialized = serializeWithError(ctx, prevDepth, value);
-        if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.StreamNext, id, serialized]);
-        }
-      }
-    },
-    throw: value => {
-      if (ctx.alive) {
-        const serialized = serializeWithError(ctx, prevDepth, value);
-        if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.StreamThrow, id, serialized]);
-        }
-      }
-      popPendingState(ctx);
-    },
-    return: value => {
-      if (ctx.alive) {
-        const serialized = serializeWithError(ctx, prevDepth, value);
-        if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.StreamReturn, id, serialized]);
-        }
-      }
-      popPendingState(ctx);
-    },
+    next: serializeStreamNext.bind(null, ctx, prevDepth, id),
+    throw: serializeStreamThrow.bind(null, ctx, prevDepth, id),
+    return: serializeStreamReturn.bind(null, ctx, prevDepth, id),
   });
   return id;
 }
@@ -368,7 +389,12 @@ function serializeBoxed(ctx: SerializerContext, value: object) {
 function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
   const id = createID(ctx, value);
   const arr = new Uint8Array(value);
-  onSerialize(ctx, [SerovalNodeType.ArrayBuffer, id, encodeInteger(arr.length), arr]);
+  onSerialize(ctx, [
+    SerovalNodeType.ArrayBuffer,
+    id,
+    encodeInteger(arr.length),
+    arr,
+  ]);
   return id;
 }
 
@@ -436,30 +462,44 @@ function serializeSet(ctx: SerializerContext, value: Set<unknown>) {
   return id;
 }
 
+function serializePromiseSuccess(
+  ctx: SerializerContext,
+  depth: number,
+  id: Uint8Array,
+  value: unknown,
+) {
+  if (ctx.alive) {
+    const serialized = serializeWithError(ctx, depth, value);
+    if (serialized) {
+      onSerialize(ctx, [SerovalNodeType.PromiseSuccess, id, serialized]);
+    }
+  }
+  popPendingState(ctx);
+}
+
+function serializePromiseFailure(
+  ctx: SerializerContext,
+  depth: number,
+  id: Uint8Array,
+  value: unknown,
+) {
+  if (ctx.alive) {
+    const serialized = serializeWithError(ctx, depth, value);
+    if (serialized) {
+      onSerialize(ctx, [SerovalNodeType.PromiseFailure, id, serialized]);
+    }
+  }
+  popPendingState(ctx);
+}
+
 function serializePromise(ctx: SerializerContext, value: Promise<unknown>) {
   const id = createID(ctx, value);
   onSerialize(ctx, [SerovalNodeType.Promise, id]);
   const prevDepth = CURRENT_DEPTH;
   pushPendingState(ctx);
   value.then(
-    val => {
-      if (ctx.alive) {
-        const serialized = serializeWithError(ctx, prevDepth, val);
-        if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.PromiseSuccess, id, serialized]);
-        }
-      }
-      popPendingState(ctx);
-    },
-    val => {
-      if (ctx.alive) {
-        const serialized = serializeWithError(ctx, prevDepth, val);
-        if (serialized) {
-          onSerialize(ctx, [SerovalNodeType.PromiseFailure, id, serialized]);
-        }
-      }
-      popPendingState(ctx);
-    },
+    serializePromiseSuccess.bind(null, ctx, prevDepth, id),
+    serializePromiseFailure.bind(null, ctx, prevDepth, id),
   );
   return id;
 }
