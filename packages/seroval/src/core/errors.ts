@@ -1,5 +1,6 @@
 /// <reference types="pridepack/env" />
 
+import { NODE_TYPE_NAME, type SerovalBinaryType } from '../binary/nodes';
 import { serializeString } from './string';
 import type { SerovalNode } from './types';
 
@@ -81,7 +82,10 @@ const enum SpecificErrorCodes {
   MalformedNode = 8,
   ConflictedNodeId = 9,
   DepthLimit = 10,
-  MalformedBinary = 9,
+  MalformedBinarySource = 11,
+  MalformedBinaryType = 12,
+  UnknownBinaryType = 13,
+  UnexpectedBinaryType = 14,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -196,12 +200,46 @@ export class SerovalDepthLimitError extends Error {
   }
 }
 
-export class SerovalMalformedBinaryError extends Error {
+export class SerovalMalformedBinarySourceError extends Error {
   constructor() {
     super(
       import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinary)
-        : 'Malformed binary detected.',
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinarySource)
+        : 'Malformed binary source detected. ',
+    );
+  }
+}
+
+export class SerovalMalformedBinaryTypeError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinaryType)
+        : `Malformed binary type detected. (type: ${NODE_TYPE_NAME[nodeType]}) `,
+    );
+  }
+}
+
+export class SerovalUnknownBinaryTypeError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.UnknownBinaryType)
+        : `Malformed binary detected. (type: ${nodeType}) `,
+    );
+  }
+}
+
+export class SerovalUnexpectedBinaryTypeError extends Error {
+  constructor(
+    from: SerovalBinaryType,
+    expected: SerovalBinaryType,
+    received: SerovalBinaryType,
+  ) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.UnexpectedBinaryType)
+        : `Unexpected binary type from type ${NODE_TYPE_NAME[from]}. (expected: ${NODE_TYPE_NAME[expected]}, received: ${NODE_TYPE_NAME[received]}) `,
     );
   }
 }
