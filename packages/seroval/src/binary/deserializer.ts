@@ -185,7 +185,7 @@ async function deserializeRef(
 ) {
   const ref = await deserializeUint(ctx);
   if (expected != null) {
-    const marker = ctx.marker.get(expected);
+    const marker = ctx.marker.get(ref);
     if (marker == null) {
       throw new SerovalMalformedBinaryTypeError(type);
     }
@@ -225,6 +225,7 @@ async function deserializeString(ctx: DeserializerContext) {
 
 async function deserializeBigint(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.BigInt);
+  const sign = await deserializeByte(ctx);
   // Check if the value exists
   const current = (
     await deserializeRef(
@@ -233,7 +234,8 @@ async function deserializeBigint(ctx: DeserializerContext) {
       SerovalBinaryType.String,
     )
   ).value;
-  upsert(ctx, id, decodeBigint(current as string));
+  const value = decodeBigint(current as string);
+  upsert(ctx, id, sign ? -value : value);
 }
 
 async function deserializeWKSymbol(ctx: DeserializerContext) {
