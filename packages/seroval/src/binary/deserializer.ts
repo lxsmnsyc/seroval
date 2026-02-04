@@ -66,6 +66,7 @@ export interface DeserializerContext {
   refs: Map<number, { value: unknown }>;
   plugins?: Plugin<any, any>[];
   root: PromiseConstructorResolver;
+  rootFound: boolean;
   done: boolean;
   buffer: Uint8Array;
   marker: Map<number, SerovalBinaryType>;
@@ -81,6 +82,7 @@ export function createDeserializerContext(
     done: false,
     buffer: new Uint8Array(),
     root: PROMISE_CONSTRUCTOR(),
+    rootFound: false,
     read: options.read,
     onError: options.onError,
     refs: options.refs,
@@ -627,6 +629,7 @@ async function deserializePlugin(ctx: DeserializerContext) {
 
 async function deserializeRoot(ctx: DeserializerContext) {
   const reference = await deserializeRef(ctx, SerovalBinaryType.Root);
+  ctx.rootFound = true;
   ctx.root.s(reference);
 }
 
@@ -782,7 +785,10 @@ async function drain(ctx: DeserializerContext) {
   while (true) {
     if (ctx.buffer.length === 0) {
       if (ctx.done) {
-        return;
+        if (ctx.rootFound) {
+          return;
+        }
+        throw new SerovalMalformedBinarySourceError();
       }
       await readChunk(ctx);
     } else {
