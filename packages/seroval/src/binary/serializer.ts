@@ -41,7 +41,11 @@ import {
   encodeUint,
   mergeBytes,
 } from './encoder';
-import { SerovalEndianness, type SerovalNode, SerovalBinaryType } from './nodes';
+import {
+  SerovalBinaryType,
+  SerovalEndianness,
+  type SerovalNode,
+} from './nodes';
 import type { Plugin } from './plugin';
 
 export interface SerializerContext {
@@ -289,9 +293,16 @@ function serializeIterator(ctx: SerializerContext, sequence: Sequence) {
   return id;
 }
 
-function serializeAsyncIterator(ctx: SerializerContext, stream: Stream<unknown>) {
+function serializeAsyncIterator(
+  ctx: SerializerContext,
+  stream: Stream<unknown>,
+) {
   const id = createID(ctx, {});
-  onSerialize(ctx, [SerovalBinaryType.AsyncIterator, id, serialize(ctx, stream)]);
+  onSerialize(ctx, [
+    SerovalBinaryType.AsyncIterator,
+    id,
+    serialize(ctx, stream),
+  ]);
   return id;
 }
 
@@ -370,7 +381,7 @@ function serializePlainObject(
 
 function serializeDate(ctx: SerializerContext, value: Date) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalBinaryType.Date, id, encodeInt(value.getTime())]);
+  onSerialize(ctx, [SerovalBinaryType.Date, id, encodeNumber(value.getTime())]);
   return id;
 }
 
