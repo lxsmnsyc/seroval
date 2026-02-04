@@ -41,7 +41,7 @@ import {
   encodeUint,
   mergeBytes,
 } from './encoder';
-import { SerovalEndianness, type SerovalNode, SerovalNodeType } from './nodes';
+import { SerovalEndianness, type SerovalNode, SerovalBinaryType } from './nodes';
 import type { Plugin } from './plugin';
 
 export interface SerializerContext {
@@ -134,7 +134,7 @@ function onSerialize(ctx: SerializerContext, bytes: SerovalNode): void {
 
 function serializeConstant(ctx: SerializerContext, value: SerovalConstant) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Constant, id, value]);
+  onSerialize(ctx, [SerovalBinaryType.Constant, id, value]);
   return id;
 }
 
@@ -152,7 +152,7 @@ function serializeNumber(ctx: SerializerContext, value: number) {
     return serializeConstant(ctx, SerovalConstant.NegZero);
   }
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Number, id, encodeNumber(value)]);
+  onSerialize(ctx, [SerovalBinaryType.Number, id, encodeNumber(value)]);
   return id;
 }
 
@@ -160,7 +160,7 @@ function serializeString(ctx: SerializerContext, value: string) {
   const id = createID(ctx, value);
   const bytes = encodeString(value);
   onSerialize(ctx, [
-    SerovalNodeType.String,
+    SerovalBinaryType.String,
     id,
     encodeUint(bytes.length),
     bytes,
@@ -171,7 +171,7 @@ function serializeString(ctx: SerializerContext, value: string) {
 function serializeBigInt(ctx: SerializerContext, value: bigint) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.BigInt,
+    SerovalBinaryType.BigInt,
     id,
     serialize(ctx, encodeBigint(value)),
   ]);
@@ -181,7 +181,7 @@ function serializeBigInt(ctx: SerializerContext, value: bigint) {
 function serializeWellKnownSymbol(ctx: SerializerContext, value: symbol) {
   if (isWellKnownSymbol(value)) {
     const id = createID(ctx, value);
-    onSerialize(ctx, [SerovalNodeType.WKSymbol, id, INV_SYMBOL_REF[value]]);
+    onSerialize(ctx, [SerovalBinaryType.WKSymbol, id, INV_SYMBOL_REF[value]]);
     return id;
   }
   // TODO allow plugins to support symbols?
@@ -191,18 +191,18 @@ function serializeWellKnownSymbol(ctx: SerializerContext, value: symbol) {
 function serializeArray(ctx: SerializerContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
-  onSerialize(ctx, [SerovalNodeType.Array, id, encodeUint(len)]);
+  onSerialize(ctx, [SerovalBinaryType.Array, id, encodeUint(len)]);
   for (let i = 0; i < len; i++) {
     if (i in value) {
       onSerialize(ctx, [
-        SerovalNodeType.ArrayAssign,
+        SerovalBinaryType.ArrayAssign,
         id,
         encodeUint(i),
         serialize(ctx, value[i]),
       ]);
     }
   }
-  onSerialize(ctx, [SerovalNodeType.ObjectFlag, id, getObjectFlag(value)]);
+  onSerialize(ctx, [SerovalBinaryType.ObjectFlag, id, getObjectFlag(value)]);
   return id;
 }
 
@@ -215,7 +215,7 @@ function serializeStreamNext(
   if (ctx.alive) {
     const serialized = serializeWithError(ctx, depth, value);
     if (serialized) {
-      onSerialize(ctx, [SerovalNodeType.StreamNext, id, serialized]);
+      onSerialize(ctx, [SerovalBinaryType.StreamNext, id, serialized]);
     }
   }
 }
@@ -229,7 +229,7 @@ function serializeStreamThrow(
   if (ctx.alive) {
     const serialized = serializeWithError(ctx, depth, value);
     if (serialized) {
-      onSerialize(ctx, [SerovalNodeType.StreamThrow, id, serialized]);
+      onSerialize(ctx, [SerovalBinaryType.StreamThrow, id, serialized]);
     }
   }
   popPendingState(ctx);
@@ -244,7 +244,7 @@ function serializeStreamReturn(
   if (ctx.alive) {
     const serialized = serializeWithError(ctx, depth, value);
     if (serialized) {
-      onSerialize(ctx, [SerovalNodeType.StreamReturn, id, serialized]);
+      onSerialize(ctx, [SerovalBinaryType.StreamReturn, id, serialized]);
     }
   }
   popPendingState(ctx);
@@ -253,7 +253,7 @@ function serializeStreamReturn(
 function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
   const id = createID(ctx, current);
   pushPendingState(ctx);
-  onSerialize(ctx, [SerovalNodeType.Stream, id]);
+  onSerialize(ctx, [SerovalBinaryType.Stream, id]);
 
   const prevDepth = CURRENT_DEPTH;
 
@@ -268,14 +268,14 @@ function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
 function serializeSequence(ctx: SerializerContext, value: Sequence) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.Sequence,
+    SerovalBinaryType.Sequence,
     id,
     encodeInt(value.t),
     encodeInt(value.d),
   ]);
   for (let i = 0, len = value.v.length; i < len; i++) {
     onSerialize(ctx, [
-      SerovalNodeType.SequencePush,
+      SerovalBinaryType.SequencePush,
       id,
       serialize(ctx, value.v[i]),
     ]);
@@ -285,13 +285,13 @@ function serializeSequence(ctx: SerializerContext, value: Sequence) {
 
 function serializeIterator(ctx: SerializerContext, sequence: Sequence) {
   const id = createID(ctx, {});
-  onSerialize(ctx, [SerovalNodeType.Iterator, id, serialize(ctx, sequence)]);
+  onSerialize(ctx, [SerovalBinaryType.Iterator, id, serialize(ctx, sequence)]);
   return id;
 }
 
 function serializeAsyncIterator(ctx: SerializerContext, stream: Stream<unknown>) {
   const id = createID(ctx, {});
-  onSerialize(ctx, [SerovalNodeType.AsyncIterator, id, serialize(ctx, stream)]);
+  onSerialize(ctx, [SerovalBinaryType.AsyncIterator, id, serialize(ctx, stream)]);
   return id;
 }
 
@@ -303,7 +303,7 @@ function serializeProperties(
   const entries = Object.entries(properties);
   for (let i = 0, len = entries.length; i < len; i++) {
     onSerialize(ctx, [
-      SerovalNodeType.ObjectAssign,
+      SerovalBinaryType.ObjectAssign,
       id,
       serialize(ctx, entries[i][0]),
       serialize(ctx, entries[i][1]),
@@ -313,7 +313,7 @@ function serializeProperties(
   // Check special properties, symbols in this case
   if (SYM_ITERATOR in properties) {
     onSerialize(ctx, [
-      SerovalNodeType.ObjectAssign,
+      SerovalBinaryType.ObjectAssign,
       id,
       serialize(ctx, SYM_ITERATOR),
       serializeIterator(
@@ -324,7 +324,7 @@ function serializeProperties(
   }
   if (SYM_ASYNC_ITERATOR in properties) {
     onSerialize(ctx, [
-      SerovalNodeType.ObjectAssign,
+      SerovalBinaryType.ObjectAssign,
       id,
       serialize(ctx, SYM_ASYNC_ITERATOR),
       serializeAsyncIterator(
@@ -337,7 +337,7 @@ function serializeProperties(
   }
   if (SYM_TO_STRING_TAG in properties) {
     onSerialize(ctx, [
-      SerovalNodeType.ObjectAssign,
+      SerovalBinaryType.ObjectAssign,
       id,
       serialize(ctx, SYM_TO_STRING_TAG),
       serialize(ctx, properties[SYM_TO_STRING_TAG]),
@@ -345,7 +345,7 @@ function serializeProperties(
   }
   if (SYM_IS_CONCAT_SPREADABLE in properties) {
     onSerialize(ctx, [
-      SerovalNodeType.ObjectAssign,
+      SerovalBinaryType.ObjectAssign,
       id,
       serialize(ctx, SYM_IS_CONCAT_SPREADABLE),
       serialize(ctx, properties[SYM_IS_CONCAT_SPREADABLE]),
@@ -360,24 +360,24 @@ function serializePlainObject(
 ) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    empty ? SerovalNodeType.NullConstructor : SerovalNodeType.Object,
+    empty ? SerovalBinaryType.NullConstructor : SerovalBinaryType.Object,
     id,
   ]);
   serializeProperties(ctx, id, value);
-  onSerialize(ctx, [SerovalNodeType.ObjectFlag, id, getObjectFlag(value)]);
+  onSerialize(ctx, [SerovalBinaryType.ObjectFlag, id, getObjectFlag(value)]);
   return id;
 }
 
 function serializeDate(ctx: SerializerContext, value: Date) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Date, id, encodeInt(value.getTime())]);
+  onSerialize(ctx, [SerovalBinaryType.Date, id, encodeInt(value.getTime())]);
   return id;
 }
 
 function serializeError(ctx: SerializerContext, value: Error) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.Error,
+    SerovalBinaryType.Error,
     id,
     getErrorConstructor(value),
     serialize(ctx, value.message),
@@ -392,7 +392,7 @@ function serializeError(ctx: SerializerContext, value: Error) {
 function serializeBoxed(ctx: SerializerContext, value: object) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.Boxed,
+    SerovalBinaryType.Boxed,
     id,
     serialize(ctx, value.valueOf()),
   ]);
@@ -403,7 +403,7 @@ function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
   const id = createID(ctx, value);
   const arr = new Uint8Array(value);
   onSerialize(ctx, [
-    SerovalNodeType.ArrayBuffer,
+    SerovalBinaryType.ArrayBuffer,
     id,
     encodeUint(arr.length),
     arr,
@@ -414,7 +414,7 @@ function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
 function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.TypedArray,
+    SerovalBinaryType.TypedArray,
     id,
     getTypedArrayTag(value),
     encodeUint(value.byteOffset),
@@ -430,7 +430,7 @@ function serializeBigIntTypedArray(
 ) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.BigIntTypedArray,
+    SerovalBinaryType.BigIntTypedArray,
     id,
     getBigIntTypedArrayTag(value),
     encodeUint(value.byteOffset),
@@ -443,7 +443,7 @@ function serializeBigIntTypedArray(
 function serializeDataView(ctx: SerializerContext, value: DataView) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.DataView,
+    SerovalBinaryType.DataView,
     id,
     encodeUint(value.byteOffset),
     encodeUint(value.byteLength),
@@ -454,10 +454,10 @@ function serializeDataView(ctx: SerializerContext, value: DataView) {
 
 function serializeMap(ctx: SerializerContext, value: Map<unknown, unknown>) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Map, id]);
+  onSerialize(ctx, [SerovalBinaryType.Map, id]);
   for (const [key, val] of value.entries()) {
     onSerialize(ctx, [
-      SerovalNodeType.MapSet,
+      SerovalBinaryType.MapSet,
       id,
       serialize(ctx, key),
       serialize(ctx, val),
@@ -468,9 +468,9 @@ function serializeMap(ctx: SerializerContext, value: Map<unknown, unknown>) {
 
 function serializeSet(ctx: SerializerContext, value: Set<unknown>) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Set, id]);
+  onSerialize(ctx, [SerovalBinaryType.Set, id]);
   for (const key of value.keys()) {
-    onSerialize(ctx, [SerovalNodeType.SetAdd, id, serialize(ctx, key)]);
+    onSerialize(ctx, [SerovalBinaryType.SetAdd, id, serialize(ctx, key)]);
   }
   return id;
 }
@@ -484,7 +484,7 @@ function serializePromiseSuccess(
   if (ctx.alive) {
     const serialized = serializeWithError(ctx, depth, value);
     if (serialized) {
-      onSerialize(ctx, [SerovalNodeType.PromiseSuccess, id, serialized]);
+      onSerialize(ctx, [SerovalBinaryType.PromiseSuccess, id, serialized]);
     }
   }
   popPendingState(ctx);
@@ -499,7 +499,7 @@ function serializePromiseFailure(
   if (ctx.alive) {
     const serialized = serializeWithError(ctx, depth, value);
     if (serialized) {
-      onSerialize(ctx, [SerovalNodeType.PromiseFailure, id, serialized]);
+      onSerialize(ctx, [SerovalBinaryType.PromiseFailure, id, serialized]);
     }
   }
   popPendingState(ctx);
@@ -507,7 +507,7 @@ function serializePromiseFailure(
 
 function serializePromise(ctx: SerializerContext, value: Promise<unknown>) {
   const id = createID(ctx, value);
-  onSerialize(ctx, [SerovalNodeType.Promise, id]);
+  onSerialize(ctx, [SerovalBinaryType.Promise, id]);
   const prevDepth = CURRENT_DEPTH;
   pushPendingState(ctx);
   value.then(
@@ -520,7 +520,7 @@ function serializePromise(ctx: SerializerContext, value: Promise<unknown>) {
 function serializeRegExp(ctx: SerializerContext, value: RegExp) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.RegExp,
+    SerovalBinaryType.RegExp,
     id,
     serialize(ctx, value.source),
     serialize(ctx, value.flags),
@@ -534,7 +534,7 @@ function serializeAggregateError(
 ) {
   const id = createID(ctx, value);
   onSerialize(ctx, [
-    SerovalNodeType.AggregateError,
+    SerovalBinaryType.AggregateError,
     id,
     serialize(ctx, value.message),
   ]);
@@ -648,7 +648,7 @@ function serializePlugin(ctx: SerializerContext, value: object) {
       if (current.test(value)) {
         const id = createID(ctx, value);
         onSerialize(ctx, [
-          SerovalNodeType.Plugin,
+          SerovalBinaryType.Plugin,
           id,
           serialize(ctx, current.tag),
           serialize(ctx, current.serialize(value)),
@@ -747,10 +747,10 @@ function getEndianness() {
 const ENDIANNESS = /* @__PURE__ */ getEndianness();
 
 export function startSerialize<T>(ctx: SerializerContext, value: T) {
-  onSerialize(ctx, [SerovalNodeType.Preamble, ENDIANNESS]);
+  onSerialize(ctx, [SerovalBinaryType.Preamble, ENDIANNESS]);
   const serialized = serializeWithError(ctx, 0, value);
   if (serialized) {
-    onSerialize(ctx, [SerovalNodeType.Root, serialized]);
+    onSerialize(ctx, [SerovalBinaryType.Root, serialized]);
 
     if (ctx.pending <= 0) {
       endSerialize(ctx);
