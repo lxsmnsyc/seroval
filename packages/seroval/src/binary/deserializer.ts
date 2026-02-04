@@ -423,7 +423,7 @@ async function deserializeNullConstructor(ctx: DeserializerContext) {
 
 async function deserializeDate(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.Date);
-  const timestamp = await deserializeUint(ctx);
+  const timestamp = await deserializeNumberValue(ctx);
   upsert(ctx, id, new Date(timestamp));
 }
 
