@@ -98,7 +98,7 @@ export function decodeBigint(value: string): bigint {
   let hex = '';
   for (let i = 0, len = value.length; i < len; i++) {
     const code = value.charCodeAt(i);
-    hex += code.toString(16);
+    hex += code.toString(16).padStart(2, '0');
   }
   return BigInt('0x' + hex);
 }

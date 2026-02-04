@@ -118,6 +118,7 @@ export type SerovalStringNode = [
 export type SerovalBigintNode = [
   type: SerovalBinaryType.BigInt,
   id: Uint8Array,
+  isNegative: number,
   // value ref
   value: Uint8Array,
 ];

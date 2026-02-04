@@ -177,7 +177,8 @@ function serializeBigInt(ctx: SerializerContext, value: bigint) {
   onSerialize(ctx, [
     SerovalBinaryType.BigInt,
     id,
-    serialize(ctx, encodeBigint(value)),
+    value < 0 ? 1 : 0,
+    serialize(ctx, encodeBigint(value < 0 ? -value : value)),
   ]);
   return id;
 }
