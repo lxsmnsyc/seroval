@@ -3,7 +3,8 @@ import { createPlugin } from 'seroval';
 
 const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<
   URLSearchParams,
-  { value: SerovalNode }
+  { value: SerovalNode },
+  { value: string }
 >({
   tag: 'seroval-plugins/web/URLSearchParams',
   test(value) {
@@ -34,6 +35,14 @@ const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<
   },
   deserialize(node, ctx) {
     return new URLSearchParams(ctx.deserialize(node.value) as string);
+  },
+  binary: {
+    serialize(value) {
+      return { value: value.toString() };
+    },
+    deserialize(data) {
+      return new URLSearchParams(data.value);
+    },
   },
 });
 

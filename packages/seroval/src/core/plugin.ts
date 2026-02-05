@@ -68,9 +68,27 @@ export interface Plugin<Value, Info extends PluginInfo> {
   ): Value;
 }
 
+export interface BinaryPlugin<Value, BinaryData> {
+  serialize(value: Value): BinaryData;
+  deserialize(value: BinaryData): Value | Promise<Value>;
+}
+
+export interface PluginWithBinaryMode<
+  Value,
+  Info extends PluginInfo,
+  BinaryData,
+> extends Plugin<Value, Info> {
+  extends?: PluginWithBinaryMode<any, any, any>[];
+  binary: BinaryPlugin<Value, BinaryData>;
+}
+
 export function createPlugin<Value, Info extends PluginInfo>(
   plugin: Plugin<Value, Info>,
-): Plugin<Value, Info> {
+): Plugin<Value, Info>;
+export function createPlugin<Value, Info extends PluginInfo, BinaryData>(
+  plugin: PluginWithBinaryMode<Value, Info, BinaryData>,
+): PluginWithBinaryMode<Value, Info, BinaryData>;
+export function createPlugin(plugin: unknown) {
   return plugin;
 }
 
@@ -93,6 +111,12 @@ function dedupePlugins(
   }
 }
 
+export function resolvePlugins(
+  plugins?: PluginWithBinaryMode<any, any, any>[],
+): PluginWithBinaryMode<any, any, any>[] | undefined;
+export function resolvePlugins(
+  plugins?: Plugin<any, any>[],
+): Plugin<any, any>[] | undefined;
 export function resolvePlugins(
   plugins?: Plugin<any, any>[],
 ): Plugin<any, any>[] | undefined {

@@ -15,6 +15,7 @@ import {
   SerovalUnsupportedTypeError,
 } from '../core/errors';
 import { OpaqueReference } from '../core/opaque-reference';
+import type { PluginWithBinaryMode } from '../core/plugin';
 import {
   createSequenceFromIterable,
   isSequence,
@@ -46,7 +47,6 @@ import {
   SerovalEndianness,
   type SerovalNode,
 } from './nodes';
-import type { Plugin } from './plugin';
 
 export interface SerializerContext {
   alive: boolean;
@@ -54,7 +54,7 @@ export interface SerializerContext {
   depthLimit: number;
   refs: Map<unknown, Uint8Array>;
   features: number;
-  plugins?: Plugin<any, any>[];
+  plugins?: PluginWithBinaryMode<any, any, any>[];
   onSerialize(bytes: Uint8Array): void;
   onDone(): void;
   onError(error: unknown): void;
@@ -65,7 +65,7 @@ export interface SerializerContextOptions {
   disabledFeatures?: number;
   depthLimit?: number;
   refs: Map<unknown, Uint8Array>;
-  plugins?: Plugin<any, any>[];
+  plugins?: PluginWithBinaryMode<any, any, any>[];
   onSerialize(bytes: Uint8Array): void;
   onDone(): void;
   onError(error: unknown): void;
@@ -663,7 +663,7 @@ function serializePlugin(ctx: SerializerContext, value: object) {
           SerovalBinaryType.Plugin,
           id,
           serialize(ctx, current.tag),
-          serialize(ctx, current.serialize(value)),
+          serialize(ctx, current.binary.serialize(value)),
         ]);
         return id;
       }
