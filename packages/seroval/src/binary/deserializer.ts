@@ -23,6 +23,7 @@ import {
   SerovalUnexpectedBinaryTypeError,
   SerovalUnknownBinaryTypeError,
 } from '../core/errors';
+import type { PluginWithBinaryMode } from '../core/plugin';
 import {
   createSequence,
   type Sequence,
@@ -47,7 +48,6 @@ import {
   decodeUint,
 } from './encoder';
 import { SerovalBinaryType, SerovalEndianness } from './nodes';
-import type { Plugin } from './plugin';
 
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
@@ -55,7 +55,7 @@ export interface DeserializerContextOptions {
   read(): Promise<Uint8Array | undefined>;
   onError(error: unknown): void;
   refs: Map<number, { value: unknown }>;
-  plugins?: Plugin<any, any>[];
+  plugins?: PluginWithBinaryMode<any, any, any>[];
   disabledFeatures?: number;
   features?: number;
 }
@@ -64,7 +64,7 @@ export interface DeserializerContext {
   read(): Promise<Uint8Array | undefined>;
   onError(error: unknown): void;
   refs: Map<number, { value: unknown }>;
-  plugins?: Plugin<any, any>[];
+  plugins?: PluginWithBinaryMode<any, any, any>[];
   root: PromiseConstructorResolver;
   rootFound: boolean;
   done: boolean;
@@ -619,7 +619,7 @@ async function deserializePlugin(ctx: DeserializerContext) {
     for (let i = 0, len = ctx.plugins.length; i < len; i++) {
       const current = ctx.plugins[i];
       if (current.tag === tag) {
-        upsert(ctx, id, current.deserialize(options));
+        upsert(ctx, id, await current.binary.deserialize(options));
         return;
       }
     }

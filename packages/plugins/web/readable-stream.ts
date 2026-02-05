@@ -30,6 +30,7 @@ const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
 
 const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
   object,
+  {},
   {}
 >({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
@@ -52,6 +53,14 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
   },
   deserialize() {
     return READABLE_STREAM_FACTORY;
+  },
+  binary: {
+    serialize() {
+      return READABLE_STREAM_FACTORY;
+    },
+    deserialize() {
+      return READABLE_STREAM_FACTORY;
+    },
   },
 });
 
@@ -86,9 +95,14 @@ type ReadableStreamNode = {
   stream: SerovalNode;
 };
 
+type ReadableStreamBinaryData = {
+  stream: Stream<unknown>;
+};
+
 const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   ReadableStream,
-  ReadableStreamNode
+  ReadableStreamNode,
+  ReadableStreamBinaryData
 >({
   tag: 'seroval/plugins/web/ReadableStream',
   extends: [ReadableStreamFactoryPlugin],
@@ -130,6 +144,14 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   deserialize(node, ctx) {
     const stream = ctx.deserialize(node.stream) as Stream<any>;
     return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);
+  },
+  binary: {
+    serialize(value) {
+      return { stream: toStream(value) };
+    },
+    deserialize(data) {
+      return READABLE_STREAM_FACTORY_CONSTRUCTOR(data.stream);
+    },
   },
 });
 
