@@ -27,7 +27,16 @@ type RequestNode = {
   options: SerovalNode;
 };
 
-const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
+type RequestBinaryData = {
+  url: string;
+  options: RequestInit;
+};
+
+const RequestPlugin = /* @__PURE__ */ createPlugin<
+  Request,
+  RequestNode,
+  RequestBinaryData
+>({
   tag: 'seroval-plugins/web/Request',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   test(value) {
@@ -76,6 +85,20 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
       ctx.deserialize(node.url) as string,
       ctx.deserialize(node.options) as RequestInit,
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        url: value.url,
+        options: createRequestOptions(
+          value,
+          value.body && !value.bodyUsed ? value.clone().body : null,
+        ),
+      };
+    },
+    deserialize(data) {
+      return new Request(data.url, data.options);
+    },
   },
 });
 

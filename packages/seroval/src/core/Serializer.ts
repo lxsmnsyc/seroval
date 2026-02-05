@@ -1,8 +1,8 @@
 import { crossSerializeStream } from './cross';
 import {
-  resolvePlugins,
   type Plugin,
   type PluginAccessOptions,
+  resolvePlugins,
 } from './plugin';
 import { serializeString } from './string';
 
