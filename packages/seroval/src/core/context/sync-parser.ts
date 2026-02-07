@@ -22,6 +22,7 @@ import {
   createTypedArrayNode,
 } from '../base-primitives';
 import { Feature } from '../compat';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import { NIL, SerovalNodeType } from '../constants';
 import {
   SerovalDepthLimitError,
@@ -72,10 +73,6 @@ import type {
   SerovalTypedArrayNode,
 } from '../types';
 import { getErrorOptions } from '../utils/error';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createArrayBufferNode,

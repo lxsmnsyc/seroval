@@ -30,7 +30,11 @@ function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
 
 const ABORT_CONTROLLER = {};
 
-const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
+const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  {},
+  {}
+>({
   tag: 'seroval-plugins/web/AbortControllerFactoryPlugin',
   test(value) {
     return value === ABORT_CONTROLLER;
@@ -52,11 +56,20 @@ const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   deserialize() {
     return PROMISE_TO_ABORT_SIGNAL;
   },
+  binary: {
+    serialize() {
+      return ABORT_CONTROLLER;
+    },
+    deserialize() {
+      return PROMISE_TO_ABORT_SIGNAL;
+    },
+  },
 });
 
 const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
   AbortSignal,
-  { reason?: SerovalNode; controller?: SerovalNode; factory?: SerovalNode }
+  { reason?: SerovalNode; controller?: SerovalNode; factory?: SerovalNode },
+  { reason: unknown } | { controller: Promise<unknown> }
 >({
   tag: 'seroval-plugins/web/AbortSignal',
   extends: [AbortControllerFactoryPlugin],
@@ -125,6 +138,27 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
     }
     const controller = new AbortController();
     return controller.signal;
+  },
+  binary: {
+    serialize(value) {
+      if (value.aborted) {
+        return {
+          reason: value.reason,
+        };
+      }
+
+      const promise = abortSignalToPromise(value);
+
+      return {
+        controller: promise,
+      };
+    },
+    deserialize(data) {
+      if ('reason' in data) {
+        return AbortSignal.abort(data.reason);
+      }
+      return PROMISE_TO_ABORT_SIGNAL(data.controller).signal;
+    },
   },
 });
 

@@ -3,7 +3,7 @@ import { createPlugin } from 'seroval';
 
 function convertHeaders(instance: Headers): HeadersInit {
   const items: HeadersInit = [];
-  // biome-ignore lint/complexity/noForEach: <explanation>
+  // biome-ignore lint/complexity/noForEach: Headers aren't consistently iterable
   instance.forEach((value, key) => {
     items.push([key, value]);
   });
@@ -12,7 +12,8 @@ function convertHeaders(instance: Headers): HeadersInit {
 
 const HeadersPlugin = /* @__PURE__ */ createPlugin<
   Headers,
-  { value: SerovalNode }
+  { value: SerovalNode },
+  { value: HeadersInit }
 >({
   tag: 'seroval-plugins/web/Headers',
   test(value) {
@@ -43,6 +44,14 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<
   },
   deserialize(node, ctx) {
     return new Headers(ctx.deserialize(node.value) as HeadersInit);
+  },
+  binary: {
+    serialize(value) {
+      return { value: convertHeaders(value) };
+    },
+    deserialize(data) {
+      return new Headers(data.value);
+    },
   },
 });
 

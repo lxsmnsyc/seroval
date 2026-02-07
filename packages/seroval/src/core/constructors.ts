@@ -1,4 +1,4 @@
-import { Sequence } from './sequence';
+import type { Sequence } from './sequence';
 import type { Stream } from './stream';
 
 type SpecialPromise = Promise<unknown> & { s?: 1 | 2; v?: unknown };
