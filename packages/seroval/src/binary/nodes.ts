@@ -46,6 +46,7 @@ export const enum SerovalBinaryType {
   AggregateError = 35,
   Iterator = 36,
   AsyncIterator = 37,
+  Pending = 38,
 }
 
 export const NODE_TYPE_NAME: Record<SerovalBinaryType, string> = {
@@ -87,6 +88,7 @@ export const NODE_TYPE_NAME: Record<SerovalBinaryType, string> = {
   [SerovalBinaryType.AggregateError]: 'AggregateError',
   [SerovalBinaryType.Iterator]: 'Iterator',
   [SerovalBinaryType.AsyncIterator]: 'AsyncIterator',
+  [SerovalBinaryType.Pending]: 'Pending',
 };
 
 export const enum SerovalEndianness {
@@ -157,7 +159,10 @@ export type SerovalArrayNode = [
   length: Uint8Array,
 ];
 
-export type SerovalStreamNode = [type: SerovalBinaryType.Stream, id: Uint8Array];
+export type SerovalStreamNode = [
+  type: SerovalBinaryType.Stream,
+  id: Uint8Array,
+];
 
 export type SerovalStreamNextNode = [
   type: SerovalBinaryType.StreamNext,
@@ -191,7 +196,10 @@ export type SerovalSequencePushNode = [
   value: Uint8Array,
 ];
 
-export type SerovalObjectNode = [type: SerovalBinaryType.Object, id: Uint8Array];
+export type SerovalObjectNode = [
+  type: SerovalBinaryType.Object,
+  id: Uint8Array,
+];
 export type SerovalNullConstructorNode = [
   type: SerovalBinaryType.NullConstructor,
   id: Uint8Array,
@@ -327,6 +335,12 @@ export type SerovalAsyncIteratorNode = [
   stream: Uint8Array,
 ];
 
+export type SerovalPendingNode = [
+  type: SerovalBinaryType.Pending,
+  id: Uint8Array,
+  amount: Uint8Array,
+];
+
 export type SerovalNode =
   | SerovalPreambleNode
   | SerovalConstantNode
@@ -365,4 +379,5 @@ export type SerovalNode =
   | SerovalPluginNode
   | SerovalRootNode
   | SerovalIteratorNode
-  | SerovalAsyncIteratorNode;
+  | SerovalAsyncIteratorNode
+  | SerovalPendingNode;
