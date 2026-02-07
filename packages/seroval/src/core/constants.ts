@@ -194,7 +194,7 @@ export const ERROR_CONSTRUCTOR_STRING: Record<ErrorConstructorTag, string> = {
   [ErrorConstructorTag.URIError]: 'URIError',
 };
 
-type ErrorConstructors =
+export type ErrorConstructors =
   | ErrorConstructor
   | EvalErrorConstructor
   | RangeErrorConstructor
@@ -266,10 +266,7 @@ export const TYPED_ARRAY_CONSTRUCTOR: Record<
   [TypedArrayTag.Uint8Array]: Uint8Array,
   [TypedArrayTag.Uint8ClampedArray]: Uint8ClampedArray,
 };
-export const TYPED_ARRAY_CONSTRUCTOR_STRING: Record<
-  TypedArrayTag,
-  string
-> = {
+export const TYPED_ARRAY_CONSTRUCTOR_STRING: Record<TypedArrayTag, string> = {
   [TypedArrayTag.Float32Array]: 'Float32Array',
   [TypedArrayTag.Float64Array]: 'Float64Array',
   [TypedArrayTag.Int16Array]: 'Int16Array',

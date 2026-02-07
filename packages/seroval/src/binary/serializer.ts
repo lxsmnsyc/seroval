@@ -136,6 +136,10 @@ function onSerialize(ctx: SerializerContext, bytes: SerovalNode): void {
   ctx.onSerialize(mergeBytes(bytes));
 }
 
+function serializePending(ctx: SerializerContext, source: Uint8Array, amount: number): void {
+  onSerialize(ctx, [SerovalBinaryType.Pending, source, encodeUint(amount)]);
+}
+
 function serializeConstant(ctx: SerializerContext, value: SerovalConstant) {
   const id = createID(ctx, value);
   onSerialize(ctx, [SerovalBinaryType.Constant, id, value]);
@@ -197,6 +201,8 @@ function serializeArray(ctx: SerializerContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
   onSerialize(ctx, [SerovalBinaryType.Array, id, encodeUint(len)]);
+  
+  let pending = 0;
   for (let i = 0; i < len; i++) {
     if (i in value) {
       onSerialize(ctx, [
@@ -205,8 +211,10 @@ function serializeArray(ctx: SerializerContext, value: unknown[]) {
         encodeUint(i),
         serialize(ctx, value[i]),
       ]);
+      pending++;
     }
   }
+  serializePending(ctx, id, pending)
   onSerialize(ctx, [SerovalBinaryType.ObjectFlag, id, getObjectFlag(value)]);
   return id;
 }
@@ -278,13 +286,15 @@ function serializeSequence(ctx: SerializerContext, value: Sequence) {
     encodeInt(value.t),
     encodeInt(value.d),
   ]);
-  for (let i = 0, len = value.v.length; i < len; i++) {
+  const length = value.v.length;
+  for (let i = 0; i < length; i++) {
     onSerialize(ctx, [
       SerovalBinaryType.SequencePush,
       id,
       serialize(ctx, value.v[i]),
     ]);
   }
+  serializePending(ctx, id, length)
   return id;
 }
 
@@ -313,7 +323,8 @@ function serializeProperties(
   properties: object,
 ) {
   const entries = Object.entries(properties);
-  for (let i = 0, len = entries.length; i < len; i++) {
+  let pending = entries.length;
+  for (let i = 0; i < pending; i++) {
     onSerialize(ctx, [
       SerovalBinaryType.ObjectAssign,
       id,
@@ -333,6 +344,7 @@ function serializeProperties(
         createSequenceFromIterable(properties as unknown as Iterable<unknown>),
       ),
     ]);
+    pending++;
   }
   if (SYM_ASYNC_ITERATOR in properties) {
     onSerialize(ctx, [
@@ -346,6 +358,7 @@ function serializeProperties(
         ),
       ),
     ]);
+    pending++;
   }
   if (SYM_TO_STRING_TAG in properties) {
     onSerialize(ctx, [
@@ -354,6 +367,7 @@ function serializeProperties(
       serialize(ctx, SYM_TO_STRING_TAG),
       serialize(ctx, properties[SYM_TO_STRING_TAG]),
     ]);
+    pending++;
   }
   if (SYM_IS_CONCAT_SPREADABLE in properties) {
     onSerialize(ctx, [
@@ -362,7 +376,10 @@ function serializeProperties(
       serialize(ctx, SYM_IS_CONCAT_SPREADABLE),
       serialize(ctx, properties[SYM_IS_CONCAT_SPREADABLE]),
     ]);
+    pending++;
   }
+
+  serializePending(ctx, id, pending);
 }
 
 function serializePlainObject(
@@ -429,9 +446,9 @@ function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
     SerovalBinaryType.TypedArray,
     id,
     getTypedArrayTag(value),
+    serialize(ctx, value.buffer),
     encodeUint(value.byteOffset),
     encodeUint(value.byteLength),
-    serialize(ctx, value.buffer),
   ]);
   return id;
 }
@@ -445,9 +462,9 @@ function serializeBigIntTypedArray(
     SerovalBinaryType.BigIntTypedArray,
     id,
     getBigIntTypedArrayTag(value),
+    serialize(ctx, value.buffer),
     encodeUint(value.byteOffset),
     encodeUint(value.byteLength),
-    serialize(ctx, value.buffer),
   ]);
   return id;
 }
@@ -457,9 +474,9 @@ function serializeDataView(ctx: SerializerContext, value: DataView) {
   onSerialize(ctx, [
     SerovalBinaryType.DataView,
     id,
+    serialize(ctx, value.buffer),
     encodeUint(value.byteOffset),
     encodeUint(value.byteLength),
-    serialize(ctx, value.buffer),
   ]);
   return id;
 }
@@ -475,6 +492,7 @@ function serializeMap(ctx: SerializerContext, value: Map<unknown, unknown>) {
       serialize(ctx, val),
     ]);
   }
+  serializePending(ctx, id, value.size);
   return id;
 }
 
@@ -484,6 +502,7 @@ function serializeSet(ctx: SerializerContext, value: Set<unknown>) {
   for (const key of value.keys()) {
     onSerialize(ctx, [SerovalBinaryType.SetAdd, id, serialize(ctx, key)]);
   }
+  serializePending(ctx, id, value.size);
   return id;
 }
 

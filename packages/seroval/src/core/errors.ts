@@ -86,6 +86,7 @@ const enum SpecificErrorCodes {
   MalformedBinaryType = 12,
   UnknownBinaryType = 13,
   UnexpectedBinaryType = 14,
+  MissingBinaryRef = 15,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -226,6 +227,16 @@ export class SerovalUnknownBinaryTypeError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnknownBinaryType)
         : `Malformed binary detected. (type: ${nodeType}) `,
+    );
+  }
+}
+
+export class SerovalMissingBinaryRefError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MissingBinaryRef)
+        : `Missing binary ref detected. (type: ${nodeType}) `,
     );
   }
 }

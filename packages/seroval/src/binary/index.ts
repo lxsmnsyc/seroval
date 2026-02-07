@@ -1,6 +1,7 @@
 import { resolvePlugins } from '../core/plugin';
 import {
   createDeserializerContext,
+  createReferenceMap,
   type DeserializerContextOptions,
   deserializeStart,
 } from './deserializer';
@@ -32,6 +33,7 @@ export async function deserialize<T>(
   const context = createDeserializerContext({
     ...options,
     plugins,
+    refs: createReferenceMap(),
   });
   return (await deserializeStart(context)) as Promise<{ value: T }>;
 }
