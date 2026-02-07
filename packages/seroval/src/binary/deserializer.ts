@@ -627,7 +627,14 @@ async function deserializeArrayBuffer(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.ArrayBuffer);
   const length = await deserializeUint(ctx);
   const bytes = await ensureChunk(ctx, length);
-  upsert(ctx, id, createImmediateTask(bytes.buffer));
+  upsert(
+    ctx,
+    id,
+    createImmediateTask(
+      // We can't really use the buffer directly.
+      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+    ),
+  );
 }
 
 async function deserializeTypedArrayInner(
@@ -934,7 +941,7 @@ async function deserializeRootInner(ctx: DeserializerContext, ref: number) {
   // first, check for resolvers
   const resolver = ctx.refs.resolvers.get(ref);
   // If there's a resolver, we use that first
-  if (resolver) {
+  if (resolver && ctx.refs.types.get(ref) !== SerovalBinaryType.Promise) {
     ctx.root.found = true;
     await resolver.p;
   }
