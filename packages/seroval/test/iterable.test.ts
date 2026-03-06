@@ -24,6 +24,16 @@ const EXAMPLE = {
   },
 };
 
+function makeDeepObject(depth: number): Record<string, unknown> {
+  let current: Record<string, unknown> = {};
+  const root = current;
+  for (let i = 0; i < depth; i++) {
+    current.next = {};
+    current = current.next as Record<string, unknown>;
+  }
+  return root;
+}
+
 describe('Iterable', () => {
   describe('serialize', () => {
     it('supports Iterables', () => {
@@ -181,5 +191,34 @@ describe('Iterable', () => {
           },
         });
       }));
+    it('respects depthLimit', async () =>
+      new Promise<void>(resolve => {
+        const deep = makeDeepObject(5);
+        let parsed = false;
+        toCrossJSONStream(deep, {
+          depthLimit: 2,
+          onParse() {
+            parsed = true;
+          },
+          onError(error) {
+            expect(error).toBeInstanceOf(Error);
+            expect((error as Error).message).toContain('Depth limit');
+            expect(parsed).toBe(false);
+            resolve();
+          },
+        });
+      }));
+  });
+  describe('fromCrossJSON', () => {
+    it('respects depthLimit', () => {
+      const deep = makeDeepObject(5);
+      const tree = toCrossJSON(deep);
+      expect(() =>
+        fromCrossJSON(tree, {
+          depthLimit: 2,
+          refs: new Map(),
+        }),
+      ).toThrowError(/Depth limit/);
+    });
   });
 });

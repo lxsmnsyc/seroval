@@ -161,6 +161,7 @@ export function toCrossJSONStream<T>(
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
+    depthLimit: options.depthLimit,
     onParse: options.onParse,
     onError: options.onError,
     onDone: options.onDone,
@@ -183,6 +184,7 @@ export function fromCrossJSON<T>(
     refs: options.refs,
     features: options.features,
     disabledFeatures: options.disabledFeatures,
+    depthLimit: options.depthLimit,
   });
   return deserializeTop(ctx, source) as T;
 }
