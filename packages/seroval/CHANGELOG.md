@@ -1,5 +1,11 @@
 # seroval
 
+## 1.5.1
+
+### Patch Changes
+
+- fix depthLimit on streaming mode
+
 ## 1.5.0
 
 ### Minor Changes
