@@ -11,10 +11,10 @@ self._$ = self._$ || {
       success = resolve;
       failure = reject;
     });
-  
+
     promise.s = success;
     promise.f = failure;
-  
+
     return promise;
   },
   // This unsets the custom properties of the Promise instance
@@ -52,7 +52,7 @@ self._$ = self._$ || {
     stream = new ReadableStream({
       start: function (c) {
         controller = c;
-      }
+      },
     });
     stream.c = controller;
     return stream;
