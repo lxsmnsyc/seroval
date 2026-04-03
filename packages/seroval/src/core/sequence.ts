@@ -1,5 +1,5 @@
-import { ITERATOR_CONSTRUCTOR } from "./constructors";
-import { SYM_ITERATOR } from "./symbols";
+import { ITERATOR_CONSTRUCTOR } from './constructors';
+import { SYM_ITERATOR } from './symbols';
 
 export interface Sequence {
   __SEROVAL_SEQUENCE__: true;
@@ -13,7 +13,11 @@ export function isSequence(value: object): value is Sequence {
   return '__SEROVAL_SEQUENCE__' in value;
 }
 
-export function createSequence(values: unknown[], throwAt: number, doneAt: number): Sequence {
+export function createSequence(
+  values: unknown[],
+  throwAt: number,
+  doneAt: number,
+): Sequence {
   return {
     __SEROVAL_SEQUENCE__: true,
 

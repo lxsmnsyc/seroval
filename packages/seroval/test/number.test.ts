@@ -32,12 +32,12 @@ describe('number', () => {
       expect(await serializeAsync(Promise.resolve(Number.NaN))).toBe(
         'Promise.resolve(0/0)',
       );
-      expect(await serializeAsync(Promise.resolve(Number.POSITIVE_INFINITY))).toBe(
-        'Promise.resolve(1/0)',
-      );
-      expect(await serializeAsync(Promise.resolve(Number.NEGATIVE_INFINITY))).toBe(
-        'Promise.resolve(-1/0)',
-      );
+      expect(
+        await serializeAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
+      ).toBe('Promise.resolve(1/0)');
+      expect(
+        await serializeAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
+      ).toBe('Promise.resolve(-1/0)');
       expect(await serializeAsync(Promise.resolve(-0))).toBe(
         'Promise.resolve(-0)',
       );
@@ -48,8 +48,12 @@ describe('number', () => {
       const value = 0xdeadbeef;
       expect(JSON.stringify(toJSON(value))).toMatchSnapshot();
       expect(JSON.stringify(toJSON(Number.NaN))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Number.POSITIVE_INFINITY))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Number.NEGATIVE_INFINITY))).toMatchSnapshot();
+      expect(
+        JSON.stringify(toJSON(Number.POSITIVE_INFINITY)),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(toJSON(Number.NEGATIVE_INFINITY)),
+      ).toMatchSnapshot();
       expect(JSON.stringify(toJSON(-0))).toMatchSnapshot();
     });
   });
@@ -63,10 +67,14 @@ describe('number', () => {
         JSON.stringify(await toJSONAsync(Promise.resolve(Number.NaN))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY))),
+        JSON.stringify(
+          await toJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
+        ),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY))),
+        JSON.stringify(
+          await toJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
+        ),
       ).toMatchSnapshot();
       expect(
         JSON.stringify(await toJSONAsync(Promise.resolve(-0))),
@@ -89,7 +97,9 @@ describe('number', () => {
       expect(
         await crossSerializeAsync(Promise.resolve(value)),
       ).toMatchSnapshot();
-      expect(await crossSerializeAsync(Promise.resolve(Number.NaN))).toMatchSnapshot();
+      expect(
+        await crossSerializeAsync(Promise.resolve(Number.NaN)),
+      ).toMatchSnapshot();
       expect(
         await crossSerializeAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
       ).toMatchSnapshot();
@@ -177,8 +187,12 @@ describe('number', () => {
       const value = 0xdeadbeef;
       expect(JSON.stringify(toCrossJSON(value))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(Number.NaN))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Number.POSITIVE_INFINITY))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Number.NEGATIVE_INFINITY))).toMatchSnapshot();
+      expect(
+        JSON.stringify(toCrossJSON(Number.POSITIVE_INFINITY)),
+      ).toMatchSnapshot();
+      expect(
+        JSON.stringify(toCrossJSON(Number.NEGATIVE_INFINITY)),
+      ).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(-0))).toMatchSnapshot();
     });
   });
@@ -192,10 +206,14 @@ describe('number', () => {
         JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.NaN))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY))),
+        JSON.stringify(
+          await toCrossJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
+        ),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY))),
+        JSON.stringify(
+          await toCrossJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
+        ),
       ).toMatchSnapshot();
       expect(
         JSON.stringify(await toCrossJSONAsync(Promise.resolve(-0))),

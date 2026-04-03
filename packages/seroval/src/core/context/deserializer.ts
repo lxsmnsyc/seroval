@@ -326,7 +326,11 @@ function assignProperty(
   value: SerovalNode,
 ): void {
   if (typeof key === 'string') {
-    assignStringProperty(object, key, deserialize(ctx, depth, value));
+    assignStringProperty(
+      object,
+      deserializeString(key),
+      deserialize(ctx, depth, value),
+    );
   } else {
     const actual = deserialize(ctx, depth, key);
     switch (typeof actual) {

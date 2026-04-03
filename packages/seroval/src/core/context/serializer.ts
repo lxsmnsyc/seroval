@@ -491,7 +491,11 @@ function createSequenceAssign(
   index: number | string,
   value: string,
 ): void {
-  createAssignment(ctx.base, getRefParam(ctx, ref) + '.v[' + index + ']', value);
+  createAssignment(
+    ctx.base,
+    getRefParam(ctx, ref) + '.v[' + index + ']',
+    value,
+  );
 }
 
 /**
@@ -970,14 +974,26 @@ function serializeTypedArray(
   ctx: SerializerContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ): string {
-  return 'new ' + node.c + '(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
+  return (
+    'new ' +
+    node.c +
+    '(' +
+    serialize(ctx, node.f) +
+    ',' +
+    node.b +
+    ',' +
+    node.l +
+    ')'
+  );
 }
 
 function serializeDataView(
   ctx: SerializerContext,
   node: SerovalDataViewNode,
 ): string {
-  return 'new DataView(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
+  return (
+    'new DataView(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')'
+  );
 }
 
 function serializeAggregateError(
@@ -1285,7 +1301,15 @@ function serializeSequence(
     }
     ctx.base.stack.pop();
     if (result) {
-      return '{__SEROVAL_SEQUENCE__:!0,v:[' + result + '],t:' + node.s + ',d:' + node.l + '}';
+      return (
+        '{__SEROVAL_SEQUENCE__:!0,v:[' +
+        result +
+        '],t:' +
+        node.s +
+        ',d:' +
+        node.l +
+        '}'
+      );
     }
   }
   return '{__SEROVAL_SEQUENCE__:!0,v:[],t:-1,d:0}';

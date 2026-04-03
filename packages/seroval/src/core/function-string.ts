@@ -1,4 +1,3 @@
-
 declare const T: unknown;
 
 const RETURN = () => T;

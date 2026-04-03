@@ -28,10 +28,7 @@ const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
     },
   });
 
-const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
-  object,
-  {}
->({
+const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
   test(value) {
     return value === READABLE_STREAM_FACTORY;
