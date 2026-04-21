@@ -52,30 +52,43 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   },
 });
 
-function toStream<T>(value: ReadableStream<T>): Stream<T | undefined> {
+async function drainStream<T>(
+  stream: Stream<T | undefined>,
+  reader: ReadableStreamDefaultReader<T>,
+): Promise<void> {
+  try {
+    const result = await reader.read();
+    if (result.done) {
+      stream.return(result.value);
+      reader.releaseLock();
+    } else {
+      stream.next(result.value);
+      await drainStream(stream, reader);
+    }
+  } catch (error) {
+    stream.throw(error);
+  }
+}
+
+function cleanupStream<T>(reader: ReadableStreamDefaultReader<T>): void {
+  reader.cancel().catch(() => {
+    // no-op
+  });
+  reader.releaseLock();
+}
+
+function toStream<T>(
+  value: ReadableStream<T>,
+): [Stream<T | undefined>, () => void] {
   const stream = createStream<T | undefined>();
 
   const reader = value.getReader();
 
-  async function push(): Promise<void> {
-    try {
-      const result = await reader.read();
-      if (result.done) {
-        stream.return(result.value);
-      } else {
-        stream.next(result.value);
-        await push();
-      }
-    } catch (error) {
-      stream.throw(error);
-    }
-  }
+  const cleanup = cleanupStream.bind(null, reader);
 
-  push().catch(() => {
-    //
-  });
+  drainStream(stream, reader).catch(cleanup);
 
-  return stream;
+  return [stream, cleanup];
 }
 
 type ReadableStreamNode = {
@@ -105,13 +118,15 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
     async async(value, ctx) {
       return {
         factory: await ctx.parse(READABLE_STREAM_FACTORY),
-        stream: await ctx.parse(toStream(value)),
+        stream: await ctx.parse(toStream(value)[0]),
       };
     },
     stream(value, ctx) {
+      const [stream, cleanup] = toStream(value);
+      ctx.addCleanup(cleanup);
       return {
         factory: ctx.parse(READABLE_STREAM_FACTORY),
-        stream: ctx.parse(toStream(value)),
+        stream: ctx.parse(stream),
       };
     },
   },
