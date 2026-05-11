@@ -36,6 +36,14 @@ import type {
   SerovalStreamReturnNode,
   SerovalStreamThrowNode,
   SerovalStringNode,
+  SerovalTemporalDurationNode,
+  SerovalTemporalInstantNode,
+  SerovalTemporalPlainDateNode,
+  SerovalTemporalPlainDateTimeNode,
+  SerovalTemporalPlainMonthDayNode,
+  SerovalTemporalPlainTimeNode,
+  SerovalTemporalPlainYearMonthNode,
+  SerovalTemporalZonedDateTimeNode,
   SerovalTypedArrayNode,
   SerovalWKSymbolNode,
 } from './types';
@@ -134,6 +142,166 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     SerovalNodeType.Date,
     id,
     timestamp !== timestamp ? '' : current.toISOString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalInstantNode(
+  id: number,
+  current: Temporal.Instant,
+): SerovalTemporalInstantNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalInstant,
+    id,
+    current.toString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalDurationNode(
+  id: number,
+  current: Temporal.Duration,
+): SerovalTemporalDurationNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalDuration,
+    id,
+    current.toString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalPlainDateNode(
+  id: number,
+  current: Temporal.PlainDate,
+): SerovalTemporalPlainDateNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalPlainDate,
+    id,
+    current.toString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalPlainDateTimeNode(
+  id: number,
+  current: Temporal.PlainDateTime,
+): SerovalTemporalPlainDateTimeNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalPlainDateTime,
+    id,
+    current.toString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalPlainMonthDayNode(
+  id: number,
+  current: Temporal.PlainMonthDay,
+): SerovalTemporalPlainMonthDayNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalPlainMonthDay,
+    id,
+    current.toString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalPlainTimeNode(
+  id: number,
+  current: Temporal.PlainTime,
+): SerovalTemporalPlainTimeNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalPlainTime,
+    id,
+    current.toString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalPlainYearMonthNode(
+  id: number,
+  current: Temporal.PlainYearMonth,
+): SerovalTemporalPlainYearMonthNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalPlainYearMonth,
+    id,
+    current.toString(),
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+export function createTemporalZonedDateTimeNode(
+  id: number,
+  current: Temporal.ZonedDateTime,
+): SerovalTemporalZonedDateTimeNode {
+  return createSerovalNode(
+    SerovalNodeType.TemporalZonedDateTime,
+    id,
+    current.toString(),
     NIL,
     NIL,
     NIL,

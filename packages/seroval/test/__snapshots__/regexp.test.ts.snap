@@ -66,9 +66,9 @@ exports[`RegExp > toCrossJSONStream > supports RegExp 1`] = `"{"t":22,"i":0,"s":
 
 exports[`RegExp > toCrossJSONStream > supports RegExp 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":6,"i":3,"c":"[a-z0-9]+","m":"i"}]}"`;
 
-exports[`RegExp > toJSON > supports RegExp 1`] = `"{"t":{"t":6,"i":0,"c":"[a-z0-9]+","m":"i"},"f":63,"m":[]}"`;
+exports[`RegExp > toJSON > supports RegExp 1`] = `"{"t":{"t":6,"i":0,"c":"[a-z0-9]+","m":"i"},"f":127,"m":[]}"`;
 
-exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":6,"i":1,"c":"[a-z0-9]+","m":"i"}},"f":63,"m":[]}"`;
+exports[`RegExp > toJSONAsync > supports RegExp 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":6,"i":1,"c":"[a-z0-9]+","m":"i"}},"f":127,"m":[]}"`;
 
 exports[`RegExp with escaped source > serialize > supports escaped source 1`] = `"/\\d+\\.\\d+\\s?\\/\\w*/g"`;
 
@@ -78,6 +78,6 @@ exports[`RegExp with escaped source > toCrossJSON > supports escaped source 1`] 
 
 exports[`RegExp with escaped source > toCrossJSONAsync > supports escaped source 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":6,"i":1,"c":"\\\\\\\\d+\\\\\\\\.\\\\\\\\d+\\\\\\\\s?\\\\\\\\/\\\\\\\\w*","m":"g"}}"`;
 
-exports[`RegExp with escaped source > toJSON > supports escaped source 1`] = `"{"t":{"t":6,"i":0,"c":"\\\\\\\\d+\\\\\\\\.\\\\\\\\d+\\\\\\\\s?\\\\\\\\/\\\\\\\\w*","m":"g"},"f":63,"m":[]}"`;
+exports[`RegExp with escaped source > toJSON > supports escaped source 1`] = `"{"t":{"t":6,"i":0,"c":"\\\\\\\\d+\\\\\\\\.\\\\\\\\d+\\\\\\\\s?\\\\\\\\/\\\\\\\\w*","m":"g"},"f":127,"m":[]}"`;
 
-exports[`RegExp with escaped source > toJSONAsync > supports escaped source 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":6,"i":1,"c":"\\\\\\\\d+\\\\\\\\.\\\\\\\\d+\\\\\\\\s?\\\\\\\\/\\\\\\\\w*","m":"g"}},"f":63,"m":[]}"`;
+exports[`RegExp with escaped source > toJSONAsync > supports escaped source 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":6,"i":1,"c":"\\\\\\\\d+\\\\\\\\.\\\\\\\\d+\\\\\\\\s?\\\\\\\\/\\\\\\\\w*","m":"g"}},"f":127,"m":[]}"`;

@@ -1,0 +1,71 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Temporal.ZonedDateTime > crossSerialize > scoped > supports Temporal.ZonedDateTime 1`] = `"($R=>$R[0]=Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]"))($R["example"])"`;
+
+exports[`Temporal.ZonedDateTime > crossSerialize > supports Temporal.ZonedDateTime 1`] = `"$R[0]=Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]")"`;
+
+exports[`Temporal.ZonedDateTime > crossSerializeAsync > scoped > supports Temporal.ZonedDateTime 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]")))($R["example"])"`;
+
+exports[`Temporal.ZonedDateTime > crossSerializeAsync > supports Temporal.ZonedDateTime 1`] = `"$R[0]=Promise.resolve($R[1]=Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]"))"`;
+
+exports[`Temporal.ZonedDateTime > crossSerializeStream > scoped > supports Temporal.ZonedDateTime 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
+
+exports[`Temporal.ZonedDateTime > crossSerializeStream > scoped > supports Temporal.ZonedDateTime 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]")))($R["example"])"
+`;
+
+exports[`Temporal.ZonedDateTime > crossSerializeStream > supports Temporal.ZonedDateTime 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
+
+exports[`Temporal.ZonedDateTime > crossSerializeStream > supports Temporal.ZonedDateTime 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]"))"
+`;
+
+exports[`Temporal.ZonedDateTime > serialize > supports Temporal.ZonedDateTime 1`] = `"Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]")"`;
+
+exports[`Temporal.ZonedDateTime > serializeAsync > supports Temporal.ZonedDateTime 1`] = `"Promise.resolve(Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]"))"`;
+
+exports[`Temporal.ZonedDateTime > toCrossJSON > supports Temporal.ZonedDateTime 1`] = `"{"t":43,"i":0,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}"`;
+
+exports[`Temporal.ZonedDateTime > toCrossJSONAsync > supports Temporal.ZonedDateTime 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":43,"i":1,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}}"`;
+
+exports[`Temporal.ZonedDateTime > toCrossJSONStream > supports Temporal.ZonedDateTime 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
+
+exports[`Temporal.ZonedDateTime > toCrossJSONStream > supports Temporal.ZonedDateTime 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":43,"i":3,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}]}"`;
+
+exports[`Temporal.ZonedDateTime > toJSON > supports Temporal.ZonedDateTime 1`] = `"{"t":{"t":43,"i":0,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"},"f":127,"m":[]}"`;
+
+exports[`Temporal.ZonedDateTime > toJSONAsync > supports Temporal.ZonedDateTime 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":43,"i":1,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}},"f":127,"m":[]}"`;

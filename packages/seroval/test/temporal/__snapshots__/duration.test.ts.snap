@@ -1,0 +1,71 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Temporal.Duration > crossSerialize > scoped > supports Temporal.Duration 1`] = `"($R=>$R[0]=Temporal.Duration.from("P1Y2M3DT4H5M6S"))($R["example"])"`;
+
+exports[`Temporal.Duration > crossSerialize > supports Temporal.Duration 1`] = `"$R[0]=Temporal.Duration.from("P1Y2M3DT4H5M6S")"`;
+
+exports[`Temporal.Duration > crossSerializeAsync > scoped > supports Temporal.Duration 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Temporal.Duration.from("P1Y2M3DT4H5M6S")))($R["example"])"`;
+
+exports[`Temporal.Duration > crossSerializeAsync > supports Temporal.Duration 1`] = `"$R[0]=Promise.resolve($R[1]=Temporal.Duration.from("P1Y2M3DT4H5M6S"))"`;
+
+exports[`Temporal.Duration > crossSerializeStream > scoped > supports Temporal.Duration 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
+
+exports[`Temporal.Duration > crossSerializeStream > scoped > supports Temporal.Duration 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.Duration.from("P1Y2M3DT4H5M6S")))($R["example"])"
+`;
+
+exports[`Temporal.Duration > crossSerializeStream > supports Temporal.Duration 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
+
+exports[`Temporal.Duration > crossSerializeStream > supports Temporal.Duration 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.Duration.from("P1Y2M3DT4H5M6S"))"
+`;
+
+exports[`Temporal.Duration > serialize > supports Temporal.Duration 1`] = `"Temporal.Duration.from("P1Y2M3DT4H5M6S")"`;
+
+exports[`Temporal.Duration > serializeAsync > supports Temporal.Duration 1`] = `"Promise.resolve(Temporal.Duration.from("P1Y2M3DT4H5M6S"))"`;
+
+exports[`Temporal.Duration > toCrossJSON > supports Temporal.Duration 1`] = `"{"t":37,"i":0,"s":"P1Y2M3DT4H5M6S"}"`;
+
+exports[`Temporal.Duration > toCrossJSONAsync > supports Temporal.Duration 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":37,"i":1,"s":"P1Y2M3DT4H5M6S"}}"`;
+
+exports[`Temporal.Duration > toCrossJSONStream > supports Temporal.Duration 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
+
+exports[`Temporal.Duration > toCrossJSONStream > supports Temporal.Duration 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":37,"i":3,"s":"P1Y2M3DT4H5M6S"}]}"`;
+
+exports[`Temporal.Duration > toJSON > supports Temporal.Duration 1`] = `"{"t":{"t":37,"i":0,"s":"P1Y2M3DT4H5M6S"},"f":127,"m":[]}"`;
+
+exports[`Temporal.Duration > toJSONAsync > supports Temporal.Duration 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":37,"i":1,"s":"P1Y2M3DT4H5M6S"}},"f":127,"m":[]}"`;

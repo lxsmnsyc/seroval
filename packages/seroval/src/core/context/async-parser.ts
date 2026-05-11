@@ -19,6 +19,14 @@ import {
   createStreamReturnNode,
   createStreamThrowNode,
   createStringNode,
+  createTemporalDurationNode,
+  createTemporalInstantNode,
+  createTemporalPlainDateNode,
+  createTemporalPlainDateTimeNode,
+  createTemporalPlainMonthDayNode,
+  createTemporalPlainTimeNode,
+  createTemporalPlainYearMonthNode,
+  createTemporalZonedDateTimeNode,
   createTypedArrayNode,
 } from '../base-primitives';
 import { Feature } from '../compat';
@@ -585,6 +593,52 @@ export async function parseObjectAsync(
       id,
       current as unknown as AggregateError,
     );
+  }
+  if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
+    switch (currentClass) {
+      case Temporal.Instant:
+        return createTemporalInstantNode(
+          id,
+          current as unknown as Temporal.Instant,
+        );
+      case Temporal.Duration:
+        return createTemporalDurationNode(
+          id,
+          current as unknown as Temporal.Duration,
+        );
+      case Temporal.PlainDate:
+        return createTemporalPlainDateNode(
+          id,
+          current as unknown as Temporal.PlainDate,
+        );
+      case Temporal.PlainDateTime:
+        return createTemporalPlainDateTimeNode(
+          id,
+          current as unknown as Temporal.PlainDateTime,
+        );
+      case Temporal.PlainMonthDay:
+        return createTemporalPlainMonthDayNode(
+          id,
+          current as unknown as Temporal.PlainMonthDay,
+        );
+      case Temporal.PlainTime:
+        return createTemporalPlainTimeNode(
+          id,
+          current as unknown as Temporal.PlainTime,
+        );
+      case Temporal.PlainYearMonth:
+        return createTemporalPlainYearMonthNode(
+          id,
+          current as unknown as Temporal.PlainYearMonth,
+        );
+      case Temporal.ZonedDateTime:
+        return createTemporalZonedDateTimeNode(
+          id,
+          current as unknown as Temporal.ZonedDateTime,
+        );
+      default:
+        break;
+    }
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.

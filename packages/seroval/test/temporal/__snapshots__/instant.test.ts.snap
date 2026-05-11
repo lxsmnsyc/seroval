@@ -1,0 +1,71 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Temporal.Instant > crossSerialize > scoped > supports Temporal.Instant 1`] = `"($R=>$R[0]=Temporal.Instant.from("2012-03-04T12:34:56.789Z"))($R["example"])"`;
+
+exports[`Temporal.Instant > crossSerialize > supports Temporal.Instant 1`] = `"$R[0]=Temporal.Instant.from("2012-03-04T12:34:56.789Z")"`;
+
+exports[`Temporal.Instant > crossSerializeAsync > scoped > supports Temporal.Instant 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Temporal.Instant.from("2012-03-04T12:34:56.789Z")))($R["example"])"`;
+
+exports[`Temporal.Instant > crossSerializeAsync > supports Temporal.Instant 1`] = `"$R[0]=Promise.resolve($R[1]=Temporal.Instant.from("2012-03-04T12:34:56.789Z"))"`;
+
+exports[`Temporal.Instant > crossSerializeStream > scoped > supports Temporal.Instant 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
+
+exports[`Temporal.Instant > crossSerializeStream > scoped > supports Temporal.Instant 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.Instant.from("2012-03-04T12:34:56.789Z")))($R["example"])"
+`;
+
+exports[`Temporal.Instant > crossSerializeStream > supports Temporal.Instant 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
+
+exports[`Temporal.Instant > crossSerializeStream > supports Temporal.Instant 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.Instant.from("2012-03-04T12:34:56.789Z"))"
+`;
+
+exports[`Temporal.Instant > serialize > supports Temporal.Instant 1`] = `"Temporal.Instant.from("2012-03-04T12:34:56.789Z")"`;
+
+exports[`Temporal.Instant > serializeAsync > supports Temporal.Instant 1`] = `"Promise.resolve(Temporal.Instant.from("2012-03-04T12:34:56.789Z"))"`;
+
+exports[`Temporal.Instant > toCrossJSON > supports Temporal.Instant 1`] = `"{"t":36,"i":0,"s":"2012-03-04T12:34:56.789Z"}"`;
+
+exports[`Temporal.Instant > toCrossJSONAsync > supports Temporal.Instant 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"2012-03-04T12:34:56.789Z"}}"`;
+
+exports[`Temporal.Instant > toCrossJSONStream > supports Temporal.Instant 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
+
+exports[`Temporal.Instant > toCrossJSONStream > supports Temporal.Instant 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":36,"i":3,"s":"2012-03-04T12:34:56.789Z"}]}"`;
+
+exports[`Temporal.Instant > toJSON > supports Temporal.Instant 1`] = `"{"t":{"t":36,"i":0,"s":"2012-03-04T12:34:56.789Z"},"f":127,"m":[]}"`;
+
+exports[`Temporal.Instant > toJSONAsync > supports Temporal.Instant 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"2012-03-04T12:34:56.789Z"}},"f":127,"m":[]}"`;

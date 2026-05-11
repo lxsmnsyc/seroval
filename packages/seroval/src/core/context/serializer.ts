@@ -56,6 +56,7 @@ import type {
   SerovalStreamNextNode,
   SerovalStreamReturnNode,
   SerovalStreamThrowNode,
+  SerovalTemporalNode,
   SerovalTypedArrayNode,
 } from '../types';
 import getIdentifier from '../utils/get-identifier';
@@ -851,6 +852,27 @@ function serializeDate(node: SerovalDateNode): string {
   return 'new Date("' + node.s + '")';
 }
 
+const TEMPORAL_CONSTRUCTOR: Record<SerovalTemporalNode['t'], string> = {
+  [SerovalNodeType.TemporalInstant]: 'Temporal.Instant',
+  [SerovalNodeType.TemporalDuration]: 'Temporal.Duration',
+  [SerovalNodeType.TemporalPlainDate]: 'Temporal.PlainDate',
+  [SerovalNodeType.TemporalPlainDateTime]: 'Temporal.PlainDateTime',
+  [SerovalNodeType.TemporalPlainMonthDay]: 'Temporal.PlainMonthDay',
+  [SerovalNodeType.TemporalPlainTime]: 'Temporal.PlainTime',
+  [SerovalNodeType.TemporalPlainYearMonth]: 'Temporal.PlainYearMonth',
+  [SerovalNodeType.TemporalZonedDateTime]: 'Temporal.ZonedDateTime',
+};
+
+function serializeTemporal(
+  ctx: SerializerContext,
+  node: SerovalTemporalNode,
+): string {
+  if (ctx.base.features & Feature.Temporal) {
+    return TEMPORAL_CONSTRUCTOR[node.t] + '.from("' + node.s + '")';
+  }
+  throw new SerovalUnsupportedNodeError(node);
+}
+
 function serializeRegExp(
   ctx: SerializerContext,
   node: SerovalRegExpNode,
@@ -1401,6 +1423,15 @@ function serializeAssignable(
       return SPECIAL_REF_STRING[node.s];
     case SerovalNodeType.Sequence:
       return serializeSequence(ctx, node);
+    case SerovalNodeType.TemporalInstant:
+    case SerovalNodeType.TemporalDuration:
+    case SerovalNodeType.TemporalPlainDate:
+    case SerovalNodeType.TemporalPlainDateTime:
+    case SerovalNodeType.TemporalPlainMonthDay:
+    case SerovalNodeType.TemporalPlainTime:
+    case SerovalNodeType.TemporalPlainYearMonth:
+    case SerovalNodeType.TemporalZonedDateTime:
+      return serializeTemporal(ctx, node);
     default:
       throw new SerovalUnsupportedNodeError(node);
   }

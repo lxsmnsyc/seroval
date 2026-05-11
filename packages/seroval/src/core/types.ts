@@ -133,12 +133,79 @@ export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   l: number;
 }
 
+export interface SerovalTemporalInstantNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalInstant;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export interface SerovalTemporalDurationNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalDuration;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export interface SerovalTemporalPlainDateNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalPlainDate;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export interface SerovalTemporalPlainDateTimeNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalPlainDateTime;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export interface SerovalTemporalPlainMonthDayNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalPlainMonthDay;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export interface SerovalTemporalPlainTimeNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalPlainTime;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export interface SerovalTemporalPlainYearMonthNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalPlainYearMonth;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export interface SerovalTemporalZonedDateTimeNode extends SerovalBaseNode {
+  t: SerovalNodeType.TemporalZonedDateTime;
+  i: number;
+  // ISO string
+  s: string;
+}
+
+export type SerovalTemporalNode =
+  | SerovalTemporalInstantNode
+  | SerovalTemporalDurationNode
+  | SerovalTemporalPlainDateNode
+  | SerovalTemporalPlainDateTimeNode
+  | SerovalTemporalPlainMonthDayNode
+  | SerovalTemporalPlainTimeNode
+  | SerovalTemporalPlainYearMonthNode
+  | SerovalTemporalZonedDateTimeNode;
+
 export type SerovalSemiPrimitiveNode =
   | SerovalBigIntNode
   | SerovalDateNode
   | SerovalRegExpNode
   | SerovalTypedArrayNode
-  | SerovalBigIntTypedArrayNode;
+  | SerovalBigIntTypedArrayNode
+  | SerovalTemporalNode;
 
 export interface SerovalSetNode extends SerovalBaseNode {
   t: SerovalNodeType.Set;
