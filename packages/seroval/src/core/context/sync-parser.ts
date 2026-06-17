@@ -820,7 +820,15 @@ function parseObject(
   if (isSequence(current)) {
     return parseSequence(ctx, depth, id, current);
   }
-  const currentClass = current.constructor;
+  let currentClass: unknown = current.constructor;
+  // `constructor` is an ordinary own property, so data can shadow it
+  // (`JSON.parse('{"constructor":1}')`) and hide the real class. A class is
+  // always callable, so anything else means the lookup was shadowed — only
+  // then fall back to the prototype, keeping the common path free of it.
+  if (currentClass !== NIL && typeof currentClass !== 'function') {
+    const proto = Object.getPrototypeOf(current) as object | null;
+    currentClass = proto === null ? NIL : proto.constructor;
+  }
   if (currentClass === OpaqueReference) {
     return parseSOS(
       ctx,
