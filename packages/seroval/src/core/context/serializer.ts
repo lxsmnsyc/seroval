@@ -630,6 +630,12 @@ function serializeProperty(
       }
       return '';
     }
+    // `__proto__` as an identifier or string key in an object literal is the
+    // prototype setter, not an own property; use a computed key so the
+    // round-trip preserves it as an actual own property.
+    if (key === '__proto__') {
+      return '["__proto__"]:' + serialize(ctx, val);
+    }
     return (isIdentifier ? key : '"' + key + '"') + ':' + serialize(ctx, val);
   }
   return '[' + serialize(ctx, key) + ']:' + serialize(ctx, val);

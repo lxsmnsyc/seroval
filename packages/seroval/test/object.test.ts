@@ -536,4 +536,36 @@ describe('objects', () => {
       expect(back.example).toBe(EXAMPLE.example);
     });
   });
+  describe('with an own __proto__ property', () => {
+    // `JSON.parse` creates an own enumerable `__proto__` data property
+    // (not a prototype), as does any record with a `__proto__` field.
+    function makeProtoObject(): Record<string, unknown> {
+      return JSON.parse('{"__proto__":5,"value":42}') as Record<string, unknown>;
+    }
+    function expectPreserved(back: Record<string, unknown>): void {
+      const descriptor = Object.getOwnPropertyDescriptor(back, '__proto__');
+      expect(descriptor).toBeDefined();
+      expect(descriptor?.value).toBe(5);
+      expect(Object.getPrototypeOf(back)).toBe(Object.prototype);
+      expect(back.value).toBe(42);
+    }
+
+    it('supports serialize', () => {
+      expectPreserved(
+        deserialize<Record<string, unknown>>(serialize(makeProtoObject())),
+      );
+    });
+    it('supports serializeAsync', async () => {
+      expectPreserved(
+        deserialize<Record<string, unknown>>(
+          await serializeAsync(makeProtoObject()),
+        ),
+      );
+    });
+    it('supports toJSON', () => {
+      expectPreserved(
+        fromJSON<Record<string, unknown>>(toJSON(makeProtoObject())),
+      );
+    });
+  });
 });
