@@ -66,6 +66,7 @@ const enum AssignmentType {
   Add = 1,
   Set = 2,
   Delete = 3,
+  Define = 4,
 }
 
 interface IndexAssignment {
@@ -96,12 +97,23 @@ interface DeleteAssignment {
   v: undefined;
 }
 
+// Defines an own `__proto__` data property (see `createObjectAssign`).
+// `k` holds the serialized value; `v` is unused so this never participates
+// in the value-based merging done by `mergeAssignments`.
+interface DefineAssignment {
+  t: AssignmentType.Define;
+  s: string;
+  k: string;
+  v: undefined;
+}
+
 // Array of assignments to be done (used for recursion)
 type Assignment =
   | IndexAssignment
   | AddAssignment
   | SetAssignment
-  | DeleteAssignment;
+  | DeleteAssignment
+  | DefineAssignment;
 
 export interface FlaggedObject {
   type: SerovalObjectFlags;
@@ -118,6 +130,14 @@ function getAssignmentExpression(assignment: Assignment): string {
       return assignment.s + '.add(' + assignment.v + ')';
     case AssignmentType.Delete:
       return assignment.s + '.delete(' + assignment.k + ')';
+    case AssignmentType.Define:
+      return (
+        'Object.defineProperty(' +
+        assignment.s +
+        ',"__proto__",{value:' +
+        assignment.k +
+        ',configurable:!0,enumerable:!0,writable:!0})'
+      );
   }
 }
 
@@ -482,6 +502,19 @@ function createObjectAssign(
   key: string,
   value: string,
 ): void {
+  if (key === '__proto__') {
+    // `obj.__proto__ = x`, including the bracket form `obj["__proto__"] = x`,
+    // invokes the prototype setter rather than creating an own property.
+    // Define the property instead so the round-trip preserves it as an actual
+    // own property (matches the inline path in `serializeProperty`).
+    ctx.base.assignments.push({
+      t: AssignmentType.Define,
+      s: getRefParam(ctx, ref),
+      k: value,
+      v: NIL,
+    });
+    return;
+  }
   createAssignment(ctx.base, getRefParam(ctx, ref) + '.' + key, value);
 }
 
