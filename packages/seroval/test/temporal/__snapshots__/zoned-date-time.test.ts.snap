@@ -58,14 +58,14 @@ exports[`Temporal.ZonedDateTime > serialize > supports Temporal.ZonedDateTime 1`
 
 exports[`Temporal.ZonedDateTime > serializeAsync > supports Temporal.ZonedDateTime 1`] = `"Promise.resolve(Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]"))"`;
 
-exports[`Temporal.ZonedDateTime > toCrossJSON > supports Temporal.ZonedDateTime 1`] = `"{"t":43,"i":0,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}"`;
+exports[`Temporal.ZonedDateTime > toCrossJSON > supports Temporal.ZonedDateTime 1`] = `"{"t":36,"i":0,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]","c":7}"`;
 
-exports[`Temporal.ZonedDateTime > toCrossJSONAsync > supports Temporal.ZonedDateTime 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":43,"i":1,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}}"`;
+exports[`Temporal.ZonedDateTime > toCrossJSONAsync > supports Temporal.ZonedDateTime 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]","c":7}}"`;
 
 exports[`Temporal.ZonedDateTime > toCrossJSONStream > supports Temporal.ZonedDateTime 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Temporal.ZonedDateTime > toCrossJSONStream > supports Temporal.ZonedDateTime 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":43,"i":3,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}]}"`;
+exports[`Temporal.ZonedDateTime > toCrossJSONStream > supports Temporal.ZonedDateTime 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":36,"i":3,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]","c":7}]}"`;
 
-exports[`Temporal.ZonedDateTime > toJSON > supports Temporal.ZonedDateTime 1`] = `"{"t":{"t":43,"i":0,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"},"f":127,"m":[]}"`;
+exports[`Temporal.ZonedDateTime > toJSON > supports Temporal.ZonedDateTime 1`] = `"{"t":{"t":36,"i":0,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]","c":7},"f":127,"m":[]}"`;
 
-exports[`Temporal.ZonedDateTime > toJSONAsync > supports Temporal.ZonedDateTime 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":43,"i":1,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]"}},"f":127,"m":[]}"`;
+exports[`Temporal.ZonedDateTime > toJSONAsync > supports Temporal.ZonedDateTime 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"2012-03-04T12:34:56.789-05:00[America/New_York]","c":7}},"f":127,"m":[]}"`;

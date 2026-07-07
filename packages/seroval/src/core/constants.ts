@@ -62,14 +62,18 @@ export const enum SerovalNodeType {
   StreamThrow = 33,
   StreamReturn = 34,
   Sequence = 35,
-  TemporalInstant = 36,
-  TemporalDuration = 37,
-  TemporalPlainDate = 38,
-  TemporalPlainDateTime = 39,
-  TemporalPlainMonthDay = 40,
-  TemporalPlainTime = 41,
-  TemporalPlainYearMonth = 42,
-  TemporalZonedDateTime = 43,
+  Temporal = 36,
+}
+
+export const enum SerovalTemporalType {
+  Instant = 0,
+  Duration = 1,
+  PlainDate = 2,
+  PlainDateTime = 3,
+  PlainMonthDay = 4,
+  PlainTime = 5,
+  PlainYearMonth = 6,
+  ZonedDateTime = 7,
 }
 
 export const enum SerovalObjectFlags {

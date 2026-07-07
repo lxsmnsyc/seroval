@@ -58,14 +58,14 @@ exports[`Temporal.PlainDateTime > serialize > supports Temporal.PlainDateTime 1`
 
 exports[`Temporal.PlainDateTime > serializeAsync > supports Temporal.PlainDateTime 1`] = `"Promise.resolve(Temporal.PlainDateTime.from("2012-03-04T12:34:56.789"))"`;
 
-exports[`Temporal.PlainDateTime > toCrossJSON > supports Temporal.PlainDateTime 1`] = `"{"t":39,"i":0,"s":"2012-03-04T12:34:56.789"}"`;
+exports[`Temporal.PlainDateTime > toCrossJSON > supports Temporal.PlainDateTime 1`] = `"{"t":36,"i":0,"s":"2012-03-04T12:34:56.789","c":3}"`;
 
-exports[`Temporal.PlainDateTime > toCrossJSONAsync > supports Temporal.PlainDateTime 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":39,"i":1,"s":"2012-03-04T12:34:56.789"}}"`;
+exports[`Temporal.PlainDateTime > toCrossJSONAsync > supports Temporal.PlainDateTime 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"2012-03-04T12:34:56.789","c":3}}"`;
 
 exports[`Temporal.PlainDateTime > toCrossJSONStream > supports Temporal.PlainDateTime 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`Temporal.PlainDateTime > toCrossJSONStream > supports Temporal.PlainDateTime 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":39,"i":3,"s":"2012-03-04T12:34:56.789"}]}"`;
+exports[`Temporal.PlainDateTime > toCrossJSONStream > supports Temporal.PlainDateTime 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":36,"i":3,"s":"2012-03-04T12:34:56.789","c":3}]}"`;
 
-exports[`Temporal.PlainDateTime > toJSON > supports Temporal.PlainDateTime 1`] = `"{"t":{"t":39,"i":0,"s":"2012-03-04T12:34:56.789"},"f":127,"m":[]}"`;
+exports[`Temporal.PlainDateTime > toJSON > supports Temporal.PlainDateTime 1`] = `"{"t":{"t":36,"i":0,"s":"2012-03-04T12:34:56.789","c":3},"f":127,"m":[]}"`;
 
-exports[`Temporal.PlainDateTime > toJSONAsync > supports Temporal.PlainDateTime 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":39,"i":1,"s":"2012-03-04T12:34:56.789"}},"f":127,"m":[]}"`;
+exports[`Temporal.PlainDateTime > toJSONAsync > supports Temporal.PlainDateTime 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"2012-03-04T12:34:56.789","c":3}},"f":127,"m":[]}"`;

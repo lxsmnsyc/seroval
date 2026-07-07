@@ -5,6 +5,7 @@ import {
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
+  SerovalTemporalType,
   SYMBOL_REF,
 } from '../constants';
 import {
@@ -390,31 +391,33 @@ function deserializeTemporal(
     throw new SerovalUnsupportedNodeError(node);
   }
   let value: unknown;
-  switch (node.t) {
-    case SerovalNodeType.TemporalInstant:
+  switch (node.c) {
+    case SerovalTemporalType.Instant:
       value = Temporal.Instant.from(node.s);
       break;
-    case SerovalNodeType.TemporalDuration:
+    case SerovalTemporalType.Duration:
       value = Temporal.Duration.from(node.s);
       break;
-    case SerovalNodeType.TemporalPlainDate:
+    case SerovalTemporalType.PlainDate:
       value = Temporal.PlainDate.from(node.s);
       break;
-    case SerovalNodeType.TemporalPlainDateTime:
+    case SerovalTemporalType.PlainDateTime:
       value = Temporal.PlainDateTime.from(node.s);
       break;
-    case SerovalNodeType.TemporalPlainMonthDay:
+    case SerovalTemporalType.PlainMonthDay:
       value = Temporal.PlainMonthDay.from(node.s);
       break;
-    case SerovalNodeType.TemporalPlainTime:
+    case SerovalTemporalType.PlainTime:
       value = Temporal.PlainTime.from(node.s);
       break;
-    case SerovalNodeType.TemporalPlainYearMonth:
+    case SerovalTemporalType.PlainYearMonth:
       value = Temporal.PlainYearMonth.from(node.s);
       break;
-    case SerovalNodeType.TemporalZonedDateTime:
+    case SerovalTemporalType.ZonedDateTime:
       value = Temporal.ZonedDateTime.from(node.s);
       break;
+    default:
+      throw new SerovalMalformedNodeError(node);
   }
   return assignIndexedValue(ctx, node.i, value);
 }
@@ -853,14 +856,7 @@ function deserialize(
     // case SerovalNodeType.SpecialReference:
     case SerovalNodeType.Sequence:
       return deserializeSequence(ctx, depth, node);
-    case SerovalNodeType.TemporalInstant:
-    case SerovalNodeType.TemporalDuration:
-    case SerovalNodeType.TemporalPlainDate:
-    case SerovalNodeType.TemporalPlainDateTime:
-    case SerovalNodeType.TemporalPlainMonthDay:
-    case SerovalNodeType.TemporalPlainTime:
-    case SerovalNodeType.TemporalPlainYearMonth:
-    case SerovalNodeType.TemporalZonedDateTime:
+    case SerovalNodeType.Temporal:
       return deserializeTemporal(ctx, node);
     default:
       throw new SerovalUnsupportedNodeError(node);
