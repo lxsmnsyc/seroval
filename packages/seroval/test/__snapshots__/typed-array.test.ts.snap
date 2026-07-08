@@ -134,14 +134,14 @@ exports[`typed arrays > serializeAsync > supports typed arrays 1`] = `
 })("/////////////////////w=="),0,4))"
 `;
 
-exports[`typed arrays > toCrossJSON > supports typed arrays 1`] = `"{"t":15,"i":0,"c":"Uint32Array","f":{"t":19,"i":1,"s":"/////////////////////w==","f":{"t":26,"i":2,"s":5}},"b":0,"l":4}"`;
+exports[`typed arrays > toCrossJSON > supports typed arrays 1`] = `"{"t":15,"i":0,"s":6,"f":{"t":19,"i":1,"s":"/////////////////////w==","f":{"t":26,"i":2,"s":5}},"b":0,"l":4}"`;
 
-exports[`typed arrays > toCrossJSONAsync > supports typed arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"c":"Uint32Array","f":{"t":19,"i":2,"s":"/////////////////////w==","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}}"`;
+exports[`typed arrays > toCrossJSONAsync > supports typed arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"s":6,"f":{"t":19,"i":2,"s":"/////////////////////w==","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}}"`;
 
 exports[`typed arrays > toCrossJSONStream > supports typed arrays 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
 
-exports[`typed arrays > toCrossJSONStream > supports typed arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":15,"i":3,"c":"Uint32Array","f":{"t":19,"i":4,"s":"/////////////////////w==","f":{"t":26,"i":5,"s":5}},"b":0,"l":4}]}"`;
+exports[`typed arrays > toCrossJSONStream > supports typed arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":15,"i":3,"s":6,"f":{"t":19,"i":4,"s":"/////////////////////w==","f":{"t":26,"i":5,"s":5}},"b":0,"l":4}]}"`;
 
-exports[`typed arrays > toJSON > supports typed arrays 1`] = `"{"t":{"t":15,"i":0,"c":"Uint32Array","f":{"t":19,"i":1,"s":"/////////////////////w==","f":{"t":26,"i":2,"s":5}},"b":0,"l":4},"f":63,"m":[]}"`;
+exports[`typed arrays > toJSON > supports typed arrays 1`] = `"{"t":{"t":15,"i":0,"s":6,"f":{"t":19,"i":1,"s":"/////////////////////w==","f":{"t":26,"i":2,"s":5}},"b":0,"l":4},"f":63,"m":[]}"`;
 
-exports[`typed arrays > toJSONAsync > supports typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"c":"Uint32Array","f":{"t":19,"i":2,"s":"/////////////////////w==","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}},"f":63,"m":[]}"`;
+exports[`typed arrays > toJSONAsync > supports typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":15,"i":1,"s":6,"f":{"t":19,"i":2,"s":"/////////////////////w==","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}},"f":63,"m":[]}"`;

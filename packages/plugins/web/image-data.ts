@@ -8,7 +8,20 @@ type ImageDataNode = {
   options: SerovalNode;
 };
 
-const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
+type ImageDataBinaryData = {
+  data: ImageDataArray;
+  width: number;
+  height: number;
+  options: {
+    colorSpace: PredefinedColorSpace;
+  };
+};
+
+const ImageDataPlugin = /* @__PURE__ */ createPlugin<
+  ImageData,
+  ImageDataNode,
+  ImageDataBinaryData
+>({
   tag: 'seroval-plugins/web/ImageData',
   test(value) {
     if (typeof ImageData === 'undefined') {
@@ -68,6 +81,21 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
       ctx.deserialize(node.height) as number,
       ctx.deserialize(node.options) as ImageDataSettings,
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        data: value.data,
+        width: value.width,
+        height: value.height,
+        options: {
+          colorSpace: value.colorSpace,
+        },
+      };
+    },
+    deserialize(data) {
+      return new ImageData(data.data, data.width, data.height, data.options);
+    },
   },
 });
 

@@ -4,8 +4,12 @@ import {
   createWKSymbolNode,
 } from '../base-primitives';
 import { ALL_ENABLED } from '../compat';
-import type { WellKnownSymbols } from '../constants';
-import { INV_SYMBOL_REF, NIL, SerovalNodeType } from '../constants';
+import {
+  DEFAULT_DEPTH_LIMIT,
+  isWellKnownSymbol,
+  NIL,
+  SerovalNodeType,
+} from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
 import type { PluginAccessOptions, SerovalMode } from '../plugin';
@@ -86,7 +90,7 @@ export function createBaseParserContext(
     marked: new Set(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     refs: options.refs || new Map(),
-    depthLimit: options.depthLimit || 1000,
+    depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
   };
 }
 
@@ -164,8 +168,8 @@ export function parseWellKnownSymbol(
   if (ref.type !== ParserNodeType.Fresh) {
     return ref.value;
   }
-  if (current in INV_SYMBOL_REF) {
-    return createWKSymbolNode(ref.value, current as WellKnownSymbols);
+  if (isWellKnownSymbol(current)) {
+    return createWKSymbolNode(ref.value, current);
   }
   throw new SerovalUnsupportedTypeError(current);
 }

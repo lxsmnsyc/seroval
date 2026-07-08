@@ -1,7 +1,11 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }>({
+const URLPlugin = /* @__PURE__ */ createPlugin<
+  URL,
+  { value: SerovalNode },
+  { value: string }
+>({
   tag: 'seroval-plugins/web/URL',
   test(value) {
     if (typeof URL === 'undefined') {
@@ -31,6 +35,14 @@ const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }>({
   },
   deserialize(node, ctx) {
     return new URL(ctx.deserialize(node.value) as string);
+  },
+  binary: {
+    serialize(value) {
+      return { value: value.href };
+    },
+    deserialize(data) {
+      return new URL(data.value);
+    },
   },
 });
 

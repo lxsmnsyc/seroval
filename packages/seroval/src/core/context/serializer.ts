@@ -1,11 +1,13 @@
 import { Feature } from '../compat';
 import {
+  BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING,
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
   SYMBOL_STRING,
+  TYPED_ARRAY_CONSTRUCTOR_STRING,
 } from '../constants';
 import {
   SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR,
@@ -1014,9 +1016,13 @@ function serializeTypedArray(
   ctx: SerializerContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ): string {
+  const construct =
+    node.t === SerovalNodeType.BigIntTypedArray
+      ? BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING[node.s]
+      : TYPED_ARRAY_CONSTRUCTOR_STRING[node.s];
   return (
     'new ' +
-    node.c +
+    construct +
     '(' +
     serialize(ctx, node.f) +
     ',' +

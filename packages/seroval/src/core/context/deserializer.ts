@@ -1,11 +1,15 @@
 import { ALL_ENABLED, Feature } from '../compat';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import {
+  BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
   CONSTANT_VAL,
+  DEFAULT_DEPTH_LIMIT,
   ERROR_CONSTRUCTOR,
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
   SYMBOL_REF,
+  TYPED_ARRAY_CONSTRUCTOR,
 } from '../constants';
 import {
   ARRAY_BUFFER_CONSTRUCTOR,
@@ -60,11 +64,6 @@ import type {
   SerovalStreamThrowNode,
   SerovalTypedArrayNode,
 } from '../types';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from '../utils/typed-array';
-import { getTypedArrayConstructor } from '../utils/typed-array';
 import { isValidKey, isValidSymbol } from '../utils/valid-properties';
 
 const MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
@@ -103,8 +102,6 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
   features: number;
   depthLimit: number;
 }
-
-const DEFAULT_DEPTH_LIMIT = 1000;
 
 export function createBaseDeserializerContext(
   mode: SerovalMode,
@@ -446,7 +443,10 @@ function deserializeTypedArray(
   depth: number,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
 ): TypedArrayValue | BigIntTypedArrayValue {
-  const construct = getTypedArrayConstructor(node.c) as Int8ArrayConstructor;
+  const construct =
+    node.t === SerovalNodeType.BigIntTypedArray
+      ? deserializeKnownValue(node, BIG_INT_TYPED_ARRAY_CONSTRUCTOR, node.s)
+      : deserializeKnownValue(node, TYPED_ARRAY_CONSTRUCTOR, node.s);
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
   const offset = node.b ?? 0;
   if (offset < 0 || offset > source.byteLength) {
