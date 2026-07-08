@@ -306,7 +306,7 @@ export function createBigIntTypedArrayNode(
     buffer,
     current.byteOffset,
     NIL,
-    current.byteLength,
+    current.length,
   );
 }
 

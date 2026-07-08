@@ -1,0 +1,147 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`bigint typed arrays > crossSerialize > scoped > supports bigint typed arrays 1`] = `
+"($R=>$R[0]=new BigInt64Array($R[1]=($R[2]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4))($R["example"])"
+`;
+
+exports[`bigint typed arrays > crossSerialize > supports bigint typed arrays 1`] = `
+"$R[0]=new BigInt64Array($R[1]=($R[2]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4)"
+`;
+
+exports[`bigint typed arrays > crossSerializeAsync > scoped > supports bigint typed arrays 1`] = `
+"($R=>$R[0]=Promise.resolve($R[1]=new BigInt64Array($R[2]=($R[3]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4)))($R["example"])"
+`;
+
+exports[`bigint typed arrays > crossSerializeAsync > supports bigint typed arrays 1`] = `
+"$R[0]=Promise.resolve($R[1]=new BigInt64Array($R[2]=($R[3]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4))"
+`;
+
+exports[`bigint typed arrays > crossSerializeStream > scoped > supports bigint typed arrays 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
+
+exports[`bigint typed arrays > crossSerializeStream > scoped > supports bigint typed arrays 2`] = `
+"($R=>($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new BigInt64Array($R[4]=($R[5]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4)))($R["example"])"
+`;
+
+exports[`bigint typed arrays > crossSerializeStream > supports bigint typed arrays 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
+
+exports[`bigint typed arrays > crossSerializeStream > supports bigint typed arrays 2`] = `
+"($R[6]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=new BigInt64Array($R[4]=($R[5]=(b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4))"
+`;
+
+exports[`bigint typed arrays > serialize > supports bigint typed arrays 1`] = `
+"new BigInt64Array(((b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4)"
+`;
+
+exports[`bigint typed arrays > serializeAsync > supports bigint typed arrays 1`] = `
+"Promise.resolve(new BigInt64Array(((b64) => {
+  const decoded = atob(b64);
+  const length = decoded.length;
+  const arr = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = decoded.charCodeAt(i);
+  };
+  return arr.buffer;
+})("AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8="),0,4))"
+`;
+
+exports[`bigint typed arrays > toCrossJSON > supports bigint typed arrays 1`] = `"{"t":16,"i":0,"c":"BigInt64Array","f":{"t":19,"i":1,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":2,"s":5}},"b":0,"l":4}"`;
+
+exports[`bigint typed arrays > toCrossJSONAsync > supports bigint typed arrays 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":16,"i":1,"c":"BigInt64Array","f":{"t":19,"i":2,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}}"`;
+
+exports[`bigint typed arrays > toCrossJSONStream > supports bigint typed arrays 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
+
+exports[`bigint typed arrays > toCrossJSONStream > supports bigint typed arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":16,"i":3,"c":"BigInt64Array","f":{"t":19,"i":4,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":5,"s":5}},"b":0,"l":4}]}"`;
+
+exports[`bigint typed arrays > toJSON > supports bigint typed arrays 1`] = `"{"t":{"t":16,"i":0,"c":"BigInt64Array","f":{"t":19,"i":1,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":2,"s":5}},"b":0,"l":4},"f":63,"m":[]}"`;
+
+exports[`bigint typed arrays > toJSONAsync > supports bigint typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":16,"i":1,"c":"BigInt64Array","f":{"t":19,"i":2,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}},"f":63,"m":[]}"`;
