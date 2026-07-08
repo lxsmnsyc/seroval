@@ -1,5 +1,13 @@
 # seroval-benchmarks
 
+## 1.3.12
+
+### Patch Changes
+
+- Updated dependencies
+  - seroval-plugins@1.5.5
+  - seroval@1.5.5
+
 ## 1.3.11
 
 ### Patch Changes

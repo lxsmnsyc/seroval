@@ -1,5 +1,11 @@
 # seroval
 
+## 1.5.5
+
+### Patch Changes
+
+- serialization fixes
+
 ## 1.5.4
 
 ### Patch Changes
