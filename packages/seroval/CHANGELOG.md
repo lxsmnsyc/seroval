@@ -1,5 +1,17 @@
 # seroval
 
+## 1.5.4
+
+### Patch Changes
+
+- fix internal type map missing in cross context
+
+## 1.5.3
+
+### Patch Changes
+
+- fix deserialization internal type check
+
 ## 1.5.2
 
 ### Patch Changes

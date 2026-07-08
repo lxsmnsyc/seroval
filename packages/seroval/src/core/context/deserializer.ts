@@ -25,7 +25,7 @@ import { SerovalMode } from '../plugin';
 import { getReference } from '../reference';
 import { createSequence, type Sequence, sequenceToIterator } from '../sequence';
 import type { Stream } from '../stream';
-import { createStream, isStream, streamToAsyncIterable } from '../stream';
+import { createStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import {
   SYM_ASYNC_ITERATOR,
@@ -104,7 +104,7 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
   /**
    * Mapping ids to values
    */
-  refs: Map<number, unknown>;
+  refs: Map<number, unknown> & { types: Map<number, SerovalNodeType> };
   features: number;
   depthLimit: number;
 }
@@ -115,10 +115,16 @@ export function createBaseDeserializerContext(
   mode: SerovalMode,
   options: BaseDeserializerContextOptions,
 ): BaseDeserializerContext {
+  const refs = options.refs || new Map();
+  if (!('types' in refs)) {
+    Object.assign(refs, {
+      types: new Map(),
+    });
+  }
   return {
     mode,
     plugins: options.plugins,
-    refs: options.refs || new Map(),
+    refs: refs as BaseDeserializerContext['refs'],
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
     depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
   };
@@ -345,6 +351,25 @@ function assignProperty(
       default:
         throw new SerovalMalformedNodeError(key);
     }
+  }
+}
+
+function assignNodeType(
+  ctx: DeserializerContext,
+  id: number,
+  type: SerovalNodeType,
+): void {
+  ctx.base.refs.types.set(id, type);
+}
+
+function validateNodeType(
+  ctx: DeserializerContext,
+  node: SerovalNode,
+  id: number,
+  type: SerovalNodeType,
+): asserts id is SerovalNodeType {
+  if (ctx.base.refs.types.get(id) !== type) {
+    throw new SerovalMalformedNodeError(node);
   }
 }
 
@@ -587,11 +612,13 @@ function deserializePromiseConstructor(
   ctx: DeserializerContext,
   node: SerovalPromiseConstructorNode,
 ): unknown {
-  return assignIndexedValue(
+  const value = assignIndexedValue(
     ctx,
     node.i,
     assignIndexedValue(ctx, node.s, PROMISE_CONSTRUCTOR()).p,
   );
+  assignNodeType(ctx, node.s, SerovalNodeType.PromiseConstructor);
+  return value;
 }
 
 function deserializePromiseResolve(
@@ -603,6 +630,7 @@ function deserializePromiseResolve(
     | PromiseConstructorResolver
     | undefined;
   if (deferred) {
+    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
     deferred.s(deserialize(ctx, depth, node.a[1]));
     return NIL;
   }
@@ -618,6 +646,7 @@ function deserializePromiseReject(
     | PromiseConstructorResolver
     | undefined;
   if (deferred) {
+    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
     deferred.f(deserialize(ctx, depth, node.a[1]));
     return NIL;
   }
@@ -650,6 +679,7 @@ function deserializeStreamConstructor(
   node: SerovalStreamConstructorNode,
 ): unknown {
   const result = assignIndexedValue(ctx, node.i, createStream());
+  assignNodeType(ctx, node.i, SerovalNodeType.StreamConstructor);
   const items = node.a;
   const len = items.length;
   if (len) {
@@ -666,7 +696,8 @@ function deserializeStreamNext(
   node: SerovalStreamNextNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  if (deferred && isStream(deferred)) {
+  if (deferred) {
+    validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
     deferred.next(deserialize(ctx, depth, node.f));
     return NIL;
   }
@@ -679,7 +710,8 @@ function deserializeStreamThrow(
   node: SerovalStreamThrowNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  if (deferred && isStream(deferred)) {
+  if (deferred) {
+    validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
     deferred.throw(deserialize(ctx, depth, node.f));
     return NIL;
   }
@@ -692,7 +724,8 @@ function deserializeStreamReturn(
   node: SerovalStreamReturnNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  if (deferred && isStream(deferred)) {
+  if (deferred) {
+    validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
     deferred.return(deserialize(ctx, depth, node.f));
     return NIL;
   }
