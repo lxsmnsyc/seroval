@@ -9,7 +9,7 @@ import {
   toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import ReadableStreamPlugin from '../../web/readable-stream';
 
 describe('ReadableStream', () => {
@@ -231,6 +231,45 @@ describe('ReadableStream', () => {
           },
         });
       }));
+    it('supports ReadableStream interruption', () => {
+      const cancelSpy = vi.fn();
+      const onSerializeSpy = vi.fn();
+      const onDoneSpy = vi.fn();
+
+      let timeout: ReturnType<typeof setTimeout>;
+
+      const stream = new ReadableStream({
+        start(controller) {
+          timeout = setTimeout(() => {
+            controller.enqueue('test');
+            controller.close();
+          });
+        },
+        cancel() {
+          clearTimeout(timeout);
+          cancelSpy();
+        },
+      });
+
+      const cleanup = crossSerializeStream(stream, {
+        plugins: [ReadableStreamPlugin],
+        onSerialize() {
+          onSerializeSpy();
+        },
+        onDone() {
+          onDoneSpy();
+        },
+        onError() {
+          // no-op
+        },
+      });
+
+      cleanup();
+
+      expect(cancelSpy).toBeCalledTimes(1);
+      expect(onSerializeSpy).toBeCalledTimes(1);
+      expect(onDoneSpy).toBeCalledTimes(1);
+    });
     describe('scoped', () => {
       it('supports ReadableStream', async () =>
         new Promise<void>((resolve, reject) => {

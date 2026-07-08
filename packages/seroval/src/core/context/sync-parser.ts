@@ -173,6 +173,10 @@ export class StreamParsePluginContext {
   onError(error: unknown): void {
     onError(this._p, error);
   }
+
+  addCleanup(callback: () => void): void {
+    this._p.state.cleanups.push(callback);
+  }
 }
 
 interface StreamParserState {
@@ -188,6 +192,8 @@ interface StreamParserState {
   onParse: (node: SerovalNode, initial: boolean) => void;
   onError?: (error: unknown) => void;
   onDone?: () => void;
+
+  cleanups: (() => void)[];
 }
 
 function createStreamParserState(
@@ -201,6 +207,7 @@ function createStreamParserState(
     onParse: options.onParse,
     onError: options.onError,
     onDone: options.onDone,
+    cleanups: [],
   };
 }
 
@@ -860,6 +867,10 @@ function onError(ctx: StreamParserContext, error: unknown): void {
 function onDone(ctx: StreamParserContext): void {
   if (ctx.state.onDone) {
     ctx.state.onDone();
+  }
+
+  for (let i = 0, len = ctx.state.cleanups.length; i < len; i++) {
+    ctx.state.cleanups[i]();
   }
 }
 
