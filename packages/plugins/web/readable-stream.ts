@@ -162,7 +162,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   },
   binary: {
     serialize(value) {
-      return { stream: toStream(value) };
+      const [stream] = toStream(value);
+      // ctx.addCleanup(cleanup);
+      return { stream };
     },
     deserialize(data) {
       return READABLE_STREAM_FACTORY_CONSTRUCTOR(data.stream);

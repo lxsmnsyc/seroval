@@ -136,7 +136,11 @@ function onSerialize(ctx: SerializerContext, bytes: SerovalNode): void {
   ctx.onSerialize(mergeBytes(bytes));
 }
 
-function serializePending(ctx: SerializerContext, source: Uint8Array, amount: number): void {
+function serializePending(
+  ctx: SerializerContext,
+  source: Uint8Array,
+  amount: number,
+): void {
   onSerialize(ctx, [SerovalBinaryType.Pending, source, encodeUint(amount)]);
 }
 
@@ -201,7 +205,7 @@ function serializeArray(ctx: SerializerContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
   onSerialize(ctx, [SerovalBinaryType.Array, id, encodeUint(len)]);
-  
+
   let pending = 0;
   for (let i = 0; i < len; i++) {
     if (i in value) {
@@ -214,7 +218,7 @@ function serializeArray(ctx: SerializerContext, value: unknown[]) {
       pending++;
     }
   }
-  serializePending(ctx, id, pending)
+  serializePending(ctx, id, pending);
   onSerialize(ctx, [SerovalBinaryType.ObjectFlag, id, getObjectFlag(value)]);
   return id;
 }
@@ -294,7 +298,7 @@ function serializeSequence(ctx: SerializerContext, value: Sequence) {
       serialize(ctx, value.v[i]),
     ]);
   }
-  serializePending(ctx, id, length)
+  serializePending(ctx, id, length);
   return id;
 }
 
