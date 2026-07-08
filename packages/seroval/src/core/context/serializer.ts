@@ -60,6 +60,7 @@ import type {
 } from '../types';
 import getIdentifier from '../utils/get-identifier';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
+import { isValidKey } from '../utils/valid-properties';
 
 const enum AssignmentType {
   Index = 0,
@@ -502,7 +503,7 @@ function createObjectAssign(
   key: string,
   value: string,
 ): void {
-  if (key === '__proto__') {
+  if (!isValidKey(key)) {
     // `obj.__proto__ = x`, including the bracket form `obj["__proto__"] = x`,
     // invokes the prototype setter rather than creating an own property.
     // Define the property instead so the round-trip preserves it as an actual
@@ -663,13 +664,13 @@ function serializeProperty(
       }
       return '';
     }
+    if (isValidKey(key)) {
+      return (isIdentifier ? key : '"' + key + '"') + ':' + serialize(ctx, val);
+    }
     // `__proto__` as an identifier or string key in an object literal is the
     // prototype setter, not an own property; use a computed key so the
     // round-trip preserves it as an actual own property.
-    if (key === '__proto__') {
-      return '["__proto__"]:' + serialize(ctx, val);
-    }
-    return (isIdentifier ? key : '"' + key + '"') + ':' + serialize(ctx, val);
+    return '["' + key + '"]:' + serialize(ctx, val);
   }
   return '[' + serialize(ctx, key) + ']:' + serialize(ctx, val);
 }

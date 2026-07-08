@@ -27,12 +27,6 @@ import { createSequence, type Sequence, sequenceToIterator } from '../sequence';
 import type { Stream } from '../stream';
 import { createStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
-import {
-  SYM_ASYNC_ITERATOR,
-  SYM_IS_CONCAT_SPREADABLE,
-  SYM_ITERATOR,
-  SYM_TO_STRING_TAG,
-} from '../symbols';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
@@ -71,6 +65,7 @@ import type {
   TypedArrayValue,
 } from '../utils/typed-array';
 import { getTypedArrayConstructor } from '../utils/typed-array';
+import { isValidKey, isValidSymbol } from '../utils/valid-properties';
 
 const MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
 const MAX_BIGINT_LENGTH = 10_000;
@@ -277,34 +272,6 @@ function deserializeArray(
   }
   applyObjectFlag(result, node.o);
   return result;
-}
-
-function isValidKey(key: string): boolean {
-  switch (key) {
-    case 'constructor':
-    case '__proto__':
-    case 'prototype':
-    case '__defineGetter__':
-    case '__defineSetter__':
-    case '__lookupGetter__':
-    case '__lookupSetter__':
-      // case 'then':
-      return false;
-    default:
-      return true;
-  }
-}
-
-function isValidSymbol(symbol: symbol): boolean {
-  switch (symbol) {
-    case SYM_ASYNC_ITERATOR:
-    case SYM_IS_CONCAT_SPREADABLE:
-    case SYM_TO_STRING_TAG:
-    case SYM_ITERATOR:
-      return true;
-    default:
-      return false;
-  }
 }
 
 function assignStringProperty(
