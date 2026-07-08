@@ -115,7 +115,7 @@ export const SYMBOL_STRING: Record<Symbols, string> = {
   [Symbols.Unscopables]: 'Symbol.unscopables',
 };
 
-export const INV_SYMBOL_REF = /* @__PURE__ */ {
+export const INV_SYMBOL_REF = {
   [SYM_ASYNC_ITERATOR]: Symbols.AsyncIterator,
   [SYM_HAS_INSTANCE]: Symbols.HasInstance,
   [SYM_IS_CONCAT_SPREADABLE]: Symbols.IsConcatSpreadable,
