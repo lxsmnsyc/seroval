@@ -17,6 +17,8 @@ import {
 
 const EXAMPLE = /[a-z0-9]+/i;
 
+const EXAMPLE_ESCAPED = /\d+\.\d+\s?\/\w*/g;
+
 describe('RegExp', () => {
   describe('serialize', () => {
     it('supports RegExp', () => {
@@ -150,5 +152,75 @@ describe('RegExp', () => {
           },
         });
       }));
+  });
+});
+
+describe('RegExp with escaped source', () => {
+  describe('serialize', () => {
+    it('supports escaped source', () => {
+      const result = serialize(EXAMPLE_ESCAPED);
+      expect(result).toMatchSnapshot();
+      const back = deserialize<typeof EXAMPLE_ESCAPED>(result);
+      expect(back).toBeInstanceOf(RegExp);
+      expect(back.source).toBe(EXAMPLE_ESCAPED.source);
+      expect(String(back)).toBe(String(EXAMPLE_ESCAPED));
+    });
+  });
+  describe('serializeAsync', () => {
+    it('supports escaped source', async () => {
+      const result = await serializeAsync(Promise.resolve(EXAMPLE_ESCAPED));
+      expect(result).toMatchSnapshot();
+      const back = await deserialize<Promise<typeof EXAMPLE_ESCAPED>>(result);
+      expect(back).toBeInstanceOf(RegExp);
+      expect(back.source).toBe(EXAMPLE_ESCAPED.source);
+      expect(String(back)).toBe(String(EXAMPLE_ESCAPED));
+    });
+  });
+  describe('toJSON', () => {
+    it('supports escaped source', () => {
+      const result = toJSON(EXAMPLE_ESCAPED);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromJSON<typeof EXAMPLE_ESCAPED>(result);
+      expect(back).toBeInstanceOf(RegExp);
+      expect(back.source).toBe(EXAMPLE_ESCAPED.source);
+      expect(String(back)).toBe(String(EXAMPLE_ESCAPED));
+    });
+  });
+  describe('toJSONAsync', () => {
+    it('supports escaped source', async () => {
+      const result = await toJSONAsync(Promise.resolve(EXAMPLE_ESCAPED));
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = await fromJSON<Promise<typeof EXAMPLE_ESCAPED>>(result);
+      expect(back).toBeInstanceOf(RegExp);
+      expect(back.source).toBe(EXAMPLE_ESCAPED.source);
+      expect(String(back)).toBe(String(EXAMPLE_ESCAPED));
+    });
+  });
+  describe('toCrossJSON', () => {
+    it('supports escaped source', () => {
+      const result = toCrossJSON(EXAMPLE_ESCAPED);
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = fromCrossJSON<typeof EXAMPLE_ESCAPED>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(RegExp);
+      expect(back.source).toBe(EXAMPLE_ESCAPED.source);
+      expect(String(back)).toBe(String(EXAMPLE_ESCAPED));
+    });
+  });
+  describe('toCrossJSONAsync', () => {
+    it('supports escaped source', async () => {
+      const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE_ESCAPED));
+      expect(JSON.stringify(result)).toMatchSnapshot();
+      const back = await fromCrossJSON<Promise<typeof EXAMPLE_ESCAPED>>(
+        result,
+        {
+          refs: new Map(),
+        },
+      );
+      expect(back).toBeInstanceOf(RegExp);
+      expect(back.source).toBe(EXAMPLE_ESCAPED.source);
+      expect(String(back)).toBe(String(EXAMPLE_ESCAPED));
+    });
   });
 });
