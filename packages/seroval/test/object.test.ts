@@ -568,4 +568,49 @@ describe('objects', () => {
       );
     });
   });
+  describe('with a circular own __proto__ property', () => {
+    // `parent.child` -> `child`, and `child`'s own enumerable `__proto__`
+    // data property holds a back-reference to `parent`. The back-reference
+    // forces `__proto__` through the deferred assignment path rather than
+    // the inline object literal.
+    function makeCircularProtoObject(): Record<string, unknown> {
+      const parent: Record<string, unknown> = {};
+      const child = JSON.parse('{"__proto__":0}') as Record<string, unknown>;
+      parent.child = child;
+      Object.defineProperty(child, '__proto__', {
+        value: parent,
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+      return parent;
+    }
+    function expectPreserved(back: Record<string, unknown>): void {
+      const child = back.child as Record<string, unknown>;
+      const descriptor = Object.getOwnPropertyDescriptor(child, '__proto__');
+      expect(descriptor).toBeDefined();
+      expect(descriptor?.value).toBe(back);
+      expect(Object.getPrototypeOf(child)).toBe(Object.prototype);
+    }
+
+    it('supports serialize', () => {
+      expectPreserved(
+        deserialize<Record<string, unknown>>(
+          serialize(makeCircularProtoObject()),
+        ),
+      );
+    });
+    it('supports serializeAsync', async () => {
+      expectPreserved(
+        deserialize<Record<string, unknown>>(
+          await serializeAsync(makeCircularProtoObject()),
+        ),
+      );
+    });
+    it('supports toJSON', () => {
+      expectPreserved(
+        fromJSON<Record<string, unknown>>(toJSON(makeCircularProtoObject())),
+      );
+    });
+  });
 });
