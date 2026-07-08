@@ -21,7 +21,7 @@ import { GLOBAL_CONTEXT_REFERENCES, REFERENCES_KEY } from '../keys';
 import type { PluginAccessOptions } from '../plugin';
 import { SerovalMode } from '../plugin';
 import { SPECIAL_REF_STRING } from '../special-reference';
-import { serializeString } from '../string';
+import { deserializeString, serializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
   SerovalArrayBufferNode,
@@ -856,7 +856,7 @@ function serializeRegExp(
   node: SerovalRegExpNode,
 ): string {
   if (ctx.base.features & Feature.RegExp) {
-    return '/' + node.c + '/' + node.m;
+    return '/' + deserializeString(node.c) + '/' + node.m;
   }
   throw new SerovalUnsupportedNodeError(node);
 }
