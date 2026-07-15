@@ -5,6 +5,7 @@ import {
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
+  SerovalTemporalType,
   SYMBOL_STRING,
 } from '../constants';
 import {
@@ -56,6 +57,7 @@ import type {
   SerovalStreamNextNode,
   SerovalStreamReturnNode,
   SerovalStreamThrowNode,
+  SerovalTemporalNode,
   SerovalTypedArrayNode,
 } from '../types';
 import getIdentifier from '../utils/get-identifier';
@@ -851,6 +853,27 @@ function serializeDate(node: SerovalDateNode): string {
   return 'new Date("' + node.s + '")';
 }
 
+const TEMPORAL_CONSTRUCTOR: Record<SerovalTemporalType, string> = {
+  [SerovalTemporalType.Instant]: 'Temporal.Instant',
+  [SerovalTemporalType.Duration]: 'Temporal.Duration',
+  [SerovalTemporalType.PlainDate]: 'Temporal.PlainDate',
+  [SerovalTemporalType.PlainDateTime]: 'Temporal.PlainDateTime',
+  [SerovalTemporalType.PlainMonthDay]: 'Temporal.PlainMonthDay',
+  [SerovalTemporalType.PlainTime]: 'Temporal.PlainTime',
+  [SerovalTemporalType.PlainYearMonth]: 'Temporal.PlainYearMonth',
+  [SerovalTemporalType.ZonedDateTime]: 'Temporal.ZonedDateTime',
+};
+
+function serializeTemporal(
+  ctx: SerializerContext,
+  node: SerovalTemporalNode,
+): string {
+  if (ctx.base.features & Feature.Temporal) {
+    return TEMPORAL_CONSTRUCTOR[node.c] + '.from("' + node.s + '")';
+  }
+  throw new SerovalUnsupportedNodeError(node);
+}
+
 function serializeRegExp(
   ctx: SerializerContext,
   node: SerovalRegExpNode,
@@ -1401,6 +1424,8 @@ function serializeAssignable(
       return SPECIAL_REF_STRING[node.s];
     case SerovalNodeType.Sequence:
       return serializeSequence(ctx, node);
+    case SerovalNodeType.Temporal:
+      return serializeTemporal(ctx, node);
     default:
       throw new SerovalUnsupportedNodeError(node);
   }

@@ -19,10 +19,11 @@ import {
   createStreamReturnNode,
   createStreamThrowNode,
   createStringNode,
+  createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
 import { Feature } from '../compat';
-import { NIL, SerovalNodeType } from '../constants';
+import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
 import { SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { createSerovalNode } from '../node';
@@ -585,6 +586,60 @@ export async function parseObjectAsync(
       id,
       current as unknown as AggregateError,
     );
+  }
+  if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
+    switch (currentClass) {
+      case Temporal.Instant:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.Instant,
+          current as unknown as Temporal.Instant,
+        );
+      case Temporal.Duration:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.Duration,
+          current as unknown as Temporal.Duration,
+        );
+      case Temporal.PlainDate:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.PlainDate,
+          current as unknown as Temporal.PlainDate,
+        );
+      case Temporal.PlainDateTime:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.PlainDateTime,
+          current as unknown as Temporal.PlainDateTime,
+        );
+      case Temporal.PlainMonthDay:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.PlainMonthDay,
+          current as unknown as Temporal.PlainMonthDay,
+        );
+      case Temporal.PlainTime:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.PlainTime,
+          current as unknown as Temporal.PlainTime,
+        );
+      case Temporal.PlainYearMonth:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.PlainYearMonth,
+          current as unknown as Temporal.PlainYearMonth,
+        );
+      case Temporal.ZonedDateTime:
+        return createTemporalNode(
+          id,
+          SerovalTemporalType.ZonedDateTime,
+          current as unknown as Temporal.ZonedDateTime,
+        );
+      default:
+        break;
+    }
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.

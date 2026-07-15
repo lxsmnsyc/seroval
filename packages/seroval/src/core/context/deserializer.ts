@@ -5,6 +5,7 @@ import {
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
+  SerovalTemporalType,
   SYMBOL_REF,
 } from '../constants';
 import {
@@ -58,6 +59,7 @@ import type {
   SerovalStreamNextNode,
   SerovalStreamReturnNode,
   SerovalStreamThrowNode,
+  SerovalTemporalNode,
   SerovalTypedArrayNode,
 } from '../types';
 import type {
@@ -379,6 +381,45 @@ function deserializeDate(
   node: SerovalDateNode,
 ): Date {
   return assignIndexedValue(ctx, node.i, new Date(node.s));
+}
+
+function deserializeTemporal(
+  ctx: DeserializerContext,
+  node: SerovalTemporalNode,
+): unknown {
+  if (!(ctx.base.features & Feature.Temporal)) {
+    throw new SerovalUnsupportedNodeError(node);
+  }
+  let value: unknown;
+  switch (node.c) {
+    case SerovalTemporalType.Instant:
+      value = Temporal.Instant.from(node.s);
+      break;
+    case SerovalTemporalType.Duration:
+      value = Temporal.Duration.from(node.s);
+      break;
+    case SerovalTemporalType.PlainDate:
+      value = Temporal.PlainDate.from(node.s);
+      break;
+    case SerovalTemporalType.PlainDateTime:
+      value = Temporal.PlainDateTime.from(node.s);
+      break;
+    case SerovalTemporalType.PlainMonthDay:
+      value = Temporal.PlainMonthDay.from(node.s);
+      break;
+    case SerovalTemporalType.PlainTime:
+      value = Temporal.PlainTime.from(node.s);
+      break;
+    case SerovalTemporalType.PlainYearMonth:
+      value = Temporal.PlainYearMonth.from(node.s);
+      break;
+    case SerovalTemporalType.ZonedDateTime:
+      value = Temporal.ZonedDateTime.from(node.s);
+      break;
+    default:
+      throw new SerovalMalformedNodeError(node);
+  }
+  return assignIndexedValue(ctx, node.i, value);
 }
 
 function deserializeRegExp(
@@ -815,6 +856,8 @@ function deserialize(
     // case SerovalNodeType.SpecialReference:
     case SerovalNodeType.Sequence:
       return deserializeSequence(ctx, depth, node);
+    case SerovalNodeType.Temporal:
+      return deserializeTemporal(ctx, node);
     default:
       throw new SerovalUnsupportedNodeError(node);
   }

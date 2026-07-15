@@ -142,6 +142,6 @@ exports[`bigint typed arrays > toCrossJSONStream > supports bigint typed arrays 
 
 exports[`bigint typed arrays > toCrossJSONStream > supports bigint typed arrays 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":6,"s":2},{"t":16,"i":3,"c":"BigInt64Array","f":{"t":19,"i":4,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":5,"s":5}},"b":0,"l":4}]}"`;
 
-exports[`bigint typed arrays > toJSON > supports bigint typed arrays 1`] = `"{"t":{"t":16,"i":0,"c":"BigInt64Array","f":{"t":19,"i":1,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":2,"s":5}},"b":0,"l":4},"f":63,"m":[]}"`;
+exports[`bigint typed arrays > toJSON > supports bigint typed arrays 1`] = `"{"t":{"t":16,"i":0,"c":"BigInt64Array","f":{"t":19,"i":1,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":2,"s":5}},"b":0,"l":4},"f":127,"m":[]}"`;
 
-exports[`bigint typed arrays > toJSONAsync > supports bigint typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":16,"i":1,"c":"BigInt64Array","f":{"t":19,"i":2,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}},"f":63,"m":[]}"`;
+exports[`bigint typed arrays > toJSONAsync > supports bigint typed arrays 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":16,"i":1,"c":"BigInt64Array","f":{"t":19,"i":2,"s":"AQAAAAAA4P////////8fAAAAAAAAAAAA//////////8=","f":{"t":26,"i":3,"s":5}},"b":0,"l":4}},"f":127,"m":[]}"`;

@@ -3,6 +3,7 @@ import type {
   SerovalConstant,
   SerovalNodeType,
   SerovalObjectFlags,
+  SerovalTemporalType,
   Symbols,
 } from './constants';
 import type { SpecialReference } from './special-reference';
@@ -14,8 +15,8 @@ export interface SerovalBaseNode {
   i: number | undefined;
   // Serialized value
   s: unknown;
-  // Constructor name / RegExp source
-  c: string | undefined;
+  // Constructor name / RegExp source / Temporal type
+  c: string | SerovalTemporalType | undefined;
   // message/flags
   m: string | undefined;
   // properties (objects)
@@ -133,12 +134,22 @@ export interface SerovalBigIntTypedArrayNode extends SerovalBaseNode {
   l: number;
 }
 
+export interface SerovalTemporalNode extends SerovalBaseNode {
+  t: SerovalNodeType.Temporal;
+  i: number;
+  // Temporal Constructor
+  c: SerovalTemporalType;
+  // ISO string
+  s: string;
+}
+
 export type SerovalSemiPrimitiveNode =
   | SerovalBigIntNode
   | SerovalDateNode
   | SerovalRegExpNode
   | SerovalTypedArrayNode
-  | SerovalBigIntTypedArrayNode;
+  | SerovalBigIntTypedArrayNode
+  | SerovalTemporalNode;
 
 export interface SerovalSetNode extends SerovalBaseNode {
   t: SerovalNodeType.Set;

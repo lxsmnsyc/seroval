@@ -1,5 +1,10 @@
 import type { WellKnownSymbols } from './constants';
-import { INV_SYMBOL_REF, NIL, SerovalNodeType } from './constants';
+import {
+  INV_SYMBOL_REF,
+  NIL,
+  SerovalNodeType,
+  type SerovalTemporalType,
+} from './constants';
 import {
   INFINITY_NODE,
   NAN_NODE,
@@ -36,6 +41,7 @@ import type {
   SerovalStreamReturnNode,
   SerovalStreamThrowNode,
   SerovalStringNode,
+  SerovalTemporalNode,
   SerovalTypedArrayNode,
   SerovalWKSymbolNode,
 } from './types';
@@ -135,6 +141,37 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     id,
     timestamp !== timestamp ? '' : current.toISOString(),
     NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+  );
+}
+
+type SerovalTemporalValue =
+  | Temporal.Instant
+  | Temporal.Duration
+  | Temporal.PlainDate
+  | Temporal.PlainDateTime
+  | Temporal.PlainMonthDay
+  | Temporal.PlainTime
+  | Temporal.PlainYearMonth
+  | Temporal.ZonedDateTime;
+
+export function createTemporalNode(
+  id: number,
+  type: SerovalTemporalType,
+  current: SerovalTemporalValue,
+): SerovalTemporalNode {
+  return createSerovalNode(
+    SerovalNodeType.Temporal,
+    id,
+    current.toString(),
+    type,
     NIL,
     NIL,
     NIL,

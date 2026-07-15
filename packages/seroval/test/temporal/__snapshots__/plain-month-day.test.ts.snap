@@ -1,0 +1,71 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Temporal.PlainMonthDay > crossSerialize > scoped > supports Temporal.PlainMonthDay 1`] = `"($R=>$R[0]=Temporal.PlainMonthDay.from("05-07"))($R["example"])"`;
+
+exports[`Temporal.PlainMonthDay > crossSerialize > supports Temporal.PlainMonthDay 1`] = `"$R[0]=Temporal.PlainMonthDay.from("05-07")"`;
+
+exports[`Temporal.PlainMonthDay > crossSerializeAsync > scoped > supports Temporal.PlainMonthDay 1`] = `"($R=>$R[0]=Promise.resolve($R[1]=Temporal.PlainMonthDay.from("05-07")))($R["example"])"`;
+
+exports[`Temporal.PlainMonthDay > crossSerializeAsync > supports Temporal.PlainMonthDay 1`] = `"$R[0]=Promise.resolve($R[1]=Temporal.PlainMonthDay.from("05-07"))"`;
+
+exports[`Temporal.PlainMonthDay > crossSerializeStream > scoped > supports Temporal.PlainMonthDay 1`] = `
+"($R=>$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p)($R["example"])"
+`;
+
+exports[`Temporal.PlainMonthDay > crossSerializeStream > scoped > supports Temporal.PlainMonthDay 2`] = `
+"($R=>($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.PlainMonthDay.from("05-07")))($R["example"])"
+`;
+
+exports[`Temporal.PlainMonthDay > crossSerializeStream > supports Temporal.PlainMonthDay 1`] = `
+"$R[0]=($R[1]=($R[2]=() => {
+  const resolver = {
+    p: 0,
+    s: 0,
+    f: 0
+  };
+  resolver.p = new Promise((resolve, reject) => {
+    resolver.s = resolve;
+    resolver.f = reject;
+  });
+  return resolver;
+})()).p"
+`;
+
+exports[`Temporal.PlainMonthDay > crossSerializeStream > supports Temporal.PlainMonthDay 2`] = `
+"($R[4]=(resolver, data) => {
+  resolver.s(data);
+  resolver.p.s = 1;
+  resolver.p.v = data;
+})($R[1],$R[3]=Temporal.PlainMonthDay.from("05-07"))"
+`;
+
+exports[`Temporal.PlainMonthDay > serialize > supports Temporal.PlainMonthDay 1`] = `"Temporal.PlainMonthDay.from("05-07")"`;
+
+exports[`Temporal.PlainMonthDay > serializeAsync > supports Temporal.PlainMonthDay 1`] = `"Promise.resolve(Temporal.PlainMonthDay.from("05-07"))"`;
+
+exports[`Temporal.PlainMonthDay > toCrossJSON > supports Temporal.PlainMonthDay 1`] = `"{"t":36,"i":0,"s":"05-07","c":4}"`;
+
+exports[`Temporal.PlainMonthDay > toCrossJSONAsync > supports Temporal.PlainMonthDay 1`] = `"{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"05-07","c":4}}"`;
+
+exports[`Temporal.PlainMonthDay > toCrossJSONStream > supports Temporal.PlainMonthDay 1`] = `"{"t":22,"i":0,"s":1,"f":{"t":26,"i":2,"s":1}}"`;
+
+exports[`Temporal.PlainMonthDay > toCrossJSONStream > supports Temporal.PlainMonthDay 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":4,"s":2},{"t":36,"i":3,"s":"05-07","c":4}]}"`;
+
+exports[`Temporal.PlainMonthDay > toJSON > supports Temporal.PlainMonthDay 1`] = `"{"t":{"t":36,"i":0,"s":"05-07","c":4},"f":127,"m":[]}"`;
+
+exports[`Temporal.PlainMonthDay > toJSONAsync > supports Temporal.PlainMonthDay 1`] = `"{"t":{"t":12,"i":0,"s":1,"f":{"t":36,"i":1,"s":"05-07","c":4}},"f":127,"m":[]}"`;
