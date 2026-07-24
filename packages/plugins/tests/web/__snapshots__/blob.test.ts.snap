@@ -7,7 +7,7 @@ exports[`Blob > crossSerializeAsync > scoped > supports Blob 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],{type:"text/plain"})))($R["example"])"
 `;
@@ -19,7 +19,7 @@ exports[`Blob > crossSerializeAsync > supports Blob 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],{type:"text/plain"})"
 `;
@@ -31,7 +31,7 @@ exports[`Blob > serializeAsync > supports Blob 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],{type:"text/plain"})"
 `;
