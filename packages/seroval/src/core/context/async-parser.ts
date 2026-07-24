@@ -24,7 +24,7 @@ import {
 } from '../base-primitives';
 import { Feature } from '../compat';
 import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
-import { SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
+import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
@@ -675,6 +675,9 @@ export async function parseAsync<T>(
   depth: number,
   current: T,
 ): Promise<SerovalNode> {
+  if (depth >= ctx.base.depthLimit) {
+    throw new SerovalDepthLimitError(ctx.base.depthLimit);
+  }
   switch (typeof current) {
     case 'boolean':
       return current ? TRUE_NODE : FALSE_NODE;

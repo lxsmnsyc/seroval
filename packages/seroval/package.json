@@ -1,7 +1,7 @@
 {
   "name": "seroval",
   "type": "module",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "files": [
     "dist",
     "src"
@@ -54,13 +54,13 @@
   "module": "./dist/esm/production/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
       "development": {
         "require": "./dist/cjs/development/index.cjs",
         "import": "./dist/esm/development/index.mjs"
       },
       "require": "./dist/cjs/production/index.cjs",
-      "import": "./dist/esm/production/index.mjs"
+      "import": "./dist/esm/production/index.mjs",
+      "types": "./dist/types/index.d.ts"
     }
   },
   "typesVersions": {

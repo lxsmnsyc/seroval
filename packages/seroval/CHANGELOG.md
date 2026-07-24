@@ -1,5 +1,11 @@
 # seroval
 
+## 1.5.6
+
+### Patch Changes
+
+- fix depth limit
+
 ## 1.5.5
 
 ### Patch Changes
