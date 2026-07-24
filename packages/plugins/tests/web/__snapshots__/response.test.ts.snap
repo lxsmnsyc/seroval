@@ -7,7 +7,7 @@ exports[`Response > crossSerializeAsync > scoped > supports Response 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),$R[3]={headers:$R[4]=new Headers($R[5]=[$R[6]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""}))($R["example"])"
 `;
@@ -19,7 +19,7 @@ exports[`Response > crossSerializeAsync > supports Response 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),$R[3]={headers:$R[4]=new Headers($R[5]=[$R[6]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"
 `;
@@ -72,7 +72,7 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -119,7 +119,7 @@ exports[`Response > crossSerializeStream > scoped > supports Response 2`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),0,12)))($R["example"])"
 `;
@@ -174,7 +174,7 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -221,7 +221,7 @@ exports[`Response > crossSerializeStream > supports Response 2`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),0,12))"
 `;
@@ -237,7 +237,7 @@ exports[`Response > serializeAsync > supports Response 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),{headers:new Headers([["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"
 `;
