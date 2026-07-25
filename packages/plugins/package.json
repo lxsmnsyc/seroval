@@ -3,8 +3,7 @@
   "type": "module",
   "version": "1.5.6",
   "files": [
-    "dist",
-    "web"
+    "dist"
   ],
   "engines": {
     "node": ">=10"
