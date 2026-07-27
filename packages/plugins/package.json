@@ -46,6 +46,7 @@
   },
   "author": "Alexis Munsayac",
   "exports": {
+    ".": "./dist/index.js",
     "./web": "./dist/web.js",
     "./package.json": "./package.json"
   },
