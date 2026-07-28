@@ -613,4 +613,40 @@ describe('objects', () => {
       );
     });
   });
+  describe('with a shadowed constructor property', () => {
+    const SHADOWED = { constructor: 'not a constructor', value: 42 };
+
+    it('supports serialize', () => {
+      const result = serialize(SHADOWED);
+      const back = deserialize<typeof SHADOWED>(result);
+      expect(back.constructor).toBe('not a constructor');
+      expect(back.value).toBe(42);
+    });
+    it('supports serializeAsync', async () => {
+      const result = await serializeAsync(SHADOWED);
+      const back = deserialize<typeof SHADOWED>(result);
+      expect(back.constructor).toBe('not a constructor');
+      expect(back.value).toBe(42);
+    });
+    it('supports toJSON', () => {
+      const result = toJSON(SHADOWED);
+      const back = fromJSON<typeof SHADOWED>(result);
+      expect(back.constructor).toBe('not a constructor');
+      expect(back.value).toBe(42);
+    });
+    it('keeps a null-prototype object null-prototype', () => {
+      const shadowed = Object.create(null) as Record<string, unknown>;
+      shadowed.constructor = 1;
+      const back = deserialize<Record<string, unknown>>(serialize(shadowed));
+      expect(Object.getPrototypeOf(back)).toBe(null);
+      expect(back.constructor).toBe(1);
+    });
+    it('keeps a shadowed Map a Map', () => {
+      const shadowed = new Map([['a', 1]]);
+      (shadowed as unknown as Record<string, unknown>).constructor = 1;
+      const back = deserialize<Map<string, number>>(serialize(shadowed));
+      expect(back).toBeInstanceOf(Map);
+      expect(back.get('a')).toBe(1);
+    });
+  });
 });
