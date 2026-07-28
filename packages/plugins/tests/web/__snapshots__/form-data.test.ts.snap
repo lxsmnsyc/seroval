@@ -33,7 +33,7 @@ exports[`FormData > crossSerializeAsync > scoped > supports FormData 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",$R[5]={type:"text/plain",lastModified:1681027542680})],$R[8]=["foo-bar",$R[9]=new File([$R[11]=$R[7]("Rm9vIEJhcg==")],"foo-bar.txt",$R[10]={type:"text/plain",lastModified:1681027542680})]]))($R["example"])"
 `;
@@ -51,7 +51,7 @@ exports[`FormData > crossSerializeAsync > supports FormData 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",$R[5]={type:"text/plain",lastModified:1681027542680})],$R[8]=["foo-bar",$R[9]=new File([$R[11]=$R[7]("Rm9vIEJhcg==")],"foo-bar.txt",$R[10]={type:"text/plain",lastModified:1681027542680})]])"
 `;
@@ -137,7 +137,7 @@ exports[`FormData > serializeAsync > supports FormData 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",{type:"text/plain",lastModified:1681027542680})],["foo-bar",new File([h("Rm9vIEJhcg==")],"foo-bar.txt",{type:"text/plain",lastModified:1681027542680})]]))()"
 `;

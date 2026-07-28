@@ -7,7 +7,7 @@ exports[`Request > crossSerializeAsync > scoped > supports Request 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),cache:"default",credentials:"same-origin",headers:$R[4]=new Headers($R[5]=[$R[6]=["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""}))($R["example"])"
 `;
@@ -19,7 +19,7 @@ exports[`Request > crossSerializeAsync > supports Request 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),cache:"default",credentials:"same-origin",headers:$R[4]=new Headers($R[5]=[$R[6]=["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""})"
 `;
@@ -31,7 +31,7 @@ exports[`Request > crossSerializeAsync > supports already read Request 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),cache:"default",credentials:"same-origin",headers:$R[4]=new Headers($R[5]=[$R[6]=["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""})"
 `;
@@ -84,7 +84,7 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -131,7 +131,7 @@ exports[`Request > crossSerializeStream > scoped > supports Request 2`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),0,12)))($R["example"])"
 `;
@@ -186,7 +186,7 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -233,7 +233,7 @@ exports[`Request > crossSerializeStream > supports Request 2`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),0,12))"
 `;
@@ -247,7 +247,7 @@ exports[`Request > serializeAsync > supports Request 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQh"),cache:"default",credentials:"same-origin",headers:new Headers([["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""})"
 `;

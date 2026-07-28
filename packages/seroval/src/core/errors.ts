@@ -1,9 +1,9 @@
-/// <reference types="pridepack/env" />
+/// <reference types="tsdown" />
 
 import { serializeString } from './string';
 import type { SerovalNode } from './types';
 
-const { toString: objectToString } = /* @__PURE__ */ Object.prototype;
+const { toString: objectToString } = Object.prototype;
 
 const enum StepErrorCodes {
   Parse = 1,

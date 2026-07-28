@@ -7,7 +7,7 @@ exports[`File > crossSerializeAsync > scoped > supports File 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",$R[1]={type:"text/plain",lastModified:1681027542680}))($R["example"])"
 `;
@@ -19,7 +19,7 @@ exports[`File > crossSerializeAsync > supports File 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",$R[1]={type:"text/plain",lastModified:1681027542680})"
 `;
@@ -31,7 +31,7 @@ exports[`File > serializeAsync > supports File 1`] = `
   const arr = new Uint8Array(length);
   for (let i = 0; i < length; i++) {
     arr[i] = decoded.charCodeAt(i);
-  };
+  }
   return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",{type:"text/plain",lastModified:1681027542680})"
 `;

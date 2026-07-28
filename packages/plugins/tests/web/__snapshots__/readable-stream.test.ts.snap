@@ -48,7 +48,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -136,7 +136,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -224,7 +224,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -312,7 +312,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -400,7 +400,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -496,7 +496,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -586,7 +586,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -682,7 +682,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -772,7 +772,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
@@ -860,7 +860,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
     if (alive) {
       temp = count++;
       listeners[temp] = listener;
-    };
+    }
     up(listener);
     return () => {
       if (alive) {
