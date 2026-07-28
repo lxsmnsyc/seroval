@@ -38,18 +38,18 @@ exports[`Request > crossSerializeAsync > supports already read Request 1`] = `
 
 exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 "($R=>$R[0]=new Request("http://localhost:3000/",$R[1]={body:$R[2]=($R[3]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -140,18 +140,18 @@ exports[`Request > crossSerializeStream > scoped > supports Request 3`] = `"($R=
 
 exports[`Request > crossSerializeStream > supports Request 1`] = `
 "$R[0]=new Request("http://localhost:3000/",$R[1]={body:$R[2]=($R[3]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
