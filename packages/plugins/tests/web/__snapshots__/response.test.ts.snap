@@ -26,18 +26,18 @@ exports[`Response > crossSerializeAsync > supports Response 1`] = `
 
 exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 "($R=>$R[0]=new Response($R[1]=($R[2]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -128,18 +128,18 @@ exports[`Response > crossSerializeStream > scoped > supports Response 3`] = `"($
 
 exports[`Response > crossSerializeStream > supports Response 1`] = `
 "$R[0]=new Response($R[1]=($R[2]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {

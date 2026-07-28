@@ -3,21 +3,26 @@ import { createPlugin, createStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
+// Serialized via toString() — only use method shorthand for nested functions.
+// Their name comes from the property key at runtime, so name-preserving
+// transforms (esbuild keepNames) have nothing to wrap; any other shape gets
+// rewritten to call a bundle-scoped helper that does not exist in the
+// receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
 const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
   new ReadableStream({
-    start: controller => {
+    start(controller) {
       stream.on({
-        next: value => {
+        next(value) {
           try {
             controller.enqueue(value);
           } catch (_error) {
             // no-op
           }
         },
-        throw: value => {
+        throw(value) {
           controller.error(value);
         },
-        return: () => {
+        return() {
           try {
             controller.close();
           } catch (_error) {

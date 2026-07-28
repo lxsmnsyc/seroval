@@ -2,18 +2,18 @@
 
 exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream 1`] = `
 "($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -90,18 +90,18 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 
 exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream errors 1`] = `
 "($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -178,18 +178,18 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 
 exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 "$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -266,18 +266,18 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 
 exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1`] = `
 "$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -354,18 +354,18 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `
 "($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -450,18 +450,18 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 1`] = `
 "($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -540,18 +540,18 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 "$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -636,18 +636,18 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `
 "$R[0]=($R[1]=(stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -726,18 +726,18 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 "(h=>((stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {
@@ -814,18 +814,18 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = `
 "(h=>((stream) => new ReadableStream({
-  start: (controller) => {
+  start(controller) {
     stream.on({
-      next: (value) => {
+      next(value) {
         try {
           controller.enqueue(value);
         } catch (_error) {
         }
       },
-      throw: (value) => {
+      throw(value) {
         controller.error(value);
       },
-      return: () => {
+      return() {
         try {
           controller.close();
         } catch (_error) {

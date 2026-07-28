@@ -53,73 +53,79 @@ interface StreamListener<T> {
   return(value: T): void;
 }
 
+// Serialized via toString() — every nested function must be an object method
+// in shorthand form. Shorthand methods take their name from the property key
+// at runtime, so name-preserving transforms (esbuild keepNames) emit nothing
+// for them; arrows, function expressions and local function declarations all
+// get rewritten to call a bundle-scoped helper that does not exist in the
+// receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
 export const STREAM_CONSTRUCTOR = () => {
   const buffer: unknown[] = [];
   const listeners: StreamListener<unknown>[] = [];
   let alive = true;
   let success = false;
   let count = 0;
-  const flush = (
-    value: unknown,
-    mode: keyof StreamListener<unknown>,
-    x?: number,
-  ) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
+  const internal = {
+    flush(value: unknown, mode: keyof StreamListener<unknown>, x?: number) {
+      for (x = 0; x < count; x++) {
+        if (listeners[x]) {
+          listeners[x][mode](value);
+        }
       }
-    }
-  };
-  const up = (
-    listener: StreamListener<unknown>,
-    x?: number,
-    z?: number,
-    current?: unknown,
-  ) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? 'return' : 'throw'](current);
-      } else {
-        listener.next(current);
+    },
+    up(
+      listener: StreamListener<unknown>,
+      x?: number,
+      z?: number,
+      current?: unknown,
+    ) {
+      for (x = 0, z = buffer.length; x < z; x++) {
+        current = buffer[x];
+        if (!alive && x === z - 1) {
+          listener[success ? 'return' : 'throw'](current);
+        } else {
+          listener.next(current);
+        }
       }
-    }
-  };
-  const on = (listener: StreamListener<unknown>, temp?: number) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
+    },
+    on(listener: StreamListener<unknown>, temp?: number) {
       if (alive) {
-        listeners[temp!] = listeners[count];
-        listeners[count--] = undefined as any;
+        temp = count++;
+        listeners[temp] = listener;
       }
-    };
+      internal.up(listener);
+      return () => {
+        if (alive) {
+          listeners[temp!] = listeners[count];
+          listeners[count--] = undefined as any;
+        }
+      };
+    },
   };
   return {
     __SEROVAL_STREAM__: true,
-    on: (listener: StreamListener<unknown>) => on(listener),
-    next: (value: unknown) => {
+    on(listener: StreamListener<unknown>) {
+      return internal.on(listener);
+    },
+    next(value: unknown) {
       if (alive) {
         buffer.push(value);
-        flush(value, 'next');
+        internal.flush(value, 'next');
       }
     },
-    throw: (value: unknown) => {
+    throw(value: unknown) {
       if (alive) {
         buffer.push(value);
-        flush(value, 'throw');
+        internal.flush(value, 'throw');
         alive = false;
         success = false;
         listeners.length = 0;
       }
     },
-    return: (value: unknown) => {
+    return(value: unknown) {
       if (alive) {
         buffer.push(value);
-        flush(value, 'return');
+        internal.flush(value, 'return');
         alive = false;
         success = true;
         listeners.length = 0;
@@ -131,12 +137,16 @@ export const STREAM_CONSTRUCTOR = () => {
 export const SERIALIZED_STREAM_CONSTRUCTOR =
   /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
 
+// Serialized via toString() — nested functions must be shorthand methods
+// (see STREAM_CONSTRUCTOR).
 export const ITERATOR_CONSTRUCTOR =
   (symbol: symbol) => (sequence: Sequence) => () => {
     let index = 0;
     const instance = {
-      [symbol]: () => instance,
-      next: () => {
+      [symbol]() {
+        return instance;
+      },
+      next() {
         if (index > sequence.d) {
           return {
             done: true,
@@ -160,6 +170,8 @@ export const ITERATOR_CONSTRUCTOR =
 export const SERIALIZED_ITERATOR_CONSTRUCTOR =
   /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
 
+// Serialized via toString() — nested functions must be shorthand methods
+// (see STREAM_CONSTRUCTOR).
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
   (stream: Stream<unknown>) =>
@@ -169,46 +181,50 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
     let isThrow = false;
     const buffer: unknown[] = [];
     const pending: PromiseConstructorResolver[] = [];
-    const finalize = (i = 0, len = pending.length) => {
-      for (; i < len; i++) {
-        pending[i].s({
-          done: true,
-          value: undefined,
-        });
-      }
+    const internal = {
+      finalize(i = 0, len = pending.length) {
+        for (; i < len; i++) {
+          pending[i].s({
+            done: true,
+            value: undefined,
+          });
+        }
+      },
     };
     stream.on({
-      next: value => {
+      next(value) {
         const temp = pending.shift();
         if (temp) {
           temp.s({ done: false, value });
         }
         buffer.push(value);
       },
-      throw: value => {
+      throw(value) {
         const temp = pending.shift();
         if (temp) {
           temp.f(value);
         }
-        finalize();
+        internal.finalize();
         doneAt = buffer.length;
         isThrow = true;
         buffer.push(value);
       },
-      return: value => {
+      return(value) {
         const temp = pending.shift();
         if (temp) {
           temp.s({ done: true, value });
         }
-        finalize();
+        internal.finalize();
         doneAt = buffer.length;
         buffer.push(value);
       },
     });
 
     const instance = {
-      [symbol]: () => instance,
-      next: () => {
+      [symbol]() {
+        return instance;
+      },
+      next() {
         if (doneAt === -1) {
           const index = count++;
           if (index >= buffer.length) {

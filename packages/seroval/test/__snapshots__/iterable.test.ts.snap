@@ -4,8 +4,10 @@ exports[`Iterable > crossSerialize > scoped > supports Iterables 1`] = `
 "($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -31,8 +33,10 @@ exports[`Iterable > crossSerialize > supports Iterables 1`] = `
 "($R[0]={title:"Hello World",[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -58,8 +62,10 @@ exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `
 "($R=>$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -85,8 +91,10 @@ exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `
 "$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -131,8 +139,10 @@ exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `
 })($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -177,8 +187,10 @@ exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `
 })($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -204,8 +216,10 @@ exports[`Iterable > serialize > supports Iterables 1`] = `
 "(h=>({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -231,8 +245,10 @@ exports[`Iterable > serializeAsync > supports Iterables 1`] = `
 "(h=>Promise.resolve({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
