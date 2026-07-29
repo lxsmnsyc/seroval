@@ -22,69 +22,66 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
     });
   }
 }))(($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })(),$R[2].next("foo"),$R[2].next("bar"),$R[2].next("baz"),$R[2].return(void 0),$R[2])))($R["example"])"
 `;
 
@@ -110,69 +107,66 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
     });
   }
 }))(($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })(),$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})),$R[2])))($R["example"])"
 `;
 
@@ -198,69 +192,66 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
     });
   }
 }))(($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })(),$R[2].next("foo"),$R[2].next("bar"),$R[2].next("baz"),$R[2].return(void 0),$R[2]))"
 `;
 
@@ -286,69 +277,66 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
     });
   }
 }))(($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })(),$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})),$R[2]))"
 `;
 
@@ -374,69 +362,66 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
     });
   }
 }))($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })()))($R["example"])"
 `;
 
@@ -470,69 +455,66 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
     });
   }
 }))($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })()))($R["example"])"
 `;
 
@@ -560,69 +542,66 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
     });
   }
 }))($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })())"
 `;
 
@@ -656,69 +635,66 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
     });
   }
 }))($R[2]=($R[3]=() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })())"
 `;
 
@@ -746,69 +722,66 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
     });
   }
 }))((h=(() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })(),h.next("foo"),h.next("bar"),h.next("baz"),h.return(void 0),h)))()"
 `;
 
@@ -834,69 +807,66 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
     });
   }
 }))((h=(() => {
-  const buffer = [];
-  const listeners = [];
-  let alive = true;
-  let success = false;
-  let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
-      }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
-      }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    }
-    up(listener);
-    return () => {
-      if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
-  };
-  return {
-    __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "next");
-      }
-    },
-    throw: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "throw");
-        alive = false;
-        success = false;
-        listeners.length = 0;
-      }
-    },
-    return: (value) => {
-      if (alive) {
-        buffer.push(value);
-        flush(value, "return");
-        alive = false;
-        success = true;
-        listeners.length = 0;
-      }
-    }
-  };
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp) {
+			if (alive) {
+				temp = count++;
+				listeners[temp] = listener;
+			};
+			internal.up(listener);
+			return () => {
+				if (alive) {
+					listeners[temp] = listeners[count];
+					listeners[count--] = void 0;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
 })(),h.throw(Object.assign(new Error("Oops!"),{stack:""})),h)))()"
 `;
 
@@ -922,8 +892,8 @@ exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 1`]
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 2`] = `"{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}"`;
 
-exports[`ReadableStream > toJSONAsync > supports ReadableStream 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":32,"i":2,"f":{"t":1,"s":"foo"}},{"t":32,"i":2,"f":{"t":1,"s":"bar"}},{"t":32,"i":2,"f":{"t":1,"s":"baz"}},{"t":34,"i":2,"f":{"t":2,"s":1}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":63,"m":[2]}"`;
+exports[`ReadableStream > toJSONAsync > supports ReadableStream 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":32,"i":2,"f":{"t":1,"s":"foo"}},{"t":32,"i":2,"f":{"t":1,"s":"bar"}},{"t":32,"i":2,"f":{"t":1,"s":"baz"}},{"t":34,"i":2,"f":{"t":2,"s":1}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":127,"m":[2]}"`;
 
-exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":63,"m":[2]}"`;
+exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"f":127,"m":[2]}"`;
 
 exports[`ReadableStream > toJSONAsync > supports ReadableStream errors 2`] = `[Error: Oops!]`;

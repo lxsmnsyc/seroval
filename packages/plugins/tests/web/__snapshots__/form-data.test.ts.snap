@@ -28,13 +28,11 @@ exports[`FormData > crossSerializeAsync > scoped > supports FormData 1`] = `
   };
   return f;
 })($R[2]=[$R[3]=["hello-world",$R[4]=new File([$R[6]=($R[7]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  }
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) arr[i] = decoded.charCodeAt(i);
+	return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",$R[5]={type:"text/plain",lastModified:1681027542680})],$R[8]=["foo-bar",$R[9]=new File([$R[11]=$R[7]("Rm9vIEJhcg==")],"foo-bar.txt",$R[10]={type:"text/plain",lastModified:1681027542680})]]))($R["example"])"
 `;
 
@@ -46,36 +44,34 @@ exports[`FormData > crossSerializeAsync > supports FormData 1`] = `
   };
   return f;
 })($R[2]=[$R[3]=["hello-world",$R[4]=new File([$R[6]=($R[7]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  }
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) arr[i] = decoded.charCodeAt(i);
+	return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",$R[5]={type:"text/plain",lastModified:1681027542680})],$R[8]=["foo-bar",$R[9]=new File([$R[11]=$R[7]("Rm9vIEJhcg==")],"foo-bar.txt",$R[10]={type:"text/plain",lastModified:1681027542680})]])"
 `;
 
 exports[`FormData > crossSerializeStream > scoped > supports FormData 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p)($R["example"])"
 `;
 
 exports[`FormData > crossSerializeStream > scoped > supports FormData 2`] = `
 "($R=>($R[8]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=($R[4]=(e, f = new FormData(), i = 0, s = e.length, t) => {
   for (; i < s; i++) {
     t = e[i];
@@ -87,24 +83,24 @@ exports[`FormData > crossSerializeStream > scoped > supports FormData 2`] = `
 
 exports[`FormData > crossSerializeStream > supports FormData 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p"
 `;
 
 exports[`FormData > crossSerializeStream > supports FormData 2`] = `
 "($R[8]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=($R[4]=(e, f = new FormData(), i = 0, s = e.length, t) => {
   for (; i < s; i++) {
     t = e[i];
@@ -132,13 +128,11 @@ exports[`FormData > serializeAsync > supports FormData 1`] = `
   };
   return f;
 })([["hello-world",new File([(h=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  }
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) arr[i] = decoded.charCodeAt(i);
+	return arr.buffer;
 })("SGVsbG8gV29ybGQ=")],"hello.txt",{type:"text/plain",lastModified:1681027542680})],["foo-bar",new File([h("Rm9vIEJhcg==")],"foo-bar.txt",{type:"text/plain",lastModified:1681027542680})]]))()"
 `;
 
@@ -150,6 +144,6 @@ exports[`FormData > toCrossJSONStream > supports FormData 1`] = `"{"t":22,"i":0,
 
 exports[`FormData > toCrossJSONStream > supports FormData 2`] = `"{"t":23,"i":1,"a":[{"t":26,"i":8,"s":2},{"t":25,"i":3,"s":{"factory":{"t":25,"i":4,"s":{},"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":5,"a":[{"t":9,"i":6,"a":[{"t":1,"s":"hello"},{"t":1,"s":"world"}],"o":0},{"t":9,"i":7,"a":[{"t":1,"s":"foo"},{"t":1,"s":"bar"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"}]}"`;
 
-exports[`FormData > toJSON > supports FormData 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"a":[{"t":9,"i":3,"a":[{"t":1,"s":"hello"},{"t":1,"s":"world"}],"o":0},{"t":9,"i":4,"a":[{"t":1,"s":"foo"},{"t":1,"s":"bar"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"},"f":63,"m":[]}"`;
+exports[`FormData > toJSON > supports FormData 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"a":[{"t":9,"i":3,"a":[{"t":1,"s":"hello"},{"t":1,"s":"world"}],"o":0},{"t":9,"i":4,"a":[{"t":1,"s":"foo"},{"t":1,"s":"bar"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"},"f":127,"m":[]}"`;
 
-exports[`FormData > toJSONAsync > supports FormData 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"a":[{"t":9,"i":3,"a":[{"t":1,"s":"hello-world"},{"t":25,"i":4,"s":{"name":{"t":1,"s":"hello.txt"},"options":{"t":10,"i":5,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}]},"o":0},"buffer":{"t":19,"i":6,"s":"SGVsbG8gV29ybGQ=","f":{"t":26,"i":7,"s":5}}},"c":"seroval-plugins/web/File"}],"o":0},{"t":9,"i":8,"a":[{"t":1,"s":"foo-bar"},{"t":25,"i":9,"s":{"name":{"t":1,"s":"foo-bar.txt"},"options":{"t":10,"i":10,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}]},"o":0},"buffer":{"t":19,"i":11,"s":"Rm9vIEJhcg==","f":{"t":4,"i":7}}},"c":"seroval-plugins/web/File"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"},"f":63,"m":[7]}"`;
+exports[`FormData > toJSONAsync > supports FormData 1`] = `"{"t":{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/FormDataFactory"},"entries":{"t":9,"i":2,"a":[{"t":9,"i":3,"a":[{"t":1,"s":"hello-world"},{"t":25,"i":4,"s":{"name":{"t":1,"s":"hello.txt"},"options":{"t":10,"i":5,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}]},"o":0},"buffer":{"t":19,"i":6,"s":"SGVsbG8gV29ybGQ=","f":{"t":26,"i":7,"s":5}}},"c":"seroval-plugins/web/File"}],"o":0},{"t":9,"i":8,"a":[{"t":1,"s":"foo-bar"},{"t":25,"i":9,"s":{"name":{"t":1,"s":"foo-bar.txt"},"options":{"t":10,"i":10,"p":{"k":["type","lastModified"],"v":[{"t":1,"s":"text/plain"},{"t":0,"s":1681027542680}]},"o":0},"buffer":{"t":19,"i":11,"s":"Rm9vIEJhcg==","f":{"t":4,"i":7}}},"c":"seroval-plugins/web/File"}],"o":0}],"o":0}},"c":"seroval-plugins/web/FormData"},"f":127,"m":[7]}"`;
