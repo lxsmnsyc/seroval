@@ -12,8 +12,10 @@ exports[`objects > crossSerialize > scoped > supports Symbol.iterator 1`] = `
 "($R=>$R[0]={[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -43,8 +45,10 @@ exports[`objects > crossSerialize > supports Symbol.iterator 1`] = `
 "($R[0]={[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -88,45 +92,49 @@ exports[`objects > crossSerializeAsync > scoped > supports Symbol.asyncIterator 
   let isThrow = false;
   const buffer = [];
   const pending = [];
-  const finalize = (i = 0, len = pending.length) => {
-    for (; i < len; i++) {
-      pending[i].s({
-        done: true,
-        value: void 0
-      });
+  const internal = {
+    finalize(i = 0, len = pending.length) {
+      for (; i < len; i++) {
+        pending[i].s({
+          done: true,
+          value: void 0
+        });
+      }
     }
   };
   stream.on({
-    next: (value) => {
+    next(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
       };
       buffer.push(value);
     },
-    throw: (value) => {
+    throw(value) {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       isThrow = true;
       buffer.push(value);
     },
-    return: (value) => {
+    return(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       buffer.push(value);
     }
   });
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
@@ -169,58 +177,62 @@ exports[`objects > crossSerializeAsync > scoped > supports Symbol.asyncIterator 
   let alive = true;
   let success = false;
   let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
+  const internal = {
+    flush(value, mode, x) {
+      for (x = 0; x < count; x++) {
+        if (listeners[x]) {
+          listeners[x][mode](value);
+        }
       }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
+    },
+    up(listener, x, z, current) {
+      for (x = 0, z = buffer.length; x < z; x++) {
+        current = buffer[x];
+        if (!alive && x === z - 1) {
+          listener[success ? "return" : "throw"](current);
+        } else {
+          listener.next(current);
+        }
       }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    };
-    up(listener);
-    return () => {
+    },
+    on(listener, temp) {
       if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
+        temp = count++;
+        listeners[temp] = listener;
+      };
+      internal.up(listener);
+      return () => {
+        if (alive) {
+          listeners[temp] = listeners[count];
+          listeners[count--] = void 0;
+        }
+      };
+    }
   };
   return {
     __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
+    on(listener) {
+      return internal.on(listener);
+    },
+    next(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "next");
+        internal.flush(value, "next");
       }
     },
-    throw: (value) => {
+    throw(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "throw");
+        internal.flush(value, "throw");
         alive = false;
         success = false;
         listeners.length = 0;
       }
     },
-    return: (value) => {
+    return(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "return");
+        internal.flush(value, "return");
         alive = false;
         success = true;
         listeners.length = 0;
@@ -234,8 +246,10 @@ exports[`objects > crossSerializeAsync > scoped > supports Symbol.iterator 1`] =
 "($R=>$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -279,45 +293,49 @@ exports[`objects > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `
   let isThrow = false;
   const buffer = [];
   const pending = [];
-  const finalize = (i = 0, len = pending.length) => {
-    for (; i < len; i++) {
-      pending[i].s({
-        done: true,
-        value: void 0
-      });
+  const internal = {
+    finalize(i = 0, len = pending.length) {
+      for (; i < len; i++) {
+        pending[i].s({
+          done: true,
+          value: void 0
+        });
+      }
     }
   };
   stream.on({
-    next: (value) => {
+    next(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
       };
       buffer.push(value);
     },
-    throw: (value) => {
+    throw(value) {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       isThrow = true;
       buffer.push(value);
     },
-    return: (value) => {
+    return(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       buffer.push(value);
     }
   });
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
@@ -360,58 +378,62 @@ exports[`objects > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `
   let alive = true;
   let success = false;
   let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
+  const internal = {
+    flush(value, mode, x) {
+      for (x = 0; x < count; x++) {
+        if (listeners[x]) {
+          listeners[x][mode](value);
+        }
       }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
+    },
+    up(listener, x, z, current) {
+      for (x = 0, z = buffer.length; x < z; x++) {
+        current = buffer[x];
+        if (!alive && x === z - 1) {
+          listener[success ? "return" : "throw"](current);
+        } else {
+          listener.next(current);
+        }
       }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    };
-    up(listener);
-    return () => {
+    },
+    on(listener, temp) {
       if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
+        temp = count++;
+        listeners[temp] = listener;
+      };
+      internal.up(listener);
+      return () => {
+        if (alive) {
+          listeners[temp] = listeners[count];
+          listeners[count--] = void 0;
+        }
+      };
+    }
   };
   return {
     __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
+    on(listener) {
+      return internal.on(listener);
+    },
+    next(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "next");
+        internal.flush(value, "next");
       }
     },
-    throw: (value) => {
+    throw(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "throw");
+        internal.flush(value, "throw");
         alive = false;
         success = false;
         listeners.length = 0;
       }
     },
-    return: (value) => {
+    return(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "return");
+        internal.flush(value, "return");
         alive = false;
         success = true;
         listeners.length = 0;
@@ -425,8 +447,10 @@ exports[`objects > crossSerializeAsync > supports Symbol.iterator 1`] = `
 "$R[0]=Promise.resolve($R[1]={[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -491,45 +515,49 @@ exports[`objects > crossSerializeStream > scoped > supports Symbol.asyncIterator
   let isThrow = false;
   const buffer = [];
   const pending = [];
-  const finalize = (i = 0, len = pending.length) => {
-    for (; i < len; i++) {
-      pending[i].s({
-        done: true,
-        value: void 0
-      });
+  const internal = {
+    finalize(i = 0, len = pending.length) {
+      for (; i < len; i++) {
+        pending[i].s({
+          done: true,
+          value: void 0
+        });
+      }
     }
   };
   stream.on({
-    next: (value) => {
+    next(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
       };
       buffer.push(value);
     },
-    throw: (value) => {
+    throw(value) {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       isThrow = true;
       buffer.push(value);
     },
-    return: (value) => {
+    return(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       buffer.push(value);
     }
   });
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
@@ -572,58 +600,62 @@ exports[`objects > crossSerializeStream > scoped > supports Symbol.asyncIterator
   let alive = true;
   let success = false;
   let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
+  const internal = {
+    flush(value, mode, x) {
+      for (x = 0; x < count; x++) {
+        if (listeners[x]) {
+          listeners[x][mode](value);
+        }
       }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
+    },
+    up(listener, x, z, current) {
+      for (x = 0, z = buffer.length; x < z; x++) {
+        current = buffer[x];
+        if (!alive && x === z - 1) {
+          listener[success ? "return" : "throw"](current);
+        } else {
+          listener.next(current);
+        }
       }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    };
-    up(listener);
-    return () => {
+    },
+    on(listener, temp) {
       if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
+        temp = count++;
+        listeners[temp] = listener;
+      };
+      internal.up(listener);
+      return () => {
+        if (alive) {
+          listeners[temp] = listeners[count];
+          listeners[count--] = void 0;
+        }
+      };
+    }
   };
   return {
     __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
+    on(listener) {
+      return internal.on(listener);
+    },
+    next(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "next");
+        internal.flush(value, "next");
       }
     },
-    throw: (value) => {
+    throw(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "throw");
+        internal.flush(value, "throw");
         alive = false;
         success = false;
         listeners.length = 0;
       }
     },
-    return: (value) => {
+    return(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "return");
+        internal.flush(value, "return");
         alive = false;
         success = true;
         listeners.length = 0;
@@ -664,8 +696,10 @@ exports[`objects > crossSerializeStream > scoped > supports Symbol.iterator 2`] 
 })($R[1],$R[3]={[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -753,45 +787,49 @@ exports[`objects > crossSerializeStream > supports Symbol.asyncIterator 1`] = `
   let isThrow = false;
   const buffer = [];
   const pending = [];
-  const finalize = (i = 0, len = pending.length) => {
-    for (; i < len; i++) {
-      pending[i].s({
-        done: true,
-        value: void 0
-      });
+  const internal = {
+    finalize(i = 0, len = pending.length) {
+      for (; i < len; i++) {
+        pending[i].s({
+          done: true,
+          value: void 0
+        });
+      }
     }
   };
   stream.on({
-    next: (value) => {
+    next(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
       };
       buffer.push(value);
     },
-    throw: (value) => {
+    throw(value) {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       isThrow = true;
       buffer.push(value);
     },
-    return: (value) => {
+    return(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       buffer.push(value);
     }
   });
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
@@ -834,58 +872,62 @@ exports[`objects > crossSerializeStream > supports Symbol.asyncIterator 1`] = `
   let alive = true;
   let success = false;
   let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
+  const internal = {
+    flush(value, mode, x) {
+      for (x = 0; x < count; x++) {
+        if (listeners[x]) {
+          listeners[x][mode](value);
+        }
       }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
+    },
+    up(listener, x, z, current) {
+      for (x = 0, z = buffer.length; x < z; x++) {
+        current = buffer[x];
+        if (!alive && x === z - 1) {
+          listener[success ? "return" : "throw"](current);
+        } else {
+          listener.next(current);
+        }
       }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    };
-    up(listener);
-    return () => {
+    },
+    on(listener, temp) {
       if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
+        temp = count++;
+        listeners[temp] = listener;
+      };
+      internal.up(listener);
+      return () => {
+        if (alive) {
+          listeners[temp] = listeners[count];
+          listeners[count--] = void 0;
+        }
+      };
+    }
   };
   return {
     __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
+    on(listener) {
+      return internal.on(listener);
+    },
+    next(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "next");
+        internal.flush(value, "next");
       }
     },
-    throw: (value) => {
+    throw(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "throw");
+        internal.flush(value, "throw");
         alive = false;
         success = false;
         listeners.length = 0;
       }
     },
-    return: (value) => {
+    return(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "return");
+        internal.flush(value, "return");
         alive = false;
         success = true;
         listeners.length = 0;
@@ -926,8 +968,10 @@ exports[`objects > crossSerializeStream > supports Symbol.iterator 2`] = `
 })($R[1],$R[3]={[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -980,8 +1024,10 @@ exports[`objects > serialize > supports Symbol.iterator 1`] = `
 "(h=>({[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
@@ -1025,45 +1071,49 @@ exports[`objects > serializeAsync > supports Symbol.asyncIterator 1`] = `
   let isThrow = false;
   const buffer = [];
   const pending = [];
-  const finalize = (i = 0, len = pending.length) => {
-    for (; i < len; i++) {
-      pending[i].s({
-        done: true,
-        value: void 0
-      });
+  const internal = {
+    finalize(i = 0, len = pending.length) {
+      for (; i < len; i++) {
+        pending[i].s({
+          done: true,
+          value: void 0
+        });
+      }
     }
   };
   stream.on({
-    next: (value) => {
+    next(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: false, value });
       };
       buffer.push(value);
     },
-    throw: (value) => {
+    throw(value) {
       const temp = pending.shift();
       if (temp) {
         temp.f(value);
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       isThrow = true;
       buffer.push(value);
     },
-    return: (value) => {
+    return(value) {
       const temp = pending.shift();
       if (temp) {
         temp.s({ done: true, value });
       };
-      finalize();
+      internal.finalize();
       doneAt = buffer.length;
       buffer.push(value);
     }
   });
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (doneAt === -1) {
         const index2 = count++;
         if (index2 >= buffer.length) {
@@ -1106,58 +1156,62 @@ exports[`objects > serializeAsync > supports Symbol.asyncIterator 1`] = `
   let alive = true;
   let success = false;
   let count = 0;
-  const flush = (value, mode, x) => {
-    for (x = 0; x < count; x++) {
-      if (listeners[x]) {
-        listeners[x][mode](value);
+  const internal = {
+    flush(value, mode, x) {
+      for (x = 0; x < count; x++) {
+        if (listeners[x]) {
+          listeners[x][mode](value);
+        }
       }
-    }
-  };
-  const up = (listener, x, z, current) => {
-    for (x = 0, z = buffer.length; x < z; x++) {
-      current = buffer[x];
-      if (!alive && x === z - 1) {
-        listener[success ? "return" : "throw"](current);
-      } else {
-        listener.next(current);
+    },
+    up(listener, x, z, current) {
+      for (x = 0, z = buffer.length; x < z; x++) {
+        current = buffer[x];
+        if (!alive && x === z - 1) {
+          listener[success ? "return" : "throw"](current);
+        } else {
+          listener.next(current);
+        }
       }
-    }
-  };
-  const on = (listener, temp) => {
-    if (alive) {
-      temp = count++;
-      listeners[temp] = listener;
-    };
-    up(listener);
-    return () => {
+    },
+    on(listener, temp) {
       if (alive) {
-        listeners[temp] = listeners[count];
-        listeners[count--] = void 0;
-      }
-    };
+        temp = count++;
+        listeners[temp] = listener;
+      };
+      internal.up(listener);
+      return () => {
+        if (alive) {
+          listeners[temp] = listeners[count];
+          listeners[count--] = void 0;
+        }
+      };
+    }
   };
   return {
     __SEROVAL_STREAM__: true,
-    on: (listener) => on(listener),
-    next: (value) => {
+    on(listener) {
+      return internal.on(listener);
+    },
+    next(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "next");
+        internal.flush(value, "next");
       }
     },
-    throw: (value) => {
+    throw(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "throw");
+        internal.flush(value, "throw");
         alive = false;
         success = false;
         listeners.length = 0;
       }
     },
-    return: (value) => {
+    return(value) {
       if (alive) {
         buffer.push(value);
-        flush(value, "return");
+        internal.flush(value, "return");
         alive = false;
         success = true;
         listeners.length = 0;
@@ -1171,8 +1225,10 @@ exports[`objects > serializeAsync > supports Symbol.iterator 1`] = `
 "(h=>Promise.resolve({[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
   let index = 0;
   const instance = {
-    [symbol]: () => instance,
-    next: () => {
+    [symbol]() {
+      return instance;
+    },
+    next() {
       if (index > sequence.d) {
         return {
           done: true,
