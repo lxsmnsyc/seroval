@@ -1,5 +1,11 @@
 # seroval-plugins
 
+## 1.6.1
+
+### Patch Changes
+
+- f84d457: fix CJS/ESM builds
+
 ## 1.6.0
 
 ### Minor Changes

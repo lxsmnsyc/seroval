@@ -1,7 +1,7 @@
 {
   "name": "seroval-plugins",
   "type": "module",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "files": [
     "dist"
   ],
@@ -16,7 +16,7 @@
     "@types/node": "^24.10.0",
     "@vitest/ui": "^4.0.6",
     "esbuild": "^0.28.1",
-    "seroval": "1.6.0",
+    "seroval": "1.6.1",
     "tsdown": "^0.22.14",
     "tslib": "^2.8.1",
     "typescript": "^7.0.2",
