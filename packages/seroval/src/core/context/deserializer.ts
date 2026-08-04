@@ -67,7 +67,11 @@ import type {
   TypedArrayValue,
 } from '../utils/typed-array';
 import { getTypedArrayConstructor } from '../utils/typed-array';
-import { isValidKey, isValidSymbol } from '../utils/valid-properties';
+import {
+  isInvalidKey,
+  isValidKey,
+  isValidSymbol,
+} from '../utils/valid-properties';
 
 const MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
 const MAX_BIGINT_LENGTH = 10_000;
@@ -283,7 +287,7 @@ function assignStringProperty(
 ): void {
   if (isValidKey(key)) {
     object[key] = value;
-  } else {
+  } else if (!isInvalidKey(key)) {
     Object.defineProperty(object, key, {
       value,
       configurable: true,

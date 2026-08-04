@@ -47,8 +47,26 @@
   },
   "author": "Alexis Munsayac",
   "exports": {
-    ".": "./dist/index.js",
-    "./web": "./dist/web.js",
+    ".": {
+      "development": {
+        "import": "./dist/dev/index.js",
+        "require": "./dist/dev/index.cjs",
+        "default": "./dist/dev/index.js"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./web": {
+      "development": {
+        "import": "./dist/dev/web.js",
+        "require": "./dist/dev/web.cjs",
+        "default": "./dist/dev/web.js"
+      },
+      "import": "./dist/web.js",
+      "require": "./dist/web.cjs",
+      "default": "./dist/web.js"
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
