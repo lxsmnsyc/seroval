@@ -1,8 +1,24 @@
 import { defineConfig } from 'tsdown';
 
-export default defineConfig({
-  entry: 'src/index.ts',
-  platform: 'neutral',
-  dts: true,
-  exports: true,
-});
+export default defineConfig([
+  {
+    entry: 'src/index.ts',
+    platform: 'neutral',
+    dts: true,
+    outDir: './dist/dev',
+    format: ['esm', 'cjs'],
+    env: {
+      PROD: false,
+    },
+  },
+  {
+    entry: 'src/index.ts',
+    platform: 'neutral',
+    dts: true,
+
+    format: ['esm', 'cjs'],
+    env: {
+      PROD: true,
+    },
+  },
+]);

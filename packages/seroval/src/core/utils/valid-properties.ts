@@ -21,6 +21,15 @@ export function isValidKey(key: string): boolean {
   }
 }
 
+export function isInvalidKey(key: string): boolean {
+  switch (key) {
+    case 'then':
+      return true;
+    default:
+      return false;
+  }
+}
+
 export function isValidSymbol(symbol: symbol): boolean {
   switch (symbol) {
     case SYM_ASYNC_ITERATOR:

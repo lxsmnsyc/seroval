@@ -62,7 +62,7 @@ import type {
 } from '../types';
 import getIdentifier from '../utils/get-identifier';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
-import { isValidKey } from '../utils/valid-properties';
+import { isInvalidKey, isValidKey } from '../utils/valid-properties';
 
 const enum AssignmentType {
   Index = 0,
@@ -635,6 +635,9 @@ function serializeProperty(
   val: SerovalNode,
 ): string {
   if (typeof key === 'string') {
+    if (isInvalidKey(key)) {
+      return '';
+    }
     const check = Number(key);
     const isIdentifier =
       // Test if key is a valid positive number or JS identifier

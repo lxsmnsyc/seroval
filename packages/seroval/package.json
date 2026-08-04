@@ -48,12 +48,23 @@
     "access": "public"
   },
   "author": "Alexis Munsayac",
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/index.d.cts",
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "development": {
+        "import": "./dist/dev/index.js",
+        "require": "./dist/dev/index.cjs",
+        "default": "./dist/dev/index.js"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {}
-  }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js"
 }
