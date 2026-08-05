@@ -29,6 +29,7 @@ export function mergeBytes(bytes: (number | Uint8Array)[]) {
 
   return newArr;
 }
+
 export function encodeInt(value: number): Uint8Array {
   const buffer = new ArrayBuffer(4);
   const uint = new Int32Array(buffer);

@@ -99,297 +99,241 @@ export const enum SerovalEndianness {
   BE = 2,
 }
 
-export type SerovalPreambleNode = [
-  type: SerovalBinaryType.Preamble,
-  endianness: SerovalEndianness,
-];
+export type SerovalNodeMap = {
+  [SerovalBinaryType.Preamble]: [
+    type: SerovalBinaryType.Preamble,
+    endianness: SerovalEndianness,
+  ];
+  [SerovalBinaryType.Plugin]: [
+    type: SerovalBinaryType.Plugin,
+    id: Uint8Array,
+    // string ref,
+    tag: Uint8Array,
+    // object ref
+    config: Uint8Array,
+  ];
+  [SerovalBinaryType.Root]: [type: SerovalBinaryType.Root, id: Uint8Array];
+  [SerovalBinaryType.Pending]: [
+    type: SerovalBinaryType.Pending,
+    id: Uint8Array,
+    amount: Uint8Array,
+  ];
 
-export type SerovalConstantNode = [
-  type: SerovalBinaryType.Constant,
-  id: Uint8Array,
-  value: SerovalConstant,
-];
-export type SerovalNumberNode = [
-  type: SerovalBinaryType.Number,
-  id: Uint8Array,
-  value: Uint8Array,
-];
-export type SerovalStringNode = [
-  type: SerovalBinaryType.String,
-  id: Uint8Array,
-  length: Uint8Array,
-  value: Uint8Array,
-];
-export type SerovalBigintNode = [
-  type: SerovalBinaryType.BigInt,
-  id: Uint8Array,
-  isNegative: number,
-  // value ref
-  value: Uint8Array,
-];
-export type SerovalWKSymbolNode = [
-  type: SerovalBinaryType.WKSymbol,
-  id: Uint8Array,
-  value: Symbols,
-];
+  [SerovalBinaryType.Constant]: [
+    type: SerovalBinaryType.Constant,
+    id: Uint8Array,
+    value: SerovalConstant,
+  ];
+  [SerovalBinaryType.Number]: [
+    type: SerovalBinaryType.Number,
+    id: Uint8Array,
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.String]: [
+    type: SerovalBinaryType.String,
+    id: Uint8Array,
+    length: Uint8Array,
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.BigInt]: [
+    type: SerovalBinaryType.BigInt,
+    id: Uint8Array,
+    isNegative: number,
+    // value ref
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.WKSymbol]: [
+    type: SerovalBinaryType.WKSymbol,
+    id: Uint8Array,
+    value: Symbols,
+  ];
 
-export type SerovalObjectFlagNode = [
-  type: SerovalBinaryType.ObjectFlag,
-  id: Uint8Array,
-  state: SerovalObjectFlags,
-];
+  // Operations
+  [SerovalBinaryType.ObjectFlag]: [
+    type: SerovalBinaryType.ObjectFlag,
+    id: Uint8Array,
+    state: SerovalObjectFlags,
+  ];
+  [SerovalBinaryType.ObjectAssign]: [
+    type: SerovalBinaryType.ObjectAssign,
+    id: Uint8Array,
+    // value ref
+    index: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.ArrayAssign]: [
+    type: SerovalBinaryType.ArrayAssign,
+    id: Uint8Array,
+    index: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
 
-// Operations
-export type SerovalObjectAssignNode = [
-  type: SerovalBinaryType.ObjectAssign,
-  id: Uint8Array,
-  // value ref
-  index: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
-export type SerovalArrayAssignNode = [
-  type: SerovalBinaryType.ArrayAssign,
-  id: Uint8Array,
-  index: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
+  [SerovalBinaryType.Array]: [
+    type: SerovalBinaryType.Array,
+    id: Uint8Array,
+    length: Uint8Array,
+  ];
 
-export type SerovalArrayNode = [
-  type: SerovalBinaryType.Array,
-  id: Uint8Array,
-  length: Uint8Array,
-];
+  [SerovalBinaryType.Stream]: [type: SerovalBinaryType.Stream, id: Uint8Array];
+  [SerovalBinaryType.StreamNext]: [
+    type: SerovalBinaryType.StreamNext,
+    id: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.StreamThrow]: [
+    type: SerovalBinaryType.StreamThrow,
+    id: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.StreamReturn]: [
+    type: SerovalBinaryType.StreamReturn,
+    id: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
 
-export type SerovalStreamNode = [
-  type: SerovalBinaryType.Stream,
-  id: Uint8Array,
-];
+  [SerovalBinaryType.Sequence]: [
+    type: SerovalBinaryType.Sequence,
+    id: Uint8Array,
+    throwsAt: Uint8Array,
+    doneAt: Uint8Array,
+  ];
+  [SerovalBinaryType.SequencePush]: [
+    type: SerovalBinaryType.SequencePush,
+    id: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
 
-export type SerovalStreamNextNode = [
-  type: SerovalBinaryType.StreamNext,
-  id: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
-export type SerovalStreamThrowNode = [
-  type: SerovalBinaryType.StreamThrow,
-  id: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
-export type SerovalStreamReturnNode = [
-  type: SerovalBinaryType.StreamReturn,
-  id: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
+  [SerovalBinaryType.Object]: [type: SerovalBinaryType.Object, id: Uint8Array];
+  [SerovalBinaryType.NullConstructor]: [
+    type: SerovalBinaryType.NullConstructor,
+    id: Uint8Array,
+  ];
 
-export type SerovalSequenceNode = [
-  type: SerovalBinaryType.Sequence,
-  id: Uint8Array,
-  throwsAt: Uint8Array,
-  doneAt: Uint8Array,
-];
-export type SerovalSequencePushNode = [
-  type: SerovalBinaryType.SequencePush,
-  id: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
+  [SerovalBinaryType.Date]: [
+    type: SerovalBinaryType.Date,
+    id: Uint8Array,
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.Error]: [
+    type: SerovalBinaryType.Error,
+    id: Uint8Array,
+    constructor: ErrorConstructorTag,
+    // string reference
+    message: Uint8Array,
+  ];
+  [SerovalBinaryType.Boxed]: [
+    type: SerovalBinaryType.Boxed,
+    id: Uint8Array,
+    // boxed value reference
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.ArrayBuffer]: [
+    type: SerovalBinaryType.ArrayBuffer,
+    id: Uint8Array,
+    length: Uint8Array,
+    bytes: Uint8Array,
+  ];
+  [SerovalBinaryType.TypedArray]: [
+    type: SerovalBinaryType.TypedArray,
+    id: Uint8Array,
+    constructor: TypedArrayTag,
+    offset: Uint8Array,
+    length: Uint8Array,
+    // ArrayBuffer reference
+    buffer: Uint8Array,
+  ];
+  [SerovalBinaryType.BigIntTypedArray]: [
+    type: SerovalBinaryType.BigIntTypedArray,
+    id: Uint8Array,
+    constructor: BigIntTypedArrayTag,
+    offset: Uint8Array,
+    length: Uint8Array,
+    // ArrayBuffer reference
+    buffer: Uint8Array,
+  ];
+  [SerovalBinaryType.DataView]: [
+    type: SerovalBinaryType.DataView,
+    id: Uint8Array,
+    offset: Uint8Array,
+    length: Uint8Array,
+    // ArrayBuffer reference
+    buffer: Uint8Array,
+  ];
 
-export type SerovalObjectNode = [
-  type: SerovalBinaryType.Object,
-  id: Uint8Array,
-];
-export type SerovalNullConstructorNode = [
-  type: SerovalBinaryType.NullConstructor,
-  id: Uint8Array,
-];
+  [SerovalBinaryType.Map]: [type: SerovalBinaryType.Map, id: Uint8Array];
+  [SerovalBinaryType.MapSet]: [
+    type: SerovalBinaryType.MapSet,
+    id: Uint8Array,
+    // index ref
+    index: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
 
-export type SerovalDateNode = [
-  type: SerovalBinaryType.Date,
-  id: Uint8Array,
-  value: Uint8Array,
-];
+  [SerovalBinaryType.Set]: [type: SerovalBinaryType.Set, id: Uint8Array];
+  [SerovalBinaryType.SetAdd]: [
+    type: SerovalBinaryType.SetAdd,
+    id: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
 
-export type SerovalErrorNode = [
-  type: SerovalBinaryType.Error,
-  id: Uint8Array,
-  constructor: ErrorConstructorTag,
-  // string reference
-  message: Uint8Array,
-];
+  [SerovalBinaryType.Promise]: [
+    type: SerovalBinaryType.Promise,
+    id: Uint8Array,
+  ];
+  [SerovalBinaryType.PromiseSuccess]: [
+    type: SerovalBinaryType.PromiseSuccess,
+    id: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
+  [SerovalBinaryType.PromiseFailure]: [
+    type: SerovalBinaryType.PromiseFailure,
+    id: Uint8Array,
+    // value ref
+    value: Uint8Array,
+  ];
 
-export type SerovalBoxedNode = [
-  type: SerovalBinaryType.Boxed,
-  id: Uint8Array,
-  // boxed value reference
-  value: Uint8Array,
-];
+  [SerovalBinaryType.RegExp]: [
+    type: SerovalBinaryType.RegExp,
+    id: Uint8Array,
+    // string ref
+    pattern: Uint8Array,
+    // string ref
+    flags: Uint8Array,
+  ];
+  [SerovalBinaryType.AggregateError]: [
+    type: SerovalBinaryType.AggregateError,
+    id: Uint8Array,
+    // string ref
+    message: Uint8Array,
+  ];
 
-export type SerovalArrayBufferNode = [
-  type: SerovalBinaryType.ArrayBuffer,
-  id: Uint8Array,
-  length: Uint8Array,
-  bytes: Uint8Array,
-];
+  [SerovalBinaryType.Iterator]: [
+    type: SerovalBinaryType.Iterator,
+    id: Uint8Array,
+    sequence: Uint8Array,
+  ];
+  [SerovalBinaryType.AsyncIterator]: [
+    type: SerovalBinaryType.AsyncIterator,
+    id: Uint8Array,
+    stream: Uint8Array,
+  ];
 
-export type SerovalTypedArrayNode = [
-  type: SerovalBinaryType.TypedArray,
-  id: Uint8Array,
-  constructor: TypedArrayTag,
-  offset: Uint8Array,
-  length: Uint8Array,
-  // ArrayBuffer reference
-  buffer: Uint8Array,
-];
+  [SerovalBinaryType.Temporal]: [
+    type: SerovalBinaryType.Temporal,
+    id: Uint8Array,
+    type: SerovalTemporalType,
+    // string ref
+    iso: Uint8Array,
+  ];
+};
 
-export type SerovalBigIntTypedArrayNode = [
-  type: SerovalBinaryType.BigIntTypedArray,
-  id: Uint8Array,
-  constructor: BigIntTypedArrayTag,
-  offset: Uint8Array,
-  length: Uint8Array,
-  // ArrayBuffer reference
-  buffer: Uint8Array,
-];
-
-export type SerovalDataViewNode = [
-  type: SerovalBinaryType.DataView,
-  id: Uint8Array,
-  offset: Uint8Array,
-  length: Uint8Array,
-  // ArrayBuffer reference
-  buffer: Uint8Array,
-];
-
-export type SerovalMapNode = [type: SerovalBinaryType.Map, id: Uint8Array];
-export type SerovalMapSetNode = [
-  type: SerovalBinaryType.MapSet,
-  id: Uint8Array,
-  // index ref
-  index: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
-
-export type SerovalSetNode = [type: SerovalBinaryType.Set, id: Uint8Array];
-export type SerovalSetAddNode = [
-  type: SerovalBinaryType.SetAdd,
-  id: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
-
-export type SerovalPromiseNode = [
-  type: SerovalBinaryType.Promise,
-  id: Uint8Array,
-];
-export type SerovalPromiseSuccessNode = [
-  type: SerovalBinaryType.PromiseSuccess,
-  id: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
-export type SerovalPromiseFailureNode = [
-  type: SerovalBinaryType.PromiseFailure,
-  id: Uint8Array,
-  // value ref
-  value: Uint8Array,
-];
-
-export type SerovalRegExpNode = [
-  type: SerovalBinaryType.RegExp,
-  id: Uint8Array,
-  // string ref
-  pattern: Uint8Array,
-  // string ref
-  flags: Uint8Array,
-];
-
-export type SerovalAggregateErrorNode = [
-  type: SerovalBinaryType.AggregateError,
-  id: Uint8Array,
-  // string ref
-  message: Uint8Array,
-];
-
-export type SerovalPluginNode = [
-  type: SerovalBinaryType.Plugin,
-  id: Uint8Array,
-  // string ref,
-  tag: Uint8Array,
-  // object ref
-  config: Uint8Array,
-];
-
-export type SerovalRootNode = [type: SerovalBinaryType.Root, id: Uint8Array];
-
-export type SerovalIteratorNode = [
-  type: SerovalBinaryType.Iterator,
-  id: Uint8Array,
-  sequence: Uint8Array,
-];
-export type SerovalAsyncIteratorNode = [
-  type: SerovalBinaryType.AsyncIterator,
-  id: Uint8Array,
-  stream: Uint8Array,
-];
-
-export type SerovalPendingNode = [
-  type: SerovalBinaryType.Pending,
-  id: Uint8Array,
-  amount: Uint8Array,
-];
-
-export type SerovalTemporalNode = [
-  type: SerovalBinaryType.Temporal,
-  id: Uint8Array,
-  type: SerovalTemporalType,
-  // string ref
-  iso: Uint8Array,
-];
-
-export type SerovalNode =
-  | SerovalPreambleNode
-  | SerovalConstantNode
-  | SerovalNumberNode
-  | SerovalStringNode
-  | SerovalBigintNode
-  | SerovalWKSymbolNode
-  | SerovalObjectAssignNode
-  | SerovalArrayAssignNode
-  | SerovalObjectFlagNode
-  | SerovalArrayNode
-  | SerovalStreamNode
-  | SerovalStreamNextNode
-  | SerovalStreamThrowNode
-  | SerovalStreamReturnNode
-  | SerovalSequenceNode
-  | SerovalSequencePushNode
-  | SerovalObjectNode
-  | SerovalNullConstructorNode
-  | SerovalDateNode
-  | SerovalErrorNode
-  | SerovalBoxedNode
-  | SerovalArrayBufferNode
-  | SerovalTypedArrayNode
-  | SerovalBigIntTypedArrayNode
-  | SerovalDataViewNode
-  | SerovalMapNode
-  | SerovalMapSetNode
-  | SerovalSetNode
-  | SerovalSetAddNode
-  | SerovalPromiseNode
-  | SerovalPromiseSuccessNode
-  | SerovalPromiseFailureNode
-  | SerovalRegExpNode
-  | SerovalAggregateErrorNode
-  | SerovalPluginNode
-  | SerovalRootNode
-  | SerovalIteratorNode
-  | SerovalAsyncIteratorNode
-  | SerovalPendingNode
-  | SerovalTemporalNode;
+export type SerovalNode = SerovalNodeMap[keyof SerovalNodeMap];

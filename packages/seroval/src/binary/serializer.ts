@@ -1,4 +1,4 @@
-import { SerovalTemporalValue } from '../core/base-primitives';
+import type { SerovalTemporalValue } from '../core/base-primitives';
 import { ALL_ENABLED, Feature } from '../core/compat';
 import {
   type BigIntTypedArrayValue,
