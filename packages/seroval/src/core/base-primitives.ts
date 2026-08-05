@@ -154,7 +154,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   );
 }
 
-type SerovalTemporalValue =
+export type SerovalTemporalValue =
   | Temporal.Instant
   | Temporal.Duration
   | Temporal.PlainDate

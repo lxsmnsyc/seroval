@@ -391,4 +391,5 @@ export type SerovalNode =
   | SerovalRootNode
   | SerovalIteratorNode
   | SerovalAsyncIteratorNode
-  | SerovalPendingNode;
+  | SerovalPendingNode
+  | SerovalTemporalNode;

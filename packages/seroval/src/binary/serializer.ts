@@ -1,3 +1,4 @@
+import { SerovalTemporalValue } from '../core/base-primitives';
 import { ALL_ENABLED, Feature } from '../core/compat';
 import {
   type BigIntTypedArrayValue,
@@ -8,6 +9,7 @@ import {
   isWellKnownSymbol,
   NIL,
   SerovalConstant,
+  SerovalTemporalType,
   type TypedArrayValue,
 } from '../core/constants';
 import {
@@ -580,6 +582,21 @@ function serializeAggregateError(
   return id;
 }
 
+function serializeTemporal(
+  ctx: SerializerContext,
+  value: SerovalTemporalValue,
+  type: SerovalTemporalType,
+) {
+  const id = createID(ctx, value);
+  onSerialize(ctx, [
+    SerovalBinaryType.Temporal,
+    id,
+    type,
+    serialize(ctx, value.toString()),
+  ]);
+  return id;
+}
+
 function serializeObjectPhase2(
   ctx: SerializerContext,
   current: object,
@@ -661,6 +678,58 @@ function serializeObjectPhase2(
     (currentClass === AggregateError || current instanceof AggregateError)
   ) {
     return serializeAggregateError(ctx, current as unknown as AggregateError);
+  }
+  if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
+    switch (currentClass) {
+      case Temporal.Duration:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.Duration,
+          SerovalTemporalType.Duration,
+        );
+      case Temporal.Instant:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.Instant,
+          SerovalTemporalType.Instant,
+        );
+      case Temporal.PlainDate:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.PlainDate,
+          SerovalTemporalType.PlainDate,
+        );
+      case Temporal.PlainDateTime:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.PlainDateTime,
+          SerovalTemporalType.PlainDateTime,
+        );
+      case Temporal.PlainMonthDay:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.PlainMonthDay,
+          SerovalTemporalType.PlainMonthDay,
+        );
+      case Temporal.PlainTime:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.PlainTime,
+          SerovalTemporalType.PlainTime,
+        );
+      case Temporal.PlainYearMonth:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.PlainYearMonth,
+          SerovalTemporalType.PlainYearMonth,
+        );
+      case Temporal.ZonedDateTime:
+        return serializeTemporal(
+          ctx,
+          current as unknown as Temporal.ZonedDateTime,
+          SerovalTemporalType.ZonedDateTime,
+        );
+    }
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
