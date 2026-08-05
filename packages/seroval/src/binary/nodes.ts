@@ -3,6 +3,7 @@ import type {
   ErrorConstructorTag,
   SerovalConstant,
   SerovalObjectFlags,
+  SerovalTemporalType,
   Symbols,
   TypedArrayTag,
 } from '../core/constants';
@@ -47,6 +48,7 @@ export const enum SerovalBinaryType {
   Iterator = 36,
   AsyncIterator = 37,
   Pending = 38,
+  Temporal = 39,
 }
 
 export const NODE_TYPE_NAME: Record<SerovalBinaryType, string> = {
@@ -89,6 +91,7 @@ export const NODE_TYPE_NAME: Record<SerovalBinaryType, string> = {
   [SerovalBinaryType.Iterator]: 'Iterator',
   [SerovalBinaryType.AsyncIterator]: 'AsyncIterator',
   [SerovalBinaryType.Pending]: 'Pending',
+  [SerovalBinaryType.Temporal]: 'Temporal',
 };
 
 export const enum SerovalEndianness {
@@ -339,6 +342,14 @@ export type SerovalPendingNode = [
   type: SerovalBinaryType.Pending,
   id: Uint8Array,
   amount: Uint8Array,
+];
+
+export type SerovalTemporalNode = [
+  type: SerovalBinaryType.Temporal,
+  id: Uint8Array,
+  type: SerovalTemporalType,
+  // string ref
+  iso: Uint8Array,
 ];
 
 export type SerovalNode =

@@ -6,6 +6,7 @@ import {
   type ErrorConstructorTag,
   type SerovalConstant,
   SerovalObjectFlags,
+  SerovalTemporalType,
   SYMBOL_REF,
   type Symbols,
   TYPED_ARRAY_CONSTRUCTOR,
@@ -999,6 +1000,63 @@ async function deserializeAsyncIterator(ctx: DeserializerContext) {
   upsert(ctx, id, deserializeAsyncIteratorInner(ctx, stream));
 }
 
+async function deserializeTemporalInner(
+  ctx: DeserializerContext,
+  type: SerovalTemporalType,
+  isoRef: number,
+) {
+  if (!(ctx.features & Feature.Temporal)) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Temporal);
+  }
+  const iso = (await getRef(ctx, isoRef)).value as string;
+  let value: unknown;
+
+  switch (type) {
+    case SerovalTemporalType.Instant:
+      value = Temporal.Instant.from(iso);
+      break;
+    case SerovalTemporalType.Duration:
+      value = Temporal.Duration.from(iso);
+      break;
+    case SerovalTemporalType.PlainDate:
+      value = Temporal.PlainDate.from(iso);
+      break;
+    case SerovalTemporalType.PlainDateTime:
+      value = Temporal.PlainDateTime.from(iso);
+      break;
+    case SerovalTemporalType.PlainMonthDay:
+      value = Temporal.PlainMonthDay.from(iso);
+      break;
+    case SerovalTemporalType.PlainTime:
+      value = Temporal.PlainTime.from(iso);
+      break;
+    case SerovalTemporalType.PlainYearMonth:
+      value = Temporal.PlainYearMonth.from(iso);
+      break;
+    case SerovalTemporalType.ZonedDateTime:
+      value = Temporal.ZonedDateTime.from(iso);
+      break;
+    default:
+      throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Temporal);
+  }
+
+  return {
+    value,
+  };
+}
+
+async function deserializeTemporal(ctx: DeserializerContext) {
+  const id = await deserializeId(ctx, SerovalBinaryType.Temporal);
+  const type = (await deserializeByte(ctx)) as SerovalTemporalType;
+  const isoRef = await deserializeRef(
+    ctx,
+    SerovalBinaryType.Temporal,
+    SerovalBinaryType.String,
+  );
+
+  upsert(ctx, id, deserializeTemporalInner(ctx, type, isoRef));
+}
+
 async function deserializeChunk(ctx: DeserializerContext) {
   // Read first byte
   const firstByte = (await deserializeByte(ctx)) as SerovalBinaryType;
@@ -1120,6 +1178,9 @@ async function deserializeChunk(ctx: DeserializerContext) {
       break;
     case SerovalBinaryType.Pending:
       await deserializePending(ctx);
+      break;
+    case SerovalBinaryType.Temporal:
+      await deserializeTemporal(ctx);
       break;
     default:
       throw new SerovalUnknownBinaryTypeError(firstByte);

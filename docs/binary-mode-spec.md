@@ -353,3 +353,9 @@ This node type is serialized immediately after a `Set` node has been serialized.
 ```
 
 `AsyncIterator` is for generating the callbacks for `Symbol.asyncIterator` derived from a `Stream`
+
+### `Temporal`
+
+```
+<byte:temporal=38> <id> <byte:temporal-type> <ref:iso=string>
+```
