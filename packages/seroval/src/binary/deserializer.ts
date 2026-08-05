@@ -152,6 +152,15 @@ async function ensureChunk(ctx: DeserializerContext, requiredLength: number) {
   return resizeBuffer(ctx, requiredLength);
 }
 
+function isThenable(value: unknown): boolean {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'then' in value &&
+    typeof value.then === 'function'
+  );
+}
+
 function deserializeKnownValue<
   T extends Record<string, unknown>,
   K extends keyof T,
@@ -810,8 +819,9 @@ async function deserializePromise(ctx: DeserializerContext) {
   upsert(ctx, promise, createImmediateTask(instance.p));
 }
 
-async function deserializePromiseSuccessInner(
+async function deserializePromiseFulfillInner(
   ctx: DeserializerContext,
+  success: boolean,
   resolver: number,
   value: number,
 ) {
@@ -819,33 +829,31 @@ async function deserializePromiseSuccessInner(
   if (currentResolver == null) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseSuccess);
   }
-  currentResolver.s((await getRef(ctx, value)).value);
+  const resolvingValue = (await getRef(ctx, value)).value;
+  if (isThenable(resolvingValue)) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseSuccess);
+  }
+  if (success) {
+    currentResolver.s(resolvingValue);
+  } else {
+    currentResolver.f(resolvingValue);
+  }
 }
 
 async function deserializePromiseSuccess(ctx: DeserializerContext) {
   const resolver = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
-  deserializePromiseSuccessInner(ctx, resolver, value).catch(ctx.onError);
-}
-
-async function deserializePromiseFailureInner(
-  ctx: DeserializerContext,
-  resolver: number,
-  value: number,
-) {
-  const currentResolver = ctx.refs.resolvers.get(resolver);
-  if (currentResolver == null) {
-    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseFailure);
-  }
-  currentResolver.f((await getRef(ctx, value)).value);
+  deserializePromiseFulfillInner(ctx, true, resolver, value).catch(ctx.onError);
 }
 
 async function deserializePromiseFailure(ctx: DeserializerContext) {
   const resolver = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
-  deserializePromiseFailureInner(ctx, resolver, value).catch(ctx.onError);
+  deserializePromiseFulfillInner(ctx, false, resolver, value).catch(
+    ctx.onError,
+  );
 }
 
 async function deserializeRegExpInner(
