@@ -50,6 +50,12 @@ import {
   type SerovalNode,
 } from './nodes';
 
+export type Cleanup = () => void;
+
+export interface SerializerPluginContext {
+  onCleanup(cleanup: Cleanup): void;
+}
+
 export interface SerializerContext {
   alive: boolean;
   pending: number;
@@ -60,6 +66,9 @@ export interface SerializerContext {
   onSerialize(bytes: Uint8Array): void;
   onDone(): void;
   onError(error: unknown): void;
+  cleanups: Cleanup[];
+
+  pluginContext: SerializerPluginContext;
 }
 
 export interface SerializerContextOptions {
@@ -73,9 +82,21 @@ export interface SerializerContextOptions {
   onError(error: unknown): void;
 }
 
+function registerCleanup(this: (() => void)[], cleanup: Cleanup) {
+  this.push(cleanup);
+}
+
+function runCleanup(ctx: SerializerContext) {
+  for (const cleanup of ctx.cleanups) {
+    cleanup();
+  }
+}
+
 export function createSerializerContext(
   options: SerializerContextOptions,
 ): SerializerContext {
+  const cleanups: Cleanup[] = [];
+
   return {
     alive: true,
     pending: 0,
@@ -86,6 +107,11 @@ export function createSerializerContext(
     onDone: options.onDone,
     onError: options.onError,
     plugins: options.plugins,
+    cleanups,
+
+    pluginContext: {
+      onCleanup: registerCleanup.bind(cleanups),
+    },
   };
 }
 
@@ -755,7 +781,7 @@ function serializePlugin(ctx: SerializerContext, value: object) {
           SerovalBinaryType.Plugin,
           id,
           serialize(ctx, current.tag),
-          serialize(ctx, current.binary.serialize(value)),
+          serialize(ctx, current.binary.serialize(value, ctx.pluginContext)),
         ]);
         return id;
       }
@@ -865,6 +891,7 @@ export function startSerialize<T>(ctx: SerializerContext, value: T) {
 export function endSerialize(ctx: SerializerContext) {
   if (ctx.alive) {
     ctx.onDone();
+    runCleanup(ctx);
     ctx.alive = false;
   }
 }

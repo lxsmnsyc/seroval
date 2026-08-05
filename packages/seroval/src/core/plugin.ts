@@ -69,7 +69,12 @@ export interface Plugin<Value, Info extends PluginInfo> {
 }
 
 export interface BinaryPlugin<Value, BinaryData> {
-  serialize(value: Value): BinaryData;
+  serialize(
+    value: Value,
+    ctx: {
+      onCleanup: (cleanup: () => void) => void;
+    },
+  ): BinaryData;
   deserialize(value: BinaryData): Value | Promise<Value>;
 }
 
