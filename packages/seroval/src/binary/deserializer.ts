@@ -75,7 +75,7 @@ export function createReferenceMap(): ReferenceMap {
 export interface DeserializerContextOptions {
   read(): Promise<Uint8Array | undefined>;
   onError(error: unknown): void;
-  refs: ReferenceMap;
+  refs?: ReferenceMap;
   plugins?: PluginWithBinaryMode<any, any, any>[];
   disabledFeatures?: number;
   features?: number;
@@ -103,7 +103,7 @@ export function createDeserializerContext(
   return {
     read: options.read,
     onError: options.onError,
-    refs: options.refs,
+    refs: options.refs || createReferenceMap(),
     plugins: options.plugins,
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
     done: false,

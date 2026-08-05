@@ -33,10 +33,11 @@ export async function deserialize<T>(
   const context = createDeserializerContext({
     ...options,
     plugins,
-    refs: createReferenceMap(),
   });
   return (await deserializeStart(context)) as Promise<{ value: T }>;
 }
+
+export { createReferenceMap };
 
 export type { DeserializerContext } from './deserializer';
 export type { SerializerContextOptions } from './serializer';
