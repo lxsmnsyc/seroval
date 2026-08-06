@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "benny": "^3.7.1",
-    "devalue": "^5.1.1",
+    "devalue": "^5.8.1",
     "flatted": "^3.3.3",
     "next-json": "^0.4.0",
     "o-son": "^1.0.4",

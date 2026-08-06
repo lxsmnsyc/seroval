@@ -24,8 +24,8 @@ importers:
         specifier: ^3.7.1
         version: 3.7.1
       devalue:
-        specifier: ^5.1.1
-        version: 5.1.1
+        specifier: ^5.8.1
+        version: 5.8.1
       flatted:
         specifier: ^3.3.3
         version: 3.3.3
@@ -82,7 +82,7 @@ importers:
         specifier: ^0.28.1
         version: 0.28.1
       seroval:
-        specifier: 1.6.0
+        specifier: 1.6.1
         version: link:../seroval
       tsdown:
         specifier: ^0.22.14
@@ -1312,8 +1312,8 @@ packages:
     resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
     engines: {node: '>=8'}
 
-  devalue@5.1.1:
-    resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
+  devalue@5.8.1:
+    resolution: {integrity: sha512-4CXDYRBGqN+57wVJkuXBYmpAVUSg3L6JAQa/DFqm238G73E1wuyc/JhGQJzN7vUf/CMphYau2zXbfWzDR5aTEw==}
 
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
@@ -2989,7 +2989,7 @@ snapshots:
 
   detect-indent@6.1.0: {}
 
-  devalue@5.1.1: {}
+  devalue@5.8.1: {}
 
   dir-glob@3.0.1:
     dependencies:
