@@ -2,271 +2,271 @@
 
 exports[`Iterable > crossSerialize > scoped > supports Iterables 1`] = `
 "($R=>$R[0]={title:"Hello World",[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })($R[1]))($R[3]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})($R["example"])"
 `;
 
 exports[`Iterable > crossSerialize > supports Iterables 1`] = `
 "($R[0]={title:"Hello World",[$R[1]=Symbol.iterator]:($R[2]=((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })($R[1]))($R[3]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})"
 `;
 
 exports[`Iterable > crossSerializeAsync > scoped > supports Iterables 1`] = `
 "($R=>$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })($R[2]))($R[4]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
 `;
 
 exports[`Iterable > crossSerializeAsync > supports Iterables 1`] = `
 "$R[0]=Promise.resolve($R[1]={title:"Hello World",[$R[2]=Symbol.iterator]:($R[3]=((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })($R[2]))($R[4]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})"
 `;
 
 exports[`Iterable > crossSerializeStream > scoped > supports Iterables 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p)($R["example"])"
 `;
 
 exports[`Iterable > crossSerializeStream > scoped > supports Iterables 2`] = `
 "($R=>($R[7]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })($R[4]))($R[6]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))($R["example"])"
 `;
 
 exports[`Iterable > crossSerializeStream > supports Iterables 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p"
 `;
 
 exports[`Iterable > crossSerializeStream > supports Iterables 2`] = `
 "($R[7]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]={title:"Hello World",[$R[4]=Symbol.iterator]:($R[5]=((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })($R[4]))($R[6]={__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})})"
 `;
 
 exports[`Iterable > serialize > supports Iterables 1`] = `
 "(h=>({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })(h))({__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))()"
 `;
 
 exports[`Iterable > serializeAsync > supports Iterables 1`] = `
 "(h=>Promise.resolve({title:"Hello World",[h=Symbol.iterator]:(((symbol) => (sequence) => () => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
-        return {
-          done: true,
-          value: void 0
-        };
-      };
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      };
-      return {
-        done: currentIndex === sequence.d,
-        value: data
-      };
-    }
-  };
-  return instance;
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) {
+				return {
+					done: true,
+					value: undefined
+				};
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) {
+				throw data;
+			};
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
 })(h))({__SEROVAL_SEQUENCE__:!0,v:[1,2,3,void 0],t:-1,d:3})}))()"
 `;
 

@@ -2,135 +2,135 @@
 
 exports[`typed arrays > crossSerialize > scoped > supports typed arrays 1`] = `
 "($R=>$R[0]=new Uint32Array($R[1]=($R[2]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4))($R["example"])"
 `;
 
 exports[`typed arrays > crossSerialize > supports typed arrays 1`] = `
 "$R[0]=new Uint32Array($R[1]=($R[2]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4)"
 `;
 
 exports[`typed arrays > crossSerializeAsync > scoped > supports typed arrays 1`] = `
 "($R=>$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=($R[3]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4)))($R["example"])"
 `;
 
 exports[`typed arrays > crossSerializeAsync > supports typed arrays 1`] = `
 "$R[0]=Promise.resolve($R[1]=new Uint32Array($R[2]=($R[3]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4))"
 `;
 
 exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p)($R["example"])"
 `;
 
 exports[`typed arrays > crossSerializeStream > scoped > supports typed arrays 2`] = `
 "($R=>($R[6]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=new Uint32Array($R[4]=($R[5]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4)))($R["example"])"
 `;
 
 exports[`typed arrays > crossSerializeStream > supports typed arrays 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p"
 `;
 
 exports[`typed arrays > crossSerializeStream > supports typed arrays 2`] = `
 "($R[6]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=new Uint32Array($R[4]=($R[5]=(b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4))"
 `;
 
 exports[`typed arrays > serialize > supports typed arrays 1`] = `
 "new Uint32Array(((b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4)"
 `;
 
 exports[`typed arrays > serializeAsync > supports typed arrays 1`] = `
 "Promise.resolve(new Uint32Array(((b64) => {
-  const decoded = atob(b64);
-  const length = decoded.length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = decoded.charCodeAt(i);
-  };
-  return arr.buffer;
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) {
+		arr[i] = decoded.charCodeAt(i);
+	};
+	return arr.buffer;
 })("/////////////////////w=="),0,4))"
 `;
 

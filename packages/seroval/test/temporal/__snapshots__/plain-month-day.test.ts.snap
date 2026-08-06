@@ -10,47 +10,47 @@ exports[`Temporal.PlainMonthDay > crossSerializeAsync > supports Temporal.PlainM
 
 exports[`Temporal.PlainMonthDay > crossSerializeStream > scoped > supports Temporal.PlainMonthDay 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p)($R["example"])"
 `;
 
 exports[`Temporal.PlainMonthDay > crossSerializeStream > scoped > supports Temporal.PlainMonthDay 2`] = `
 "($R=>($R[4]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Temporal.PlainMonthDay.from("05-07")))($R["example"])"
 `;
 
 exports[`Temporal.PlainMonthDay > crossSerializeStream > supports Temporal.PlainMonthDay 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p"
 `;
 
 exports[`Temporal.PlainMonthDay > crossSerializeStream > supports Temporal.PlainMonthDay 2`] = `
 "($R[4]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Temporal.PlainMonthDay.from("05-07"))"
 `;
 

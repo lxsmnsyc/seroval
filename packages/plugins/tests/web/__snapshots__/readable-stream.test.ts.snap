@@ -1,27 +1,23 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream 1`] = `
-"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))(($R[2]=($R[3]=() => {
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))(($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -86,27 +82,23 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 `;
 
 exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream errors 1`] = `
-"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))(($R[2]=($R[3]=() => {
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))(($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -171,27 +163,23 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 `;
 
 exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
-"$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))(($R[2]=($R[3]=() => {
+"$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))(($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -256,27 +244,23 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 `;
 
 exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1`] = `
-"$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))(($R[2]=($R[3]=() => {
+"$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))(($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -341,27 +325,23 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 `;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 1`] = `
-"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))($R[2]=($R[3]=() => {
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -434,27 +414,23 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 5`] = `"($R=>$R[2].return(void 0))($R["example"])"`;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 1`] = `
-"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))($R[2]=($R[3]=() => {
+"($R=>$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -521,27 +497,23 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 2`] = `"($R=>$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})))($R["example"])"`;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
-"$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))($R[2]=($R[3]=() => {
+"$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -614,27 +586,23 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 4`] = `
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 5`] = `"$R[2].return(void 0)"`;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 1`] = `
-"$R[0]=($R[1]=(stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))($R[2]=($R[3]=() => {
+"$R[0]=($R[1]=(stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))($R[2]=($R[3]=() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -701,27 +669,23 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""}))"`;
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
-"(h=>((stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))((h=(() => {
+"(h=>((stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))((h=(() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -786,27 +750,23 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 `;
 
 exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = `
-"(h=>((stream) => new ReadableStream({
-  start(controller) {
-    stream.on({
-      next(value) {
-        try {
-          controller.enqueue(value);
-        } catch (_error) {
-        }
-      },
-      throw(value) {
-        controller.error(value);
-      },
-      return() {
-        try {
-          controller.close();
-        } catch (_error) {
-        }
-      }
-    });
-  }
-}))((h=(() => {
+"(h=>((stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} }))((h=(() => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;

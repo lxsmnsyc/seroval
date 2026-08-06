@@ -2,31 +2,31 @@
 
 exports[`FormData > crossSerialize > scoped > supports FormData 1`] = `
 "($R=>$R[0]=($R[1]=(e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })($R[2]=[$R[3]=["hello","world"],$R[4]=["foo","bar"]]))($R["example"])"
 `;
 
 exports[`FormData > crossSerialize > supports FormData 1`] = `
 "$R[0]=($R[1]=(e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })($R[2]=[$R[3]=["hello","world"],$R[4]=["foo","bar"]])"
 `;
 
 exports[`FormData > crossSerializeAsync > scoped > supports FormData 1`] = `
 "($R=>$R[0]=($R[1]=(e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })($R[2]=[$R[3]=["hello-world",$R[4]=new File([$R[6]=($R[7]=(b64) => {
 	const decoded = atob(b64);
 	const length = decoded.length;
@@ -38,11 +38,11 @@ exports[`FormData > crossSerializeAsync > scoped > supports FormData 1`] = `
 
 exports[`FormData > crossSerializeAsync > supports FormData 1`] = `
 "$R[0]=($R[1]=(e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })($R[2]=[$R[3]=["hello-world",$R[4]=new File([$R[6]=($R[7]=(b64) => {
 	const decoded = atob(b64);
 	const length = decoded.length;
@@ -73,11 +73,11 @@ exports[`FormData > crossSerializeStream > scoped > supports FormData 2`] = `
 	resolver.p.s = 1;
 	resolver.p.v = data;
 })($R[1],$R[3]=($R[4]=(e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })($R[5]=[$R[6]=["hello","world"],$R[7]=["foo","bar"]])))($R["example"])"
 `;
 
@@ -102,31 +102,31 @@ exports[`FormData > crossSerializeStream > supports FormData 2`] = `
 	resolver.p.s = 1;
 	resolver.p.v = data;
 })($R[1],$R[3]=($R[4]=(e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })($R[5]=[$R[6]=["hello","world"],$R[7]=["foo","bar"]]))"
 `;
 
 exports[`FormData > serialize > supports FormData 1`] = `
 "((e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })([["hello","world"],["foo","bar"]])"
 `;
 
 exports[`FormData > serializeAsync > supports FormData 1`] = `
 "(h=>((e, f = new FormData(), i = 0, s = e.length, t) => {
-  for (; i < s; i++) {
-    t = e[i];
-    f.append(t[0], t[1]);
-  };
-  return f;
+	for (; i < s; i++) {
+		t = e[i];
+		f.append(t[0], t[1]);
+	};
+	return f;
 })([["hello-world",new File([(h=(b64) => {
 	const decoded = atob(b64);
 	const length = decoded.length;

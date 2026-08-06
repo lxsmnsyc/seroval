@@ -26,24 +26,24 @@ exports[`Error > crossSerializeAsync > supports other Error classes 1`] = `"$R[0
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p)($R["example"])"
 `;
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 2`] = `
 "($R=>($R[6]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=($R[5]=$R[2]()).p})))($R["example"])"
 `;
 
@@ -51,70 +51,70 @@ exports[`Error > crossSerializeStream > scoped > supports Error.prototype.cause 
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p)($R["example"])"
 `;
 
 exports[`Error > crossSerializeStream > scoped > supports Error.prototype.name 2`] = `
 "($R=>($R[4]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""})))($R["example"])"
 `;
 
 exports[`Error > crossSerializeStream > scoped > supports other Error classes 1`] = `
 "($R=>$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p)($R["example"])"
 `;
 
 exports[`Error > crossSerializeStream > scoped > supports other Error classes 2`] = `
 "($R=>($R[4]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""})))($R["example"])"
 `;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.cause 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p"
 `;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.cause 2`] = `
 "($R[6]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Object.assign(new Error("B"),{stack:"",cause:$R[4]=($R[5]=$R[2]()).p}))"
 `;
 
@@ -122,47 +122,47 @@ exports[`Error > crossSerializeStream > supports Error.prototype.cause 3`] = `"$
 
 exports[`Error > crossSerializeStream > supports Error.prototype.name 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p"
 `;
 
 exports[`Error > crossSerializeStream > supports Error.prototype.name 2`] = `
 "($R[4]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Object.assign(new Error("A"),{name:"ExampleError",stack:""}))"
 `;
 
 exports[`Error > crossSerializeStream > supports other Error classes 1`] = `
 "$R[0]=($R[1]=($R[2]=() => {
-  const resolver = {
-    p: 0,
-    s: 0,
-    f: 0
-  };
-  resolver.p = new Promise((resolve, reject) => {
-    resolver.s = resolve;
-    resolver.f = reject;
-  });
-  return resolver;
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
 })()).p"
 `;
 
 exports[`Error > crossSerializeStream > supports other Error classes 2`] = `
 "($R[4]=(resolver, data) => {
-  resolver.s(data);
-  resolver.p.s = 1;
-  resolver.p.v = data;
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
 })($R[1],$R[3]=Object.assign(new ReferenceError("A"),{stack:""}))"
 `;
 
