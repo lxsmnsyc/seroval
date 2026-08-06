@@ -52,8 +52,8 @@ import {
 
 export type Cleanup = () => void;
 
-export interface SerializerPluginContext {
-  onCleanup(cleanup: Cleanup): void;
+export interface BinarySerializerPluginContext {
+  addCleanup(cleanup: Cleanup): void;
 }
 
 export interface SerializerContext {
@@ -68,7 +68,7 @@ export interface SerializerContext {
   onError(error: unknown): void;
   cleanups: Cleanup[];
 
-  pluginContext: SerializerPluginContext;
+  pluginContext: BinarySerializerPluginContext;
 }
 
 export interface SerializerContextOptions {
@@ -110,7 +110,7 @@ export function createSerializerContext(
     cleanups,
 
     pluginContext: {
-      onCleanup: registerCleanup.bind(cleanups),
+      addCleanup: registerCleanup.bind(cleanups),
     },
   };
 }
@@ -480,7 +480,7 @@ function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
     getTypedArrayTag(value),
     serialize(ctx, value.buffer),
     encodeUint(value.byteOffset),
-    encodeUint(value.byteLength),
+    encodeUint(value.length),
   ]);
   return id;
 }
@@ -496,7 +496,7 @@ function serializeBigIntTypedArray(
     getBigIntTypedArrayTag(value),
     serialize(ctx, value.buffer),
     encodeUint(value.byteOffset),
-    encodeUint(value.byteLength),
+    encodeUint(value.length),
   ]);
   return id;
 }

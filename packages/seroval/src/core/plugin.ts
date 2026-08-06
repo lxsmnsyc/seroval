@@ -1,3 +1,4 @@
+import type { BinarySerializerPluginContext } from '../binary/serializer';
 import type { AsyncParsePluginContext } from './context/async-parser';
 import type { DeserializePluginContext } from './context/deserializer';
 import type { SerializePluginContext } from './context/serializer';
@@ -69,12 +70,7 @@ export interface Plugin<Value, Info extends PluginInfo> {
 }
 
 export interface BinaryPlugin<Value, BinaryData> {
-  serialize(
-    value: Value,
-    ctx: {
-      onCleanup: (cleanup: () => void) => void;
-    },
-  ): BinaryData;
+  serialize(value: Value, ctx: BinarySerializerPluginContext): BinaryData;
   deserialize(value: BinaryData): Value | Promise<Value>;
 }
 
