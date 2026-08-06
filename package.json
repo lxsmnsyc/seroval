@@ -6,8 +6,8 @@
     "benchmark"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^2.3.2",
-    "@changesets/cli": "^2.29.7",
+    "@biomejs/biome": "^2.5.7",
+    "@changesets/cli": "^2.31.1",
     "typescript": "^7.0.2"
   },
   "scripts": {
