@@ -2,7 +2,7 @@
 
 > Stringify JS values
 
-[![NPM](https://img.shields.io/npm/v/seroval.svg)](https://www.npmjs.com/package/seroval) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
+[![NPM](https://img.shields.io/npm/v/seroval.svg)](https://www.npmjs.com/package/seroval) [![JavaScript Style Guide](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/lxsmnsyc/seroval/badge)](https://scorecard.dev/viewer/?uri=github.com/lxsmnsyc/seroval)
 
 ## Install
 
