@@ -17,7 +17,7 @@ import {
 
 const EXAMPLE = /[a-z0-9]+/i;
 
-const EXAMPLE_ESCAPED = /\d+\.\d+\s?\/\w*/g;
+const EXAMPLE_ESCAPED = /^\d{3}-\d{3}-\d{4}$/g;
 
 describe('RegExp', () => {
   describe('serialize', () => {
