@@ -21,16 +21,12 @@ describe('boxed bigint', () => {
   describe('serialize', () => {
     it('supports boxed bigint', () => {
       expect(serialize(Object(EXAMPLE))).toMatchSnapshot();
-      expect(deserialize<object>(serialize(Object(EXAMPLE))).valueOf()).toBe(
-        EXAMPLE,
-      );
+      expect(deserialize<object>(serialize(Object(EXAMPLE))).valueOf()).toBe(EXAMPLE);
     });
   });
   describe('serializeAsync', () => {
     it('supports boxed bigint', async () => {
-      expect(
-        await serializeAsync(Promise.resolve(Object(EXAMPLE))),
-      ).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Object(EXAMPLE)))).toMatchSnapshot();
     });
   });
   describe('toJSON', () => {
@@ -41,9 +37,7 @@ describe('boxed bigint', () => {
   });
   describe('toJSONAsync', () => {
     it('supports boxed bigint', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(EXAMPLE)))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Object(EXAMPLE))))).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -52,17 +46,13 @@ describe('boxed bigint', () => {
     });
     describe('scoped', () => {
       it('supports boxed bigint', () => {
-        expect(
-          crossSerialize(Object(EXAMPLE), { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        expect(crossSerialize(Object(EXAMPLE), { scopeId: 'example' })).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports boxed bigint', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(Object(EXAMPLE))),
-      ).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object(EXAMPLE)))).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports boxed bigint', async () => {
@@ -120,9 +110,7 @@ describe('boxed bigint', () => {
   describe('toCrossJSONAsync', () => {
     it('supports boxed bigint', async () => {
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Object(EXAMPLE))),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(EXAMPLE)))),
       ).toMatchSnapshot();
     });
   });

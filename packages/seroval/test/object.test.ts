@@ -63,9 +63,7 @@ describe('objects', () => {
 
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', () => {
@@ -91,9 +89,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', async () => {
@@ -126,9 +122,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', () => {
@@ -154,9 +148,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', async () => {
@@ -384,9 +376,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', () => {
@@ -421,9 +411,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', async () => {
@@ -551,21 +539,15 @@ describe('objects', () => {
     }
 
     it('supports serialize', () => {
-      expectPreserved(
-        deserialize<Record<string, unknown>>(serialize(makeProtoObject())),
-      );
+      expectPreserved(deserialize<Record<string, unknown>>(serialize(makeProtoObject())));
     });
     it('supports serializeAsync', async () => {
       expectPreserved(
-        deserialize<Record<string, unknown>>(
-          await serializeAsync(makeProtoObject()),
-        ),
+        deserialize<Record<string, unknown>>(await serializeAsync(makeProtoObject())),
       );
     });
     it('supports toJSON', () => {
-      expectPreserved(
-        fromJSON<Record<string, unknown>>(toJSON(makeProtoObject())),
-      );
+      expectPreserved(fromJSON<Record<string, unknown>>(toJSON(makeProtoObject())));
     });
   });
   describe('with a circular own __proto__ property', () => {
@@ -594,23 +576,15 @@ describe('objects', () => {
     }
 
     it('supports serialize', () => {
-      expectPreserved(
-        deserialize<Record<string, unknown>>(
-          serialize(makeCircularProtoObject()),
-        ),
-      );
+      expectPreserved(deserialize<Record<string, unknown>>(serialize(makeCircularProtoObject())));
     });
     it('supports serializeAsync', async () => {
       expectPreserved(
-        deserialize<Record<string, unknown>>(
-          await serializeAsync(makeCircularProtoObject()),
-        ),
+        deserialize<Record<string, unknown>>(await serializeAsync(makeCircularProtoObject())),
       );
     });
     it('supports toJSON', () => {
-      expectPreserved(
-        fromJSON<Record<string, unknown>>(toJSON(makeCircularProtoObject())),
-      );
+      expectPreserved(fromJSON<Record<string, unknown>>(toJSON(makeCircularProtoObject())));
     });
   });
   describe('with a shadowed constructor property', () => {
@@ -636,6 +610,7 @@ describe('objects', () => {
     });
     it('keeps a null-prototype object null-prototype', () => {
       const shadowed = Object.create(null) as Record<string, unknown>;
+      // @ts-expect-error
       shadowed.constructor = 1;
       const back = deserialize<Record<string, unknown>>(serialize(shadowed));
       expect(Object.getPrototypeOf(back)).toBe(null);
@@ -643,6 +618,7 @@ describe('objects', () => {
     });
     it('keeps a shadowed Map a Map', () => {
       const shadowed = new Map([['a', 1]]);
+      // @ts-expect-error
       (shadowed as unknown as Record<string, unknown>).constructor = 1;
       const back = deserialize<Map<string, number>>(serialize(shadowed));
       expect(back).toBeInstanceOf(Map);

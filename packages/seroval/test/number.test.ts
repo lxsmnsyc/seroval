@@ -26,21 +26,15 @@ describe('number', () => {
   describe('serializeAsync', () => {
     it('supports numbers', async () => {
       const value = 0xdeadbeef;
-      expect(await serializeAsync(Promise.resolve(value))).toBe(
-        `Promise.resolve(${value})`,
+      expect(await serializeAsync(Promise.resolve(value))).toBe(`Promise.resolve(${value})`);
+      expect(await serializeAsync(Promise.resolve(Number.NaN))).toBe('Promise.resolve(0/0)');
+      expect(await serializeAsync(Promise.resolve(Number.POSITIVE_INFINITY))).toBe(
+        'Promise.resolve(1/0)',
       );
-      expect(await serializeAsync(Promise.resolve(Number.NaN))).toBe(
-        'Promise.resolve(0/0)',
+      expect(await serializeAsync(Promise.resolve(Number.NEGATIVE_INFINITY))).toBe(
+        'Promise.resolve(-1/0)',
       );
-      expect(
-        await serializeAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
-      ).toBe('Promise.resolve(1/0)');
-      expect(
-        await serializeAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
-      ).toBe('Promise.resolve(-1/0)');
-      expect(await serializeAsync(Promise.resolve(-0))).toBe(
-        'Promise.resolve(-0)',
-      );
+      expect(await serializeAsync(Promise.resolve(-0))).toBe('Promise.resolve(-0)');
     });
   });
   describe('toJSON', () => {
@@ -48,37 +42,23 @@ describe('number', () => {
       const value = 0xdeadbeef;
       expect(JSON.stringify(toJSON(value))).toMatchSnapshot();
       expect(JSON.stringify(toJSON(Number.NaN))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toJSON(Number.POSITIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(toJSON(Number.NEGATIVE_INFINITY)),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(Number.POSITIVE_INFINITY))).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(Number.NEGATIVE_INFINITY))).toMatchSnapshot();
       expect(JSON.stringify(toJSON(-0))).toMatchSnapshot();
     });
   });
   describe('toJSONAsync', () => {
     it('supports numbers', async () => {
       const value = 0xdeadbeef;
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(value)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Number.NaN)))).toMatchSnapshot();
       expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(value))),
+        JSON.stringify(await toJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Number.NaN))),
+        JSON.stringify(await toJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY))),
       ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(-0))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(-0)))).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -94,12 +74,8 @@ describe('number', () => {
   describe('crossSerializeAsync', () => {
     it('supports numbers', async () => {
       const value = 0xdeadbeef;
-      expect(
-        await crossSerializeAsync(Promise.resolve(value)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Number.NaN)),
-      ).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(value))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Number.NaN))).toMatchSnapshot();
       expect(
         await crossSerializeAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
       ).toMatchSnapshot();
@@ -187,37 +163,23 @@ describe('number', () => {
       const value = 0xdeadbeef;
       expect(JSON.stringify(toCrossJSON(value))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(Number.NaN))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toCrossJSON(Number.POSITIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(toCrossJSON(Number.NEGATIVE_INFINITY)),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Number.POSITIVE_INFINITY))).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Number.NEGATIVE_INFINITY))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(-0))).toMatchSnapshot();
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports numbers', async () => {
       const value = 0xdeadbeef;
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(value)))).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.NaN)))).toMatchSnapshot();
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(value))),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.NaN))),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY))),
       ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(-0))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(-0)))).toMatchSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {

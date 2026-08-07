@@ -79,8 +79,5 @@ function deserializeReplacer(str: string): string {
 }
 
 export function deserializeString(str: string): string {
-  return str.replace(
-    /(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g,
-    deserializeReplacer,
-  );
+  return str.replace(/(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g, deserializeReplacer);
 }

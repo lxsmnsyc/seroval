@@ -7,15 +7,10 @@ import { ALL_ENABLED } from '../compat';
 import type { WellKnownSymbols } from '../constants';
 import { INV_SYMBOL_REF, NIL, SerovalNodeType } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
-import { createSerovalNode } from '../node';
+import createSerovalNode from '../node';
 import type { PluginAccessOptions, SerovalMode } from '../plugin';
 import { hasReferenceID } from '../reference';
-import {
-  ASYNC_ITERATOR,
-  ITERATOR,
-  SPECIAL_REFS,
-  SpecialReference,
-} from '../special-reference';
+import { ASYNC_ITERATOR, ITERATOR, SPECIAL_REFS, SpecialReference } from '../special-reference';
 import { serializeString } from '../string';
 import { SYM_ASYNC_ITERATOR, SYM_ITERATOR } from '../symbols';
 import type {
@@ -108,10 +103,7 @@ export function isParserRefMarked(ctx: BaseParserContext, id: number): boolean {
  * @param ctx
  * @param current
  */
-export function createIndexForValue<T>(
-  ctx: BaseParserContext,
-  current: T,
-): number {
+export function createIndexForValue<T>(ctx: BaseParserContext, current: T): number {
   const id = ctx.refs.size;
   ctx.refs.set(current, id);
   return id;
@@ -135,10 +127,7 @@ export function getNodeForIndexedValue<T>(
   };
 }
 
-export function getReferenceNode<T>(
-  ctx: BaseParserContext,
-  current: T,
-): ObjectNode {
+export function getReferenceNode<T>(ctx: BaseParserContext, current: T): ObjectNode {
   const indexed = getNodeForIndexedValue(ctx, current);
   if (indexed.type === ParserNodeType.Indexed) {
     return indexed;

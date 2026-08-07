@@ -34,54 +34,26 @@ describe('well-known symbols', () => {
   });
   describe('serializeAsync', () => {
     it('supports well-known symbols', async () => {
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.asyncIterator)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.hasInstance)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.isConcatSpreadable)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.iterator)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.match)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.matchAll)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.replace)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.search)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.species)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.split)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.toPrimitive)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.toStringTag)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.unscopables)),
-      ).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.asyncIterator))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.hasInstance))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.isConcatSpreadable))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.iterator))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.match))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.matchAll))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.replace))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.search))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.species))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.split))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.toPrimitive))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.toStringTag))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Symbol.unscopables))).toMatchSnapshot();
     });
   });
   describe('toJSON', () => {
     it('supports well-known symbols', () => {
       expect(JSON.stringify(toJSON(Symbol.asyncIterator))).toMatchSnapshot();
       expect(JSON.stringify(toJSON(Symbol.hasInstance))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toJSON(Symbol.isConcatSpreadable)),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(toJSON(Symbol.isConcatSpreadable))).toMatchSnapshot();
       expect(JSON.stringify(toJSON(Symbol.iterator))).toMatchSnapshot();
       expect(JSON.stringify(toJSON(Symbol.match))).toMatchSnapshot();
       expect(JSON.stringify(toJSON(Symbol.matchAll))).toMatchSnapshot();
@@ -97,39 +69,21 @@ describe('well-known symbols', () => {
   describe('toJSONAsync', () => {
     it('supports well-known symbols', async () => {
       expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Symbol.asyncIterator)),
-        ),
+        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.asyncIterator))),
       ).toMatchSnapshot();
       expect(
         JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.hasInstance))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Symbol.isConcatSpreadable)),
-        ),
+        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.isConcatSpreadable))),
       ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.iterator))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.match))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.matchAll))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.replace))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.search))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.species))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.split))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.iterator)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.match)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.matchAll)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.replace)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.search)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.species)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.split)))).toMatchSnapshot();
       expect(
         JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.toPrimitive))),
       ).toMatchSnapshot();
@@ -159,89 +113,39 @@ describe('well-known symbols', () => {
     });
     describe('scoped', () => {
       it('supports well-known symbols', () => {
-        expect(
-          crossSerialize(Symbol.asyncIterator, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.hasInstance, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.isConcatSpreadable, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.iterator, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.match, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.matchAll, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.replace, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.search, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.species, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.split, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.toPrimitive, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.toStringTag, { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Symbol.unscopables, { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        expect(crossSerialize(Symbol.asyncIterator, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.hasInstance, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.isConcatSpreadable, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.iterator, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.match, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.matchAll, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.replace, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.search, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.species, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.split, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.toPrimitive, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.toStringTag, { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Symbol.unscopables, { scopeId: 'example' })).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports well-known symbols', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.asyncIterator)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.hasInstance)),
-      ).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.asyncIterator))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.hasInstance))).toMatchSnapshot();
       expect(
         await crossSerializeAsync(Promise.resolve(Symbol.isConcatSpreadable)),
       ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.iterator)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.match)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.matchAll)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.replace)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.search)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.species)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.split)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.toPrimitive)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.toStringTag)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.unscopables)),
-      ).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.iterator))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.match))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.matchAll))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.replace))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.search))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.species))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.split))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.toPrimitive))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.toStringTag))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Symbol.unscopables))).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports well-known symbols', async () => {
@@ -256,10 +160,9 @@ describe('well-known symbols', () => {
           }),
         ).toMatchSnapshot();
         expect(
-          await crossSerializeAsync(
-            Promise.resolve(Symbol.isConcatSpreadable),
-            { scopeId: 'example' },
-          ),
+          await crossSerializeAsync(Promise.resolve(Symbol.isConcatSpreadable), {
+            scopeId: 'example',
+          }),
         ).toMatchSnapshot();
         expect(
           await crossSerializeAsync(Promise.resolve(Symbol.iterator), {
@@ -697,13 +600,9 @@ describe('well-known symbols', () => {
   });
   describe('toCrossJSON', () => {
     it('supports well-known symbols', () => {
-      expect(
-        JSON.stringify(toCrossJSON(Symbol.asyncIterator)),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.asyncIterator))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(Symbol.hasInstance))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toCrossJSON(Symbol.isConcatSpreadable)),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(toCrossJSON(Symbol.isConcatSpreadable))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(Symbol.iterator))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(Symbol.match))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(Symbol.matchAll))).toMatchSnapshot();
@@ -719,32 +618,22 @@ describe('well-known symbols', () => {
   describe('toCrossJSONAsync', () => {
     it('supports well-known symbols', async () => {
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.asyncIterator)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.asyncIterator))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.hasInstance)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.hasInstance))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.isConcatSpreadable)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.isConcatSpreadable))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.iterator)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.iterator))),
       ).toMatchSnapshot();
       expect(
         JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.match))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.matchAll)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.matchAll))),
       ).toMatchSnapshot();
       expect(
         JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.replace))),
@@ -759,19 +648,13 @@ describe('well-known symbols', () => {
         JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.split))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.toPrimitive)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.toPrimitive))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.toStringTag)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.toStringTag))),
       ).toMatchSnapshot();
       expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.unscopables)),
-        ),
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.unscopables))),
       ).toMatchSnapshot();
     });
   });

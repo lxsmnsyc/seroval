@@ -15,9 +15,7 @@ import {
   toJSONAsync,
 } from '../src';
 
-const EXAMPLE = new Uint32Array([
-  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-]);
+const EXAMPLE = new Uint32Array([0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff]);
 
 describe('typed arrays', () => {
   describe('serialize', () => {

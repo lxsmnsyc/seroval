@@ -33,9 +33,7 @@ export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   return ErrorConstructorTag.Error;
 }
 
-function getInitialErrorOptions(
-  error: Error,
-): Record<string, unknown> | undefined {
+function getInitialErrorOptions(error: Error): Record<string, unknown> | undefined {
   const construct = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
   // Name has been modified
   if (error.name !== construct) {

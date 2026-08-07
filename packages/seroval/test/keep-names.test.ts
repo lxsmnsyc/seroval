@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // https://github.com/lxsmnsyc/seroval/issues/87
@@ -90,15 +90,14 @@ async function bundleAndRun(): Promise<Payloads> {
     write: false,
   });
   const code = result.outputFiles[0].text;
-  const mod = await import(
-    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  );
+  const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
   return mod.getPayloads();
 }
 
 // Function bodies only see globals — same visibility as a payload evaluated
 // in a browser that never loaded the server bundle.
 function evaluate<T>(payload: string): T {
+  // oxlint-disable-next-line no-new-func
   return new Function(`return (${payload})`)() as T;
 }
 
@@ -129,6 +128,7 @@ describe('keep-names bundled payloads', () => {
   it('supports crossSerializeStream', async () => {
     const payloads = await getBundledPayloads();
     const $R: unknown[] = [];
+    // oxlint-disable-next-line no-new-func
     new Function('$R', payloads.streamChunks.join(';\n'))($R);
     const back = $R[0] as AsyncIterable<string>;
     expect(await drain(back)).toEqual(['foo', 'bar']);
