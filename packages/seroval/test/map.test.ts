@@ -23,10 +23,7 @@ const RECURSIVE = new Map<unknown, unknown>();
 RECURSIVE.set(RECURSIVE, RECURSIVE);
 
 const ASYNC_RECURSIVE = new Map<Promise<unknown>, Promise<unknown>>();
-ASYNC_RECURSIVE.set(
-  Promise.resolve(ASYNC_RECURSIVE),
-  Promise.resolve(ASYNC_RECURSIVE),
-);
+ASYNC_RECURSIVE.set(Promise.resolve(ASYNC_RECURSIVE), Promise.resolve(ASYNC_RECURSIVE));
 
 describe('Map', () => {
   describe('serialize', () => {

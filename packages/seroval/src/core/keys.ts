@@ -11,7 +11,5 @@ export function getCrossReferenceHeader(id?: string): string {
   if (id == null) {
     return `${GLOBAL_CONTEXT_R}=${GLOBAL_CONTEXT_R}||[]`;
   }
-  return `(${GLOBAL_CONTEXT_R}=${GLOBAL_CONTEXT_R}||{})["${serializeString(
-    id,
-  )}"]=[]`;
+  return `(${GLOBAL_CONTEXT_R}=${GLOBAL_CONTEXT_R}||{})["${serializeString(id)}"]=[]`;
 }

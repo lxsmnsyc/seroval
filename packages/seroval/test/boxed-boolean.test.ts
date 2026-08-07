@@ -33,12 +33,8 @@ describe('boxed boolean', () => {
   });
   describe('toJSONAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(true)))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(false)))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Object(true))))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Object(false))))).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -48,12 +44,8 @@ describe('boxed boolean', () => {
     });
     describe('scoped', () => {
       it('supports boolean', () => {
-        expect(
-          crossSerialize(Object(true), { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Object(false), { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        expect(crossSerialize(Object(true), { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Object(false), { scopeId: 'example' })).toMatchSnapshot();
       });
     });
   });
@@ -64,12 +56,8 @@ describe('boxed boolean', () => {
     });
     describe('scoped', () => {
       it('supports boolean', async () => {
-        expect(
-          await crossSerializeAsync(Object(true), { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Object(false), { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        expect(await crossSerializeAsync(Object(true), { scopeId: 'example' })).toMatchSnapshot();
+        expect(await crossSerializeAsync(Object(false), { scopeId: 'example' })).toMatchSnapshot();
       });
     });
   });

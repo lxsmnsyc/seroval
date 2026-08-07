@@ -1,3 +1,5 @@
+import 'temporal-polyfill/global';
+import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -12,15 +14,13 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
-} from "../../src";
-import "temporal-polyfill/global";
-import { describe, expect, it } from "vitest";
+} from '../../src';
 
-const EXAMPLE = Temporal.ZonedDateTime.from("2012-03-04T12:34:56.789-05:00[America/New_York]");
+const EXAMPLE = Temporal.ZonedDateTime.from('2012-03-04T12:34:56.789-05:00[America/New_York]');
 
-describe("Temporal.ZonedDateTime", () => {
-  describe("serialize", () => {
-    it("supports Temporal.ZonedDateTime", () => {
+describe('Temporal.ZonedDateTime', () => {
+  describe('serialize', () => {
+    it('supports Temporal.ZonedDateTime', () => {
       const result = serialize(EXAMPLE);
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
@@ -28,8 +28,8 @@ describe("Temporal.ZonedDateTime", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("serializeAsync", () => {
-    it("supports Temporal.ZonedDateTime", async () => {
+  describe('serializeAsync', () => {
+    it('supports Temporal.ZonedDateTime', async () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
@@ -37,8 +37,8 @@ describe("Temporal.ZonedDateTime", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toJSON", () => {
-    it("supports Temporal.ZonedDateTime", () => {
+  describe('toJSON', () => {
+    it('supports Temporal.ZonedDateTime', () => {
       const result = toJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
@@ -46,8 +46,8 @@ describe("Temporal.ZonedDateTime", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toJSONAsync", () => {
-    it("supports Temporal.ZonedDateTime", async () => {
+  describe('toJSONAsync', () => {
+    it('supports Temporal.ZonedDateTime', async () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE));
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
@@ -55,36 +55,36 @@ describe("Temporal.ZonedDateTime", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("crossSerialize", () => {
-    it("supports Temporal.ZonedDateTime", () => {
+  describe('crossSerialize', () => {
+    it('supports Temporal.ZonedDateTime', () => {
       const result = crossSerialize(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
-    describe("scoped", () => {
-      it("supports Temporal.ZonedDateTime", () => {
+    describe('scoped', () => {
+      it('supports Temporal.ZonedDateTime', () => {
         const result = crossSerialize(EXAMPLE, {
-          scopeId: "example",
+          scopeId: 'example',
         });
         expect(result).toMatchSnapshot();
       });
     });
   });
-  describe("crossSerializeAsync", () => {
-    it("supports Temporal.ZonedDateTime", async () => {
+  describe('crossSerializeAsync', () => {
+    it('supports Temporal.ZonedDateTime', async () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
     });
-    describe("scoped", () => {
-      it("supports Temporal.ZonedDateTime", async () => {
+    describe('scoped', () => {
+      it('supports Temporal.ZonedDateTime', async () => {
         const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
-          scopeId: "example",
+          scopeId: 'example',
         });
         expect(result).toMatchSnapshot();
       });
     });
   });
-  describe("crossSerializeStream", () => {
-    it("supports Temporal.ZonedDateTime", async () =>
+  describe('crossSerializeStream', () => {
+    it('supports Temporal.ZonedDateTime', async () =>
       new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           onSerialize(data) {
@@ -98,11 +98,11 @@ describe("Temporal.ZonedDateTime", () => {
           },
         });
       }));
-    describe("scoped", () => {
-      it("supports Temporal.ZonedDateTime", async () =>
+    describe('scoped', () => {
+      it('supports Temporal.ZonedDateTime', async () =>
         new Promise<void>((resolve, reject) => {
           crossSerializeStream(Promise.resolve(EXAMPLE), {
-            scopeId: "example",
+            scopeId: 'example',
             onSerialize(data) {
               expect(data).toMatchSnapshot();
             },
@@ -116,8 +116,8 @@ describe("Temporal.ZonedDateTime", () => {
         }));
     });
   });
-  describe("toCrossJSON", () => {
-    it("supports Temporal.ZonedDateTime", () => {
+  describe('toCrossJSON', () => {
+    it('supports Temporal.ZonedDateTime', () => {
       const result = toCrossJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
@@ -127,8 +127,8 @@ describe("Temporal.ZonedDateTime", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toCrossJSONAsync", () => {
-    it("supports Temporal.ZonedDateTime", async () => {
+  describe('toCrossJSONAsync', () => {
+    it('supports Temporal.ZonedDateTime', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
@@ -138,8 +138,8 @@ describe("Temporal.ZonedDateTime", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toCrossJSONStream", () => {
-    it("supports Temporal.ZonedDateTime", async () =>
+  describe('toCrossJSONStream', () => {
+    it('supports Temporal.ZonedDateTime', async () =>
       new Promise<void>((resolve, reject) => {
         toCrossJSONStream(Promise.resolve(EXAMPLE), {
           onParse(data) {

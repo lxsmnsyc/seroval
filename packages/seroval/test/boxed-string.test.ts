@@ -23,20 +23,14 @@ describe('boxed string', () => {
     it('supports boxed strings', () => {
       expect(serialize(Object(QUOTED))).toMatchSnapshot();
       expect(serialize(Object(HTML))).toMatchSnapshot();
-      expect(deserialize<object>(serialize(Object(QUOTED))).valueOf()).toBe(
-        QUOTED,
-      );
+      expect(deserialize<object>(serialize(Object(QUOTED))).valueOf()).toBe(QUOTED);
       expect(deserialize<object>(serialize(Object(HTML))).valueOf()).toBe(HTML);
     });
   });
   describe('serializeAsync', () => {
     it('supports boxed strings', async () => {
-      expect(
-        await serializeAsync(Promise.resolve(Object(QUOTED))),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Object(HTML))),
-      ).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Object(QUOTED)))).toMatchSnapshot();
+      expect(await serializeAsync(Promise.resolve(Object(HTML)))).toMatchSnapshot();
     });
   });
   describe('toJSON', () => {
@@ -49,12 +43,8 @@ describe('boxed string', () => {
   });
   describe('toJSONAsync', () => {
     it('supports boxed strings', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(QUOTED)))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(HTML)))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Object(QUOTED))))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(Object(HTML))))).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -64,23 +54,15 @@ describe('boxed string', () => {
     });
     describe('scoped', () => {
       it('supports boxed strings', () => {
-        expect(
-          crossSerialize(Object(QUOTED), { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
-          crossSerialize(Object(HTML), { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        expect(crossSerialize(Object(QUOTED), { scopeId: 'example' })).toMatchSnapshot();
+        expect(crossSerialize(Object(HTML), { scopeId: 'example' })).toMatchSnapshot();
       });
     });
   });
   describe('crossSerializeAsync', () => {
     it('supports boxed strings', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(Object(QUOTED))),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Object(HTML))),
-      ).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object(QUOTED)))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(Object(HTML)))).toMatchSnapshot();
     });
     describe('scoped', () => {
       it('supports boxed strings', async () => {

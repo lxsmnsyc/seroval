@@ -1,17 +1,12 @@
-import type { WellKnownSymbols } from './constants';
 import {
   INV_SYMBOL_REF,
   NIL,
   SerovalNodeType,
   type SerovalTemporalType,
+  type WellKnownSymbols,
 } from './constants';
-import {
-  INFINITY_NODE,
-  NAN_NODE,
-  NEG_INFINITY_NODE,
-  NEG_ZERO_NODE,
-} from './literals';
-import { createSerovalNode } from './node';
+import { INFINITY_NODE, NAN_NODE, NEG_INFINITY_NODE, NEG_ZERO_NODE } from './literals';
+import createSerovalNode from './node';
 import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
@@ -46,15 +41,10 @@ import type {
   SerovalWKSymbolNode,
 } from './types';
 import { getErrorConstructor } from './utils/error';
-import { getObjectFlag } from './utils/get-object-flag';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from './utils/typed-array';
+import getObjectFlag from './utils/get-object-flag';
+import type { BigIntTypedArrayValue, TypedArrayValue } from './utils/typed-array';
 
-export function createNumberNode(
-  value: number,
-): SerovalConstantNode | SerovalNumberNode {
+export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
   switch (value) {
     case Number.POSITIVE_INFINITY:
       return INFINITY_NODE;
@@ -139,7 +129,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   return createSerovalNode(
     SerovalNodeType.Date,
     id,
-    timestamp !== timestamp ? '' : current.toISOString(),
+    timestamp === timestamp ? current.toISOString() : '',
     NIL,
     NIL,
     NIL,
@@ -183,10 +173,7 @@ export function createTemporalNode(
   );
 }
 
-export function createRegExpNode(
-  id: number,
-  current: RegExp,
-): SerovalRegExpNode {
+export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode {
   return createSerovalNode(
     SerovalNodeType.RegExp,
     id,
@@ -203,10 +190,7 @@ export function createRegExpNode(
   );
 }
 
-export function createWKSymbolNode(
-  id: number,
-  current: WellKnownSymbols,
-): SerovalWKSymbolNode {
+export function createWKSymbolNode(id: number, current: WellKnownSymbols): SerovalWKSymbolNode {
   return createSerovalNode(
     SerovalNodeType.WKSymbol,
     id,
@@ -223,10 +207,7 @@ export function createWKSymbolNode(
   );
 }
 
-export function createReferenceNode<T>(
-  id: number,
-  ref: T,
-): SerovalReferenceNode {
+export function createReferenceNode<T>(id: number, ref: T): SerovalReferenceNode {
   return createSerovalNode(
     SerovalNodeType.Reference,
     id,
@@ -285,10 +266,7 @@ export function createArrayNode(
   );
 }
 
-export function createBoxedNode(
-  id: number,
-  boxed: SerovalNode,
-): SerovalBoxedNode {
+export function createBoxedNode(id: number, boxed: SerovalNode): SerovalBoxedNode {
   return createSerovalNode(
     SerovalNodeType.Boxed,
     id,
@@ -410,10 +388,7 @@ export function createAggregateErrorNode(
   );
 }
 
-export function createSetNode(
-  id: number,
-  items: SerovalNode[],
-): SerovalSetNode {
+export function createSetNode(id: number, items: SerovalNode[]): SerovalSetNode {
   return createSerovalNode(
     SerovalNodeType.Set,
     id,
@@ -491,10 +466,7 @@ export function createStreamConstructorNode(
   );
 }
 
-export function createStreamNextNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamNextNode {
+export function createStreamNextNode(id: number, parsed: SerovalNode): SerovalStreamNextNode {
   return createSerovalNode(
     SerovalNodeType.StreamNext,
     id,
@@ -511,10 +483,7 @@ export function createStreamNextNode(
   );
 }
 
-export function createStreamThrowNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamThrowNode {
+export function createStreamThrowNode(id: number, parsed: SerovalNode): SerovalStreamThrowNode {
   return createSerovalNode(
     SerovalNodeType.StreamThrow,
     id,
@@ -531,10 +500,7 @@ export function createStreamThrowNode(
   );
 }
 
-export function createStreamReturnNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamReturnNode {
+export function createStreamReturnNode(id: number, parsed: SerovalNode): SerovalStreamReturnNode {
   return createSerovalNode(
     SerovalNodeType.StreamReturn,
     id,

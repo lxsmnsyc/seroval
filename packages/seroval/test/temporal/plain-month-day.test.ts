@@ -1,3 +1,5 @@
+import 'temporal-polyfill/global';
+import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -12,15 +14,13 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
-} from "../../src";
-import "temporal-polyfill/global";
-import { describe, expect, it } from "vitest";
+} from '../../src';
 
-const EXAMPLE = Temporal.PlainMonthDay.from("05-07");
+const EXAMPLE = Temporal.PlainMonthDay.from('05-07');
 
-describe("Temporal.PlainMonthDay", () => {
-  describe("serialize", () => {
-    it("supports Temporal.PlainMonthDay", () => {
+describe('Temporal.PlainMonthDay', () => {
+  describe('serialize', () => {
+    it('supports Temporal.PlainMonthDay', () => {
       const result = serialize(EXAMPLE);
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
@@ -28,8 +28,8 @@ describe("Temporal.PlainMonthDay", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("serializeAsync", () => {
-    it("supports Temporal.PlainMonthDay", async () => {
+  describe('serializeAsync', () => {
+    it('supports Temporal.PlainMonthDay', async () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
@@ -37,8 +37,8 @@ describe("Temporal.PlainMonthDay", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toJSON", () => {
-    it("supports Temporal.PlainMonthDay", () => {
+  describe('toJSON', () => {
+    it('supports Temporal.PlainMonthDay', () => {
       const result = toJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
@@ -46,8 +46,8 @@ describe("Temporal.PlainMonthDay", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toJSONAsync", () => {
-    it("supports Temporal.PlainMonthDay", async () => {
+  describe('toJSONAsync', () => {
+    it('supports Temporal.PlainMonthDay', async () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE));
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
@@ -55,36 +55,36 @@ describe("Temporal.PlainMonthDay", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("crossSerialize", () => {
-    it("supports Temporal.PlainMonthDay", () => {
+  describe('crossSerialize', () => {
+    it('supports Temporal.PlainMonthDay', () => {
       const result = crossSerialize(EXAMPLE);
       expect(result).toMatchSnapshot();
     });
-    describe("scoped", () => {
-      it("supports Temporal.PlainMonthDay", () => {
+    describe('scoped', () => {
+      it('supports Temporal.PlainMonthDay', () => {
         const result = crossSerialize(EXAMPLE, {
-          scopeId: "example",
+          scopeId: 'example',
         });
         expect(result).toMatchSnapshot();
       });
     });
   });
-  describe("crossSerializeAsync", () => {
-    it("supports Temporal.PlainMonthDay", async () => {
+  describe('crossSerializeAsync', () => {
+    it('supports Temporal.PlainMonthDay', async () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
       expect(result).toMatchSnapshot();
     });
-    describe("scoped", () => {
-      it("supports Temporal.PlainMonthDay", async () => {
+    describe('scoped', () => {
+      it('supports Temporal.PlainMonthDay', async () => {
         const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
-          scopeId: "example",
+          scopeId: 'example',
         });
         expect(result).toMatchSnapshot();
       });
     });
   });
-  describe("crossSerializeStream", () => {
-    it("supports Temporal.PlainMonthDay", async () =>
+  describe('crossSerializeStream', () => {
+    it('supports Temporal.PlainMonthDay', async () =>
       new Promise<void>((resolve, reject) => {
         crossSerializeStream(Promise.resolve(EXAMPLE), {
           onSerialize(data) {
@@ -98,11 +98,11 @@ describe("Temporal.PlainMonthDay", () => {
           },
         });
       }));
-    describe("scoped", () => {
-      it("supports Temporal.PlainMonthDay", async () =>
+    describe('scoped', () => {
+      it('supports Temporal.PlainMonthDay', async () =>
         new Promise<void>((resolve, reject) => {
           crossSerializeStream(Promise.resolve(EXAMPLE), {
-            scopeId: "example",
+            scopeId: 'example',
             onSerialize(data) {
               expect(data).toMatchSnapshot();
             },
@@ -116,8 +116,8 @@ describe("Temporal.PlainMonthDay", () => {
         }));
     });
   });
-  describe("toCrossJSON", () => {
-    it("supports Temporal.PlainMonthDay", () => {
+  describe('toCrossJSON', () => {
+    it('supports Temporal.PlainMonthDay', () => {
       const result = toCrossJSON(EXAMPLE);
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
@@ -127,8 +127,8 @@ describe("Temporal.PlainMonthDay", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toCrossJSONAsync", () => {
-    it("supports Temporal.PlainMonthDay", async () => {
+  describe('toCrossJSONAsync', () => {
+    it('supports Temporal.PlainMonthDay', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
@@ -138,8 +138,8 @@ describe("Temporal.PlainMonthDay", () => {
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
-  describe("toCrossJSONStream", () => {
-    it("supports Temporal.PlainMonthDay", async () =>
+  describe('toCrossJSONStream', () => {
+    it('supports Temporal.PlainMonthDay', async () =>
       new Promise<void>((resolve, reject) => {
         toCrossJSONStream(Promise.resolve(EXAMPLE), {
           onParse(data) {

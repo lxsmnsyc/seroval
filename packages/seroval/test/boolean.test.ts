@@ -21,12 +21,8 @@ describe('boolean', () => {
   });
   describe('serializeAsync', () => {
     it('supports boolean', async () => {
-      expect(await serializeAsync(Promise.resolve(true))).toBe(
-        'Promise.resolve(!0)',
-      );
-      expect(await serializeAsync(Promise.resolve(false))).toBe(
-        'Promise.resolve(!1)',
-      );
+      expect(await serializeAsync(Promise.resolve(true))).toBe('Promise.resolve(!0)');
+      expect(await serializeAsync(Promise.resolve(false))).toBe('Promise.resolve(!1)');
     });
   });
   describe('toJSON', () => {
@@ -37,12 +33,8 @@ describe('boolean', () => {
   });
   describe('toJSONAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(true))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(false))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(true)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(false)))).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -53,12 +45,8 @@ describe('boolean', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(true)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(false)),
-      ).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(true))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(false))).toMatchSnapshot();
     });
   });
   describe('crossSerializeStream', () => {
@@ -99,12 +87,8 @@ describe('boolean', () => {
   });
   describe('toCrossJSONAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(true))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(false))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(true)))).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(false)))).toMatchSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {

@@ -62,10 +62,7 @@ export interface SerovalConstantNode extends SerovalBaseNode {
   s: SerovalConstant;
 }
 
-export type SerovalPrimitiveNode =
-  | SerovalNumberNode
-  | SerovalStringNode
-  | SerovalConstantNode;
+export type SerovalPrimitiveNode = SerovalNumberNode | SerovalStringNode | SerovalConstantNode;
 
 export interface SerovalIndexedValueNode extends SerovalBaseNode {
   t: SerovalNodeType.IndexedValue;
@@ -303,8 +300,7 @@ export interface SerovalAsyncIteratorFactoryNode extends SerovalBaseNode {
   a: [promise: SerovalNodeWithID, symbol: SerovalNodeWithID];
 }
 
-export interface SerovalAsyncIteratorFactoryInstanceNode
-  extends SerovalBaseNode {
+export interface SerovalAsyncIteratorFactoryInstanceNode extends SerovalBaseNode {
   t: SerovalNodeType.AsyncIteratorFactoryInstance;
   a: [instance: SerovalNodeWithID, sequence: SerovalNodeWithID];
 }

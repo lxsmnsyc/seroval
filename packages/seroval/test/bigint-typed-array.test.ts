@@ -15,12 +15,7 @@ import {
   toJSONAsync,
 } from '../src';
 
-const EXAMPLE = new BigInt64Array([
-  -9007199254740991n,
-  9007199254740991n,
-  0n,
-  -1n,
-]);
+const EXAMPLE = new BigInt64Array([-9007199254740991n, 9007199254740991n, 0n, -1n]);
 
 describe('bigint typed arrays', () => {
   describe('serialize', () => {
