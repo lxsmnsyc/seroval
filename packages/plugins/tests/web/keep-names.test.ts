@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // https://github.com/lxsmnsyc/seroval/issues/87
@@ -82,9 +82,7 @@ async function bundleAndRun(): Promise<Payloads> {
     // guards the workspace code — bundle against the local build (CI builds
     // all packages before running tests).
     alias: {
-      seroval: fileURLToPath(
-        new URL('../../../seroval/dist/index.js', import.meta.url),
-      ),
+      seroval: fileURLToPath(new URL('../../../seroval/dist/index.js', import.meta.url)),
     },
     bundle: true,
     keepNames: true,
@@ -94,13 +92,12 @@ async function bundleAndRun(): Promise<Payloads> {
     write: false,
   });
   const code = result.outputFiles[0].text;
-  const mod = await import(
-    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  );
+  const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
   return mod.getPayloads();
 }
 
 function evaluate<T>(payload: string): T {
+  // oxlint-disable-next-line no-new-func
   return new Function(`return (${payload})`)() as T;
 }
 
@@ -121,10 +118,11 @@ describe('keep-names bundled payloads', () => {
   it('supports AbortSignal', async () => {
     const payloads = await getBundledPayloads();
     const $R: unknown[] = [];
+    // oxlint-disable-next-line no-new-func
     new Function('$R', payloads.abortSignalChunks.join(';\n'))($R);
     const back = $R[0] as AbortSignal;
     // the deserialized promise aborts the controller in a microtask
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       setTimeout(resolve, 0);
     });
     expect(back.aborted).toBe(true);

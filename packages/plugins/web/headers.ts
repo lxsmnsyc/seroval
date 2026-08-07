@@ -10,10 +10,7 @@ function convertHeaders(instance: Headers): HeadersInit {
   return items;
 }
 
-const HeadersPlugin = /* @__PURE__ */ createPlugin<
-  Headers,
-  { value: SerovalNode }
->({
+const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode }>({
   tag: 'seroval-plugins/web/Headers',
   test(value) {
     if (typeof Headers === 'undefined') {
