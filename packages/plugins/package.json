@@ -16,7 +16,7 @@
     "@types/node": "^26.1.2",
     "@vitest/ui": "^4.1.10",
     "esbuild": "^0.28.1",
-    "seroval": "1.6.1",
+    "seroval": "1.6.2",
     "tsdown": "^0.22.14",
     "tslib": "^2.8.1",
     "typescript": "^7.0.2",
