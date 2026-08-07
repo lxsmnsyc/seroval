@@ -28,7 +28,7 @@ import type {
   SerovalSpecialReferenceNode,
   SerovalWKSymbolNode,
 } from '../types';
-import { getObjectFlag } from '../utils/get-object-flag';
+import getObjectFlag from '../utils/get-object-flag';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
