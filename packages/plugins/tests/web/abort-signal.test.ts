@@ -16,7 +16,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import { AbortSignalPlugin } from '../../web';
 
-const delayedAbortSignal = () => {
+const delayedAbortSignal = (): AbortSignal => {
   const controller = new AbortController();
   setTimeout(() => {
     controller.abort('aborted!');
@@ -164,13 +164,10 @@ describe('AbortSignal', () => {
     });
     describe('scoped', () => {
       it('supports aborted AbortSignal', async () => {
-        const result = await crossSerializeAsync(
-          Promise.resolve(SYNC_EXAMPLE),
-          {
-            scopeId: 'example',
-            plugins: [AbortSignalPlugin],
-          },
-        );
+        const result = await crossSerializeAsync(Promise.resolve(SYNC_EXAMPLE), {
+          scopeId: 'example',
+          plugins: [AbortSignalPlugin],
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports future AbortSignal', async () => {

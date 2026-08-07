@@ -13,11 +13,7 @@ export function isSequence(value: object): value is Sequence {
   return '__SEROVAL_SEQUENCE__' in value;
 }
 
-export function createSequence(
-  values: unknown[],
-  throwAt: number,
-  doneAt: number,
-): Sequence {
+export function createSequence(values: unknown[], throwAt: number, doneAt: number): Sequence {
   return {
     __SEROVAL_SEQUENCE__: true,
 
@@ -52,8 +48,6 @@ export function createSequenceFromIterable<T>(source: Iterable<T>): Sequence {
 
 const createIterator = ITERATOR_CONSTRUCTOR(SYM_ITERATOR);
 
-export function sequenceToIterator<T>(
-  sequence: Sequence,
-): () => IterableIterator<T> {
+export function sequenceToIterator<T>(sequence: Sequence): () => IterableIterator<T> {
   return createIterator(sequence) as unknown as () => IterableIterator<T>;
 }

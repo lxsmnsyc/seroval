@@ -1,16 +1,28 @@
 {
   "name": "seroval-benchmarks",
-  "type": "module",
+  "version": "1.3.15",
   "private": true,
+  "type": "module",
+  "main": "./dist/cjs/production/index.cjs",
+  "module": "./dist/esm/production/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "typesVersions": {
+    "*": {}
+  },
+  "exports": {
+    ".": {
+      "development": {
+        "require": "./dist/cjs/development/index.cjs",
+        "import": "./dist/esm/development/index.mjs"
+      },
+      "require": "./dist/cjs/production/index.cjs",
+      "import": "./dist/esm/production/index.mjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "node build-src",
     "start": "node build-src && node build/index.cjs"
-  },
-  "devDependencies": {
-    "@types/node": "^26.1.2",
-    "esbuild": "^0.28.1",
-    "tslib": "^2.6.2",
-    "typescript": "^7.0.2"
   },
   "dependencies": {
     "benny": "^3.7.1",
@@ -26,22 +38,10 @@
     "turbo-stream": "^3.2.0",
     "warp10": "^2.1.0"
   },
-  "types": "./dist/types/index.d.ts",
-  "main": "./dist/cjs/production/index.cjs",
-  "module": "./dist/esm/production/index.mjs",
-  "exports": {
-    ".": {
-      "development": {
-        "require": "./dist/cjs/development/index.cjs",
-        "import": "./dist/esm/development/index.mjs"
-      },
-      "require": "./dist/cjs/production/index.cjs",
-      "import": "./dist/esm/production/index.mjs",
-      "types": "./dist/types/index.d.ts"
-    }
-  },
-  "typesVersions": {
-    "*": {}
-  },
-  "version": "1.3.15"
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "esbuild": "^0.28.1",
+    "tslib": "^2.6.2",
+    "typescript": "^7.0.2"
+  }
 }

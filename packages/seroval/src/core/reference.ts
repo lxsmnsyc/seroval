@@ -1,7 +1,4 @@
-import {
-  SerovalMissingReferenceError,
-  SerovalMissingReferenceForIdError,
-} from '..';
+import { SerovalMissingReferenceError, SerovalMissingReferenceForIdError } from './errors';
 import { REFERENCES_KEY } from './keys';
 
 const REFERENCE = new Map<unknown, string>();

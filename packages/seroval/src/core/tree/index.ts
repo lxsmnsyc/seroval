@@ -14,11 +14,12 @@ import {
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
 import {
   type PluginAccessOptions,
-  resolvePlugins,
   SerovalMode,
+  resolvePlugins,
 } from '../plugin';
 import type { SerovalNode } from '../types';
 import { ALL_ENABLED } from '../compat';
+
 export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 

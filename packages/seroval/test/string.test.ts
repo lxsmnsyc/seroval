@@ -43,12 +43,8 @@ describe('string', () => {
   });
   describe('toJSONAsync', () => {
     it('supports strings', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(QUOTED))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(HTML))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(QUOTED)))).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(HTML)))).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -59,12 +55,8 @@ describe('string', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports strings', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(QUOTED)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(HTML)),
-      ).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(QUOTED))).toMatchSnapshot();
+      expect(await crossSerializeAsync(Promise.resolve(HTML))).toMatchSnapshot();
     });
   });
   describe('crossSerializeStream', () => {
@@ -101,22 +93,14 @@ describe('string', () => {
     it('supports strings', () => {
       expect(JSON.stringify(toCrossJSON(QUOTED))).toMatchSnapshot();
       expect(JSON.stringify(toCrossJSON(HTML))).toMatchSnapshot();
-      expect(
-        fromCrossJSON<object>(toCrossJSON(QUOTED), { refs: new Map() }),
-      ).toBe(QUOTED);
-      expect(
-        fromCrossJSON<object>(toCrossJSON(HTML), { refs: new Map() }),
-      ).toBe(HTML);
+      expect(fromCrossJSON<object>(toCrossJSON(QUOTED), { refs: new Map() })).toBe(QUOTED);
+      expect(fromCrossJSON<object>(toCrossJSON(HTML), { refs: new Map() })).toBe(HTML);
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports strings', async () => {
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(QUOTED))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(HTML))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(QUOTED)))).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(HTML)))).toMatchSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {

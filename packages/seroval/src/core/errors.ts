@@ -38,10 +38,8 @@ function getErrorMessageProd(type: string): string {
   return `Seroval Error (step: ${STEP_ERROR_CODES[type]})`;
 }
 
-const getErrorMessage = (type: string, cause: any) =>
-  import.meta.env.PROD
-    ? getErrorMessageProd(type)
-    : getErrorMessageDev(type, cause);
+const getErrorMessage = (type: string, cause: unknown): string =>
+  import.meta.env.PROD ? getErrorMessageProd(type) : getErrorMessageDev(type, cause);
 
 export class SerovalError extends Error {
   constructor(

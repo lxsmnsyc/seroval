@@ -160,7 +160,7 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.Nan]: '0/0',
 };
 
-export const NIL = void 0;
+export const NIL = undefined;
 
 export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.True]: true,
@@ -202,13 +202,12 @@ type ErrorConstructors =
   | TypeErrorConstructor
   | URIErrorConstructor;
 
-export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
-  {
-    [ErrorConstructorTag.Error]: Error,
-    [ErrorConstructorTag.EvalError]: EvalError,
-    [ErrorConstructorTag.RangeError]: RangeError,
-    [ErrorConstructorTag.ReferenceError]: ReferenceError,
-    [ErrorConstructorTag.SyntaxError]: SyntaxError,
-    [ErrorConstructorTag.TypeError]: TypeError,
-    [ErrorConstructorTag.URIError]: URIError,
-  };
+export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> = {
+  [ErrorConstructorTag.Error]: Error,
+  [ErrorConstructorTag.EvalError]: EvalError,
+  [ErrorConstructorTag.RangeError]: RangeError,
+  [ErrorConstructorTag.ReferenceError]: ReferenceError,
+  [ErrorConstructorTag.SyntaxError]: SyntaxError,
+  [ErrorConstructorTag.TypeError]: TypeError,
+  [ErrorConstructorTag.URIError]: URIError,
+};

@@ -192,7 +192,7 @@ describe('Iterable', () => {
         });
       }));
     it('respects depthLimit', async () =>
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         const deep = makeDeepObject(5);
         let parsed = false;
         toCrossJSONStream(deep, {

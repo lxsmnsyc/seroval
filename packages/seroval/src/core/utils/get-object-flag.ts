@@ -1,6 +1,6 @@
 import { SerovalObjectFlags } from '../constants';
 
-export function getObjectFlag(obj: unknown): SerovalObjectFlags {
+export default function getObjectFlag(obj: unknown): SerovalObjectFlags {
   if (Object.isFrozen(obj)) {
     return SerovalObjectFlags.Frozen;
   }

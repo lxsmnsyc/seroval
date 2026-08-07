@@ -1,9 +1,6 @@
 import { crossSerializeStream } from './cross';
-import {
-  resolvePlugins,
-  type Plugin,
-  type PluginAccessOptions,
-} from './plugin';
+import type { Plugin, PluginAccessOptions } from './plugin';
+import { resolvePlugins } from './plugin';
 import { serializeString } from './string';
 
 export interface SerializerOptions extends PluginAccessOptions {
@@ -51,11 +48,7 @@ export default class Serializer {
             if (this.alive) {
               this.options.onData(
                 initial
-                  ? this.options.globalIdentifier +
-                      '["' +
-                      serializeString(key) +
-                      '"]=' +
-                      data
+                  ? this.options.globalIdentifier + '["' + serializeString(key) + '"]=' + data
                   : data,
               );
             }
@@ -63,12 +56,7 @@ export default class Serializer {
           onDone: () => {
             if (this.alive) {
               this.pending--;
-              if (
-                this.pending <= 0 &&
-                this.flushed &&
-                !this.done &&
-                this.options.onDone
-              ) {
+              if (this.pending <= 0 && this.flushed && !this.done && this.options.onDone) {
                 this.options.onDone();
                 this.done = true;
               }
