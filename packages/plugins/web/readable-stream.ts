@@ -8,7 +8,7 @@ const READABLE_STREAM_FACTORY = {};
 // transforms (esbuild keepNames) have nothing to wrap; any other shape gets
 // rewritten to call a bundle-scoped helper that does not exist in the
 // receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
-const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
+const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>): ReadableStream =>
   new ReadableStream({
     start(controller) {
       stream.on({
@@ -33,7 +33,10 @@ const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
     },
   });
 
-const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
+const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  Record<string, SerovalNode>
+>({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
   test(value) {
     return value === READABLE_STREAM_FACTORY;
@@ -82,9 +85,7 @@ function cleanupStream<T>(reader: ReadableStreamDefaultReader<T>): void {
   reader.releaseLock();
 }
 
-function toStream<T>(
-  value: ReadableStream<T>,
-): [Stream<T | undefined>, () => void] {
+function toStream<T>(value: ReadableStream<T>): [Stream<T | undefined>, () => void] {
   const stream = createStream<T | undefined>();
 
   const reader = value.getReader();
@@ -101,10 +102,7 @@ type ReadableStreamNode = {
   stream: SerovalNode;
 };
 
-const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
-  ReadableStream,
-  ReadableStreamNode
->({
+const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, ReadableStreamNode>({
   tag: 'seroval/plugins/web/ReadableStream',
   extends: [ReadableStreamFactoryPlugin],
   test(value) {
@@ -136,13 +134,7 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
     },
   },
   serialize(node, ctx) {
-    return (
-      '(' +
-      ctx.serialize(node.factory) +
-      ')(' +
-      ctx.serialize(node.stream) +
-      ')'
-    );
+    return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.stream) + ')';
   },
   deserialize(node, ctx) {
     const stream = ctx.deserialize(node.stream) as Stream<any>;
