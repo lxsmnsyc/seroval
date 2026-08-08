@@ -55,12 +55,19 @@ By default, all feature flags are enabled. The following are the feature flags a
   - Disables serialization of `BigInt64Array` and `BigUint64Array`
 - `RegExp`
   - Disables serialization (and deserialization) of `RegExp`
+- [`Temporal`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal)
+  - Disables serialization of `Temporal` types (`Instant`, `Duration`, `PlainDate`, `PlainDateTime`, `PlainMonthDay`, `PlainTime`, `PlainYearMonth`, `ZonedDateTime`)
 
 ## Supported Types
 
 - sync = `serialize`, `toJSON`, `crossSerialize`, `toCrossJSON`
 - async = `serializeAsync`, `toJSONAsync`, `crossSerializeAsync`, `toCrossJSONAsync`
 - streaming = `crossSerializeStream`, `toCrossJSONStream`, `Serializer`
+
+> [!NOTE]
+> [Binary mode](./binary-mode-spec.md) (`binary.serialize` / `binary.deserialize`)
+> is a fourth, streaming mode that encodes the same types as `Uint8Array` chunks
+> instead of strings.
 
 | Type                                                                                                                                                     | sync      | async     | streaming |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------- | --------- |
@@ -106,6 +113,8 @@ By default, all feature flags are enabled. The following are the feature flags a
 | `Promise`                                                                                                                                                | ❌         | ✅         | ✅         |
 | [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)                                | ✅         | ✅         | ✅         |
 | [Well-known symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#static_properties)                          | ✅         | ✅         | ✅         |
+| Boxed primitives (`Object(1)`, `Object("s")`, ...)                                                                                                       | ✅         | ✅         | ✅         |
+| [`Temporal`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal) types                                            | ❓[^7]     | ❓[^7]     | ❓[^7]     |
 | [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols) | ❌         | ✅         | ✅         |
 | Built-in streaming primitive                                                                                                                             | ✅         | ✅         | ✅         |
 | Cyclic references                                                                                                                                        | ✅         | ✅         | ✅         |
@@ -136,3 +145,4 @@ By default, all feature flags are enabled. The following are the feature flags a
 [^4]: `FormData` is partially supported if it doesn't contain any `Blob` or `File` instances.
 [^5]: Due to the nature of `Blob` and `File` being an async type (in that it returns a `Promise`-based serializable data) while having a sync constructor, it cannot be represented in a way that the type is consistent to its original declaration.
 [^6]: `Feature.RegExp` must be enabled, otherwise throws an `SerovalUnsupportedTypeError` and `SerovalUnsupportedNodeError`.
+[^7]: `Feature.Temporal` must be enabled, otherwise throws an `SerovalUnsupportedTypeError`.
