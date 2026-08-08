@@ -467,49 +467,49 @@ can wait for the container to be fully populated.
 
 ## Examples
 
-Each example lists the emitted bytes in decimal, using little-endian encoding
-(`endianness = 1`), then walks through how they are interpreted. Recall that a
-`uint` is 4 bytes and a `number` is 8 bytes.
+Each example lists the emitted bytes as hexadecimal pairs, using little-endian
+encoding (`endianness = 01`), then walks through how they are interpreted. Recall
+that a `uint` is 4 bytes and a `number` is 8 bytes.
 
 ### `null`
 
 ```
-0 1   2 1 0 0 0 0   1 1 0 0 0
+00 01   02 01 00 00 00 00   01 01 00 00 00
 ```
 
 | bytes | node | meaning |
 | --- | --- | --- |
-| `0 1` | `Preamble` | `0` = preamble, `1` = little-endian |
-| `2  1 0 0 0  0` | `Constant` | `2` = constant, id `1`, value `0` = `null` |
-| `1  1 0 0 0` | `Root` | `1` = root, references id `1` |
+| `00 01` | `Preamble` | `00` = preamble, `01` = little-endian |
+| `02  01 00 00 00  00` | `Constant` | `02` = constant, id `1`, value `00` = `null` |
+| `01  01 00 00 00` | `Root` | `01` = root, references id `1` |
 
 Result: `null`.
 
 ### `42`
 
 ```
-0 1   3 1 0 0 0  0 0 0 0 0 0 69 64   1 1 0 0 0
+00 01   03 01 00 00 00  00 00 00 00 00 00 45 40   01 01 00 00 00
 ```
 
 | bytes | node | meaning |
 | --- | --- | --- |
-| `0 1` | `Preamble` | little-endian |
-| `3  1 0 0 0  0 0 0 0 0 0 69 64` | `Number` | `3` = number, id `1`, the 8 bytes are `42.0` as a little-endian float64 |
-| `1  1 0 0 0` | `Root` | references id `1` |
+| `00 01` | `Preamble` | little-endian |
+| `03  01 00 00 00  00 00 00 00 00 00 45 40` | `Number` | `03` = number, id `1`, the 8 bytes are `42.0` as a little-endian float64 |
+| `01  01 00 00 00` | `Root` | references id `1` |
 
 Result: `42`.
 
 ### `"hi"`
 
 ```
-0 1   4 1 0 0 0  2 0 0 0  104 105   1 1 0 0 0
+00 01   04 01 00 00 00  02 00 00 00  68 69   01 01 00 00 00
 ```
 
 | bytes | node | meaning |
 | --- | --- | --- |
-| `0 1` | `Preamble` | little-endian |
-| `4  1 0 0 0  2 0 0 0  104 105` | `String` | `4` = string, id `1`, length `2`, UTF-8 bytes `104 105` (`"hi"`) |
-| `1  1 0 0 0` | `Root` | references id `1` |
+| `00 01` | `Preamble` | little-endian |
+| `04  01 00 00 00  02 00 00 00  68 69` | `String` | `04` = string, id `1`, length `2`, UTF-8 bytes `68 69` (`"hi"`) |
+| `01  01 00 00 00` | `Root` | references id `1` |
 
 Result: `"hi"`.
 
@@ -520,26 +520,26 @@ announce how many assignments to expect, set the object flag, then point the
 root at it.
 
 ```
-0 1
-18 1 0 0 0
-4 2 0 0 0  1 0 0 0  97
-3 3 0 0 0  0 0 0 0 0 0 240 63
-7  1 0 0 0  2 0 0 0  3 0 0 0
-38 1 0 0 0  1 0 0 0
-9  1 0 0 0  0
-1  1 0 0 0
+00 01
+12 01 00 00 00
+04 02 00 00 00  01 00 00 00  61
+03 03 00 00 00  00 00 00 00 00 00 F0 3F
+07 01 00 00 00  02 00 00 00  03 00 00 00
+26 01 00 00 00  01 00 00 00
+09 01 00 00 00  00
+01 01 00 00 00
 ```
 
 | bytes | node | meaning |
 | --- | --- | --- |
-| `0 1` | `Preamble` | little-endian |
-| `18  1 0 0 0` | `Object` | declares `{}` as id `1` |
-| `4  2 0 0 0  1 0 0 0  97` | `String` | id `2`, length `1`, byte `97` (`"a"`) — the key |
-| `3  3 0 0 0  …240 63` | `Number` | id `3`, value `1.0` — the value |
-| `7  1 0 0 0  2 0 0 0  3 0 0 0` | `ObjectAssign` | on id `1`, assign key id `2` (`"a"`) the value id `3` (`1`) |
-| `38  1 0 0 0  1 0 0 0` | `Pending` | id `1` expects `1` assignment |
-| `9  1 0 0 0  0` | `ObjectFlag` | id `1`, flag `0` (unmodified / extensible) |
-| `1  1 0 0 0` | `Root` | references id `1` |
+| `00 01` | `Preamble` | little-endian |
+| `12  01 00 00 00` | `Object` | `12` = object (`18`), declares `{}` as id `1` |
+| `04  02 00 00 00  01 00 00 00  61` | `String` | id `2`, length `1`, byte `61` (`"a"`) — the key |
+| `03  03 00 00 00  … F0 3F` | `Number` | id `3`, value `1.0` — the value |
+| `07  01 00 00 00  02 00 00 00  03 00 00 00` | `ObjectAssign` | on id `1`, assign key id `2` (`"a"`) the value id `3` (`1`) |
+| `26  01 00 00 00  01 00 00 00` | `Pending` | `26` = pending (`38`), id `1` expects `1` assignment |
+| `09  01 00 00 00  00` | `ObjectFlag` | id `1`, flag `00` (unmodified / extensible) |
+| `01  01 00 00 00` | `Root` | references id `1` |
 
 Result: `{ a: 1 }`.
 
