@@ -53,15 +53,25 @@ import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
+// The join state of a container: how many child assignments are still
+// outstanding, and a resolver that fires once the count reaches zero.
+interface PendingState {
+  count: number;
+  resolver: PromiseConstructorResolver;
+}
+
 export interface ReferenceMap {
   // Map id to deserialized value
   values: Map<number, Promise<{ value: unknown }>>;
   // Map id to its encoded type
   types: Map<number, SerovalBinaryType>;
-  // a hidden resolver map for Promises
-  resolvers: Map<number, PromiseConstructorResolver>;
-  // Tracks pending sub nodes
-  pendings: Map<number, number>;
+  // Resolvers for Promise nodes: the real, user-facing settle.
+  promiseResolvers: Map<number, PromiseConstructorResolver>;
+  // Join state for containers: outstanding child count plus its resolver.
+  // Disjoint from `promiseResolvers` - a Promise is never a container and a
+  // container is never a Promise - so neither one has to be told apart from
+  // the other by its node type.
+  pendingResolvers: Map<number, PendingState>;
   // Maps a container id to the ids it holds, so a subtree can be awaited
   children: Map<number, number[]>;
   // Plugin ids whose `deserialize` has not returned yet
@@ -72,8 +82,8 @@ export function createReferenceMap(): ReferenceMap {
   return {
     values: new Map(),
     types: new Map(),
-    resolvers: new Map(),
-    pendings: new Map(),
+    promiseResolvers: new Map(),
+    pendingResolvers: new Map(),
     children: new Map(),
     inflight: new Set(),
   };
@@ -329,20 +339,17 @@ async function awaitSubtree(
 
   for (let i = 0; i < queue.length; i++) {
     const current = queue[i];
-    const resolver = ctx.refs.resolvers.get(current);
-    if (
-      resolver &&
-      PENDING_TARGETS.indexOf(
-        ctx.refs.types.get(current) as SerovalBinaryType,
-      ) !== -1
-    ) {
+    // Only containers have a pending resolver, so no node-type check is
+    // needed to keep a Promise out of this wait.
+    const entry = ctx.refs.pendingResolvers.get(current);
+    if (entry) {
       const held = ctx.refs.children.get(current);
       let blocked = false;
       if (held && owner != null) {
         blocked = held.indexOf(owner) !== -1;
       }
       if (!blocked) {
-        await resolver.p;
+        await entry.resolver.p;
       }
     }
     // Re-read: more assignments may have been parsed while awaiting.
@@ -366,25 +373,25 @@ function getRef(ctx: DeserializerContext, ref: number) {
   throw new SerovalMissingBinaryRefError(ref);
 }
 
-function invalidatePending(ctx: DeserializerContext, id: number) {
-  const resolver = ctx.refs.resolvers.get(id);
-  if (resolver) {
-    const current = ctx.refs.pendings.get(id) ?? 0;
-    if (current === 0) {
-      resolver.s(true);
-    }
+function invalidatePending(entry: PendingState) {
+  if (entry.count === 0) {
+    entry.resolver.s(true);
   }
 }
 
 function popPendingState(ctx: DeserializerContext, id: number) {
-  const current = ctx.refs.pendings.get(id) ?? 0;
-  ctx.refs.pendings.set(id, current - 1);
-
-  invalidatePending(ctx, id);
+  const entry = ctx.refs.pendingResolvers.get(id);
+  if (entry) {
+    entry.count -= 1;
+    invalidatePending(entry);
+  }
 }
 
 function createPending(ctx: DeserializerContext, id: number) {
-  ctx.refs.resolvers.set(id, PROMISE_CONSTRUCTOR());
+  ctx.refs.pendingResolvers.set(id, {
+    count: 0,
+    resolver: PROMISE_CONSTRUCTOR(),
+  });
 }
 
 async function deserializePending(ctx: DeserializerContext) {
@@ -395,10 +402,11 @@ async function deserializePending(ctx: DeserializerContext) {
   );
   const amount = await deserializeUint(ctx);
 
-  const current = ctx.refs.pendings.get(id) ?? 0;
-  ctx.refs.pendings.set(id, current + amount);
-
-  invalidatePending(ctx, id);
+  const entry = ctx.refs.pendingResolvers.get(id);
+  if (entry) {
+    entry.count += amount;
+    invalidatePending(entry);
+  }
 }
 
 function createImmediateTask(value: unknown) {
@@ -589,9 +597,9 @@ async function deserializeObjectFlagInner(
   id: number,
   flag: SerovalObjectFlags,
 ) {
-  const resolver = ctx.refs.resolvers.get(id);
-  if (resolver) {
-    await resolver.p;
+  const entry = ctx.refs.pendingResolvers.get(id);
+  if (entry) {
+    await entry.resolver.p;
     const object = (await getRef(ctx, id)).value;
     switch (flag) {
       case SerovalObjectFlags.Frozen:
@@ -978,7 +986,7 @@ async function deserializePromise(ctx: DeserializerContext) {
   const promise = await deserializeId(ctx, SerovalBinaryType.Promise);
 
   const instance = PROMISE_CONSTRUCTOR();
-  ctx.refs.resolvers.set(promise, instance);
+  ctx.refs.promiseResolvers.set(promise, instance);
   upsert(ctx, promise, createImmediateTask(instance.p));
 }
 
@@ -988,7 +996,7 @@ async function deserializePromiseFulfillInner(
   resolver: number,
   value: number,
 ) {
-  const currentResolver = ctx.refs.resolvers.get(resolver);
+  const currentResolver = ctx.refs.promiseResolvers.get(resolver);
   if (currentResolver == null) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseSuccess);
   }
@@ -1006,8 +1014,8 @@ async function deserializePromiseFulfillInner(
 }
 
 async function deserializePromiseSuccess(ctx: DeserializerContext) {
-  // `refs.resolvers` also holds the pending-state resolvers of Objects and
-  // Arrays, so the target has to be a Promise and nothing else.
+  // Only Promise ids ever reach `promiseResolvers`, but validating the target
+  // type up front turns a wrong reference into a clear error.
   const resolver = await deserializeRef(
     ctx,
     SerovalBinaryType.PromiseSuccess,
@@ -1138,12 +1146,14 @@ async function deserializePlugin(ctx: DeserializerContext) {
 }
 
 async function deserializeRootInner(ctx: DeserializerContext, ref: number) {
-  // first, check for resolvers
-  const resolver = ctx.refs.resolvers.get(ref);
-  // If there's a resolver, we use that first
-  if (resolver && ctx.refs.types.get(ref) !== SerovalBinaryType.Promise) {
+  // A container root has to be fully joined before it is handed over. Its
+  // pending resolver lives in `pendingResolvers`, so no Promise ever matches
+  // here - the `awaitSubtree` below waits on the same resolver too, but this
+  // marks the root found as early as its own join.
+  const entry = ctx.refs.pendingResolvers.get(ref);
+  if (entry) {
     ctx.root.found = true;
-    await resolver.p;
+    await entry.resolver.p;
   }
   if (ctx.refs.values.has(ref)) {
     ctx.root.found = true;
