@@ -31,6 +31,16 @@ export interface CrossSerializeOptions
   extends SyncParserContextOptions,
     CrossContextOptions {}
 
+/**
+ * Cross-reference variant of {@link serialize}. The output references a shared
+ * `$R` reference table on the target realm instead of being fully
+ * self-contained, so several payloads that share a `refs` map (and optionally a
+ * `scopeId`) can point at the same instances after evaluation - the basis for
+ * streaming a value across a network boundary in multiple chunks.
+ *
+ * Synchronous: use {@link crossSerializeAsync} for values containing Promises,
+ * or {@link crossSerializeStream} to emit chunks as they resolve.
+ */
 export function crossSerialize<T>(
   source: T,
   options: CrossSerializeOptions = {},
@@ -55,6 +65,10 @@ export interface CrossSerializeAsyncOptions
   extends AsyncParserContextOptions,
     CrossContextOptions {}
 
+/**
+ * Asynchronous variant of {@link crossSerialize}: awaits every reachable
+ * `Promise` before producing the cross-referenced string.
+ */
 export async function crossSerializeAsync<T>(
   source: T,
   options: CrossSerializeAsyncOptions = {},
@@ -77,6 +91,14 @@ export async function crossSerializeAsync<T>(
 
 export type ToCrossJSONOptions = SyncParserContextOptions;
 
+/**
+ * Cross-reference variant of {@link toJSON}. Produces a single
+ * {@link SerovalNode} tree (not wrapped with feature/marked metadata) meant to
+ * be rebuilt with {@link fromCrossJSON} using a shared `refs` map.
+ *
+ * Synchronous: use {@link toCrossJSONAsync} for Promises, or
+ * {@link toCrossJSONStream} to emit nodes as they resolve.
+ */
 export function toCrossJSON<T>(
   source: T,
   options: ToCrossJSONOptions = {},
@@ -92,6 +114,10 @@ export function toCrossJSON<T>(
 
 export type ToCrossJSONAsyncOptions = AsyncParserContextOptions;
 
+/**
+ * Asynchronous variant of {@link toCrossJSON}: awaits every reachable `Promise`
+ * before producing the node tree.
+ */
 export async function toCrossJSONAsync<T>(
   source: T,
   options: ToCrossJSONAsyncOptions = {},
@@ -108,9 +134,22 @@ export async function toCrossJSONAsync<T>(
 export interface CrossSerializeStreamOptions
   extends Omit<StreamParserContextOptions, 'onParse'>,
     CrossContextOptions {
+  /**
+   * Called for each serialized chunk. `initial` is `true` for the first chunk
+   * (the synchronous part of the value) and `false` for chunks emitted later as
+   * Promises and streams resolve.
+   */
   onSerialize: (data: string, initial: boolean) => void;
 }
 
+/**
+ * Streaming variant of {@link crossSerialize}. Emits the synchronous portion of
+ * the value immediately through `onSerialize`, then one further chunk each time
+ * a reachable `Promise` or `ReadableStream` produces a value, calling `onDone`
+ * when everything has settled.
+ *
+ * @returns A function that aborts the stream and releases its resources.
+ */
 export function crossSerializeStream<T>(
   source: T,
   options: CrossSerializeStreamOptions,
@@ -152,6 +191,14 @@ export function crossSerializeStream<T>(
 
 export type ToCrossJSONStreamOptions = StreamParserContextOptions;
 
+/**
+ * Streaming variant of {@link toCrossJSON}. Delivers {@link SerovalNode} chunks
+ * through `onParse` - the synchronous part first, then one per resolving
+ * `Promise` / `ReadableStream` - and calls `onDone` when the value has fully
+ * settled.
+ *
+ * @returns A function that aborts the stream and releases its resources.
+ */
 export function toCrossJSONStream<T>(
   source: T,
   options: ToCrossJSONStreamOptions,
@@ -174,6 +221,13 @@ export function toCrossJSONStream<T>(
 
 export type FromCrossJSONOptions = CrossDeserializerContextOptions;
 
+/**
+ * Rebuilds a value from a {@link SerovalNode} tree produced by the
+ * cross-reference parsers ({@link toCrossJSON}, {@link toCrossJSONAsync},
+ * {@link toCrossJSONStream}). The `refs` map must be shared across every chunk
+ * of the same value so cross-references resolve to the same instances; it never
+ * evaluates code.
+ */
 export function fromCrossJSON<T>(
   source: SerovalNode,
   options: FromCrossJSONOptions,

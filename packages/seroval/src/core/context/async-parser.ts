@@ -23,8 +23,13 @@ import {
   createTypedArrayNode,
 } from '../base-primitives';
 import { Feature } from '../compat';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
-import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
+import {
+  SerovalDepthLimitError,
+  SerovalParserError,
+  SerovalUnsupportedTypeError,
+} from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
@@ -67,10 +72,6 @@ import type {
 } from '../types';
 import { getErrorOptions } from '../utils/error';
 import promiseToResult from '../utils/promise-to-result';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createArrayBufferNode,
