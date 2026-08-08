@@ -172,8 +172,18 @@ function serializePending(
   onSerialize(ctx, [SerovalBinaryType.Pending, source, encodeUint(amount)]);
 }
 
-function serializeConstant(ctx: SerializerContext, value: SerovalConstant) {
-  const id = createID(ctx, value);
+// `refs` is keyed by the value being serialized, so a constant must be keyed
+// by its runtime value and never by its `SerovalConstant` tag, otherwise the
+// numbers 0-7 would collide with the tags of `null`, `true`, `NaN` and friends.
+// `-0` gets a sentinel because a Map cannot tell `-0` and `0` apart.
+const NEG_ZERO_KEY = {};
+
+function serializeConstant(
+  ctx: SerializerContext,
+  key: unknown,
+  value: SerovalConstant,
+) {
+  const id = createID(ctx, key);
   onSerialize(ctx, [SerovalBinaryType.Constant, id, value]);
   return id;
 }
@@ -181,15 +191,15 @@ function serializeConstant(ctx: SerializerContext, value: SerovalConstant) {
 function serializeNumber(ctx: SerializerContext, value: number) {
   switch (value) {
     case Number.POSITIVE_INFINITY:
-      return serializeConstant(ctx, SerovalConstant.Inf);
+      return serializeConstant(ctx, value, SerovalConstant.Inf);
     case Number.NEGATIVE_INFINITY:
-      return serializeConstant(ctx, SerovalConstant.NegInf);
+      return serializeConstant(ctx, value, SerovalConstant.NegInf);
   }
   if (value !== value) {
-    return serializeConstant(ctx, SerovalConstant.Nan);
+    return serializeConstant(ctx, value, SerovalConstant.Nan);
   }
   if (Object.is(value, -0)) {
-    return serializeConstant(ctx, SerovalConstant.NegZero);
+    return serializeConstant(ctx, NEG_ZERO_KEY, SerovalConstant.NegZero);
   }
   const id = createID(ctx, value);
   onSerialize(ctx, [SerovalBinaryType.Number, id, encodeNumber(value)]);
@@ -832,7 +842,8 @@ function serialize<T>(ctx: SerializerContext, current: T): Uint8Array {
   if (CURRENT_DEPTH >= ctx.depthLimit) {
     throw new SerovalDepthLimitError(ctx.depthLimit);
   }
-  const currentID = ctx.refs.get(current);
+  // `-0` must not reuse the id of `0`: both are the same Map key.
+  const currentID = Object.is(current, -0) ? NIL : ctx.refs.get(current);
   if (currentID != null) {
     return currentID;
   }
@@ -840,10 +851,11 @@ function serialize<T>(ctx: SerializerContext, current: T): Uint8Array {
     case 'boolean':
       return serializeConstant(
         ctx,
+        current,
         current ? SerovalConstant.True : SerovalConstant.False,
       );
     case 'undefined':
-      return serializeConstant(ctx, SerovalConstant.Undefined);
+      return serializeConstant(ctx, current, SerovalConstant.Undefined);
     case 'number':
       return serializeNumber(ctx, current);
     case 'string':
@@ -854,7 +866,7 @@ function serialize<T>(ctx: SerializerContext, current: T): Uint8Array {
       if (current) {
         return serializeObject(ctx, current);
       }
-      return serializeConstant(ctx, SerovalConstant.Null);
+      return serializeConstant(ctx, current, SerovalConstant.Null);
     }
     case 'symbol':
       return serializeWellKnownSymbol(ctx, current);
@@ -878,13 +890,15 @@ const ENDIANNESS = /* @__PURE__ */ getEndianness();
 
 export function startSerialize<T>(ctx: SerializerContext, value: T) {
   onSerialize(ctx, [SerovalBinaryType.Preamble, ENDIANNESS]);
+  // Hold a pending slot for the duration of the root traversal: a source that
+  // completes synchronously (an already-finished Stream, for example) would
+  // otherwise end the serialization before the root node is written.
+  pushPendingState(ctx);
   const serialized = serializeWithError(ctx, 0, value);
   if (serialized) {
     onSerialize(ctx, [SerovalBinaryType.Root, serialized]);
 
-    if (ctx.pending <= 0) {
-      endSerialize(ctx);
-    }
+    popPendingState(ctx);
   }
 }
 
