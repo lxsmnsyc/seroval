@@ -88,12 +88,16 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<
   },
   binary: {
     serialize(value) {
+      const body = value.body && !value.bodyUsed ? value.clone().body : null;
+      const options = createRequestOptions(value, body);
+      if (body) {
+        // A streamed request body is only accepted in half duplex mode.
+        // Without this the receiving `new Request()` throws.
+        (options as { duplex?: string }).duplex = 'half';
+      }
       return {
         url: value.url,
-        options: createRequestOptions(
-          value,
-          value.body && !value.bodyUsed ? value.clone().body : null,
-        ),
+        options,
       };
     },
     deserialize(data) {
