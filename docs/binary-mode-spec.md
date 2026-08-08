@@ -13,6 +13,27 @@ Use this as a guide for the terms used in the document.
 - `node`: a `node` is a series of `byte`s that is used to represent the data type or the action that is serialized.
 - `buffer`: a series of `byte` of arbitrary length
 
+## Structure
+
+A serialized payload is a stream of `node`s, not a single tree:
+
+- The `Preamble` is always the first node.
+- Every value is assigned an `id` when its node is emitted, and a value's node
+  is always emitted before any node that references it — so a `ref` never points
+  forward. Cyclic references work because a container's `id` exists before its
+  child assignments are emitted.
+- Container values are emitted as a declaration node (e.g. `Object`, `Array`,
+  `Map`) followed by their action nodes (`ObjectAssign`, `ArrayAssign`,
+  `MapSet`, ...) and a closing `Pending` node.
+- The `Root` node marks the top-level value. It is emitted once the synchronous
+  part of the value has been written; nodes for asynchronous values
+  (`PromiseSuccess` / `PromiseFailure`, `StreamNext` / `StreamThrow` /
+  `StreamReturn`, and their `Pending`) may follow the `Root` as those values
+  settle.
+
+Numeric fields (`int`, `uint`, `number`) are encoded using the endianness
+declared in the `Preamble`.
+
 ## Node Types
 
 ### `Preamble`
@@ -61,6 +82,9 @@ A `Constant` is a set of known values in a JS runtime, which is one of the follo
 ```
 <byte:number=3> <id> <number>
 ```
+
+A finite, ordinary JS `number`. The special values `-0`, `NaN`, `Infinity` and
+`-Infinity` are not serialized here — they are emitted as `Constant` nodes.
 
 ### `String`
 
@@ -143,6 +167,10 @@ An `ObjectFlag` is an action node type for changing the state of the `ref:target
 <byte:array=10> <id> <uint:length>
 ```
 
+Declares an array of the given `length`. Its elements are assigned afterwards
+through `ArrayAssign` nodes; a hole (an unassigned index in a sparse array) is
+simply never assigned, so `length` may exceed the number of `ArrayAssign` nodes.
+
 ### `Stream`
 
 ```
@@ -157,17 +185,26 @@ A `Stream` represents an observable data that sends and receives value over time
 <byte:stream-next=12> <ref:stream> <ref:value>
 ```
 
+Pushes `ref:value` onto `ref:stream` as its next value. A stream may receive any
+number of these over time.
+
 ### `StreamThrow`
 
 ```
 <byte:stream-throw=13> <ref:stream> <ref:value>
 ```
 
+Ends `ref:stream` with an error, `ref:value`. No further stream nodes for that
+stream follow.
+
 ### `StreamReturn`
 
 ```
 <byte:stream-return=14> <ref:stream> <ref:value>
 ```
+
+Ends `ref:stream` normally with a final value, `ref:value`. No further stream
+nodes for that stream follow.
 
 ### `Sequence`
 
@@ -202,6 +239,10 @@ value; it is not required to be an object.
 <byte:object=18> <id>
 ```
 
+Declares a plain object (`{}`). Its properties are assigned afterwards through
+`ObjectAssign` nodes, and its final extensibility state through an `ObjectFlag`
+node.
+
 ### `NullConstructor`
 
 ```
@@ -215,6 +256,10 @@ This node type is for `Object.create(null)`
 ```
 <byte:date=20> <id> <number:timestamp>
 ```
+
+A `Date` reconstructed from `timestamp`, the number of milliseconds since the
+Unix epoch (`Date.prototype.getTime`). An invalid date is encoded as a `NaN`
+timestamp.
 
 ### `Error`
 
@@ -246,13 +291,20 @@ This node type is for `Object.create(null)`
 <byte:array-buffer=23> <id> <uint:length> <buffer>
 ```
 
+An `ArrayBuffer` whose `length` bytes follow inline as `buffer`. `TypedArray`,
+`BigIntTypedArray` and `DataView` nodes reference an `ArrayBuffer` by id rather
+than repeating its bytes, so views over the same buffer stay shared.
+
 ### `TypedArray`
 
 ```
 <byte:typed-array=24> <id> <byte:constructor> <ref:array-buffer> <uint:offset> <uint:length>
 ```
 
-`byte:constructor>` is one of the following:
+A typed-array view of `byte:constructor`'s kind over the referenced
+`ArrayBuffer`, starting at `offset` bytes and spanning `length` elements.
+
+`byte:constructor` is one of the following:
 
 - `1`: `Int8Array`
 - `2`: `Int16Array`
@@ -270,7 +322,10 @@ This node type is for `Object.create(null)`
 <byte:bigint-typed-array=25> <id> <byte:constructor> <ref:array-buffer> <uint:offset> <uint:length>
 ```
 
-`byte:constructor>` is one of the following:
+The bigint-valued counterpart of `TypedArray`, viewing the referenced
+`ArrayBuffer` from `offset` bytes across `length` elements.
+
+`byte:constructor` is one of the following:
 
 - `1`: `BigInt64Array`
 - `2`: `BigUint64Array`
@@ -281,11 +336,17 @@ This node type is for `Object.create(null)`
 <byte:data-view=26> <id> <ref:array-buffer> <uint:offset> <uint:length>
 ```
 
+A `DataView` over the referenced `ArrayBuffer`, starting at `offset` bytes and
+spanning `length` bytes.
+
 ### `Map`
 
 ```
 <byte:map=27> <id>
 ```
+
+Declares an empty `Map`. Its entries are added afterwards through `MapSet` nodes,
+preserving insertion order.
 
 ### `MapSet`
 
@@ -302,6 +363,9 @@ This node type is serialized immediately after a `Map` node has been serialized.
 <byte:set=29> <id>
 ```
 
+Declares an empty `Set`. Its members are added afterwards through `SetAdd` nodes,
+preserving insertion order.
+
 ### `SetAdd`
 
 ```
@@ -317,11 +381,17 @@ This node type is serialized immediately after a `Set` node has been serialized.
 <byte:promise=31> <id>
 ```
 
+Declares a pending `Promise`. It is settled later — possibly after the `Root`
+node — by exactly one `PromiseSuccess` or `PromiseFailure` node referencing this
+`id`.
+
 ### `PromiseSuccess`
 
 ```
 <byte:promise-success=32> <ref:promise> <ref:value>
 ```
+
+Resolves `ref:promise` with `ref:value`.
 
 ### `PromiseFailure`
 
@@ -329,17 +399,25 @@ This node type is serialized immediately after a `Set` node has been serialized.
 <byte:promise-failure=33> <ref:promise> <ref:value>
 ```
 
+Rejects `ref:promise` with `ref:value`.
+
 ### `RegExp`
 
 ```
 <byte:regexp=34> <id> <ref:pattern=string> <ref:flags=string>
 ```
 
+A `RegExp` built from its `source` (`pattern`) and `flags`, both referenced as
+strings. Requires the `RegExp` feature; see the compatibility docs.
+
 ### `AggregateError`
 
 ```
 <byte:aggregate-error=35> <id> <ref:message=string>
 ```
+
+An `AggregateError` carrying `ref:message`. Its aggregated `errors` and any other
+own properties follow as `ObjectAssign` nodes targeting this `id`.
 
 ### `Iterator`
 
@@ -364,11 +442,11 @@ This node type is serialized immediately after a `Set` node has been serialized.
 ```
 
 A `Pending` node tells the deserializer how many child assignments a container
-(`Object`, `NullConstructor`, `Array`, `Map`, `Set` or `Sequence`) still expects
-before it is considered complete. It is emitted after the container's assignment
-nodes, and its `amount` is the number of those assignments. The deserializer
-counts assignments down against it so a consumer can wait for the container to be
-fully populated.
+(`Object`, `NullConstructor`, `Array`, `Map`, `Set`, `Sequence`, `Error` or
+`AggregateError`) still expects before it is considered complete. It is emitted
+after the container's assignment nodes, and its `amount` is the number of those
+assignments. The deserializer counts assignments down against it so a consumer
+can wait for the container to be fully populated.
 
 ### `Temporal`
 
@@ -386,3 +464,84 @@ fully populated.
 - `5`: `Temporal.PlainTime`
 - `6`: `Temporal.PlainYearMonth`
 - `7`: `Temporal.ZonedDateTime`
+
+## Examples
+
+Each example lists the emitted bytes in decimal, using little-endian encoding
+(`endianness = 1`), then walks through how they are interpreted. Recall that a
+`uint` is 4 bytes and a `number` is 8 bytes.
+
+### `null`
+
+```
+0 1   2 1 0 0 0 0   1 1 0 0 0
+```
+
+| bytes | node | meaning |
+| --- | --- | --- |
+| `0 1` | `Preamble` | `0` = preamble, `1` = little-endian |
+| `2  1 0 0 0  0` | `Constant` | `2` = constant, id `1`, value `0` = `null` |
+| `1  1 0 0 0` | `Root` | `1` = root, references id `1` |
+
+Result: `null`.
+
+### `42`
+
+```
+0 1   3 1 0 0 0  0 0 0 0 0 0 69 64   1 1 0 0 0
+```
+
+| bytes | node | meaning |
+| --- | --- | --- |
+| `0 1` | `Preamble` | little-endian |
+| `3  1 0 0 0  0 0 0 0 0 0 69 64` | `Number` | `3` = number, id `1`, the 8 bytes are `42.0` as a little-endian float64 |
+| `1  1 0 0 0` | `Root` | references id `1` |
+
+Result: `42`.
+
+### `"hi"`
+
+```
+0 1   4 1 0 0 0  2 0 0 0  104 105   1 1 0 0 0
+```
+
+| bytes | node | meaning |
+| --- | --- | --- |
+| `0 1` | `Preamble` | little-endian |
+| `4  1 0 0 0  2 0 0 0  104 105` | `String` | `4` = string, id `1`, length `2`, UTF-8 bytes `104 105` (`"hi"`) |
+| `1  1 0 0 0` | `Root` | references id `1` |
+
+Result: `"hi"`.
+
+### `{ a: 1 }`
+
+This shows the full lifecycle of a container: declare, fill by reference,
+announce how many assignments to expect, set the object flag, then point the
+root at it.
+
+```
+0 1
+18 1 0 0 0
+4 2 0 0 0  1 0 0 0  97
+3 3 0 0 0  0 0 0 0 0 0 240 63
+7  1 0 0 0  2 0 0 0  3 0 0 0
+38 1 0 0 0  1 0 0 0
+9  1 0 0 0  0
+1  1 0 0 0
+```
+
+| bytes | node | meaning |
+| --- | --- | --- |
+| `0 1` | `Preamble` | little-endian |
+| `18  1 0 0 0` | `Object` | declares `{}` as id `1` |
+| `4  2 0 0 0  1 0 0 0  97` | `String` | id `2`, length `1`, byte `97` (`"a"`) — the key |
+| `3  3 0 0 0  …240 63` | `Number` | id `3`, value `1.0` — the value |
+| `7  1 0 0 0  2 0 0 0  3 0 0 0` | `ObjectAssign` | on id `1`, assign key id `2` (`"a"`) the value id `3` (`1`) |
+| `38  1 0 0 0  1 0 0 0` | `Pending` | id `1` expects `1` assignment |
+| `9  1 0 0 0  0` | `ObjectFlag` | id `1`, flag `0` (unmodified / extensible) |
+| `1  1 0 0 0` | `Root` | references id `1` |
+
+Result: `{ a: 1 }`.
+
+Note how the key and value are emitted as their own `String` and `Number` nodes
+*before* the `ObjectAssign` that references them — a `ref` never points forward.
