@@ -127,7 +127,7 @@ This node is serialized immediately after an `Array` node has been serialized.
 ### `ObjectFlag`
 
 ```
-<byte:object-flag=9> <ref:target=object|null-constructor-array> <byte:flag>
+<byte:object-flag=9> <ref:target=object|null-constructor|array> <byte:flag>
 ```
 
 An `ObjectFlag` is an action node type for changing the state of the `ref:target`, which could be one of the following values:
@@ -190,8 +190,11 @@ This node type is serialized immediately after a `Sequence` node has been serial
 ### `Plugin`
 
 ```
-<byte:plugin=17> <id> <ref:tag=string> <ref:config=object>
+<byte:plugin=17> <id> <ref:tag=string> <ref:config>
 ```
+
+`ref:config` is whatever the plugin's `binary.serialize` returns, serialized as a
+value; it is not required to be an object.
 
 ### `Object`
 
@@ -246,7 +249,7 @@ This node type is for `Object.create(null)`
 ### `TypedArray`
 
 ```
-<byte:typed-array=24> <id> <byte:constructor> <uint:offset> <uint:length> <ref:array-buffer>
+<byte:typed-array=24> <id> <byte:constructor> <ref:array-buffer> <uint:offset> <uint:length>
 ```
 
 `byte:constructor>` is one of the following:
@@ -264,7 +267,7 @@ This node type is for `Object.create(null)`
 ### `BigIntTypedArray`
 
 ```
-<byte:bigint-typed-array=24> <id> <byte:constructor> <uint:offset> <uint:length> <ref:array-buffer>
+<byte:bigint-typed-array=25> <id> <byte:constructor> <ref:array-buffer> <uint:offset> <uint:length>
 ```
 
 `byte:constructor>` is one of the following:
@@ -275,7 +278,7 @@ This node type is for `Object.create(null)`
 ### `DataView`
 
 ```
-<byte:data-view=26> <id> <uint:offset> <uint:length> <ref:array-buffer>
+<byte:data-view=26> <id> <ref:array-buffer> <uint:offset> <uint:length>
 ```
 
 ### `Map`
@@ -302,7 +305,7 @@ This node type is serialized immediately after a `Map` node has been serialized.
 ### `SetAdd`
 
 ```
-<byte:map-set=30> <ref:set> <<ref:value>
+<byte:set-add=30> <ref:set> <ref:value>
 ```
 
 `SetAdd` is an action node type that adds a `ref:value` to a `ref:set`
@@ -354,8 +357,32 @@ This node type is serialized immediately after a `Set` node has been serialized.
 
 `AsyncIterator` is for generating the callbacks for `Symbol.asyncIterator` derived from a `Stream`
 
+### `Pending`
+
+```
+<byte:pending=38> <ref:target> <uint:amount>
+```
+
+A `Pending` node tells the deserializer how many child assignments a container
+(`Object`, `NullConstructor`, `Array`, `Map`, `Set` or `Sequence`) still expects
+before it is considered complete. It is emitted after the container's assignment
+nodes, and its `amount` is the number of those assignments. The deserializer
+counts assignments down against it so a consumer can wait for the container to be
+fully populated.
+
 ### `Temporal`
 
 ```
-<byte:temporal=38> <id> <byte:temporal-type> <ref:iso=string>
+<byte:temporal=39> <id> <byte:temporal-type> <ref:iso=string>
 ```
+
+`byte:temporal-type` is one of the following:
+
+- `0`: `Temporal.Instant`
+- `1`: `Temporal.Duration`
+- `2`: `Temporal.PlainDate`
+- `3`: `Temporal.PlainDateTime`
+- `4`: `Temporal.PlainMonthDay`
+- `5`: `Temporal.PlainTime`
+- `6`: `Temporal.PlainYearMonth`
+- `7`: `Temporal.ZonedDateTime`

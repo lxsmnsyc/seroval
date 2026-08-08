@@ -243,27 +243,27 @@ export type SerovalNodeMap = {
     type: SerovalBinaryType.TypedArray,
     id: Uint8Array,
     constructor: TypedArrayTag,
-    offset: Uint8Array,
-    length: Uint8Array,
     // ArrayBuffer reference
     buffer: Uint8Array,
+    offset: Uint8Array,
+    length: Uint8Array,
   ];
   [SerovalBinaryType.BigIntTypedArray]: [
     type: SerovalBinaryType.BigIntTypedArray,
     id: Uint8Array,
     constructor: BigIntTypedArrayTag,
-    offset: Uint8Array,
-    length: Uint8Array,
     // ArrayBuffer reference
     buffer: Uint8Array,
+    offset: Uint8Array,
+    length: Uint8Array,
   ];
   [SerovalBinaryType.DataView]: [
     type: SerovalBinaryType.DataView,
     id: Uint8Array,
-    offset: Uint8Array,
-    length: Uint8Array,
     // ArrayBuffer reference
     buffer: Uint8Array,
+    offset: Uint8Array,
+    length: Uint8Array,
   ];
 
   [SerovalBinaryType.Map]: [type: SerovalBinaryType.Map, id: Uint8Array];
