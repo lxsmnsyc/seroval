@@ -62,6 +62,10 @@ export interface ReferenceMap {
   resolvers: Map<number, PromiseConstructorResolver>;
   // Tracks pending sub nodes
   pendings: Map<number, number>;
+  // Maps a container id to the ids it holds, so a subtree can be awaited
+  children: Map<number, number[]>;
+  // Plugin ids whose `deserialize` has not returned yet
+  inflight: Set<number>;
 }
 
 export function createReferenceMap(): ReferenceMap {
@@ -70,6 +74,8 @@ export function createReferenceMap(): ReferenceMap {
     types: new Map(),
     resolvers: new Map(),
     pendings: new Map(),
+    children: new Map(),
+    inflight: new Set(),
   };
 }
 
@@ -285,6 +291,74 @@ const PENDING_TARGETS = [
   SerovalBinaryType.AggregateError,
 ];
 
+function trackChild(
+  ctx: DeserializerContext,
+  parent: number,
+  child: number,
+): void {
+  const current = ctx.refs.children.get(parent);
+  if (current) {
+    current.push(child);
+  } else {
+    ctx.refs.children.set(parent, [child]);
+  }
+}
+
+/**
+ * Waits until every container reachable from `id` has applied all of its
+ * assignments. A node's ref resolves with its *shell* as early as possible so
+ * that cycles can be built at all, which means a freshly resolved container
+ * may still be empty; this is how a consumer waits for the real thing.
+ *
+ * Promise and Stream nodes are deliberately not awaited: they are the parts of
+ * the format that are meant to stay open after the value is handed over.
+ *
+ * `owner` is the plugin id whose payload is being materialized, if any. A
+ * container inside that payload holding the plugin's own value can never
+ * settle - that value is what we are building - so it is stepped over. A
+ * payload of plugin A holding plugin B whose payload holds A is beyond that
+ * guard and is not supported.
+ */
+async function awaitSubtree(
+  ctx: DeserializerContext,
+  id: number,
+  owner?: number,
+): Promise<void> {
+  const seen = new Set<number>([id]);
+  const queue = [id];
+
+  for (let i = 0; i < queue.length; i++) {
+    const current = queue[i];
+    const resolver = ctx.refs.resolvers.get(current);
+    if (
+      resolver &&
+      PENDING_TARGETS.indexOf(
+        ctx.refs.types.get(current) as SerovalBinaryType,
+      ) !== -1
+    ) {
+      const held = ctx.refs.children.get(current);
+      let blocked = false;
+      if (held && owner != null) {
+        blocked = held.indexOf(owner) !== -1;
+      }
+      if (!blocked) {
+        await resolver.p;
+      }
+    }
+    // Re-read: more assignments may have been parsed while awaiting.
+    const children = ctx.refs.children.get(current);
+    if (children) {
+      for (let j = 0, len = children.length; j < len; j++) {
+        const child = children[j];
+        if (!seen.has(child)) {
+          seen.add(child);
+          queue.push(child);
+        }
+      }
+    }
+  }
+}
+
 function getRef(ctx: DeserializerContext, ref: number) {
   if (ctx.refs.values.has(ref)) {
     return ctx.refs.values.get(ref)!;
@@ -451,18 +525,22 @@ async function deserializeObjectAssignInner(
   key: number,
   value: number,
 ) {
-  const awaited = await Promise.all([
-    getRef(ctx, id),
-    getRef(ctx, key),
-    getRef(ctx, value),
-  ]);
-  assignProperty(
-    awaited[0].value as Record<string, unknown>,
-    awaited[1].value as string,
-    awaited[2].value,
-  );
-
-  popPendingState(ctx, id);
+  try {
+    const awaited = await Promise.all([
+      getRef(ctx, id),
+      getRef(ctx, key),
+      getRef(ctx, value),
+    ]);
+    assignProperty(
+      awaited[0].value as Record<string, unknown>,
+      awaited[1].value as string,
+      awaited[2].value,
+    );
+  } finally {
+    // Even a failed assignment has to release the container: anything waiting
+    // for it to be complete would otherwise wait forever.
+    popPendingState(ctx, id);
+  }
 }
 
 async function deserializeObjectAssign(ctx: DeserializerContext) {
@@ -474,6 +552,7 @@ async function deserializeObjectAssign(ctx: DeserializerContext) {
   const key = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
+  trackChild(ctx, object, value);
   deserializeObjectAssignInner(ctx, object, key, value).catch(ctx.onError);
 }
 
@@ -483,11 +562,13 @@ async function deserializeArrayAssignInner(
   index: number,
   value: number,
 ) {
-  const awaited = await Promise.all([getRef(ctx, id), getRef(ctx, value)]);
+  try {
+    const awaited = await Promise.all([getRef(ctx, id), getRef(ctx, value)]);
 
-  (awaited[0].value as unknown[])[index] = awaited[1].value;
-
-  popPendingState(ctx, id);
+    (awaited[0].value as unknown[])[index] = awaited[1].value;
+  } finally {
+    popPendingState(ctx, id);
+  }
 }
 
 async function deserializeArrayAssign(ctx: DeserializerContext) {
@@ -499,6 +580,7 @@ async function deserializeArrayAssign(ctx: DeserializerContext) {
   const key = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
+  trackChild(ctx, object, value);
   deserializeArrayAssignInner(ctx, object, key, value).catch(ctx.onError);
 }
 
@@ -615,6 +697,7 @@ async function deserializeSequence(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.Sequence);
   const throwAt = await deserializeInt(ctx);
   const doneAt = await deserializeInt(ctx);
+  createPending(ctx, id);
   upsert(ctx, id, createImmediateTask(createSequence([], throwAt, doneAt)));
 }
 async function deserializeSequencePushInner(
@@ -622,14 +705,16 @@ async function deserializeSequencePushInner(
   sequence: number,
   value: number,
 ) {
-  const awaited = await Promise.all([
-    getRef(ctx, sequence),
-    getRef(ctx, value),
-  ]);
+  try {
+    const awaited = await Promise.all([
+      getRef(ctx, sequence),
+      getRef(ctx, value),
+    ]);
 
-  (awaited[0].value as Sequence).v.push(awaited[1].value);
-
-  popPendingState(ctx, sequence);
+    (awaited[0].value as Sequence).v.push(awaited[1].value);
+  } finally {
+    popPendingState(ctx, sequence);
+  }
 }
 
 async function deserializeSequencePush(ctx: DeserializerContext) {
@@ -639,6 +724,7 @@ async function deserializeSequencePush(ctx: DeserializerContext) {
     SerovalBinaryType.Sequence,
   );
   const value = await deserializeUint(ctx);
+  trackChild(ctx, sequence, value);
   deserializeSequencePushInner(ctx, sequence, value).catch(ctx.onError);
 }
 
@@ -697,6 +783,7 @@ async function deserializeBoxedInner(ctx: DeserializerContext, value: number) {
 async function deserializeBoxed(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.Boxed);
   const value = await deserializeUint(ctx);
+  trackChild(ctx, id, value);
   upsert(ctx, id, deserializeBoxedInner(ctx, value));
 }
 
@@ -817,6 +904,7 @@ async function deserializeDataView(ctx: DeserializerContext) {
 
 async function deserializeMap(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.Map);
+  createPending(ctx, id);
   upsert(ctx, id, createImmediateTask(new Map()));
 }
 
@@ -826,17 +914,19 @@ async function deserializeMapSetInner(
   key: number,
   value: number,
 ) {
-  const awaited = await Promise.all([
-    getRef(ctx, id),
-    getRef(ctx, key),
-    getRef(ctx, value),
-  ]);
-  (awaited[0].value as Map<unknown, unknown>).set(
-    awaited[1].value,
-    awaited[2].value,
-  );
-
-  popPendingState(ctx, id);
+  try {
+    const awaited = await Promise.all([
+      getRef(ctx, id),
+      getRef(ctx, key),
+      getRef(ctx, value),
+    ]);
+    (awaited[0].value as Map<unknown, unknown>).set(
+      awaited[1].value,
+      awaited[2].value,
+    );
+  } finally {
+    popPendingState(ctx, id);
+  }
 }
 
 async function deserializeMapSet(ctx: DeserializerContext) {
@@ -848,11 +938,14 @@ async function deserializeMapSet(ctx: DeserializerContext) {
   const key = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
+  trackChild(ctx, object, key);
+  trackChild(ctx, object, value);
   deserializeMapSetInner(ctx, object, key, value).catch(ctx.onError);
 }
 
 async function deserializeSet(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.Set);
+  createPending(ctx, id);
   upsert(ctx, id, createImmediateTask(new Set()));
 }
 
@@ -861,10 +954,12 @@ async function deserializeSetAddInner(
   id: number,
   value: number,
 ) {
-  const awaited = await Promise.all([getRef(ctx, id), getRef(ctx, value)]);
-  (awaited[0].value as Set<unknown>).add(awaited[1].value);
-
-  popPendingState(ctx, id);
+  try {
+    const awaited = await Promise.all([getRef(ctx, id), getRef(ctx, value)]);
+    (awaited[0].value as Set<unknown>).add(awaited[1].value);
+  } finally {
+    popPendingState(ctx, id);
+  }
 }
 
 async function deserializeSetAdd(ctx: DeserializerContext) {
@@ -875,6 +970,7 @@ async function deserializeSetAdd(ctx: DeserializerContext) {
   );
   const value = await deserializeUint(ctx);
 
+  trackChild(ctx, object, value);
   deserializeSetAddInner(ctx, object, value).catch(ctx.onError);
 }
 
@@ -900,6 +996,8 @@ async function deserializePromiseFulfillInner(
   if (isThenable(resolvingValue)) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseSuccess);
   }
+  // Same contract as the root: a settled Promise hands over a finished value.
+  await awaitSubtree(ctx, value);
   if (success) {
     currentResolver.s(resolvingValue);
   } else {
@@ -990,25 +1088,37 @@ async function deserializeAggregateError(ctx: DeserializerContext) {
 
 async function deserializePluginInner(
   ctx: DeserializerContext,
+  id: number,
   tag: number,
   options: number,
 ) {
-  const awaited = await Promise.all([getRef(ctx, tag), getRef(ctx, options)]);
+  try {
+    const awaited = await Promise.all([getRef(ctx, tag), getRef(ctx, options)]);
 
-  const actualTag = awaited[0].value as string;
-  const actualOptions = awaited[1].value;
+    const actualTag = awaited[0].value as string;
+    const actualOptions = awaited[1].value;
 
-  if (ctx.plugins) {
-    for (let i = 0, len = ctx.plugins.length; i < len; i++) {
-      const current = ctx.plugins[i];
-      if (current.tag === actualTag) {
-        return {
-          value: await current.binary.deserialize(actualOptions),
-        };
+    // A plugin builds a native value out of its payload and most of them copy
+    // what they are given (`FormData.append`, `new CustomEvent`, ...), so the
+    // payload has to be fully materialized first. Without this a nested async
+    // value - a File's bytes, say - is still missing and gets copied as
+    // `undefined` with no way to recover.
+    await awaitSubtree(ctx, options, id);
+
+    if (ctx.plugins) {
+      for (let i = 0, len = ctx.plugins.length; i < len; i++) {
+        const current = ctx.plugins[i];
+        if (current.tag === actualTag) {
+          return {
+            value: await current.binary.deserialize(actualOptions),
+          };
+        }
       }
     }
+    throw new SerovalMissingPluginError(actualTag);
+  } finally {
+    ctx.refs.inflight.delete(id);
   }
-  throw new SerovalMissingPluginError(actualTag);
 }
 
 async function deserializePlugin(ctx: DeserializerContext) {
@@ -1020,7 +1130,11 @@ async function deserializePlugin(ctx: DeserializerContext) {
   );
   const options = await deserializeUint(ctx);
 
-  upsert(ctx, id, deserializePluginInner(ctx, tag, options));
+  trackChild(ctx, id, options);
+  // Marked before the first await so that a container holding this plugin can
+  // be recognised as un-settleable while we build it.
+  ctx.refs.inflight.add(id);
+  upsert(ctx, id, deserializePluginInner(ctx, id, tag, options));
 }
 
 async function deserializeRootInner(ctx: DeserializerContext, ref: number) {
@@ -1033,6 +1147,9 @@ async function deserializeRootInner(ctx: DeserializerContext, ref: number) {
   }
   if (ctx.refs.values.has(ref)) {
     ctx.root.found = true;
+    // Hand the value over materialized: a nested container is only a shell
+    // when its own ref resolves.
+    await awaitSubtree(ctx, ref);
     ctx.root.resolver.s(ctx.refs.values.get(ref));
   } else {
     // we might be earlier
@@ -1042,7 +1159,7 @@ async function deserializeRootInner(ctx: DeserializerContext, ref: number) {
 
 async function deserializeRoot(ctx: DeserializerContext) {
   const ref = await deserializeUint(ctx);
-  deserializeRootInner(ctx, ref);
+  deserializeRootInner(ctx, ref).catch(ctx.onError);
 }
 
 async function deserializeIteratorInner(
@@ -1061,6 +1178,7 @@ async function deserializeIterator(ctx: DeserializerContext) {
     SerovalBinaryType.Iterator,
     SerovalBinaryType.Sequence,
   );
+  trackChild(ctx, id, sequence);
   upsert(ctx, id, deserializeIteratorInner(ctx, sequence));
 }
 

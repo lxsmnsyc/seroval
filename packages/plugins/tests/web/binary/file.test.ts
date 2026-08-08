@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import FilePlugin from '../../../web/file';
 import { roundtrip } from './utils';
 
@@ -52,30 +52,47 @@ describe('binary File', () => {
       { files: [new File(['a'], 'a.txt'), new File(['b'], 'b.txt')] },
       PLUGINS,
     );
-    // A File's bytes travel as a Promise node, so a File nested below the root
-    // lands after the root is handed over. See the timing test below.
-    await vi.waitFor(() => {
-      expect(value.files[1]).toBeInstanceOf(File);
-    });
     expect(value.files).toHaveLength(2);
     expect(await value.files[0].text()).toBe('a');
     expect(await value.files[1].text()).toBe('b');
   });
 
-  it('fills a nested File in only after the root is handed over', async () => {
-    // The root resolves once its own pending assignments settle, and assigning
-    // the array counts as settled the moment the array *shell* exists. A
-    // grandchild waiting on a Promise node is not covered by that count, and
-    // the deserializer exposes no "fully materialised" signal to wait on.
-    const { value } = await roundtrip<{ files: File[] }>(
-      { files: [new File(['a'], 'a.txt')] },
+  it('hands over a deeply nested File already materialized', async () => {
+    // A File's bytes travel as a Promise node, so the value only exists once
+    // that node settles. The root must not be handed over before then, at any
+    // depth - a consumer has no other signal to wait on.
+    const { value } = await roundtrip<{ a: { b: { files: File[] } } }>(
+      { a: { b: { files: [new File(['deep'], 'deep.txt')] } } },
       PLUGINS,
     );
-    expect(value.files[0]).toBeUndefined();
+    expect(value.a.b.files[0]).toBeInstanceOf(File);
+    expect(await value.a.b.files[0].text()).toBe('deep');
+  });
 
-    await vi.waitFor(() => {
-      expect(value.files[0]).toBeInstanceOf(File);
-    });
+  it('hands over Files nested in Maps and Sets', async () => {
+    const { value } = await roundtrip<{
+      map: Map<string, File>;
+      set: Set<File>;
+    }>(
+      {
+        map: new Map([['key', new File(['in map'], 'map.txt')]]),
+        set: new Set([new File(['in set'], 'set.txt')]),
+      },
+      PLUGINS,
+    );
+    expect(value.map.get('key')).toBeInstanceOf(File);
+    expect(await (value.map.get('key') as File).text()).toBe('in map');
+    expect(value.set.size).toBe(1);
+    expect([...value.set][0]).toBeInstanceOf(File);
+  });
+
+  it('hands over a Map of Files at the root', async () => {
+    const { value } = await roundtrip<Map<string, File>>(
+      new Map([['f', new File(['x'], 'x.txt')]]),
+      PLUGINS,
+    );
+    expect(value.size).toBe(1);
+    expect(value.get('f')).toBeInstanceOf(File);
   });
 
   it('delivers a File at the root fully populated', async () => {

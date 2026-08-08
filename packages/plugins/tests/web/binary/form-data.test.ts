@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import FormDataPlugin from '../../../web/form-data';
 import { roundtrip } from './utils';
 
@@ -31,37 +31,29 @@ describe('binary FormData', () => {
     expect(value.getAll('tag')).toEqual(['a', 'b']);
   });
 
-  // KNOWN FAILURE - a plugin's `deserialize` runs as soon as the *shell* of
-  // its options object exists. A File's bytes travel as a Promise node, so
-  // `FORM_DATA_FACTORY_CONSTRUCTOR` appends the entry before the File lands
-  // and FormData copies the value at append time: the entry is permanently
-  // the string "undefined". Flip this back to `it` once plugin options wait
-  // for their subtree to materialise.
-  it.fails('supports File entries through the extended plugin', async () => {
+  it('supports File entries through the extended plugin', async () => {
+    // A File's bytes travel as a Promise node. `FormData.append` copies its
+    // argument, so the plugin must not run until that File has landed - the
+    // deserializer materialises a plugin payload before handing it over.
     const source = new FormData();
     source.set('upload', new File(['content'], 'upload.txt'), 'upload.txt');
 
     const { value } = await roundtrip<FormData>(source, PLUGINS);
-    await vi.waitFor(() => {
-      expect(value.get('upload')).toBeInstanceOf(File);
-    });
     const file = value.get('upload') as File;
+    expect(file).toBeInstanceOf(File);
     expect(file.name).toBe('upload.txt');
     expect(await file.text()).toBe('content');
   });
 
-  it('corrupts File entries today, and never recovers', async () => {
-    // Pins the damage from the bug above so a partial fix cannot go unnoticed.
+  it('supports mixed entries', async () => {
     const source = new FormData();
     source.set('text', 'value');
     source.set('blob', new File(['bytes'], 'blob.bin'));
 
-    const { value, done } = await roundtrip<FormData>(source, PLUGINS);
-    await done;
-    await new Promise(resolve => setTimeout(resolve, 10));
-
+    const { value } = await roundtrip<FormData>(source, PLUGINS);
     expect(value.get('text')).toBe('value');
-    expect(value.get('blob')).toBe('undefined');
+    expect(value.get('blob')).toBeInstanceOf(File);
+    expect(await (value.get('blob') as File).text()).toBe('bytes');
   });
 
   it('supports string-only FormData without any delay', async () => {

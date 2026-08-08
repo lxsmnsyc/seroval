@@ -309,6 +309,49 @@ describe('binary malformed input', () => {
       expect(delivered).toBe('pending');
     });
 
+    it('leaves the root pending when a Pending count never balances', async () => {
+      // A container is complete when its pending count reaches zero, so a
+      // payload that over-declares one is never complete and the root is never
+      // handed over. No error either - the deserializer cannot tell this apart
+      // from a container still waiting on data that has not arrived yet.
+      const attempt = feed([
+        preamble(),
+        objectNode(1),
+        stringNode(2, 'key'),
+        stringNode(3, 'value'),
+        objectAssign(1, 2, 3),
+        pending(1, 5),
+        root(1),
+      ]);
+
+      const delivered = await Promise.race([
+        attempt.value.then(
+          () => 'delivered',
+          () => 'rejected',
+        ),
+        new Promise(resolve => setTimeout(() => resolve('pending'), 20)),
+      ]);
+      expect(delivered).toBe('pending');
+    });
+
+    it('still hands over when a failed assignment releases the count', async () => {
+      // The assignment below cannot resolve its value ref, but it must still
+      // release the container - otherwise a single bad ref would hang the
+      // whole payload.
+      const attempt = feed([
+        preamble(),
+        objectNode(1),
+        stringNode(2, 'key'),
+        objectAssign(1, 2, 99),
+        pending(1, 1),
+        root(1),
+      ]);
+
+      const { value } = await attempt.value;
+      expect(Object.keys(value as object)).toEqual([]);
+      expect(attempt.errors[0]).toBeInstanceOf(Error);
+    });
+
     it('rejects an operation aimed at an unknown id', async () => {
       const attempt = feed([
         preamble(),

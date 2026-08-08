@@ -102,6 +102,141 @@ describe('binary Plugin', () => {
     expect(value.x).toBe(5);
   });
 
+  describe('materialization', () => {
+    // A plugin whose value only exists after a Promise node settles is the
+    // sharpest test of "the root is handed over complete": every container in
+    // between has to wait, at any depth and whatever its kind.
+    const SlowVectorPlugin = createPlugin<Vector, SerovalNode, VectorData>({
+      ...VectorPlugin,
+      binary: {
+        serialize(value) {
+          return { x: value.x, y: value.y };
+        },
+        async deserialize(value) {
+          await new Promise(resolve => setTimeout(resolve, 5));
+          return new Vector(value.x, value.y);
+        },
+      },
+    });
+    const SLOW = {
+      serialize: { plugins: [SlowVectorPlugin] },
+      deserialize: { plugins: [SlowVectorPlugin] },
+    };
+
+    it('hands over a directly nested plugin value', async () => {
+      const { value } = await roundtrip<{ v: Vector }>(
+        { v: new Vector(1, 2) },
+        SLOW,
+      );
+      expect(value.v).toBeInstanceOf(Vector);
+    });
+
+    it('hands over a deeply nested plugin value', async () => {
+      const { value } = await roundtrip<{ a: { b: Vector[] } }>(
+        { a: { b: [new Vector(3, 4)] } },
+        SLOW,
+      );
+      expect(value.a.b[0]).toBeInstanceOf(Vector);
+      expect(value.a.b[0].x).toBe(3);
+    });
+
+    it('hands over plugin values inside a Map', async () => {
+      const { value } = await roundtrip<Map<string, Vector>>(
+        new Map([['v', new Vector(5, 6)]]),
+        SLOW,
+      );
+      expect(value.size).toBe(1);
+      expect(value.get('v')).toBeInstanceOf(Vector);
+    });
+
+    it('hands over plugin values inside a Set', async () => {
+      const { value } = await roundtrip<Set<Vector>>(
+        new Set([new Vector(7, 8)]),
+        SLOW,
+      );
+      expect(value.size).toBe(1);
+      expect([...value][0]).toBeInstanceOf(Vector);
+    });
+
+    it('hands over a Map at the root fully populated', async () => {
+      const { value } = await roundtrip<Map<string, number>>(
+        new Map([
+          ['a', 1],
+          ['b', 2],
+        ]),
+        SLOW,
+      );
+      expect(value.size).toBe(2);
+    });
+
+    it('hands over a plugin payload containing another plugin value', async () => {
+      class Envelope {
+        constructor(public inner: Vector) {}
+      }
+      const OuterPlugin = createPlugin<Envelope, SerovalNode, { inner: Vector }>(
+        {
+          tag: 'Outer',
+          test: value => value instanceof Envelope,
+          parse: { sync: (value, ctx) => ctx.parse(value.inner) },
+          serialize: (node, ctx) => ctx.serialize(node),
+          deserialize: () => new Envelope(new Vector(0, 0)),
+          binary: {
+            serialize: value => ({ inner: value.inner }),
+            // Copies its payload the way the web plugins do.
+            deserialize: value => new Envelope(value.inner),
+          },
+        },
+      );
+      const plugins = [OuterPlugin, SlowVectorPlugin];
+
+      const { value } = await roundtrip<Envelope>(
+        new Envelope(new Vector(9, 9)),
+        { serialize: { plugins }, deserialize: { plugins } },
+      );
+      expect(value).toBeInstanceOf(Envelope);
+      expect(value.inner).toBeInstanceOf(Vector);
+      expect(value.inner.x).toBe(9);
+    });
+
+    it('does not deadlock on a payload that references its own value', async () => {
+      // The payload holds the very value the plugin is building, so the
+      // container can never settle. The wait has to step over it.
+      class Node {
+        marker = 'node';
+      }
+      const SelfPlugin = createPlugin<Node, SerovalNode, { self: Node }>({
+        tag: 'Self',
+        test: value => value instanceof Node,
+        parse: { sync: (value, ctx) => ctx.parse(value.marker) },
+        serialize: (node, ctx) => ctx.serialize(node),
+        deserialize: () => new Node(),
+        binary: {
+          serialize: value => ({ self: value }),
+          deserialize: () => new Node(),
+        },
+      });
+      const plugins = [SelfPlugin];
+      const errors: unknown[] = [];
+
+      const settled = await Promise.race([
+        roundtrip<Node>(new Node(), {
+          serialize: { plugins },
+          deserialize: {
+            plugins,
+            onError(error) {
+              errors.push(error);
+            },
+          },
+        }).then(result => result.value),
+        new Promise(resolve => setTimeout(() => resolve('deadlock'), 200)),
+      ]);
+      expect(settled).toBeInstanceOf(Node);
+      // The back-reference itself cannot be satisfied - the id is only
+      // registered when the Plugin node is read - so it is reported, not hung.
+      expect(errors[0]).toBeInstanceOf(Error);
+    });
+  });
+
   it('runs cleanups once serialization is done', async () => {
     const cleanup = vi.fn();
     const CleanupPlugin = createPlugin<Vector, SerovalNode, VectorData>({

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import AbortSignalPlugin from '../../../web/abort-signal';
+import BlobPlugin from '../../../web/blob';
 import { roundtrip, startDeserialize, startSerialize } from './utils';
 
 const PLUGINS = [AbortSignalPlugin];
@@ -23,6 +24,19 @@ describe('binary AbortSignal', () => {
     expect(value.aborted).toBe(true);
     // Without DOMExceptionPlugin the reason degrades to a plain Error.
     expect((value.reason as Error).message).toBe('cancelled');
+  });
+
+  it('supports a Blob abort reason', async () => {
+    // The plugin branches on `'reason' in data`, so the payload has to be
+    // materialized before it runs - otherwise it takes the live-controller
+    // branch and throws on an undefined controller.
+    const { value } = await roundtrip<AbortSignal>(
+      AbortSignal.abort(new Blob(['why'])),
+      [AbortSignalPlugin, BlobPlugin],
+    );
+    expect(value.aborted).toBe(true);
+    expect(value.reason).toBeInstanceOf(Blob);
+    expect(await (value.reason as Blob).text()).toBe('why');
   });
 
   it('aborts a live signal when the source aborts', async () => {

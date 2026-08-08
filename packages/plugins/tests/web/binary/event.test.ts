@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import BlobPlugin from '../../../web/blob';
 import CustomEventPlugin from '../../../web/custom-event';
 import EventPlugin from '../../../web/event';
+import FilePlugin from '../../../web/file';
 import { roundtrip } from './utils';
 
 describe('binary Event', () => {
@@ -69,6 +71,30 @@ describe('binary CustomEvent', () => {
     const detail = value.detail as Map<string, Date>;
     expect(detail).toBeInstanceOf(Map);
     expect(detail.get('key')).toBeInstanceOf(Date);
+  });
+
+  it('supports a Blob detail', async () => {
+    // `CustomEventInit.detail` is read at construction, so a detail whose
+    // bytes arrive as a Promise node has to be materialized first - otherwise
+    // the event is built with `null` and never recovers.
+    const { value } = await roundtrip<CustomEvent>(
+      new CustomEvent('blob', { detail: new Blob(['payload']) }),
+      [CustomEventPlugin, BlobPlugin],
+    );
+    expect(value.detail).toBeInstanceOf(Blob);
+    expect(await (value.detail as Blob).text()).toBe('payload');
+  });
+
+  it('supports a File nested inside the detail', async () => {
+    const { value } = await roundtrip<CustomEvent>(
+      new CustomEvent('nested', {
+        detail: { attachment: new File(['data'], 'a.txt') },
+      }),
+      [CustomEventPlugin, FilePlugin],
+    );
+    const detail = value.detail as { attachment: File };
+    expect(detail.attachment).toBeInstanceOf(File);
+    expect(await detail.attachment.text()).toBe('data');
   });
 
   it('supports a cyclic detail', async () => {
