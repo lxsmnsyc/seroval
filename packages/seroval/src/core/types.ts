@@ -385,6 +385,13 @@ export type SerovalAsyncNode =
   | SerovalStreamThrowNode
   | SerovalStreamReturnNode;
 
+/**
+ * A single node in seroval's intermediate representation - the parsed,
+ * JSON-serializable form of a value before it becomes a string or is rebuilt.
+ * It is the element type of a {@link SerovalJSON} tree and the value the
+ * cross-reference JSON API ({@link toCrossJSON}, {@link fromCrossJSON}) passes
+ * around. Plugins receive and return nodes through their parse context.
+ */
 export type SerovalNode = SerovalSyncNode | SerovalAsyncNode;
 
 export type SerovalNodeWithID = Extract<SerovalNode, { i: number }>;

@@ -21,6 +21,17 @@ export type PluginInfo = {
   [key: string]: SerovalNode;
 };
 
+/**
+ * Teaches seroval to (de)serialize a type it does not support natively. A
+ * plugin recognizes its values with {@link Plugin.test}, breaks them down into
+ * a serializable {@link PluginInfo} during `parse`, and rebuilds them in
+ * {@link Plugin.serialize} (to a JS string) and {@link Plugin.deserialize} (to a
+ * runtime value). Register plugins through the `plugins` option on any
+ * serializer or deserializer.
+ *
+ * @typeParam Value The runtime type the plugin handles.
+ * @typeParam Info The intermediate, serializable shape produced during parsing.
+ */
 export interface Plugin<Value, Info extends PluginInfo> {
   /**
    * A unique string that helps idenfity the plugin
@@ -69,11 +80,19 @@ export interface Plugin<Value, Info extends PluginInfo> {
   ): Value;
 }
 
+/**
+ * The binary-mode half of a plugin, used by the `binary` serializer/
+ * deserializer. It converts a value to and from a `BinaryData` payload that
+ * seroval itself knows how to encode.
+ */
 export interface BinaryPlugin<Value, BinaryData> {
+  /** Reduces a value to a serializable `BinaryData` payload. */
   serialize(value: Value, ctx: BinarySerializerPluginContext): BinaryData;
+  /** Rebuilds the value from its `BinaryData` payload, possibly asynchronously. */
   deserialize(value: BinaryData): Value | Promise<Value>;
 }
 
+/** A {@link Plugin} that also supports binary mode via a {@link BinaryPlugin}. */
 export interface PluginWithBinaryMode<
   Value,
   Info extends PluginInfo,
@@ -83,6 +102,12 @@ export interface PluginWithBinaryMode<
   binary: BinaryPlugin<Value, BinaryData>;
 }
 
+/**
+ * Identity helper that defines a plugin with full type inference. Returns the
+ * plugin unchanged; its only job is to bind the `Value`/`Info`/`BinaryData`
+ * type parameters so the `parse`, `serialize` and `deserialize` callbacks are
+ * checked against each other.
+ */
 export function createPlugin<Value, Info extends PluginInfo>(
   plugin: Plugin<Value, Info>,
 ): Plugin<Value, Info>;
