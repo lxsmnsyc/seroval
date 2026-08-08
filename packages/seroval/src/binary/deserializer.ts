@@ -2,6 +2,7 @@ import { ALL_ENABLED, Feature } from '../core/compat';
 import {
   BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
   type BigIntTypedArrayTag,
+  CONSTANT_VAL,
   ERROR_CONSTRUCTOR,
   type ErrorConstructorTag,
   type SerovalConstant,
@@ -234,6 +235,56 @@ async function deserializeRef(
   return ref;
 }
 
+/**
+ * Same as {@link deserializeRef}, for the nodes that legitimately accept more
+ * than one target type. Untrusted input must never be able to aim an operation
+ * node at a node type the serializer would never pair it with.
+ */
+async function deserializeRefOf(
+  ctx: DeserializerContext,
+  type: SerovalBinaryType,
+  expected: SerovalBinaryType[],
+) {
+  const ref = await deserializeUint(ctx);
+  const marker = ctx.refs.types.get(ref);
+  if (marker == null) {
+    throw new SerovalMalformedBinaryTypeError(type);
+  }
+  if (expected.indexOf(marker) === -1) {
+    throw new SerovalUnexpectedBinaryTypeError(type, expected[0], marker);
+  }
+  return ref;
+}
+
+// The serializer only emits properties for these node types.
+const PROPERTY_TARGETS = [
+  SerovalBinaryType.Object,
+  SerovalBinaryType.NullConstructor,
+  SerovalBinaryType.Error,
+  SerovalBinaryType.AggregateError,
+];
+
+// ...and only tracks object flags for these.
+const FLAG_TARGETS = [
+  SerovalBinaryType.Object,
+  SerovalBinaryType.NullConstructor,
+  SerovalBinaryType.Array,
+];
+
+// ...and only counts pending sub-nodes for these. A Promise must not be in
+// this list: its resolver lives in the same table and settling it here would
+// hand the consumer `true` instead of the serialized value.
+const PENDING_TARGETS = [
+  SerovalBinaryType.Object,
+  SerovalBinaryType.NullConstructor,
+  SerovalBinaryType.Array,
+  SerovalBinaryType.Sequence,
+  SerovalBinaryType.Map,
+  SerovalBinaryType.Set,
+  SerovalBinaryType.Error,
+  SerovalBinaryType.AggregateError,
+];
+
 function getRef(ctx: DeserializerContext, ref: number) {
   if (ctx.refs.values.has(ref)) {
     return ctx.refs.values.get(ref)!;
@@ -263,7 +314,11 @@ function createPending(ctx: DeserializerContext, id: number) {
 }
 
 async function deserializePending(ctx: DeserializerContext) {
-  const id = await deserializeUint(ctx);
+  const id = await deserializeRefOf(
+    ctx,
+    SerovalBinaryType.Pending,
+    PENDING_TARGETS,
+  );
   const amount = await deserializeUint(ctx);
 
   const current = ctx.refs.pendings.get(id) ?? 0;
@@ -281,7 +336,13 @@ function createImmediateTask(value: unknown) {
 async function deserializeConstant(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.Constant);
   const byte = (await deserializeByte(ctx)) as SerovalConstant;
-  upsert(ctx, id, createImmediateTask(byte));
+  upsert(
+    ctx,
+    id,
+    createImmediateTask(
+      deserializeKnownValue(SerovalBinaryType.Constant, CONSTANT_VAL, byte),
+    ),
+  );
 }
 
 async function deserializeNumber(ctx: DeserializerContext) {
@@ -405,7 +466,11 @@ async function deserializeObjectAssignInner(
 }
 
 async function deserializeObjectAssign(ctx: DeserializerContext) {
-  const object = await deserializeUint(ctx);
+  const object = await deserializeRefOf(
+    ctx,
+    SerovalBinaryType.ObjectAssign,
+    PROPERTY_TARGETS,
+  );
   const key = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
@@ -421,8 +486,6 @@ async function deserializeArrayAssignInner(
   const awaited = await Promise.all([getRef(ctx, id), getRef(ctx, value)]);
 
   (awaited[0].value as unknown[])[index] = awaited[1].value;
-
-  console.log(awaited);
 
   popPendingState(ctx, id);
 }
@@ -465,7 +528,11 @@ async function deserializeObjectFlagInner(
 }
 
 async function deserializeObjectFlag(ctx: DeserializerContext) {
-  const object = await deserializeUint(ctx);
+  const object = await deserializeRefOf(
+    ctx,
+    SerovalBinaryType.ObjectFlag,
+    FLAG_TARGETS,
+  );
   const flag = (await deserializeByte(ctx)) as SerovalObjectFlags;
 
   // TODO pending state
@@ -531,7 +598,7 @@ async function deserializeStreamReturnInner(
 ) {
   const awaited = await Promise.all([getRef(ctx, stream), getRef(ctx, value)]);
 
-  (awaited[0].value as Stream<unknown>).throw(awaited[1].value);
+  (awaited[0].value as Stream<unknown>).return(awaited[1].value);
 }
 
 async function deserializeStreamReturn(ctx: DeserializerContext) {
@@ -841,14 +908,24 @@ async function deserializePromiseFulfillInner(
 }
 
 async function deserializePromiseSuccess(ctx: DeserializerContext) {
-  const resolver = await deserializeUint(ctx);
+  // `refs.resolvers` also holds the pending-state resolvers of Objects and
+  // Arrays, so the target has to be a Promise and nothing else.
+  const resolver = await deserializeRef(
+    ctx,
+    SerovalBinaryType.PromiseSuccess,
+    SerovalBinaryType.Promise,
+  );
   const value = await deserializeUint(ctx);
 
   deserializePromiseFulfillInner(ctx, true, resolver, value).catch(ctx.onError);
 }
 
 async function deserializePromiseFailure(ctx: DeserializerContext) {
-  const resolver = await deserializeUint(ctx);
+  const resolver = await deserializeRef(
+    ctx,
+    SerovalBinaryType.PromiseFailure,
+    SerovalBinaryType.Promise,
+  );
   const value = await deserializeUint(ctx);
 
   deserializePromiseFulfillInner(ctx, false, resolver, value).catch(
