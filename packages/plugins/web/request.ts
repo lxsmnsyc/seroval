@@ -27,7 +27,16 @@ type RequestNode = {
   options: SerovalNode;
 };
 
-const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
+type RequestBinaryData = {
+  url: string;
+  options: RequestInit;
+};
+
+const RequestPlugin = /* @__PURE__ */ createPlugin<
+  Request,
+  RequestNode,
+  RequestBinaryData
+>({
   tag: 'seroval-plugins/web/Request',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   test(value) {
@@ -76,6 +85,24 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
       ctx.deserialize(node.url) as string,
       ctx.deserialize(node.options) as RequestInit,
     );
+  },
+  binary: {
+    serialize(value) {
+      const body = value.body && !value.bodyUsed ? value.clone().body : null;
+      const options = createRequestOptions(value, body);
+      if (body) {
+        // A streamed request body is only accepted in half duplex mode.
+        // Without this the receiving `new Request()` throws.
+        (options as { duplex?: string }).duplex = 'half';
+      }
+      return {
+        url: value.url,
+        options,
+      };
+    },
+    deserialize(data) {
+      return new Request(data.url, data.options);
+    },
   },
 });
 

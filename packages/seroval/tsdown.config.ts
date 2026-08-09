@@ -2,7 +2,7 @@ import { defineConfig } from 'tsdown';
 
 export default defineConfig([
   {
-    entry: 'src/index.ts',
+    entry: ['src/index.ts', { binary: 'src/binary/index.ts' }],
     platform: 'neutral',
     dts: true,
     outDir: './dist/dev',
@@ -12,7 +12,7 @@ export default defineConfig([
     },
   },
   {
-    entry: 'src/index.ts',
+    entry: ['src/index.ts', { binary: 'src/binary/index.ts' }],
     platform: 'neutral',
     dts: true,
 

@@ -1,9 +1,15 @@
-import type { WellKnownSymbols } from './constants';
+import type {
+  BigIntTypedArrayValue,
+  SerovalTemporalType,
+  TypedArrayValue,
+  WellKnownSymbols,
+} from './constants';
 import {
+  getBigIntTypedArrayTag,
+  getTypedArrayTag,
   INV_SYMBOL_REF,
   NIL,
   SerovalNodeType,
-  type SerovalTemporalType,
 } from './constants';
 import {
   INFINITY_NODE,
@@ -47,10 +53,6 @@ import type {
 } from './types';
 import { getErrorConstructor } from './utils/error';
 import { getObjectFlag } from './utils/get-object-flag';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from './utils/typed-array';
 
 export function createNumberNode(
   value: number,
@@ -152,7 +154,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   );
 }
 
-type SerovalTemporalValue =
+export type SerovalTemporalValue =
   | Temporal.Instant
   | Temporal.Duration
   | Temporal.PlainDate
@@ -313,8 +315,8 @@ export function createTypedArrayNode(
   return createSerovalNode(
     SerovalNodeType.TypedArray,
     id,
+    getTypedArrayTag(current),
     NIL,
-    current.constructor.name,
     NIL,
     NIL,
     NIL,
@@ -334,8 +336,8 @@ export function createBigIntTypedArrayNode(
   return createSerovalNode(
     SerovalNodeType.BigIntTypedArray,
     id,
+    getBigIntTypedArrayTag(current),
     NIL,
-    current.constructor.name,
     NIL,
     NIL,
     NIL,

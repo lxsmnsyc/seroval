@@ -1,6 +1,7 @@
 # Serialization
 
-`seroval` offers 3 modes of serialization: sync, async and streaming.
+`seroval` offers several modes of serialization: sync, async, streaming, and
+binary. Each has a string form and, except binary, a JSON form.
 
 ## Basic serialization
 
@@ -243,8 +244,75 @@ The mentioned serialization methods are ideal for server-to-client communication
 
 ## Push-based streaming serialization
 
-> [!NOTE]
-> Coming soon.
+`crossSerializeStream` takes a single value up front. When you instead want to
+push values into one shared stream over time — for example, flushing data to an
+HTML response as it becomes ready — use the `Serializer` class.
+
+It shares one reference table across every write, so values repeated between
+writes are emitted once. Each write assigns onto the `globalIdentifier` object
+on the receiving realm.
+
+```js
+import { Serializer } from 'seroval';
+
+const serializer = new Serializer({
+  globalIdentifier: 'self.$R',
+  onData(chunk) {
+    console.log(chunk); // push each chunk to the client
+  },
+  onDone() {
+    console.log('all pending values settled');
+  },
+  onError(error) {
+    console.error(error);
+  },
+});
+
+// Assign under an explicit key...
+serializer.write('data', Promise.resolve({ foo: 'bar' }));
+// ...or let it pick one, returning the key it used
+const key = serializer.push(myOtherValue);
+
+// Signal no more writes; `onDone` fires once everything has settled
+serializer.flush();
+
+// Or abort early, cancelling pending async values
+// serializer.close();
+```
+
+## Binary serialization
+
+Every mode above emits strings (or JSON). Binary mode instead encodes a value
+into compact `Uint8Array` chunks, streamed as they are produced, and decodes
+them back without ever evaluating code. It is exposed as the `binary` namespace.
+
+```js
+import { binary } from 'seroval';
+
+const chunks = [];
+binary.serialize(Promise.resolve({ foo: 'bar' }), {
+  refs: new Map(),
+  onSerialize(bytes) {
+    chunks.push(bytes);
+  },
+  onDone() {
+    // every value has settled
+  },
+  onError(error) {
+    console.error(error);
+  },
+});
+
+let i = 0;
+const { value } = await binary.deserialize({
+  read: () => Promise.resolve(chunks[i++]), // resolve `undefined` at end of stream
+  onError(error) {
+    console.error(error);
+  },
+});
+```
+
+See the [binary mode specification](./binary-mode-spec.md) for the wire format.
 
 ## Plugins
 
