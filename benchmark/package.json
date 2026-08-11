@@ -18,7 +18,7 @@
     "flatted": "^3.4.4",
     "next-json": "^0.5.1",
     "o-son": "^1.0.4",
-    "serialize-javascript": "^7.0.7",
+    "serialize-javascript": "^7.1.0",
     "seroval": "workspace:*",
     "seroval-plugins": "workspace:*",
     "superjson": "^2.2.6",

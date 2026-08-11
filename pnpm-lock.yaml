@@ -36,8 +36,8 @@ importers:
         specifier: ^1.0.4
         version: 1.0.4
       serialize-javascript:
-        specifier: ^7.0.7
-        version: 7.0.7
+        specifier: ^7.1.0
+        version: 7.1.0
       seroval:
         specifier: workspace:*
         version: link:../packages/seroval
@@ -1506,8 +1506,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  serialize-javascript@7.0.7:
-    resolution: {integrity: sha512-YAy8Od6KV+uuwUuU50np8fGB/Aues6Y0nAhA9y/hId74PlKUcme4pXcBD46NWKr1Q4osN/iseZ17YqO1XfmI8g==}
+  serialize-javascript@7.1.0:
+    resolution: {integrity: sha512-RNEqWOyhhUQYN9V1GfHwu9AR/g+NTciH6Z5u3/no6X3/w+04J2lVDL+svFQVXgXrEGBMG2puMVN3gq2SNGuTGw==}
     engines: {node: '>=20.0.0'}
 
   shebang-command@2.0.0:
@@ -2954,7 +2954,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  serialize-javascript@7.0.7: {}
+  serialize-javascript@7.1.0: {}
 
   shebang-command@2.0.0:
     dependencies:
