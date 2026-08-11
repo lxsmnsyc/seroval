@@ -16,7 +16,7 @@
     "serialization"
   ],
   "devDependencies": {
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.2.0",
     "@vitest/ui": "^4.1.10",
     "esbuild": "^0.28.1",
     "temporal-polyfill": "^1.0.3",
