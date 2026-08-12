@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
-    "esbuild": "^0.28.1",
+    "esbuild": "^0.28.2",
     "tslib": "^2.6.2",
     "typescript": "^7.0.2"
   },
