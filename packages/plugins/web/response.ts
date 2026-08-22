@@ -29,30 +29,20 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
     async async(value, ctx) {
       return {
         body: await ctx.parse(
-          value.body && !value.bodyUsed
-            ? await value.clone().arrayBuffer()
-            : null,
+          value.body && !value.bodyUsed ? await value.clone().arrayBuffer() : null,
         ),
         options: await ctx.parse(createResponseOptions(value)),
       };
     },
     stream(value, ctx) {
       return {
-        body: ctx.parse(
-          value.body && !value.bodyUsed ? value.clone().body : null,
-        ),
+        body: ctx.parse(value.body && !value.bodyUsed ? value.clone().body : null),
         options: ctx.parse(createResponseOptions(value)),
       };
     },
   },
   serialize(node, ctx) {
-    return (
-      'new Response(' +
-      ctx.serialize(node.body) +
-      ',' +
-      ctx.serialize(node.options) +
-      ')'
-    );
+    return 'new Response(' + ctx.serialize(node.body) + ',' + ctx.serialize(node.options) + ')';
   },
   deserialize(node, ctx) {
     return new Response(

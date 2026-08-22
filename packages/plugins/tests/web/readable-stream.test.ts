@@ -62,9 +62,7 @@ describe('ReadableStream', () => {
       const back = deserialize<typeof example>(result);
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () =>
-        reader.read(),
-      ).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('toJSONAsync', () => {
@@ -120,9 +118,7 @@ describe('ReadableStream', () => {
       });
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () =>
-        reader.read(),
-      ).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('crossSerializeAsync', () => {
@@ -375,9 +371,7 @@ describe('ReadableStream', () => {
       });
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () =>
-        reader.read(),
-      ).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {

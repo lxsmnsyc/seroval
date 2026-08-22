@@ -1,22 +1,10 @@
-import type { AsyncParserContextOptions } from '../context/async-parser';
-import {
-  createAsyncParserContext,
-  parseTopAsync,
-} from '../context/async-parser';
+import { createAsyncParserContext, parseTopAsync } from '../context/async-parser';
 import type { CrossDeserializerContextOptions } from '../context/deserializer';
-import {
-  createCrossDeserializerContext,
-  deserializeTop,
-} from '../context/deserializer';
+import { createCrossDeserializerContext, deserializeTop } from '../context/deserializer';
+import type { BaseParserContextOptions } from '../context/parser';
 import type { CrossContextOptions } from '../context/serializer';
-import {
-  createCrossSerializerContext,
-  serializeTopCross,
-} from '../context/serializer';
-import type {
-  StreamParserContextOptions,
-  SyncParserContextOptions,
-} from '../context/sync-parser';
+import { createCrossSerializerContext, serializeTopCross } from '../context/serializer';
+import type { StreamParserContextOptions } from '../context/sync-parser';
 import {
   createStreamParserContext,
   createSyncParserContext,
@@ -24,17 +12,12 @@ import {
   parseTop,
   startStreamParse,
 } from '../context/sync-parser';
-import { resolvePlugins, SerovalMode } from '../plugin';
+import { SerovalMode, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 
-export interface CrossSerializeOptions
-  extends SyncParserContextOptions,
-    CrossContextOptions {}
+export interface CrossSerializeOptions extends BaseParserContextOptions, CrossContextOptions {}
 
-export function crossSerialize<T>(
-  source: T,
-  options: CrossSerializeOptions = {},
-): string {
+export function crossSerialize<T>(source: T, options: CrossSerializeOptions = {}): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Cross, {
     plugins,
@@ -51,9 +34,7 @@ export function crossSerialize<T>(
   return serializeTopCross(serial, tree);
 }
 
-export interface CrossSerializeAsyncOptions
-  extends AsyncParserContextOptions,
-    CrossContextOptions {}
+export interface CrossSerializeAsyncOptions extends BaseParserContextOptions, CrossContextOptions {}
 
 export async function crossSerializeAsync<T>(
   source: T,
@@ -75,12 +56,9 @@ export async function crossSerializeAsync<T>(
   return serializeTopCross(serial, tree);
 }
 
-export type ToCrossJSONOptions = SyncParserContextOptions;
+export type ToCrossJSONOptions = BaseParserContextOptions;
 
-export function toCrossJSON<T>(
-  source: T,
-  options: ToCrossJSONOptions = {},
-): SerovalNode {
+export function toCrossJSON<T>(source: T, options: ToCrossJSONOptions = {}): SerovalNode {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Cross, {
     plugins,
@@ -90,7 +68,7 @@ export function toCrossJSON<T>(
   return parseTop(ctx, source);
 }
 
-export type ToCrossJSONAsyncOptions = AsyncParserContextOptions;
+export type ToCrossJSONAsyncOptions = BaseParserContextOptions;
 
 export async function toCrossJSONAsync<T>(
   source: T,
@@ -106,8 +84,7 @@ export async function toCrossJSONAsync<T>(
 }
 
 export interface CrossSerializeStreamOptions
-  extends Omit<StreamParserContextOptions, 'onParse'>,
-    CrossContextOptions {
+  extends Omit<StreamParserContextOptions, 'onParse'>, CrossContextOptions {
   onSerialize: (data: string, initial: boolean) => void;
 }
 
@@ -152,10 +129,7 @@ export function crossSerializeStream<T>(
 
 export type ToCrossJSONStreamOptions = StreamParserContextOptions;
 
-export function toCrossJSONStream<T>(
-  source: T,
-  options: ToCrossJSONStreamOptions,
-): () => void {
+export function toCrossJSONStream<T>(source: T, options: ToCrossJSONStreamOptions): () => void {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createStreamParserContext({
     plugins,
@@ -174,10 +148,7 @@ export function toCrossJSONStream<T>(
 
 export type FromCrossJSONOptions = CrossDeserializerContextOptions;
 
-export function fromCrossJSON<T>(
-  source: SerovalNode,
-  options: FromCrossJSONOptions,
-): T {
+export function fromCrossJSON<T>(source: SerovalNode, options: FromCrossJSONOptions): T {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createCrossDeserializerContext({
     plugins,

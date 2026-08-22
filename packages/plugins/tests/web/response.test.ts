@@ -98,7 +98,7 @@ describe('Response', () => {
       const example = new Response(EXAMPLE_BODY);
       await example.text();
 
-      new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         crossSerializeStream(example, {
           plugins: [ResponsePlugin],
           onSerialize(data) {

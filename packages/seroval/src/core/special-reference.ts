@@ -37,6 +37,5 @@ export const SPECIAL_REF_STRING: Record<SpecialReference, string> = {
   [SpecialReference.PromiseSuccess]: SERIALIZED_PROMISE_SUCCESS,
   [SpecialReference.PromiseFailure]: SERIALIZED_PROMISE_FAILURE,
   [SpecialReference.StreamConstructor]: SERIALIZED_STREAM_CONSTRUCTOR,
-  [SpecialReference.ArrayBufferConstructor]:
-    SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR,
+  [SpecialReference.ArrayBufferConstructor]: SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR,
 };

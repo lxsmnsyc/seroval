@@ -17,7 +17,7 @@ import {
 
 const EXAMPLE = /[a-z0-9]+/i;
 
-const EXAMPLE_ESCAPED = /\d+\.\d+\s?\/\w*/g;
+const EXAMPLE_ESCAPED = /^\d{3}-\d{3}-\d{4}$/g;
 
 describe('RegExp', () => {
   describe('serialize', () => {
@@ -212,12 +212,9 @@ describe('RegExp with escaped source', () => {
     it('supports escaped source', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE_ESCAPED));
       expect(JSON.stringify(result)).toMatchSnapshot();
-      const back = await fromCrossJSON<Promise<typeof EXAMPLE_ESCAPED>>(
-        result,
-        {
-          refs: new Map(),
-        },
-      );
+      const back = await fromCrossJSON<Promise<typeof EXAMPLE_ESCAPED>>(result, {
+        refs: new Map(),
+      });
       expect(back).toBeInstanceOf(RegExp);
       expect(back.source).toBe(EXAMPLE_ESCAPED.source);
       expect(String(back)).toBe(String(EXAMPLE_ESCAPED));

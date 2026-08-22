@@ -1,12 +1,9 @@
 import type { SerovalNodeType } from './constants';
 import type { SerovalNode } from './types';
 
-type ExtractedNodeType<T extends SerovalNodeType> = Extract<
-  SerovalNode,
-  { t: T }
->;
+type ExtractedNodeType<T extends SerovalNodeType> = Extract<SerovalNode, { t: T }>;
 
-export function createSerovalNode<
+export default function createSerovalNode<
   T extends SerovalNodeType,
   N extends ExtractedNodeType<T>,
 >(
