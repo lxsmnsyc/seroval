@@ -11,6 +11,7 @@ import {
   NEG_INFINITY_NODE,
   NEG_ZERO_NODE,
 } from './literals';
+import { SerovalUnsupportedTypeError } from './errors';
 import { createSerovalNode } from './node';
 import { getReferenceID } from './reference';
 import { serializeString } from './string';
@@ -305,11 +306,17 @@ export function createBoxedNode(
   );
 }
 
+// Same cap as the ArrayBuffer deserialization limit (MAX_BASE64_LENGTH).
+const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
+
 export function createTypedArrayNode(
   id: number,
   current: TypedArrayValue,
   buffer: SerovalNode,
 ): SerovalTypedArrayNode {
+  if (current.length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   return createSerovalNode(
     SerovalNodeType.TypedArray,
     id,
@@ -331,6 +338,9 @@ export function createBigIntTypedArrayNode(
   current: BigIntTypedArrayValue,
   buffer: SerovalNode,
 ): SerovalBigIntTypedArrayNode {
+  if (current.length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   return createSerovalNode(
     SerovalNodeType.BigIntTypedArray,
     id,
@@ -352,6 +362,9 @@ export function createDataViewNode(
   current: DataView,
   buffer: SerovalNode,
 ): SerovalDataViewNode {
+  if (current.byteLength > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   return createSerovalNode(
     SerovalNodeType.DataView,
     id,
