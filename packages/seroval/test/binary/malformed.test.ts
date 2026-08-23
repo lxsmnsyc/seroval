@@ -54,7 +54,14 @@ const TYPE = {
   PromiseFailure: 33,
   RegExp: 34,
   Pending: 38,
+  ArrayBuffer: 23,
+  TypedArray: 24,
+  BigIntTypedArray: 25,
+  DataView: 26,
 } as const;
+
+const TYPED_ARRAY_TAG = { Uint8Array: 4 } as const;
+const BIG_INT_TYPED_ARRAY_TAG = { BigInt64Array: 1 } as const;
 
 const CONSTANT = { Null: 0, Undefined: 1, True: 2 } as const;
 const FLAG = { Frozen: 3 } as const;
@@ -86,6 +93,37 @@ const promiseSuccess = (id: number, value: number) =>
 const regexpNode = (id: number, pattern: number, flags: number) =>
   node(TYPE.RegExp, u32(id), u32(pattern), u32(flags));
 const root = (id: number) => node(TYPE.Root, u32(id));
+const arrayBufferNode = (id: number, bytes: Uint8Array) =>
+  node(TYPE.ArrayBuffer, u32(id), u32(bytes.length), bytes);
+const typedArrayNode = (
+  id: number,
+  tag: number,
+  buffer: number,
+  offset: number,
+  length: number,
+) =>
+  node(TYPE.TypedArray, u32(id), tag, u32(buffer), u32(offset), u32(length));
+const bigIntTypedArrayNode = (
+  id: number,
+  tag: number,
+  buffer: number,
+  offset: number,
+  length: number,
+) =>
+  node(
+    TYPE.BigIntTypedArray,
+    u32(id),
+    tag,
+    u32(buffer),
+    u32(offset),
+    u32(length),
+  );
+const dataViewNode = (
+  id: number,
+  buffer: number,
+  offset: number,
+  length: number,
+) => node(TYPE.DataView, u32(id), u32(buffer), u32(offset), u32(length));
 
 interface Attempt {
   value: Promise<{ value: unknown }>;
@@ -454,6 +492,42 @@ describe('binary malformed input', () => {
         stringNode(2, ''),
         regexpNode(3, 1, 2),
         root(3),
+      ]);
+      await expectRejected(attempt);
+    });
+
+    it('rejects a TypedArray length above the cap', async () => {
+      const attempt = feed([
+        preamble(),
+        arrayBufferNode(1, new Uint8Array(0)),
+        typedArrayNode(2, TYPED_ARRAY_TAG.Uint8Array, 1, 0, 1_000_001),
+        root(2),
+      ]);
+      await expectRejected(attempt);
+    });
+
+    it('rejects a BigIntTypedArray length above the cap', async () => {
+      const attempt = feed([
+        preamble(),
+        arrayBufferNode(1, new Uint8Array(0)),
+        bigIntTypedArrayNode(
+          2,
+          BIG_INT_TYPED_ARRAY_TAG.BigInt64Array,
+          1,
+          0,
+          1_000_001,
+        ),
+        root(2),
+      ]);
+      await expectRejected(attempt);
+    });
+
+    it('rejects a DataView length above the cap', async () => {
+      const attempt = feed([
+        preamble(),
+        arrayBufferNode(1, new Uint8Array(0)),
+        dataViewNode(2, 1, 0, 1_000_001),
+        root(2),
       ]);
       await expectRejected(attempt);
     });

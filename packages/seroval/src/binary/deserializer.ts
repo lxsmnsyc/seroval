@@ -53,6 +53,9 @@ import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
+// Same cap as the ArrayBuffer deserialization limit (MAX_BASE64_LENGTH).
+const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
+
 // The join state of a container: how many child assignments are still
 // outstanding, and a resolver that fires once the count reaches zero.
 interface PendingState {
@@ -781,6 +784,9 @@ async function deserializeTypedArray(ctx: DeserializerContext) {
   );
   const offset = await deserializeUint(ctx);
   const length = await deserializeUint(ctx);
+  if (length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.TypedArray);
+  }
   const construct = deserializeKnownValue(
     SerovalBinaryType.TypedArray,
     TYPED_ARRAY_CONSTRUCTOR,
@@ -803,6 +809,11 @@ async function deserializeBigIntTypedArray(ctx: DeserializerContext) {
   );
   const offset = await deserializeUint(ctx);
   const length = await deserializeUint(ctx);
+  if (length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalMalformedBinaryTypeError(
+      SerovalBinaryType.BigIntTypedArray,
+    );
+  }
   const construct = deserializeKnownValue(
     SerovalBinaryType.BigIntTypedArray,
     BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
@@ -824,6 +835,9 @@ async function deserializeDataView(ctx: DeserializerContext) {
   );
   const offset = await deserializeUint(ctx);
   const length = await deserializeUint(ctx);
+  if (length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.DataView);
+  }
   upsert(
     ctx,
     id,

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { roundtrip } from './utils';
+import { captureSerializeError, roundtrip } from './utils';
+
+const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
 describe('binary ArrayBuffer', () => {
   it('supports ArrayBuffer', async () => {
@@ -103,5 +105,29 @@ describe('binary TypedArray', () => {
     const array = new Uint8Array([1]);
     const { value } = await roundtrip<Uint8Array[]>([array, array]);
     expect(value[0]).toBe(value[1]);
+  });
+
+  it('serializes a TypedArray at the length cap', async () => {
+    const source = new Uint8Array(MAX_TYPED_ARRAY_LENGTH);
+    const { value } = await roundtrip<Uint8Array>(source);
+    expect(value.length).toBe(MAX_TYPED_ARRAY_LENGTH);
+  });
+
+  it('rejects serializing a TypedArray above the length cap', async () => {
+    const source = new Uint8Array(MAX_TYPED_ARRAY_LENGTH + 1);
+    const error = await captureSerializeError(source);
+    expect(error).toBeInstanceOf(Error);
+  });
+
+  it('rejects serializing a BigIntTypedArray above the length cap', async () => {
+    const source = new BigInt64Array(MAX_TYPED_ARRAY_LENGTH + 1);
+    const error = await captureSerializeError(source);
+    expect(error).toBeInstanceOf(Error);
+  });
+
+  it('rejects serializing a DataView above the length cap', async () => {
+    const source = new DataView(new ArrayBuffer(MAX_TYPED_ARRAY_LENGTH + 1));
+    const error = await captureSerializeError(source);
+    expect(error).toBeInstanceOf(Error);
   });
 });

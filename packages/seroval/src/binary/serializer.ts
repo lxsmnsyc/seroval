@@ -50,6 +50,9 @@ import {
   type SerovalNode,
 } from './nodes';
 
+// Same cap as the ArrayBuffer deserialization limit (MAX_BASE64_LENGTH).
+const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
+
 export type Cleanup = () => void;
 
 export interface BinarySerializerPluginContext {
@@ -483,6 +486,9 @@ function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
 }
 
 function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
+  if (value.length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(value);
+  }
   const id = createID(ctx, value);
   onSerialize(ctx, [
     SerovalBinaryType.TypedArray,
@@ -499,6 +505,9 @@ function serializeBigIntTypedArray(
   ctx: SerializerContext,
   value: BigIntTypedArrayValue,
 ) {
+  if (value.length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(value);
+  }
   const id = createID(ctx, value);
   onSerialize(ctx, [
     SerovalBinaryType.BigIntTypedArray,
@@ -512,6 +521,9 @@ function serializeBigIntTypedArray(
 }
 
 function serializeDataView(ctx: SerializerContext, value: DataView) {
+  if (value.byteLength > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(value);
+  }
   const id = createID(ctx, value);
   onSerialize(ctx, [
     SerovalBinaryType.DataView,
