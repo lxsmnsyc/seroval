@@ -23,7 +23,7 @@
     "seroval-plugins": "workspace:*",
     "superjson": "^2.2.6",
     "tosource": "2.0.0-alpha.3",
-    "turbo-stream": "^3.2.0",
+    "turbo-stream": "^3.2.1",
     "warp10": "^2.1.0"
   },
   "types": "./dist/types/index.d.ts",
