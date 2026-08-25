@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type SerovalDataViewNode,
   type SerovalTypedArrayNode,
   fromJSON,
   serialize,
@@ -33,6 +34,19 @@ describe('typed array length limit', () => {
     it('rejects a typed array node claiming a length over the limit', () => {
       const json = toJSON(new Uint8Array([1, 2, 3]));
       (json.t as SerovalTypedArrayNode).l = MAX + 1;
+      expect(() => fromJSON(json)).toThrow();
+    });
+
+    it('rejects a typed array whose buffer source is not an ArrayBuffer', () => {
+      const json = toJSON(new Uint8Array([1, 2, 3]));
+      // Point the buffer source at a non-ArrayBuffer node.
+      (json.t as SerovalTypedArrayNode).f = toJSON(42).t;
+      expect(() => fromJSON(json)).toThrow();
+    });
+
+    it('rejects a DataView whose buffer source is not an ArrayBuffer', () => {
+      const json = toJSON(new DataView(new Uint8Array([1, 2, 3]).buffer));
+      (json.t as SerovalDataViewNode).f = toJSON('nope').t;
       expect(() => fromJSON(json)).toThrow();
     });
   });
