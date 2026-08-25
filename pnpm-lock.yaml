@@ -76,14 +76,14 @@ importers:
         specifier: ^26.2.0
         version: 26.2.0
       '@vitest/ui':
-        specifier: ^4.1.10
-        version: 4.1.10(vitest@4.1.10)
+        specifier: ^4.1.11
+        version: 4.1.11(vitest@4.1.10)
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
       seroval:
         specifier: 1.6.1
-        version: link:../seroval
+        version: 1.6.1
       tsdown:
         specifier: ^0.22.14
         version: 0.22.14(typescript@7.0.2)
@@ -95,7 +95,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^4.1.10
-        version: 4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.10)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2))
+        version: 4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.11)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2))
 
   packages/seroval:
     devDependencies:
@@ -103,8 +103,8 @@ importers:
         specifier: ^26.2.0
         version: 26.2.0
       '@vitest/ui':
-        specifier: ^4.1.10
-        version: 4.1.10(vitest@4.1.10)
+        specifier: ^4.1.11
+        version: 4.1.11(vitest@4.1.10)
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -125,7 +125,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^4.1.10
-        version: 4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.10)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2))
+        version: 4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.11)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2))
 
 packages:
 
@@ -822,6 +822,9 @@ packages:
   '@vitest/pretty-format@4.1.10':
     resolution: {integrity: sha512-W1HsjSH4MXQ9YfmmhLAoIYf1HRfekQCGngeIgcei6MP5QQGWUe0gkopdZQaVCFO+JDJMrAJGwa5pRpNpvy4P8Q==}
 
+  '@vitest/pretty-format@4.1.11':
+    resolution: {integrity: sha512-yiZzPbGTS9Sr/JpFl8zHrcIkAofNbFV6k21vIgQN/cY/oxZeXhJv5sc/MBJ5jFKWmWs+oJHw0UXLZjmf931+Vw==}
+
   '@vitest/runner@4.1.10':
     resolution: {integrity: sha512-IKI6kpIH+LmpROplyLwBBaCfMgOZOMsygVa6BARD6ahA04VRuJSa6OaVG7kRvSEMD870Vd91rSSw0eegtWyLGg==}
 
@@ -831,13 +834,16 @@ packages:
   '@vitest/spy@4.1.10':
     resolution: {integrity: sha512-PLf/Ugvoq5wO/b4rwYCR1h2PSIdXz7wnkQFMiUpLdtM7l6pqVFcQIBEHyT1+l+cj7mNwAfZHzqXqDyjvOuwbDw==}
 
-  '@vitest/ui@4.1.10':
-    resolution: {integrity: sha512-EOUqfXHTXtpSHsyLHH40ts3Ue+hRhSGwzwzMlK0dTEOLSDYyOXLyr5JDGmHQWhN2DYI30gw6dVx3cdgM9FZl+Q==}
+  '@vitest/ui@4.1.11':
+    resolution: {integrity: sha512-r/rwyKoev21mWdRGSEkZOqkQ2BYy68mwjihg9M90nNRbf4NGrgzZ4cj6JNCEwlOGJkbKeMgsjlykvwKUbRr7gw==}
     peerDependencies:
-      vitest: 4.1.10
+      vitest: 4.1.11
 
   '@vitest/utils@4.1.10':
     resolution: {integrity: sha512-fy9am/HWxbaGt/Sawrp90vt6Y6jQwf1RX77cz3uwoJwJVMli/e1IEwRPnMNJ7vKfPTwo0diXifkpPvwH9v7nGA==}
+
+  '@vitest/utils@4.1.11':
+    resolution: {integrity: sha512-zTCVGpyFsGWBhllOyKlTw/vnr6D9qxsfSDyfbyZmTyjHw5N/VuvzHpHoQjm2ZJzn4RJgx5w4r7V0er69CmLgPQ==}
 
   '@yuku-codegen/binding-android-arm64@0.8.3':
     resolution: {integrity: sha512-/EKnnqwvN7xYoVDhQEIEJTdPDwGW1wkFz/2Eku3ES/IJd4lcQh/OaIDFBmoJKvpe12enrb1TIoYh1fxasGXolA==}
@@ -1613,6 +1619,10 @@ packages:
   serialize-javascript@7.1.0:
     resolution: {integrity: sha512-RNEqWOyhhUQYN9V1GfHwu9AR/g+NTciH6Z5u3/no6X3/w+04J2lVDL+svFQVXgXrEGBMG2puMVN3gq2SNGuTGw==}
     engines: {node: '>=20.0.0'}
+
+  seroval@1.6.1:
+    resolution: {integrity: sha512-o6yy/WwtnphyGVbHJtRWpdLEqLZikCmwDPtDZJZMtBSoPHYDs1ro9vyyvc4612Rvqkhy+wrHZ55PlUMeq8Btwg==}
+    engines: {node: '>=10'}
 
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
@@ -2449,6 +2459,10 @@ snapshots:
     dependencies:
       tinyrainbow: 3.1.1
 
+  '@vitest/pretty-format@4.1.11':
+    dependencies:
+      tinyrainbow: 3.1.1
+
   '@vitest/runner@4.1.10':
     dependencies:
       '@vitest/utils': 4.1.10
@@ -2463,20 +2477,26 @@ snapshots:
 
   '@vitest/spy@4.1.10': {}
 
-  '@vitest/ui@4.1.10(vitest@4.1.10)':
+  '@vitest/ui@4.1.11(vitest@4.1.10)':
     dependencies:
-      '@vitest/utils': 4.1.10
+      '@vitest/utils': 4.1.11
       fflate: 0.8.3
       flatted: 3.4.4
       pathe: 2.0.3
       sirv: 3.0.2
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.10)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2))
+      vitest: 4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.11)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2))
 
   '@vitest/utils@4.1.10':
     dependencies:
       '@vitest/pretty-format': 4.1.10
+      convert-source-map: 2.0.0
+      tinyrainbow: 3.1.1
+
+  '@vitest/utils@4.1.11':
+    dependencies:
+      '@vitest/pretty-format': 4.1.11
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.1
 
@@ -3128,6 +3148,8 @@ snapshots:
 
   serialize-javascript@7.1.0: {}
 
+  seroval@1.6.1: {}
+
   shebang-command@2.0.0:
     dependencies:
       shebang-regex: 3.0.0
@@ -3310,7 +3332,7 @@ snapshots:
       esbuild: 0.28.2
       fsevents: 2.3.3
 
-  vitest@4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.10)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2)):
+  vitest@4.1.10(@types/node@26.2.0)(@vitest/ui@4.1.11)(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2)):
     dependencies:
       '@vitest/expect': 4.1.10
       '@vitest/mocker': 4.1.10(vite@8.2.0(@types/node@26.2.0)(esbuild@0.28.2))
@@ -3334,7 +3356,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.2.0
-      '@vitest/ui': 4.1.10(vitest@4.1.10)
+      '@vitest/ui': 4.1.11(vitest@4.1.10)
     transitivePeerDependencies:
       - msw
 
