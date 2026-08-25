@@ -225,7 +225,7 @@ describe('binary malformed input', () => {
       expect(({}).constructor).toBe(Object);
     });
 
-    it('ignores non-string, non-symbol keys', async () => {
+    it('rejects a non-string, non-symbol key', async () => {
       const attempt = feed([
         preamble(),
         objectNode(1),
@@ -236,8 +236,7 @@ describe('binary malformed input', () => {
         root(1),
       ]);
 
-      const { value } = await attempt.value;
-      expect(Object.keys(value as object)).toEqual([]);
+      await expectRejected(attempt);
     });
   });
 

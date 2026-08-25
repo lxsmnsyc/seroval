@@ -566,7 +566,13 @@ async function deserializeObjectAssign(ctx: DeserializerContext) {
     SerovalBinaryType.ObjectAssign,
     PROPERTY_TARGETS,
   );
-  const key = await deserializeUint(ctx);
+  // The serializer only ever emits a String or a well-known symbol as a key.
+  // Validating it here keeps untrusted input from aiming a key slot at some
+  // other node type, so the `as string` cast below can never be a lie.
+  const key = await deserializeRefOf(ctx, SerovalBinaryType.ObjectAssign, [
+    SerovalBinaryType.String,
+    SerovalBinaryType.WKSymbol,
+  ]);
   const value = await deserializeUint(ctx);
 
   trackChild(ctx, object, value);
