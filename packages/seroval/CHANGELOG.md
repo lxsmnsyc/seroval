@@ -1,5 +1,11 @@
 # seroval
 
+## 1.6.5
+
+### Patch Changes
+
+- Validate the backing source of an iterator, async iterator, readable stream, and abort signal during deserialization, and export `isStream`.
+
 ## 1.6.4
 
 ### Patch Changes

@@ -7,8 +7,10 @@ import {
   serializeAsync,
   toCrossJSONAsync,
   toCrossJSONStream,
+  toJSON,
   toJSONAsync,
 } from 'seroval';
+import type { SerovalNode } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import ReadableStreamPlugin from '../../web/readable-stream';
 
@@ -426,5 +428,25 @@ describe('ReadableStream', () => {
           },
         });
       }));
+  });
+  describe('malformed input', () => {
+    it('rejects a stream source that is not a Stream', async () => {
+      const example = new ReadableStream({
+        start(controller): void {
+          controller.enqueue('foo');
+          controller.close();
+        },
+      });
+      const result = await toJSONAsync(example, {
+        plugins: [ReadableStreamPlugin],
+      });
+      // The root is the ReadableStream plugin node; aim its stream slot at a
+      // non-Stream node.
+      const info = (result.t as unknown as { s: Record<string, SerovalNode> }).s;
+      info.stream = toJSON(42).t;
+      expect(() =>
+        fromJSON(result, { plugins: [ReadableStreamPlugin] }),
+      ).toThrow();
+    });
   });
 });

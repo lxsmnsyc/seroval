@@ -1,5 +1,12 @@
 # seroval-plugins
 
+## 1.6.5
+
+### Patch Changes
+
+- Throw when the `AbortController` factory helper is deserialized directly instead of returning its internal function.
+- Validate the backing source of an iterator, async iterator, readable stream, and abort signal during deserialization, and export `isStream`.
+
 ## 1.6.4
 
 ### Patch Changes
