@@ -34,3 +34,5 @@ export { createStream } from './core/stream';
 export type { Stream, StreamListener } from './core/stream';
 export * from './core/tree';
 export type { SerovalNode } from './core/types';
+export * as v from './core/validator';
+export type { Validator } from './core/validator';

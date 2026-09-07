@@ -81,6 +81,7 @@ const enum SpecificErrorCodes {
   MalformedNode = 8,
   ConflictedNodeId = 9,
   DepthLimit = 10,
+  PluginValidation = 11,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -117,6 +118,19 @@ export class SerovalMissingPluginError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.MissingPlugin)
         : 'Missing plugin for tag "' + tag + '".',
+    );
+  }
+}
+
+export class SerovalPluginValidationError extends Error {
+  constructor(tag: string) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.PluginValidation)
+        : 'Plugin "' +
+            tag +
+            '" received a value that failed its validator during ' +
+            'deserialization.',
     );
   }
 }
