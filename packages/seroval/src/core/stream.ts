@@ -31,22 +31,46 @@ export function createStream<T>(): Stream<T> {
 
 export function createStreamFromAsyncIterable<T>(
   iterable: AsyncIterable<T>,
+  cleanups?: (() => void)[],
 ): Stream<T> {
   const stream = createStream<T>();
 
   const iterator = iterable[SYM_ASYNC_ITERATOR]();
+  let cancelled = false;
+  let done = false;
+
+  cleanups?.push(() => {
+    if (!(done || cancelled)) {
+      cancelled = true;
+      Promise.resolve()
+        .then(() => iterator.return?.())
+        .catch(() => {
+          // no-op
+        });
+    }
+  });
 
   async function push(): Promise<void> {
+    if (cancelled) {
+      return;
+    }
     try {
       const value = await iterator.next();
+      if (cancelled) {
+        return;
+      }
       if (value.done) {
+        done = true;
         stream.return(value.value as T);
       } else {
         stream.next(value.value);
         await push();
       }
     } catch (error) {
-      stream.throw(error);
+      done = true;
+      if (!cancelled) {
+        stream.throw(error);
+      }
     }
   }
 
