@@ -38,12 +38,13 @@ export function createStreamFromAsyncIterable<T>(
 
   async function push(): Promise<void> {
     try {
-      const value = await iterator.next();
-      if (value.done) {
-        stream.return(value.value as T);
-      } else {
+      while (true) {
+        const value = await iterator.next();
+        if (value.done) {
+          stream.return(value.value as T);
+          break;
+        }
         stream.next(value.value);
-        await push();
       }
     } catch (error) {
       stream.throw(error);
