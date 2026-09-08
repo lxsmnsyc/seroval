@@ -260,6 +260,9 @@ function deserializeArray(
   node: SerovalArrayNode,
 ): unknown[] {
   const items = node.a;
+  if (!Array.isArray(items)) {
+    throw new SerovalMalformedNodeError(node);
+  }
   const len = items.length;
   const result: unknown[] = assignIndexedValue(
     ctx,
