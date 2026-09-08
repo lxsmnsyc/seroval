@@ -497,11 +497,9 @@ function deserializeArrayBuffer(
     buffer = ARRAY_BUFFER_CONSTRUCTOR(source);
   } else {
     // Keep atob's validation; Buffer's base64 decoder accepts malformed input.
-    const bytes = Buffer.from(atob(source), 'latin1');
-    buffer = bytes.buffer.slice(
-      bytes.byteOffset,
-      bytes.byteOffset + bytes.byteLength,
-    );
+    const decoded = atob(source);
+    buffer = new ArrayBuffer(decoded.length);
+    Buffer.from(buffer).write(decoded, 'latin1');
   }
   return assignIndexedValue(ctx, node.i, buffer);
 }
