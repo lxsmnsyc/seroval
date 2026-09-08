@@ -25,9 +25,12 @@ const escapes: Record<string, string> = {
   '\u2029': '\\u2029',
 };
 const cases = [
-  ['below threshold', 'x'.repeat(1023)],
-  ['at threshold', 'x'.repeat(1024)],
-  ['above threshold', 'x'.repeat(1025)],
+  ['below threshold', 'x'.repeat(63)],
+  ['at threshold', 'x'.repeat(64)],
+  ['above threshold', 'x'.repeat(65)],
+  ['below threshold with escape', 'x'.repeat(62) + '"'],
+  ['at threshold with escape', 'x'.repeat(63) + '"'],
+  ['above threshold with escape', 'x'.repeat(64) + '"'],
   [
     'JSON text',
     JSON.stringify({ items: new Array(100).fill({ text: 'a"b\\c\n' }) }),
@@ -60,7 +63,7 @@ describe('long strings', () => {
   );
 
   it('preserves every UTF-16 code unit inside long strings', () => {
-    const padding = 'x'.repeat(1024);
+    const padding = 'x'.repeat(63);
     for (let code = 0; code <= 0xffff; code++) {
       const char = String.fromCharCode(code);
       expect(serializeString(padding + char)).toBe(

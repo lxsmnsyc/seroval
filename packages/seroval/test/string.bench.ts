@@ -5,6 +5,10 @@ const record = JSON.stringify({ id: 1, text: 'a"b\\c\n', active: true });
 const cases = [
   ['short key', 'queryHash'],
   ['short escaped value', 'a"b\\c\n'],
+  ['64 code units plain text', 'x'.repeat(64)],
+  ['64 code units JSON text', record.repeat(2).slice(0, 64)],
+  ['64 code units HTML fallback', 'x'.repeat(55) + '</script>'],
+  ['64 code units surrogate fallback', 'x'.repeat(62) + '\ud83d\ude00'],
   ['1 KiB plain text', 'x'.repeat(1024)],
   ['1 KiB JSON text', record.repeat(32).slice(0, 1024)],
   ['64 KiB JSON text', record.repeat(2048).slice(0, 65536)],

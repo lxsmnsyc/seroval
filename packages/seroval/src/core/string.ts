@@ -1,5 +1,7 @@
 import { NIL } from './constants';
 
+const MIN_JSON_STRINGIFY_LENGTH = 64;
+
 // JSON escapes these code units differently from Seroval's wire format.
 const JSON_ESCAPE_DIFFERENCES =
   // biome-ignore lint/suspicious/noControlCharactersInRegex: Match the control characters that require the existing encoder.
@@ -38,7 +40,10 @@ export function serializeChar(str: string): string | undefined {
 // Also includes "<" to escape "</script>" and "\" to avoid invalid escapes in the output.
 // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
 export function serializeString(str: string): string {
-  if (str.length >= 1024 && !JSON_ESCAPE_DIFFERENCES.test(str)) {
+  if (
+    str.length >= MIN_JSON_STRINGIFY_LENGTH &&
+    !JSON_ESCAPE_DIFFERENCES.test(str)
+  ) {
     return JSON.stringify(str).slice(1, -1);
   }
   let result = '';
