@@ -290,6 +290,7 @@ function parseProperties(
             ? createStream()
             : createStreamFromAsyncIterable(
                 properties as unknown as AsyncIterable<unknown>,
+                ctx.state.cleanups,
               ),
         ) as SerovalNodeWithID,
       ),
