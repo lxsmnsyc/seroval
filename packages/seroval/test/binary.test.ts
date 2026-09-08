@@ -100,6 +100,29 @@ describe('binary decoding validation', () => {
       expect(new Uint8Array(second)).toEqual(bytes);
     }
   });
+
+  for (const cross of [false, true]) {
+    it(`returns transferable buffers with shared views (cross: ${cross})`, () => {
+      for (const length of [383, 384, 385, 4096, 65536]) {
+        const bytes = Uint8Array.from({ length }, (_, i) => i % 256);
+        const input = {
+          buffer: bytes.buffer,
+          view: new Uint8Array(bytes.buffer),
+        };
+        const back = cross
+          ? fromCrossJSON<typeof input>(toCrossJSON(input), { refs: new Map() })
+          : fromJSON<typeof input>(toJSON(input));
+        expect(back.view.buffer).toBe(back.buffer);
+
+        const transferred = structuredClone(back, { transfer: [back.buffer] });
+        expect(back.buffer.byteLength).toBe(0);
+        expect(back.view.byteLength).toBe(0);
+        expect(transferred.buffer.byteLength).toBe(length);
+        expect(transferred.view.buffer).toBe(transferred.buffer);
+        expect(transferred.view).toEqual(bytes);
+      }
+    });
+  }
 });
 
 describe('compact ArrayBuffer views', () => {
