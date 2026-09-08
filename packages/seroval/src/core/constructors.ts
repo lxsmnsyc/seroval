@@ -61,15 +61,16 @@ interface StreamListener<T> {
 // receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
 export const STREAM_CONSTRUCTOR = () => {
   const buffer: unknown[] = [];
-  const listeners: StreamListener<unknown>[] = [];
+  const listeners: (StreamListener<unknown> | undefined)[] = [];
   let alive = true;
   let success = false;
   let count = 0;
   const internal = {
     flush(value: unknown, mode: keyof StreamListener<unknown>, x?: number) {
       for (x = 0; x < count; x++) {
-        if (listeners[x]) {
-          listeners[x][mode](value);
+        const listener = listeners[x];
+        if (listener) {
+          listener[mode](value);
         }
       }
     },
@@ -88,16 +89,28 @@ export const STREAM_CONSTRUCTOR = () => {
         }
       }
     },
-    on(listener: StreamListener<unknown>, temp?: number) {
+    on(listener: StreamListener<unknown>, temp = 0) {
+      let subscribed = alive;
       if (alive) {
-        temp = count++;
+        for (temp = 0; temp < count; temp++) {
+          if (!listeners[temp]) {
+            break;
+          }
+        }
+        if (temp === count) {
+          count++;
+        }
         listeners[temp] = listener;
       }
       internal.up(listener);
       return () => {
-        if (alive) {
-          listeners[temp!] = listeners[count];
-          listeners[count--] = undefined as any;
+        if (alive && subscribed) {
+          subscribed = false;
+          listeners[temp] = undefined;
+          while (count > 0 && !listeners[count - 1]) {
+            count--;
+          }
+          listeners.length = count;
         }
       };
     },

@@ -55,7 +55,10 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
-			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+			for (x = 0; x < count; x++) {
+				const listener = listeners[x];
+				if (listener) listener[mode](value);
+			}
 		},
 		up(listener, x, z, current) {
 			for (x = 0, z = buffer.length; x < z; x++) {
@@ -64,16 +67,20 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 				else listener.next(current);
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
+				if (temp === count) count++;
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = void 0;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = void 0;
+					while (count > 0 && !listeners[count - 1]) count--;
+					listeners.length = count;
 				}
 			};
 		}
@@ -148,7 +155,10 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
-			for (x = 0; x < count; x++) if (listeners[x]) listeners[x][mode](value);
+			for (x = 0; x < count; x++) {
+				const listener = listeners[x];
+				if (listener) listener[mode](value);
+			}
 		},
 		up(listener, x, z, current) {
 			for (x = 0, z = buffer.length; x < z; x++) {
@@ -157,16 +167,20 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 				else listener.next(current);
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
+				if (temp === count) count++;
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = void 0;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = void 0;
+					while (count > 0 && !listeners[count - 1]) count--;
+					listeners.length = count;
 				}
 			};
 		}
