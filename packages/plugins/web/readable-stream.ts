@@ -62,15 +62,17 @@ async function drainStream<T>(
   reader: ReadableStreamDefaultReader<T>,
 ): Promise<void> {
   try {
-    const result = await reader.read();
-    if (result.done) {
-      stream.return(result.value);
-      reader.releaseLock();
-    } else {
+    while (true) {
+      const result = await reader.read();
+      if (result.done) {
+        stream.return(result.value);
+        reader.releaseLock();
+        break;
+      }
       stream.next(result.value);
-      await drainStream(stream, reader);
     }
   } catch (error) {
+    reader.releaseLock();
     stream.throw(error);
   }
 }

@@ -178,8 +178,9 @@ exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 	const internal = {
 		flush(value, mode, x) {
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -193,16 +194,28 @@ exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -383,8 +396,9 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 	const internal = {
 		flush(value, mode, x) {
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -398,16 +412,28 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -609,8 +635,9 @@ exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIt
 	const internal = {
 		flush(value, mode, x) {
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -624,16 +651,28 @@ exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIt
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -885,8 +924,9 @@ exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`
 	const internal = {
 		flush(value, mode, x) {
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -900,16 +940,28 @@ exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -1173,8 +1225,9 @@ exports[`frozen object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 	const internal = {
 		flush(value, mode, x) {
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -1188,16 +1241,28 @@ exports[`frozen object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}

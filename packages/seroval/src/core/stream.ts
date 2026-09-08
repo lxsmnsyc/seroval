@@ -51,20 +51,18 @@ export function createStreamFromAsyncIterable<T>(
   });
 
   async function push(): Promise<void> {
-    if (cancelled) {
-      return;
-    }
     try {
-      const value = await iterator.next();
-      if (cancelled) {
-        return;
-      }
-      if (value.done) {
-        done = true;
-        stream.return(value.value as T);
-      } else {
+      while (!cancelled) {
+        const value = await iterator.next();
+        if (cancelled) {
+          return;
+        }
+        if (value.done) {
+          done = true;
+          stream.return(value.value as T);
+          break;
+        }
         stream.next(value.value);
-        await push();
       }
     } catch (error) {
       done = true;

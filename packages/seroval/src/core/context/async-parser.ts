@@ -24,7 +24,11 @@ import {
 } from '../base-primitives';
 import { Feature } from '../compat';
 import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
-import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
+import {
+  SerovalDepthLimitError,
+  SerovalParserError,
+  SerovalUnsupportedTypeError,
+} from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
@@ -77,11 +81,12 @@ import {
   createBaseParserContext,
   createMapNode,
   createObjectNode,
+  getArrayBufferView,
   getReferenceNode,
   markParserRef,
+  ParserNodeType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
-  ParserNodeType,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
@@ -235,6 +240,7 @@ async function parseTypedArray(
   id: number,
   current: TypedArrayValue,
 ): Promise<SerovalTypedArrayNode> {
+  current = getArrayBufferView(ctx.base, current);
   return createTypedArrayNode(
     id,
     current,
@@ -248,6 +254,7 @@ async function parseBigIntTypedArray(
   id: number,
   current: BigIntTypedArrayValue,
 ): Promise<SerovalBigIntTypedArrayNode> {
+  current = getArrayBufferView(ctx.base, current);
   return createBigIntTypedArrayNode(
     id,
     current,
@@ -261,6 +268,7 @@ async function parseDataView(
   id: number,
   current: DataView,
 ): Promise<SerovalDataViewNode> {
+  current = getArrayBufferView(ctx.base, current);
   return createDataViewNode(
     id,
     current,

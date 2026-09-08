@@ -1,8 +1,10 @@
+import { ALL_ENABLED } from '../compat';
 import {
   createAsyncParserContext,
   parseTopAsync,
 } from '../context/async-parser';
 import {
+  type BaseDeserializerContextOptions,
   createVanillaDeserializerContext,
   deserializeTop,
 } from '../context/deserializer';
@@ -18,7 +20,6 @@ import {
   SerovalMode,
 } from '../plugin';
 import type { SerovalNode } from '../types';
-import { ALL_ENABLED } from '../compat';
 export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 
@@ -28,6 +29,7 @@ export function serialize<T>(
 ): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Vanilla, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -46,6 +48,7 @@ export async function serializeAsync<T>(
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -68,7 +71,9 @@ export interface SerovalJSON {
   m: number[];
 }
 
-export interface FromJSONOptions extends PluginAccessOptions {
+export interface FromJSONOptions
+  extends PluginAccessOptions,
+    Pick<BaseDeserializerContextOptions, 'maxBase64Length'> {
   disabledFeatures?: number;
 }
 
@@ -78,6 +83,7 @@ export function toJSON<T>(
 ): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Vanilla, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -94,6 +100,7 @@ export async function toJSONAsync<T>(
 ): Promise<SerovalJSON> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -125,6 +132,7 @@ export function fromJSON<T>(
   const disabledFeatures = options.disabledFeatures || 0;
   const sourceFeatures = source.f ?? ALL_ENABLED;
   const ctx = createVanillaDeserializerContext({
+    maxBase64Length: options.maxBase64Length,
     plugins,
     markedRefs: source.m,
     features: sourceFeatures & ~disabledFeatures,

@@ -85,10 +85,11 @@ import {
   createMapNode,
   createObjectNode,
   createPromiseConstructorNode,
+  getArrayBufferView,
   getReferenceNode,
+  ParserNodeType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
-  ParserNodeType,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
@@ -341,6 +342,7 @@ function parseTypedArray(
   id: number,
   current: TypedArrayValue,
 ): SerovalTypedArrayNode {
+  current = getArrayBufferView(ctx.base, current);
   return createTypedArrayNode(
     id,
     current,
@@ -354,6 +356,7 @@ function parseBigIntTypedArray(
   id: number,
   current: BigIntTypedArrayValue,
 ): SerovalBigIntTypedArrayNode {
+  current = getArrayBufferView(ctx.base, current);
   return createBigIntTypedArrayNode(
     id,
     current,
@@ -367,6 +370,7 @@ function parseDataView(
   id: number,
   current: DataView,
 ): SerovalDataViewNode {
+  current = getArrayBufferView(ctx.base, current);
   return createDataViewNode(id, current, parseSOS(ctx, depth, current.buffer));
 }
 
