@@ -1,8 +1,8 @@
 import { crossSerializeStream } from './cross';
 import {
-  resolvePlugins,
   type Plugin,
   type PluginAccessOptions,
+  resolvePlugins,
 } from './plugin';
 import { serializeString } from './string';
 
@@ -10,6 +10,7 @@ export interface SerializerOptions extends PluginAccessOptions {
   globalIdentifier: string;
   scopeId?: string;
   disabledFeatures?: number;
+  compactArrayBufferViews?: boolean;
   onData: (result: string) => void;
   onError: (error: unknown) => void;
   onDone?: () => void;
@@ -46,6 +47,7 @@ export default class Serializer {
           scopeId: this.options.scopeId,
           refs: this.refs,
           disabledFeatures: this.options.disabledFeatures,
+          compactArrayBufferViews: this.options.compactArrayBufferViews,
           onError: this.options.onError,
           onSerialize: (data, initial) => {
             if (this.alive) {

@@ -241,6 +241,64 @@ The mentioned serialization methods are ideal for server-to-client communication
 | deserialization | `deserialize` | `fromJSON` |
 | cross-deserialization | `deserialize` | `fromCrossJSON` |
 
+## Binary values
+
+ArrayBuffers are encoded as base64. Seroval uses native Node or browser encoding
+when available, with a fallback for runtimes without either API.
+
+### Compact typed arrays and DataViews
+
+By default, Seroval preserves each view's full backing buffer, byte offset, and
+shared-buffer identity. A small view can therefore serialize a much larger buffer,
+including bytes outside the view.
+
+Pass `compactArrayBufferViews: true` to serialize only each view's visible bytes:
+
+```ts
+import { toJSON, fromJSON } from 'seroval';
+
+const view = new Uint8Array(new ArrayBuffer(512 * 1024), 128, 1024);
+const result = fromJSON<Uint8Array>(
+  toJSON(view, { compactArrayBufferViews: true }),
+);
+
+result.byteOffset; // 0
+result.buffer.byteLength; // 1024
+```
+
+This option applies to all serialization modes and `Serializer`. Each distinct
+view gets its own copied buffer, even when views overlap or span the entire
+original buffer. Repeated references to the same view still refer to the same
+deserialized view. The original values are not changed.
+
+Compaction intentionally breaks buffer sharing between distinct views and any
+separately serialized backing buffer. If the input also contains the backing
+ArrayBuffer itself, that buffer is still serialized in full. Use the default when
+buffer identity or offsets matter.
+
+### JSON decoding limits
+
+Serialization can produce buffers larger than the default JSON decoding limit.
+`fromJSON` and `fromCrossJSON` accept `maxBase64Length` to set a receiver-owned
+limit, measured in encoded characters per ArrayBuffer. The default remains
+1,000,000 characters (up to 750,000 decoded bytes).
+
+```ts
+const buffer = new ArrayBuffer(1024 * 1024);
+const json = toJSON(buffer);
+
+// A 1 MiB buffer requires 1,398,104 base64 characters.
+const result = fromJSON<ArrayBuffer>(json, { maxBase64Length: 1_398_104 });
+```
+
+The limit must be a non-negative safe integer. Zero permits only empty buffers.
+Oversized input is rejected before base64 decoding or allocating its output
+buffer, with a `RangeError` cause inside `SerovalDeserializationError`. Invalid
+option values throw `RangeError` when the deserializer is created. Set the limit
+according to the receiving application's needs; it is a per-buffer limit, not a
+total payload or memory budget. JavaScript evaluation through `deserialize` does
+not use these JSON decoding limits.
+
 ## Push-based streaming serialization
 
 > [!NOTE]

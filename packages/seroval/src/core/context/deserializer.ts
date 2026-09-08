@@ -69,7 +69,7 @@ import type {
 import { getTypedArrayConstructor } from '../utils/typed-array';
 import { isValidKey, isValidSymbol } from '../utils/valid-properties';
 
-const MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
+const DEFAULT_MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
 const MAX_BIGINT_LENGTH = 10_000;
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
@@ -94,6 +94,8 @@ export interface BaseDeserializerContextOptions extends PluginAccessOptions {
   features?: number;
   disabledFeatures?: number;
   depthLimit?: number;
+  /** Maximum encoded characters per ArrayBuffer. Defaults to 1,000,000. */
+  maxBase64Length?: number;
 }
 
 export interface BaseDeserializerContext extends PluginAccessOptions {
@@ -104,6 +106,7 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
   refs: Map<number, unknown> & { types: Map<number, SerovalNodeType> };
   features: number;
   depthLimit: number;
+  maxBase64Length: number;
 }
 
 const DEFAULT_DEPTH_LIMIT = 1000;
@@ -112,6 +115,10 @@ export function createBaseDeserializerContext(
   mode: SerovalMode,
   options: BaseDeserializerContextOptions,
 ): BaseDeserializerContext {
+  const maxBase64Length = options.maxBase64Length ?? DEFAULT_MAX_BASE64_LENGTH;
+  if (!Number.isSafeInteger(maxBase64Length) || maxBase64Length < 0) {
+    throw new RangeError('maxBase64Length must be a non-negative safe integer');
+  }
   const refs = options.refs || new Map();
   if (!('types' in refs)) {
     Object.assign(refs, {
@@ -124,6 +131,7 @@ export function createBaseDeserializerContext(
     refs: refs as BaseDeserializerContext['refs'],
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
     depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
+    maxBase64Length,
   };
 }
 
@@ -471,8 +479,13 @@ function deserializeArrayBuffer(
   ctx: DeserializerContext,
   node: SerovalArrayBufferNode,
 ): ArrayBuffer {
-  if (node.s.length > MAX_BASE64_LENGTH) {
+  if (typeof node.s !== 'string') {
     throw new SerovalMalformedNodeError(node);
+  }
+  if (node.s.length > ctx.base.maxBase64Length) {
+    throw new RangeError(
+      'ArrayBuffer exceeds maxBase64Length (' + ctx.base.maxBase64Length + ')',
+    );
   }
   const result = assignIndexedValue(
     ctx,
