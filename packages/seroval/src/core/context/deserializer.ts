@@ -531,11 +531,10 @@ function deserializeTypedArray(
     throw new SerovalMalformedNodeError(node);
   }
   const offset = node.b ?? 0;
-  if (
-    offset < 0 ||
-    offset > source.byteLength ||
-    node.l > ctx.base.maxBase64Length
-  ) {
+  // The backing buffer is already capped at ArrayBuffer deserialization, and the
+  // view constructor throws when offset + length exceeds it, so `node.l` needs
+  // no separate bound here.
+  if (offset < 0 || offset > source.byteLength) {
     throw new SerovalMalformedNodeError(node);
   }
   const result = assignIndexedValue(
@@ -559,11 +558,10 @@ function deserializeDataView(
     throw new SerovalMalformedNodeError(node);
   }
   const offset = node.b ?? 0;
-  if (
-    offset < 0 ||
-    offset > source.byteLength ||
-    node.l > ctx.base.maxBase64Length
-  ) {
+  // The backing buffer is already capped at ArrayBuffer deserialization, and the
+  // view constructor throws when offset + length exceeds it, so `node.l` needs
+  // no separate bound here.
+  if (offset < 0 || offset > source.byteLength) {
     throw new SerovalMalformedNodeError(node);
   }
   const result = assignIndexedValue(
