@@ -70,6 +70,7 @@ import { getTypedArrayConstructor } from '../utils/typed-array';
 import { isValidKey, isValidSymbol } from '../utils/valid-properties';
 
 const DEFAULT_MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
+const MIN_NATIVE_BASE64_LENGTH = 512;
 const MAX_BIGINT_LENGTH = 10_000;
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
@@ -487,12 +488,22 @@ function deserializeArrayBuffer(
       'ArrayBuffer exceeds maxBase64Length (' + ctx.base.maxBase64Length + ')',
     );
   }
-  const result = assignIndexedValue(
-    ctx,
-    node.i,
-    ARRAY_BUFFER_CONSTRUCTOR(deserializeString(node.s)),
-  );
-  return result;
+  const source = deserializeString(node.s);
+  let buffer: ArrayBuffer;
+  if (
+    source.length < MIN_NATIVE_BASE64_LENGTH ||
+    typeof Buffer === 'undefined'
+  ) {
+    buffer = ARRAY_BUFFER_CONSTRUCTOR(source);
+  } else {
+    // Keep atob's validation; Buffer's base64 decoder accepts malformed input.
+    const bytes = Buffer.from(atob(source), 'latin1');
+    buffer = bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength,
+    );
+  }
+  return assignIndexedValue(ctx, node.i, buffer);
 }
 
 function deserializeTypedArray(

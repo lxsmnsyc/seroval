@@ -47,6 +47,61 @@ describe('binary encoding', () => {
   }
 });
 
+describe('binary decoding validation', () => {
+  for (const native of [true, false]) {
+    it(`preserves accepted padding and whitespace (native: ${native})`, () => {
+      if (!native) {
+        vi.stubGlobal('Buffer', undefined);
+      }
+      for (const [source, expected] of [
+        ['', []],
+        ['YQ', [97]],
+        ['YQ==', [97]],
+        ['YWI', [97, 98]],
+        ['YWI=', [97, 98]],
+        [' Y\tW\nI=\r', [97, 98]],
+      ] as const) {
+        for (const padding of ['', ' '.repeat(512)]) {
+          const json = toJSON(new ArrayBuffer(0));
+          json.t.s = padding + source;
+          const back = fromJSON<ArrayBuffer>(json);
+          expect(back.byteLength).toBe(expected.length);
+          expect([...new Uint8Array(back)]).toEqual(expected);
+        }
+      }
+    });
+
+    it(`rejects malformed base64 (native: ${native})`, () => {
+      if (!native) {
+        vi.stubGlobal('Buffer', undefined);
+      }
+      for (const source of ['!!!!', 'YQ=', 'YQ===', '_w==', 'A', 'YQ==A']) {
+        for (const padding of ['', ' '.repeat(512)]) {
+          const json = toJSON(new ArrayBuffer(0));
+          json.t.s = padding + source;
+          expect(() => fromJSON(json)).toThrow(SerovalDeserializationError);
+          expect(() => fromCrossJSON(json.t, { refs: new Map() })).toThrow(
+            SerovalDeserializationError,
+          );
+        }
+      }
+    });
+  }
+
+  it('preserves exact buffer lengths and independence across the native cutoff', () => {
+    for (const length of [381, 382, 383, 384, 385, 4095, 4096, 4097]) {
+      const bytes = Uint8Array.from({ length }, (_, i) => i % 256);
+      const json = toJSON(bytes.buffer);
+      const first = fromJSON<ArrayBuffer>(json);
+      const second = fromJSON<ArrayBuffer>(json);
+      expect(first.byteLength).toBe(length);
+      expect(new Uint8Array(first)).toEqual(bytes);
+      new Uint8Array(first).fill(42);
+      expect(new Uint8Array(second)).toEqual(bytes);
+    }
+  });
+});
+
 describe('compact ArrayBuffer views', () => {
   it('preserves backing-buffer identity and offsets by default', () => {
     const buffer = new ArrayBuffer(32);
