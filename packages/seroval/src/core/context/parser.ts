@@ -16,7 +16,6 @@ import {
   SPECIAL_REFS,
   SpecialReference,
 } from '../special-reference';
-import { serializeString } from '../string';
 import { SYM_ASYNC_ITERATOR, SYM_ITERATOR } from '../symbols';
 import type {
   SerovalArrayBufferNode,
@@ -39,6 +38,8 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
   refs?: Map<unknown, number>;
   depthLimit?: number;
+  /** Copy each typed array or DataView's visible bytes into its own buffer. */
+  compactArrayBufferViews?: boolean;
 }
 
 export const enum ParserNodeType {
@@ -74,6 +75,7 @@ export interface BaseParserContext extends PluginAccessOptions {
   features: number;
 
   depthLimit: number;
+  compactArrayBufferViews: boolean;
 }
 
 export function createBaseParserContext(
@@ -87,6 +89,7 @@ export function createBaseParserContext(
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     refs: options.refs || new Map(),
     depthLimit: options.depthLimit || 1000,
+    compactArrayBufferViews: options.compactArrayBufferViews ?? false,
   };
 }
 
@@ -308,20 +311,46 @@ export function createPromiseConstructorNode(
   );
 }
 
+export function getArrayBufferView<T extends ArrayBufferView>(
+  ctx: BaseParserContext,
+  current: T,
+): T {
+  if (!ctx.compactArrayBufferViews) {
+    return current;
+  }
+  const buffer = new Uint8Array(
+    current.buffer,
+    current.byteOffset,
+    current.byteLength,
+  ).slice().buffer;
+  const Constructor = current.constructor as new (buffer: ArrayBuffer) => T;
+  return new Constructor(buffer);
+}
+
+function encodeArrayBuffer(current: ArrayBuffer): string {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(current).toString('base64');
+  }
+  const bytes = new Uint8Array(current);
+  if (typeof bytes.toBase64 === 'function') {
+    return bytes.toBase64();
+  }
+  let result = '';
+  for (let i = 0, len = bytes.length; i < len; i++) {
+    result += String.fromCharCode(bytes[i]);
+  }
+  return btoa(result);
+}
+
 export function createArrayBufferNode(
   ctx: BaseParserContext,
   id: number,
   current: ArrayBuffer,
 ): SerovalArrayBufferNode {
-  const bytes = new Uint8Array(current);
-  let result = '';
-  for (let i = 0, len = bytes.length; i < len; i++) {
-    result += String.fromCharCode(bytes[i]);
-  }
   return createSerovalNode(
     SerovalNodeType.ArrayBuffer,
     id,
-    serializeString(btoa(result)),
+    encodeArrayBuffer(current),
     NIL,
     NIL,
     NIL,

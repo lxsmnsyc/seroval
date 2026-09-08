@@ -37,6 +37,7 @@ export function crossSerialize<T>(
 ): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Cross, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -61,6 +62,7 @@ export async function crossSerializeAsync<T>(
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext(SerovalMode.Cross, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -83,6 +85,7 @@ export function toCrossJSON<T>(
 ): SerovalNode {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Cross, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -98,6 +101,7 @@ export async function toCrossJSONAsync<T>(
 ): Promise<SerovalNode> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext(SerovalMode.Cross, {
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -117,6 +121,7 @@ export function crossSerializeStream<T>(
 ): () => void {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createStreamParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
@@ -158,6 +163,7 @@ export function toCrossJSONStream<T>(
 ): () => void {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createStreamParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
@@ -180,6 +186,7 @@ export function fromCrossJSON<T>(
 ): T {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createCrossDeserializerContext({
+    maxBase64Length: options.maxBase64Length,
     plugins,
     refs: options.refs,
     features: options.features,
