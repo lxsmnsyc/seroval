@@ -71,6 +71,7 @@ async function drainStream<T>(
       await drainStream(stream, reader);
     }
   } catch (error) {
+    reader.releaseLock();
     stream.throw(error);
   }
 }
