@@ -1,5 +1,13 @@
 # seroval
 
+## 1.6.7
+
+### Patch Changes
+
+- c7520ad: Skip escape replacement when decoding strings without backslashes.
+- bbd75e8: Reduce JSON binary decoding time in Node while preserving base64 validation and the browser fallback.
+- 772666b: Write decoded binary data directly into its output ArrayBuffer in Node, avoiding a temporary byte buffer and an additional copy.
+
 ## 1.6.6
 
 ### Patch Changes
