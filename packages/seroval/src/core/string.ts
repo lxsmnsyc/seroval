@@ -92,6 +92,9 @@ function deserializeReplacer(str: string): string {
 }
 
 export function deserializeString(str: string): string {
+  if (typeof str === 'string' && !str.includes('\\')) {
+    return str;
+  }
   return str.replace(
     /(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g,
     deserializeReplacer,
