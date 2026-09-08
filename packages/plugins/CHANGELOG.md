@@ -1,5 +1,12 @@
 # seroval-plugins
 
+## 1.6.6
+
+### Patch Changes
+
+- 7770e48: Drain async iterables and ReadableStreams iteratively to avoid retaining an async call chain for every streamed value.
+- f97aea7: Release ReadableStream reader locks when reading fails during async serialization.
+
 ## 1.6.5
 
 ### Patch Changes

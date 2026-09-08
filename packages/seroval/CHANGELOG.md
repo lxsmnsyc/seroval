@@ -1,5 +1,15 @@
 # seroval
 
+## 1.6.6
+
+### Patch Changes
+
+- 0233519: Stop pulling async iterators and call their return method when streaming serialization is cancelled.
+- 35f14f9: Use native base64 encoding when available. Add opt-in compact ArrayBuffer views and a configurable JSON deserialization base64 limit while preserving the existing defaults.
+- 0e4e78d: Reduce the cost of escaping long strings while preserving their serialized representation.
+- 7770e48: Drain async iterables and ReadableStreams iteratively to avoid retaining an async call chain for every streamed value.
+- ad310d6: Keep stream listeners active when another subscription is removed, and make subscription cleanup idempotent.
+
 ## 1.6.5
 
 ### Patch Changes
