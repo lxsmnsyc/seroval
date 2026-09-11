@@ -16,6 +16,33 @@ import {
 } from '../src';
 
 describe('mutual cyclic references', () => {
+  describe.each([
+    ['serialize', serialize],
+    ['serializeAsync', serializeAsync],
+    ['crossSerialize', crossSerialize],
+    ['crossSerializeAsync', crossSerializeAsync],
+  ])('%s deferred assignments', (_name, encode) => {
+    it('evaluates a large graph of repeated back-references', async () => {
+      const source: { items: Record<string, unknown>[] } = { items: [] };
+      for (let index = 0; index < 3000; index++) {
+        source.items.push({
+          owner: source,
+          alternate: source,
+          repeated: source,
+        });
+      }
+      const payload = await encode(source);
+      const back = new Function('$R', `return (${payload})`)(
+        [],
+      ) as typeof source;
+      expect(back.items.length).toBe(source.items.length);
+      for (const item of back.items) {
+        expect(item.owner).toBe(back);
+        expect(item.alternate).toBe(back);
+        expect(item.repeated).toBe(back);
+      }
+    });
+  });
   describe('serialize', () => {
     it('supports Arrays and Arrays', () => {
       const a: unknown[] = [];

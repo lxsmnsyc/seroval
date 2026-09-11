@@ -144,16 +144,27 @@ function getAssignmentExpression(assignment: Assignment): string {
   }
 }
 
+const MAX_ASSIGNMENT_CHAIN_LENGTH = 100;
+
 function mergeAssignments(assignments: Assignment[]): Assignment[] {
   const newAssignments: Assignment[] = [];
   let current = assignments[0];
+  let chainLength = 1;
   for (
     let i = 1, len = assignments.length, item: Assignment, prev = current;
     i < len;
     i++
   ) {
     item = assignments[i];
-    if (item.t === AssignmentType.Index && item.v === prev.v) {
+    if (chainLength === MAX_ASSIGNMENT_CHAIN_LENGTH) {
+      newAssignments.push(current);
+      current = item;
+      chainLength = 0;
+    } else if (
+      item.t === AssignmentType.Index &&
+      prev.t === AssignmentType.Index &&
+      item.v === prev.v
+    ) {
       // Merge if the right-hand value is the same
       // saves at least 2 chars
       current = {
@@ -162,7 +173,11 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
         k: NIL,
         v: getAssignmentExpression(current),
       } as IndexAssignment;
-    } else if (item.t === AssignmentType.Set && item.s === prev.s) {
+    } else if (
+      item.t === AssignmentType.Set &&
+      prev.t === AssignmentType.Set &&
+      item.s === prev.s
+    ) {
       // Maps has chaining methods, merge if source is the same
       current = {
         t: AssignmentType.Set,
@@ -170,7 +185,11 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
         k: item.k,
         v: item.v,
       } as SetAssignment;
-    } else if (item.t === AssignmentType.Add && item.s === prev.s) {
+    } else if (
+      item.t === AssignmentType.Add &&
+      prev.t === AssignmentType.Add &&
+      item.s === prev.s
+    ) {
       // Sets has chaining methods too
       current = {
         t: AssignmentType.Add,
@@ -178,8 +197,11 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
         k: NIL,
         v: item.v,
       } as AddAssignment;
-    } else if (item.t === AssignmentType.Delete && item.s === prev.s) {
-      // Maps has chaining methods, merge if source is the same
+    } else if (
+      item.t === AssignmentType.Delete &&
+      prev.t === AssignmentType.Set &&
+      item.s === prev.s
+    ) {
       current = {
         t: AssignmentType.Delete,
         s: getAssignmentExpression(current),
@@ -190,7 +212,9 @@ function mergeAssignments(assignments: Assignment[]): Assignment[] {
       // Different assignment, push current
       newAssignments.push(current);
       current = item;
+      chainLength = 0;
     }
+    chainLength++;
     prev = item;
   }
 
