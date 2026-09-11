@@ -1,7 +1,4 @@
-import {
-  SerovalMissingReferenceError,
-  SerovalMissingReferenceForIdError,
-} from '..';
+import { SerovalMissingReferenceForIdError } from '..';
 import { REFERENCES_KEY } from './keys';
 
 const REFERENCE = new Map<unknown, string>();
@@ -13,19 +10,12 @@ export function createReference<T>(id: string, value: T): T {
   return value;
 }
 
-export function hasReferenceID<T>(value: T): boolean {
-  return REFERENCE.has(value);
-}
-
 export function hasReference(id: string): boolean {
   return INV_REFERENCE.has(id);
 }
 
-export function getReferenceID<T>(value: T): string {
-  if (hasReferenceID(value)) {
-    return REFERENCE.get(value)!;
-  }
-  throw new SerovalMissingReferenceError(value);
+export function getReferenceID(value: unknown): string | undefined {
+  return REFERENCE.get(value);
 }
 
 export function getReference<T>(id: string): T {
