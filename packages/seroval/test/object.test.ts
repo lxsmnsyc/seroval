@@ -666,6 +666,28 @@ describe('objects', () => {
       expectPreserved(new Function('$R', `return (${payload})`)([]));
     });
   });
+  it.each([
+    '',
+    '0',
+    '-0',
+    '01',
+    '1.5',
+    '1e3',
+    '1e+21',
+    'Infinity',
+    'NaN',
+    '1e400',
+    'needs-quote',
+  ])('preserves property spelling %j in deferred assignments', key => {
+    const source: Record<string, unknown> = {};
+    source[key] = source;
+    for (const payload of [serialize(source), compileJSON(toJSON(source))]) {
+      const back = deserialize<Record<string, unknown>>(payload);
+      expect(Object.keys(back)).toEqual([key]);
+      expect(back[key]).toBe(back);
+      expect(Object.getPrototypeOf(back)).toBe(Object.prototype);
+    }
+  });
   describe('with a shadowed constructor property', () => {
     const SHADOWED = { constructor: 'not a constructor', value: 42 };
 
