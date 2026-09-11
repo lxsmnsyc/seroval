@@ -41,43 +41,46 @@ export default class Serializer {
     if (this.alive && !this.flushed) {
       this.pending++;
       this.keys.add(key);
-      this.cleanups.push(
-        crossSerializeStream(value, {
-          plugins: this.plugins,
-          scopeId: this.options.scopeId,
-          refs: this.refs,
-          disabledFeatures: this.options.disabledFeatures,
-          compactArrayBufferViews: this.options.compactArrayBufferViews,
-          onError: this.options.onError,
-          onSerialize: (data, initial) => {
-            if (this.alive) {
-              this.options.onData(
-                initial
-                  ? this.options.globalIdentifier +
-                      '["' +
-                      serializeString(key) +
-                      '"]=' +
-                      data
-                  : data,
-              );
+      const cleanup = crossSerializeStream(value, {
+        plugins: this.plugins,
+        scopeId: this.options.scopeId,
+        refs: this.refs,
+        disabledFeatures: this.options.disabledFeatures,
+        compactArrayBufferViews: this.options.compactArrayBufferViews,
+        onError: this.options.onError,
+        onSerialize: (data, initial) => {
+          if (this.alive) {
+            this.options.onData(
+              initial
+                ? this.options.globalIdentifier +
+                    '["' +
+                    serializeString(key) +
+                    '"]=' +
+                    data
+                : data,
+            );
+          }
+        },
+        onDone: () => {
+          if (this.alive) {
+            this.pending--;
+            if (
+              this.pending <= 0 &&
+              this.flushed &&
+              !this.done &&
+              this.options.onDone
+            ) {
+              this.done = true;
+              this.options.onDone();
             }
-          },
-          onDone: () => {
-            if (this.alive) {
-              this.pending--;
-              if (
-                this.pending <= 0 &&
-                this.flushed &&
-                !this.done &&
-                this.options.onDone
-              ) {
-                this.options.onDone();
-                this.done = true;
-              }
-            }
-          },
-        }),
-      );
+          }
+        },
+      });
+      if (this.alive) {
+        this.cleanups.push(cleanup);
+      } else {
+        cleanup();
+      }
     }
   }
 
@@ -100,22 +103,40 @@ export default class Serializer {
     if (this.alive) {
       this.flushed = true;
       if (this.pending <= 0 && !this.done && this.options.onDone) {
-        this.options.onDone();
         this.done = true;
+        this.options.onDone();
       }
     }
   }
 
   close(): void {
     if (this.alive) {
-      for (let i = 0, len = this.cleanups.length; i < len; i++) {
-        this.cleanups[i]();
-      }
-      if (!this.done && this.options.onDone) {
-        this.options.onDone();
-        this.done = true;
-      }
       this.alive = false;
+      let failure: { value: unknown } | undefined;
+      for (
+        let index = 0, length = this.cleanups.length;
+        index < length;
+        index++
+      ) {
+        try {
+          this.cleanups[index]();
+        } catch (error) {
+          failure ??= { value: error };
+        }
+      }
+      this.cleanups.length = 0;
+      this.refs.clear();
+      if (!this.done && this.options.onDone) {
+        this.done = true;
+        try {
+          this.options.onDone();
+        } catch (error) {
+          failure ??= { value: error };
+        }
+      }
+      if (failure) {
+        throw failure.value;
+      }
     }
   }
 }
