@@ -97,6 +97,15 @@ export function resolvePlugins(
   plugins?: Plugin<any, any>[],
 ): Plugin<any, any>[] | undefined {
   if (plugins) {
+    if (plugins.length < 2) {
+      if (plugins.length === 0) {
+        return [];
+      }
+      const plugin = plugins[0];
+      if (!plugin.extends || plugin.extends.length === 0) {
+        return [plugin];
+      }
+    }
     const deduped = new Set<Plugin<any, any>>();
     dedupePlugins(deduped, plugins);
     return [...deduped];

@@ -8,6 +8,7 @@ import {
   deserialize,
   fromCrossJSON,
   fromJSON,
+  resolvePlugins,
   serialize,
   serializeAsync,
   toCrossJSON,
@@ -44,6 +45,51 @@ const BufferPlugin = createPlugin<Buffer, SerovalNode>({
 const EXAMPLE = Buffer.from('Hello, World!', 'utf-8');
 
 describe('Plugin', () => {
+  describe('resolution', () => {
+    it('keeps the input list independent of the resolved result', () => {
+      const plugins = [BufferPlugin];
+      const resolved = resolvePlugins(plugins);
+      expect(resolved).toEqual([BufferPlugin]);
+      resolved?.pop();
+      expect(plugins).toEqual([BufferPlugin]);
+      expect(resolvePlugins(plugins)).toEqual([BufferPlugin]);
+    });
+
+    it('keeps empty input lists independent of the resolved result', () => {
+      const plugins: (typeof BufferPlugin)[] = [];
+      const resolved = resolvePlugins(plugins);
+      expect(resolved).toEqual([]);
+      resolved?.push(BufferPlugin);
+      expect(plugins).toEqual([]);
+      expect(resolvePlugins()).toBeUndefined();
+    });
+
+    it('preserves dependency order and removes repeated plugin instances', () => {
+      const parent = createPlugin({
+        ...BufferPlugin,
+        tag: 'parent',
+        extends: [BufferPlugin],
+      });
+      const sibling = createPlugin({ ...BufferPlugin, tag: 'sibling' });
+      expect(resolvePlugins([parent, sibling, BufferPlugin, parent])).toEqual([
+        parent,
+        BufferPlugin,
+        sibling,
+      ]);
+    });
+
+    it('observes dependencies added between resolutions and handles cycles', () => {
+      const dependencies: (typeof BufferPlugin)[] = [];
+      const parent = createPlugin({
+        ...BufferPlugin,
+        tag: 'parent',
+        extends: dependencies,
+      });
+      expect(resolvePlugins([parent])).toEqual([parent]);
+      dependencies.push(BufferPlugin, parent);
+      expect(resolvePlugins([parent])).toEqual([parent, BufferPlugin]);
+    });
+  });
   describe('serialize', () => {
     it('supports Plugin', () => {
       const result = serialize(EXAMPLE, {
