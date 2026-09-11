@@ -76,6 +76,17 @@ export const enum SerovalTemporalType {
   ZonedDateTime = 7,
 }
 
+export const TEMPORAL_TYPE_NAME: Record<SerovalTemporalType, string> = {
+  [SerovalTemporalType.Instant]: 'Instant',
+  [SerovalTemporalType.Duration]: 'Duration',
+  [SerovalTemporalType.PlainDate]: 'PlainDate',
+  [SerovalTemporalType.PlainDateTime]: 'PlainDateTime',
+  [SerovalTemporalType.PlainMonthDay]: 'PlainMonthDay',
+  [SerovalTemporalType.PlainTime]: 'PlainTime',
+  [SerovalTemporalType.PlainYearMonth]: 'PlainYearMonth',
+  [SerovalTemporalType.ZonedDateTime]: 'ZonedDateTime',
+};
+
 export const enum SerovalObjectFlags {
   None = 0,
   NonExtensible = 1,

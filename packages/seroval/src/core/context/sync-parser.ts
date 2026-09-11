@@ -1,9 +1,6 @@
 import {
-  createAggregateErrorNode,
   createArrayNode,
-  createAsyncIteratorFactoryInstanceNode,
   createBigIntNode,
-  createBigIntTypedArrayNode,
   createBoxedNode,
   createDataViewNode,
   createDateNode,
@@ -15,15 +12,13 @@ import {
   createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
-  createStreamNextNode,
-  createStreamReturnNode,
-  createStreamThrowNode,
+  createStreamNode,
   createStringNode,
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
 import { FeatureFlag } from '../compat';
-import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
+import { NIL, SerovalNodeType } from '../constants';
 import {
   SerovalDepthLimitError,
   SerovalParserError,
@@ -87,6 +82,7 @@ import {
   createPromiseConstructorNode,
   getArrayBufferView,
   getReferenceNode,
+  getTemporalType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
@@ -267,6 +263,7 @@ function parseProperties(
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ITERATOR));
     valueNodes.push(
       createIteratorFactoryInstanceNode(
+        SerovalNodeType.IteratorFactoryInstance,
         parseIteratorFactory(ctx.base),
         parseSOS(
           ctx,
@@ -281,7 +278,8 @@ function parseProperties(
   if (SYM_ASYNC_ITERATOR in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ASYNC_ITERATOR));
     valueNodes.push(
-      createAsyncIteratorFactoryInstanceNode(
+      createIteratorFactoryInstanceNode(
+        SerovalNodeType.AsyncIteratorFactoryInstance,
         parseAsyncIteratorFactory(ctx.base),
         parseSOS(
           ctx,
@@ -339,25 +337,13 @@ function parseBoxed(
 function parseTypedArray(
   ctx: SOSParserContext,
   depth: number,
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
   id: number,
-  current: TypedArrayValue,
-): SerovalTypedArrayNode {
+  current: TypedArrayValue | BigIntTypedArrayValue,
+): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode {
   current = getArrayBufferView(ctx.base, current);
   return createTypedArrayNode(
-    id,
-    current,
-    parseSOS(ctx, depth, current.buffer),
-  );
-}
-
-function parseBigIntTypedArray(
-  ctx: SOSParserContext,
-  depth: number,
-  id: number,
-  current: BigIntTypedArrayValue,
-): SerovalBigIntTypedArrayNode {
-  current = getArrayBufferView(ctx.base, current);
-  return createBigIntTypedArrayNode(
+    type,
     id,
     current,
     parseSOS(ctx, depth, current.buffer),
@@ -377,25 +363,13 @@ function parseDataView(
 function parseError(
   ctx: SOSParserContext,
   depth: number,
+  type: SerovalNodeType.Error | SerovalNodeType.AggregateError,
   id: number,
   current: Error,
-): SerovalErrorNode {
+): SerovalErrorNode | SerovalAggregateErrorNode {
   const options = getErrorOptions(current, ctx.base.features);
   return createErrorNode(
-    id,
-    current,
-    options ? parseProperties(ctx, depth, options) : NIL,
-  );
-}
-
-function parseAggregateError(
-  ctx: SOSParserContext,
-  depth: number,
-  id: number,
-  current: AggregateError,
-): SerovalAggregateErrorNode {
-  const options = getErrorOptions(current, ctx.base.features);
-  return createAggregateErrorNode(
+    type,
     id,
     current,
     options ? parseProperties(ctx, depth, options) : NIL,
@@ -451,7 +425,10 @@ function parseStream(
         if (ctx.state.alive) {
           const parsed = parseWithError(ctx, depth, value);
           if (parsed) {
-            onParse(ctx, createStreamNextNode(id, parsed));
+            onParse(
+              ctx,
+              createStreamNode(SerovalNodeType.StreamNext, id, parsed),
+            );
           }
         }
       },
@@ -459,7 +436,10 @@ function parseStream(
         if (ctx.state.alive) {
           const parsed = parseWithError(ctx, depth, value);
           if (parsed) {
-            onParse(ctx, createStreamThrowNode(id, parsed));
+            onParse(
+              ctx,
+              createStreamNode(SerovalNodeType.StreamThrow, id, parsed),
+            );
           }
         }
         popPendingState(ctx);
@@ -468,7 +448,10 @@ function parseStream(
         if (ctx.state.alive) {
           const parsed = parseWithError(ctx, depth, value);
           if (parsed) {
-            onParse(ctx, createStreamReturnNode(id, parsed));
+            onParse(
+              ctx,
+              createStreamNode(SerovalNodeType.StreamReturn, id, parsed),
+            );
           }
         }
         popPendingState(ctx);
@@ -661,7 +644,13 @@ function parseObjectPhase2(
     case SyntaxError:
     case TypeError:
     case URIError:
-      return parseError(ctx, depth, id, current as unknown as Error);
+      return parseError(
+        ctx,
+        depth,
+        SerovalNodeType.Error,
+        id,
+        current as unknown as Error,
+      );
     case Number:
     case Boolean:
     case String:
@@ -685,6 +674,7 @@ function parseObjectPhase2(
       return parseTypedArray(
         ctx,
         depth,
+        SerovalNodeType.TypedArray,
         id,
         current as unknown as TypedArrayValue,
       );
@@ -715,9 +705,10 @@ function parseObjectPhase2(
     switch (currentClass) {
       case BigInt64Array:
       case BigUint64Array:
-        return parseBigIntTypedArray(
+        return parseTypedArray(
           ctx,
           depth,
+          SerovalNodeType.BigIntTypedArray,
           id,
           current as unknown as BigIntTypedArrayValue,
         );
@@ -730,9 +721,10 @@ function parseObjectPhase2(
     typeof AggregateError !== 'undefined' &&
     (currentClass === AggregateError || current instanceof AggregateError)
   ) {
-    return parseAggregateError(
+    return parseError(
       ctx,
       depth,
+      SerovalNodeType.AggregateError,
       id,
       current as unknown as AggregateError,
     );
@@ -741,63 +733,19 @@ function parseObjectPhase2(
     currentFeatures & FeatureFlag.Temporal &&
     typeof Temporal !== 'undefined'
   ) {
-    switch (currentClass) {
-      case Temporal.Instant:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Instant,
-          current as unknown as Temporal.Instant,
-        );
-      case Temporal.Duration:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Duration,
-          current as unknown as Temporal.Duration,
-        );
-      case Temporal.PlainDate:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDate,
-          current as unknown as Temporal.PlainDate,
-        );
-      case Temporal.PlainDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDateTime,
-          current as unknown as Temporal.PlainDateTime,
-        );
-      case Temporal.PlainMonthDay:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainMonthDay,
-          current as unknown as Temporal.PlainMonthDay,
-        );
-      case Temporal.PlainTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainTime,
-          current as unknown as Temporal.PlainTime,
-        );
-      case Temporal.PlainYearMonth:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainYearMonth,
-          current as unknown as Temporal.PlainYearMonth,
-        );
-      case Temporal.ZonedDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.ZonedDateTime,
-          current as unknown as Temporal.ZonedDateTime,
-        );
-      default:
-        break;
+    const temporalType = getTemporalType(currentClass);
+    if (temporalType != null) {
+      return createTemporalNode(
+        id,
+        temporalType,
+        current as unknown as Temporal.Instant,
+      );
     }
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
   if (current instanceof Error) {
-    return parseError(ctx, depth, id, current);
+    return parseError(ctx, depth, SerovalNodeType.Error, id, current);
   }
   // Generator functions don't have a global constructor
   // despite existing
