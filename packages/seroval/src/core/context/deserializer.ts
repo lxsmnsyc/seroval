@@ -5,8 +5,8 @@ import {
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
-  SerovalTemporalType,
   SYMBOL_REF,
+  TEMPORAL_TYPE_NAME,
 } from '../constants';
 import {
   ARRAY_BUFFER_CONSTRUCTOR,
@@ -25,7 +25,7 @@ import type { PluginAccessOptions } from '../plugin';
 import { SerovalMode } from '../plugin';
 import { getReference } from '../reference';
 import { createSequence, type Sequence, sequenceToIterator } from '../sequence';
-import type { Stream } from '../stream';
+import type { Stream, StreamListener } from '../stream';
 import { createStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import type {
@@ -199,7 +199,7 @@ export class DeserializePluginContext {
 }
 
 function guardIndexedValue(ctx: BaseDeserializerContext, id: number): void {
-  if (id < 0 || !Number.isFinite(id) || !Number.isInteger(id)) {
+  if (id < 0 || !Number.isInteger(id)) {
     throw new SerovalMalformedNodeError({
       t: SerovalNodeType.IndexedValue,
       i: id,
@@ -399,36 +399,12 @@ function deserializeTemporal(
   if (!(ctx.base.features & Feature.Temporal)) {
     throw new SerovalUnsupportedNodeError(node);
   }
-  let value: unknown;
-  switch (node.c) {
-    case SerovalTemporalType.Instant:
-      value = Temporal.Instant.from(node.s);
-      break;
-    case SerovalTemporalType.Duration:
-      value = Temporal.Duration.from(node.s);
-      break;
-    case SerovalTemporalType.PlainDate:
-      value = Temporal.PlainDate.from(node.s);
-      break;
-    case SerovalTemporalType.PlainDateTime:
-      value = Temporal.PlainDateTime.from(node.s);
-      break;
-    case SerovalTemporalType.PlainMonthDay:
-      value = Temporal.PlainMonthDay.from(node.s);
-      break;
-    case SerovalTemporalType.PlainTime:
-      value = Temporal.PlainTime.from(node.s);
-      break;
-    case SerovalTemporalType.PlainYearMonth:
-      value = Temporal.PlainYearMonth.from(node.s);
-      break;
-    case SerovalTemporalType.ZonedDateTime:
-      value = Temporal.ZonedDateTime.from(node.s);
-      break;
-    default:
-      throw new SerovalMalformedNodeError(node);
-  }
-  return assignIndexedValue(ctx, node.i, value);
+  // `node.c` only ever indexes our own name table (own-property checked),
+  // so untrusted input cannot reach arbitrary `Temporal` members.
+  const construct = (
+    Temporal as unknown as Record<string, { from(value: string): unknown }>
+  )[deserializeKnownValue(node, TEMPORAL_TYPE_NAME, node.c)];
+  return assignIndexedValue(ctx, node.i, construct.from(node.s));
 }
 
 function deserializeRegExp(
@@ -651,33 +627,22 @@ function deserializePromiseConstructor(
   return value;
 }
 
-function deserializePromiseResolve(
+function deserializePromiseResult(
   ctx: DeserializerContext,
   depth: number,
-  node: SerovalPromiseResolveNode,
+  node: SerovalPromiseResolveNode | SerovalPromiseRejectNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as
     | PromiseConstructorResolver
     | undefined;
   if (deferred) {
     validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
-    deferred.s(deserialize(ctx, depth, node.a[1]));
-    return NIL;
-  }
-  throw new SerovalMissingInstanceError('Promise');
-}
-
-function deserializePromiseReject(
-  ctx: DeserializerContext,
-  depth: number,
-  node: SerovalPromiseRejectNode,
-): unknown {
-  const deferred = ctx.base.refs.get(node.i) as
-    | PromiseConstructorResolver
-    | undefined;
-  if (deferred) {
-    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
-    deferred.f(deserialize(ctx, depth, node.a[1]));
+    const value = deserialize(ctx, depth, node.a[1]);
+    if (node.t === SerovalNodeType.PromiseSuccess) {
+      deferred.s(value);
+    } else {
+      deferred.f(value);
+    }
     return NIL;
   }
   throw new SerovalMissingInstanceError('Promise');
@@ -720,43 +685,19 @@ function deserializeStreamConstructor(
   return result;
 }
 
-function deserializeStreamNext(
+function deserializeStreamCall(
   ctx: DeserializerContext,
   depth: number,
-  node: SerovalStreamNextNode,
+  node:
+    | SerovalStreamNextNode
+    | SerovalStreamThrowNode
+    | SerovalStreamReturnNode,
+  method: keyof StreamListener<unknown>,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
   if (deferred) {
     validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
-    deferred.next(deserialize(ctx, depth, node.f));
-    return NIL;
-  }
-  throw new SerovalMissingInstanceError('Stream');
-}
-
-function deserializeStreamThrow(
-  ctx: DeserializerContext,
-  depth: number,
-  node: SerovalStreamThrowNode,
-): unknown {
-  const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  if (deferred) {
-    validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
-    deferred.throw(deserialize(ctx, depth, node.f));
-    return NIL;
-  }
-  throw new SerovalMissingInstanceError('Stream');
-}
-
-function deserializeStreamReturn(
-  ctx: DeserializerContext,
-  depth: number,
-  node: SerovalStreamReturnNode,
-): unknown {
-  const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
-  if (deferred) {
-    validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
-    deferred.return(deserialize(ctx, depth, node.f));
+    deferred[method](deserialize(ctx, depth, node.f));
     return NIL;
   }
   throw new SerovalMissingInstanceError('Stream');
@@ -856,9 +797,8 @@ function deserialize(
     case SerovalNodeType.PromiseConstructor:
       return deserializePromiseConstructor(ctx, node);
     case SerovalNodeType.PromiseSuccess:
-      return deserializePromiseResolve(ctx, depth, node);
     case SerovalNodeType.PromiseFailure:
-      return deserializePromiseReject(ctx, depth, node);
+      return deserializePromiseResult(ctx, depth, node);
     case SerovalNodeType.IteratorFactoryInstance:
       return deserializeIteratorFactoryInstance(ctx, depth, node);
     case SerovalNodeType.AsyncIteratorFactoryInstance:
@@ -866,11 +806,11 @@ function deserialize(
     case SerovalNodeType.StreamConstructor:
       return deserializeStreamConstructor(ctx, depth, node);
     case SerovalNodeType.StreamNext:
-      return deserializeStreamNext(ctx, depth, node);
+      return deserializeStreamCall(ctx, depth, node, 'next');
     case SerovalNodeType.StreamThrow:
-      return deserializeStreamThrow(ctx, depth, node);
+      return deserializeStreamCall(ctx, depth, node, 'throw');
     case SerovalNodeType.StreamReturn:
-      return deserializeStreamReturn(ctx, depth, node);
+      return deserializeStreamCall(ctx, depth, node, 'return');
     case SerovalNodeType.IteratorFactory:
       return deserializeIteratorFactory(ctx, depth, node);
     case SerovalNodeType.AsyncIteratorFactory:

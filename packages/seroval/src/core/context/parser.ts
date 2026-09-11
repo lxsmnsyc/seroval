@@ -5,7 +5,12 @@ import {
 } from '../base-primitives';
 import { ALL_ENABLED } from '../compat';
 import type { WellKnownSymbols } from '../constants';
-import { INV_SYMBOL_REF, NIL, SerovalNodeType } from '../constants';
+import {
+  INV_SYMBOL_REF,
+  NIL,
+  SerovalNodeType,
+  SerovalTemporalType,
+} from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
 import type { PluginAccessOptions, SerovalMode } from '../plugin';
@@ -191,6 +196,31 @@ export function parseAsyncIteratorFactory(
       parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR),
     ],
   );
+}
+
+export function getTemporalType(
+  currentClass: unknown,
+): SerovalTemporalType | undefined {
+  switch (currentClass) {
+    case Temporal.Instant:
+      return SerovalTemporalType.Instant;
+    case Temporal.Duration:
+      return SerovalTemporalType.Duration;
+    case Temporal.PlainDate:
+      return SerovalTemporalType.PlainDate;
+    case Temporal.PlainDateTime:
+      return SerovalTemporalType.PlainDateTime;
+    case Temporal.PlainMonthDay:
+      return SerovalTemporalType.PlainMonthDay;
+    case Temporal.PlainTime:
+      return SerovalTemporalType.PlainTime;
+    case Temporal.PlainYearMonth:
+      return SerovalTemporalType.PlainYearMonth;
+    case Temporal.ZonedDateTime:
+      return SerovalTemporalType.ZonedDateTime;
+    default:
+      return NIL;
+  }
 }
 
 export function createObjectNode(

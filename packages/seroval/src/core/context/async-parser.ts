@@ -1,9 +1,6 @@
 import {
-  createAggregateErrorNode,
   createArrayNode,
-  createAsyncIteratorFactoryInstanceNode,
   createBigIntNode,
-  createBigIntTypedArrayNode,
   createBoxedNode,
   createDataViewNode,
   createDateNode,
@@ -15,15 +12,13 @@ import {
   createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
-  createStreamNextNode,
-  createStreamReturnNode,
-  createStreamThrowNode,
+  createStreamNode,
   createStringNode,
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
 import { Feature } from '../compat';
-import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
+import { NIL, SerovalNodeType } from '../constants';
 import {
   SerovalDepthLimitError,
   SerovalParserError,
@@ -83,6 +78,7 @@ import {
   createObjectNode,
   getArrayBufferView,
   getReferenceNode,
+  getTemporalType,
   markParserRef,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
@@ -166,6 +162,7 @@ async function parseProperties(
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ITERATOR));
     valueNodes.push(
       createIteratorFactoryInstanceNode(
+        SerovalNodeType.IteratorFactoryInstance,
         parseIteratorFactory(ctx.base),
         (await parseAsync(
           ctx,
@@ -180,7 +177,8 @@ async function parseProperties(
   if (SYM_ASYNC_ITERATOR in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ASYNC_ITERATOR));
     valueNodes.push(
-      createAsyncIteratorFactoryInstanceNode(
+      createIteratorFactoryInstanceNode(
+        SerovalNodeType.AsyncIteratorFactoryInstance,
         parseAsyncIteratorFactory(ctx.base),
         (await parseAsync(
           ctx,
@@ -236,25 +234,13 @@ async function parseBoxed(
 async function parseTypedArray(
   ctx: AsyncParserContext,
   depth: number,
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
   id: number,
-  current: TypedArrayValue,
-): Promise<SerovalTypedArrayNode> {
+  current: TypedArrayValue | BigIntTypedArrayValue,
+): Promise<SerovalTypedArrayNode | SerovalBigIntTypedArrayNode> {
   current = getArrayBufferView(ctx.base, current);
   return createTypedArrayNode(
-    id,
-    current,
-    await parseAsync(ctx, depth, current.buffer),
-  );
-}
-
-async function parseBigIntTypedArray(
-  ctx: AsyncParserContext,
-  depth: number,
-  id: number,
-  current: BigIntTypedArrayValue,
-): Promise<SerovalBigIntTypedArrayNode> {
-  current = getArrayBufferView(ctx.base, current);
-  return createBigIntTypedArrayNode(
+    type,
     id,
     current,
     await parseAsync(ctx, depth, current.buffer),
@@ -278,25 +264,13 @@ async function parseDataView(
 async function parseError(
   ctx: AsyncParserContext,
   depth: number,
+  type: SerovalNodeType.Error | SerovalNodeType.AggregateError,
   id: number,
   current: Error,
-): Promise<SerovalErrorNode> {
+): Promise<SerovalErrorNode | SerovalAggregateErrorNode> {
   const options = getErrorOptions(current, ctx.base.features);
   return createErrorNode(
-    id,
-    current,
-    options ? await parseProperties(ctx, depth, options) : NIL,
-  );
-}
-
-async function parseAggregateError(
-  ctx: AsyncParserContext,
-  depth: number,
-  id: number,
-  current: AggregateError,
-): Promise<SerovalAggregateErrorNode> {
-  const options = getErrorOptions(current, ctx.base.features);
-  return createAggregateErrorNode(
+    type,
     id,
     current,
     options ? await parseProperties(ctx, depth, options) : NIL,
@@ -395,7 +369,7 @@ function parseStreamHandle<T>(
       markParserRef(this.base, id);
       parseAsync(this, depth, value).then(
         data => {
-          sequence.push(createStreamNextNode(id, data));
+          sequence.push(createStreamNode(SerovalNodeType.StreamNext, id, data));
         },
         data => {
           reject(data);
@@ -407,7 +381,9 @@ function parseStreamHandle<T>(
       markParserRef(this.base, id);
       parseAsync(this, depth, value).then(
         data => {
-          sequence.push(createStreamThrowNode(id, data));
+          sequence.push(
+            createStreamNode(SerovalNodeType.StreamThrow, id, data),
+          );
           resolve(sequence);
           cleanup();
         },
@@ -421,7 +397,9 @@ function parseStreamHandle<T>(
       markParserRef(this.base, id);
       parseAsync(this, depth, value).then(
         data => {
-          sequence.push(createStreamReturnNode(id, data));
+          sequence.push(
+            createStreamNode(SerovalNodeType.StreamReturn, id, data),
+          );
           resolve(sequence);
           cleanup();
         },
@@ -523,7 +501,13 @@ export async function parseObjectAsync(
     case SyntaxError:
     case TypeError:
     case URIError:
-      return parseError(ctx, depth, id, current as unknown as Error);
+      return parseError(
+        ctx,
+        depth,
+        SerovalNodeType.Error,
+        id,
+        current as unknown as Error,
+      );
     case Number:
     case Boolean:
     case String:
@@ -547,6 +531,7 @@ export async function parseObjectAsync(
       return parseTypedArray(
         ctx,
         depth,
+        SerovalNodeType.TypedArray,
         id,
         current as unknown as TypedArrayValue,
       );
@@ -577,9 +562,10 @@ export async function parseObjectAsync(
     switch (currentClass) {
       case BigInt64Array:
       case BigUint64Array:
-        return parseBigIntTypedArray(
+        return parseTypedArray(
           ctx,
           depth,
+          SerovalNodeType.BigIntTypedArray,
           id,
           current as unknown as BigIntTypedArrayValue,
         );
@@ -592,71 +578,28 @@ export async function parseObjectAsync(
     typeof AggregateError !== 'undefined' &&
     (currentClass === AggregateError || current instanceof AggregateError)
   ) {
-    return parseAggregateError(
+    return parseError(
       ctx,
       depth,
+      SerovalNodeType.AggregateError,
       id,
       current as unknown as AggregateError,
     );
   }
   if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
-    switch (currentClass) {
-      case Temporal.Instant:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Instant,
-          current as unknown as Temporal.Instant,
-        );
-      case Temporal.Duration:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Duration,
-          current as unknown as Temporal.Duration,
-        );
-      case Temporal.PlainDate:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDate,
-          current as unknown as Temporal.PlainDate,
-        );
-      case Temporal.PlainDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDateTime,
-          current as unknown as Temporal.PlainDateTime,
-        );
-      case Temporal.PlainMonthDay:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainMonthDay,
-          current as unknown as Temporal.PlainMonthDay,
-        );
-      case Temporal.PlainTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainTime,
-          current as unknown as Temporal.PlainTime,
-        );
-      case Temporal.PlainYearMonth:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainYearMonth,
-          current as unknown as Temporal.PlainYearMonth,
-        );
-      case Temporal.ZonedDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.ZonedDateTime,
-          current as unknown as Temporal.ZonedDateTime,
-        );
-      default:
-        break;
+    const temporalType = getTemporalType(currentClass);
+    if (temporalType != null) {
+      return createTemporalNode(
+        id,
+        temporalType,
+        current as unknown as Temporal.Instant,
+      );
     }
   }
   // Slow path. We only need to handle Errors and Iterators
   // since they have very broad implementations.
   if (current instanceof Error) {
-    return parseError(ctx, depth, id, current);
+    return parseError(ctx, depth, SerovalNodeType.Error, id, current);
   }
   // Generator functions don't have a global constructor
   // despite existing
