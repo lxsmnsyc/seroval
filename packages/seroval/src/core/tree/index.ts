@@ -130,7 +130,7 @@ export function fromJSON<T>(
 ): T {
   const plugins = resolvePlugins(options.plugins);
   const disabledFeatures = options.disabledFeatures || 0;
-  const sourceFeatures = source.f ?? ALL_ENABLED;
+  const sourceFeatures = source.f == null ? ALL_ENABLED : source.f;
   const ctx = createVanillaDeserializerContext({
     maxBase64Length: options.maxBase64Length,
     plugins,

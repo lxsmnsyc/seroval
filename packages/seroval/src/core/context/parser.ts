@@ -66,7 +66,7 @@ export function createBaseParserContext(
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     refs: options.refs || new Map(),
     depthLimit: options.depthLimit || 1000,
-    compactArrayBufferViews: options.compactArrayBufferViews ?? false,
+    compactArrayBufferViews: !!options.compactArrayBufferViews,
   };
 }
 

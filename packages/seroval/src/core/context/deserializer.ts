@@ -116,7 +116,10 @@ export function createBaseDeserializerContext(
   mode: SerovalMode,
   options: BaseDeserializerContextOptions,
 ): BaseDeserializerContext {
-  const maxBase64Length = options.maxBase64Length ?? DEFAULT_MAX_BASE64_LENGTH;
+  const maxBase64Length =
+    options.maxBase64Length == null
+      ? DEFAULT_MAX_BASE64_LENGTH
+      : options.maxBase64Length;
   if (!Number.isSafeInteger(maxBase64Length) || maxBase64Length < 0) {
     throw new RangeError('maxBase64Length must be a non-negative safe integer');
   }
@@ -130,7 +133,10 @@ export function createBaseDeserializerContext(
     mode,
     plugins: options.plugins,
     refs: refs as BaseDeserializerContext['refs'],
-    features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
+    features:
+      options.features == null
+        ? ALL_ENABLED ^ (options.disabledFeatures || 0)
+        : options.features,
     depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
     maxBase64Length,
   };
@@ -511,7 +517,7 @@ function deserializeTypedArray(
 ): TypedArrayValue | BigIntTypedArrayValue {
   const construct = getTypedArrayConstructor(node.c) as Int8ArrayConstructor;
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
-  const offset = node.b ?? 0;
+  const offset = node.b == null ? 0 : node.b;
   if (offset < 0 || offset > source.byteLength) {
     throw new SerovalMalformedNodeError(node);
   }
@@ -529,7 +535,7 @@ function deserializeDataView(
   node: SerovalDataViewNode,
 ): DataView {
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
-  const offset = node.b ?? 0;
+  const offset = node.b == null ? 0 : node.b;
   if (offset < 0 || offset > source.byteLength) {
     throw new SerovalMalformedNodeError(node);
   }

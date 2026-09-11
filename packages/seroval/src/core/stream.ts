@@ -39,16 +39,23 @@ export function createStreamFromAsyncIterable<T>(
   let cancelled = false;
   let done = false;
 
-  cleanups?.push(() => {
-    if (!(done || cancelled)) {
-      cancelled = true;
-      Promise.resolve()
-        .then(() => iterator.return?.())
-        .catch(() => {
-          // no-op
-        });
-    }
-  });
+  if (cleanups) {
+    cleanups.push(() => {
+      if (!(done || cancelled)) {
+        cancelled = true;
+        Promise.resolve()
+          .then(() => {
+            if (iterator.return) {
+              return iterator.return();
+            }
+            return undefined;
+          })
+          .catch(() => {
+            // no-op
+          });
+      }
+    });
+  }
 
   async function push(): Promise<void> {
     try {
