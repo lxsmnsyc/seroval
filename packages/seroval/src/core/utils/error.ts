@@ -33,38 +33,34 @@ export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   return ErrorConstructorTag.Error;
 }
 
-function getInitialErrorOptions(
-  error: Error,
-): Record<string, unknown> | undefined {
+function getInitialErrorOptions(error: Error): Record<string, unknown> {
+  const options: Record<string, unknown> = Object.create(null);
   const construct = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
   // Name has been modified
   if (error.name !== construct) {
-    return { name: error.name };
-  }
-  if (error.constructor.name !== construct) {
+    options.name = error.name;
+  } else if (error.constructor.name !== construct) {
     // Otherwise, name is overriden because
     // the Error class is extended
-    return { name: error.constructor.name };
+    options.name = error.constructor.name;
   }
-  return {};
+  return options;
 }
 
 export function getErrorOptions(
   error: Error,
   features: number,
 ): Record<string, unknown> | undefined {
-  let options = getInitialErrorOptions(error);
+  const options = getInitialErrorOptions(error);
   const names = Object.getOwnPropertyNames(error);
   for (let i = 0, len = names.length, name: string; i < len; i++) {
     name = names[i];
     if (name !== 'name' && name !== 'message') {
       if (name === 'stack') {
         if (features & Feature.ErrorPrototypeStack) {
-          options = options || {};
           options[name] = error[name as keyof Error];
         }
       } else {
-        options = options || {};
         options[name] = error[name as keyof Error];
       }
     }

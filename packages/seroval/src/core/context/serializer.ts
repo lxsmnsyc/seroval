@@ -505,7 +505,7 @@ function createObjectAssign(
   key: string,
   value: string,
 ): void {
-  if (!isValidKey(key)) {
+  if (key === '__proto__') {
     // `obj.__proto__ = x`, including the bracket form `obj["__proto__"] = x`,
     // invokes the prototype setter rather than creating an own property.
     // Define the property instead so the round-trip preserves it as an actual
@@ -821,7 +821,10 @@ function serializeDictionary(
 ): string {
   if (node.p) {
     const base = ctx.base;
-    if (base.features & Feature.ObjectAssign) {
+    if (
+      base.features & Feature.ObjectAssign &&
+      !node.p.k.includes('__proto__')
+    ) {
       init = serializeWithObjectAssign(ctx, node, node.p, init);
     } else {
       markSerializerRef(base, node.i);
