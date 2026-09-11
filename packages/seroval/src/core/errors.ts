@@ -189,7 +189,7 @@ export class SerovalDepthLimitError extends Error {
   constructor(limit: number) {
     super(
       import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.ConflictedNodeId)
+        ? getSpecificErrorMessage(SpecificErrorCodes.DepthLimit)
         : 'Depth limit of ' + limit + ' reached',
     );
   }
