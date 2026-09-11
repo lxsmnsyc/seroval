@@ -12,7 +12,6 @@ import {
   NEG_ZERO_NODE,
 } from './literals';
 import { createSerovalNode } from './node';
-import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
   SerovalAggregateErrorNode,
@@ -139,7 +138,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   return createSerovalNode(
     SerovalNodeType.Date,
     id,
-    timestamp !== timestamp ? '' : current.toISOString(),
+    timestamp === timestamp ? current.toISOString() : '',
     NIL,
     NIL,
     NIL,
@@ -223,14 +222,14 @@ export function createWKSymbolNode(
   );
 }
 
-export function createReferenceNode<T>(
+export function createReferenceNode(
   id: number,
-  ref: T,
+  referenceId: string,
 ): SerovalReferenceNode {
   return createSerovalNode(
     SerovalNodeType.Reference,
     id,
-    serializeString(getReferenceID(ref)),
+    serializeString(referenceId),
     NIL,
     NIL,
     NIL,
