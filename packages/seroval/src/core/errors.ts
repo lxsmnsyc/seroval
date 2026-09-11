@@ -3,12 +3,14 @@
 import { serializeString } from './string';
 import type { SerovalNode } from './types';
 
-const { toString: objectToString } = Object.prototype;
-
 const enum StepErrorCodes {
   Parse = 1,
   Serialize = 2,
   Deserialize = 3,
+}
+
+function objectToString(value: unknown): string {
+  return Object.prototype.toString.call(value);
 }
 
 function getErrorMessageDev(type: string, cause: unknown): string {
@@ -23,7 +25,7 @@ ${cause.message}
   }
   return `Seroval caught an error during the ${type} process.
 
-"${objectToString.call(cause)}"
+"${objectToString(cause)}"
 
 For more information, please check the "cause" property of this error.`;
 }
@@ -38,17 +40,16 @@ function getErrorMessageProd(type: string): string {
   return `Seroval Error (step: ${STEP_ERROR_CODES[type]})`;
 }
 
-const getErrorMessage = (type: string, cause: any) =>
-  import.meta.env.PROD
-    ? getErrorMessageProd(type)
-    : getErrorMessageDev(type, cause);
-
 export class SerovalError extends Error {
   constructor(
     type: string,
     public cause: unknown,
   ) {
-    super(getErrorMessage(type, cause));
+    super(
+      import.meta.env.PROD
+        ? getErrorMessageProd(type)
+        : getErrorMessageDev(type, cause),
+    );
   }
 }
 
@@ -92,7 +93,7 @@ export class SerovalUnsupportedTypeError extends Error {
     super(
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnsupportedType)
-        : `The value ${objectToString.call(value)} of type "${typeof value}" cannot be parsed/serialized.
+        : `The value ${objectToString(value)} of type "${typeof value}" cannot be parsed/serialized.
       
 There are few workarounds for this problem:
 - Transform the value in a way that it can be serialized.
@@ -137,7 +138,7 @@ export class SerovalMissingReferenceError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.MissingReference)
         : 'Missing reference for the value "' +
-            objectToString.call(value) +
+            objectToString(value) +
             '" of type "' +
             typeof value +
             '"',
