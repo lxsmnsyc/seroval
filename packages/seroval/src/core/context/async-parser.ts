@@ -377,9 +377,6 @@ async function parsePromise(
     NIL,
     NIL,
     await parseAsync(ctx, depth, result),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 

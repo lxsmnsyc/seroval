@@ -498,10 +498,6 @@ function handlePromiseSuccess(
             parseSpecialReference(this.base, SpecialReference.PromiseSuccess),
             parsed,
           ],
-          NIL,
-          NIL,
-          NIL,
-          NIL,
         ),
       );
     }
@@ -532,10 +528,6 @@ function handlePromiseFailure(
             parseSpecialReference(this.base, SpecialReference.PromiseFailure),
             parsed,
           ],
-          NIL,
-          NIL,
-          NIL,
-          NIL,
         ),
       );
     }
