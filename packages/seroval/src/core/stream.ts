@@ -79,7 +79,7 @@ export function createStreamFromAsyncIterable<T>(
   return stream;
 }
 
-const createAsyncIterable = ASYNC_ITERATOR_CONSTRUCTOR(
+const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
   SYM_ASYNC_ITERATOR,
   PROMISE_CONSTRUCTOR,
 );
