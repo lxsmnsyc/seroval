@@ -87,7 +87,6 @@ import {
   createPromiseConstructorNode,
   getArrayBufferView,
   getReferenceNode,
-  ParserNodeType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
@@ -854,10 +853,10 @@ function parseFunction(
   current: unknown,
 ): SerovalNode {
   const ref = getReferenceNode(ctx.base, current);
-  if (ref.type !== ParserNodeType.Fresh) {
-    return ref.value;
+  if (typeof ref !== 'number') {
+    return ref;
   }
-  const plugin = parsePlugin(ctx, depth, ref.value, current);
+  const plugin = parsePlugin(ctx, depth, ref, current);
   if (plugin) {
     return plugin;
   }
@@ -886,9 +885,9 @@ export function parseSOS<T>(
     case 'object': {
       if (current) {
         const ref = getReferenceNode(ctx.base, current);
-        return ref.type === ParserNodeType.Fresh
-          ? parseObject(ctx, depth + 1, ref.value, current as object)
-          : ref.value;
+        return typeof ref === 'number'
+          ? parseObject(ctx, depth + 1, ref, current as object)
+          : ref;
       }
       return NULL_NODE;
     }
