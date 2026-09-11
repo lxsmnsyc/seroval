@@ -146,93 +146,53 @@ function getAssignmentExpression(assignment: Assignment): string {
 
 const MAX_ASSIGNMENT_CHAIN_LENGTH = 100;
 
-function mergeAssignments(assignments: Assignment[]): Assignment[] {
-  const newAssignments: Assignment[] = [];
-  let current = assignments[0];
+function resolveAssignments(assignments: Assignment[]): string | undefined {
+  if (!assignments.length) {
+    return NIL;
+  }
+  let previous = assignments[0];
+  let expression = getAssignmentExpression(previous);
+  let result = '';
   let chainLength = 1;
-  for (
-    let i = 1, len = assignments.length, item: Assignment, prev = current;
-    i < len;
-    i++
-  ) {
-    item = assignments[i];
+  for (let index = 1, length = assignments.length; index < length; index++) {
+    const assignment = assignments[index];
     if (chainLength === MAX_ASSIGNMENT_CHAIN_LENGTH) {
-      newAssignments.push(current);
-      current = item;
+      result += expression + ',';
+      expression = getAssignmentExpression(assignment);
       chainLength = 0;
     } else if (
-      item.t === AssignmentType.Index &&
-      prev.t === AssignmentType.Index &&
-      item.v === prev.v
+      assignment.t === AssignmentType.Index &&
+      previous.t === AssignmentType.Index &&
+      assignment.v === previous.v
     ) {
-      // Merge if the right-hand value is the same
-      // saves at least 2 chars
-      current = {
-        t: AssignmentType.Index,
-        s: item.s,
-        k: NIL,
-        v: getAssignmentExpression(current),
-      } as IndexAssignment;
+      expression = assignment.s + '=' + expression;
     } else if (
-      item.t === AssignmentType.Set &&
-      prev.t === AssignmentType.Set &&
-      item.s === prev.s
+      assignment.t === AssignmentType.Set &&
+      previous.t === AssignmentType.Set &&
+      assignment.s === previous.s
     ) {
-      // Maps has chaining methods, merge if source is the same
-      current = {
-        t: AssignmentType.Set,
-        s: getAssignmentExpression(current),
-        k: item.k,
-        v: item.v,
-      } as SetAssignment;
+      expression += '.set(' + assignment.k + ',' + assignment.v + ')';
     } else if (
-      item.t === AssignmentType.Add &&
-      prev.t === AssignmentType.Add &&
-      item.s === prev.s
+      assignment.t === AssignmentType.Add &&
+      previous.t === AssignmentType.Add &&
+      assignment.s === previous.s
     ) {
-      // Sets has chaining methods too
-      current = {
-        t: AssignmentType.Add,
-        s: getAssignmentExpression(current),
-        k: NIL,
-        v: item.v,
-      } as AddAssignment;
+      expression += '.add(' + assignment.v + ')';
     } else if (
-      item.t === AssignmentType.Delete &&
-      prev.t === AssignmentType.Set &&
-      item.s === prev.s
+      assignment.t === AssignmentType.Delete &&
+      previous.t === AssignmentType.Set &&
+      assignment.s === previous.s
     ) {
-      current = {
-        t: AssignmentType.Delete,
-        s: getAssignmentExpression(current),
-        k: item.k,
-        v: NIL,
-      } as DeleteAssignment;
+      expression += '.delete(' + assignment.k + ')';
     } else {
-      // Different assignment, push current
-      newAssignments.push(current);
-      current = item;
+      result += expression + ',';
+      expression = getAssignmentExpression(assignment);
       chainLength = 0;
     }
     chainLength++;
-    prev = item;
+    previous = assignment;
   }
-
-  newAssignments.push(current);
-
-  return newAssignments;
-}
-
-function resolveAssignments(assignments: Assignment[]): string | undefined {
-  if (assignments.length) {
-    let result = '';
-    const merged = mergeAssignments(assignments);
-    for (let i = 0, len = merged.length; i < len; i++) {
-      result += getAssignmentExpression(merged[i]) + ',';
-    }
-    return result;
-  }
-  return NIL;
+  return result + expression + ',';
 }
 
 const NULL_CONSTRUCTOR = 'Object.create(null)';
