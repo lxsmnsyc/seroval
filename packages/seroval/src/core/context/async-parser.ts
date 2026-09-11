@@ -154,12 +154,13 @@ async function parseProperties(
   depth: number,
   properties: Record<string | symbol, unknown>,
 ): Promise<SerovalObjectRecordNode> {
-  const entries = Object.entries(properties);
+  const keys = Object.keys(properties);
   const keyNodes: SerovalObjectRecordKey[] = [];
   const valueNodes: SerovalNode[] = [];
-  for (let i = 0, len = entries.length; i < len; i++) {
-    keyNodes.push(serializeString(entries[i][0]));
-    valueNodes.push(await parseAsync(ctx, depth, entries[i][1]));
+  for (let i = 0, len = keys.length, key: string; i < len; i++) {
+    key = keys[i];
+    keyNodes.push(serializeString(key));
+    valueNodes.push(await parseAsync(ctx, depth, properties[key]));
   }
   // Check special properties
   if (SYM_ITERATOR in properties) {
