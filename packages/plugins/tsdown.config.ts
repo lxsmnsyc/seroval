@@ -12,6 +12,7 @@ export default defineConfig([
       },
     ],
     platform: 'neutral',
+    target: 'es2020',
     dts: true,
     outDir: './dist/dev',
     format: ['esm', 'cjs'],
@@ -37,6 +38,7 @@ export default defineConfig([
       },
     ],
     platform: 'neutral',
+    target: 'es2020',
     dts: true,
 
     format: ['esm', 'cjs'],
