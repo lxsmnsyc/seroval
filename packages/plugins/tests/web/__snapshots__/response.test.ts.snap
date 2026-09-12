@@ -37,7 +37,7 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 			} catch (_error) {}
 		}
 	});
-} }))($R[3]=($R[4]=() => {
+} }))($R[3]=($R[4]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -45,6 +45,7 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -58,6 +59,7 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -65,6 +67,10 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -81,14 +87,10 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -97,7 +99,6 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -105,7 +106,7 @@ exports[`Response > crossSerializeStream > scoped > supports Response 1`] = `
 			}
 		}
 	};
-})()),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""}))($R["example"])"
+})(1)),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""}))($R["example"])"
 `;
 
 exports[`Response > crossSerializeStream > scoped > supports Response 2`] = `
@@ -137,7 +138,7 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
 			} catch (_error) {}
 		}
 	});
-} }))($R[3]=($R[4]=() => {
+} }))($R[3]=($R[4]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -145,6 +146,7 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -158,6 +160,7 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -165,6 +168,10 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -181,14 +188,10 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -197,7 +200,6 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -205,7 +207,7 @@ exports[`Response > crossSerializeStream > supports Response 1`] = `
 			}
 		}
 	};
-})()),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"
+})(1)),$R[5]={headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),status:200,statusText:""})"
 `;
 
 exports[`Response > crossSerializeStream > supports Response 2`] = `
@@ -234,7 +236,7 @@ exports[`Response > serializeAsync > supports Response 1`] = `
 
 exports[`Response > supports already read Response 1`] = `"{"t":25,"i":0,"s":{"body":{"t":2,"s":0},"options":{"t":10,"i":1,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":2,"s":{"value":{"t":9,"i":3,"a":[{"t":9,"i":4,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0}},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}]},"o":0}},"c":"seroval-plugins/web/Response"}"`;
 
-exports[`Response > toCrossJSONStream > supports Response 1`] = `"{"t":25,"i":0,"s":{"body":{"t":25,"i":1,"s":{"factory":{"t":25,"i":2,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":3,"a":[],"f":{"t":26,"i":4,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},"options":{"t":10,"i":5,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":6,"s":{"value":{"t":9,"i":7,"a":[{"t":9,"i":8,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0}},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}]},"o":0}},"c":"seroval-plugins/web/Response"}"`;
+exports[`Response > toCrossJSONStream > supports Response 1`] = `"{"t":25,"i":0,"s":{"body":{"t":25,"i":1,"s":{"factory":{"t":25,"i":2,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":3,"a":[],"f":{"t":26,"i":4,"s":4},"l":1}},"c":"seroval/plugins/web/ReadableStream"},"options":{"t":10,"i":5,"p":{"k":["headers","status","statusText"],"v":[{"t":25,"i":6,"s":{"value":{"t":9,"i":7,"a":[{"t":9,"i":8,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0}},"c":"seroval-plugins/web/Headers"},{"t":0,"s":200},{"t":1,"s":""}]},"o":0}},"c":"seroval-plugins/web/Response"}"`;
 
 exports[`Response > toCrossJSONStream > supports Response 2`] = `"{"t":32,"i":3,"f":{"t":15,"i":9,"c":"Uint8Array","f":{"t":19,"i":10,"s":"SGVsbG8gV29ybGQh","f":{"t":26,"i":11,"s":5}},"b":0,"l":12}}"`;
 

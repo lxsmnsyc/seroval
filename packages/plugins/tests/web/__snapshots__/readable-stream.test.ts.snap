@@ -17,7 +17,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 			} catch (_error) {}
 		}
 	});
-} }))(($R[2]=($R[3]=() => {
+} }))(($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -25,6 +25,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -38,6 +39,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -45,6 +47,10 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -61,14 +67,10 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -77,7 +79,6 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -105,7 +106,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 			} catch (_error) {}
 		}
 	});
-} }))(($R[2]=($R[3]=() => {
+} }))(($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -113,6 +114,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -126,6 +128,7 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -133,6 +136,10 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -149,14 +156,10 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -165,7 +168,6 @@ exports[`ReadableStream > crossSerializeAsync > scoped > supports ReadableStream
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -193,7 +195,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 			} catch (_error) {}
 		}
 	});
-} }))(($R[2]=($R[3]=() => {
+} }))(($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -201,6 +203,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -214,6 +217,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -221,6 +225,10 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -237,14 +245,10 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -253,7 +257,6 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -281,7 +284,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 			} catch (_error) {}
 		}
 	});
-} }))(($R[2]=($R[3]=() => {
+} }))(($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -289,6 +292,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -302,6 +306,7 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -309,6 +314,10 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -325,14 +334,10 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -341,7 +346,6 @@ exports[`ReadableStream > crossSerializeAsync > supports ReadableStream errors 1
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -369,7 +373,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			} catch (_error) {}
 		}
 	});
-} }))($R[2]=($R[3]=() => {
+} }))($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -377,6 +381,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -390,6 +395,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -397,6 +403,10 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -413,14 +423,10 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -429,7 +435,6 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -437,7 +442,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			}
 		}
 	};
-})()))($R["example"])"
+})(1)))($R["example"])"
 `;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream 2`] = `"($R=>$R[2].next("foo"))($R["example"])"`;
@@ -465,7 +470,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			} catch (_error) {}
 		}
 	});
-} }))($R[2]=($R[3]=() => {
+} }))($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -473,6 +478,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -486,6 +492,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -493,6 +500,10 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -509,14 +520,10 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -525,7 +532,6 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -533,7 +539,7 @@ exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStrea
 			}
 		}
 	};
-})()))($R["example"])"
+})(1)))($R["example"])"
 `;
 
 exports[`ReadableStream > crossSerializeStream > scoped > supports ReadableStream errors 2`] = `"($R=>$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""})))($R["example"])"`;
@@ -555,7 +561,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 			} catch (_error) {}
 		}
 	});
-} }))($R[2]=($R[3]=() => {
+} }))($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -563,6 +569,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -576,6 +583,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -583,6 +591,10 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -599,14 +611,10 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -615,7 +623,6 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -623,7 +630,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream 1`] = `
 			}
 		}
 	};
-})())"
+})(1))"
 `;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream 2`] = `"$R[2].next("foo")"`;
@@ -651,7 +658,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 			} catch (_error) {}
 		}
 	});
-} }))($R[2]=($R[3]=() => {
+} }))($R[2]=($R[3]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -659,6 +666,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -672,6 +680,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -679,6 +688,10 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -695,14 +708,10 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -711,7 +720,6 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -719,7 +727,7 @@ exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 
 			}
 		}
 	};
-})())"
+})(1))"
 `;
 
 exports[`ReadableStream > crossSerializeStream > supports ReadableStream errors 2`] = `"$R[2].throw($R[4]=Object.assign(new Error("Oops!"),{stack:""}))"`;
@@ -741,7 +749,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 			} catch (_error) {}
 		}
 	});
-} }))((h=(() => {
+} }))((h=((live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -749,6 +757,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -762,6 +771,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -769,6 +779,10 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -785,14 +799,10 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -801,7 +811,6 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -829,7 +838,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
 			} catch (_error) {}
 		}
 	});
-} }))((h=(() => {
+} }))((h=((live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -837,6 +846,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -850,6 +860,7 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -857,6 +868,10 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -873,14 +888,10 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -889,7 +900,6 @@ exports[`ReadableStream > serializeAsync > supports ReadableStream errors 1`] = 
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -908,7 +918,7 @@ exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream errors 1`] 
 
 exports[`ReadableStream > toCrossJSONAsync > supports ReadableStream errors 2`] = `[Error: Oops!]`;
 
-exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4},"l":1}},"c":"seroval/plugins/web/ReadableStream"}"`;
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 2`] = `"{"t":32,"i":2,"f":{"t":1,"s":"foo"}}"`;
 
@@ -918,7 +928,7 @@ exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 4`] = `"{"
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream 5`] = `"{"t":34,"i":2,"f":{"t":2,"s":1}}"`;
 
-exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4}}},"c":"seroval/plugins/web/ReadableStream"}"`;
+exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 1`] = `"{"t":25,"i":0,"s":{"factory":{"t":25,"i":1,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":2,"a":[],"f":{"t":26,"i":3,"s":4},"l":1}},"c":"seroval/plugins/web/ReadableStream"}"`;
 
 exports[`ReadableStream > toCrossJSONStream > supports ReadableStream errors 2`] = `"{"t":33,"i":2,"f":{"t":13,"i":4,"s":0,"m":"Oops!","p":{"k":["stack"],"v":[{"t":1,"s":""}]}}}"`;
 

@@ -47,7 +47,7 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 			} catch (_error) {}
 		}
 	});
-} }))($R[4]=($R[5]=() => {
+} }))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -55,6 +55,7 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -68,6 +69,7 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -75,6 +77,10 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -91,14 +97,10 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -107,7 +109,6 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -115,7 +116,7 @@ exports[`Request > crossSerializeStream > scoped > supports Request 1`] = `
 			}
 		}
 	};
-})()),cache:"default",credentials:"same-origin",headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""}))($R["example"])"
+})(1)),cache:"default",credentials:"same-origin",headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""}))($R["example"])"
 `;
 
 exports[`Request > crossSerializeStream > scoped > supports Request 2`] = `
@@ -147,7 +148,7 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 			} catch (_error) {}
 		}
 	});
-} }))($R[4]=($R[5]=() => {
+} }))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -155,6 +156,7 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) listener[mode](value);
@@ -168,6 +170,7 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) throw new Error("Stream consumed");
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
@@ -175,6 +178,10 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -191,14 +198,10 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 			return internal.on(listener);
 		},
 		next(value) {
-			if (alive) {
-				buffer.push(value);
-				internal.flush(value, "next");
-			}
+			if (alive) internal.flush(value, "next");
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -207,7 +210,6 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -215,7 +217,7 @@ exports[`Request > crossSerializeStream > supports Request 1`] = `
 			}
 		}
 	};
-})()),cache:"default",credentials:"same-origin",headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""})"
+})(1)),cache:"default",credentials:"same-origin",headers:$R[6]=new Headers($R[7]=[$R[8]=["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""})"
 `;
 
 exports[`Request > crossSerializeStream > supports Request 2`] = `
@@ -242,7 +244,7 @@ exports[`Request > serializeAsync > supports Request 1`] = `
 
 exports[`Request > serializeAsync > supports already read Request 1`] = `"new Request("http://localhost:3000/",{body:null,cache:"default",credentials:"same-origin",headers:new Headers([["content-type","text/plain;charset=UTF-8"]]),integrity:"",keepalive:!1,method:"POST",mode:"cors",redirect:"follow",referrer:"about:client",referrerPolicy:""})"`;
 
-exports[`Request > toCrossJSONStream > supports Request 1`] = `"{"t":25,"i":0,"s":{"url":{"t":1,"s":"http://localhost:3000/"},"options":{"t":10,"i":1,"p":{"k":["body","cache","credentials","headers","integrity","keepalive","method","mode","redirect","referrer","referrerPolicy"],"v":[{"t":25,"i":2,"s":{"factory":{"t":25,"i":3,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":4,"a":[],"f":{"t":26,"i":5,"s":4}}},"c":"seroval/plugins/web/ReadableStream"},{"t":1,"s":"default"},{"t":1,"s":"same-origin"},{"t":25,"i":6,"s":{"value":{"t":9,"i":7,"a":[{"t":9,"i":8,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0}},"c":"seroval-plugins/web/Headers"},{"t":1,"s":""},{"t":2,"s":3},{"t":1,"s":"POST"},{"t":1,"s":"cors"},{"t":1,"s":"follow"},{"t":1,"s":"about:client"},{"t":1,"s":""}]},"o":0}},"c":"seroval-plugins/web/Request"}"`;
+exports[`Request > toCrossJSONStream > supports Request 1`] = `"{"t":25,"i":0,"s":{"url":{"t":1,"s":"http://localhost:3000/"},"options":{"t":10,"i":1,"p":{"k":["body","cache","credentials","headers","integrity","keepalive","method","mode","redirect","referrer","referrerPolicy"],"v":[{"t":25,"i":2,"s":{"factory":{"t":25,"i":3,"s":{},"c":"seroval-plugins/web/ReadableStreamFactory"},"stream":{"t":31,"i":4,"a":[],"f":{"t":26,"i":5,"s":4},"l":1}},"c":"seroval/plugins/web/ReadableStream"},{"t":1,"s":"default"},{"t":1,"s":"same-origin"},{"t":25,"i":6,"s":{"value":{"t":9,"i":7,"a":[{"t":9,"i":8,"a":[{"t":1,"s":"content-type"},{"t":1,"s":"text/plain;charset=UTF-8"}],"o":0}],"o":0}},"c":"seroval-plugins/web/Headers"},{"t":1,"s":""},{"t":2,"s":3},{"t":1,"s":"POST"},{"t":1,"s":"cors"},{"t":1,"s":"follow"},{"t":1,"s":"about:client"},{"t":1,"s":""}]},"o":0}},"c":"seroval-plugins/web/Request"}"`;
 
 exports[`Request > toCrossJSONStream > supports Request 2`] = `"{"t":32,"i":4,"f":{"t":15,"i":9,"c":"Uint8Array","f":{"t":19,"i":10,"s":"SGVsbG8gV29ybGQh","f":{"t":26,"i":11,"s":5}},"b":0,"l":12}}"`;
 
