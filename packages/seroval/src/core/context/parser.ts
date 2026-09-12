@@ -148,20 +148,7 @@ export function parseSpecialReference(
   if (typeof result !== 'number') {
     return result;
   }
-  return createSerovalNode(
-    SerovalNodeType.SpecialReference,
-    result,
-    ref,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.SpecialReference, result, ref);
 }
 
 export function parseIteratorFactory(
@@ -181,9 +168,6 @@ export function parseIteratorFactory(
     NIL,
     NIL,
     parseWellKnownSymbol(ctx, SYM_ITERATOR),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -206,10 +190,6 @@ export function parseAsyncIteratorFactory(
       parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
       parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR),
     ],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -231,7 +211,6 @@ export function createObjectNode(
     NIL,
     NIL,
     getObjectFlag(current),
-    NIL,
   );
 }
 
@@ -251,9 +230,6 @@ export function createMapNode(
     { k, v },
     NIL,
     parseSpecialReference(ctx, SpecialReference.MapSentinel),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -272,9 +248,6 @@ export function createPromiseConstructorNode(
     NIL,
     NIL,
     parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -324,8 +297,5 @@ export function createArrayBufferNode(
     NIL,
     NIL,
     parseSpecialReference(ctx, SpecialReference.ArrayBufferConstructor),
-    NIL,
-    NIL,
-    NIL,
   );
 }
