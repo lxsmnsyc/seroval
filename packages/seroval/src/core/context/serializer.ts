@@ -1497,20 +1497,7 @@ function serialize(ctx: SerializerContext, node: SerovalNode): string {
   }
 }
 
-export function serializeRoot(
-  ctx: SerializerContext,
-  node: SerovalNode,
-): string {
-  try {
-    return serialize(ctx, node);
-  } catch (error) {
-    throw error instanceof SerovalSerializationError
-      ? error
-      : new SerovalSerializationError(error);
-  }
-}
-
-export function serializeTopVanilla(
+function serializeVanilla(
   ctx: VanillaSerializerContext,
   tree: SerovalNode,
 ): string {
@@ -1536,7 +1523,7 @@ export function serializeTopVanilla(
   return result;
 }
 
-export function serializeTopCross(
+function serializeCross(
   ctx: CrossSerializerContext,
   tree: SerovalNode,
 ): string {
@@ -1575,4 +1562,32 @@ export function serializeTopCross(
         '"])';
   // Create the IIFE
   return '(' + createFunction([params], body) + ')' + args;
+}
+
+function wrapSerializationError(error: unknown): SerovalSerializationError {
+  return error instanceof SerovalSerializationError
+    ? error
+    : new SerovalSerializationError(error);
+}
+
+export function serializeTopVanilla(
+  ctx: VanillaSerializerContext,
+  tree: SerovalNode,
+): string {
+  try {
+    return serializeVanilla(ctx, tree);
+  } catch (error) {
+    throw wrapSerializationError(error);
+  }
+}
+
+export function serializeTopCross(
+  ctx: CrossSerializerContext,
+  tree: SerovalNode,
+): string {
+  try {
+    return serializeCross(ctx, tree);
+  } catch (error) {
+    throw wrapSerializationError(error);
+  }
 }

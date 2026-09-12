@@ -14,6 +14,7 @@ import {
   type PromiseConstructorResolver,
 } from '../constructors';
 import {
+  SerovalConflictedNodeIdError,
   SerovalDepthLimitError,
   SerovalDeserializationError,
   SerovalMalformedNodeError,
@@ -199,14 +200,12 @@ export class DeserializePluginContext {
 }
 
 function guardIndexedValue(ctx: BaseDeserializerContext, id: number): void {
-  if (id < 0 || !Number.isFinite(id) || !Number.isInteger(id)) {
-    throw new SerovalMalformedNodeError({
-      t: SerovalNodeType.IndexedValue,
-      i: id,
-    } as SerovalNode);
+  const node = { t: SerovalNodeType.IndexedValue, i: id } as SerovalNode;
+  if (id < 0 || !Number.isInteger(id)) {
+    throw new SerovalMalformedNodeError(node);
   }
   if (ctx.refs.has(id)) {
-    throw new Error('Conflicted ref id: ' + id);
+    throw new SerovalConflictedNodeIdError(node);
   }
 }
 
