@@ -299,6 +299,27 @@ according to the receiving application's needs; it is a per-buffer limit, not a
 total payload or memory budget. JavaScript evaluation through `deserialize` does
 not use these JSON decoding limits.
 
+## Trust boundary
+
+The JSON form is safe to receive from an untrusted source only in one
+direction. `fromJSON` and `fromCrossJSON` validate the tree they are given:
+unknown node types, constructor names and constants are rejected, reserved
+property names are defined as own properties instead of assigned, and the
+decoding limits above bound the work a single node can cause.
+
+`compileJSON` does not validate. It turns a tree into JavaScript source by
+concatenating node fields, and it assumes the tree came from `toJSON` or
+`toJSONAsync` in a process you control. A tree from an untrusted source can
+smuggle code into the output through any string field, for example the flags
+of a RegExp node or the value of a Number node, and that code runs when the
+output is evaluated. The same applies to a plugin's `serialize` method, which
+receives the plugin's node fields unvalidated.
+
+Keep `compileJSON` on the same side of the trust boundary as the serializer
+that produced the tree. To move a value across a boundary, send the JSON and
+call `fromJSON` on the receiving side, or send the output of `serialize` and
+evaluate it only where the sender is trusted.
+
 ## Push-based streaming serialization
 
 > [!NOTE]

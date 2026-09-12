@@ -6,7 +6,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=20"
   },
   "license": "MIT",
   "keywords": [
@@ -61,9 +61,6 @@
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {}
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js"
