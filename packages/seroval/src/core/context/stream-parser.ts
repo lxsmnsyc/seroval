@@ -21,46 +21,8 @@ import {
   type StreamParserContext,
   type StreamParserContextOptions,
   type StreamParserState,
+  SyncParsePluginContext,
 } from './sync-parser';
-
-export class StreamParsePluginContext {
-  constructor(
-    private _p: StreamParserContext,
-    private depth: number,
-  ) {}
-
-  parse<T>(current: T): SerovalNode {
-    return parseSOS(this._p, this.depth, current);
-  }
-
-  parseWithError<T>(current: T): SerovalNode | undefined {
-    return parseWithError(this._p, this.depth, current);
-  }
-
-  isAlive(): boolean {
-    return this._p.state.alive;
-  }
-
-  pushPendingState(): void {
-    pushPendingState(this._p);
-  }
-
-  popPendingState(): void {
-    popPendingState(this._p);
-  }
-
-  onParse(node: SerovalNode): void {
-    onParse(this._p, node);
-  }
-
-  onError(error: unknown): void {
-    onError(this._p, error);
-  }
-
-  addCleanup(callback: () => void): void {
-    this._p.state.cleanups.push(callback);
-  }
-}
 
 function parsePluginStream(
   ctx: StreamParserContext,
@@ -75,7 +37,7 @@ function parsePluginStream(
       return createPluginNode(
         id,
         plugin.tag,
-        plugin.parse.stream(current, new StreamParsePluginContext(ctx, depth), {
+        plugin.parse.stream(current, new SyncParsePluginContext(ctx, depth), {
           id,
         }),
       );
@@ -186,8 +148,9 @@ function wrapPromiseResult(
   );
 }
 
-function handlePromiseSuccess(
+function handlePromise(
   this: StreamParserContext,
+  type: SerovalNodeType.PromiseSuccess | SerovalNodeType.PromiseFailure,
   id: number,
   depth: number,
   data: unknown,
@@ -197,25 +160,7 @@ function handlePromiseSuccess(
       this,
       depth,
       data,
-      wrapPromiseResult.bind(null, this, SerovalNodeType.PromiseSuccess, id),
-      NIL,
-    );
-    popPendingState(this);
-  }
-}
-
-function handlePromiseFailure(
-  this: StreamParserContext,
-  id: number,
-  depth: number,
-  data: unknown,
-): void {
-  if (this.state.alive) {
-    parseEvent(
-      this,
-      depth,
-      data,
-      wrapPromiseResult.bind(null, this, SerovalNodeType.PromiseFailure, id),
+      wrapPromiseResult.bind(null, this, type, id),
       NIL,
     );
   }
@@ -230,8 +175,8 @@ function watchPromise(
 ): void {
   pushPendingState(ctx);
   current.then(
-    handlePromiseSuccess.bind(ctx, resolver, depth),
-    handlePromiseFailure.bind(ctx, resolver, depth),
+    handlePromise.bind(ctx, SerovalNodeType.PromiseSuccess, resolver, depth),
+    handlePromise.bind(ctx, SerovalNodeType.PromiseFailure, resolver, depth),
   );
 }
 
@@ -255,49 +200,40 @@ function iterateAsync(
   current: AsyncIterable<unknown>,
 ): void {
   const iterator = current[SYM_ASYNC_ITERATOR]();
+  const listener = streamListener(ctx, depth, id);
   let active = true;
-  pushPendingState(ctx);
-  ctx.state.cleanups.push(() => {
+  function stop(): void {
     if (active) {
       active = false;
       returnIterator(iterator);
-    }
-  });
-  function settle(
-    type: StreamEventType,
-    value: unknown,
-    accept: (() => void) | undefined,
-  ): void {
-    if (active) {
-      const failure = parseEvent(
-        ctx,
-        depth,
-        value,
-        createStreamEventNode.bind(null, type, id),
-        accept,
-      );
-      if (accept === NIL) {
-        active = false;
-        popPendingState(ctx);
-      } else if (failure !== NIL) {
-        // The value was never emitted, so stop the source.
-        active = false;
-        returnIterator(iterator);
-        popPendingState(ctx);
-      }
     }
   }
   function pull(): void {
     if (active) {
       iterator.next().then(
-        result =>
-          result.done
-            ? settle(SerovalNodeType.StreamReturn, result.value, NIL)
-            : settle(SerovalNodeType.StreamNext, result.value, pull),
-        error => settle(SerovalNodeType.StreamThrow, error, NIL),
+        result => {
+          if (active) {
+            if (result.done) {
+              active = false;
+              listener.return(result.value, NIL as unknown as () => void);
+            } else if (listener.next(result.value, pull) !== NIL) {
+              // The value was never emitted, so stop the source.
+              stop();
+              (listener.done as () => void)();
+            }
+          }
+        },
+        error => {
+          if (active) {
+            active = false;
+            listener.throw(error, NIL as unknown as () => void);
+          }
+        },
       );
     }
   }
+  pushPendingState(ctx);
+  ctx.state.cleanups.push(stop);
   pull();
 }
 
@@ -333,11 +269,6 @@ export function createStreamParserContext(
   };
 }
 
-function onParse(ctx: StreamParserContext, node: SerovalNode): void {
-  ctx.state.queue.push({ node, initial: false, accept: NIL });
-  drainOutput(ctx);
-}
-
 function onError(ctx: StreamParserContext, error: unknown): void {
   if (ctx.state.onError) {
     ctx.state.onError(error);
@@ -358,9 +289,10 @@ function popPendingState(ctx: StreamParserContext): void {
 }
 
 /**
- * Parses a value that arrived after the root, queues its wrapper record
- * ahead of any records discovered while parsing it, and emits what can be
- * emitted. Returns the parse error after reporting it, or `undefined`.
+ * Parses a value that arrived after the root. Its record is queued before
+ * parsing starts so that records discovered inside it follow it, and it is
+ * dropped again if parsing fails. Returns the parse error after reporting
+ * it, or `undefined`.
  */
 function parseEvent(
   ctx: StreamParserContext,
@@ -370,25 +302,16 @@ function parseEvent(
   accept: (() => void) | undefined,
 ): unknown {
   const state = ctx.state;
-  const outer = state.queue;
-  let parsed: SerovalNode | undefined;
+  const record: OutputRecord = { node: NIL, initial: false, accept };
   let failure: unknown = NIL;
-  state.queue = [];
+  state.queue.push(record);
   state.parsing++;
   try {
-    parsed = parseSOS(ctx, depth, value);
+    record.node = wrap(parseSOS(ctx, depth, value));
   } catch (error) {
     failure = error;
   } finally {
     state.parsing--;
-    const inner = state.queue;
-    state.queue = outer;
-    if (parsed) {
-      outer.push({ node: wrap(parsed), initial: false, accept });
-    }
-    for (let i = 0, len = inner.length; i < len; i++) {
-      outer.push(inner[i]);
-    }
   }
   if (failure === NIL) {
     drainOutput(ctx);
@@ -396,19 +319,6 @@ function parseEvent(
     onError(ctx, failure);
   }
   return failure;
-}
-
-function parseWithError<T>(
-  ctx: StreamParserContext,
-  depth: number,
-  current: T,
-): SerovalNode | undefined {
-  try {
-    return parseSOS(ctx, depth, current);
-  } catch (err) {
-    onError(ctx, err);
-    return NIL;
-  }
 }
 
 /**
@@ -423,6 +333,9 @@ function drainOutput(ctx: StreamParserContext): void {
   }
   while (state.alive && state.queue.length > 0) {
     const record = state.queue.shift() as OutputRecord;
+    if (!record.node) {
+      continue;
+    }
     let result: void | PromiseLike<void>;
     try {
       result = state.onParse(record.node, record.initial);

@@ -57,51 +57,10 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   },
 });
 
-async function drainStream<T>(
-  stream: Stream<T | undefined>,
-  reader: ReadableStreamDefaultReader<T>,
-): Promise<void> {
-  try {
-    while (true) {
-      const result = await reader.read();
-      if (result.done) {
-        stream.return(result.value);
-        reader.releaseLock();
-        break;
-      }
-      stream.next(result.value);
-    }
-  } catch (error) {
-    reader.releaseLock();
-    stream.throw(error);
-  }
-}
-
-function cleanupStream<T>(reader: ReadableStreamDefaultReader<T>): void {
-  reader.cancel().catch(() => {
-    // no-op
-  });
-  reader.releaseLock();
-}
-
-function toStream<T>(
-  value: ReadableStream<T>,
-): [Stream<T | undefined>, () => void] {
-  const stream = createStream<T | undefined>();
-
-  const reader = value.getReader();
-
-  const cleanup = cleanupStream.bind(null, reader);
-
-  drainStream(stream, reader).catch(cleanup);
-
-  return [stream, cleanup];
-}
-
 /**
- * Streaming parse mode: each chunk is read only after the previous one has
- * been accepted by the serializer's output, so the source never runs ahead
- * of the destination and no chunk is retained after it is written.
+ * Each chunk is read only after the previous one has been accepted: by the
+ * serializer's output in streaming mode, or by the collector in async mode.
+ * The source never runs ahead of its destination.
  */
 function toLiveStream<T>(value: ReadableStream<T>): LiveStream<T | undefined> {
   const reader = value.getReader();
@@ -180,7 +139,7 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
     async async(value, ctx) {
       return {
         factory: await ctx.parse(READABLE_STREAM_FACTORY),
-        stream: await ctx.parse(toStream(value)[0]),
+        stream: await ctx.parse(toLiveStream(value)),
       };
     },
     stream(value, ctx) {

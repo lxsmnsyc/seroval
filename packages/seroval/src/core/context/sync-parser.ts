@@ -37,7 +37,7 @@ import {
 } from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
-import { createStream, isStream } from '../stream';
+import { isStream } from '../stream';
 import { serializeString } from '../string';
 import {
   SYM_ASYNC_ITERATOR,
@@ -115,7 +115,7 @@ export function createSyncParserContext(
 
 export class SyncParsePluginContext {
   constructor(
-    private _p: SyncParserContext,
+    private _p: SOSParserContext,
     private depth: number,
   ) {}
 
@@ -141,7 +141,8 @@ export interface StreamParserContext {
   state: StreamParserState;
 }
 export interface OutputRecord {
-  node: SerovalNode;
+  // `undefined` while the value is still being parsed, or if that failed.
+  node: SerovalNode | undefined;
   initial: boolean;
   // Releases the live stream event behind this record once it is emitted.
   accept: (() => void) | undefined;
@@ -292,17 +293,17 @@ function parseAsyncIterable(
   depth: number,
   current: AsyncIterable<unknown>,
 ): SerovalNode {
-  if (ctx.type === ParserMode.Sync) {
-    return parseSOS(ctx, depth, createStream());
-  }
-  // The iterator is driven by the stream parser; the node only needs an id.
+  // The node only needs an id; in streaming mode the parser drives the
+  // iterator, in sync mode it stays empty.
   const id = createIndexForValue(ctx.base, {});
   const result = createStreamConstructorNode(
     id,
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
   );
-  ctx.state.iterable(ctx, depth, id, current);
+  if (ctx.type === ParserMode.Stream) {
+    ctx.state.iterable(ctx, depth, id, current);
+  }
   return result;
 }
 
