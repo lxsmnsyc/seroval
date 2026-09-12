@@ -20,23 +20,20 @@ export const enum FeatureFlag {
 }
 
 /**
- * Public feature bits for `disabledFeatures`. A plain object instead of a
- * runtime enum so consumers that never import it pay nothing for it and
- * consumers that do only ship the forward mapping. Values must match
- * `FeatureFlag` (checked by test/feature.test.ts).
+ * Public feature bits for `disabledFeatures`. Stays a runtime `enum` so the
+ * published declaration is unchanged for consumers. Its values must match
+ * the internal bits (checked by test/feature.test.ts).
  */
-export const Feature = {
-  AggregateError: 0x01,
-  /** @deprecated */
-  ArrowFunction: 0x02,
-  ErrorPrototypeStack: 0x04,
-  ObjectAssign: 0x08,
-  BigIntTypedArray: 0x10,
-  RegExp: 0x20,
-  Temporal: 0x40,
-} as const satisfies Record<keyof typeof FeatureFlag, number>;
-
-export type Feature = (typeof Feature)[keyof typeof Feature];
+export enum Feature {
+  AggregateError = 0x01,
+  // @deprecated
+  ArrowFunction = 0x02,
+  ErrorPrototypeStack = 0x04,
+  ObjectAssign = 0x08,
+  BigIntTypedArray = 0x10,
+  RegExp = 0x20,
+  Temporal = 0x40,
+}
 
 export const ALL_ENABLED =
   FeatureFlag.AggregateError |
