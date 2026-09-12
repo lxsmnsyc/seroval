@@ -3,7 +3,7 @@ import {
   createReferenceNode,
   createWKSymbolNode,
 } from '../base-primitives';
-import { ALL_ENABLED } from '../compat';
+import { ALL_ENABLED, Feature } from '../compat';
 import type { WellKnownSymbols } from '../constants';
 import {
   INV_SYMBOL_REF,
@@ -221,6 +221,125 @@ export function getTemporalType(
     default:
       return NIL;
   }
+}
+
+export const enum ObjectKind {
+  Unsupported = 0,
+  PlainObject = 1,
+  NullObject = 2,
+  Date = 3,
+  Error = 4,
+  AggregateError = 5,
+  Boxed = 6,
+  ArrayBuffer = 7,
+  TypedArray = 8,
+  BigIntTypedArray = 9,
+  DataView = 10,
+  Map = 11,
+  Set = 12,
+  Promise = 13,
+  RegExp = 14,
+  Temporal = 15,
+  Iterable = 16,
+}
+
+export function getObjectClass(current: object): unknown {
+  const currentClass: unknown = current.constructor;
+  // `constructor` is an ordinary own property, so data can shadow it
+  // (`JSON.parse('{"constructor":1}')`) and hide the real class. A class is
+  // always callable, so anything else means the lookup was shadowed; only
+  // then fall back to the prototype, keeping the common path free of it.
+  if (currentClass !== NIL && typeof currentClass !== 'function') {
+    const proto = Object.getPrototypeOf(current) as object | null;
+    return proto === null ? NIL : proto.constructor;
+  }
+  return currentClass;
+}
+
+/**
+ * Decides how an object is parsed. Shared by the sync, stream and async
+ * parsers so the class checks and feature gates live in one place.
+ */
+export function getObjectKind(
+  current: object,
+  currentClass: unknown,
+  features: number,
+): ObjectKind {
+  switch (currentClass) {
+    case Object:
+      return ObjectKind.PlainObject;
+    case NIL:
+      return ObjectKind.NullObject;
+    case Date:
+      return ObjectKind.Date;
+    case Error:
+    case EvalError:
+    case RangeError:
+    case ReferenceError:
+    case SyntaxError:
+    case TypeError:
+    case URIError:
+      return ObjectKind.Error;
+    case Number:
+    case Boolean:
+    case String:
+    case BigInt:
+      return ObjectKind.Boxed;
+    case ArrayBuffer:
+      return ObjectKind.ArrayBuffer;
+    case Int8Array:
+    case Int16Array:
+    case Int32Array:
+    case Uint8Array:
+    case Uint16Array:
+    case Uint32Array:
+    case Uint8ClampedArray:
+    case Float32Array:
+    case Float64Array:
+      return ObjectKind.TypedArray;
+    case DataView:
+      return ObjectKind.DataView;
+    case Map:
+      return ObjectKind.Map;
+    case Set:
+      return ObjectKind.Set;
+    default:
+      break;
+  }
+  if (currentClass === Promise || current instanceof Promise) {
+    return ObjectKind.Promise;
+  }
+  if (features & Feature.RegExp && currentClass === RegExp) {
+    return ObjectKind.RegExp;
+  }
+  if (
+    features & Feature.BigIntTypedArray &&
+    (currentClass === BigInt64Array || currentClass === BigUint64Array)
+  ) {
+    return ObjectKind.BigIntTypedArray;
+  }
+  if (
+    features & Feature.AggregateError &&
+    typeof AggregateError !== 'undefined' &&
+    (currentClass === AggregateError || current instanceof AggregateError)
+  ) {
+    return ObjectKind.AggregateError;
+  }
+  if (
+    features & Feature.Temporal &&
+    typeof Temporal !== 'undefined' &&
+    getTemporalType(currentClass) != null
+  ) {
+    return ObjectKind.Temporal;
+  }
+  // Slow path. Errors and iterables have very broad implementations.
+  if (current instanceof Error) {
+    return ObjectKind.Error;
+  }
+  if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) {
+    return ObjectKind.Iterable;
+  }
+  return ObjectKind.Unsupported;
 }
 
 export function createObjectNode(

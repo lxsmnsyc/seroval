@@ -17,7 +17,6 @@ import {
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
-import { Feature } from '../compat';
 import { NIL, SerovalNodeType } from '../constants';
 import {
   SerovalDepthLimitError,
@@ -77,9 +76,12 @@ import {
   createMapNode,
   createObjectNode,
   getArrayBufferView,
+  getObjectClass,
+  getObjectKind,
   getReferenceNode,
   getTemporalType,
   markParserRef,
+  ObjectKind,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
@@ -455,15 +457,7 @@ export async function parseObjectAsync(
   if (isSequence(current)) {
     return parseSequence(ctx, depth, id, current);
   }
-  let currentClass: unknown = current.constructor;
-  // `constructor` is an ordinary own property, so data can shadow it
-  // (`JSON.parse('{"constructor":1}')`) and hide the real class. A class is
-  // always callable, so anything else means the lookup was shadowed — only
-  // then fall back to the prototype, keeping the common path free of it.
-  if (currentClass !== NIL && typeof currentClass !== 'function') {
-    const proto = Object.getPrototypeOf(current) as object | null;
-    currentClass = proto === null ? NIL : proto.constructor;
-  }
+  const currentClass = getObjectClass(current);
   if (currentClass === OpaqueReference) {
     return parseAsync(
       ctx,
@@ -475,16 +469,18 @@ export async function parseObjectAsync(
   if (parsed) {
     return parsed;
   }
-  switch (currentClass) {
-    case Object:
-      return parsePlainObject(
-        ctx,
-        depth,
-        id,
-        current as Record<string, unknown>,
-        false,
-      );
-    case NIL:
+  // Plain objects dominate real payloads; skip the classifier for them.
+  if (currentClass === Object) {
+    return parsePlainObject(
+      ctx,
+      depth,
+      id,
+      current as Record<string, unknown>,
+      false,
+    );
+  }
+  switch (getObjectKind(current, currentClass, ctx.base.features)) {
+    case ObjectKind.NullObject:
       return parsePlainObject(
         ctx,
         depth,
@@ -492,15 +488,9 @@ export async function parseObjectAsync(
         current as Record<string, unknown>,
         true,
       );
-    case Date:
+    case ObjectKind.Date:
       return createDateNode(id, current as unknown as Date);
-    case Error:
-    case EvalError:
-    case RangeError:
-    case ReferenceError:
-    case SyntaxError:
-    case TypeError:
-    case URIError:
+    case ObjectKind.Error:
       return parseError(
         ctx,
         depth,
@@ -508,26 +498,23 @@ export async function parseObjectAsync(
         id,
         current as unknown as Error,
       );
-    case Number:
-    case Boolean:
-    case String:
-    case BigInt:
+    case ObjectKind.AggregateError:
+      return parseError(
+        ctx,
+        depth,
+        SerovalNodeType.AggregateError,
+        id,
+        current as unknown as AggregateError,
+      );
+    case ObjectKind.Boxed:
       return parseBoxed(ctx, depth, id, current);
-    case ArrayBuffer:
+    case ObjectKind.ArrayBuffer:
       return createArrayBufferNode(
         ctx.base,
         id,
         current as unknown as ArrayBuffer,
       );
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
+    case ObjectKind.TypedArray:
       return parseTypedArray(
         ctx,
         depth,
@@ -535,78 +522,52 @@ export async function parseObjectAsync(
         id,
         current as unknown as TypedArrayValue,
       );
-    case DataView:
+    case ObjectKind.BigIntTypedArray:
+      return parseTypedArray(
+        ctx,
+        depth,
+        SerovalNodeType.BigIntTypedArray,
+        id,
+        current as unknown as BigIntTypedArrayValue,
+      );
+    case ObjectKind.DataView:
       return parseDataView(ctx, depth, id, current as unknown as DataView);
-    case Map:
+    case ObjectKind.Map:
       return parseMap(
         ctx,
         depth,
         id,
         current as unknown as Map<unknown, unknown>,
       );
-    case Set:
+    case ObjectKind.Set:
       return parseSet(ctx, depth, id, current as unknown as Set<unknown>);
-    default:
-      break;
-  }
-  // Promises
-  if (currentClass === Promise || current instanceof Promise) {
-    return parsePromise(ctx, depth, id, current as unknown as Promise<unknown>);
-  }
-  const currentFeatures = ctx.base.features;
-  if (currentFeatures & Feature.RegExp && currentClass === RegExp) {
-    return createRegExpNode(id, current as unknown as RegExp);
-  }
-  // BigInt Typed Arrays
-  if (currentFeatures & Feature.BigIntTypedArray) {
-    switch (currentClass) {
-      case BigInt64Array:
-      case BigUint64Array:
-        return parseTypedArray(
-          ctx,
-          depth,
-          SerovalNodeType.BigIntTypedArray,
-          id,
-          current as unknown as BigIntTypedArrayValue,
-        );
-      default:
-        break;
-    }
-  }
-  if (
-    currentFeatures & Feature.AggregateError &&
-    typeof AggregateError !== 'undefined' &&
-    (currentClass === AggregateError || current instanceof AggregateError)
-  ) {
-    return parseError(
-      ctx,
-      depth,
-      SerovalNodeType.AggregateError,
-      id,
-      current as unknown as AggregateError,
-    );
-  }
-  if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
-    const temporalType = getTemporalType(currentClass);
-    if (temporalType != null) {
+    case ObjectKind.Promise:
+      return parsePromise(
+        ctx,
+        depth,
+        id,
+        current as unknown as Promise<unknown>,
+      );
+    case ObjectKind.RegExp:
+      return createRegExpNode(id, current as unknown as RegExp);
+    case ObjectKind.Temporal:
       return createTemporalNode(
         id,
-        temporalType,
+        getTemporalType(currentClass) as SerovalTemporalType,
         current as unknown as Temporal.Instant,
       );
-    }
+    case ObjectKind.Iterable:
+      // Generator objects have no global constructor despite existing
+      return parsePlainObject(
+        ctx,
+        depth,
+        id,
+        current as Record<string, unknown>,
+        !!currentClass,
+      );
+    default:
+      throw new SerovalUnsupportedTypeError(current);
   }
-  // Slow path. We only need to handle Errors and Iterators
-  // since they have very broad implementations.
-  if (current instanceof Error) {
-    return parseError(ctx, depth, SerovalNodeType.Error, id, current);
-  }
-  // Generator functions don't have a global constructor
-  // despite existing
-  if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) {
-    return parsePlainObject(ctx, depth, id, current, !!currentClass);
-  }
-  throw new SerovalUnsupportedTypeError(current);
 }
 
 export async function parseFunctionAsync(
