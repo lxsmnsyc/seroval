@@ -343,6 +343,7 @@ export function createStreamConstructorNode(
   id: number,
   factory: SerovalNodeWithID,
   sequence: SerovalNode[],
+  live?: 1,
 ): SerovalStreamConstructorNode {
   return createSerovalNode(
     SerovalNodeType.StreamConstructor,
@@ -354,6 +355,9 @@ export function createStreamConstructorNode(
     NIL,
     sequence,
     factory,
+    NIL,
+    NIL,
+    live,
   );
 }
 

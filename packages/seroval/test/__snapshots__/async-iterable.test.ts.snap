@@ -101,7 +101,7 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 		}
 	};
 	return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+})($R[1],$R[3])))(($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -109,6 +109,7 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -127,6 +128,9 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -140,6 +144,10 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -159,13 +167,11 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -174,7 +180,6 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -286,7 +291,7 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 		}
 	};
 	return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+})($R[1],$R[3])))(($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -294,6 +299,7 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -312,6 +318,9 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -325,6 +334,10 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -344,13 +357,11 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -359,7 +370,6 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -471,7 +481,7 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 		}
 	};
 	return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=() => {
+})($R[1],$R[3])))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -479,6 +489,7 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -497,6 +508,9 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -510,6 +524,10 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -529,13 +547,11 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -544,7 +560,6 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -664,7 +679,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 		}
 	};
 	return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=() => {
+})($R[1],$R[3])))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -672,6 +687,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -690,6 +706,9 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -703,6 +722,10 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -722,13 +745,11 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -737,7 +758,6 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -857,7 +877,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 		}
 	};
 	return instance;
-})(h,j)))((k=(() => {
+})(h,j)))((k=((live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -865,6 +885,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -883,6 +904,9 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -896,6 +920,10 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -915,13 +943,11 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -930,7 +956,6 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;

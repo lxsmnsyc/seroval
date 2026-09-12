@@ -448,12 +448,16 @@ function parseLiveStream(
   id: number,
   current: LiveStream<unknown>,
 ): SerovalNode {
+  // Only incremental output gets a live receiver: its factory subscribes while
+  // the root record is evaluated. A sync parse never delivers events.
+  const stream = ctx.type === ParserMode.Stream;
   const result = createStreamConstructorNode(
     id,
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
+    stream ? 1 : NIL,
   );
-  if (ctx.type === ParserMode.Stream) {
+  if (stream) {
     ctx.state.live(ctx, depth, id, current);
   }
   return result;
