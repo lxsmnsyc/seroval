@@ -17,8 +17,8 @@ export type {
   SerializePluginContext,
   VanillaSerializerContextOptions,
 } from './core/context/serializer';
+export type { StreamParsePluginContext } from './core/context/stream-parser';
 export type {
-  StreamParsePluginContext,
   StreamParserContextOptions,
   SyncParsePluginContext,
   SyncParserContextOptions,
@@ -26,11 +26,20 @@ export type {
 export * from './core/cross';
 export * from './core/errors';
 export { getCrossReferenceHeader } from './core/keys';
+export type {
+  LiveStream,
+  LiveStreamConsumer,
+  LiveStreamDelivery,
+  LiveStreamEvent,
+  LiveStreamOptions,
+  LiveStreamProducer,
+} from './core/live-stream';
+export { createLiveStream, isLiveStream } from './core/live-stream';
 export { OpaqueReference } from './core/opaque-reference';
 export * from './core/plugin';
 export { createReference } from './core/reference';
 export { default as Serializer } from './core/Serializer';
-export { createStream } from './core/stream';
 export type { Stream, StreamListener } from './core/stream';
+export { createStream } from './core/stream';
 export * from './core/tree';
 export type { SerovalNode } from './core/types';
