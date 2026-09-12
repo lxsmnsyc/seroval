@@ -1,4 +1,4 @@
-import { ALL_ENABLED, Feature } from '../compat';
+import { ALL_ENABLED, FeatureFlag } from '../compat';
 import {
   CONSTANT_VAL,
   ERROR_CONSTRUCTOR,
@@ -395,7 +395,7 @@ function deserializeTemporal(
   ctx: DeserializerContext,
   node: SerovalTemporalNode,
 ): unknown {
-  if (!(ctx.base.features & Feature.Temporal)) {
+  if (!(ctx.base.features & FeatureFlag.Temporal)) {
     throw new SerovalUnsupportedNodeError(node);
   }
   let value: unknown;
@@ -434,7 +434,7 @@ function deserializeRegExp(
   ctx: DeserializerContext,
   node: SerovalRegExpNode,
 ): RegExp {
-  if (ctx.base.features & Feature.RegExp) {
+  if (ctx.base.features & FeatureFlag.RegExp) {
     const source = deserializeString(node.c);
     if (source.length > MAX_REGEXP_SOURCE_LENGTH) {
       throw new SerovalMalformedNodeError(node);

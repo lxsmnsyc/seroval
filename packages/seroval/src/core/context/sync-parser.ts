@@ -22,7 +22,7 @@ import {
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
-import { Feature } from '../compat';
+import { FeatureFlag } from '../compat';
 import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
 import {
   SerovalDepthLimitError,
@@ -705,11 +705,11 @@ function parseObjectPhase2(
     return parsePromise(ctx, depth, id, current as unknown as Promise<unknown>);
   }
   const currentFeatures = ctx.base.features;
-  if (currentFeatures & Feature.RegExp && currentClass === RegExp) {
+  if (currentFeatures & FeatureFlag.RegExp && currentClass === RegExp) {
     return createRegExpNode(id, current as unknown as RegExp);
   }
   // BigInt Typed Arrays
-  if (currentFeatures & Feature.BigIntTypedArray) {
+  if (currentFeatures & FeatureFlag.BigIntTypedArray) {
     switch (currentClass) {
       case BigInt64Array:
       case BigUint64Array:
@@ -724,7 +724,7 @@ function parseObjectPhase2(
     }
   }
   if (
-    currentFeatures & Feature.AggregateError &&
+    currentFeatures & FeatureFlag.AggregateError &&
     typeof AggregateError !== 'undefined' &&
     (currentClass === AggregateError || current instanceof AggregateError)
   ) {
@@ -735,7 +735,10 @@ function parseObjectPhase2(
       current as unknown as AggregateError,
     );
   }
-  if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
+  if (
+    currentFeatures & FeatureFlag.Temporal &&
+    typeof Temporal !== 'undefined'
+  ) {
     switch (currentClass) {
       case Temporal.Instant:
         return createTemporalNode(
