@@ -18,7 +18,7 @@
   ],
   "devDependencies": {
     "@types/node": "^26.2.0",
-    "@vitest/ui": "^4.1.10",
+    "@vitest/ui": "^4.1.11",
     "esbuild": "^0.28.2",
     "temporal-polyfill": "^1.0.4",
     "ts-prune": "^0.10.3",
