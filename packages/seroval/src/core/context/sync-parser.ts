@@ -1,9 +1,6 @@
 import {
-  createAggregateErrorNode,
   createArrayNode,
-  createAsyncIteratorFactoryInstanceNode,
   createBigIntNode,
-  createBigIntTypedArrayNode,
   createBoxedNode,
   createDataViewNode,
   createDateNode,
@@ -15,15 +12,12 @@ import {
   createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
-  createStreamNextNode,
-  createStreamReturnNode,
-  createStreamThrowNode,
+  createStreamNode,
   createStringNode,
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
-import { Feature } from '../compat';
-import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
+import { NIL, SerovalNodeType } from '../constants';
 import {
   SerovalDepthLimitError,
   SerovalParserError,
@@ -86,7 +80,11 @@ import {
   createObjectNode,
   createPromiseConstructorNode,
   getArrayBufferView,
+  getObjectClass,
+  getObjectKind,
   getReferenceNode,
+  getTemporalType,
+  ObjectKind,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
@@ -267,6 +265,7 @@ function parseProperties(
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ITERATOR));
     valueNodes.push(
       createIteratorFactoryInstanceNode(
+        SerovalNodeType.IteratorFactoryInstance,
         parseIteratorFactory(ctx.base),
         parseSOS(
           ctx,
@@ -281,7 +280,8 @@ function parseProperties(
   if (SYM_ASYNC_ITERATOR in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ASYNC_ITERATOR));
     valueNodes.push(
-      createAsyncIteratorFactoryInstanceNode(
+      createIteratorFactoryInstanceNode(
+        SerovalNodeType.AsyncIteratorFactoryInstance,
         parseAsyncIteratorFactory(ctx.base),
         parseSOS(
           ctx,
@@ -339,25 +339,13 @@ function parseBoxed(
 function parseTypedArray(
   ctx: SOSParserContext,
   depth: number,
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
   id: number,
-  current: TypedArrayValue,
-): SerovalTypedArrayNode {
+  current: TypedArrayValue | BigIntTypedArrayValue,
+): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode {
   current = getArrayBufferView(ctx.base, current);
   return createTypedArrayNode(
-    id,
-    current,
-    parseSOS(ctx, depth, current.buffer),
-  );
-}
-
-function parseBigIntTypedArray(
-  ctx: SOSParserContext,
-  depth: number,
-  id: number,
-  current: BigIntTypedArrayValue,
-): SerovalBigIntTypedArrayNode {
-  current = getArrayBufferView(ctx.base, current);
-  return createBigIntTypedArrayNode(
+    type,
     id,
     current,
     parseSOS(ctx, depth, current.buffer),
@@ -377,25 +365,13 @@ function parseDataView(
 function parseError(
   ctx: SOSParserContext,
   depth: number,
+  type: SerovalNodeType.Error | SerovalNodeType.AggregateError,
   id: number,
   current: Error,
-): SerovalErrorNode {
+): SerovalErrorNode | SerovalAggregateErrorNode {
   const options = getErrorOptions(current, ctx.base.features);
   return createErrorNode(
-    id,
-    current,
-    options ? parseProperties(ctx, depth, options) : NIL,
-  );
-}
-
-function parseAggregateError(
-  ctx: SOSParserContext,
-  depth: number,
-  id: number,
-  current: AggregateError,
-): SerovalAggregateErrorNode {
-  const options = getErrorOptions(current, ctx.base.features);
-  return createAggregateErrorNode(
+    type,
     id,
     current,
     options ? parseProperties(ctx, depth, options) : NIL,
@@ -450,7 +426,10 @@ function parseStream(
       if (ctx.state.alive) {
         const parsed = parseWithError(ctx, depth, value);
         if (parsed) {
-          onParse(ctx, createStreamNextNode(id, parsed));
+          onParse(
+            ctx,
+            createStreamNode(SerovalNodeType.StreamNext, id, parsed),
+          );
         }
       }
     },
@@ -458,7 +437,10 @@ function parseStream(
       if (ctx.state.alive) {
         const parsed = parseWithError(ctx, depth, value);
         if (parsed) {
-          onParse(ctx, createStreamThrowNode(id, parsed));
+          onParse(
+            ctx,
+            createStreamNode(SerovalNodeType.StreamThrow, id, parsed),
+          );
         }
       }
       popPendingState(ctx);
@@ -467,7 +449,10 @@ function parseStream(
       if (ctx.state.alive) {
         const parsed = parseWithError(ctx, depth, value);
         if (parsed) {
-          onParse(ctx, createStreamReturnNode(id, parsed));
+          onParse(
+            ctx,
+            createStreamNode(SerovalNodeType.StreamReturn, id, parsed),
+          );
         }
       }
       popPendingState(ctx);
@@ -633,16 +618,18 @@ function parseObjectPhase2(
   current: object,
   currentClass: unknown,
 ): SerovalNode {
-  switch (currentClass) {
-    case Object:
-      return parsePlainObject(
-        ctx,
-        depth,
-        id,
-        current as Record<string, unknown>,
-        false,
-      );
-    case NIL:
+  // Plain objects dominate real payloads; skip the classifier for them.
+  if (currentClass === Object) {
+    return parsePlainObject(
+      ctx,
+      depth,
+      id,
+      current as Record<string, unknown>,
+      false,
+    );
+  }
+  switch (getObjectKind(current, currentClass, ctx.base.features)) {
+    case ObjectKind.NullObject:
       return parsePlainObject(
         ctx,
         depth,
@@ -650,156 +637,86 @@ function parseObjectPhase2(
         current as Record<string, unknown>,
         true,
       );
-    case Date:
+    case ObjectKind.Date:
       return createDateNode(id, current as unknown as Date);
-    case Error:
-    case EvalError:
-    case RangeError:
-    case ReferenceError:
-    case SyntaxError:
-    case TypeError:
-    case URIError:
-      return parseError(ctx, depth, id, current as unknown as Error);
-    case Number:
-    case Boolean:
-    case String:
-    case BigInt:
+    case ObjectKind.Error:
+      return parseError(
+        ctx,
+        depth,
+        SerovalNodeType.Error,
+        id,
+        current as unknown as Error,
+      );
+    case ObjectKind.AggregateError:
+      return parseError(
+        ctx,
+        depth,
+        SerovalNodeType.AggregateError,
+        id,
+        current as unknown as AggregateError,
+      );
+    case ObjectKind.Boxed:
       return parseBoxed(ctx, depth, id, current);
-    case ArrayBuffer:
+    case ObjectKind.ArrayBuffer:
       return createArrayBufferNode(
         ctx.base,
         id,
         current as unknown as ArrayBuffer,
       );
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
+    case ObjectKind.TypedArray:
       return parseTypedArray(
         ctx,
         depth,
+        SerovalNodeType.TypedArray,
         id,
         current as unknown as TypedArrayValue,
       );
-    case DataView:
+    case ObjectKind.BigIntTypedArray:
+      return parseTypedArray(
+        ctx,
+        depth,
+        SerovalNodeType.BigIntTypedArray,
+        id,
+        current as unknown as BigIntTypedArrayValue,
+      );
+    case ObjectKind.DataView:
       return parseDataView(ctx, depth, id, current as unknown as DataView);
-    case Map:
+    case ObjectKind.Map:
       return parseMap(
         ctx,
         depth,
         id,
         current as unknown as Map<unknown, unknown>,
       );
-    case Set:
+    case ObjectKind.Set:
       return parseSet(ctx, depth, id, current as unknown as Set<unknown>);
+    case ObjectKind.Promise:
+      return parsePromise(
+        ctx,
+        depth,
+        id,
+        current as unknown as Promise<unknown>,
+      );
+    case ObjectKind.RegExp:
+      return createRegExpNode(id, current as unknown as RegExp);
+    case ObjectKind.Temporal:
+      return createTemporalNode(
+        id,
+        getTemporalType(currentClass) as SerovalTemporalType,
+        current as unknown as Temporal.Instant,
+      );
+    case ObjectKind.Iterable:
+      // Generator objects have no global constructor despite existing
+      return parsePlainObject(
+        ctx,
+        depth,
+        id,
+        current as Record<string, unknown>,
+        !!currentClass,
+      );
     default:
-      break;
+      throw new SerovalUnsupportedTypeError(current);
   }
-  // Promises
-  if (currentClass === Promise || current instanceof Promise) {
-    return parsePromise(ctx, depth, id, current as unknown as Promise<unknown>);
-  }
-  const currentFeatures = ctx.base.features;
-  if (currentFeatures & Feature.RegExp && currentClass === RegExp) {
-    return createRegExpNode(id, current as unknown as RegExp);
-  }
-  // BigInt Typed Arrays
-  if (currentFeatures & Feature.BigIntTypedArray) {
-    switch (currentClass) {
-      case BigInt64Array:
-      case BigUint64Array:
-        return parseBigIntTypedArray(
-          ctx,
-          depth,
-          id,
-          current as unknown as BigIntTypedArrayValue,
-        );
-      default:
-        break;
-    }
-  }
-  if (
-    currentFeatures & Feature.AggregateError &&
-    typeof AggregateError !== 'undefined' &&
-    (currentClass === AggregateError || current instanceof AggregateError)
-  ) {
-    return parseAggregateError(
-      ctx,
-      depth,
-      id,
-      current as unknown as AggregateError,
-    );
-  }
-  if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
-    switch (currentClass) {
-      case Temporal.Instant:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Instant,
-          current as unknown as Temporal.Instant,
-        );
-      case Temporal.Duration:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Duration,
-          current as unknown as Temporal.Duration,
-        );
-      case Temporal.PlainDate:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDate,
-          current as unknown as Temporal.PlainDate,
-        );
-      case Temporal.PlainDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDateTime,
-          current as unknown as Temporal.PlainDateTime,
-        );
-      case Temporal.PlainMonthDay:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainMonthDay,
-          current as unknown as Temporal.PlainMonthDay,
-        );
-      case Temporal.PlainTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainTime,
-          current as unknown as Temporal.PlainTime,
-        );
-      case Temporal.PlainYearMonth:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainYearMonth,
-          current as unknown as Temporal.PlainYearMonth,
-        );
-      case Temporal.ZonedDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.ZonedDateTime,
-          current as unknown as Temporal.ZonedDateTime,
-        );
-      default:
-        break;
-    }
-  }
-  // Slow path. We only need to handle Errors and Iterators
-  // since they have very broad implementations.
-  if (current instanceof Error) {
-    return parseError(ctx, depth, id, current);
-  }
-  // Generator functions don't have a global constructor
-  // despite existing
-  if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) {
-    return parsePlainObject(ctx, depth, id, current, !!currentClass);
-  }
-  throw new SerovalUnsupportedTypeError(current);
 }
 
 function parseObject(
@@ -817,15 +734,7 @@ function parseObject(
   if (isSequence(current)) {
     return parseSequence(ctx, depth, id, current);
   }
-  let currentClass: unknown = current.constructor;
-  // `constructor` is an ordinary own property, so data can shadow it
-  // (`JSON.parse('{"constructor":1}')`) and hide the real class. A class is
-  // always callable, so anything else means the lookup was shadowed — only
-  // then fall back to the prototype, keeping the common path free of it.
-  if (currentClass !== NIL && typeof currentClass !== 'function') {
-    const proto = Object.getPrototypeOf(current) as object | null;
-    currentClass = proto === null ? NIL : proto.constructor;
-  }
+  const currentClass = getObjectClass(current);
   if (currentClass === OpaqueReference) {
     return parseSOS(
       ctx,

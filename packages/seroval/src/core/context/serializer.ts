@@ -5,8 +5,8 @@ import {
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
-  SerovalTemporalType,
   SYMBOL_STRING,
+  TEMPORAL_TYPE_NAME,
 } from '../constants';
 import {
   SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR,
@@ -883,23 +883,12 @@ function serializeDate(node: SerovalDateNode): string {
   return 'new Date("' + node.s + '")';
 }
 
-const TEMPORAL_CONSTRUCTOR: Record<SerovalTemporalType, string> = {
-  [SerovalTemporalType.Instant]: 'Temporal.Instant',
-  [SerovalTemporalType.Duration]: 'Temporal.Duration',
-  [SerovalTemporalType.PlainDate]: 'Temporal.PlainDate',
-  [SerovalTemporalType.PlainDateTime]: 'Temporal.PlainDateTime',
-  [SerovalTemporalType.PlainMonthDay]: 'Temporal.PlainMonthDay',
-  [SerovalTemporalType.PlainTime]: 'Temporal.PlainTime',
-  [SerovalTemporalType.PlainYearMonth]: 'Temporal.PlainYearMonth',
-  [SerovalTemporalType.ZonedDateTime]: 'Temporal.ZonedDateTime',
-};
-
 function serializeTemporal(
   ctx: SerializerContext,
   node: SerovalTemporalNode,
 ): string {
   if (ctx.base.features & Feature.Temporal) {
-    return TEMPORAL_CONSTRUCTOR[node.c] + '.from("' + node.s + '")';
+    return 'Temporal.' + TEMPORAL_TYPE_NAME[node.c] + '.from("' + node.s + '")';
   }
   throw new SerovalUnsupportedNodeError(node);
 }
@@ -1181,26 +1170,9 @@ function serializePromiseConstructor(
   return '(' + resolver + ').p';
 }
 
-function serializePromiseResolve(
+function serializePromiseResult(
   ctx: SerializerContext,
-  node: SerovalPromiseResolveNode,
-): string {
-  if (ctx.mode === SerovalMode.Vanilla) {
-    throw new SerovalUnsupportedNodeError(node);
-  }
-  return (
-    getConstructor(ctx, node.a[0]) +
-    '(' +
-    getRefParam(ctx, node.i) +
-    ',' +
-    serialize(ctx, node.a[1]) +
-    ')'
-  );
-}
-
-function serializePromiseReject(
-  ctx: SerializerContext,
-  node: SerovalPromiseRejectNode,
+  node: SerovalPromiseResolveNode | SerovalPromiseRejectNode,
 ): string {
   if (ctx.mode === SerovalMode.Vanilla) {
     throw new SerovalUnsupportedNodeError(node);
@@ -1264,7 +1236,9 @@ function serializeIteratorFactory(
 
 function serializeIteratorFactoryInstance(
   ctx: SerializerContext,
-  node: SerovalIteratorFactoryInstanceNode,
+  node:
+    | SerovalIteratorFactoryInstanceNode
+    | SerovalAsyncIteratorFactoryInstanceNode,
 ): string {
   return getConstructor(ctx, node.a[0]) + '(' + serialize(ctx, node.a[1]) + ')';
 }
@@ -1310,13 +1284,6 @@ function serializeAsyncIteratorFactory(
   return iterator;
 }
 
-function serializeAsyncIteratorFactoryInstance(
-  ctx: SerializerContext,
-  node: SerovalAsyncIteratorFactoryInstanceNode,
-): string {
-  return getConstructor(ctx, node.a[0]) + '(' + serialize(ctx, node.a[1]) + ')';
-}
-
 function serializeStreamConstructor(
   ctx: SerializerContext,
   node: SerovalStreamConstructorNode,
@@ -1337,25 +1304,17 @@ function serializeStreamConstructor(
   return result;
 }
 
-function serializeStreamNext(
+function serializeStreamCall(
   ctx: SerializerContext,
-  node: SerovalStreamNextNode,
+  node:
+    | SerovalStreamNextNode
+    | SerovalStreamThrowNode
+    | SerovalStreamReturnNode,
+  method: string,
 ): string {
-  return getRefParam(ctx, node.i) + '.next(' + serialize(ctx, node.f) + ')';
-}
-
-function serializeStreamThrow(
-  ctx: SerializerContext,
-  node: SerovalStreamThrowNode,
-): string {
-  return getRefParam(ctx, node.i) + '.throw(' + serialize(ctx, node.f) + ')';
-}
-
-function serializeStreamReturn(
-  ctx: SerializerContext,
-  node: SerovalStreamReturnNode,
-): string {
-  return getRefParam(ctx, node.i) + '.return(' + serialize(ctx, node.f) + ')';
+  return (
+    getRefParam(ctx, node.i) + '.' + method + '(' + serialize(ctx, node.f) + ')'
+  );
 }
 
 function serializeSequenceItem(
@@ -1474,25 +1433,23 @@ function serialize(ctx: SerializerContext, node: SerovalNode): string {
     case SerovalNodeType.IndexedValue:
       return getRefParam(ctx, node.i);
     case SerovalNodeType.PromiseSuccess:
-      return serializePromiseResolve(ctx, node);
     case SerovalNodeType.PromiseFailure:
-      return serializePromiseReject(ctx, node);
+      return serializePromiseResult(ctx, node);
     case SerovalNodeType.IteratorFactory:
       return serializeIteratorFactory(ctx, node);
     case SerovalNodeType.IteratorFactoryInstance:
+    case SerovalNodeType.AsyncIteratorFactoryInstance:
       return serializeIteratorFactoryInstance(ctx, node);
     case SerovalNodeType.AsyncIteratorFactory:
       return serializeAsyncIteratorFactory(ctx, node);
-    case SerovalNodeType.AsyncIteratorFactoryInstance:
-      return serializeAsyncIteratorFactoryInstance(ctx, node);
     case SerovalNodeType.StreamConstructor:
       return serializeStreamConstructor(ctx, node);
     case SerovalNodeType.StreamNext:
-      return serializeStreamNext(ctx, node);
+      return serializeStreamCall(ctx, node, 'next');
     case SerovalNodeType.StreamThrow:
-      return serializeStreamThrow(ctx, node);
+      return serializeStreamCall(ctx, node, 'throw');
     case SerovalNodeType.StreamReturn:
-      return serializeStreamReturn(ctx, node);
+      return serializeStreamCall(ctx, node, 'return');
     default:
       return assignIndexedValue(ctx, node.i, serializeAssignable(ctx, node));
   }
