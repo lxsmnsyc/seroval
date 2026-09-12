@@ -62,7 +62,6 @@ import type {
 } from '../types';
 import getIdentifier from '../utils/get-identifier';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
-import { isValidKey } from '../utils/valid-properties';
 
 const enum AssignmentType {
   Index = 0,
@@ -505,7 +504,7 @@ function createObjectAssign(
   key: string,
   value: string,
 ): void {
-  if (!isValidKey(key)) {
+  if (key === '__proto__') {
     // `obj.__proto__ = x`, including the bracket form `obj["__proto__"] = x`,
     // invokes the prototype setter rather than creating an own property.
     // Define the property instead so the round-trip preserves it as an actual
@@ -628,6 +627,22 @@ function serializeArray(
   return '[]';
 }
 
+const enum PropertyKeyType {
+  Quoted = 0,
+  Numeric = 1,
+  Identifier = 2,
+}
+
+function getPropertyKeyType(key: string): PropertyKeyType {
+  const numeric = Number(key);
+  if (numeric >= 0 && numeric.toString() === key) {
+    return PropertyKeyType.Numeric;
+  }
+  return isValidIdentifier(key)
+    ? PropertyKeyType.Identifier
+    : PropertyKeyType.Quoted;
+}
+
 function serializeProperty(
   ctx: SerializerContext,
   source: SerovalNodeWithProperties,
@@ -635,39 +650,28 @@ function serializeProperty(
   val: SerovalNode,
 ): string {
   if (typeof key === 'string') {
-    const check = Number(key);
-    const isIdentifier =
-      // Test if key is a valid positive number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      (check >= 0 &&
-        // It's also important to consider that if the key is
-        // indeed numeric, we need to make sure that when
-        // converted back into a string, it's still the same
-        // to the original key. This allows us to differentiate
-        // keys that has numeric formats but in a different
-        // format, which can cause unintentional key declaration
-        // Example: { 0x1: 1 } vs { '0x1': 1 }
-        check.toString() === key) ||
-      isValidIdentifier(key);
+    const keyType = getPropertyKeyType(key);
     if (isIndexedValueInStack(ctx.base, val)) {
       const refParam = getRefParam(ctx, (val as SerovalIndexedValueNode).i);
       markSerializerRef(ctx.base, source.i);
-      // Strict identifier check, make sure
-      // that it isn't numeric (except NaN)
-      if (isIdentifier && check !== check) {
+      if (keyType === PropertyKeyType.Identifier) {
         createObjectAssign(ctx, source.i, key, refParam);
       } else {
         createArrayAssign(
           ctx,
           source.i,
-          isIdentifier ? key : '"' + key + '"',
+          keyType === PropertyKeyType.Quoted ? '"' + key + '"' : key,
           refParam,
         );
       }
       return '';
     }
-    if (isValidKey(key)) {
-      return (isIdentifier ? key : '"' + key + '"') + ':' + serialize(ctx, val);
+    if (key !== '__proto__') {
+      return (
+        (keyType === PropertyKeyType.Quoted ? '"' + key + '"' : key) +
+        ':' +
+        serialize(ctx, val)
+      );
     }
     // `__proto__` as an identifier or string key in an object literal is the
     // prototype setter, not an own property; use a computed key so the
@@ -728,48 +732,22 @@ function serializeStringKeyAssignment(
 ): void {
   const base = ctx.base;
   const serialized = serialize(ctx, value);
-  const check = Number(key);
-  const isIdentifier =
-    // Test if key is a valid positive number or JS identifier
-    // so that we don't have to serialize the key and wrap with brackets
-    (check >= 0 &&
-      // It's also important to consider that if the key is
-      // indeed numeric, we need to make sure that when
-      // converted back into a string, it's still the same
-      // to the original key. This allows us to differentiate
-      // keys that has numeric formats but in a different
-      // format, which can cause unintentional key declaration
-      // Example: { 0x1: 1 } vs { '0x1': 1 }
-      check.toString() === key) ||
-    isValidIdentifier(key);
-  if (isIndexedValueInStack(base, value)) {
-    // Strict identifier check, make sure
-    // that it isn't numeric (except NaN)
-    if (isIdentifier && check !== check) {
-      createObjectAssign(ctx, source.i, key, serialized);
-    } else {
-      createArrayAssign(
-        ctx,
-        source.i,
-        isIdentifier ? key : '"' + key + '"',
-        serialized,
-      );
-    }
-  } else {
-    const parentAssignment = base.assignments;
+  const keyType = getPropertyKeyType(key);
+  const parentAssignment = base.assignments;
+  if (!isIndexedValueInStack(base, value)) {
     base.assignments = mainAssignments;
-    if (isIdentifier && check !== check) {
-      createObjectAssign(ctx, source.i, key, serialized);
-    } else {
-      createArrayAssign(
-        ctx,
-        source.i,
-        isIdentifier ? key : '"' + key + '"',
-        serialized,
-      );
-    }
-    base.assignments = parentAssignment;
   }
+  if (keyType === PropertyKeyType.Identifier) {
+    createObjectAssign(ctx, source.i, key, serialized);
+  } else {
+    createArrayAssign(
+      ctx,
+      source.i,
+      keyType === PropertyKeyType.Quoted ? '"' + key + '"' : key,
+      serialized,
+    );
+  }
+  base.assignments = parentAssignment;
 }
 
 function serializeAssignment(
@@ -821,7 +799,10 @@ function serializeDictionary(
 ): string {
   if (node.p) {
     const base = ctx.base;
-    if (base.features & Feature.ObjectAssign) {
+    if (
+      base.features & Feature.ObjectAssign &&
+      !node.p.k.includes('__proto__')
+    ) {
       init = serializeWithObjectAssign(ctx, node, node.p, init);
     } else {
       markSerializerRef(base, node.i);
