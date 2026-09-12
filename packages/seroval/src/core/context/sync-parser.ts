@@ -15,24 +15,21 @@ import {
   createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
-  createStreamNextNode,
-  createStreamReturnNode,
-  createStreamThrowNode,
   createStringNode,
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
 import { Feature } from '../compat';
-import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
+import { NIL, SerovalTemporalType } from '../constants';
 import {
   SerovalDepthLimitError,
   SerovalParserError,
   SerovalUnsupportedTypeError,
 } from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
-import { createSerovalNode } from '../node';
+import { isLiveStream, type LiveStream } from '../live-stream';
 import { OpaqueReference } from '../opaque-reference';
-import { type Plugin, SerovalMode } from '../plugin';
+import type { Plugin, SerovalMode } from '../plugin';
 import {
   createSequenceFromIterable,
   isSequence,
@@ -40,11 +37,7 @@ import {
 } from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
-import {
-  createStream,
-  createStreamFromAsyncIterable,
-  isStream,
-} from '../stream';
+import { isStream } from '../stream';
 import { serializeString } from '../string';
 import {
   SYM_ASYNC_ITERATOR,
@@ -97,7 +90,7 @@ type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
 export type SyncParserContextOptions = BaseParserContextOptions;
 
-const enum ParserMode {
+export const enum ParserMode {
   Sync = 1,
   Stream = 2,
 }
@@ -121,7 +114,7 @@ export function createSyncParserContext(
 
 export class SyncParsePluginContext {
   constructor(
-    private _p: SyncParserContext,
+    private _p: SOSParserContext,
     private depth: number,
   ) {}
 
@@ -131,7 +124,12 @@ export class SyncParsePluginContext {
 }
 
 export interface StreamParserContextOptions extends SyncParserContextOptions {
-  onParse: (node: SerovalNode, initial: boolean) => void;
+  /**
+   * Receives each parsed record. Returning a promise defers the next record,
+   * and the acceptance of the source event that produced it, until the
+   * promise settles.
+   */
+  onParse: (node: SerovalNode, initial: boolean) => void | PromiseLike<void>;
   onError?: (error: unknown) => void;
   onDone?: () => void;
 }
@@ -141,85 +139,68 @@ export interface StreamParserContext {
   base: BaseParserContext;
   state: StreamParserState;
 }
-export class StreamParsePluginContext {
-  constructor(
-    private _p: StreamParserContext,
-    private depth: number,
-  ) {}
-
-  parse<T>(current: T): SerovalNode {
-    return parseSOS(this._p, this.depth, current);
-  }
-
-  parseWithError<T>(current: T): SerovalNode | undefined {
-    return parseWithError(this._p, this.depth, current);
-  }
-
-  isAlive(): boolean {
-    return this._p.state.alive;
-  }
-
-  pushPendingState(): void {
-    pushPendingState(this._p);
-  }
-
-  popPendingState(): void {
-    popPendingState(this._p);
-  }
-
-  onParse(node: SerovalNode): void {
-    onParse(this._p, node);
-  }
-
-  onError(error: unknown): void {
-    onError(this._p, error);
-  }
-
-  addCleanup(callback: () => void): void {
-    this._p.state.cleanups.push(callback);
-  }
+export interface OutputRecord {
+  // `undefined` while the value is still being parsed, or if that failed.
+  node: SerovalNode | undefined;
+  initial: boolean;
+  // Releases the live stream event behind this record once it is emitted.
+  accept: (() => void) | undefined;
 }
 
-interface StreamParserState {
+export interface StreamParserState {
   // Life cycle
   alive: boolean;
   // Number of pending things
   pending: number;
-  //
-  initial: boolean;
-  //
-  buffer: SerovalNode[];
+  // Depth of synchronous parses in progress. Records are held back until the
+  // record that introduces their references has been queued.
+  parsing: number;
+  // Records waiting to be emitted, in order.
+  queue: OutputRecord[];
+  // An output callback returned a promise that has not settled yet.
+  writing: boolean;
+  // Why the parse stopped early, handed to live stream sources on cleanup.
+  reason: unknown;
   // Callbacks
-  onParse: (node: SerovalNode, initial: boolean) => void;
+  onParse: (node: SerovalNode, initial: boolean) => void | PromiseLike<void>;
   onError?: (error: unknown) => void;
   onDone?: () => void;
 
   cleanups: (() => void)[];
-}
 
-function createStreamParserState(
-  options: StreamParserContextOptions,
-): StreamParserState {
-  return {
-    alive: true,
-    pending: 0,
-    initial: true,
-    buffer: [],
-    onParse: options.onParse,
-    onError: options.onError,
-    onDone: options.onDone,
-    cleanups: [],
-  };
-}
-
-export function createStreamParserContext(
-  options: StreamParserContextOptions,
-): StreamParserContext {
-  return {
-    type: ParserMode.Stream,
-    base: createBaseParserContext(SerovalMode.Cross, options),
-    state: createStreamParserState(options),
-  };
+  // Streaming-mode behavior, set by `createStreamParserContext` so that
+  // synchronous consumers never bundle it.
+  stream: (
+    ctx: StreamParserContext,
+    depth: number,
+    id: number,
+    current: Stream<unknown>,
+  ) => void;
+  live: (
+    ctx: StreamParserContext,
+    depth: number,
+    id: number,
+    current: LiveStream<unknown>,
+  ) => void;
+  promise: (
+    ctx: StreamParserContext,
+    resolver: number,
+    depth: number,
+    current: Promise<unknown>,
+  ) => void;
+  iterable: (
+    ctx: StreamParserContext,
+    depth: number,
+    id: number,
+    current: AsyncIterable<unknown>,
+  ) => void;
+  plugin: (
+    ctx: StreamParserContext,
+    depth: number,
+    id: number,
+    current: unknown,
+    plugins: Plugin<any, any>[],
+  ) => SerovalPluginNode | undefined;
 }
 
 type SOSParserContext = SyncParserContext | StreamParserContext;
@@ -283,15 +264,10 @@ function parseProperties(
     valueNodes.push(
       createAsyncIteratorFactoryInstanceNode(
         parseAsyncIteratorFactory(ctx.base),
-        parseSOS(
+        parseAsyncIterable(
           ctx,
           depth,
-          ctx.type === ParserMode.Sync
-            ? createStream()
-            : createStreamFromAsyncIterable(
-                properties as unknown as AsyncIterable<unknown>,
-                ctx.state.cleanups,
-              ),
+          properties as unknown as AsyncIterable<unknown>,
         ) as SerovalNodeWithID,
       ),
     );
@@ -310,6 +286,25 @@ function parseProperties(
     k: keyNodes,
     v: valueNodes,
   };
+}
+
+function parseAsyncIterable(
+  ctx: SOSParserContext,
+  depth: number,
+  current: AsyncIterable<unknown>,
+): SerovalNode {
+  // The node only needs an id; in streaming mode the parser drives the
+  // iterator, in sync mode it stays empty.
+  const id = createIndexForValue(ctx.base, {});
+  const result = createStreamConstructorNode(
+    id,
+    parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
+    [],
+  );
+  if (ctx.type === ParserMode.Stream) {
+    ctx.state.iterable(ctx, depth, id, current);
+  }
+  return result;
 }
 
 function parsePlainObject(
@@ -441,99 +436,31 @@ function parseStream(
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
   );
-  if (ctx.type === ParserMode.Sync) {
-    return result;
+  if (ctx.type === ParserMode.Stream) {
+    ctx.state.stream(ctx, depth, id, current);
   }
-  pushPendingState(ctx);
-  current.on({
-    next: value => {
-      if (ctx.state.alive) {
-        const parsed = parseWithError(ctx, depth, value);
-        if (parsed) {
-          onParse(ctx, createStreamNextNode(id, parsed));
-        }
-      }
-    },
-    throw: value => {
-      if (ctx.state.alive) {
-        const parsed = parseWithError(ctx, depth, value);
-        if (parsed) {
-          onParse(ctx, createStreamThrowNode(id, parsed));
-        }
-      }
-      popPendingState(ctx);
-    },
-    return: value => {
-      if (ctx.state.alive) {
-        const parsed = parseWithError(ctx, depth, value);
-        if (parsed) {
-          onParse(ctx, createStreamReturnNode(id, parsed));
-        }
-      }
-      popPendingState(ctx);
-    },
-  });
   return result;
 }
 
-function handlePromiseSuccess(
-  this: StreamParserContext,
-  id: number,
+function parseLiveStream(
+  ctx: SOSParserContext,
   depth: number,
-  data: unknown,
-): void {
-  if (this.state.alive) {
-    const parsed = parseWithError(this, depth, data);
-    if (parsed) {
-      onParse(
-        this,
-        createSerovalNode(
-          SerovalNodeType.PromiseSuccess,
-          id,
-          NIL,
-          NIL,
-          NIL,
-          NIL,
-          NIL,
-          [
-            parseSpecialReference(this.base, SpecialReference.PromiseSuccess),
-            parsed,
-          ],
-        ),
-      );
-    }
-    popPendingState(this);
-  }
-}
-
-function handlePromiseFailure(
-  this: StreamParserContext,
   id: number,
-  depth: number,
-  data: unknown,
-): void {
-  if (this.state.alive) {
-    const parsed = parseWithError(this, depth, data);
-    if (parsed) {
-      onParse(
-        this,
-        createSerovalNode(
-          SerovalNodeType.PromiseFailure,
-          id,
-          NIL,
-          NIL,
-          NIL,
-          NIL,
-          NIL,
-          [
-            parseSpecialReference(this.base, SpecialReference.PromiseFailure),
-            parsed,
-          ],
-        ),
-      );
-    }
+  current: LiveStream<unknown>,
+): SerovalNode {
+  // Only incremental output gets a live receiver: its factory subscribes while
+  // the root record is evaluated. A sync parse never delivers events.
+  const stream = ctx.type === ParserMode.Stream;
+  const result = createStreamConstructorNode(
+    id,
+    parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
+    [],
+    stream ? 1 : NIL,
+  );
+  if (stream) {
+    ctx.state.live(ctx, depth, id, current);
   }
-  popPendingState(this);
+  return result;
 }
 
 function parsePromise(
@@ -545,11 +472,7 @@ function parsePromise(
   // Creates a unique reference for the promise resolver
   const resolver = createIndexForValue(ctx.base, {});
   if (ctx.type === ParserMode.Stream) {
-    pushPendingState(ctx);
-    current.then(
-      handlePromiseSuccess.bind(ctx, resolver, depth),
-      handlePromiseFailure.bind(ctx, resolver, depth),
-    );
+    ctx.state.promise(ctx, resolver, depth, current);
   }
   return createPromiseConstructorNode(ctx.base, id, resolver);
 }
@@ -576,28 +499,6 @@ function parsePluginSync(
   return NIL;
 }
 
-function parsePluginStream(
-  ctx: StreamParserContext,
-  depth: number,
-  id: number,
-  current: unknown,
-  currentPlugins: Plugin<any, any>[],
-): SerovalPluginNode | undefined {
-  for (let i = 0, len = currentPlugins.length; i < len; i++) {
-    const plugin = currentPlugins[i];
-    if (plugin.parse.stream && plugin.test(current)) {
-      return createPluginNode(
-        id,
-        plugin.tag,
-        plugin.parse.stream(current, new StreamParsePluginContext(ctx, depth), {
-          id,
-        }),
-      );
-    }
-  }
-  return NIL;
-}
-
 function parsePlugin(
   ctx: SOSParserContext,
   depth: number,
@@ -608,7 +509,7 @@ function parsePlugin(
   if (currentPlugins) {
     return ctx.type === ParserMode.Sync
       ? parsePluginSync(ctx, depth, id, current, currentPlugins)
-      : parsePluginStream(ctx, depth, id, current, currentPlugins);
+      : ctx.state.plugin(ctx, depth, id, current, currentPlugins);
   }
   return NIL;
 }
@@ -812,7 +713,9 @@ function parseObject(
     return parseArray(ctx, depth, id, current);
   }
   if (isStream(current)) {
-    return parseStream(ctx, depth, id, current);
+    return isLiveStream(current)
+      ? parseLiveStream(ctx, depth, id, current)
+      : parseStream(ctx, depth, id, current);
   }
   if (isSequence(current)) {
     return parseSequence(ctx, depth, id, current);
@@ -901,103 +804,5 @@ export function parseTop<T>(ctx: SyncParserContext, current: T): SerovalNode {
     throw error instanceof SerovalParserError
       ? error
       : new SerovalParserError(error);
-  }
-}
-
-function onParse(ctx: StreamParserContext, node: SerovalNode): void {
-  // If the value emitted happens to be during parsing, we push to the
-  // buffer and emit after the initial parsing is done.
-  if (ctx.state.initial) {
-    ctx.state.buffer.push(node);
-  } else {
-    onParseInternal(ctx, node, false);
-  }
-}
-
-function onError(ctx: StreamParserContext, error: unknown): void {
-  if (ctx.state.onError) {
-    ctx.state.onError(error);
-  } else {
-    throw error instanceof SerovalParserError
-      ? error
-      : new SerovalParserError(error);
-  }
-}
-
-function onDone(ctx: StreamParserContext): void {
-  if (ctx.state.onDone) {
-    ctx.state.onDone();
-  }
-
-  for (let i = 0, len = ctx.state.cleanups.length; i < len; i++) {
-    ctx.state.cleanups[i]();
-  }
-}
-
-function onParseInternal(
-  ctx: StreamParserContext,
-  node: SerovalNode,
-  initial: boolean,
-): void {
-  try {
-    ctx.state.onParse(node, initial);
-  } catch (error) {
-    onError(ctx, error);
-  }
-}
-
-function pushPendingState(ctx: StreamParserContext): void {
-  ctx.state.pending++;
-}
-
-function popPendingState(ctx: StreamParserContext): void {
-  if (--ctx.state.pending <= 0) {
-    onDone(ctx);
-  }
-}
-
-function parseWithError<T>(
-  ctx: StreamParserContext,
-  depth: number,
-  current: T,
-): SerovalNode | undefined {
-  try {
-    return parseSOS(ctx, depth, current);
-  } catch (err) {
-    onError(ctx, err);
-    return NIL;
-  }
-}
-
-export function startStreamParse<T>(
-  ctx: StreamParserContext,
-  current: T,
-): void {
-  const parsed = parseWithError(ctx, 0, current);
-  if (parsed) {
-    onParseInternal(ctx, parsed, true);
-    ctx.state.initial = false;
-    flushStreamParse(ctx, ctx.state);
-
-    // Check if there's any pending pushes
-    if (ctx.state.pending <= 0) {
-      destroyStreamParse(ctx);
-    }
-  }
-}
-
-function flushStreamParse(
-  ctx: StreamParserContext,
-  state: StreamParserState,
-): void {
-  for (let i = 0, len = state.buffer.length; i < len; i++) {
-    onParseInternal(ctx, state.buffer[i], false);
-  }
-}
-
-export function destroyStreamParse(ctx: StreamParserContext): void {
-  if (ctx.state.alive) {
-    onDone(ctx);
-    ctx.state.alive = false;
   }
 }

@@ -315,6 +315,9 @@ export interface SerovalStreamConstructorNode extends SerovalBaseNode {
   a: SerovalNode[];
   // special reference to the constructor
   f: SerovalNodeWithID;
+  // 1 for a live receiver (one listener, no history after it subscribes);
+  // absent for a replay receiver
+  l: 1 | undefined;
 }
 
 export interface SerovalStreamNextNode extends SerovalBaseNode {

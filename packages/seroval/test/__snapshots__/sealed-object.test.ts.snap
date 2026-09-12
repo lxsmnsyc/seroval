@@ -169,7 +169,7 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 		}
 	};
 	return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+})($R[1],$R[3])))(($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -177,6 +177,7 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -195,6 +196,9 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -208,6 +212,10 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -227,13 +235,11 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -242,7 +248,6 @@ exports[`sealed object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -387,7 +392,7 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 		}
 	};
 	return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+})($R[1],$R[3])))(($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -395,6 +400,7 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -413,6 +419,9 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -426,6 +435,10 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -445,13 +458,11 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -460,7 +471,6 @@ exports[`sealed object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -626,7 +636,7 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
 		}
 	};
 	return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=() => {
+})($R[1],$R[3])))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -634,6 +644,7 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -652,6 +663,9 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -665,6 +679,10 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -684,13 +702,11 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -699,7 +715,6 @@ exports[`sealed object > crossSerializeStream > scoped > supports Symbol.asyncIt
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -915,7 +930,7 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
 		}
 	};
 	return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=() => {
+})($R[1],$R[3])))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -923,6 +938,7 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -941,6 +957,9 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -954,6 +973,10 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -973,13 +996,11 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -988,7 +1009,6 @@ exports[`sealed object > crossSerializeStream > supports Symbol.asyncIterator 1`
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -1216,7 +1236,7 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 		}
 	};
 	return instance;
-})(j,k)))((m=(() => {
+})(j,k)))((m=((live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -1224,6 +1244,7 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
 				const listener = listeners[x];
 				if (listener) {
@@ -1242,6 +1263,9 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 			}
 		},
 		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
 			let subscribed = alive;
 			if (alive) {
 				for (temp = 0; temp < count; temp++) {
@@ -1255,6 +1279,10 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
 				if (alive && subscribed) {
 					subscribed = false;
@@ -1274,13 +1302,11 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -1289,7 +1315,6 @@ exports[`sealed object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;

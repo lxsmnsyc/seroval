@@ -1324,7 +1324,7 @@ function serializeStreamConstructor(
   const result = assignIndexedValue(
     ctx,
     node.i,
-    getConstructor(ctx, node.f) + '()',
+    getConstructor(ctx, node.f) + (node.l === 1 ? '(1)' : '()'),
   );
   const len = node.a.length;
   if (len) {

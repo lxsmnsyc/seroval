@@ -12,6 +12,7 @@ import {
   ARRAY_BUFFER_CONSTRUCTOR,
   PROMISE_CONSTRUCTOR,
   type PromiseConstructorResolver,
+  STREAM_CONSTRUCTOR,
 } from '../constructors';
 import {
   SerovalConflictedNodeIdError,
@@ -27,7 +28,7 @@ import { SerovalMode } from '../plugin';
 import { getReference } from '../reference';
 import { createSequence, type Sequence, sequenceToIterator } from '../sequence';
 import type { Stream } from '../stream';
-import { createStream, streamToAsyncIterable } from '../stream';
+import { streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
@@ -707,7 +708,12 @@ function deserializeStreamConstructor(
   depth: number,
   node: SerovalStreamConstructorNode,
 ): unknown {
-  const result = assignIndexedValue(ctx, node.i, createStream());
+  // Anything but the exact live marker builds a replay receiver.
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    STREAM_CONSTRUCTOR(node.l === 1 ? 1 : NIL),
+  );
   assignNodeType(ctx, node.i, SerovalNodeType.StreamConstructor);
   const items = node.a;
   const len = items.length;
