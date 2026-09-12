@@ -144,71 +144,55 @@ function getAssignmentExpression(assignment: Assignment): string {
   }
 }
 
-function mergeAssignments(assignments: Assignment[]): Assignment[] {
-  const newAssignments: Assignment[] = [];
-  let current = assignments[0];
-  for (
-    let i = 1, len = assignments.length, item: Assignment, prev = current;
-    i < len;
-    i++
-  ) {
-    item = assignments[i];
-    if (item.t === AssignmentType.Index && item.v === prev.v) {
-      // Merge if the right-hand value is the same
-      // saves at least 2 chars
-      current = {
-        t: AssignmentType.Index,
-        s: item.s,
-        k: NIL,
-        v: getAssignmentExpression(current),
-      } as IndexAssignment;
-    } else if (item.t === AssignmentType.Set && item.s === prev.s) {
-      // Maps has chaining methods, merge if source is the same
-      current = {
-        t: AssignmentType.Set,
-        s: getAssignmentExpression(current),
-        k: item.k,
-        v: item.v,
-      } as SetAssignment;
-    } else if (item.t === AssignmentType.Add && item.s === prev.s) {
-      // Sets has chaining methods too
-      current = {
-        t: AssignmentType.Add,
-        s: getAssignmentExpression(current),
-        k: NIL,
-        v: item.v,
-      } as AddAssignment;
-    } else if (item.t === AssignmentType.Delete && item.s === prev.s) {
-      // Maps has chaining methods, merge if source is the same
-      current = {
-        t: AssignmentType.Delete,
-        s: getAssignmentExpression(current),
-        k: item.k,
-        v: NIL,
-      } as DeleteAssignment;
-    } else {
-      // Different assignment, push current
-      newAssignments.push(current);
-      current = item;
-    }
-    prev = item;
-  }
-
-  newAssignments.push(current);
-
-  return newAssignments;
-}
+const MAX_ASSIGNMENT_CHAIN_LENGTH = 100;
 
 function resolveAssignments(assignments: Assignment[]): string | undefined {
-  if (assignments.length) {
-    let result = '';
-    const merged = mergeAssignments(assignments);
-    for (let i = 0, len = merged.length; i < len; i++) {
-      result += getAssignmentExpression(merged[i]) + ',';
-    }
-    return result;
+  if (!assignments.length) {
+    return NIL;
   }
-  return NIL;
+  let previous = assignments[0];
+  let expression = getAssignmentExpression(previous);
+  let result = '';
+  let chainLength = 1;
+  for (let index = 1, length = assignments.length; index < length; index++) {
+    const assignment = assignments[index];
+    if (chainLength === MAX_ASSIGNMENT_CHAIN_LENGTH) {
+      result += expression + ',';
+      expression = getAssignmentExpression(assignment);
+      chainLength = 0;
+    } else if (
+      assignment.t === AssignmentType.Index &&
+      previous.t === AssignmentType.Index &&
+      assignment.v === previous.v
+    ) {
+      expression = assignment.s + '=' + expression;
+    } else if (
+      assignment.t === AssignmentType.Set &&
+      previous.t === AssignmentType.Set &&
+      assignment.s === previous.s
+    ) {
+      expression += '.set(' + assignment.k + ',' + assignment.v + ')';
+    } else if (
+      assignment.t === AssignmentType.Add &&
+      previous.t === AssignmentType.Add &&
+      assignment.s === previous.s
+    ) {
+      expression += '.add(' + assignment.v + ')';
+    } else if (
+      assignment.t === AssignmentType.Delete &&
+      previous.t === AssignmentType.Set &&
+      assignment.s === previous.s
+    ) {
+      expression += '.delete(' + assignment.k + ')';
+    } else {
+      result += expression + ',';
+      expression = getAssignmentExpression(assignment);
+      chainLength = 0;
+    }
+    chainLength++;
+    previous = assignment;
+  }
+  return result + expression + ',';
 }
 
 const NULL_CONSTRUCTOR = 'Object.create(null)';
