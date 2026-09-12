@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { crossSerializeStream, toCrossJSONStream } from '../src';
+import { createStream, crossSerializeStream, toCrossJSONStream } from '../src';
 
 const serializers = [
   [
@@ -13,6 +13,57 @@ const serializers = [
       crossSerializeStream(value, { onSerialize: emit }),
   ],
 ] as const;
+
+describe.each(serializers)('%s stream subscriptions', (name, serialize) => {
+  it.each(['cancel', 'return', 'throw'] as const)(
+    'releases its subscription after %s',
+    mode => {
+      const source = createStream<number>();
+      const subscribe = source.on;
+      let subscribed = false;
+      source.on = listener => {
+        subscribed = true;
+        const unsubscribe = subscribe(listener);
+        return () => {
+          subscribed = false;
+          unsubscribe();
+        };
+      };
+      const emit = vi.fn();
+      const cancel = serialize(source, emit);
+      expect(subscribed).toBe(true);
+      if (mode === 'cancel') {
+        cancel();
+      } else {
+        source[mode](1);
+      }
+      expect(subscribed).toBe(false);
+      emit.mockClear();
+      source.next(2);
+      expect(emit).not.toHaveBeenCalled();
+    },
+  );
+
+  it('completes once when the completion callback cancels serialization', () => {
+    const source = createStream<number>();
+    let completions = 0;
+    const options = {
+      onParse: vi.fn(),
+      onSerialize: vi.fn(),
+      onDone() {
+        completions++;
+        cancel();
+      },
+    };
+    const cancel =
+      name === 'JSON'
+        ? toCrossJSONStream(source, options)
+        : crossSerializeStream(source, options);
+    source.return(1);
+    cancel();
+    expect(completions).toBe(1);
+  });
+});
 
 describe.each(serializers)(
   '%s async iterator cancellation',
