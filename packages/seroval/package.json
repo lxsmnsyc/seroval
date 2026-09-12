@@ -62,9 +62,6 @@
     },
     "./package.json": "./package.json"
   },
-  "typesVersions": {
-    "*": {}
-  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js"
 }

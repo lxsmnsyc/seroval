@@ -246,7 +246,8 @@ function deserializeKnownValue<
   T extends Record<string, unknown>,
   K extends keyof T,
 >(node: SerovalNode, record: T, key: K): T[K] {
-  if (Object.hasOwn(record, key)) {
+  // biome-ignore lint/suspicious/noPrototypeBuiltins: `Object.hasOwn` needs Node 16.9 / Safari 15.4, newer than the runtimes the package targets.
+  if (Object.prototype.hasOwnProperty.call(record, key)) {
     return record[key];
   }
   throw new SerovalMalformedNodeError(node);
