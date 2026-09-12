@@ -271,7 +271,12 @@ export function createBaseSerializerContext(
     mode,
     plugins: options.plugins,
     features: options.features,
-    marked: new Set(options.markedRefs),
+    // A Set passed by a parser is shared, not copied: streaming serializers
+    // create one context per emitted node, and copying the whole set each
+    // time made every emitted node cost O(references).
+    marked: Array.isArray(options.markedRefs)
+      ? new Set(options.markedRefs)
+      : options.markedRefs,
     stack: [],
     flags: [],
     assignments: [],
