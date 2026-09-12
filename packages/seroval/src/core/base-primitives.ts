@@ -12,7 +12,6 @@ import {
   NEG_ZERO_NODE,
 } from './literals';
 import { createSerovalNode } from './node';
-import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
   SerovalAggregateErrorNode,
@@ -67,71 +66,19 @@ export function createNumberNode(
   if (Object.is(value, -0)) {
     return NEG_ZERO_NODE;
   }
-  return createSerovalNode(
-    SerovalNodeType.Number,
-    NIL,
-    value,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.Number, NIL, value);
 }
 
 export function createStringNode(value: string): SerovalStringNode {
-  return createSerovalNode(
-    SerovalNodeType.String,
-    NIL,
-    serializeString(value),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.String, NIL, serializeString(value));
 }
 
 export function createBigIntNode(current: bigint): SerovalBigIntNode {
-  return createSerovalNode(
-    SerovalNodeType.BigInt,
-    NIL,
-    '' + current,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.BigInt, NIL, '' + current);
 }
 
 export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
-  return createSerovalNode(
-    SerovalNodeType.IndexedValue,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.IndexedValue, id);
 }
 
 export function createDateNode(id: number, current: Date): SerovalDateNode {
@@ -140,15 +87,6 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
     SerovalNodeType.Date,
     id,
     timestamp === timestamp ? current.toISOString() : '',
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -172,14 +110,6 @@ export function createTemporalNode(
     id,
     current.toString(),
     type,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -193,13 +123,6 @@ export function createRegExpNode(
     NIL,
     serializeString(current.source),
     current.flags,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -211,35 +134,17 @@ export function createWKSymbolNode(
     SerovalNodeType.WKSymbol,
     id,
     INV_SYMBOL_REF[current],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
-export function createReferenceNode<T>(
+export function createReferenceNode(
   id: number,
-  ref: T,
+  referenceId: string,
 ): SerovalReferenceNode {
   return createSerovalNode(
     SerovalNodeType.Reference,
     id,
-    serializeString(getReferenceID(ref)),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
+    serializeString(referenceId),
   );
 }
 
@@ -253,14 +158,6 @@ export function createPluginNode(
     id,
     value,
     serializeString(tag),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -281,7 +178,6 @@ export function createArrayNode(
     NIL,
     NIL,
     getObjectFlag(current),
-    NIL,
   );
 }
 
@@ -299,9 +195,6 @@ export function createBoxedNode(
     NIL,
     NIL,
     boxed,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -380,12 +273,6 @@ export function createErrorNode(
     NIL,
     serializeString(current.message),
     options,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -401,12 +288,6 @@ export function createAggregateErrorNode(
     NIL,
     serializeString(current.message),
     options,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -423,10 +304,6 @@ export function createSetNode(
     NIL,
     NIL,
     items,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -443,10 +320,6 @@ export function createIteratorFactoryInstanceNode(
     NIL,
     NIL,
     [factory, items],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -463,10 +336,6 @@ export function createAsyncIteratorFactoryInstanceNode(
     NIL,
     NIL,
     [factory, items],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -485,9 +354,6 @@ export function createStreamConstructorNode(
     NIL,
     sequence,
     factory,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -511,9 +377,6 @@ export function createStreamEventNode(
     NIL,
     NIL,
     parsed,
-    NIL,
-    NIL,
-    NIL,
   ) as SerovalStreamEventNode;
 }
 

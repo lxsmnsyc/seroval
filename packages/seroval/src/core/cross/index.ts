@@ -37,6 +37,7 @@ export function crossSerialize<T>(
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Cross, {
     compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -62,6 +63,7 @@ export async function crossSerializeAsync<T>(
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext(SerovalMode.Cross, {
     compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -85,6 +87,7 @@ export function toCrossJSON<T>(
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext(SerovalMode.Cross, {
     compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -101,6 +104,7 @@ export async function toCrossJSONAsync<T>(
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext(SerovalMode.Cross, {
     compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -126,6 +130,7 @@ export function crossSerializeStream<T>(
   const plugins = resolvePlugins(options.plugins);
   const ctx = createStreamParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,

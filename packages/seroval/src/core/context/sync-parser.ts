@@ -80,7 +80,6 @@ import {
   createPromiseConstructorNode,
   getArrayBufferView,
   getReferenceNode,
-  ParserNodeType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
@@ -236,12 +235,13 @@ function parseProperties(
   depth: number,
   properties: Record<string | symbol, unknown>,
 ): SerovalObjectRecordNode {
-  const entries = Object.entries(properties);
+  const keys = Object.keys(properties);
   const keyNodes: SerovalObjectRecordKey[] = [];
   const valueNodes: SerovalNode[] = [];
-  for (let i = 0, len = entries.length; i < len; i++) {
-    keyNodes.push(serializeString(entries[i][0]));
-    valueNodes.push(parseSOS(ctx, depth, entries[i][1]));
+  for (let i = 0, len = keys.length, key: string; i < len; i++) {
+    key = keys[i];
+    keyNodes.push(serializeString(key));
+    valueNodes.push(parseSOS(ctx, depth, properties[key]));
   }
   // Check special properties, symbols in this case
   if (SYM_ITERATOR in properties) {
@@ -745,10 +745,10 @@ function parseFunction(
   current: unknown,
 ): SerovalNode {
   const ref = getReferenceNode(ctx.base, current);
-  if (ref.type !== ParserNodeType.Fresh) {
-    return ref.value;
+  if (typeof ref !== 'number') {
+    return ref;
   }
-  const plugin = parsePlugin(ctx, depth, ref.value, current);
+  const plugin = parsePlugin(ctx, depth, ref, current);
   if (plugin) {
     return plugin;
   }
@@ -777,9 +777,9 @@ export function parseSOS<T>(
     case 'object': {
       if (current) {
         const ref = getReferenceNode(ctx.base, current);
-        return ref.type === ParserNodeType.Fresh
-          ? parseObject(ctx, depth + 1, ref.value, current as object)
-          : ref.value;
+        return typeof ref === 'number'
+          ? parseObject(ctx, depth + 1, ref, current as object)
+          : ref;
       }
       return NULL_NODE;
     }

@@ -29,7 +29,7 @@ export function createStream<T>(): Stream<T> {
   return STREAM_CONSTRUCTOR() as unknown as Stream<T>;
 }
 
-const createAsyncIterable = ASYNC_ITERATOR_CONSTRUCTOR(
+const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
   SYM_ASYNC_ITERATOR,
   PROMISE_CONSTRUCTOR,
 );

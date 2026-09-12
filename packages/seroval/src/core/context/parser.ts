@@ -9,7 +9,7 @@ import { INV_SYMBOL_REF, NIL, SerovalNodeType } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
 import type { PluginAccessOptions, SerovalMode } from '../plugin';
-import { hasReferenceID } from '../reference';
+import { getReferenceID } from '../reference';
 import {
   ASYNC_ITERATOR,
   ITERATOR,
@@ -41,29 +41,6 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
   /** Copy each typed array or DataView's visible bytes into its own buffer. */
   compactArrayBufferViews?: boolean;
 }
-
-export const enum ParserNodeType {
-  Fresh = 0,
-  Indexed = 1,
-  Referenced = 2,
-}
-
-export interface FreshNode {
-  type: ParserNodeType.Fresh;
-  value: number;
-}
-
-export interface IndexedNode {
-  type: ParserNodeType.Indexed;
-  value: SerovalIndexedValueNode;
-}
-
-export interface ReferencedNode {
-  type: ParserNodeType.Referenced;
-  value: SerovalReferenceNode;
-}
-
-type ObjectNode = FreshNode | IndexedNode | ReferencedNode;
 
 export interface BaseParserContext extends PluginAccessOptions {
   readonly mode: SerovalMode;
@@ -123,37 +100,27 @@ export function createIndexForValue<T>(
 export function getNodeForIndexedValue<T>(
   ctx: BaseParserContext,
   current: T,
-): FreshNode | IndexedNode {
+): number | SerovalIndexedValueNode {
   const registeredId = ctx.refs.get(current);
   if (registeredId != null) {
     markParserRef(ctx, registeredId);
-    return {
-      type: ParserNodeType.Indexed,
-      value: createIndexedValueNode(registeredId),
-    };
+    return createIndexedValueNode(registeredId);
   }
-  return {
-    type: ParserNodeType.Fresh,
-    value: createIndexForValue(ctx, current),
-  };
+  return createIndexForValue(ctx, current);
 }
 
 export function getReferenceNode<T>(
   ctx: BaseParserContext,
   current: T,
-): ObjectNode {
+): number | SerovalIndexedValueNode | SerovalReferenceNode {
   const indexed = getNodeForIndexedValue(ctx, current);
-  if (indexed.type === ParserNodeType.Indexed) {
+  if (typeof indexed !== 'number') {
     return indexed;
   }
-  // Special references are special ;)
-  if (hasReferenceID(current)) {
-    return {
-      type: ParserNodeType.Referenced,
-      value: createReferenceNode(indexed.value, current),
-    };
-  }
-  return indexed;
+  const referenceId = getReferenceID(current);
+  return referenceId === undefined
+    ? indexed
+    : createReferenceNode(indexed, referenceId);
 }
 
 /**
@@ -164,11 +131,11 @@ export function parseWellKnownSymbol(
   current: symbol,
 ): SerovalIndexedValueNode | SerovalWKSymbolNode | SerovalReferenceNode {
   const ref = getReferenceNode(ctx, current);
-  if (ref.type !== ParserNodeType.Fresh) {
-    return ref.value;
+  if (typeof ref !== 'number') {
+    return ref;
   }
   if (current in INV_SYMBOL_REF) {
-    return createWKSymbolNode(ref.value, current as WellKnownSymbols);
+    return createWKSymbolNode(ref, current as WellKnownSymbols);
   }
   throw new SerovalUnsupportedTypeError(current);
 }
@@ -178,35 +145,22 @@ export function parseSpecialReference(
   ref: SpecialReference,
 ): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
   const result = getNodeForIndexedValue(ctx, SPECIAL_REFS[ref]);
-  if (result.type === ParserNodeType.Indexed) {
-    return result.value;
+  if (typeof result !== 'number') {
+    return result;
   }
-  return createSerovalNode(
-    SerovalNodeType.SpecialReference,
-    result.value,
-    ref,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.SpecialReference, result, ref);
 }
 
 export function parseIteratorFactory(
   ctx: BaseParserContext,
 ): SerovalIndexedValueNode | SerovalIteratorFactoryNode {
   const result = getNodeForIndexedValue(ctx, ITERATOR);
-  if (result.type === ParserNodeType.Indexed) {
-    return result.value;
+  if (typeof result !== 'number') {
+    return result;
   }
   return createSerovalNode(
     SerovalNodeType.IteratorFactory,
-    result.value,
+    result,
     NIL,
     NIL,
     NIL,
@@ -214,9 +168,6 @@ export function parseIteratorFactory(
     NIL,
     NIL,
     parseWellKnownSymbol(ctx, SYM_ITERATOR),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -224,12 +175,12 @@ export function parseAsyncIteratorFactory(
   ctx: BaseParserContext,
 ): SerovalIndexedValueNode | SerovalAsyncIteratorFactoryNode {
   const result = getNodeForIndexedValue(ctx, ASYNC_ITERATOR);
-  if (result.type === ParserNodeType.Indexed) {
-    return result.value;
+  if (typeof result !== 'number') {
+    return result;
   }
   return createSerovalNode(
     SerovalNodeType.AsyncIteratorFactory,
-    result.value,
+    result,
     NIL,
     NIL,
     NIL,
@@ -239,10 +190,6 @@ export function parseAsyncIteratorFactory(
       parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
       parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR),
     ],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -264,7 +211,6 @@ export function createObjectNode(
     NIL,
     NIL,
     getObjectFlag(current),
-    NIL,
   );
 }
 
@@ -284,9 +230,6 @@ export function createMapNode(
     { k, v },
     NIL,
     parseSpecialReference(ctx, SpecialReference.MapSentinel),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -305,9 +248,6 @@ export function createPromiseConstructorNode(
     NIL,
     NIL,
     parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -357,8 +297,5 @@ export function createArrayBufferNode(
     NIL,
     NIL,
     parseSpecialReference(ctx, SpecialReference.ArrayBufferConstructor),
-    NIL,
-    NIL,
-    NIL,
   );
 }
