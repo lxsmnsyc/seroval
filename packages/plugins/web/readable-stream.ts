@@ -1,5 +1,5 @@
-import type { SerovalNode, Stream } from 'seroval';
-import { createPlugin, createStream } from 'seroval';
+import type { LiveStream, SerovalNode, Stream } from 'seroval';
+import { createLiveStream, createPlugin, createStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -98,6 +98,61 @@ function toStream<T>(
   return [stream, cleanup];
 }
 
+/**
+ * Streaming parse mode: each chunk is read only after the previous one has
+ * been accepted by the serializer's output, so the source never runs ahead
+ * of the destination and no chunk is retained after it is written.
+ */
+function toLiveStream<T>(value: ReadableStream<T>): LiveStream<T | undefined> {
+  const reader = value.getReader();
+  let active = true;
+
+  const { stream, producer } = createLiveStream<T | undefined>({
+    onCancel(reason) {
+      if (active) {
+        active = false;
+        reader.cancel(reason).catch(() => {
+          // no-op
+        });
+      }
+    },
+  });
+
+  async function pump(): Promise<void> {
+    try {
+      while (active) {
+        const result = await reader.read();
+        if (!active) {
+          return;
+        }
+        if (result.done) {
+          active = false;
+          await producer.close(result.value);
+          return;
+        }
+        await producer.write(result.value);
+      }
+    } catch (error) {
+      if (active) {
+        active = false;
+        await producer.fail(error);
+      }
+    } finally {
+      try {
+        reader.releaseLock();
+      } catch (_error) {
+        // no-op
+      }
+    }
+  }
+
+  pump().catch(() => {
+    // no-op
+  });
+
+  return stream;
+}
+
 type ReadableStreamNode = {
   factory: SerovalNode;
   stream: SerovalNode;
@@ -129,11 +184,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
       };
     },
     stream(value, ctx) {
-      const [stream, cleanup] = toStream(value);
-      ctx.addCleanup(cleanup);
       return {
         factory: ctx.parse(READABLE_STREAM_FACTORY),
-        stream: ctx.parse(stream),
+        stream: ctx.parse(toLiveStream(value)),
       };
     },
   },

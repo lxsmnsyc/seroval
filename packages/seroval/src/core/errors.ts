@@ -194,3 +194,26 @@ export class SerovalDepthLimitError extends Error {
     );
   }
 }
+
+export type LiveStreamErrorReason =
+  | 'consumed'
+  | 'pending'
+  | 'reading'
+  | 'closed';
+
+const LIVE_STREAM_ERROR_MESSAGES: Record<LiveStreamErrorReason, string> = {
+  consumed: 'Live stream already has a consumer',
+  pending: 'Live stream already has a pending event',
+  reading: 'Live stream already has a pending read',
+  closed: 'Live stream is closed',
+};
+
+export class SerovalLiveStreamError extends Error {
+  constructor(public reason: LiveStreamErrorReason) {
+    super(
+      import.meta.env.PROD
+        ? 'Live stream error: ' + reason
+        : LIVE_STREAM_ERROR_MESSAGES[reason],
+    );
+  }
+}

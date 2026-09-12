@@ -139,7 +139,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   return createSerovalNode(
     SerovalNodeType.Date,
     id,
-    timestamp !== timestamp ? '' : current.toISOString(),
+    timestamp === timestamp ? current.toISOString() : '',
     NIL,
     NIL,
     NIL,
@@ -491,32 +491,18 @@ export function createStreamConstructorNode(
   );
 }
 
-export function createStreamNextNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamNextNode {
-  return createSerovalNode(
-    SerovalNodeType.StreamNext,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    parsed,
-    NIL,
-    NIL,
-    NIL,
-  );
-}
+export type SerovalStreamEventNode =
+  | SerovalStreamNextNode
+  | SerovalStreamThrowNode
+  | SerovalStreamReturnNode;
 
-export function createStreamThrowNode(
+export function createStreamEventNode(
+  type: SerovalStreamEventNode['t'],
   id: number,
   parsed: SerovalNode,
-): SerovalStreamThrowNode {
+): SerovalStreamEventNode {
   return createSerovalNode(
-    SerovalNodeType.StreamThrow,
+    type,
     id,
     NIL,
     NIL,
@@ -528,27 +514,7 @@ export function createStreamThrowNode(
     NIL,
     NIL,
     NIL,
-  );
-}
-
-export function createStreamReturnNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamReturnNode {
-  return createSerovalNode(
-    SerovalNodeType.StreamReturn,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    parsed,
-    NIL,
-    NIL,
-    NIL,
-  );
+  ) as SerovalStreamEventNode;
 }
 
 export function createSequenceNode(

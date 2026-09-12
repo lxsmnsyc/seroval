@@ -13,17 +13,16 @@ import {
   createCrossSerializerContext,
   serializeTopCross,
 } from '../context/serializer';
+import {
+  createStreamParserContext,
+  destroyStreamParse,
+  startStreamParse,
+} from '../context/stream-parser';
 import type {
   StreamParserContextOptions,
   SyncParserContextOptions,
 } from '../context/sync-parser';
-import {
-  createStreamParserContext,
-  createSyncParserContext,
-  destroyStreamParse,
-  parseTop,
-  startStreamParse,
-} from '../context/sync-parser';
+import { createSyncParserContext, parseTop } from '../context/sync-parser';
 import { resolvePlugins, SerovalMode } from '../plugin';
 import type { SerovalNode } from '../types';
 
@@ -112,7 +111,12 @@ export async function toCrossJSONAsync<T>(
 export interface CrossSerializeStreamOptions
   extends Omit<StreamParserContextOptions, 'onParse'>,
     CrossContextOptions {
-  onSerialize: (data: string, initial: boolean) => void;
+  /**
+   * Receives each serialized record. Returning a promise defers the next
+   * record, and the acceptance of the live stream event behind this one,
+   * until the promise settles.
+   */
+  onSerialize: (data: string, initial: boolean) => void | PromiseLike<void>;
 }
 
 export function crossSerializeStream<T>(
@@ -125,7 +129,7 @@ export function crossSerializeStream<T>(
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
-    onParse(node, initial): void {
+    onParse(node, initial): void | PromiseLike<void> {
       const serial = createCrossSerializerContext({
         plugins,
         features: ctx.base.features,
@@ -144,7 +148,7 @@ export function crossSerializeStream<T>(
         return;
       }
 
-      options.onSerialize(serialized, initial);
+      return options.onSerialize(serialized, initial);
     },
     onError: options.onError,
     onDone: options.onDone,

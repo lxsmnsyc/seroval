@@ -15,9 +15,7 @@ import {
   createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
-  createStreamNextNode,
-  createStreamReturnNode,
-  createStreamThrowNode,
+  createStreamEventNode,
   createStringNode,
   createTemporalNode,
   createTypedArrayNode,
@@ -40,7 +38,7 @@ import {
 } from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
-import { createStreamFromAsyncIterable, isStream } from '../stream';
+import { isStream } from '../stream';
 import { serializeString } from '../string';
 import {
   SYM_ASYNC_ITERATOR,
@@ -79,6 +77,7 @@ import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createArrayBufferNode,
   createBaseParserContext,
+  createIndexForValue,
   createMapNode,
   createObjectNode,
   getArrayBufferView,
@@ -183,12 +182,10 @@ async function parseProperties(
     valueNodes.push(
       createAsyncIteratorFactoryInstanceNode(
         parseAsyncIteratorFactory(ctx.base),
-        (await parseAsync(
+        (await parseAsyncIterable(
           ctx,
           depth,
-          createStreamFromAsyncIterable(
-            properties as unknown as AsyncIterable<unknown>,
-          ),
+          properties as unknown as AsyncIterable<unknown>,
         )) as SerovalNodeWithID,
       ),
     );
@@ -393,48 +390,33 @@ function parseStreamHandle<T>(
   reject: (reason?: any) => void,
 ): void {
   const sequence: SerovalNode[] = [];
-  // TODO Optimizable
+  const handle =
+    (
+      type:
+        | SerovalNodeType.StreamNext
+        | SerovalNodeType.StreamThrow
+        | SerovalNodeType.StreamReturn,
+    ) =>
+    (value: unknown): void => {
+      markParserRef(this.base, id);
+      parseAsync(this, depth, value).then(
+        data => {
+          sequence.push(createStreamEventNode(type, id, data));
+          if (type !== SerovalNodeType.StreamNext) {
+            resolve(sequence);
+            cleanup();
+          }
+        },
+        data => {
+          reject(data);
+          cleanup();
+        },
+      );
+    };
   const cleanup = current.on({
-    next: value => {
-      markParserRef(this.base, id);
-      parseAsync(this, depth, value).then(
-        data => {
-          sequence.push(createStreamNextNode(id, data));
-        },
-        data => {
-          reject(data);
-          cleanup();
-        },
-      );
-    },
-    throw: value => {
-      markParserRef(this.base, id);
-      parseAsync(this, depth, value).then(
-        data => {
-          sequence.push(createStreamThrowNode(id, data));
-          resolve(sequence);
-          cleanup();
-        },
-        data => {
-          reject(data);
-          cleanup();
-        },
-      );
-    },
-    return: value => {
-      markParserRef(this.base, id);
-      parseAsync(this, depth, value).then(
-        data => {
-          sequence.push(createStreamReturnNode(id, data));
-          resolve(sequence);
-          cleanup();
-        },
-        data => {
-          reject(data);
-          cleanup();
-        },
-      );
-    },
+    next: handle(SerovalNodeType.StreamNext),
+    throw: handle(SerovalNodeType.StreamThrow),
+    return: handle(SerovalNodeType.StreamReturn),
   });
 }
 
@@ -451,6 +433,62 @@ async function parseStream(
       parseStreamHandle.bind(ctx, depth, id, current),
     ),
   );
+}
+
+/**
+ * Collects an async iterable into a replay node, one value at a time.
+ */
+async function parseAsyncIterable(
+  ctx: AsyncParserContext,
+  depth: number,
+  current: AsyncIterable<unknown>,
+): Promise<SerovalStreamConstructorNode> {
+  const id = createIndexForValue(ctx.base, {});
+  const reference = parseSpecialReference(
+    ctx.base,
+    SpecialReference.StreamConstructor,
+  );
+  const iterator = current[SYM_ASYNC_ITERATOR]();
+  const sequence: SerovalNode[] = [];
+  for (;;) {
+    let result: IteratorResult<unknown>;
+    try {
+      result = await iterator.next();
+    } catch (error) {
+      markParserRef(ctx.base, id);
+      sequence.push(
+        createStreamEventNode(
+          SerovalNodeType.StreamThrow,
+          id,
+          await parseAsync(ctx, depth, error),
+        ),
+      );
+      break;
+    }
+    markParserRef(ctx.base, id);
+    let parsed: SerovalNode;
+    try {
+      parsed = await parseAsync(ctx, depth, result.value);
+    } catch (error) {
+      Promise.resolve()
+        .then(() => iterator.return?.())
+        .catch(() => {
+          // no-op
+        });
+      throw error;
+    }
+    sequence.push(
+      createStreamEventNode(
+        result.done ? SerovalNodeType.StreamReturn : SerovalNodeType.StreamNext,
+        id,
+        parsed,
+      ),
+    );
+    if (result.done) {
+      break;
+    }
+  }
+  return createStreamConstructorNode(id, reference, sequence);
 }
 
 async function parseSequence(
