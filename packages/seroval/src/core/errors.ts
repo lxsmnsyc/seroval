@@ -82,6 +82,7 @@ const enum SpecificErrorCodes {
   MalformedNode = 8,
   ConflictedNodeId = 9,
   DepthLimit = 10,
+  Aborted = 11,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -192,6 +193,16 @@ export class SerovalDepthLimitError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.DepthLimit)
         : 'Depth limit of ' + limit + ' reached',
+    );
+  }
+}
+
+export class SerovalAbortedError extends Error {
+  constructor() {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.Aborted)
+        : 'Cross deserializer has been aborted.',
     );
   }
 }
