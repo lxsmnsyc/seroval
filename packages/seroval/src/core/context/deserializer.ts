@@ -112,6 +112,11 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
   features: number;
   depthLimit: number;
   maxBase64Length: number;
+  /**
+   * Ids of promise resolvers and streams that were created but not yet
+   * settled. Only maintained by `createCrossDeserializer`.
+   */
+  pending?: Set<number>;
 }
 
 const DEFAULT_DEPTH_LIMIT = 1000;
@@ -317,6 +322,7 @@ function assignNodeType(
   type: SerovalNodeType,
 ): void {
   ctx.base.refs.types.set(id, type);
+  ctx.base.pending?.add(id);
 }
 
 function validateNodeType(
@@ -324,9 +330,13 @@ function validateNodeType(
   node: SerovalNode,
   id: number,
   type: SerovalNodeType,
+  settles?: 1,
 ): asserts id is SerovalNodeType {
   if (ctx.base.refs.types.get(id) !== type) {
     throw new SerovalMalformedNodeError(node);
+  }
+  if (settles) {
+    ctx.base.pending?.delete(id);
   }
 }
 
@@ -610,7 +620,7 @@ function deserializePromiseFulfill(
     | PromiseConstructorResolver
     | undefined;
   if (deferred) {
-    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
+    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor, 1);
     const deserialized = deserialize(ctx, depth, node.a[1]);
     if (isThennable(deserialized)) {
       throw new SerovalMalformedNodeError(node.a[1]);
@@ -695,7 +705,13 @@ function deserializeStreamCall(
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
   if (deferred) {
-    validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
+    validateNodeType(
+      ctx,
+      node,
+      node.i,
+      SerovalNodeType.StreamConstructor,
+      method === 'next' ? undefined : 1,
+    );
     deferred[method](deserialize(ctx, depth, node.f));
     return NIL;
   }
@@ -839,5 +855,26 @@ export function deserializeTop(
     return deserialize(ctx, 0, node);
   } catch (error) {
     throw new SerovalDeserializationError(error);
+  }
+}
+
+/**
+ * Rejects every pending promise and throws into every open stream tracked
+ * by `ctx.base.pending`, then drops the bookkeeping so the context no longer
+ * accepts deferred values. Does nothing once the bookkeeping is gone.
+ */
+export function abortDeferred(ctx: DeserializerContext, reason: unknown): void {
+  const pending = ctx.base.pending;
+  if (pending) {
+    ctx.base.pending = NIL;
+    const refs = ctx.base.refs;
+    for (const id of pending) {
+      const value = refs.get(id);
+      if (refs.types.get(id) === SerovalNodeType.PromiseConstructor) {
+        (value as PromiseConstructorResolver).f(reason);
+      } else {
+        (value as Stream<unknown>).throw(reason);
+      }
+    }
   }
 }
