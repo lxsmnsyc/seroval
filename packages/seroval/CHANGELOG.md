@@ -1,5 +1,11 @@
 # seroval
 
+## 1.6.2
+
+### Patch Changes
+
+- guard thenables
+
 ## 1.6.1
 
 ### Patch Changes

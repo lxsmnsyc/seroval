@@ -209,6 +209,15 @@ function guardIndexedValue(ctx: BaseDeserializerContext, id: number): void {
   }
 }
 
+function isThennable(value: unknown): boolean {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'then' in value &&
+    typeof value.then === 'function'
+  );
+}
+
 function assignIndexedValueVanilla<T>(
   ctx: VanillaDeserializerContext,
   id: number,
@@ -592,6 +601,9 @@ function deserializePromise(
   const deferred = PROMISE_CONSTRUCTOR();
   const result = assignIndexedValue(ctx, node.i, deferred.p);
   const deserialized = deserialize(ctx, depth, node.f);
+  if (isThennable(deserialized)) {
+    throw new SerovalMalformedNodeError(node.f);
+  }
   if (node.s) {
     deferred.s(deserialized);
   } else {
@@ -650,33 +662,25 @@ function deserializePromiseConstructor(
   return value;
 }
 
-function deserializePromiseResolve(
+function deserializePromiseFulfill(
   ctx: DeserializerContext,
   depth: number,
-  node: SerovalPromiseResolveNode,
+  node: SerovalPromiseResolveNode | SerovalPromiseRejectNode,
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as
     | PromiseConstructorResolver
     | undefined;
   if (deferred) {
     validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
-    deferred.s(deserialize(ctx, depth, node.a[1]));
-    return NIL;
-  }
-  throw new SerovalMissingInstanceError('Promise');
-}
-
-function deserializePromiseReject(
-  ctx: DeserializerContext,
-  depth: number,
-  node: SerovalPromiseRejectNode,
-): unknown {
-  const deferred = ctx.base.refs.get(node.i) as
-    | PromiseConstructorResolver
-    | undefined;
-  if (deferred) {
-    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
-    deferred.f(deserialize(ctx, depth, node.a[1]));
+    const deserialized = deserialize(ctx, depth, node.a[1]);
+    if (isThennable(deserialized)) {
+      throw new SerovalMalformedNodeError(node.a[1]);
+    }
+    if (node.t === SerovalNodeType.PromiseSuccess) {
+      deferred.s(deserialized);
+    } else {
+      deferred.f(deserialized);
+    }
     return NIL;
   }
   throw new SerovalMissingInstanceError('Promise');
@@ -855,9 +859,8 @@ function deserialize(
     case SerovalNodeType.PromiseConstructor:
       return deserializePromiseConstructor(ctx, node);
     case SerovalNodeType.PromiseSuccess:
-      return deserializePromiseResolve(ctx, depth, node);
     case SerovalNodeType.PromiseFailure:
-      return deserializePromiseReject(ctx, depth, node);
+      return deserializePromiseFulfill(ctx, depth, node);
     case SerovalNodeType.IteratorFactoryInstance:
       return deserializeIteratorFactoryInstance(ctx, depth, node);
     case SerovalNodeType.AsyncIteratorFactoryInstance:
