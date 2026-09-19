@@ -1,5 +1,11 @@
 # seroval
 
+## 1.6.3
+
+### Patch Changes
+
+- fix typed array max length
+
 ## 1.6.2
 
 ### Patch Changes

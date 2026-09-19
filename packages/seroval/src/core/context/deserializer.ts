@@ -520,7 +520,11 @@ function deserializeTypedArray(
   const construct = getTypedArrayConstructor(node.c) as Int8ArrayConstructor;
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
   const offset = node.b ?? 0;
-  if (offset < 0 || offset > source.byteLength) {
+  if (
+    offset < 0 ||
+    offset > source.byteLength ||
+    node.l > ctx.base.maxBase64Length
+  ) {
     throw new SerovalMalformedNodeError(node);
   }
   const result = assignIndexedValue(
@@ -538,7 +542,11 @@ function deserializeDataView(
 ): DataView {
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
   const offset = node.b ?? 0;
-  if (offset < 0 || offset > source.byteLength) {
+  if (
+    offset < 0 ||
+    offset > source.byteLength ||
+    node.l > ctx.base.maxBase64Length
+  ) {
     throw new SerovalMalformedNodeError(node);
   }
   const result = assignIndexedValue(
