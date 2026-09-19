@@ -445,34 +445,36 @@ function parseStream(
     return result;
   }
   pushPendingState(ctx);
-  current.on({
-    next: value => {
-      if (ctx.state.alive) {
-        const parsed = parseWithError(ctx, depth, value);
-        if (parsed) {
-          onParse(ctx, createStreamNextNode(id, parsed));
+  ctx.state.cleanups.push(
+    current.on({
+      next: value => {
+        if (ctx.state.alive) {
+          const parsed = parseWithError(ctx, depth, value);
+          if (parsed) {
+            onParse(ctx, createStreamNextNode(id, parsed));
+          }
         }
-      }
-    },
-    throw: value => {
-      if (ctx.state.alive) {
-        const parsed = parseWithError(ctx, depth, value);
-        if (parsed) {
-          onParse(ctx, createStreamThrowNode(id, parsed));
+      },
+      throw: value => {
+        if (ctx.state.alive) {
+          const parsed = parseWithError(ctx, depth, value);
+          if (parsed) {
+            onParse(ctx, createStreamThrowNode(id, parsed));
+          }
         }
-      }
-      popPendingState(ctx);
-    },
-    return: value => {
-      if (ctx.state.alive) {
-        const parsed = parseWithError(ctx, depth, value);
-        if (parsed) {
-          onParse(ctx, createStreamReturnNode(id, parsed));
+        popPendingState(ctx);
+      },
+      return: value => {
+        if (ctx.state.alive) {
+          const parsed = parseWithError(ctx, depth, value);
+          if (parsed) {
+            onParse(ctx, createStreamReturnNode(id, parsed));
+          }
         }
-      }
-      popPendingState(ctx);
-    },
-  });
+        popPendingState(ctx);
+      },
+    }),
+  );
   return result;
 }
 
@@ -924,16 +926,6 @@ function onError(ctx: StreamParserContext, error: unknown): void {
   }
 }
 
-function onDone(ctx: StreamParserContext): void {
-  if (ctx.state.onDone) {
-    ctx.state.onDone();
-  }
-
-  for (let i = 0, len = ctx.state.cleanups.length; i < len; i++) {
-    ctx.state.cleanups[i]();
-  }
-}
-
 function onParseInternal(
   ctx: StreamParserContext,
   node: SerovalNode,
@@ -951,8 +943,8 @@ function pushPendingState(ctx: StreamParserContext): void {
 }
 
 function popPendingState(ctx: StreamParserContext): void {
-  if (--ctx.state.pending <= 0) {
-    onDone(ctx);
+  if (--ctx.state.pending <= 0 && !ctx.state.initial) {
+    destroyStreamParse(ctx);
   }
 }
 
@@ -990,14 +982,37 @@ function flushStreamParse(
   ctx: StreamParserContext,
   state: StreamParserState,
 ): void {
-  for (let i = 0, len = state.buffer.length; i < len; i++) {
-    onParseInternal(ctx, state.buffer[i], false);
+  try {
+    for (
+      let index = 0, length = state.buffer.length;
+      index < length && state.alive;
+      index++
+    ) {
+      onParseInternal(ctx, state.buffer[index], false);
+    }
+  } finally {
+    state.buffer.length = 0;
   }
 }
 
 export function destroyStreamParse(ctx: StreamParserContext): void {
-  if (ctx.state.alive) {
-    onDone(ctx);
-    ctx.state.alive = false;
+  const state = ctx.state;
+  if (state.alive) {
+    state.alive = false;
+    try {
+      if (state.onDone) {
+        state.onDone();
+      }
+    } finally {
+      for (
+        let index = 0, length = state.cleanups.length;
+        index < length;
+        index++
+      ) {
+        state.cleanups[index]();
+      }
+      state.cleanups.length = 0;
+      state.buffer.length = 0;
+    }
   }
 }
