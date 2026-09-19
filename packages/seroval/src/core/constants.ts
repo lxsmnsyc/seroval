@@ -115,21 +115,28 @@ export const SYMBOL_STRING: Record<Symbols, string> = {
   [Symbols.Unscopables]: 'Symbol.unscopables',
 };
 
-export const INV_SYMBOL_REF = {
-  [SYM_ASYNC_ITERATOR]: Symbols.AsyncIterator,
-  [SYM_HAS_INSTANCE]: Symbols.HasInstance,
-  [SYM_IS_CONCAT_SPREADABLE]: Symbols.IsConcatSpreadable,
-  [SYM_ITERATOR]: Symbols.Iterator,
-  [SYM_MATCH]: Symbols.Match,
-  [SYM_MATCH_ALL]: Symbols.MatchAll,
-  [SYM_REPLACE]: Symbols.Replace,
-  [SYM_SEARCH]: Symbols.Search,
-  [SYM_SPECIES]: Symbols.Species,
-  [SYM_SPLIT]: Symbols.Split,
-  [SYM_TO_PRIMITIVE]: Symbols.ToPrimitive,
-  [SYM_TO_STRING_TAG]: Symbols.ToStringTag,
-  [SYM_UNSCOPABLES]: Symbols.Unscopables,
-};
+// Built through a pure call: bundlers do not treat symbol-keyed (computed)
+// object literals as side-effect free, so an inline literal would be kept in
+// every consumer bundle even when unused.
+function createInverseSymbolTable() {
+  return {
+    [SYM_ASYNC_ITERATOR]: Symbols.AsyncIterator,
+    [SYM_HAS_INSTANCE]: Symbols.HasInstance,
+    [SYM_IS_CONCAT_SPREADABLE]: Symbols.IsConcatSpreadable,
+    [SYM_ITERATOR]: Symbols.Iterator,
+    [SYM_MATCH]: Symbols.Match,
+    [SYM_MATCH_ALL]: Symbols.MatchAll,
+    [SYM_REPLACE]: Symbols.Replace,
+    [SYM_SEARCH]: Symbols.Search,
+    [SYM_SPECIES]: Symbols.Species,
+    [SYM_SPLIT]: Symbols.Split,
+    [SYM_TO_PRIMITIVE]: Symbols.ToPrimitive,
+    [SYM_TO_STRING_TAG]: Symbols.ToStringTag,
+    [SYM_UNSCOPABLES]: Symbols.Unscopables,
+  };
+}
+
+export const INV_SYMBOL_REF = /* @__PURE__ */ createInverseSymbolTable();
 
 export type WellKnownSymbols = keyof typeof INV_SYMBOL_REF;
 
@@ -162,15 +169,20 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
 
 export const NIL = void 0;
 
+// Global literals keep this table free of member accesses so bundlers can
+// drop it when unused (`Number.POSITIVE_INFINITY` is not known to be pure).
 export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.True]: true,
   [SerovalConstant.False]: false,
   [SerovalConstant.Undefined]: NIL,
   [SerovalConstant.Null]: null,
   [SerovalConstant.NegZero]: -0,
-  [SerovalConstant.Inf]: Number.POSITIVE_INFINITY,
-  [SerovalConstant.NegInf]: Number.NEGATIVE_INFINITY,
-  [SerovalConstant.Nan]: Number.NaN,
+  // biome-ignore lint/style/useNumberNamespace: see above
+  [SerovalConstant.Inf]: Infinity,
+  // biome-ignore lint/style/useNumberNamespace: see above
+  [SerovalConstant.NegInf]: -Infinity,
+  // biome-ignore lint/style/useNumberNamespace: see above
+  [SerovalConstant.Nan]: NaN,
 };
 
 export const enum ErrorConstructorTag {
