@@ -102,7 +102,7 @@ interface DeleteAssignment {
 
 // Defines an own `__proto__` data property (see `createObjectAssign`).
 // `k` holds the serialized value; `v` is unused so this never participates
-// in the value-based merging done by `mergeAssignments`.
+// in the value-based chaining done by `resolveAssignments`.
 interface DefineAssignment {
   t: AssignmentType.Define;
   s: string;
@@ -117,6 +117,15 @@ type Assignment =
   | SetAssignment
   | DeleteAssignment
   | DefineAssignment;
+
+const enum KeyKind {
+  // Needs a quoted string: `"a-b":` and `["a-b"]`
+  Quoted = 0,
+  // A valid identifier: `foo:` and `.foo`
+  Identifier = 1,
+  // A canonical non-negative number: `0:` and `[0]`
+  Numeric = 2,
+}
 
 export interface FlaggedObject {
   type: SerovalObjectFlags;
@@ -255,7 +264,12 @@ export function createBaseSerializerContext(
     mode,
     plugins: options.plugins,
     features: options.features,
-    marked: new Set(options.markedRefs),
+    // A Set passed by a parser is shared, not copied: streaming serializers
+    // create one context per emitted node, and copying the whole set each
+    // time made every emitted node cost O(references).
+    marked: Array.isArray(options.markedRefs)
+      ? new Set(options.markedRefs)
+      : options.markedRefs,
     stack: [],
     flags: [],
     assignments: [],
@@ -522,6 +536,24 @@ function createSequenceAssign(
  * Checks if the value is in the stack. Stack here is a reference
  * structure to know if a object is to be accessed in a TDZ.
  */
+function getKeyKind(key: string): KeyKind {
+  const first = key.charCodeAt(0);
+  // Canonical non-negative numbers start with a digit ('0'..'9') or are
+  // "Infinity"; every other key skips the number parse.
+  if (first >= 48 && first <= 57) {
+    const check = Number(key);
+    // Converting the number back must yield the original key, so that
+    // `{ '0x1': 1 }` is not confused with `{ 0x1: 1 }`.
+    return check >= 0 && check.toString() === key
+      ? KeyKind.Numeric
+      : KeyKind.Quoted;
+  }
+  if (key === 'Infinity') {
+    return KeyKind.Numeric;
+  }
+  return isValidIdentifier(key) ? KeyKind.Identifier : KeyKind.Quoted;
+}
+
 function isIndexedValueInStack(
   ctx: BaseSerializerContext,
   node: SerovalNode,
@@ -619,39 +651,28 @@ function serializeProperty(
   val: SerovalNode,
 ): string {
   if (typeof key === 'string') {
-    const check = Number(key);
-    const isIdentifier =
-      // Test if key is a valid positive number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      (check >= 0 &&
-        // It's also important to consider that if the key is
-        // indeed numeric, we need to make sure that when
-        // converted back into a string, it's still the same
-        // to the original key. This allows us to differentiate
-        // keys that has numeric formats but in a different
-        // format, which can cause unintentional key declaration
-        // Example: { 0x1: 1 } vs { '0x1': 1 }
-        check.toString() === key) ||
-      isValidIdentifier(key);
+    const kind = getKeyKind(key);
     if (isIndexedValueInStack(ctx.base, val)) {
       const refParam = getRefParam(ctx, (val as SerovalIndexedValueNode).i);
       markSerializerRef(ctx.base, source.i);
-      // Strict identifier check, make sure
-      // that it isn't numeric (except NaN)
-      if (isIdentifier && check !== check) {
+      if (kind === KeyKind.Identifier) {
         createObjectAssign(ctx, source.i, key, refParam);
       } else {
         createArrayAssign(
           ctx,
           source.i,
-          isIdentifier ? key : '"' + key + '"',
+          kind === KeyKind.Numeric ? key : '"' + key + '"',
           refParam,
         );
       }
       return '';
     }
     if (isValidKey(key)) {
-      return (isIdentifier ? key : '"' + key + '"') + ':' + serialize(ctx, val);
+      return (
+        (kind === KeyKind.Quoted ? '"' + key + '"' : key) +
+        ':' +
+        serialize(ctx, val)
+      );
     }
     // `__proto__` as an identifier or string key in an object literal is the
     // prototype setter, not an own property; use a computed key so the
@@ -712,47 +733,32 @@ function serializeStringKeyAssignment(
 ): void {
   const base = ctx.base;
   const serialized = serialize(ctx, value);
-  const check = Number(key);
-  const isIdentifier =
-    // Test if key is a valid positive number or JS identifier
-    // so that we don't have to serialize the key and wrap with brackets
-    (check >= 0 &&
-      // It's also important to consider that if the key is
-      // indeed numeric, we need to make sure that when
-      // converted back into a string, it's still the same
-      // to the original key. This allows us to differentiate
-      // keys that has numeric formats but in a different
-      // format, which can cause unintentional key declaration
-      // Example: { 0x1: 1 } vs { '0x1': 1 }
-      check.toString() === key) ||
-    isValidIdentifier(key);
-  if (isIndexedValueInStack(base, value)) {
-    // Strict identifier check, make sure
-    // that it isn't numeric (except NaN)
-    if (isIdentifier && check !== check) {
-      createObjectAssign(ctx, source.i, key, serialized);
-    } else {
-      createArrayAssign(
-        ctx,
-        source.i,
-        isIdentifier ? key : '"' + key + '"',
-        serialized,
-      );
-    }
-  } else {
-    const parentAssignment = base.assignments;
+  const parentAssignment = base.assignments;
+  // A value that references a parent must wait for the parent to exist,
+  // so it stays in the outer assignment list.
+  if (!isIndexedValueInStack(base, value)) {
     base.assignments = mainAssignments;
-    if (isIdentifier && check !== check) {
-      createObjectAssign(ctx, source.i, key, serialized);
-    } else {
-      createArrayAssign(
-        ctx,
-        source.i,
-        isIdentifier ? key : '"' + key + '"',
-        serialized,
-      );
-    }
-    base.assignments = parentAssignment;
+  }
+  createKeyAssign(ctx, source.i, getKeyKind(key), key, serialized);
+  base.assignments = parentAssignment;
+}
+
+function createKeyAssign(
+  ctx: SerializerContext,
+  ref: number,
+  kind: KeyKind,
+  key: string,
+  value: string,
+): void {
+  if (kind === KeyKind.Identifier) {
+    createObjectAssign(ctx, ref, key, value);
+  } else {
+    createArrayAssign(
+      ctx,
+      ref,
+      kind === KeyKind.Numeric ? key : '"' + key + '"',
+      value,
+    );
   }
 }
 
@@ -1452,20 +1458,7 @@ function serialize(ctx: SerializerContext, node: SerovalNode): string {
   }
 }
 
-export function serializeRoot(
-  ctx: SerializerContext,
-  node: SerovalNode,
-): string {
-  try {
-    return serialize(ctx, node);
-  } catch (error) {
-    throw error instanceof SerovalSerializationError
-      ? error
-      : new SerovalSerializationError(error);
-  }
-}
-
-export function serializeTopVanilla(
+function serializeVanilla(
   ctx: VanillaSerializerContext,
   tree: SerovalNode,
 ): string {
@@ -1491,7 +1484,7 @@ export function serializeTopVanilla(
   return result;
 }
 
-export function serializeTopCross(
+function serializeCross(
   ctx: CrossSerializerContext,
   tree: SerovalNode,
 ): string {
@@ -1530,4 +1523,32 @@ export function serializeTopCross(
         '"])';
   // Create the IIFE
   return '(' + createFunction([params], body) + ')' + args;
+}
+
+function wrapSerializationError(error: unknown): SerovalSerializationError {
+  return error instanceof SerovalSerializationError
+    ? error
+    : new SerovalSerializationError(error);
+}
+
+export function serializeTopVanilla(
+  ctx: VanillaSerializerContext,
+  tree: SerovalNode,
+): string {
+  try {
+    return serializeVanilla(ctx, tree);
+  } catch (error) {
+    throw wrapSerializationError(error);
+  }
+}
+
+export function serializeTopCross(
+  ctx: CrossSerializerContext,
+  tree: SerovalNode,
+): string {
+  try {
+    return serializeCross(ctx, tree);
+  } catch (error) {
+    throw wrapSerializationError(error);
+  }
 }

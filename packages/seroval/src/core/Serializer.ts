@@ -11,6 +11,7 @@ export interface SerializerOptions extends PluginAccessOptions {
   scopeId?: string;
   disabledFeatures?: number;
   compactArrayBufferViews?: boolean;
+  depthLimit?: number;
   onData: (result: string) => void;
   onError: (error: unknown) => void;
   onDone?: () => void;
@@ -48,6 +49,7 @@ export default class Serializer {
           refs: this.refs,
           disabledFeatures: this.options.disabledFeatures,
           compactArrayBufferViews: this.options.compactArrayBufferViews,
+          depthLimit: this.options.depthLimit,
           onError: this.options.onError,
           onSerialize: (data, initial) => {
             if (this.alive) {

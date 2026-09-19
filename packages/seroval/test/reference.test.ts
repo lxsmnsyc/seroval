@@ -19,6 +19,34 @@ import {
 const EXAMPLE = createReference('example', () => 'Hello World');
 
 describe('Reference', () => {
+  it.each(['', '0', 'quote"\\\n'])(
+    'preserves the reference name %j',
+    async id => {
+      const reference = createReference(id, { value: 1 });
+      const source = { first: reference, second: reference };
+      const results = [
+        deserialize<typeof source>(serialize(source)),
+        deserialize<typeof source>(await serializeAsync(source)),
+        fromJSON<typeof source>(toJSON(source)),
+        fromJSON<typeof source>(await toJSONAsync(source)),
+      ];
+      for (const result of results) {
+        expect(result.first).toBe(reference);
+        expect(result.second).toBe(reference);
+      }
+    },
+  );
+
+  it('preserves an existing cross reference with ID zero', () => {
+    const value = { value: 1 };
+    const node = toCrossJSON(value, {
+      refs: new Map<unknown, number>([[value, 0]]),
+    });
+    expect(
+      fromCrossJSON(node, { refs: new Map<number, unknown>([[0, value]]) }),
+    ).toBe(value);
+  });
+
   describe('serialize', () => {
     it('supports Reference', () => {
       const result = serialize(EXAMPLE);
