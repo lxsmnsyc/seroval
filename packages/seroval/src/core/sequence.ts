@@ -50,7 +50,7 @@ export function createSequenceFromIterable<T>(source: Iterable<T>): Sequence {
   return createSequence(values, throwsAt, doneAt);
 }
 
-const createIterator = ITERATOR_CONSTRUCTOR(SYM_ITERATOR);
+const createIterator = /* @__PURE__ */ ITERATOR_CONSTRUCTOR(SYM_ITERATOR);
 
 export function sequenceToIterator<T>(
   sequence: Sequence,

@@ -84,7 +84,6 @@ import {
   getArrayBufferView,
   getReferenceNode,
   markParserRef,
-  ParserNodeType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
@@ -155,12 +154,13 @@ async function parseProperties(
   depth: number,
   properties: Record<string | symbol, unknown>,
 ): Promise<SerovalObjectRecordNode> {
-  const entries = Object.entries(properties);
+  const keys = Object.keys(properties);
   const keyNodes: SerovalObjectRecordKey[] = [];
   const valueNodes: SerovalNode[] = [];
-  for (let i = 0, len = entries.length; i < len; i++) {
-    keyNodes.push(serializeString(entries[i][0]));
-    valueNodes.push(await parseAsync(ctx, depth, entries[i][1]));
+  for (let i = 0, len = keys.length, key: string; i < len; i++) {
+    key = keys[i];
+    keyNodes.push(serializeString(key));
+    valueNodes.push(await parseAsync(ctx, depth, properties[key]));
   }
   // Check special properties
   if (SYM_ITERATOR in properties) {
@@ -378,9 +378,6 @@ async function parsePromise(
     NIL,
     NIL,
     await parseAsync(ctx, depth, result),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -676,10 +673,10 @@ export async function parseFunctionAsync(
   current: unknown,
 ): Promise<SerovalNode> {
   const ref = getReferenceNode(ctx.base, current);
-  if (ref.type !== ParserNodeType.Fresh) {
-    return ref.value;
+  if (typeof ref !== 'number') {
+    return ref;
   }
-  const plugin = await parsePlugin(ctx, depth, ref.value, current);
+  const plugin = await parsePlugin(ctx, depth, ref, current);
   if (plugin) {
     return plugin;
   }
@@ -708,9 +705,9 @@ export async function parseAsync<T>(
     case 'object': {
       if (current) {
         const ref = getReferenceNode(ctx.base, current);
-        return ref.type === 0
-          ? await parseObjectAsync(ctx, depth + 1, ref.value, current as object)
-          : ref.value;
+        return typeof ref === 'number'
+          ? await parseObjectAsync(ctx, depth + 1, ref, current as object)
+          : ref;
       }
       return NULL_NODE;
     }

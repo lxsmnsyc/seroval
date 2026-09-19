@@ -3,20 +3,7 @@ import { createSerovalNode } from './node';
 import type { SerovalConstantNode } from './types';
 
 function createConstantNode(value: SerovalConstant): SerovalConstantNode {
-  return createSerovalNode(
-    SerovalNodeType.Constant,
-    NIL,
-    value,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.Constant, NIL, value);
 }
 
 export const TRUE_NODE = /* @__PURE__ */ createConstantNode(
