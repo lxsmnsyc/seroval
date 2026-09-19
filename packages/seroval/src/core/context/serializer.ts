@@ -62,7 +62,6 @@ import type {
 } from '../types';
 import getIdentifier from '../utils/get-identifier';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
-import { isValidKey } from '../utils/valid-properties';
 
 const enum AssignmentType {
   Index = 0,
@@ -543,7 +542,7 @@ function createObjectAssign(
   key: string,
   value: string,
 ): void {
-  if (!isValidKey(key)) {
+  if (key === '__proto__') {
     // `obj.__proto__ = x`, including the bracket form `obj["__proto__"] = x`,
     // invokes the prototype setter rather than creating an own property.
     // Define the property instead so the round-trip preserves it as an actual
@@ -707,7 +706,7 @@ function serializeProperty(
       }
       return '';
     }
-    if (isValidKey(key)) {
+    if (key !== '__proto__') {
       return (
         (kind === KeyKind.Quoted ? '"' + key + '"' : key) +
         ':' +
@@ -851,7 +850,10 @@ function serializeDictionary(
 ): string {
   if (node.p) {
     const base = ctx.base;
-    if (base.features & Feature.ObjectAssign) {
+    if (
+      base.features & Feature.ObjectAssign &&
+      !node.p.k.includes('__proto__')
+    ) {
       init = serializeWithObjectAssign(ctx, node, node.p, init);
     } else {
       markSerializerRef(base, node.i);

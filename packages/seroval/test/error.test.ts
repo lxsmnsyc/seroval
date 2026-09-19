@@ -3,6 +3,9 @@ import {
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
+  deserialize,
+  Feature,
+  fromJSON,
   serialize,
   serializeAsync,
   toCrossJSON,
@@ -13,6 +16,51 @@ import {
 } from '../src';
 
 describe('Error', () => {
+  describe('with an own __proto__ field', () => {
+    function makeError(): Error {
+      const error = new Error('field');
+      Object.defineProperty(error, '__proto__', {
+        value: { retained: true },
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+      return error;
+    }
+
+    function expectPreserved(back: Error): void {
+      expect(Object.getPrototypeOf(back)).toBe(Error.prototype);
+      expect(Object.getOwnPropertyDescriptor(back, '__proto__')).toEqual({
+        value: { retained: true },
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+      expect(back.message).toBe('field');
+    }
+
+    it.each([0, Feature.ObjectAssign])(
+      'preserves the field through serialize with disabled features %i',
+      disabledFeatures => {
+        expectPreserved(
+          deserialize(serialize(makeError(), { disabledFeatures })),
+        );
+      },
+    );
+
+    it('preserves the field through serializeAsync', async () => {
+      expectPreserved(deserialize(await serializeAsync(makeError())));
+    });
+
+    it('preserves the field through JSON', () => {
+      expectPreserved(fromJSON(toJSON(makeError())));
+    });
+
+    it('preserves the field through crossSerialize', () => {
+      const payload = crossSerialize(makeError());
+      expectPreserved(new Function('$R', `return (${payload})`)([]));
+    });
+  });
   describe('serialize', () => {
     it('supports Error.prototype.name', () => {
       const a = new Error('A');

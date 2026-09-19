@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  Feature,
   compileJSON,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
   deserialize,
+  Feature,
   fromCrossJSON,
   fromJSON,
   serialize,
@@ -540,7 +540,10 @@ describe('objects', () => {
     // `JSON.parse` creates an own enumerable `__proto__` data property
     // (not a prototype), as does any record with a `__proto__` field.
     function makeProtoObject(): Record<string, unknown> {
-      return JSON.parse('{"__proto__":5,"value":42}') as Record<string, unknown>;
+      return JSON.parse('{"__proto__":5,"value":42}') as Record<
+        string,
+        unknown
+      >;
     }
     function expectPreserved(back: Record<string, unknown>): void {
       const descriptor = Object.getOwnPropertyDescriptor(back, '__proto__');
@@ -612,6 +615,78 @@ describe('objects', () => {
         fromJSON<Record<string, unknown>>(toJSON(makeCircularProtoObject())),
       );
     });
+  });
+  describe.each([
+    'constructor',
+    'prototype',
+    '__proto__',
+    '__defineGetter__',
+    '__defineSetter__',
+    '__lookupGetter__',
+    '__lookupSetter__',
+  ])('with a circular reserved property %s', key => {
+    function makeCircularObject(): Record<string, unknown> {
+      const parent: Record<string, unknown> = {};
+      const child = {};
+      parent.child = child;
+      Object.defineProperty(child, key, {
+        value: parent,
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+      return parent;
+    }
+
+    function expectPreserved(back: Record<string, unknown>): void {
+      const child = back.child as Record<string, unknown>;
+      expect(Object.getOwnPropertyDescriptor(child, key)).toEqual({
+        value: back,
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+      expect(Object.getPrototypeOf(child)).toBe(Object.prototype);
+    }
+
+    it('preserves the key through serialize', () => {
+      expectPreserved(deserialize(serialize(makeCircularObject())));
+    });
+
+    it('preserves the key through serializeAsync', async () => {
+      expectPreserved(deserialize(await serializeAsync(makeCircularObject())));
+    });
+
+    it('preserves the key through compileJSON', () => {
+      expectPreserved(deserialize(compileJSON(toJSON(makeCircularObject()))));
+    });
+
+    it('preserves the key through crossSerialize', () => {
+      const payload = crossSerialize(makeCircularObject());
+      expectPreserved(new Function('$R', `return (${payload})`)([]));
+    });
+  });
+  it.each([
+    '',
+    '0',
+    '-0',
+    '01',
+    '1.5',
+    '1e3',
+    '1e+21',
+    'Infinity',
+    'NaN',
+    '1e400',
+    'needs-quote',
+  ])('preserves property spelling %j in deferred assignments', key => {
+    const source: Record<string, unknown> = {};
+    source[key] = source;
+    for (const payload of [serialize(source), compileJSON(toJSON(source))]) {
+      const back = deserialize<Record<string, unknown>>(payload);
+      expect(Object.keys(back)).toEqual([key]);
+      expect(back[key]).toBe(back);
+      expect(Object.getPrototypeOf(back)).toBe(Object.prototype);
+    }
   });
   describe('with a shadowed constructor property', () => {
     const SHADOWED = { constructor: 'not a constructor', value: 42 };

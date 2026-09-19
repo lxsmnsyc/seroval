@@ -33,40 +33,24 @@ export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
   return ErrorConstructorTag.Error;
 }
 
-function getInitialErrorOptions(
-  error: Error,
-): Record<string, unknown> | undefined {
-  const construct = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
-  // Name has been modified
-  if (error.name !== construct) {
-    return { name: error.name };
-  }
-  if (error.constructor.name !== construct) {
-    // Otherwise, name is overriden because
-    // the Error class is extended
-    return { name: error.constructor.name };
-  }
-  return {};
-}
-
 export function getErrorOptions(
   error: Error,
   features: number,
 ): Record<string, unknown> | undefined {
-  let options = getInitialErrorOptions(error);
-  const names = Object.getOwnPropertyNames(error);
-  for (let i = 0, len = names.length, name: string; i < len; i++) {
-    name = names[i];
-    if (name !== 'name' && name !== 'message') {
-      if (name === 'stack') {
-        if (features & Feature.ErrorPrototypeStack) {
-          options = options || {};
-          options[name] = error[name as keyof Error];
-        }
-      } else {
-        options = options || {};
-        options[name] = error[name as keyof Error];
-      }
+  const options: Record<string, unknown> = Object.create(null);
+  const construct = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
+  if (error.name !== construct) {
+    options.name = error.name;
+  } else if (error.constructor.name !== construct) {
+    options.name = error.constructor.name;
+  }
+  for (const name of Object.getOwnPropertyNames(error)) {
+    if (
+      name !== 'name' &&
+      name !== 'message' &&
+      (name !== 'stack' || features & Feature.ErrorPrototypeStack)
+    ) {
+      options[name] = error[name as keyof Error];
     }
   }
   return options;
