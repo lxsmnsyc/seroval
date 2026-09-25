@@ -59,7 +59,10 @@ interface StreamListener<T> {
 // for them; arrows, function expressions and local function declarations all
 // get rewritten to call a bundle-scoped helper that does not exist in the
 // receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
-export const STREAM_CONSTRUCTOR = () => {
+// `live` = 1 keeps history only until the first listener subscribes, then
+// forwards each value and refuses a second listener, so delivered values are
+// not retained. Absent, every listener gets the full history.
+export const STREAM_CONSTRUCTOR = (live?: number) => {
   const buffer: unknown[] = [];
   const listeners: (StreamListener<unknown> | undefined)[] = [];
   let alive = true;
@@ -67,6 +70,7 @@ export const STREAM_CONSTRUCTOR = () => {
   let count = 0;
   const internal = {
     flush(value: unknown, mode: keyof StreamListener<unknown>, x?: number) {
+      (live as number) > 1 || buffer.push(value);
       for (x = 0; x < count; x++) {
         const listener = listeners[x];
         if (listener) {
@@ -90,6 +94,9 @@ export const STREAM_CONSTRUCTOR = () => {
       }
     },
     on(listener: StreamListener<unknown>, temp = 0) {
+      if ((live as number) > 1) {
+        throw new Error('Stream consumed');
+      }
       let subscribed = alive;
       if (alive) {
         for (temp = 0; temp < count; temp++) {
@@ -103,6 +110,10 @@ export const STREAM_CONSTRUCTOR = () => {
         listeners[temp] = listener;
       }
       internal.up(listener);
+      if (live) {
+        live = 2;
+        buffer.length = 0;
+      }
       return () => {
         if (alive && subscribed) {
           subscribed = false;
@@ -122,13 +133,11 @@ export const STREAM_CONSTRUCTOR = () => {
     },
     next(value: unknown) {
       if (alive) {
-        buffer.push(value);
         internal.flush(value, 'next');
       }
     },
     throw(value: unknown) {
       if (alive) {
-        buffer.push(value);
         internal.flush(value, 'throw');
         alive = false;
         success = false;
@@ -137,7 +146,6 @@ export const STREAM_CONSTRUCTOR = () => {
     },
     return(value: unknown) {
       if (alive) {
-        buffer.push(value);
         internal.flush(value, 'return');
         alive = false;
         success = true;

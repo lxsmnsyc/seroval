@@ -356,6 +356,7 @@ export function createStreamConstructorNode(
   id: number,
   factory: SerovalNodeWithID,
   sequence: SerovalNode[],
+  live?: 1,
 ): SerovalStreamConstructorNode {
   return createSerovalNode(
     SerovalNodeType.StreamConstructor,
@@ -367,15 +368,24 @@ export function createStreamConstructorNode(
     NIL,
     sequence,
     factory,
+    NIL,
+    NIL,
+    live,
   );
 }
 
-export function createStreamNextNode(
+export type SerovalStreamEventNode =
+  | SerovalStreamNextNode
+  | SerovalStreamThrowNode
+  | SerovalStreamReturnNode;
+
+export function createStreamEventNode(
+  type: SerovalStreamEventNode['t'],
   id: number,
   parsed: SerovalNode,
-): SerovalStreamNextNode {
+): SerovalStreamEventNode {
   return createSerovalNode(
-    SerovalNodeType.StreamNext,
+    type,
     id,
     NIL,
     NIL,
@@ -384,41 +394,7 @@ export function createStreamNextNode(
     NIL,
     NIL,
     parsed,
-  );
-}
-
-export function createStreamThrowNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamThrowNode {
-  return createSerovalNode(
-    SerovalNodeType.StreamThrow,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    parsed,
-  );
-}
-
-export function createStreamReturnNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamReturnNode {
-  return createSerovalNode(
-    SerovalNodeType.StreamReturn,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    parsed,
-  );
+  ) as SerovalStreamEventNode;
 }
 
 export function createSequenceNode(
