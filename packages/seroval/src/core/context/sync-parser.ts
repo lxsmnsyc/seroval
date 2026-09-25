@@ -227,8 +227,9 @@ function parseItems(
   depth: number,
   current: unknown[],
 ): (SerovalNode | 0)[] {
-  const nodes: (SerovalNode | 0)[] = [];
-  for (let i = 0, len = current.length; i < len; i++) {
+  const len = current.length;
+  const nodes: (SerovalNode | 0)[] = new Array(len);
+  for (let i = 0; i < len; i++) {
     if (i in current) {
       nodes[i] = parseSOS(ctx, depth, current[i]);
     } else {
@@ -253,12 +254,15 @@ function parseProperties(
   properties: Record<string | symbol, unknown>,
 ): SerovalObjectRecordNode {
   const keys = Object.keys(properties);
-  const keyNodes: SerovalObjectRecordKey[] = [];
-  const valueNodes: SerovalNode[] = [];
-  for (let i = 0, len = keys.length, key: string; i < len; i++) {
+  const len = keys.length;
+  // Sized up front: `push` from empty over-allocates the backing store for
+  // every object, and the length is already known.
+  const keyNodes: SerovalObjectRecordKey[] = new Array(len);
+  const valueNodes: SerovalNode[] = new Array(len);
+  for (let i = 0, key: string; i < len; i++) {
     key = keys[i];
-    keyNodes.push(serializeString(key));
-    valueNodes.push(parseSOS(ctx, depth, properties[key]));
+    keyNodes[i] = serializeString(key);
+    valueNodes[i] = parseSOS(ctx, depth, properties[key]);
   }
   // Check special properties, symbols in this case
   if (SYM_ITERATOR in properties) {
@@ -384,11 +388,13 @@ function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
-  const keyNodes: SerovalNode[] = [];
-  const valueNodes: SerovalNode[] = [];
+  const keyNodes: SerovalNode[] = new Array(current.size);
+  const valueNodes: SerovalNode[] = new Array(current.size);
+  let i = 0;
   for (const [key, value] of current.entries()) {
-    keyNodes.push(parseSOS(ctx, depth, key));
-    valueNodes.push(parseSOS(ctx, depth, value));
+    keyNodes[i] = parseSOS(ctx, depth, key);
+    valueNodes[i] = parseSOS(ctx, depth, value);
+    i++;
   }
   return createMapNode(ctx.base, id, keyNodes, valueNodes);
 }
@@ -399,9 +405,10 @@ function parseSet(
   id: number,
   current: Set<unknown>,
 ): SerovalSetNode {
-  const items: SerovalNode[] = [];
+  const items: SerovalNode[] = new Array(current.size);
+  let i = 0;
   for (const item of current.keys()) {
-    items.push(parseSOS(ctx, depth, item));
+    items[i++] = parseSOS(ctx, depth, item);
   }
   return createSetNode(id, items);
 }
@@ -606,8 +613,9 @@ function parseSequence(
   id: number,
   current: Sequence,
 ): SerovalSequenceNode {
-  const nodes: SerovalNode[] = [];
-  for (let i = 0, len = current.v.length; i < len; i++) {
+  const len = current.v.length;
+  const nodes: SerovalNode[] = new Array(len);
+  for (let i = 0; i < len; i++) {
     nodes[i] = parseSOS(ctx, depth, current.v[i]);
   }
   return createSequenceNode(id, nodes, current.t, current.d);
