@@ -299,6 +299,45 @@ according to the receiving application's needs; it is a per-buffer limit, not a
 total payload or memory budget. JavaScript evaluation through `deserialize` does
 not use these JSON decoding limits.
 
+### Aborting streamed deserialization
+
+`toCrossJSONStream` emits one record per `onParse` call. When those records
+are consumed one at a time, the first one may contain `Promise` and stream
+instances that only settle when a later record arrives. `createCrossDeserializer`
+owns the shared references for such a session, counts the deferred values that
+are still pending, and can abort them if the transport fails first.
+
+```ts
+import { createCrossDeserializer } from 'seroval';
+
+const session = createCrossDeserializer({ plugins });
+
+function onRecord(node) {
+  return session.deserialize(node);
+}
+
+function onTransportError(error) {
+  // Rejects pending promises and throws into open streams.
+  session.abort(error);
+}
+
+function onEnd() {
+  if (session.pending) {
+    session.abort(new Error('Response ended before every value settled'));
+  }
+}
+```
+
+`pending` increases when a promise or stream is created and decreases when
+its resolve, reject, return, or throw record is deserialized; stream values do
+not change it. `abort` is idempotent, and a session that has been aborted
+throws `SerovalAbortedError` from `deserialize` instead of creating new
+deferred values that nothing could abort. Rejections produced by `abort` are
+not suppressed; observe them the same way as server-sent rejections. Values
+produced by plugins are not tracked, so a plugin that returns its own promise
+must settle it itself. `fromCrossJSON` keeps working with a bare `refs` map and
+does not track anything.
+
 ## Push-based streaming serialization
 
 > [!NOTE]
