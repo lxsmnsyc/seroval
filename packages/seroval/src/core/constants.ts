@@ -110,48 +110,8 @@ export const enum Symbols {
   Unscopables = 12,
 }
 
-export const SYMBOL_STRING: Record<Symbols, string> = {
-  [Symbols.AsyncIterator]: 'Symbol.asyncIterator',
-  [Symbols.HasInstance]: 'Symbol.hasInstance',
-  [Symbols.IsConcatSpreadable]: 'Symbol.isConcatSpreadable',
-  [Symbols.Iterator]: 'Symbol.iterator',
-  [Symbols.Match]: 'Symbol.match',
-  [Symbols.MatchAll]: 'Symbol.matchAll',
-  [Symbols.Replace]: 'Symbol.replace',
-  [Symbols.Search]: 'Symbol.search',
-  [Symbols.Species]: 'Symbol.species',
-  [Symbols.Split]: 'Symbol.split',
-  [Symbols.ToPrimitive]: 'Symbol.toPrimitive',
-  [Symbols.ToStringTag]: 'Symbol.toStringTag',
-  [Symbols.Unscopables]: 'Symbol.unscopables',
-};
-
-// Built through a pure call: bundlers do not treat symbol-keyed (computed)
-// object literals as side-effect free, so an inline literal would be kept in
-// every consumer bundle even when unused.
-function createInverseSymbolTable() {
-  return {
-    [SYM_ASYNC_ITERATOR]: Symbols.AsyncIterator,
-    [SYM_HAS_INSTANCE]: Symbols.HasInstance,
-    [SYM_IS_CONCAT_SPREADABLE]: Symbols.IsConcatSpreadable,
-    [SYM_ITERATOR]: Symbols.Iterator,
-    [SYM_MATCH]: Symbols.Match,
-    [SYM_MATCH_ALL]: Symbols.MatchAll,
-    [SYM_REPLACE]: Symbols.Replace,
-    [SYM_SEARCH]: Symbols.Search,
-    [SYM_SPECIES]: Symbols.Species,
-    [SYM_SPLIT]: Symbols.Split,
-    [SYM_TO_PRIMITIVE]: Symbols.ToPrimitive,
-    [SYM_TO_STRING_TAG]: Symbols.ToStringTag,
-    [SYM_UNSCOPABLES]: Symbols.Unscopables,
-  };
-}
-
-export const INV_SYMBOL_REF = /* @__PURE__ */ createInverseSymbolTable();
-
-export type WellKnownSymbols = keyof typeof INV_SYMBOL_REF;
-
-export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
+// The one literal symbol table; the other two are derived from it below.
+export const SYMBOL_REF = {
   [Symbols.AsyncIterator]: SYM_ASYNC_ITERATOR,
   [Symbols.HasInstance]: SYM_HAS_INSTANCE,
   [Symbols.IsConcatSpreadable]: SYM_IS_CONCAT_SPREADABLE,
@@ -165,7 +125,34 @@ export const SYMBOL_REF: Record<Symbols, WellKnownSymbols> = {
   [Symbols.ToPrimitive]: SYM_TO_PRIMITIVE,
   [Symbols.ToStringTag]: SYM_TO_STRING_TAG,
   [Symbols.Unscopables]: SYM_UNSCOPABLES,
-};
+} as const;
+
+export type WellKnownSymbols = (typeof SYMBOL_REF)[Symbols];
+
+// Well-known symbols describe themselves as `Symbol.<name>`, which is
+// exactly the expression the serializer emits for them.
+function createSymbolStringTable(): Record<Symbols, string> {
+  const result = {} as Record<Symbols, string>;
+  for (let i: Symbols = 0; i <= Symbols.Unscopables; i++) {
+    result[i] = SYMBOL_REF[i].description as string;
+  }
+  return result;
+}
+
+export const SYMBOL_STRING = /* @__PURE__ */ createSymbolStringTable();
+
+// Built through a pure call: bundlers do not treat symbol-keyed (computed)
+// object literals as side-effect free, so an inline literal would be kept in
+// every consumer bundle even when unused.
+function createInverseSymbolTable(): Record<WellKnownSymbols, Symbols> {
+  const result = {} as Record<WellKnownSymbols, Symbols>;
+  for (let i: Symbols = 0; i <= Symbols.Unscopables; i++) {
+    result[SYMBOL_REF[i]] = i;
+  }
+  return result;
+}
+
+export const INV_SYMBOL_REF = /* @__PURE__ */ createInverseSymbolTable();
 
 export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.True]: '!0',
@@ -206,16 +193,6 @@ export const enum ErrorConstructorTag {
   URIError = 6,
 }
 
-export const ERROR_CONSTRUCTOR_STRING: Record<ErrorConstructorTag, string> = {
-  [ErrorConstructorTag.Error]: 'Error',
-  [ErrorConstructorTag.EvalError]: 'EvalError',
-  [ErrorConstructorTag.RangeError]: 'RangeError',
-  [ErrorConstructorTag.ReferenceError]: 'ReferenceError',
-  [ErrorConstructorTag.SyntaxError]: 'SyntaxError',
-  [ErrorConstructorTag.TypeError]: 'TypeError',
-  [ErrorConstructorTag.URIError]: 'URIError',
-};
-
 type ErrorConstructors =
   | ErrorConstructor
   | EvalErrorConstructor
@@ -235,3 +212,18 @@ export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
     [ErrorConstructorTag.TypeError]: TypeError,
     [ErrorConstructorTag.URIError]: URIError,
   };
+
+// Each constructor's own name is the identifier the serializer emits.
+function createErrorConstructorStringTable(): Record<
+  ErrorConstructorTag,
+  string
+> {
+  const result = {} as Record<ErrorConstructorTag, string>;
+  for (let i: ErrorConstructorTag = 0; i <= ErrorConstructorTag.URIError; i++) {
+    result[i] = ERROR_CONSTRUCTOR[i].name;
+  }
+  return result;
+}
+
+export const ERROR_CONSTRUCTOR_STRING =
+  /* @__PURE__ */ createErrorConstructorStringTable();
