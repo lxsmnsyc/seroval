@@ -1,4 +1,4 @@
-import { Feature } from '../compat';
+import { FeatureFlag } from '../compat';
 import { ERROR_CONSTRUCTOR_STRING, ErrorConstructorTag } from '../constants';
 
 type ErrorValue =
@@ -48,7 +48,7 @@ export function getErrorOptions(
     if (
       name !== 'name' &&
       name !== 'message' &&
-      (name !== 'stack' || features & Feature.ErrorPrototypeStack)
+      (name !== 'stack' || features & FeatureFlag.ErrorPrototypeStack)
     ) {
       options[name] = error[name as keyof Error];
     }

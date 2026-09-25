@@ -1,4 +1,4 @@
-import { Feature } from '../compat';
+import { FeatureFlag } from '../compat';
 import {
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
@@ -811,7 +811,7 @@ function serializeDictionary(
   if (node.p) {
     const base = ctx.base;
     if (
-      base.features & Feature.ObjectAssign &&
+      base.features & FeatureFlag.ObjectAssign &&
       !node.p.k.includes('__proto__')
     ) {
       init = serializeWithObjectAssign(ctx, node, node.p, init);
@@ -860,7 +860,7 @@ function serializeTemporal(
   ctx: SerializerContext,
   node: SerovalTemporalNode,
 ): string {
-  if (ctx.base.features & Feature.Temporal) {
+  if (ctx.base.features & FeatureFlag.Temporal) {
     return TEMPORAL_CONSTRUCTOR[node.c] + '.from("' + node.s + '")';
   }
   throw new SerovalUnsupportedNodeError(node);
@@ -870,7 +870,7 @@ function serializeRegExp(
   ctx: SerializerContext,
   node: SerovalRegExpNode,
 ): string {
-  if (ctx.base.features & Feature.RegExp) {
+  if (ctx.base.features & FeatureFlag.RegExp) {
     return '/' + deserializeString(node.c) + '/' + node.m;
   }
   throw new SerovalUnsupportedNodeError(node);
