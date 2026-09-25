@@ -121,16 +121,22 @@ export class AsyncParsePluginContext {
   }
 }
 
+// Only objects and functions can produce a Promise; awaiting a plain node
+// would still cost a microtask turn per primitive.
+type MaybeAsyncNode = SerovalNode | Promise<SerovalNode>;
+
 async function parseItems(
   ctx: AsyncParserContext,
   depth: number,
   current: unknown[],
 ): Promise<(SerovalNode | 0)[]> {
-  const nodes: (SerovalNode | 0)[] = [];
-  for (let i = 0, len = current.length; i < len; i++) {
+  const len = current.length;
+  const nodes: (SerovalNode | 0)[] = new Array(len);
+  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
     // For consistency in holes
     if (i in current) {
-      nodes[i] = await parseAsync(ctx, depth, current[i]);
+      node = parseValueAsync(ctx, depth, current[i]);
+      nodes[i] = node instanceof Promise ? await node : node;
     } else {
       nodes[i] = 0;
     }
@@ -153,12 +159,16 @@ async function parseProperties(
   properties: Record<string | symbol, unknown>,
 ): Promise<SerovalObjectRecordNode> {
   const keys = Object.keys(properties);
-  const keyNodes: SerovalObjectRecordKey[] = [];
-  const valueNodes: SerovalNode[] = [];
-  for (let i = 0, len = keys.length, key: string; i < len; i++) {
+  const len = keys.length;
+  // Sized up front: `push` from empty over-allocates the backing store for
+  // every object, and the length is already known.
+  const keyNodes: SerovalObjectRecordKey[] = new Array(len);
+  const valueNodes: SerovalNode[] = new Array(len);
+  for (let i = 0, key: string, node: MaybeAsyncNode; i < len; i++) {
     key = keys[i];
-    keyNodes.push(serializeString(key));
-    valueNodes.push(await parseAsync(ctx, depth, properties[key]));
+    keyNodes[i] = serializeString(key);
+    node = parseValueAsync(ctx, depth, properties[key]);
+    valueNodes[i] = node instanceof Promise ? await node : node;
   }
   // Check special properties
   if (SYM_ITERATOR in properties) {
@@ -286,11 +296,16 @@ async function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
-  const keyNodes: SerovalNode[] = [];
-  const valueNodes: SerovalNode[] = [];
+  const keyNodes: SerovalNode[] = new Array(current.size);
+  const valueNodes: SerovalNode[] = new Array(current.size);
+  let node: MaybeAsyncNode;
+  let i = 0;
   for (const [key, value] of current.entries()) {
-    keyNodes.push(await parseAsync(ctx, depth, key));
-    valueNodes.push(await parseAsync(ctx, depth, value));
+    node = parseValueAsync(ctx, depth, key);
+    keyNodes[i] = node instanceof Promise ? await node : node;
+    node = parseValueAsync(ctx, depth, value);
+    valueNodes[i] = node instanceof Promise ? await node : node;
+    i++;
   }
   return createMapNode(ctx.base, id, keyNodes, valueNodes);
 }
@@ -301,9 +316,12 @@ async function parseSet(
   id: number,
   current: Set<unknown>,
 ): Promise<SerovalSetNode> {
-  const items: SerovalNode[] = [];
+  const items: SerovalNode[] = new Array(current.size);
+  let node: MaybeAsyncNode;
+  let i = 0;
   for (const item of current.keys()) {
-    items.push(await parseAsync(ctx, depth, item));
+    node = parseValueAsync(ctx, depth, item);
+    items[i++] = node instanceof Promise ? await node : node;
   }
   return createSetNode(id, items);
 }
@@ -436,9 +454,11 @@ async function parseSequence(
   id: number,
   current: Sequence,
 ): Promise<SerovalSequenceNode> {
-  const nodes: SerovalNode[] = [];
-  for (let i = 0, len = current.v.length; i < len; i++) {
-    nodes[i] = await parseAsync(ctx, depth, current.v[i]);
+  const len = current.v.length;
+  const nodes: SerovalNode[] = new Array(len);
+  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
+    node = parseValueAsync(ctx, depth, current.v[i]);
+    nodes[i] = node instanceof Promise ? await node : node;
   }
   return createSequenceNode(id, nodes, current.t, current.d);
 }
@@ -587,11 +607,16 @@ export async function parseFunctionAsync(
   throw new SerovalUnsupportedTypeError(current);
 }
 
-export async function parseAsync<T>(
+/**
+ * Parses primitives and already-seen values synchronously; only objects and
+ * functions come back as a Promise. Errors are thrown synchronously, which
+ * an async caller turns into a rejection as before.
+ */
+function parseValueAsync<T>(
   ctx: AsyncParserContext,
   depth: number,
   current: T,
-): Promise<SerovalNode> {
+): MaybeAsyncNode {
   if (depth >= ctx.base.depthLimit) {
     throw new SerovalDepthLimitError(ctx.base.depthLimit);
   }
@@ -610,7 +635,7 @@ export async function parseAsync<T>(
       if (current) {
         const ref = getReferenceNode(ctx.base, current);
         return typeof ref === 'number'
-          ? await parseObjectAsync(ctx, depth + 1, ref, current as object)
+          ? parseObjectAsync(ctx, depth + 1, ref, current as object)
           : ref;
       }
       return NULL_NODE;
@@ -622,6 +647,14 @@ export async function parseAsync<T>(
     default:
       throw new SerovalUnsupportedTypeError(current);
   }
+}
+
+export async function parseAsync<T>(
+  ctx: AsyncParserContext,
+  depth: number,
+  current: T,
+): Promise<SerovalNode> {
+  return await parseValueAsync(ctx, depth, current);
 }
 
 export async function parseTopAsync<T>(
