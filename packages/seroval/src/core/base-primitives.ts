@@ -203,39 +203,16 @@ export function createBoxedNode(
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
 export function createTypedArrayNode(
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
   id: number,
-  current: TypedArrayValue,
+  current: TypedArrayValue | BigIntTypedArrayValue,
   buffer: SerovalNode,
-): SerovalTypedArrayNode {
+): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode {
   if (current.length > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(current);
   }
   return createSerovalNode(
-    SerovalNodeType.TypedArray,
-    id,
-    NIL,
-    current.constructor.name,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    buffer,
-    current.byteOffset,
-    NIL,
-    current.length,
-  );
-}
-
-export function createBigIntTypedArrayNode(
-  id: number,
-  current: BigIntTypedArrayValue,
-  buffer: SerovalNode,
-): SerovalBigIntTypedArrayNode {
-  if (current.length > MAX_TYPED_ARRAY_LENGTH) {
-    throw new SerovalUnsupportedTypeError(current);
-  }
-  return createSerovalNode(
-    SerovalNodeType.BigIntTypedArray,
+    type,
     id,
     NIL,
     current.constructor.name,
@@ -275,27 +252,13 @@ export function createDataViewNode(
 }
 
 export function createErrorNode(
+  type: SerovalNodeType.Error | SerovalNodeType.AggregateError,
   id: number,
   current: Error,
   options: SerovalObjectRecordNode | undefined,
-): SerovalErrorNode {
+): SerovalErrorNode | SerovalAggregateErrorNode {
   return createSerovalNode(
-    SerovalNodeType.Error,
-    id,
-    getErrorConstructor(current),
-    NIL,
-    serializeString(current.message),
-    options,
-  );
-}
-
-export function createAggregateErrorNode(
-  id: number,
-  current: AggregateError,
-  options: SerovalObjectRecordNode | undefined,
-): SerovalAggregateErrorNode {
-  return createSerovalNode(
-    SerovalNodeType.AggregateError,
+    type,
     id,
     getErrorConstructor(current),
     NIL,
@@ -321,35 +284,18 @@ export function createSetNode(
 }
 
 export function createIteratorFactoryInstanceNode(
+  type:
+    | SerovalNodeType.IteratorFactoryInstance
+    | SerovalNodeType.AsyncIteratorFactoryInstance,
   factory: SerovalNodeWithID,
   items: SerovalNodeWithID,
-): SerovalIteratorFactoryInstanceNode {
-  return createSerovalNode(
-    SerovalNodeType.IteratorFactoryInstance,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    [factory, items],
-  );
-}
-
-export function createAsyncIteratorFactoryInstanceNode(
-  factory: SerovalNodeWithID,
-  items: SerovalNodeWithID,
-): SerovalAsyncIteratorFactoryInstanceNode {
-  return createSerovalNode(
-    SerovalNodeType.AsyncIteratorFactoryInstance,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    [factory, items],
-  );
+):
+  | SerovalIteratorFactoryInstanceNode
+  | SerovalAsyncIteratorFactoryInstanceNode {
+  return createSerovalNode(type, NIL, NIL, NIL, NIL, NIL, NIL, [
+    factory,
+    items,
+  ]);
 }
 
 export function createStreamConstructorNode(

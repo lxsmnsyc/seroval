@@ -1,5 +1,9 @@
 import { FeatureFlag } from '../compat';
-import { ERROR_CONSTRUCTOR_STRING, ErrorConstructorTag } from '../constants';
+import {
+  ERROR_CONSTRUCTOR,
+  ERROR_CONSTRUCTOR_STRING,
+  ErrorConstructorTag,
+} from '../constants';
 
 type ErrorValue =
   | Error
@@ -12,23 +16,16 @@ type ErrorValue =
   | URIError;
 
 export function getErrorConstructor(error: ErrorValue): ErrorConstructorTag {
-  if (error instanceof EvalError) {
-    return ErrorConstructorTag.EvalError;
-  }
-  if (error instanceof RangeError) {
-    return ErrorConstructorTag.RangeError;
-  }
-  if (error instanceof ReferenceError) {
-    return ErrorConstructorTag.ReferenceError;
-  }
-  if (error instanceof SyntaxError) {
-    return ErrorConstructorTag.SyntaxError;
-  }
-  if (error instanceof TypeError) {
-    return ErrorConstructorTag.TypeError;
-  }
-  if (error instanceof URIError) {
-    return ErrorConstructorTag.URIError;
+  // The subclasses are siblings, so any order works; plain Error at tag 0
+  // is the fallback and is skipped.
+  for (
+    let i: ErrorConstructorTag = ErrorConstructorTag.EvalError;
+    i <= ErrorConstructorTag.URIError;
+    i++
+  ) {
+    if (error instanceof ERROR_CONSTRUCTOR[i]) {
+      return i;
+    }
   }
   return ErrorConstructorTag.Error;
 }
