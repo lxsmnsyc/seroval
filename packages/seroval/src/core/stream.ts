@@ -97,7 +97,7 @@ export class Stream<T> {
   }
 }
 
-export function isStream<T>(value: object): value is Stream<T> {
+export function isStream<T>(value: unknown): value is Stream<T> {
   return value instanceof Stream;
 }
 

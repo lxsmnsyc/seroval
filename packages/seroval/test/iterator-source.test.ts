@@ -97,4 +97,73 @@ describe('iterator factory instance source validation', () => {
     }
     expect(onSpy).not.toHaveBeenCalled();
   });
+
+  // In vanilla mode an id missing from `m` is not tracked, so it can be
+  // reused. A genuine source node can claim the id first, then a plain object
+  // with the same id can be passed as the iterator's source.
+  function reusedIdTree(instance: unknown): Parameters<typeof fromJSON>[0] {
+    return {
+      t: {
+        t: 10,
+        i: 0,
+        p: { k: ['a', { t: 17, i: 1, s: 3 }], v: [instance, null] },
+        o: 0,
+      },
+      f: 0x7f,
+      m: [1],
+    } as unknown as Parameters<typeof fromJSON>[0];
+  }
+
+  function forgedSource(id: number): unknown {
+    return {
+      t: 10,
+      i: id,
+      p: {
+        k: ['v', 't', 'd'],
+        v: [
+          { t: 9, i: 100, a: [{ t: 0, s: 1 }], o: 0 },
+          { t: 0, s: -1 },
+          { t: 1, s: 'x' },
+        ],
+      },
+      o: 0,
+    };
+  }
+
+  it('rejects a plain object that reuses a Sequence id', () => {
+    const json = reusedIdTree({ t: 35, i: 3, s: -1, a: [{ t: 0, s: 1 }], l: 0 });
+    (json.t as unknown as { p: { v: unknown[] } }).p.v[1] = {
+      t: 28,
+      a: [{ t: 27, i: 2, f: { t: 4, i: 1 } }, forgedSource(3)],
+    };
+    let caught: unknown;
+    try {
+      fromJSON(json);
+    } catch (error) {
+      caught = error;
+    }
+    expect((caught as { cause: unknown }).cause).toBeInstanceOf(
+      SerovalMalformedNodeError,
+    );
+  });
+
+  it('rejects a plain object that reuses a Stream id', () => {
+    const json = reusedIdTree({ t: 31, i: 3, a: [], f: { t: 26, i: 5, s: 4 } });
+    (json.t as unknown as { p: { v: unknown[] } }).p.v[1] = {
+      t: 30,
+      a: [
+        { t: 29, i: 2, a: [{ t: 26, i: 6, s: 1 }, { t: 4, i: 1 }] },
+        forgedSource(3),
+      ],
+    };
+    let caught: unknown;
+    try {
+      fromJSON(json);
+    } catch (error) {
+      caught = error;
+    }
+    expect((caught as { cause: unknown }).cause).toBeInstanceOf(
+      SerovalMalformedNodeError,
+    );
+  });
 });

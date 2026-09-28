@@ -21,7 +21,7 @@ export class Sequence {
   }
 }
 
-export function isSequence(value: object): value is Sequence {
+export function isSequence(value: unknown): value is Sequence {
   return value instanceof Sequence;
 }
 
