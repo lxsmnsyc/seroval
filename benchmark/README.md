@@ -8,7 +8,7 @@
 
 These reports compare the bundle size and runtime speed of Seroval revisions. The existing cross-library benchmark below remains separate.
 
-Run from the repository root with Node 22 or later. Install workspace dependencies with pnpm, then build the production public exports:
+Run from the repository root with Node 22 or later. CI uses pnpm 10.25.0 to read the repository's lockfile. Install workspace dependencies with pnpm, then build the production public exports:
 
 ```sh
 pnpm --filter seroval --filter seroval-plugins build
