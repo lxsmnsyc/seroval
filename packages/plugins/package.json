@@ -14,7 +14,7 @@
   ],
   "devDependencies": {
     "@types/node": "^26.6.2",
-    "@vitest/ui": "^4.1.10",
+    "@vitest/ui": "^5.0.1",
     "esbuild": "^0.28.2",
     "seroval": "workspace:*",
     "tsdown": "^0.23.0",
