@@ -13,7 +13,8 @@ import {
   toJSON,
   toJSONAsync,
 } from 'seroval';
-import { describe, expect, it } from 'vitest';
+import { createReference, type SerovalNode } from 'seroval';
+import { describe, expect, it, vi } from 'vitest';
 import { AbortSignalPlugin } from '../../web';
 
 const delayedAbortSignal = () => {
@@ -335,5 +336,57 @@ describe('AbortSignal', () => {
           },
         });
       }));
+  });
+  describe('malformed input', () => {
+    it('rejects a controller source that is not a Promise', () => {
+      const result = toJSON(SYNC_EXAMPLE, {
+        plugins: [AbortSignalPlugin],
+      });
+      // Aim the controller slot at a non-Promise node so the guard trips before
+      // `then` would be called.
+      (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
+        controller: toJSON(42).t,
+      };
+      expect(() =>
+        fromJSON(result, { plugins: [AbortSignalPlugin] }),
+      ).toThrow();
+    });
+
+    it('never invokes `then` on a fake thenable controller', () => {
+      // A callable `then` is only reachable through a registered reference (or
+      // a function-returning plugin). Build one and aim the controller slot at
+      // an object carrying it: the guard must reject before it is called.
+      const thenSpy = vi.fn();
+      const thenable = { then: createReference('test/abort-fake-then', thenSpy) };
+      const template = toJSON(thenable);
+      const result = toJSON(SYNC_EXAMPLE, {
+        plugins: [AbortSignalPlugin],
+      });
+      (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
+        controller: template.t,
+      };
+      expect(() =>
+        fromJSON(result, { plugins: [AbortSignalPlugin] }),
+      ).toThrow();
+      expect(thenSpy).not.toHaveBeenCalled();
+    });
+
+    it('rejects deserializing the AbortController factory directly', () => {
+      // The factory is a serialize-only helper; deserializing it would hand
+      // back the raw `PROMISE_TO_ABORT_SIGNAL` function as a callable gadget.
+      const json = {
+        t: {
+          t: 25,
+          i: 0,
+          c: 'seroval-plugins/web/AbortControllerFactoryPlugin',
+          s: {},
+        },
+        f: 0x7f,
+        m: [] as number[],
+      } as unknown as Parameters<typeof fromJSON>[0];
+      expect(() =>
+        fromJSON(json, { plugins: [AbortSignalPlugin] }),
+      ).toThrow();
+    });
   });
 });

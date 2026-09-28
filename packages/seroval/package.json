@@ -2,7 +2,7 @@
   "name": "seroval",
   "type": "module",
   "sideEffects": false,
-  "version": "1.6.4",
+  "version": "1.6.7",
   "files": [
     "dist"
   ],

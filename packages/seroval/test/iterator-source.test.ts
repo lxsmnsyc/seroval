@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  createPlugin,
   fromJSON,
   SerovalMalformedNodeError,
   type SerovalObjectNode,
@@ -51,5 +52,49 @@ describe('iterator factory instance source validation', () => {
     expect((caught as { cause: unknown }).cause).toBeInstanceOf(
       SerovalMalformedNodeError,
     );
+  });
+
+  it('rejects a plugin-forged branded stream as an async iterator source', () => {
+    // A plugin can return an object carrying the `__SEROVAL_STREAM__` brand, so
+    // a runtime brand check is not enough. The source node type (Plugin, not
+    // StreamConstructor) is what must be rejected, before its `on` is invoked.
+    const onSpy = vi.fn();
+    const fakeStreamPlugin = createPlugin<unknown, Record<string, never>>({
+      tag: 'test/fake-stream',
+      test: () => false,
+      parse: { sync: () => ({}) },
+      serialize: () => '',
+      deserialize: () =>
+        ({ __SEROVAL_STREAM__: 1, on: onSpy }) as unknown as never,
+    });
+    // AsyncIteratorFactoryInstance { a: [instance, source] }, source = plugin.
+    const json = {
+      t: {
+        t: 30,
+        a: [
+          { t: 4, i: 0 },
+          { t: 25, i: 1, c: 'test/fake-stream', s: {} },
+        ],
+      },
+      f: 0x7f,
+      m: [1],
+    } as unknown as Parameters<typeof fromJSON>[0];
+
+    const out = (() => {
+      try {
+        return fromJSON(json, { plugins: [fakeStreamPlugin] });
+      } catch {
+        return undefined;
+      }
+    })();
+    // Even if a build ever returned a factory, invoking it must not call `on`.
+    if (typeof out === 'function') {
+      try {
+        (out as () => unknown)();
+      } catch {
+        // ignore
+      }
+    }
+    expect(onSpy).not.toHaveBeenCalled();
   });
 });

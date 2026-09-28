@@ -1,5 +1,29 @@
 # seroval
 
+## 1.6.7
+
+### Patch Changes
+
+- c7520ad: Skip escape replacement when decoding strings without backslashes.
+- bbd75e8: Reduce JSON binary decoding time in Node while preserving base64 validation and the browser fallback.
+- 772666b: Write decoded binary data directly into its output ArrayBuffer in Node, avoiding a temporary byte buffer and an additional copy.
+
+## 1.6.6
+
+### Patch Changes
+
+- 0233519: Stop pulling async iterators and call their return method when streaming serialization is cancelled.
+- 35f14f9: Use native base64 encoding when available. Add opt-in compact ArrayBuffer views and a configurable JSON deserialization base64 limit while preserving the existing defaults.
+- 0e4e78d: Reduce the cost of escaping long strings while preserving their serialized representation.
+- 7770e48: Drain async iterables and ReadableStreams iteratively to avoid retaining an async call chain for every streamed value.
+- ad310d6: Keep stream listeners active when another subscription is removed, and make subscription cleanup idempotent.
+
+## 1.6.5
+
+### Patch Changes
+
+- Validate the backing source of an iterator, async iterator, readable stream, and abort signal during deserialization, and export `isStream`.
+
 ## 1.6.4
 
 ### Patch Changes

@@ -199,7 +199,8 @@ export function createBoxedNode(
   );
 }
 
-// Same cap as the ArrayBuffer deserialization limit (MAX_BASE64_LENGTH).
+// Same default cap as the ArrayBuffer deserialization limit
+// (DEFAULT_MAX_BASE64_LENGTH).
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
 export function createTypedArrayNode(

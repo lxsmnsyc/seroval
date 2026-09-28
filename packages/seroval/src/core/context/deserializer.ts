@@ -27,12 +27,11 @@ import { SerovalMode } from '../plugin';
 import { getReference } from '../reference';
 import {
   createSequence,
-  isSequence,
   type Sequence,
   sequenceToIterator,
 } from '../sequence';
 import type { Stream, StreamListener } from '../stream';
-import { createStream, isStream, streamToAsyncIterable } from '../stream';
+import { createStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
@@ -507,11 +506,10 @@ function deserializeTypedArray(
     throw new SerovalMalformedNodeError(node);
   }
   const offset = node.b ?? 0;
-  if (
-    offset < 0 ||
-    offset > source.byteLength ||
-    node.l > ctx.base.maxBase64Length
-  ) {
+  // The backing buffer is already capped at ArrayBuffer deserialization, and the
+  // view constructor throws when offset + length exceeds it, so `node.l` needs
+  // no separate bound here.
+  if (offset < 0 || offset > source.byteLength) {
     throw new SerovalMalformedNodeError(node);
   }
   const result = assignIndexedValue(
@@ -535,11 +533,10 @@ function deserializeDataView(
     throw new SerovalMalformedNodeError(node);
   }
   const offset = node.b ?? 0;
-  if (
-    offset < 0 ||
-    offset > source.byteLength ||
-    node.l > ctx.base.maxBase64Length
-  ) {
+  // The backing buffer is already capped at ArrayBuffer deserialization, and the
+  // view constructor throws when offset + length exceeds it, so `node.l` needs
+  // no separate bound here.
+  if (offset < 0 || offset > source.byteLength) {
     throw new SerovalMalformedNodeError(node);
   }
   const result = assignIndexedValue(
@@ -694,11 +691,15 @@ function deserializeIteratorFactoryInstance(
 ): unknown {
   deserialize(ctx, depth, node.a[0]);
   const source = deserialize(ctx, depth, node.a[1]);
-  // `node.a[1]` is any node the input picked; it must resolve to a Sequence.
-  if (!source || typeof source !== 'object' || !isSequence(source)) {
+  // `node.a[1]` is any node the input picked. Validate the source *node type*,
+  // not the runtime value's shape: a `__SEROVAL_SEQUENCE__` brand is forgeable
+  // by a plugin, but only a genuine Sequence node carries the Sequence mark,
+  // and `guardIndexedValue` forbids reusing its id for another value.
+  validateNodeType(ctx, node, node.a[1].i, SerovalNodeType.Sequence);
+  if (!source) {
     throw new SerovalMalformedNodeError(node.a[1]);
   }
-  return sequenceToIterator(source);
+  return sequenceToIterator(source as Sequence);
 }
 
 function deserializeAsyncIteratorFactoryInstance(
@@ -708,11 +709,16 @@ function deserializeAsyncIteratorFactoryInstance(
 ): unknown {
   deserialize(ctx, depth, node.a[0]);
   const source = deserialize(ctx, depth, node.a[1]);
-  // `node.a[1]` is any node the input picked; it must resolve to a Stream.
-  if (!source || typeof source !== 'object' || !isStream(source)) {
+  // `node.a[1]` is any node the input picked. Validate the source *node type*,
+  // not the runtime value's shape: a `__SEROVAL_STREAM__` brand is forgeable by
+  // a plugin, but only a genuine StreamConstructor node carries the mark, and
+  // `guardIndexedValue` forbids reusing its id for another value. This stops a
+  // plugin-returned fake stream from having its `on` invoked below.
+  validateNodeType(ctx, node, node.a[1].i, SerovalNodeType.StreamConstructor);
+  if (!source) {
     throw new SerovalMalformedNodeError(node.a[1]);
   }
-  return streamToAsyncIterable(source);
+  return streamToAsyncIterable(source as Stream<unknown>);
 }
 
 function deserializeStreamConstructor(
@@ -778,6 +784,8 @@ function deserializeSequence(
     node.i,
     createSequence([], node.s, node.l),
   );
+  // Mark the id so an IteratorFactoryInstance can validate its source node type.
+  assignNodeType(ctx, node.i, SerovalNodeType.Sequence);
   for (let i = 0, len = node.a.length; i < len; i++) {
     result.v[i] = deserialize(ctx, depth, node.a[i]);
   }
