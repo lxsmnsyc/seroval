@@ -25,9 +25,14 @@ import {
 import type { PluginAccessOptions } from '../plugin';
 import { SerovalMode } from '../plugin';
 import { getReference } from '../reference';
-import { createSequence, type Sequence, sequenceToIterator } from '../sequence';
+import {
+  createSequence,
+  isSequence,
+  type Sequence,
+  sequenceToIterator,
+} from '../sequence';
 import type { Stream, StreamListener } from '../stream';
-import { createStream, streamToAsyncIterable } from '../stream';
+import { createStream, isStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
@@ -495,6 +500,12 @@ function deserializeTypedArray(
 ): TypedArrayValue | BigIntTypedArrayValue {
   const construct = getTypedArrayConstructor(node.c) as Int8ArrayConstructor;
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
+  // `node.f` is cast to an ArrayBuffer but is really any node the input picked.
+  // Without this check a non-buffer source has an `undefined` `byteLength`, so
+  // the offset bound below is silently bypassed.
+  if (!(source instanceof ArrayBuffer)) {
+    throw new SerovalMalformedNodeError(node);
+  }
   const offset = node.b ?? 0;
   if (
     offset < 0 ||
@@ -517,6 +528,12 @@ function deserializeDataView(
   node: SerovalDataViewNode,
 ): DataView {
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
+  // `node.f` is cast to an ArrayBuffer but is really any node the input picked.
+  // Without this check a non-buffer source has an `undefined` `byteLength`, so
+  // the offset bound below is silently bypassed.
+  if (!(source instanceof ArrayBuffer)) {
+    throw new SerovalMalformedNodeError(node);
+  }
   const offset = node.b ?? 0;
   if (
     offset < 0 ||
@@ -677,7 +694,11 @@ function deserializeIteratorFactoryInstance(
 ): unknown {
   deserialize(ctx, depth, node.a[0]);
   const source = deserialize(ctx, depth, node.a[1]);
-  return sequenceToIterator(source as Sequence);
+  // `node.a[1]` is any node the input picked; it must resolve to a Sequence.
+  if (!source || typeof source !== 'object' || !isSequence(source)) {
+    throw new SerovalMalformedNodeError(node.a[1]);
+  }
+  return sequenceToIterator(source);
 }
 
 function deserializeAsyncIteratorFactoryInstance(
@@ -687,7 +708,11 @@ function deserializeAsyncIteratorFactoryInstance(
 ): unknown {
   deserialize(ctx, depth, node.a[0]);
   const source = deserialize(ctx, depth, node.a[1]);
-  return streamToAsyncIterable(source as Stream<any>);
+  // `node.a[1]` is any node the input picked; it must resolve to a Stream.
+  if (!source || typeof source !== 'object' || !isStream(source)) {
+    throw new SerovalMalformedNodeError(node.a[1]);
+  }
+  return streamToAsyncIterable(source);
 }
 
 function deserializeStreamConstructor(

@@ -1,5 +1,11 @@
 # seroval
 
+## 1.6.4
+
+### Patch Changes
+
+- Validate the buffer source of a typed array or `DataView` during deserialization.
+
 ## 1.6.3
 
 ### Patch Changes
