@@ -1,5 +1,5 @@
-import type { LiveStream, SerovalNode, Stream } from 'seroval';
-import { createLiveStream, createPlugin, createStream } from 'seroval';
+import type { SerovalNode, Stream } from 'seroval';
+import { createPlugin, createStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -57,59 +57,66 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   },
 });
 
-/**
- * Each chunk is read only after the previous one has been accepted: by the
- * serializer's output in streaming mode, or by the collector in async mode.
- * The source never runs ahead of its destination.
- */
-function toLiveStream<T>(value: ReadableStream<T>): LiveStream<T | undefined> {
-  const reader = value.getReader();
-  let active = true;
-
-  const { stream, producer } = createLiveStream<T | undefined>({
-    onCancel(reason) {
-      if (active) {
-        active = false;
-        reader.cancel(reason).catch(() => {
+function toAsyncIterable<T>(
+  value: ReadableStream<T>,
+): AsyncIterable<T | undefined> {
+  return {
+    [Symbol.asyncIterator]() {
+      const reader = value.getReader();
+      let active = true;
+      let reading = false;
+      const release = (): void => {
+        try {
+          reader.releaseLock();
+        } catch (_error) {
           // no-op
-        });
-      }
+        }
+      };
+      return {
+        async next() {
+          if (!active) {
+            return { done: true, value: undefined };
+          }
+          reading = true;
+          let result: ReadableStreamReadResult<T>;
+          try {
+            result = await reader.read();
+          } catch (error) {
+            reading = false;
+            release();
+            if (!active) {
+              return { done: true, value: undefined };
+            }
+            active = false;
+            throw error;
+          }
+          reading = false;
+          if (!active || result.done) {
+            active = false;
+            release();
+            return { done: true, value: undefined };
+          }
+          return result;
+        },
+        return(reason?: unknown) {
+          if (active) {
+            active = false;
+            try {
+              reader.cancel(reason).catch(() => {
+                // no-op
+              });
+            } catch (_error) {
+              // no-op
+            }
+            if (!reading) {
+              release();
+            }
+          }
+          return Promise.resolve({ done: true, value: undefined });
+        },
+      };
     },
-  });
-
-  async function pump(): Promise<void> {
-    try {
-      while (active) {
-        const result = await reader.read();
-        if (!active) {
-          return;
-        }
-        if (result.done) {
-          active = false;
-          await producer.close(result.value);
-          return;
-        }
-        await producer.write(result.value);
-      }
-    } catch (error) {
-      if (active) {
-        active = false;
-        await producer.fail(error);
-      }
-    } finally {
-      try {
-        reader.releaseLock();
-      } catch (_error) {
-        // no-op
-      }
-    }
-  }
-
-  pump().catch(() => {
-    // no-op
-  });
-
-  return stream;
+  };
 }
 
 type ReadableStreamNode = {
@@ -139,13 +146,13 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
     async async(value, ctx) {
       return {
         factory: await ctx.parse(READABLE_STREAM_FACTORY),
-        stream: await ctx.parse(toLiveStream(value)),
+        stream: await ctx.parseStreamSource(toAsyncIterable(value)),
       };
     },
     stream(value, ctx) {
       return {
         factory: ctx.parse(READABLE_STREAM_FACTORY),
-        stream: ctx.parse(toLiveStream(value)),
+        stream: ctx.parseStreamSource(toAsyncIterable(value)),
       };
     },
   },
