@@ -8,7 +8,7 @@ import { NIL, SerovalNodeType } from '../constants';
 import { SerovalParserError } from '../errors';
 import type { LiveStream, LiveStreamSink } from '../live-stream';
 import { createSerovalNode } from '../node';
-import { type Plugin, SerovalMode } from '../plugin';
+import type { Plugin } from '../plugin';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
 import { SYM_ASYNC_ITERATOR } from '../symbols';
@@ -264,7 +264,7 @@ export function createStreamParserContext(
 ): StreamParserContext {
   return {
     type: ParserMode.Stream,
-    base: createBaseParserContext(SerovalMode.Cross, options),
+    base: createBaseParserContext(options),
     state: createStreamParserState(options),
   };
 }
