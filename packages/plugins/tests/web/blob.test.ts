@@ -3,9 +3,9 @@ import {
   deserialize,
   fromCrossJSON,
   fromJSON,
-  serializeAsync,
-  SerovalPluginValidationError,
   type SerovalNode,
+  SerovalPluginValidationError,
+  serializeAsync,
   toCrossJSONAsync,
   toJSON,
   toJSONAsync,
@@ -76,9 +76,23 @@ describe('Blob', () => {
     });
   });
   describe('validation', () => {
+    it('rejects a Blob payload whose buffer field is not an ArrayBuffer', async () => {
+      const result = await toJSONAsync(EXAMPLE, { plugins: [BlobPlugin] });
+      (result.t as unknown as { s: Record<string, SerovalNode> }).s.buffer =
+        toJSON(42).t;
+      let caught: unknown;
+      try {
+        fromJSON(result, { plugins: [BlobPlugin] });
+      } catch (error) {
+        caught = error;
+      }
+      expect((caught as { cause: unknown }).cause).toBeInstanceOf(
+        SerovalPluginValidationError,
+      );
+    });
+
     it('rejects a Blob payload whose type field is not a string', async () => {
       const result = await toJSONAsync(EXAMPLE, { plugins: [BlobPlugin] });
-      // Aim the `type` field at a number node so the `v.string` guard trips.
       (result.t as unknown as { s: Record<string, SerovalNode> }).s.type =
         toJSON(42).t;
       let caught: unknown;
