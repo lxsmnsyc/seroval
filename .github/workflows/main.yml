@@ -33,11 +33,6 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Clean
-        run: pnpm recursive run clean
-        env:
-          CI: true
-
       - name: Build
         run: pnpm recursive run build
         env:
