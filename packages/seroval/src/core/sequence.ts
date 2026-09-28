@@ -1,16 +1,28 @@
 import { ITERATOR_CONSTRUCTOR } from './constructors';
 import { SYM_ITERATOR } from './symbols';
 
-export interface Sequence {
-  __SEROVAL_SEQUENCE__: true;
-
+/**
+ * An internal class rather than a tagged POJO: identity is checked with
+ * `instanceof`, which untrusted input cannot forge (the class is not exported).
+ * The eval-based `deserialize` path still rebuilds a `{__SEROVAL_SEQUENCE__…}`
+ * POJO from embedded source - it has no access to this class - so a value read
+ * back through `deserialize` is not an instance and, by design, is not treated
+ * as a genuine Sequence on re-serialization.
+ */
+export class Sequence {
   v: unknown[];
   t: number;
   d: number;
+
+  constructor(values: unknown[], throwAt: number, doneAt: number) {
+    this.v = values;
+    this.t = throwAt;
+    this.d = doneAt;
+  }
 }
 
 export function isSequence(value: object): value is Sequence {
-  return '__SEROVAL_SEQUENCE__' in value;
+  return value instanceof Sequence;
 }
 
 export function createSequence(
@@ -18,13 +30,7 @@ export function createSequence(
   throwAt: number,
   doneAt: number,
 ): Sequence {
-  return {
-    __SEROVAL_SEQUENCE__: true,
-
-    v: values,
-    t: throwAt,
-    d: doneAt,
-  };
+  return new Sequence(values, throwAt, doneAt);
 }
 
 export function createSequenceFromIterable<T>(source: Iterable<T>): Sequence {
