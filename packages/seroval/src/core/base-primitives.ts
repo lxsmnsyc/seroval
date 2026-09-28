@@ -316,15 +316,27 @@ export function createStreamConstructorNode(
   );
 }
 
-export function createStreamNode(
-  type:
-    | SerovalNodeType.StreamNext
-    | SerovalNodeType.StreamThrow
-    | SerovalNodeType.StreamReturn,
+export type SerovalStreamEventNode =
+  | SerovalStreamNextNode
+  | SerovalStreamThrowNode
+  | SerovalStreamReturnNode;
+
+export function createStreamEventNode(
+  type: SerovalStreamEventNode['t'],
   id: number,
   parsed: SerovalNode,
-): SerovalStreamNextNode | SerovalStreamThrowNode | SerovalStreamReturnNode {
-  return createSerovalNode(type, id, NIL, NIL, NIL, NIL, NIL, NIL, parsed);
+): SerovalStreamEventNode {
+  return createSerovalNode(
+    type,
+    id,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    NIL,
+    parsed,
+  ) as SerovalStreamEventNode;
 }
 
 export function createSequenceNode(
