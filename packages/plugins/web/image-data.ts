@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectNumber } from './validate';
 
 type ImageDataNode = {
   data: SerovalNode;
@@ -64,8 +65,8 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
   deserialize(node, ctx) {
     return new ImageData(
       ctx.deserialize(node.data) as Uint8ClampedArray<ArrayBuffer>,
-      ctx.deserialize(node.width) as number,
-      ctx.deserialize(node.height) as number,
+      expectNumber(ctx.deserialize(node.width)),
+      expectNumber(ctx.deserialize(node.height)),
       ctx.deserialize(node.options) as ImageDataSettings,
     );
   },
