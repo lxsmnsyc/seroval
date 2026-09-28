@@ -1,6 +1,6 @@
 const IDENTIFIER_CHECK = /^[$A-Z_][0-9A-Z_$]*$/i;
 
-export default function isValidIdentifier(name: string): boolean {
+export function isValidIdentifier(name: string): boolean {
   const char = name[0];
   return (
     (char === '$' ||

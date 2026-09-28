@@ -1,6 +1,8 @@
-export const SYM_ASYNC_ITERATOR: typeof Symbol.asyncIterator = Symbol.asyncIterator;
+export const SYM_ASYNC_ITERATOR: typeof Symbol.asyncIterator =
+  Symbol.asyncIterator;
 export const SYM_HAS_INSTANCE: typeof Symbol.hasInstance = Symbol.hasInstance;
-export const SYM_IS_CONCAT_SPREADABLE: typeof Symbol.isConcatSpreadable = Symbol.isConcatSpreadable;
+export const SYM_IS_CONCAT_SPREADABLE: typeof Symbol.isConcatSpreadable =
+  Symbol.isConcatSpreadable;
 export const SYM_ITERATOR: typeof Symbol.iterator = Symbol.iterator;
 export const SYM_MATCH: typeof Symbol.match = Symbol.match;
 export const SYM_MATCH_ALL: typeof Symbol.matchAll = Symbol.matchAll;

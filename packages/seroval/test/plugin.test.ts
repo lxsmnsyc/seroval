@@ -17,37 +17,27 @@ import {
   toJSONAsync,
 } from '../src';
 
-type BufferNode = {
-  value: SerovalNode;
-};
-
-const BufferPlugin = createPlugin<Buffer, BufferNode>({
+const BufferPlugin = createPlugin<Buffer, SerovalNode>({
   tag: 'Buffer',
   test(value) {
     return value instanceof Buffer;
   },
   parse: {
     sync(value, ctx) {
-      return {
-        value: ctx.parse(value.toString('base64')),
-      };
+      return ctx.parse(value.toString('base64'));
     },
     async async(value, ctx) {
-      return {
-        value: await ctx.parse(value.toString('base64')),
-      };
+      return await ctx.parse(value.toString('base64'));
     },
     stream(value, ctx) {
-      return {
-        value: ctx.parse(value.toString('base64')),
-      };
+      return ctx.parse(value.toString('base64'));
     },
   },
   serialize(node, ctx) {
-    return `Buffer.from(${ctx.serialize(node.value)}, "base64")`;
+    return `Buffer.from(${ctx.serialize(node)}, "base64")`;
   },
   deserialize(node, ctx) {
-    return Buffer.from(ctx.deserialize(node.value) as string, 'base64');
+    return Buffer.from(ctx.deserialize(node) as string, 'base64');
   },
 });
 

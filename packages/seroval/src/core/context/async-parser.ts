@@ -1,9 +1,6 @@
 import {
-  createAggregateErrorNode,
   createArrayNode,
-  createAsyncIteratorFactoryInstanceNode,
   createBigIntNode,
-  createBigIntTypedArrayNode,
   createBoxedNode,
   createDataViewNode,
   createDateNode,
@@ -15,24 +12,29 @@ import {
   createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
-  createStreamNextNode,
-  createStreamReturnNode,
-  createStreamThrowNode,
+  createStreamEventNode,
   createStringNode,
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
-import { Feature } from '../compat';
-import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
-import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
+import { NIL, SerovalNodeType } from '../constants';
+import {
+  SerovalDepthLimitError,
+  SerovalParserError,
+  SerovalUnsupportedTypeError,
+} from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
-import createSerovalNode from '../node';
-import OpaqueReference from '../opaque-reference';
+import { createSerovalNode } from '../node';
+import { OpaqueReference } from '../opaque-reference';
 import type { SerovalMode } from '../plugin';
-import { type Sequence, createSequenceFromIterable, isSequence } from '../sequence';
+import {
+  createSequenceFromIterable,
+  isSequence,
+  type Sequence,
+} from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
-import { createStreamFromAsyncIterable, isStream } from '../stream';
+import { isStream } from '../stream';
 import { serializeString } from '../string';
 import {
   SYM_ASYNC_ITERATOR,
@@ -63,23 +65,36 @@ import type {
 } from '../types';
 import { getErrorOptions } from '../utils/error';
 import promiseToResult from '../utils/promise-to-result';
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
+import type {
+  BigIntTypedArrayValue,
+  TypedArrayValue,
+} from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
-  ParserNodeType,
   createArrayBufferNode,
   createBaseParserContext,
+  createIndexForValue,
   createMapNode,
   createObjectNode,
+  getArrayBufferView,
+  getObjectClass,
+  getObjectKind,
   getReferenceNode,
+  getTemporalType,
   markParserRef,
+  ObjectKind,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
 
-type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode | SerovalPromiseNode;
+type ObjectLikeNode =
+  | SerovalObjectNode
+  | SerovalNullConstructorNode
+  | SerovalPromiseNode;
+
+export type AsyncParserContextOptions = BaseParserContextOptions;
 
 export interface AsyncParserContext {
   base: BaseParserContext;
@@ -88,11 +103,11 @@ export interface AsyncParserContext {
 
 export function createAsyncParserContext(
   mode: SerovalMode,
-  options: BaseParserContextOptions,
+  options: AsyncParserContextOptions,
 ): AsyncParserContext {
   return {
     base: createBaseParserContext(mode, options),
-    child: NIL,
+    child: undefined,
   };
 }
 
@@ -107,16 +122,22 @@ export class AsyncParsePluginContext {
   }
 }
 
+// Only objects and functions can produce a Promise; awaiting a plain node
+// would still cost a microtask turn per primitive.
+type MaybeAsyncNode = SerovalNode | Promise<SerovalNode>;
+
 async function parseItems(
   ctx: AsyncParserContext,
   depth: number,
   current: unknown[],
 ): Promise<(SerovalNode | 0)[]> {
-  const nodes: (SerovalNode | 0)[] = [];
-  for (let i = 0, len = current.length; i < len; i++) {
+  const len = current.length;
+  const nodes: (SerovalNode | 0)[] = new Array(len);
+  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
     // For consistency in holes
     if (i in current) {
-      nodes[i] = await parseAsync(ctx, depth, current[i]);
+      node = parseValueAsync(ctx, depth, current[i]);
+      nodes[i] = node instanceof Promise ? await node : node;
     } else {
       nodes[i] = 0;
     }
@@ -138,23 +159,31 @@ async function parseProperties(
   depth: number,
   properties: Record<string | symbol, unknown>,
 ): Promise<SerovalObjectRecordNode> {
-  const entries = Object.entries(properties);
-  const keyNodes: SerovalObjectRecordKey[] = [];
-  const valueNodes: SerovalNode[] = [];
-  for (let i = 0, len = entries.length; i < len; i++) {
-    keyNodes.push(serializeString(entries[i][0]));
-    valueNodes.push(await parseAsync(ctx, depth, entries[i][1]));
+  const keys = Object.keys(properties);
+  const len = keys.length;
+  // Sized up front: `push` from empty over-allocates the backing store for
+  // every object, and the length is already known.
+  const keyNodes: SerovalObjectRecordKey[] = new Array(len);
+  const valueNodes: SerovalNode[] = new Array(len);
+  for (let i = 0, key: string, node: MaybeAsyncNode; i < len; i++) {
+    key = keys[i];
+    keyNodes[i] = serializeString(key);
+    node = parseValueAsync(ctx, depth, properties[key]);
+    valueNodes[i] = node instanceof Promise ? await node : node;
   }
   // Check special properties
   if (SYM_ITERATOR in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ITERATOR));
     valueNodes.push(
       createIteratorFactoryInstanceNode(
+        SerovalNodeType.IteratorFactoryInstance,
         parseIteratorFactory(ctx.base),
         (await parseAsync(
           ctx,
           depth,
-          createSequenceFromIterable(properties as unknown as Iterable<unknown>),
+          createSequenceFromIterable(
+            properties as unknown as Iterable<unknown>,
+          ),
         )) as SerovalNodeWithID,
       ),
     );
@@ -162,12 +191,13 @@ async function parseProperties(
   if (SYM_ASYNC_ITERATOR in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ASYNC_ITERATOR));
     valueNodes.push(
-      createAsyncIteratorFactoryInstanceNode(
+      createIteratorFactoryInstanceNode(
+        SerovalNodeType.AsyncIteratorFactoryInstance,
         parseAsyncIteratorFactory(ctx.base),
-        (await parseAsync(
+        (await parseAsyncIterable(
           ctx,
           depth,
-          createStreamFromAsyncIterable(properties as unknown as AsyncIterable<unknown>),
+          properties as unknown as AsyncIterable<unknown>,
         )) as SerovalNodeWithID,
       ),
     );
@@ -178,7 +208,9 @@ async function parseProperties(
   }
   if (SYM_IS_CONCAT_SPREADABLE in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_IS_CONCAT_SPREADABLE));
-    valueNodes.push(properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE);
+    valueNodes.push(
+      properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE,
+    );
   }
   return {
     k: keyNodes,
@@ -193,7 +225,12 @@ async function parsePlainObject(
   current: Record<string, unknown>,
   empty: boolean,
 ): Promise<ObjectLikeNode> {
-  return createObjectNode(id, current, empty, await parseProperties(ctx, depth, current));
+  return createObjectNode(
+    id,
+    current,
+    empty,
+    await parseProperties(ctx, depth, current),
+  );
 }
 
 // TODO: check if parseBoxedSync can be used
@@ -209,19 +246,17 @@ async function parseBoxed(
 async function parseTypedArray(
   ctx: AsyncParserContext,
   depth: number,
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
   id: number,
-  current: TypedArrayValue,
-): Promise<SerovalTypedArrayNode> {
-  return createTypedArrayNode(id, current, await parseAsync(ctx, depth, current.buffer));
-}
-
-async function parseBigIntTypedArray(
-  ctx: AsyncParserContext,
-  depth: number,
-  id: number,
-  current: BigIntTypedArrayValue,
-): Promise<SerovalBigIntTypedArrayNode> {
-  return createBigIntTypedArrayNode(id, current, await parseAsync(ctx, depth, current.buffer));
+  current: TypedArrayValue | BigIntTypedArrayValue,
+): Promise<SerovalTypedArrayNode | SerovalBigIntTypedArrayNode> {
+  current = getArrayBufferView(ctx.base, current);
+  return createTypedArrayNode(
+    type,
+    id,
+    current,
+    await parseAsync(ctx, depth, current.buffer),
+  );
 }
 
 async function parseDataView(
@@ -230,27 +265,24 @@ async function parseDataView(
   id: number,
   current: DataView,
 ): Promise<SerovalDataViewNode> {
-  return createDataViewNode(id, current, await parseAsync(ctx, depth, current.buffer));
+  current = getArrayBufferView(ctx.base, current);
+  return createDataViewNode(
+    id,
+    current,
+    await parseAsync(ctx, depth, current.buffer),
+  );
 }
 
 async function parseError(
   ctx: AsyncParserContext,
   depth: number,
+  type: SerovalNodeType.Error | SerovalNodeType.AggregateError,
   id: number,
   current: Error,
-): Promise<SerovalErrorNode> {
+): Promise<SerovalErrorNode | SerovalAggregateErrorNode> {
   const options = getErrorOptions(current, ctx.base.features);
-  return createErrorNode(id, current, options ? await parseProperties(ctx, depth, options) : NIL);
-}
-
-async function parseAggregateError(
-  ctx: AsyncParserContext,
-  depth: number,
-  id: number,
-  current: AggregateError,
-): Promise<SerovalAggregateErrorNode> {
-  const options = getErrorOptions(current, ctx.base.features);
-  return createAggregateErrorNode(
+  return createErrorNode(
+    type,
     id,
     current,
     options ? await parseProperties(ctx, depth, options) : NIL,
@@ -263,11 +295,16 @@ async function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
-  const keyNodes: SerovalNode[] = [];
-  const valueNodes: SerovalNode[] = [];
+  const keyNodes: SerovalNode[] = new Array(current.size);
+  const valueNodes: SerovalNode[] = new Array(current.size);
+  let node: MaybeAsyncNode;
+  let i = 0;
   for (const [key, value] of current.entries()) {
-    keyNodes.push(await parseAsync(ctx, depth, key));
-    valueNodes.push(await parseAsync(ctx, depth, value));
+    node = parseValueAsync(ctx, depth, key);
+    keyNodes[i] = node instanceof Promise ? await node : node;
+    node = parseValueAsync(ctx, depth, value);
+    valueNodes[i] = node instanceof Promise ? await node : node;
+    i++;
   }
   return createMapNode(ctx.base, id, keyNodes, valueNodes);
 }
@@ -278,9 +315,12 @@ async function parseSet(
   id: number,
   current: Set<unknown>,
 ): Promise<SerovalSetNode> {
-  const items: SerovalNode[] = [];
+  const items: SerovalNode[] = new Array(current.size);
+  let node: MaybeAsyncNode;
+  let i = 0;
   for (const item of current.keys()) {
-    items.push(await parseAsync(ctx, depth, item));
+    node = parseValueAsync(ctx, depth, item);
+    items[i++] = node instanceof Promise ? await node : node;
   }
   return createSetNode(id, items);
 }
@@ -299,9 +339,13 @@ async function parsePlugin(
         return createPluginNode(
           id,
           plugin.tag,
-          await plugin.parse.async(current, new AsyncParsePluginContext(ctx, depth), {
-            id,
-          }),
+          await plugin.parse.async(
+            current,
+            new AsyncParsePluginContext(ctx, depth),
+            {
+              id,
+            },
+          ),
         );
       }
     }
@@ -327,9 +371,6 @@ async function parsePromise(
     NIL,
     NIL,
     await parseAsync(ctx, depth, result),
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -342,48 +383,33 @@ function parseStreamHandle<T>(
   reject: (reason?: any) => void,
 ): void {
   const sequence: SerovalNode[] = [];
-  // TODO Optimizable
+  const handle =
+    (
+      type:
+        | SerovalNodeType.StreamNext
+        | SerovalNodeType.StreamThrow
+        | SerovalNodeType.StreamReturn,
+    ) =>
+    (value: unknown): void => {
+      markParserRef(this.base, id);
+      parseAsync(this, depth, value).then(
+        data => {
+          sequence.push(createStreamEventNode(type, id, data));
+          if (type !== SerovalNodeType.StreamNext) {
+            resolve(sequence);
+            cleanup();
+          }
+        },
+        data => {
+          reject(data);
+          cleanup();
+        },
+      );
+    };
   const cleanup = current.on({
-    next: (value) => {
-      markParserRef(this.base, id);
-      parseAsync(this, depth, value).then(
-        (data) => {
-          sequence.push(createStreamNextNode(id, data));
-        },
-        (data) => {
-          reject(data);
-          cleanup();
-        },
-      );
-    },
-    throw: (value) => {
-      markParserRef(this.base, id);
-      parseAsync(this, depth, value).then(
-        (data) => {
-          sequence.push(createStreamThrowNode(id, data));
-          resolve(sequence);
-          cleanup();
-        },
-        (data) => {
-          reject(data);
-          cleanup();
-        },
-      );
-    },
-    return: (value) => {
-      markParserRef(this.base, id);
-      parseAsync(this, depth, value).then(
-        (data) => {
-          sequence.push(createStreamReturnNode(id, data));
-          resolve(sequence);
-          cleanup();
-        },
-        (data) => {
-          reject(data);
-          cleanup();
-        },
-      );
-    },
+    next: handle(SerovalNodeType.StreamNext),
+    throw: handle(SerovalNodeType.StreamThrow),
+    return: handle(SerovalNodeType.StreamReturn),
   });
 }
 
@@ -396,8 +422,66 @@ async function parseStream(
   return createStreamConstructorNode(
     id,
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
-    await new Promise<SerovalNode[]>(parseStreamHandle.bind(ctx, depth, id, current)),
+    await new Promise<SerovalNode[]>(
+      parseStreamHandle.bind(ctx, depth, id, current),
+    ),
   );
+}
+
+/**
+ * Collects an async iterable into a replay node, one value at a time.
+ */
+async function parseAsyncIterable(
+  ctx: AsyncParserContext,
+  depth: number,
+  current: AsyncIterable<unknown>,
+): Promise<SerovalStreamConstructorNode> {
+  const id = createIndexForValue(ctx.base, {});
+  const reference = parseSpecialReference(
+    ctx.base,
+    SpecialReference.StreamConstructor,
+  );
+  const iterator = current[SYM_ASYNC_ITERATOR]();
+  const sequence: SerovalNode[] = [];
+  for (;;) {
+    let result: IteratorResult<unknown>;
+    try {
+      result = await iterator.next();
+    } catch (error) {
+      markParserRef(ctx.base, id);
+      sequence.push(
+        createStreamEventNode(
+          SerovalNodeType.StreamThrow,
+          id,
+          await parseAsync(ctx, depth, error),
+        ),
+      );
+      break;
+    }
+    markParserRef(ctx.base, id);
+    let parsed: SerovalNode;
+    try {
+      parsed = await parseAsync(ctx, depth, result.value);
+    } catch (error) {
+      Promise.resolve()
+        .then(() => iterator.return?.())
+        .catch(() => {
+          // no-op
+        });
+      throw error;
+    }
+    sequence.push(
+      createStreamEventNode(
+        result.done ? SerovalNodeType.StreamReturn : SerovalNodeType.StreamNext,
+        id,
+        parsed,
+      ),
+    );
+    if (result.done) {
+      break;
+    }
+  }
+  return createStreamConstructorNode(id, reference, sequence);
 }
 
 async function parseSequence(
@@ -406,9 +490,11 @@ async function parseSequence(
   id: number,
   current: Sequence,
 ): Promise<SerovalSequenceNode> {
-  const nodes: SerovalNode[] = [];
-  for (let i = 0, len = current.v.length; i < len; i++) {
-    nodes[i] = await parseAsync(ctx, depth, current.v[i]);
+  const len = current.v.length;
+  const nodes: SerovalNode[] = new Array(len);
+  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
+    node = parseValueAsync(ctx, depth, current.v[i]);
+    nodes[i] = node instanceof Promise ? await node : node;
   }
   return createSequenceNode(id, nodes, current.t, current.d);
 }
@@ -428,153 +514,117 @@ export async function parseObjectAsync(
   if (isSequence(current)) {
     return parseSequence(ctx, depth, id, current);
   }
-  let currentClass: unknown = current.constructor;
-  // `constructor` is an ordinary own property, so data can shadow it
-  // (`JSON.parse('{"constructor":1}')`) and hide the real class. A class is
-  // always callable, so anything else means the lookup was shadowed — only
-  // then fall back to the prototype, keeping the common path free of it.
-  if (currentClass !== NIL && typeof currentClass !== 'function') {
-    const proto = Object.getPrototypeOf(current) as object | null;
-    currentClass = proto === null ? NIL : proto.constructor;
-  }
+  const currentClass = getObjectClass(current);
   if (currentClass === OpaqueReference) {
-    return parseAsync(ctx, depth, (current as OpaqueReference<unknown, unknown>).replacement);
+    return parseAsync(
+      ctx,
+      depth,
+      (current as OpaqueReference<unknown, unknown>).replacement,
+    );
   }
   const parsed = await parsePlugin(ctx, depth, id, current);
   if (parsed) {
     return parsed;
   }
-  switch (currentClass) {
-    case Object:
-      return parsePlainObject(ctx, depth, id, current as Record<string, unknown>, false);
-    case NIL:
-      return parsePlainObject(ctx, depth, id, current as Record<string, unknown>, true);
-    case Date:
+  // Plain objects dominate real payloads; skip the classifier for them.
+  if (currentClass === Object) {
+    return parsePlainObject(
+      ctx,
+      depth,
+      id,
+      current as Record<string, unknown>,
+      false,
+    );
+  }
+  switch (getObjectKind(current, currentClass, ctx.base.features)) {
+    case ObjectKind.NullObject:
+      return parsePlainObject(
+        ctx,
+        depth,
+        id,
+        current as Record<string, unknown>,
+        true,
+      );
+    case ObjectKind.Date:
       return createDateNode(id, current as unknown as Date);
-    case Error:
-    case EvalError:
-    case RangeError:
-    case ReferenceError:
-    case SyntaxError:
-    case TypeError:
-    case URIError:
-      return parseError(ctx, depth, id, current as unknown as Error);
-    case Number:
-    case Boolean:
-    case String:
-    case BigInt:
+    case ObjectKind.Error:
+      return parseError(
+        ctx,
+        depth,
+        SerovalNodeType.Error,
+        id,
+        current as unknown as Error,
+      );
+    case ObjectKind.AggregateError:
+      return parseError(
+        ctx,
+        depth,
+        SerovalNodeType.AggregateError,
+        id,
+        current as unknown as AggregateError,
+      );
+    case ObjectKind.Boxed:
       return parseBoxed(ctx, depth, id, current);
-    case ArrayBuffer:
-      return createArrayBufferNode(ctx.base, id, current as unknown as ArrayBuffer);
-    case Int8Array:
-    case Int16Array:
-    case Int32Array:
-    case Uint8Array:
-    case Uint16Array:
-    case Uint32Array:
-    case Uint8ClampedArray:
-    case Float32Array:
-    case Float64Array:
-      return parseTypedArray(ctx, depth, id, current as unknown as TypedArrayValue);
-    case DataView:
+    case ObjectKind.ArrayBuffer:
+      return createArrayBufferNode(
+        ctx.base,
+        id,
+        current as unknown as ArrayBuffer,
+      );
+    case ObjectKind.TypedArray:
+      return parseTypedArray(
+        ctx,
+        depth,
+        SerovalNodeType.TypedArray,
+        id,
+        current as unknown as TypedArrayValue,
+      );
+    case ObjectKind.BigIntTypedArray:
+      return parseTypedArray(
+        ctx,
+        depth,
+        SerovalNodeType.BigIntTypedArray,
+        id,
+        current as unknown as BigIntTypedArrayValue,
+      );
+    case ObjectKind.DataView:
       return parseDataView(ctx, depth, id, current as unknown as DataView);
-    case Map:
-      return parseMap(ctx, depth, id, current as unknown as Map<unknown, unknown>);
-    case Set:
+    case ObjectKind.Map:
+      return parseMap(
+        ctx,
+        depth,
+        id,
+        current as unknown as Map<unknown, unknown>,
+      );
+    case ObjectKind.Set:
       return parseSet(ctx, depth, id, current as unknown as Set<unknown>);
+    case ObjectKind.Promise:
+      return parsePromise(
+        ctx,
+        depth,
+        id,
+        current as unknown as Promise<unknown>,
+      );
+    case ObjectKind.RegExp:
+      return createRegExpNode(id, current as unknown as RegExp);
+    case ObjectKind.Temporal:
+      return createTemporalNode(
+        id,
+        getTemporalType(currentClass) as SerovalTemporalType,
+        current as unknown as Temporal.Instant,
+      );
+    case ObjectKind.Iterable:
+      // Generator objects have no global constructor despite existing
+      return parsePlainObject(
+        ctx,
+        depth,
+        id,
+        current as Record<string, unknown>,
+        !!currentClass,
+      );
     default:
-      break;
+      throw new SerovalUnsupportedTypeError(current);
   }
-  // Promises
-  if (currentClass === Promise || current instanceof Promise) {
-    return parsePromise(ctx, depth, id, current as unknown as Promise<unknown>);
-  }
-  const currentFeatures = ctx.base.features;
-  if (currentFeatures & Feature.RegExp && currentClass === RegExp) {
-    return createRegExpNode(id, current as unknown as RegExp);
-  }
-  // BigInt Typed Arrays
-  if (currentFeatures & Feature.BigIntTypedArray) {
-    switch (currentClass) {
-      case BigInt64Array:
-      case BigUint64Array:
-        return parseBigIntTypedArray(ctx, depth, id, current as unknown as BigIntTypedArrayValue);
-      default:
-        break;
-    }
-  }
-  if (
-    currentFeatures & Feature.AggregateError &&
-    typeof AggregateError !== 'undefined' &&
-    (currentClass === AggregateError || current instanceof AggregateError)
-  ) {
-    return parseAggregateError(ctx, depth, id, current as unknown as AggregateError);
-  }
-  if (currentFeatures & Feature.Temporal && typeof Temporal !== 'undefined') {
-    switch (currentClass) {
-      case Temporal.Instant:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Instant,
-          current as unknown as Temporal.Instant,
-        );
-      case Temporal.Duration:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.Duration,
-          current as unknown as Temporal.Duration,
-        );
-      case Temporal.PlainDate:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDate,
-          current as unknown as Temporal.PlainDate,
-        );
-      case Temporal.PlainDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainDateTime,
-          current as unknown as Temporal.PlainDateTime,
-        );
-      case Temporal.PlainMonthDay:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainMonthDay,
-          current as unknown as Temporal.PlainMonthDay,
-        );
-      case Temporal.PlainTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainTime,
-          current as unknown as Temporal.PlainTime,
-        );
-      case Temporal.PlainYearMonth:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.PlainYearMonth,
-          current as unknown as Temporal.PlainYearMonth,
-        );
-      case Temporal.ZonedDateTime:
-        return createTemporalNode(
-          id,
-          SerovalTemporalType.ZonedDateTime,
-          current as unknown as Temporal.ZonedDateTime,
-        );
-      default:
-        break;
-    }
-  }
-  // Slow path. We only need to handle Errors and Iterators
-  // since they have very broad implementations.
-  if (current instanceof Error) {
-    return parseError(ctx, depth, id, current);
-  }
-  // Generator functions don't have a global constructor
-  // despite existing
-  if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) {
-    return parsePlainObject(ctx, depth, id, current, !!currentClass);
-  }
-  throw new SerovalUnsupportedTypeError(current);
 }
 
 export async function parseFunctionAsync(
@@ -583,21 +633,26 @@ export async function parseFunctionAsync(
   current: unknown,
 ): Promise<SerovalNode> {
   const ref = getReferenceNode(ctx.base, current);
-  if (ref.type !== ParserNodeType.Fresh) {
-    return ref.value;
+  if (typeof ref !== 'number') {
+    return ref;
   }
-  const plugin = await parsePlugin(ctx, depth, ref.value, current);
+  const plugin = await parsePlugin(ctx, depth, ref, current);
   if (plugin) {
     return plugin;
   }
   throw new SerovalUnsupportedTypeError(current);
 }
 
-export async function parseAsync<T>(
+/**
+ * Parses primitives and already-seen values synchronously; only objects and
+ * functions come back as a Promise. Errors are thrown synchronously, which
+ * an async caller turns into a rejection as before.
+ */
+function parseValueAsync<T>(
   ctx: AsyncParserContext,
   depth: number,
   current: T,
-): Promise<SerovalNode> {
+): MaybeAsyncNode {
   if (depth >= ctx.base.depthLimit) {
     throw new SerovalDepthLimitError(ctx.base.depthLimit);
   }
@@ -615,9 +670,9 @@ export async function parseAsync<T>(
     case 'object': {
       if (current) {
         const ref = getReferenceNode(ctx.base, current);
-        return ref.type === 0
-          ? await parseObjectAsync(ctx, depth + 1, ref.value, current as object)
-          : ref.value;
+        return typeof ref === 'number'
+          ? parseObjectAsync(ctx, depth + 1, ref, current as object)
+          : ref;
       }
       return NULL_NODE;
     }
@@ -630,10 +685,23 @@ export async function parseAsync<T>(
   }
 }
 
-export async function parseTopAsync<T>(ctx: AsyncParserContext, current: T): Promise<SerovalNode> {
+export async function parseAsync<T>(
+  ctx: AsyncParserContext,
+  depth: number,
+  current: T,
+): Promise<SerovalNode> {
+  return await parseValueAsync(ctx, depth, current);
+}
+
+export async function parseTopAsync<T>(
+  ctx: AsyncParserContext,
+  current: T,
+): Promise<SerovalNode> {
   try {
     return await parseAsync(ctx, 0, current);
   } catch (error) {
-    throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
+    throw error instanceof SerovalParserError
+      ? error
+      : new SerovalParserError(error);
   }
 }

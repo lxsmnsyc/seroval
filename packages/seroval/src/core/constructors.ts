@@ -22,21 +22,30 @@ export const PROMISE_CONSTRUCTOR = (): PromiseConstructorResolver => {
   return resolver;
 };
 
-export const PROMISE_SUCCESS = (resolver: PromiseConstructorResolver, data: unknown): void => {
+export const PROMISE_SUCCESS = (
+  resolver: PromiseConstructorResolver,
+  data: unknown,
+): void => {
   resolver.s(data);
   resolver.p.s = 1;
   resolver.p.v = data;
 };
 
-export const PROMISE_FAILURE = (resolver: PromiseConstructorResolver, data: unknown): void => {
+export const PROMISE_FAILURE = (
+  resolver: PromiseConstructorResolver,
+  data: unknown,
+): void => {
   resolver.f(data);
   resolver.p.s = 2;
   resolver.p.v = data;
 };
 
-export const SERIALIZED_PROMISE_CONSTRUCTOR = /* @__PURE__ */ PROMISE_CONSTRUCTOR.toString();
-export const SERIALIZED_PROMISE_SUCCESS = /* @__PURE__ */ PROMISE_SUCCESS.toString();
-export const SERIALIZED_PROMISE_FAILURE = /* @__PURE__ */ PROMISE_FAILURE.toString();
+export const SERIALIZED_PROMISE_CONSTRUCTOR =
+  /* @__PURE__ */ PROMISE_CONSTRUCTOR.toString();
+export const SERIALIZED_PROMISE_SUCCESS =
+  /* @__PURE__ */ PROMISE_SUCCESS.toString();
+export const SERIALIZED_PROMISE_FAILURE =
+  /* @__PURE__ */ PROMISE_FAILURE.toString();
 
 interface StreamListener<T> {
   next(value: T): void;
@@ -50,21 +59,27 @@ interface StreamListener<T> {
 // for them; arrows, function expressions and local function declarations all
 // get rewritten to call a bundle-scoped helper that does not exist in the
 // receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
-export const STREAM_CONSTRUCTOR = <T>(): Stream<T> => {
+export const STREAM_CONSTRUCTOR = () => {
   const buffer: unknown[] = [];
-  const listeners: StreamListener<unknown>[] = [];
+  const listeners: (StreamListener<unknown> | undefined)[] = [];
   let alive = true;
   let success = false;
   let count = 0;
   const internal = {
     flush(value: unknown, mode: keyof StreamListener<unknown>, x?: number) {
       for (x = 0; x < count; x++) {
-        if (listeners[x]) {
-          listeners[x][mode](value);
+        const listener = listeners[x];
+        if (listener) {
+          listener[mode](value);
         }
       }
     },
-    up(listener: StreamListener<unknown>, x?: number, z?: number, current?: unknown) {
+    up(
+      listener: StreamListener<unknown>,
+      x?: number,
+      z?: number,
+      current?: unknown,
+    ) {
       for (x = 0, z = buffer.length; x < z; x++) {
         current = buffer[x];
         if (!alive && x === z - 1) {
@@ -74,16 +89,28 @@ export const STREAM_CONSTRUCTOR = <T>(): Stream<T> => {
         }
       }
     },
-    on(listener: StreamListener<unknown>, temp?: number) {
+    on(listener: StreamListener<unknown>, temp = 0) {
+      let subscribed = alive;
       if (alive) {
-        temp = count++;
+        for (temp = 0; temp < count; temp++) {
+          if (!listeners[temp]) {
+            break;
+          }
+        }
+        if (temp === count) {
+          count++;
+        }
         listeners[temp] = listener;
       }
       internal.up(listener);
       return () => {
-        if (alive) {
-          listeners[temp!] = listeners[count];
-          listeners[count--] = undefined as any;
+        if (alive && subscribed) {
+          subscribed = false;
+          listeners[temp] = undefined;
+          while (count > 0 && !listeners[count - 1]) {
+            count--;
+          }
+          listeners.length = count;
         }
       };
     },
@@ -120,45 +147,48 @@ export const STREAM_CONSTRUCTOR = <T>(): Stream<T> => {
   };
 };
 
-export const SERIALIZED_STREAM_CONSTRUCTOR = /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
+export const SERIALIZED_STREAM_CONSTRUCTOR =
+  /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
 
 // Serialized via toString() — nested functions must be shorthand methods
 // (see STREAM_CONSTRUCTOR).
-export const ITERATOR_CONSTRUCTOR = (symbol: symbol) => (sequence: Sequence) => (): unknown => {
-  let index = 0;
-  const instance = {
-    [symbol]() {
-      return instance;
-    },
-    next() {
-      if (index > sequence.d) {
+export const ITERATOR_CONSTRUCTOR =
+  (symbol: symbol) => (sequence: Sequence) => () => {
+    let index = 0;
+    const instance = {
+      [symbol]() {
+        return instance;
+      },
+      next() {
+        if (index > sequence.d) {
+          return {
+            done: true,
+            value: undefined,
+          };
+        }
+        const currentIndex = index++;
+        const data = sequence.v[currentIndex];
+        if (currentIndex === sequence.t) {
+          throw data;
+        }
         return {
-          done: true,
-          value: undefined,
+          done: currentIndex === sequence.d,
+          value: data,
         };
-      }
-      const currentIndex = index++;
-      const data = sequence.v[currentIndex];
-      if (currentIndex === sequence.t) {
-        throw data;
-      }
-      return {
-        done: currentIndex === sequence.d,
-        value: data,
-      };
-    },
+      },
+    };
+    return instance;
   };
-  return instance;
-};
 
-export const SERIALIZED_ITERATOR_CONSTRUCTOR = /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
+export const SERIALIZED_ITERATOR_CONSTRUCTOR =
+  /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
 
 // Serialized via toString() — nested functions must be shorthand methods
 // (see STREAM_CONSTRUCTOR).
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
   (stream: Stream<unknown>) =>
-  (): unknown => {
+  () => {
     let count = 0;
     let doneAt = -1;
     let isThrow = false;
@@ -250,7 +280,7 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
 export const SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR =
   /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR.toString();
 
-export const ARRAY_BUFFER_CONSTRUCTOR = (b64: string): ArrayBuffer => {
+export const ARRAY_BUFFER_CONSTRUCTOR = (b64: string) => {
   const decoded = atob(b64);
   const length = decoded.length;
   const arr = new Uint8Array(length);

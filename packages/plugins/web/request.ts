@@ -43,7 +43,9 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
         options: await ctx.parse(
           createRequestOptions(
             value,
-            value.body && !value.bodyUsed ? await value.clone().arrayBuffer() : null,
+            value.body && !value.bodyUsed
+              ? await value.clone().arrayBuffer()
+              : null,
           ),
         ),
       };
@@ -52,13 +54,22 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
       return {
         url: ctx.parse(value.url),
         options: ctx.parse(
-          createRequestOptions(value, value.body && !value.bodyUsed ? value.clone().body : null),
+          createRequestOptions(
+            value,
+            value.body && !value.bodyUsed ? value.clone().body : null,
+          ),
         ),
       };
     },
   },
   serialize(node, ctx) {
-    return 'new Request(' + ctx.serialize(node.url) + ',' + ctx.serialize(node.options) + ')';
+    return (
+      'new Request(' +
+      ctx.serialize(node.url) +
+      ',' +
+      ctx.serialize(node.options) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     return new Request(

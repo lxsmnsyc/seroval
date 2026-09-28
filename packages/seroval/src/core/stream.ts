@@ -26,38 +26,18 @@ export function isStream<T>(value: object): value is Stream<T> {
 }
 
 export function createStream<T>(): Stream<T> {
-  // oxlint-disable-next-line new-cap
   return STREAM_CONSTRUCTOR() as unknown as Stream<T>;
 }
 
-export function createStreamFromAsyncIterable<T>(iterable: AsyncIterable<T>): Stream<T> {
-  const stream = createStream<T>();
+const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
+  SYM_ASYNC_ITERATOR,
+  PROMISE_CONSTRUCTOR,
+);
 
-  const iterator = iterable[SYM_ASYNC_ITERATOR]();
-
-  async function push(): Promise<void> {
-    try {
-      const value = await iterator.next();
-      if (value.done) {
-        stream.return(value.value as T);
-      } else {
-        stream.next(value.value);
-        await push();
-      }
-    } catch (error) {
-      stream.throw(error);
-    }
-  }
-
-  push().catch(() => {
-    // no-op
-  });
-
-  return stream;
-}
-
-const createAsyncIterable = ASYNC_ITERATOR_CONSTRUCTOR(SYM_ASYNC_ITERATOR, PROMISE_CONSTRUCTOR);
-
-export function streamToAsyncIterable<T>(stream: Stream<T>): () => AsyncIterableIterator<T> {
-  return createAsyncIterable(stream) as unknown as () => AsyncIterableIterator<T>;
+export function streamToAsyncIterable<T>(
+  stream: Stream<T>,
+): () => AsyncIterableIterator<T> {
+  return createAsyncIterable(
+    stream,
+  ) as unknown as () => AsyncIterableIterator<T>;
 }

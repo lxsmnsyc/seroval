@@ -1,11 +1,7 @@
-import { NIL } from './constants';
-
-import type { StreamParsePluginContext, SyncParsePluginContext } from './context/sync-parser';
-
 import type { AsyncParsePluginContext } from './context/async-parser';
 import type { DeserializePluginContext } from './context/deserializer';
 import type { SerializePluginContext } from './context/serializer';
-
+import type { SyncParsePluginContext } from './context/sync-parser';
 import type { SerovalNode } from './types';
 
 export const enum SerovalMode {
@@ -39,9 +35,21 @@ export interface Plugin<Value, Info extends PluginInfo> {
    * Parsing modes
    */
   parse: {
-    sync?: (value: Value, ctx: SyncParsePluginContext, data: PluginData) => Info;
-    async?: (value: Value, ctx: AsyncParsePluginContext, data: PluginData) => Promise<Info>;
-    stream?: (value: Value, ctx: StreamParsePluginContext, data: PluginData) => Info;
+    sync?: (
+      value: Value,
+      ctx: SyncParsePluginContext,
+      data: PluginData,
+    ) => Info;
+    async?: (
+      value: Value,
+      ctx: AsyncParsePluginContext,
+      data: PluginData,
+    ) => Promise<Info>;
+    stream?: (
+      value: Value,
+      ctx: SyncParsePluginContext,
+      data: PluginData,
+    ) => Info;
   };
   /**
    * Convert the parsed node into a JS string
@@ -50,7 +58,11 @@ export interface Plugin<Value, Info extends PluginInfo> {
   /**
    * Convert the parsed node into its runtime equivalent.
    */
-  deserialize(node: Info, ctx: DeserializePluginContext, data: PluginData): Value;
+  deserialize(
+    node: Info,
+    ctx: DeserializePluginContext,
+    data: PluginData,
+  ): Value;
 }
 
 export function createPlugin<Value, Info extends PluginInfo>(
@@ -63,7 +75,10 @@ export interface PluginAccessOptions {
   plugins?: Plugin<any, any>[];
 }
 
-function dedupePlugins(deduped: Set<Plugin<any, any>>, plugins: Plugin<any, any>[]): void {
+function dedupePlugins(
+  deduped: Set<Plugin<any, any>>,
+  plugins: Plugin<any, any>[],
+): void {
   for (let i = 0, len = plugins.length; i < len; i++) {
     const current = plugins[i];
     if (!deduped.has(current)) {
@@ -75,11 +90,13 @@ function dedupePlugins(deduped: Set<Plugin<any, any>>, plugins: Plugin<any, any>
   }
 }
 
-export function resolvePlugins(plugins?: Plugin<any, any>[]): Plugin<any, any>[] | undefined {
+export function resolvePlugins(
+  plugins?: Plugin<any, any>[],
+): Plugin<any, any>[] | undefined {
   if (plugins) {
     const deduped = new Set<Plugin<any, any>>();
     dedupePlugins(deduped, plugins);
     return [...deduped];
   }
-  return NIL;
+  return undefined;
 }

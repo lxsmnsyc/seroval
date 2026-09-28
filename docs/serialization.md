@@ -241,6 +241,85 @@ The mentioned serialization methods are ideal for server-to-client communication
 | deserialization | `deserialize` | `fromJSON` |
 | cross-deserialization | `deserialize` | `fromCrossJSON` |
 
+## Binary values
+
+ArrayBuffers are encoded as base64. Seroval uses native Node or browser encoding
+when available, with a fallback for runtimes without either API.
+
+### Compact typed arrays and DataViews
+
+By default, Seroval preserves each view's full backing buffer, byte offset, and
+shared-buffer identity. A small view can therefore serialize a much larger buffer,
+including bytes outside the view.
+
+Pass `compactArrayBufferViews: true` to serialize only each view's visible bytes:
+
+```ts
+import { toJSON, fromJSON } from 'seroval';
+
+const view = new Uint8Array(new ArrayBuffer(512 * 1024), 128, 1024);
+const result = fromJSON<Uint8Array>(
+  toJSON(view, { compactArrayBufferViews: true }),
+);
+
+result.byteOffset; // 0
+result.buffer.byteLength; // 1024
+```
+
+This option applies to all serialization modes and `Serializer`. Each distinct
+view gets its own copied buffer, even when views overlap or span the entire
+original buffer. Repeated references to the same view still refer to the same
+deserialized view. The original values are not changed.
+
+Compaction intentionally breaks buffer sharing between distinct views and any
+separately serialized backing buffer. If the input also contains the backing
+ArrayBuffer itself, that buffer is still serialized in full. Use the default when
+buffer identity or offsets matter.
+
+### JSON decoding limits
+
+Serialization can produce buffers larger than the default JSON decoding limit.
+`fromJSON` and `fromCrossJSON` accept `maxBase64Length` to set a receiver-owned
+limit, measured in encoded characters per ArrayBuffer. The default remains
+1,000,000 characters (up to 750,000 decoded bytes).
+
+```ts
+const buffer = new ArrayBuffer(1024 * 1024);
+const json = toJSON(buffer);
+
+// A 1 MiB buffer requires 1,398,104 base64 characters.
+const result = fromJSON<ArrayBuffer>(json, { maxBase64Length: 1_398_104 });
+```
+
+The limit must be a non-negative safe integer. Zero permits only empty buffers.
+Oversized input is rejected before base64 decoding or allocating its output
+buffer, with a `RangeError` cause inside `SerovalDeserializationError`. Invalid
+option values throw `RangeError` when the deserializer is created. Set the limit
+according to the receiving application's needs; it is a per-buffer limit, not a
+total payload or memory budget. JavaScript evaluation through `deserialize` does
+not use these JSON decoding limits.
+
+## Trust boundary
+
+The JSON form is safe to receive from an untrusted source only in one
+direction. `fromJSON` and `fromCrossJSON` validate the tree they are given:
+unknown node types, constructor names and constants are rejected, reserved
+property names are defined as own properties instead of assigned, and the
+decoding limits above bound the work a single node can cause.
+
+`compileJSON` does not validate. It turns a tree into JavaScript source by
+concatenating node fields, and it assumes the tree came from `toJSON` or
+`toJSONAsync` in a process you control. A tree from an untrusted source can
+smuggle code into the output through any string field, for example the flags
+of a RegExp node or the value of a Number node, and that code runs when the
+output is evaluated. The same applies to a plugin's `serialize` method, which
+receives the plugin's node fields unvalidated.
+
+Keep `compileJSON` on the same side of the trust boundary as the serializer
+that produced the tree. To move a value across a boundary, send the JSON and
+call `fromJSON` on the receiving side, or send the output of `serialize` and
+evaluate it only where the sender is trusted.
+
 ## Push-based streaming serialization
 
 > [!NOTE]
@@ -262,3 +341,89 @@ console.log(await serializeAsync(example, {
   ],
 })); // new Blob([new Uint8Array([72,101,108,108,111,44,32,87,111,114,108,100,33]).buffer],{type:"text/plain "})
 ```
+
+### Security guidelines for authoring plugins
+
+A plugin's `deserialize` method runs on data that may be **untrusted**. `fromJSON`
+and `fromCrossJSON` are meant to accept serialized trees that arrive over the
+network (a client request body, a query parameter, a message), and a plugin is
+the one place where that data is turned into a live runtime value. `seroval`
+validates its own built-in node types, but it cannot know what a plugin expects,
+so a plugin is responsible for validating its own payload. Treat the `node`
+passed to `deserialize` the same way you would treat any parsed request body.
+
+#### Validate parsed nodes before you use them
+
+The `node` (the `Info` object) a plugin receives is a record of
+`SerovalNode`s, and each of those nodes is fully attacker-controlled. When you
+call `ctx.deserialize(node.someField)`, the value that comes back can be of *any*
+type — the field a serializer wrote as a `string` or an `ArrayBuffer` can be
+swapped by a crafted payload for a number, an object, another plugin's value, and
+so on. A TypeScript cast such as `ctx.deserialize(node.buffer) as ArrayBuffer` is
+only a compile-time claim; it does nothing at runtime.
+
+Validate the resolved value before you treat it as a specific type, and throw
+when it does not match:
+
+```js
+deserialize(node, ctx) {
+  const buffer = ctx.deserialize(node.buffer);
+  if (!(buffer instanceof ArrayBuffer)) {
+    throw new Error('MyPlugin: expected an ArrayBuffer.');
+  }
+  const type = ctx.deserialize(node.type);
+  if (typeof type !== 'string') {
+    throw new Error('MyPlugin: expected a string.');
+  }
+  return new Blob([buffer], { type });
+}
+```
+
+Prefer checks that assert genuine identity — `instanceof`, `typeof`, a length or
+range check — over trusting a value's shape. In particular, do **not** rely on a
+marker property (a `__SOMETHING__` flag, a `then`, an `on`) to decide that a
+value is a given kind: another plugin can return an object that carries the same
+property, so a shape check can be forged. Fail closed: when the payload is not
+exactly what the plugin serialized, throw rather than coerce or continue.
+
+Many platform constructors already validate their own arguments (`new URL(...)`,
+`new Headers(...)`, `new Response(...)` will throw on bad input), which makes a
+plugin built directly on top of them safe by construction. Explicit validation
+is most important when your plugin feeds a value into something that will later
+call a method on it, index into it, or otherwise trust its structure.
+
+#### Never return a function from `deserialize`
+
+A plugin must not return a function (or an object whose methods are the real
+payload) from `deserialize`. A callable produced from untrusted input is a
+**gadget**: it is a piece of behavior an attacker can get seroval, or your own
+code, to invoke at a time and with arguments they did not choose. Seroval's own
+control nodes call methods such as `then` and `on` on the values they
+deserialize, and a function handed out by a plugin is exactly what turns a benign
+tree into an invocation the attacker controls.
+
+If your value genuinely needs a function at runtime — a factory, an iterator, a
+stream driver — keep that function **internal** (a module-level closure the
+plugin references directly) and never expose it as the deserialized result. When
+a plugin serializes such a helper for the eval-based `deserialize` path, its own
+`deserialize` method is a serialize-only helper and should throw, because
+deserializing it directly is never a valid path:
+
+```js
+serialize() {
+  return MY_INTERNAL_FACTORY.toString();
+},
+deserialize() {
+  throw new Error('MyFactoryPlugin cannot be deserialized directly.');
+},
+```
+
+#### Summary
+
+- Treat the `node` given to `deserialize` as untrusted input.
+- Validate every field you resolve with `ctx.deserialize` before using it, and
+  throw on a mismatch — casts are not runtime checks.
+- Validate by identity (`instanceof`, `typeof`, range), not by a forgeable marker
+  property.
+- Never return a function from `deserialize`; keep runtime functions internal and
+  make serialize-only helpers throw when deserialized.

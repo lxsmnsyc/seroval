@@ -1,18 +1,24 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-const PROMISE_TO_ABORT_SIGNAL = (promise: Promise<unknown>): AbortController => {
+const PROMISE_TO_ABORT_SIGNAL = (promise: Promise<unknown>) => {
   const controller = new AbortController();
   const abort = controller.abort.bind(controller);
   promise.then(abort, abort);
   return controller;
 };
 
-function resolveAbortSignalResult(this: AbortSignal, resolve: (value: unknown) => void): void {
+function resolveAbortSignalResult(
+  this: AbortSignal,
+  resolve: (value: unknown) => void,
+): void {
   resolve(this.reason);
 }
 
-function resolveAbortSignal(this: AbortSignal, resolve: (value: unknown) => void): void {
+function resolveAbortSignal(
+  this: AbortSignal,
+  resolve: (value: unknown) => void,
+): void {
   this.addEventListener('abort', resolveAbortSignalResult.bind(this, resolve), {
     once: true,
   });
@@ -24,10 +30,7 @@ function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
 
 const ABORT_CONTROLLER = {};
 
-const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<
-  object,
-  Record<string, SerovalNode>
->({
+const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   tag: 'seroval-plugins/web/AbortControllerFactoryPlugin',
   test(value) {
     return value === ABORT_CONTROLLER;
@@ -47,7 +50,13 @@ const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<
     return PROMISE_TO_ABORT_SIGNAL.toString();
   },
   deserialize() {
-    return PROMISE_TO_ABORT_SIGNAL;
+    // This factory is a serialize-only helper: `AbortSignalPlugin` calls
+    // `PROMISE_TO_ABORT_SIGNAL` directly and never deserializes this node.
+    // Returning the raw function would hand an untrusted payload a callable
+    // gadget, so deserializing it directly is an invalid path.
+    throw new Error(
+      'seroval-plugins/web/AbortControllerFactoryPlugin cannot be deserialized directly.',
+    );
   },
 });
 
@@ -103,7 +112,13 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
       return 'AbortSignal.abort(' + ctx.serialize(node.reason) + ')';
     }
     if (node.controller && node.factory) {
-      return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.controller) + ').signal';
+      return (
+        '(' +
+        ctx.serialize(node.factory) +
+        ')(' +
+        ctx.serialize(node.controller) +
+        ').signal'
+      );
     }
     return '(new AbortController).signal';
   },
@@ -112,7 +127,15 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
       return AbortSignal.abort(ctx.deserialize(node.reason));
     }
     if (node.controller) {
-      return PROMISE_TO_ABORT_SIGNAL(ctx.deserialize(node.controller)).signal;
+      const controller = ctx.deserialize(node.controller);
+      // `node.controller` is any node the input picked; it must resolve to a
+      // native Promise before its `then` is called, so a fake thenable (for
+      // example one minted by a function-returning plugin) can never have its
+      // `then` invoked here.
+      if (!(controller instanceof Promise)) {
+        throw new Error('Expected a Promise source.');
+      }
+      return PROMISE_TO_ABORT_SIGNAL(controller).signal;
     }
     const controller = new AbortController();
     return controller.signal;

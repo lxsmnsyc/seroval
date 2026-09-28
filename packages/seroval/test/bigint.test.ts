@@ -37,7 +37,9 @@ describe('bigint', () => {
   });
   describe('toJSONAsync', () => {
     it('supports bigint', async () => {
-      expect(JSON.stringify(await toJSONAsync(Promise.resolve(EXAMPLE)))).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toJSONAsync(Promise.resolve(EXAMPLE))),
+      ).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -47,7 +49,9 @@ describe('bigint', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports bigint', async () => {
-      expect(await crossSerializeAsync(Promise.resolve(EXAMPLE))).toMatchSnapshot();
+      expect(
+        await crossSerializeAsync(Promise.resolve(EXAMPLE)),
+      ).toMatchSnapshot();
     });
   });
   describe('crossSerializeStream', () => {
@@ -69,12 +73,16 @@ describe('bigint', () => {
   describe('toCrossJSON', () => {
     it('supports bigint', () => {
       expect(JSON.stringify(toCrossJSON(EXAMPLE))).toMatchSnapshot();
-      expect(fromCrossJSON(toCrossJSON(EXAMPLE), { refs: new Map() })).toBe(EXAMPLE);
+      expect(fromCrossJSON(toCrossJSON(EXAMPLE), { refs: new Map() })).toBe(
+        EXAMPLE,
+      );
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports bigint', async () => {
-      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(EXAMPLE)))).toMatchSnapshot();
+      expect(
+        JSON.stringify(await toCrossJSONAsync(Promise.resolve(EXAMPLE))),
+      ).toMatchSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {

@@ -1,5 +1,5 @@
-import { add, complete, cycle, save, suite } from 'benny';
 import util from 'util';
+import { suite, add, cycle, complete, save } from 'benny';
 
 // fixtures
 import circularDedupe from './fixtures/circular-dedupe';
@@ -53,15 +53,15 @@ const fixtures = {
   'small-collection': smallCollection,
 };
 
-async function run(): Promise<void> {
+async function run() {
   for (const [key, value] of Object.entries(fixtures)) {
     const suiteName = key;
     const getData = value as () => unknown;
 
     // Skip benchmarks that couldn't properly serialize and hydrate the structure.
     const toolsForFixture = await Promise.all(
-      tools.map(async (tool) => {
-        let skip;
+      tools.map(async tool => {
+        let skip = false;
         try {
           skip = !util.isDeepStrictEqual(
             await tool.fromString(await tool.toString(getData())),
@@ -75,7 +75,7 @@ async function run(): Promise<void> {
       }),
     );
 
-    suite(
+    void suite(
       `${suiteName} to string`,
       ...toolsForFixture.map(({ name, utils, skip }) =>
         (skip ? add.skip : add)(name, () => {
@@ -100,7 +100,7 @@ async function run(): Promise<void> {
       }),
     );
 
-    suite(
+    void suite(
       `${suiteName} from string`,
       ...toolsForFixture.map(({ name, utils }) =>
         // This does not account for parse time since eval is cached.
@@ -132,4 +132,4 @@ async function run(): Promise<void> {
   }
 }
 
-run();
+void run();

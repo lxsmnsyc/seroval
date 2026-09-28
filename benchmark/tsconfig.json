@@ -4,7 +4,6 @@
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ESNext"],
-    "types": ["node"],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,

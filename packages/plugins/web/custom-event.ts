@@ -15,7 +15,10 @@ type CustomEventNode = {
   options: SerovalNode;
 };
 
-const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventNode>({
+const CustomEventPlugin = /* @__PURE__ */ createPlugin<
+  CustomEvent,
+  CustomEventNode
+>({
   tag: 'seroval-plugins/web/CustomEvent',
   test(value) {
     if (typeof CustomEvent === 'undefined') {
@@ -44,7 +47,13 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventN
     },
   },
   serialize(node, ctx) {
-    return 'new CustomEvent(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
+    return (
+      'new CustomEvent(' +
+      ctx.serialize(node.type) +
+      ',' +
+      ctx.serialize(node.options) +
+      ')'
+    );
   },
   deserialize(node, ctx) {
     return new CustomEvent(

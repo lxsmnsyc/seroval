@@ -23,7 +23,13 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
     },
   },
   serialize(node, ctx) {
-    return 'new Blob([' + ctx.serialize(node.buffer) + '],{type:' + ctx.serialize(node.type) + '})';
+    return (
+      'new Blob([' +
+      ctx.serialize(node.buffer) +
+      '],{type:' +
+      ctx.serialize(node.type) +
+      '})'
+    );
   },
   deserialize(node, ctx) {
     return new Blob([ctx.deserialize(node.buffer) as ArrayBuffer], {
