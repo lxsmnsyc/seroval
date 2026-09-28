@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "build": "node build-src",
-    "start": "node build-src && node build/index.cjs"
+    "start": "node build-src && node build/index.cjs",
+    "bench:size": "node reports/measure.mjs --kind size",
+    "bench:speed": "node reports/measure.mjs --kind speed",
+    "bench:report": "node reports/report.mjs",
+    "test:reports": "node --test reports/*.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",

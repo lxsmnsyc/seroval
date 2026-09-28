@@ -1,0 +1,76 @@
+name: Benchmark measurements
+
+on:
+  pull_request:
+    paths:
+      - 'packages/**'
+      - 'benchmark/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'package.json'
+      - '.github/workflows/benchmark*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'benchmark/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'package.json'
+      - '.github/workflows/benchmark*.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmarks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: candidate
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || (github.event.before != '0000000000000000000000000000000000000000' && github.event.before) || github.sha }}
+          path: baseline
+          persist-credentials: false
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        with:
+          version: 8
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - name: Install and build both revisions
+        run: |
+          pnpm --dir baseline install --frozen-lockfile
+          pnpm --dir baseline --filter seroval --filter seroval-plugins build
+          pnpm --dir candidate install --frozen-lockfile
+          pnpm --dir candidate --filter seroval --filter seroval-plugins build
+      - name: Test the report harness
+        run: node --test candidate/benchmark/reports/*.test.mjs
+      - name: Measure bundle size
+        run: node candidate/benchmark/reports/measure.mjs --kind size --candidate candidate --baseline baseline --output results
+      - name: Measure speed
+        run: node candidate/benchmark/reports/measure.mjs --kind speed --candidate candidate --baseline baseline --output results
+      - name: Render local reports
+        run: |
+          node candidate/benchmark/reports/report.mjs --input results/size.json --output results
+          node candidate/benchmark/reports/report.mjs --input results/speed.json --output results
+          cat results/size.md results/speed.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: benchmark-results
+          path: results/
+          if-no-files-found: error
+          retention-days: 30
