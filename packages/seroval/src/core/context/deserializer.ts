@@ -218,7 +218,7 @@ function guardIndexedValue(ctx: BaseDeserializerContext, id: number): void {
 function isThennable(value: unknown): boolean {
   return (
     !!value &&
-    typeof value === 'object' &&
+    (typeof value === 'object' || typeof value === 'function') &&
     'then' in value &&
     typeof value.then === 'function'
   );
