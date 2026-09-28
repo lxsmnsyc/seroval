@@ -844,11 +844,24 @@ function deserializeAsyncIteratorFactory(
   return NIL;
 }
 
+function isSequenceIndex(value: unknown, size: number): boolean {
+  return (
+    Number.isInteger(value) && (value as number) >= -1 && (value as number) < size
+  );
+}
+
 function deserializeSequence(
   ctx: DeserializerContext,
   depth: number,
   node: SerovalSequenceNode,
 ): Sequence {
+  validateNodeList(node, node.a);
+  // The iterator stops only when its index passes the done index, so both
+  // indices must be integers within the list.
+  const size = node.a.length;
+  if (!(isSequenceIndex(node.s, size) && isSequenceIndex(node.l, size))) {
+    throw new SerovalMalformedNodeError(node);
+  }
   const result = assignIndexedValue(
     ctx,
     node.i,
@@ -856,8 +869,7 @@ function deserializeSequence(
   );
   // Mark the id so an IteratorFactoryInstance can validate its source node type.
   assignNodeType(ctx, node.i, SerovalNodeType.Sequence);
-  validateNodeList(node, node.a);
-  for (let i = 0, len = node.a.length; i < len; i++) {
+  for (let i = 0; i < size; i++) {
     result.v[i] = deserialize(ctx, depth, node.a[i]);
   }
   return result;
