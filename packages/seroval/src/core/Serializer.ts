@@ -1,4 +1,5 @@
 import { crossSerializeStream } from './cross';
+import { SerovalParserError } from './errors';
 import {
   type Plugin,
   type PluginAccessOptions,
@@ -13,7 +14,7 @@ export interface SerializerOptions extends PluginAccessOptions {
   compactArrayBufferViews?: boolean;
   depthLimit?: number;
   onData: (result: string) => void;
-  onError: (error: unknown) => void;
+  onError?: (error: unknown) => void;
   onDone?: () => void;
 }
 
@@ -26,35 +27,40 @@ export default class Serializer {
 
   private pending = 0;
 
-  private cleanups: (() => void)[] = [];
+  private cleanups: ((reason?: unknown) => void)[] = [];
 
   private refs = new Map<unknown, number>();
 
   private plugins?: Plugin<any, any>[];
 
-  constructor(private options: SerializerOptions) {
+  private options: SerializerOptions | undefined;
+
+  constructor(options: SerializerOptions) {
+    this.options = options;
     this.plugins = resolvePlugins(options.plugins);
   }
 
   keys = new Set<string>();
 
   write(key: string, value: unknown): void {
-    if (this.alive && !this.flushed) {
+    const options = this.options;
+    if (this.alive && !this.flushed && options) {
       this.pending++;
       this.keys.add(key);
       const cleanup = crossSerializeStream(value, {
         plugins: this.plugins,
-        scopeId: this.options.scopeId,
+        scopeId: options.scopeId,
         refs: this.refs,
-        disabledFeatures: this.options.disabledFeatures,
-        compactArrayBufferViews: this.options.compactArrayBufferViews,
-        depthLimit: this.options.depthLimit,
-        onError: this.options.onError,
+        disabledFeatures: options.disabledFeatures,
+        compactArrayBufferViews: options.compactArrayBufferViews,
+        depthLimit: options.depthLimit,
+        onError: error => this.fail(error),
         onSerialize: (data, initial) => {
-          if (this.alive) {
-            this.options.onData(
+          const current = this.options;
+          if (this.alive && current) {
+            current.onData(
               initial
-                ? this.options.globalIdentifier +
+                ? current.globalIdentifier +
                     '["' +
                     serializeString(key) +
                     '"]=' +
@@ -66,14 +72,8 @@ export default class Serializer {
         onDone: () => {
           if (this.alive) {
             this.pending--;
-            if (
-              this.pending <= 0 &&
-              this.flushed &&
-              !this.done &&
-              this.options.onDone
-            ) {
-              this.done = true;
-              this.options.onDone();
+            if (this.pending <= 0 && this.flushed && !this.done) {
+              this.close();
             }
           }
         },
@@ -104,34 +104,62 @@ export default class Serializer {
   flush(): void {
     if (this.alive) {
       this.flushed = true;
-      if (this.pending <= 0 && !this.done && this.options.onDone) {
-        this.done = true;
-        this.options.onDone();
+      if (this.pending <= 0 && !this.done) {
+        this.close();
       }
     }
   }
 
   close(): void {
+    this.finish(true);
+  }
+
+  private fail(reason: unknown): void {
+    const onError = this.options?.onError;
+    const primary =
+      onError || reason instanceof SerovalParserError
+        ? reason
+        : new SerovalParserError(reason);
+    let cleanupFailure: { value: unknown } | undefined;
+    try {
+      this.finish(false, primary);
+    } catch (error) {
+      cleanupFailure = { value: error };
+    }
+    // A cleanup failure must not replace an unhandled parsing error or an
+    // exception thrown by its error handler. All cleanups have already run.
+    if (!onError) {
+      throw primary;
+    }
+    onError(reason);
+    if (cleanupFailure) {
+      throw cleanupFailure.value;
+    }
+  }
+
+  private finish(notify: boolean, reason?: unknown): void {
     if (this.alive) {
       this.alive = false;
+      const options = this.options;
+      this.options = undefined;
+      this.plugins = undefined;
+      const cleanups = this.cleanups;
+      this.cleanups = [];
       let failure: { value: unknown } | undefined;
-      for (
-        let index = 0, length = this.cleanups.length;
-        index < length;
-        index++
-      ) {
+      for (let index = 0, length = cleanups.length; index < length; index++) {
         try {
-          this.cleanups[index]();
+          cleanups[index](reason);
         } catch (error) {
           failure ??= { value: error };
         }
       }
-      this.cleanups.length = 0;
       this.refs.clear();
-      if (!this.done && this.options.onDone) {
+      if (!this.done) {
         this.done = true;
         try {
-          this.options.onDone();
+          if (notify) {
+            options?.onDone?.();
+          }
         } catch (error) {
           failure ??= { value: error };
         }

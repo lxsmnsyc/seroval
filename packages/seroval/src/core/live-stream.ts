@@ -50,8 +50,8 @@ export interface LiveStream<T> {
   consume(): LiveStreamConsumer<T>;
   /**
    * Consumes the stream through a replay-style listener, accepting each
-   * event as soon as it has been delivered. Used by the materializing
-   * parsers; streaming serialization ties acceptance to output instead.
+   * event as soon as it has been delivered. Use `consume` or `pump` when
+   * acceptance must wait for processing.
    */
   on(listener: StreamListener<T>): () => void;
   /**
@@ -69,8 +69,8 @@ export interface LiveStreamOptions {
 interface PendingEvent<T> {
   event: LiveStreamEvent<T> | undefined;
   delivered: boolean;
-  resolve: () => void;
-  reject: (reason: unknown) => void;
+  resolve: (() => void) | undefined;
+  reject: ((reason: unknown) => void) | undefined;
 }
 
 interface PendingRead<T> {
@@ -109,10 +109,17 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
           const terminal = (record.event as LiveStreamEvent<T>).type !== 'next';
           record.event = undefined;
           pending = undefined;
+          const resolve = record.resolve;
+          record.resolve = undefined;
+          record.reject = undefined;
           if (terminal) {
             closed = true;
+            options = undefined;
+            const read = waiting;
+            waiting = undefined;
+            read?.reject(new SerovalLiveStreamError('closed'));
           }
-          record.resolve();
+          resolve?.();
         }
       },
     });
@@ -154,14 +161,19 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
     const read = waiting;
     pending = undefined;
     waiting = undefined;
+    const callbackOwner = options;
+    options = undefined;
     if (record) {
       record.event = undefined;
-      record.reject(reason);
+      const reject = record.reject;
+      record.resolve = undefined;
+      record.reject = undefined;
+      reject?.(reason);
     }
     if (read) {
       read.reject(reason);
     }
-    options?.onCancel?.(reason);
+    callbackOwner?.onCancel?.(reason);
   }
 
   function read(): Promise<LiveStreamDelivery<T>> {
@@ -194,28 +206,53 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
 
   function pump(sink: LiveStreamSink<T>): (reason?: unknown) => void {
     const consumer = consume();
+    let current: LiveStreamSink<T> | undefined = sink;
     function next(): void {
-      consumer.read().then(delivery => {
-        const event = delivery.event;
-        let failure: unknown;
-        try {
-          failure = (
-            sink[event.type] as (value: unknown, accept: () => void) => unknown
-          )(
-            event.type === 'throw' ? event.error : event.value,
-            delivery.accept,
-          );
-        } catch (error) {
-          failure = error;
-        }
-        if (failure !== undefined) {
-          consumer.cancel(failure);
-        } else if (event.type === 'next') {
-          next();
-          return;
-        }
-        sink.done?.();
-      }, sink.error);
+      consumer.read().then(
+        delivery => {
+          const target = current;
+          if (!target) {
+            return;
+          }
+          const event = delivery.event;
+          let failure: unknown;
+          let failed = false;
+          try {
+            failure = (
+              target[event.type] as (
+                value: unknown,
+                accept: () => void,
+              ) => unknown
+            )(
+              event.type === 'throw' ? event.error : event.value,
+              delivery.accept,
+            );
+          } catch (error) {
+            failed = true;
+            failure = error;
+          }
+          if (failed || failure !== undefined) {
+            current = undefined;
+            try {
+              consumer.cancel(failure);
+            } finally {
+              target.done?.();
+            }
+            return;
+          }
+          if (event.type === 'next') {
+            next();
+            return;
+          }
+          current = undefined;
+          target.done?.();
+        },
+        reason => {
+          const target = current;
+          current = undefined;
+          target?.error?.(reason);
+        },
+      );
     }
     next();
     return consumer.cancel;

@@ -1,6 +1,7 @@
 import type { AsyncParsePluginContext } from './context/async-parser';
 import type { DeserializePluginContext } from './context/deserializer';
 import type { SerializePluginContext } from './context/serializer';
+import type { StreamParsePluginContext } from './context/stream-parser';
 import type { SyncParsePluginContext } from './context/sync-parser';
 import type { SerovalNode } from './types';
 
@@ -47,7 +48,7 @@ export interface Plugin<Value, Info extends PluginInfo> {
     ) => Promise<Info>;
     stream?: (
       value: Value,
-      ctx: SyncParsePluginContext,
+      ctx: StreamParsePluginContext,
       data: PluginData,
     ) => Info;
   };
