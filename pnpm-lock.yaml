@@ -82,8 +82,8 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
       seroval:
-        specifier: 1.6.1
-        version: link:../seroval
+        specifier: 1.6.7
+        version: 1.6.7
       tsdown:
         specifier: ^0.22.14
         version: 0.22.14(typescript@7.0.2)
@@ -1614,6 +1614,10 @@ packages:
     resolution: {integrity: sha512-RNEqWOyhhUQYN9V1GfHwu9AR/g+NTciH6Z5u3/no6X3/w+04J2lVDL+svFQVXgXrEGBMG2puMVN3gq2SNGuTGw==}
     engines: {node: '>=20.0.0'}
 
+  seroval@1.6.7:
+    resolution: {integrity: sha512-AeDcLh0yO2SFm9W71essgnSzLV9DI8ZH0x0knXn2DMnUZj728mpLbxjlbB6IqKCmqh8JA3cEqRyGoNkt584JcQ==}
+    engines: {node: '>=10'}
+
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
     engines: {node: '>=8'}
@@ -3127,6 +3131,8 @@ snapshots:
   semver@7.8.5: {}
 
   serialize-javascript@7.1.0: {}
+
+  seroval@1.6.7: {}
 
   shebang-command@2.0.0:
     dependencies:
