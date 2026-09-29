@@ -82,7 +82,7 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
       seroval:
-        specifier: 1.6.7
+        specifier: 1.6.8
         version: link:../seroval
       tsdown:
         specifier: ^0.22.14
