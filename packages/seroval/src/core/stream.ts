@@ -7,6 +7,38 @@ export interface StreamListener<T> {
   return(value: T): void;
 }
 
+// 0 = alive, 1 = returned, 2 = thrown.
+type StreamStatus = 0 | 1 | 2;
+
+interface StreamState<T> {
+  buffer: unknown[] | undefined;
+  listeners: (StreamListener<T> | undefined)[] | undefined;
+  status: StreamStatus;
+  count: number;
+}
+
+function emit<T>(
+  state: StreamState<T>,
+  value: unknown,
+  mode: keyof StreamListener<T>,
+  status: StreamStatus,
+): void {
+  if (!state.status) {
+    if (!state.buffer) {
+      state.buffer = [];
+    }
+    state.buffer.push(value);
+    // A listener can end the stream during dispatch, so read storage each time.
+    for (let x = 0; x < state.count; x++) {
+      state.listeners?.[x]?.[mode](value as T);
+    }
+    if (status) {
+      state.status = status;
+      state.listeners = undefined;
+    }
+  }
+}
+
 /**
  * An internal class rather than a tagged POJO: identity is checked with
  * `instanceof`, which untrusted input cannot forge (the class is not exported).
@@ -17,71 +49,60 @@ export interface StreamListener<T> {
  * stream read back through `deserialize` is therefore a plain POJO and, by
  * design, is not treated as a genuine Stream on re-serialization. Keep the two
  * implementations in sync.
+ *
+ * All mutable state lives in one private record, so a downleveled build keeps
+ * one WeakMap entry per stream. The buffer and the listener list are allocated
+ * on first use, and the listener list is released when the stream ends.
  */
 export class Stream<T> {
-  #buffer: unknown[] = [];
-  #listeners: (StreamListener<T> | undefined)[] = [];
-  #alive = true;
-  #success = false;
-  #count = 0;
-
-  #flush(value: unknown, mode: 'next' | 'throw' | 'return'): void {
-    for (let x = 0; x < this.#count; x++) {
-      this.#listeners[x]?.[mode](value as T);
-    }
-  }
-
-  #replay(listener: StreamListener<T>): void {
-    for (let x = 0, z = this.#buffer.length; x < z; x++) {
-      const current = this.#buffer[x];
-      if (!this.#alive && x === z - 1) {
-        listener[this.#success ? 'return' : 'throw'](current as T);
-      } else {
-        listener.next(current as T);
-      }
-    }
-  }
+  #state: StreamState<T> = {
+    buffer: undefined,
+    listeners: undefined,
+    status: 0,
+    count: 0,
+  };
 
   on(listener: StreamListener<T>): () => void {
+    const state = this.#state;
     let temp = -1;
-    if (this.#alive) {
-      temp = this.#count++;
-      this.#listeners[temp] = listener;
+    if (!state.status) {
+      temp = state.count++;
+      if (!state.listeners) {
+        state.listeners = [];
+      }
+      state.listeners[temp] = listener;
     }
-    this.#replay(listener);
+    const buffer = state.buffer;
+    if (buffer) {
+      for (let x = 0, z = buffer.length; x < z; x++) {
+        const current = buffer[x];
+        if (state.status && x === z - 1) {
+          listener[state.status === 1 ? 'return' : 'throw'](current as T);
+        } else {
+          listener.next(current as T);
+        }
+      }
+    }
     return () => {
-      if (this.#alive && temp !== -1) {
-        this.#listeners[temp] = this.#listeners[this.#count];
-        this.#listeners[this.#count--] = undefined;
+      // The list exists exactly while the stream is alive and has registered.
+      const listeners = state.listeners;
+      if (listeners && temp !== -1) {
+        listeners[temp] = listeners[state.count];
+        listeners[state.count--] = undefined;
       }
     };
   }
 
   next(value: T): void {
-    if (this.#alive) {
-      this.#buffer.push(value);
-      this.#flush(value, 'next');
-    }
+    emit(this.#state, value, 'next', 0);
   }
 
   throw(value: unknown): void {
-    if (this.#alive) {
-      this.#buffer.push(value);
-      this.#flush(value, 'throw');
-      this.#alive = false;
-      this.#success = false;
-      this.#listeners.length = 0;
-    }
+    emit(this.#state, value, 'throw', 2);
   }
 
   return(value: T): void {
-    if (this.#alive) {
-      this.#buffer.push(value);
-      this.#flush(value, 'return');
-      this.#alive = false;
-      this.#success = true;
-      this.#listeners.length = 0;
-    }
+    emit(this.#state, value, 'return', 1);
   }
 }
 
