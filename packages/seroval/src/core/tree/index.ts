@@ -14,11 +14,7 @@ import {
   serializeTopVanilla,
 } from '../context/serializer';
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
-import {
-  type PluginAccessOptions,
-  resolvePlugins,
-  SerovalMode,
-} from '../plugin';
+import { type PluginAccessOptions, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
@@ -28,7 +24,7 @@ export function serialize<T>(
   options: SyncParserContextOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,
@@ -48,7 +44,7 @@ export async function serializeAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createAsyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,
@@ -84,7 +80,7 @@ export function toJSON<T>(
   options: SyncParserContextOptions = {},
 ): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,
@@ -102,7 +98,7 @@ export async function toJSONAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<SerovalJSON> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createAsyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,
