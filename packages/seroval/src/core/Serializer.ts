@@ -14,7 +14,7 @@ export interface SerializerOptions extends PluginAccessOptions {
   compactArrayBufferViews?: boolean;
   depthLimit?: number;
   onData: (result: string) => void;
-  onError?: (error: unknown) => void;
+  onError: (error: unknown) => void;
   onDone?: () => void;
 }
 
@@ -54,7 +54,28 @@ export default class Serializer {
         disabledFeatures: options.disabledFeatures,
         compactArrayBufferViews: options.compactArrayBufferViews,
         depthLimit: options.depthLimit,
-        onError: error => this.fail(error),
+        onError: error => {
+          let failure: { value: unknown } | undefined;
+          try {
+            if (options.onError) {
+              options.onError(error);
+            } else {
+              throw error instanceof SerovalParserError
+                ? error
+                : new SerovalParserError(error);
+            }
+          } catch (error) {
+            failure = { value: error };
+          }
+          try {
+            this.finishWrite();
+          } catch (error) {
+            failure ??= { value: error };
+          }
+          if (failure) {
+            throw failure.value;
+          }
+        },
         onSerialize: (data, initial) => {
           const current = this.options;
           if (this.alive && current) {
@@ -69,19 +90,21 @@ export default class Serializer {
             );
           }
         },
-        onDone: () => {
-          if (this.alive) {
-            this.pending--;
-            if (this.pending <= 0 && this.flushed && !this.done) {
-              this.close();
-            }
-          }
-        },
+        onDone: () => this.finishWrite(),
       });
       if (this.alive) {
         this.cleanups.push(cleanup);
       } else {
         cleanup();
+      }
+    }
+  }
+
+  private finishWrite(): void {
+    if (this.alive) {
+      this.pending--;
+      if (this.pending <= 0 && this.flushed && !this.done) {
+        this.close();
       }
     }
   }
@@ -111,33 +134,10 @@ export default class Serializer {
   }
 
   close(): void {
-    this.finish(true);
+    this.finish();
   }
 
-  private fail(reason: unknown): void {
-    const onError = this.options?.onError;
-    const primary =
-      onError || reason instanceof SerovalParserError
-        ? reason
-        : new SerovalParserError(reason);
-    let cleanupFailure: { value: unknown } | undefined;
-    try {
-      this.finish(false, primary);
-    } catch (error) {
-      cleanupFailure = { value: error };
-    }
-    // A cleanup failure must not replace an unhandled parsing error or an
-    // exception thrown by its error handler. All cleanups have already run.
-    if (!onError) {
-      throw primary;
-    }
-    onError(reason);
-    if (cleanupFailure) {
-      throw cleanupFailure.value;
-    }
-  }
-
-  private finish(notify: boolean, reason?: unknown): void {
+  private finish(): void {
     if (this.alive) {
       this.alive = false;
       const options = this.options;
@@ -148,7 +148,7 @@ export default class Serializer {
       let failure: { value: unknown } | undefined;
       for (let index = 0, length = cleanups.length; index < length; index++) {
         try {
-          cleanups[index](reason);
+          cleanups[index]();
         } catch (error) {
           failure ??= { value: error };
         }
@@ -157,9 +157,7 @@ export default class Serializer {
       if (!this.done) {
         this.done = true;
         try {
-          if (notify) {
-            options?.onDone?.();
-          }
+          options?.onDone?.();
         } catch (error) {
           failure ??= { value: error };
         }

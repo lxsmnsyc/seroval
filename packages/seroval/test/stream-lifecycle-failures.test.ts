@@ -203,19 +203,19 @@ describe('fatal streaming failures', () => {
   });
 
   it('preserves the no-handler Serializer parsing error', () => {
-    const writer = new Serializer({
-      globalIdentifier: 'X',
-      onData: () => undefined,
-    });
+    const writer: Serializer = Reflect.construct(Serializer, [
+      { globalIdentifier: 'X', onData: () => undefined },
+    ]);
     expect(() => writer.write('bad', () => undefined)).toThrow(
       SerovalParserError,
     );
     expect(() => writer.write('after', 1)).not.toThrow();
-    expect([...writer.keys]).toEqual(['bad']);
+    expect([...writer.keys]).toEqual(['bad', 'after']);
+    writer.close();
   });
 
   it.each(['absent', 'throws'] as const)(
-    'preserves the primary error when cleanup also throws and the handler %s',
+    'preserves the primary error without cancelling siblings when the handler %s',
     mode => {
       const cleanupError = new Error('cleanup failed');
       const handlerError = new Error('handler failed');
@@ -236,17 +236,19 @@ describe('fatal streaming failures', () => {
         return source;
       });
       const onDone = vi.fn();
-      const writer = new Serializer({
-        globalIdentifier: 'X',
-        onData: () => undefined,
-        onDone,
-        onError:
-          mode === 'throws'
-            ? () => {
-                throw handlerError;
-              }
-            : undefined,
-      });
+      const writer: Serializer = Reflect.construct(Serializer, [
+        {
+          globalIdentifier: 'X',
+          onData: () => undefined,
+          onDone,
+          onError:
+            mode === 'throws'
+              ? () => {
+                  throw handlerError;
+                }
+              : undefined,
+        },
+      ]);
       writer.write('first', sources[0]);
       writer.write('second', sources[1]);
       let thrown: unknown;
@@ -263,17 +265,20 @@ describe('fatal streaming failures', () => {
       } else {
         expect(thrown).toBe(handlerError);
       }
-      expect(cleaned).toEqual([0, 1]);
+      expect(cleaned).toEqual([]);
       expect(onDone).not.toHaveBeenCalled();
+      expect(() => writer.close()).toThrow(cleanupError);
+      expect(cleaned).toEqual([0, 1]);
+      expect(onDone).toHaveBeenCalledTimes(1);
       expect(() => writer.close()).not.toThrow();
     },
   );
 
-  it('stops a held Serializer after output failure without successful completion', () => {
+  it('keeps a Serializer usable after one write output fails', () => {
     const failure = new Error('writer output');
     const onDone = vi.fn();
     const onError = vi.fn();
-    const onData = vi.fn(() => {
+    const onData = vi.fn().mockImplementationOnce(() => {
       throw failure;
     });
     const writer = new Serializer({
@@ -287,8 +292,8 @@ describe('fatal streaming failures', () => {
     writer.write('late', 2);
     writer.flush();
     writer.close();
-    expect(onData).toHaveBeenCalledTimes(1);
-    expect(onDone).not.toHaveBeenCalled();
+    expect(onData).toHaveBeenCalledTimes(2);
+    expect(onDone).toHaveBeenCalledTimes(1);
   });
   it.each(['throw', 'reject', 'getter', 'serialize', 'parse'] as const)(
     'rejects producer with the reported %s reason',
