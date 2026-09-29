@@ -2,4 +2,4 @@
 'seroval': patch
 ---
 
-Select stateless binary helpers through package import conditions so browser builds omit native-only branches while default builds retain them. Keep existing validation, wire format and backing-buffer semantics.
+Keep binary helpers internal to the main bundles instead of requiring package `imports` resolution. Browser export conditions reuse the existing main entry points, preserving constructor and reference-store identities without requiring changes in older bundlers or React Native resolvers. Retain runtime Buffer detection, validation, wire format and backing-buffer semantics; omit the browser-only bundle-size optimization.

@@ -1,4 +1,4 @@
-import { encodeArrayBuffer } from '#seroval-binary';
+import { encodeArrayBuffer } from '../binary-neutral';
 import {
   createIndexedValueNode,
   createReferenceNode,

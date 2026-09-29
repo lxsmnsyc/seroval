@@ -1,4 +1,4 @@
-import { decodeArrayBuffer } from '#seroval-binary';
+import { decodeArrayBuffer } from '../binary-neutral';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import {
   CONSTANT_VAL,
@@ -25,7 +25,11 @@ import {
 } from '../errors';
 import type { PluginAccessOptions } from '../plugin';
 import { getReference } from '../reference';
-import { createSequence, type Sequence, sequenceToIterator } from '../sequence';
+import {
+  createSequence,
+  type Sequence,
+  sequenceToIterator,
+} from '../sequence';
 import type { Stream, StreamListener } from '../stream';
 import { streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';

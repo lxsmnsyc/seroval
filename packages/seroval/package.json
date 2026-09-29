@@ -50,39 +50,22 @@
   },
   "author": "Alexis Munsayac",
   "types": "./dist/index.d.cts",
-  "imports": {
-    "#seroval-binary": {
-      "types": "./dist/binary-neutral.d.ts",
-      "development": {
-        "browser": {
-          "import": "./dist/dev/binary-browser.js",
-          "require": "./dist/dev/binary-browser.cjs",
-          "default": "./dist/dev/binary-browser.js"
-        },
-        "default": {
-          "import": "./dist/dev/binary-neutral.js",
-          "require": "./dist/dev/binary-neutral.cjs",
-          "default": "./dist/dev/binary-neutral.js"
-        }
-      },
-      "browser": {
-        "import": "./dist/binary-browser.js",
-        "require": "./dist/binary-browser.cjs",
-        "default": "./dist/binary-browser.js"
-      },
-      "default": {
-        "import": "./dist/binary-neutral.js",
-        "require": "./dist/binary-neutral.cjs",
-        "default": "./dist/binary-neutral.js"
-      }
-    }
-  },
   "exports": {
     ".": {
       "development": {
+        "browser": {
+          "import": "./dist/dev/index.js",
+          "require": "./dist/dev/index.cjs",
+          "default": "./dist/dev/index.js"
+        },
         "import": "./dist/dev/index.js",
         "require": "./dist/dev/index.cjs",
         "default": "./dist/dev/index.js"
+      },
+      "browser": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs",
+        "default": "./dist/index.js"
       },
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
