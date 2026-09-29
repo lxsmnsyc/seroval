@@ -36,6 +36,12 @@ export function verifyRun(run, repository, defaultBranch, reports, pull) {
     assert.ok(pull, 'No current pull request matches this run');
     assert.equal(pull.state, 'open');
     assert.equal(pull.base.repo.full_name, repository);
+    assert.equal(
+      pull.head.repo.full_name,
+      run.head_repository.full_name,
+      'Wrong pull request head repository',
+    );
+    assert.equal(pull.head.ref, run.head_branch, 'Wrong pull request branch');
     assert.equal(pull.head.sha, run.head_sha, 'Stale pull request head');
     for (const report of reports) {
       assert.equal(
@@ -188,17 +194,32 @@ export async function publish(input, output) {
   const repo = await github(prefix);
   let pull;
   if (run.event === 'pull_request') {
-    const pulls = await github(
-      `${prefix}/commits/${run.head_sha}/pulls?per_page=100`,
-    );
-    pull = pulls.find(
-      item =>
-        item.state === 'open' &&
-        item.head.sha === run.head_sha &&
-        item.base.repo.full_name === repository,
-    );
-    if (pull) {
-      pull = await github(`${prefix}/pulls/${pull.number}`);
+    assert.match(run.head_repository.full_name, repositoryPattern);
+    assert.ok(run.head_branch, 'Missing run head branch');
+    const owner = run.head_repository.full_name.split('/')[0];
+    const head = encodeURIComponent(`${owner}:${run.head_branch}`);
+    // Fork runs may have neither commit-associated PRs nor pull_requests.
+    for (let page = 1; ; page++) {
+      const pulls = await github(
+        `${prefix}/pulls?head=${head}&state=open&per_page=100&page=${page}`,
+      );
+      pull = pulls.find(
+        item =>
+          item.state === 'open' &&
+          item.head.sha === run.head_sha &&
+          item.head.ref === run.head_branch &&
+          item.head.repo?.full_name === run.head_repository.full_name &&
+          item.base.repo.full_name === repository &&
+          reports.every(report => report.baseline?.revision === item.base.sha),
+      );
+      if (pull) {
+        pull = await github(`${prefix}/pulls/${pull.number}`);
+        break;
+      }
+      if (pulls.length < 100) {
+        break;
+      }
+      assert.ok(page < 100, 'Pull request pagination limit reached');
     }
   }
   const mode = verifyRun(run, repository, repo.default_branch, reports, pull);

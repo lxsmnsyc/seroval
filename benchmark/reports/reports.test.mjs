@@ -86,6 +86,8 @@ const candidateHistory = /candidates only/;
 const staleBase = /Stale pull request base/;
 const untrustedHistory = /Untrusted history/;
 const onlyPush = /Only push/;
+const noCurrentPull = /No current pull request matches/;
+const workflowStep = /^      - /m;
 
 test('schema accepts full size/speed reports and rejects missing, duplicate, malformed and incomplete results', () => {
   for (const kind of ['size', 'speed']) {
@@ -142,8 +144,11 @@ test('report shows an injected size increase, speed change, sample spread and mi
   assert.ok(comment(speed).includes('+0.250000 (+100.00%)'));
   assert.ok(comment(speed).includes('ranges separate'));
   assert.ok(comment(report('speed')).includes('ranges overlap'));
-  size.baseline = null;
-  assert.ok(comment(size).includes('baseline unavailable'));
+  for (const value of [size, speed]) {
+    value.baseline = null;
+    assert.ok(comment(value).includes('baseline unavailable'));
+    assert.equal(validateReport(value).baseline, null);
+  }
 });
 
 test('history creates, updates idempotently, orders and separates incompatible series', () => {
@@ -200,11 +205,15 @@ test('dashboard escapes artifact text and provides readable tables without JavaS
 function run(event = 'pull_request') {
   return {
     repository: { full_name: 'owner/seroval' },
-    head_repository: { full_name: 'owner/seroval' },
+    head_repository: {
+      full_name:
+        event === 'pull_request' ? 'contributor/seroval' : 'owner/seroval',
+    },
     path: '.github/workflows/benchmarks.yml',
     conclusion: 'success',
     head_sha: 'a'.repeat(40),
-    head_branch: 'main',
+    head_branch: event === 'pull_request' ? 'feat/benchmark-reports' : 'main',
+    pull_requests: [],
     event,
   };
 }
@@ -214,7 +223,11 @@ function pull() {
     state: 'open',
     number: 1,
     base: { sha: 'b'.repeat(40), repo: { full_name: 'owner/seroval' } },
-    head: { sha: 'a'.repeat(40), repo: { full_name: 'contributor/seroval' } },
+    head: {
+      sha: 'a'.repeat(40),
+      ref: 'feat/benchmark-reports',
+      repo: { full_name: 'contributor/seroval' },
+    },
   };
 }
 
@@ -227,6 +240,20 @@ test('publisher accepts current fork PRs but rejects wrong, stale and untrusted 
   assert.equal(
     verifyRun(run('push'), 'owner/seroval', 'main', reports),
     'history',
+  );
+  const sameRepositoryRun = run();
+  sameRepositoryRun.head_repository.full_name = 'owner/seroval';
+  const sameRepositoryPull = pull();
+  sameRepositoryPull.head.repo.full_name = 'owner/seroval';
+  assert.equal(
+    verifyRun(
+      sameRepositoryRun,
+      'owner/seroval',
+      'main',
+      reports,
+      sameRepositoryPull,
+    ),
+    'comment',
   );
   for (const change of [
     value => {
@@ -241,6 +268,12 @@ test('publisher accepts current fork PRs but rejects wrong, stale and untrusted 
     value => {
       value.repository.full_name = 'other/repo';
     },
+    value => {
+      value.head_repository.full_name = 'other/seroval';
+    },
+    value => {
+      value.head_branch = 'other-branch';
+    },
   ]) {
     const invalid = run();
     change(invalid);
@@ -254,6 +287,29 @@ test('publisher accepts current fork PRs but rejects wrong, stale and untrusted 
     () => verifyRun(run(), 'owner/seroval', 'main', reports, stale),
     staleBase,
   );
+  for (const change of [
+    value => {
+      value.state = 'closed';
+    },
+    value => {
+      value.base.repo.full_name = 'other/seroval';
+    },
+    value => {
+      value.head.repo.full_name = 'contributor/other';
+    },
+    value => {
+      value.head.ref = 'other-branch';
+    },
+    value => {
+      value.head.sha = 'c'.repeat(40);
+    },
+  ]) {
+    const invalid = pull();
+    change(invalid);
+    assert.throws(() =>
+      verifyRun(run(), 'owner/seroval', 'main', reports, invalid),
+    );
+  }
   const untrusted = run('push');
   untrusted.head_repository.full_name = 'fork/seroval';
   assert.throws(
@@ -264,6 +320,181 @@ test('publisher accepts current fork PRs but rejects wrong, stale and untrusted 
     () => verifyRun(run('workflow_dispatch'), 'owner/seroval', 'main', reports),
     onlyPush,
   );
+});
+
+test('fork publication discovers by trusted head, rechecks identity and updates only its comments', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'seroval-fork-publisher-'));
+  const eventPath = join(directory, 'event.json');
+  writeFileSync(
+    eventPath,
+    JSON.stringify({ workflow_run: { id: 11, pull_requests: [] } }),
+  );
+  for (const kind of ['size', 'speed']) {
+    writeFileSync(join(directory, `${kind}.json`), JSON.stringify(report(kind)));
+  }
+  const before = { ...process.env };
+  Object.assign(process.env, {
+    GH_TOKEN: 'test-token-not-a-secret',
+    GITHUB_REPOSITORY: 'owner/seroval',
+    GITHUB_EVENT_PATH: eventPath,
+  });
+  let current = pull();
+  let listed = [pull()];
+  let paginate = false;
+  const comments = [];
+  const writes = [];
+  const reads = [];
+  t.mock.method(globalThis, 'fetch', (url, options) => {
+    const path = String(url).slice(
+      'https://api.github.com/repos/owner/seroval'.length,
+    );
+    const reply = (value, status = 200) =>
+      Promise.resolve(new Response(JSON.stringify(value), { status }));
+    if (options.method !== 'GET') {
+      writes.push({ path, method: options.method });
+      assert.ok(path.startsWith('/issues/'), 'PR runs must not write history');
+      const { body } = JSON.parse(options.body);
+      if (options.method === 'POST') {
+        comments.push({
+          id: comments.length + 1,
+          user: { login: 'github-actions[bot]' },
+          body,
+        });
+      }
+      return reply({});
+    }
+    reads.push(path);
+    if (path === '/actions/runs/11') {
+      return reply({ ...run(), id: 11 });
+    }
+    if (path === '') {
+      return reply({ default_branch: 'main' });
+    }
+    if (path.startsWith('/commits/')) {
+      return reply([]);
+    }
+    const query =
+      '/pulls?head=contributor%3Afeat%2Fbenchmark-reports&state=open&per_page=100&page=';
+    if (path === `${query}1`) {
+      return reply(
+        paginate ? new Array(100).fill({ ...pull(), state: 'closed' }) : listed,
+      );
+    }
+    if (path === `${query}2` && paginate) {
+      return reply(listed);
+    }
+    if (path === '/pulls/1') {
+      return reply(current);
+    }
+    if (path === '/git/ref/heads/benchmark-results' || path === '/pages') {
+      return reply({}, 404);
+    }
+    if (path === '/issues/1/comments?per_page=100&page=1') {
+      return reply(comments);
+    }
+    throw new Error(`Unexpected API call: ${options.method} ${path}`);
+  });
+  try {
+    await publish(directory, join(directory, 'site'));
+    paginate = true;
+    await publish(directory, join(directory, 'site'));
+    assert.deepEqual(
+      writes.map(item => item.method),
+      ['POST', 'POST', 'PATCH', 'PATCH'],
+    );
+    assert.equal(comments.length, 2);
+    assert.ok(comments[0].body.startsWith('<!-- seroval-benchmark-size -->'));
+    assert.ok(comments[1].body.startsWith('<!-- seroval-benchmark-speed -->'));
+    assert.ok(!reads.some(path => path.startsWith('/commits/')));
+    assert.ok(reads.some(path => path.endsWith('page=2')));
+    paginate = false;
+    for (const change of [
+      value => {
+        value.state = 'closed';
+      },
+      value => {
+        value.head.sha = 'c'.repeat(40);
+      },
+      value => {
+        value.base.sha = 'c'.repeat(40);
+      },
+      value => {
+        value.head.repo.full_name = 'contributor/other';
+      },
+      value => {
+        value.base.repo.full_name = 'other/seroval';
+      },
+      value => {
+        value.head.ref = 'other-branch';
+      },
+    ]) {
+      const invalid = pull();
+      change(invalid);
+      listed = [invalid];
+      await assert.rejects(
+        publish(directory, join(directory, 'site')),
+        noCurrentPull,
+      );
+      // A matching list response cannot authorize a PR that changed afterward.
+      listed = [pull()];
+      current = invalid;
+      await assert.rejects(publish(directory, join(directory, 'site')));
+      assert.equal(writes.length, 4);
+    }
+    listed = [];
+    await assert.rejects(
+      publish(directory, join(directory, 'site')),
+      noCurrentPull,
+    );
+    assert.equal(writes.length, 4);
+  } finally {
+    for (const key of ['GH_TOKEN', 'GITHUB_REPOSITORY', 'GITHUB_EVENT_PATH']) {
+      if (before[key] === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = before[key];
+      }
+    }
+    rmSync(directory, { recursive: true });
+  }
+});
+
+test('measurement workflow tolerates only push baseline checkout failures and omits unavailable baselines', () => {
+  const workflow = readFileSync(
+    new URL('../../.github/workflows/benchmarks.yml', import.meta.url),
+    'utf8',
+  );
+  const steps = workflow.split(workflowStep).slice(1);
+  const checkout = steps.find(step => step.includes('id: baseline'));
+  assert.ok(
+    checkout.includes("continue-on-error: ${{ github.event_name == 'push' }}"),
+  );
+  assert.equal(
+    steps.filter(step => step.includes('continue-on-error:')).length,
+    1,
+  );
+  const baselineBuild = steps.find(step => step.includes('pnpm --dir baseline'));
+  assert.ok(baselineBuild.includes("if: steps.baseline.outcome == 'success'"));
+  const candidateBuild = steps.find(step =>
+    step.includes('pnpm --dir candidate'),
+  );
+  assert.ok(!candidateBuild.includes('if:'));
+  assert.ok(
+    steps.some(
+      step =>
+        step.includes("if: steps.baseline.outcome == 'failure'") &&
+        step.includes('::warning::') &&
+        step.includes('baseline unavailable'),
+    ),
+  );
+  for (const kind of ['size', 'speed']) {
+    const measurement = steps.find(step => step.includes(`--kind ${kind}`));
+    assert.ok(
+      measurement.includes(
+        "${{ steps.baseline.outcome == 'success' && '--baseline baseline' || '' }}",
+      ),
+    );
+  }
 });
 
 test('comment publication creates then updates only the bot-owned marker, including pagination', async () => {
@@ -463,6 +694,11 @@ test('publisher creates and incrementally maintains both dashboard artifacts and
       'speed/index.html',
     ]);
     assert.ok(messages.some(message => message.includes('::warning::')));
+    for (const kind of ['size', 'speed']) {
+      const value = report(kind);
+      value.baseline = null;
+      writeFileSync(join(input, `${kind}.json`), JSON.stringify(value));
+    }
     pagesEnabled = true;
     await publish(input, output);
     const history = JSON.parse(
