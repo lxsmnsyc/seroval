@@ -13,7 +13,7 @@ import {
 } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
-import type { PluginAccessOptions, SerovalMode } from '../plugin';
+import type { PluginAccessOptions } from '../plugin';
 import { getReferenceID } from '../reference';
 import {
   ASYNC_ITERATOR,
@@ -48,8 +48,6 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
 }
 
 export interface BaseParserContext extends PluginAccessOptions {
-  readonly mode: SerovalMode;
-
   marked: Set<number>;
 
   refs: Map<unknown, number>;
@@ -61,12 +59,10 @@ export interface BaseParserContext extends PluginAccessOptions {
 }
 
 export function createBaseParserContext(
-  mode: SerovalMode,
   options: BaseParserContextOptions,
 ): BaseParserContext {
   return {
     plugins: options.plugins,
-    mode,
     marked: new Set(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     refs: options.refs || new Map(),

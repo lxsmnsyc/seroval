@@ -12,6 +12,7 @@ import {
   ARRAY_BUFFER_CONSTRUCTOR,
   PROMISE_CONSTRUCTOR,
   type PromiseConstructorResolver,
+  STREAM_CONSTRUCTOR,
 } from '../constructors';
 import {
   SerovalConflictedNodeIdError,
@@ -23,7 +24,6 @@ import {
   SerovalUnsupportedNodeError,
 } from '../errors';
 import type { PluginAccessOptions } from '../plugin';
-import { SerovalMode } from '../plugin';
 import { getReference } from '../reference';
 import {
   createSequence,
@@ -31,7 +31,7 @@ import {
   sequenceToIterator,
 } from '../sequence';
 import type { Stream, StreamListener } from '../stream';
-import { createStream, streamToAsyncIterable } from '../stream';
+import { streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
@@ -105,7 +105,6 @@ export interface BaseDeserializerContextOptions extends PluginAccessOptions {
 }
 
 export interface BaseDeserializerContext extends PluginAccessOptions {
-  readonly mode: SerovalMode;
   /**
    * Mapping ids to values
    */
@@ -118,7 +117,6 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
 const DEFAULT_DEPTH_LIMIT = 1000;
 
 export function createBaseDeserializerContext(
-  mode: SerovalMode,
   options: BaseDeserializerContextOptions,
 ): BaseDeserializerContext {
   const maxBase64Length = options.maxBase64Length ?? DEFAULT_MAX_BASE64_LENGTH;
@@ -132,7 +130,6 @@ export function createBaseDeserializerContext(
     });
   }
   return {
-    mode,
     plugins: options.plugins,
     refs: refs as BaseDeserializerContext['refs'],
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
@@ -146,34 +143,23 @@ export interface VanillaDeserializerContextOptions
   markedRefs: number[] | Set<number>;
 }
 
-export interface VanillaDeserializerState {
-  marked: Set<number>;
-}
-
 export interface VanillaDeserializerContext {
-  mode: SerovalMode.Vanilla;
   base: BaseDeserializerContext;
-  child: DeserializePluginContext | undefined;
-  state: VanillaDeserializerState;
+  marked: Set<number>;
 }
 
 export function createVanillaDeserializerContext(
   options: VanillaDeserializerContextOptions,
 ): VanillaDeserializerContext {
   return {
-    mode: SerovalMode.Vanilla,
-    base: createBaseDeserializerContext(SerovalMode.Vanilla, options),
-    child: NIL,
-    state: {
-      marked: new Set(options.markedRefs),
-    },
+    base: createBaseDeserializerContext(options),
+    marked: new Set(options.markedRefs),
   };
 }
 
 export interface CrossDeserializerContext {
-  mode: SerovalMode.Cross;
   base: BaseDeserializerContext;
-  child: DeserializePluginContext | undefined;
+  marked?: undefined;
 }
 
 export type CrossDeserializerContextOptions = BaseDeserializerContextOptions;
@@ -182,9 +168,9 @@ export function createCrossDeserializerContext(
   options: CrossDeserializerContextOptions,
 ): CrossDeserializerContext {
   return {
-    mode: SerovalMode.Cross,
-    base: createBaseDeserializerContext(SerovalMode.Cross, options),
-    child: NIL,
+    base: createBaseDeserializerContext(options),
+    // Do not read an inherited `marked` accessor when registering references.
+    marked: undefined,
   };
 }
 
@@ -222,36 +208,17 @@ function isThennable(value: unknown): boolean {
   );
 }
 
-function assignIndexedValueVanilla<T>(
-  ctx: VanillaDeserializerContext,
-  id: number,
-  value: T,
-): T {
-  guardIndexedValue(ctx.base, id);
-  if (ctx.state.marked.has(id)) {
-    ctx.base.refs.set(id, value);
-  }
-  return value;
-}
-
-function assignIndexedValueCross<T>(
-  ctx: CrossDeserializerContext,
-  id: number,
-  value: T,
-): T {
-  guardIndexedValue(ctx.base, id);
-  ctx.base.refs.set(id, value);
-  return value;
-}
-
 function assignIndexedValue<T>(
   ctx: DeserializerContext,
   id: number,
   value: T,
 ): T {
-  return ctx.mode === SerovalMode.Vanilla
-    ? assignIndexedValueVanilla(ctx, id, value)
-    : assignIndexedValueCross(ctx, id, value);
+  guardIndexedValue(ctx.base, id);
+  const marked = ctx.marked;
+  if (!marked || marked.has(id)) {
+    ctx.base.refs.set(id, value);
+  }
+  return value;
 }
 
 function deserializeKnownValue<
@@ -492,12 +459,12 @@ function deserializeArrayBuffer(
   return assignIndexedValue(ctx, node.i, buffer);
 }
 
-function deserializeTypedArray(
+function deserializeView(
   ctx: DeserializerContext,
   depth: number,
-  node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
-): TypedArrayValue | BigIntTypedArrayValue {
-  const construct = getTypedArrayConstructor(node.c) as Int8ArrayConstructor;
+  node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode,
+  construct?: Int8ArrayConstructor,
+): TypedArrayValue | BigIntTypedArrayValue | DataView {
   const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
   // `node.f` is cast to an ArrayBuffer but is really any node the input picked.
   // Without this check a non-buffer source has an `undefined` `byteLength`, so
@@ -512,39 +479,13 @@ function deserializeTypedArray(
   if (offset < 0 || offset > source.byteLength) {
     throw new SerovalMalformedNodeError(node);
   }
-  const result = assignIndexedValue(
+  return assignIndexedValue(
     ctx,
     node.i,
-    new construct(source, offset, node.l),
+    construct
+      ? new construct(source, offset, node.l)
+      : new DataView(source, offset, node.l),
   );
-  return result;
-}
-
-function deserializeDataView(
-  ctx: DeserializerContext,
-  depth: number,
-  node: SerovalDataViewNode,
-): DataView {
-  const source = deserialize(ctx, depth, node.f) as ArrayBuffer;
-  // `node.f` is cast to an ArrayBuffer but is really any node the input picked.
-  // Without this check a non-buffer source has an `undefined` `byteLength`, so
-  // the offset bound below is silently bypassed.
-  if (!(source instanceof ArrayBuffer)) {
-    throw new SerovalMalformedNodeError(node);
-  }
-  const offset = node.b ?? 0;
-  // The backing buffer is already capped at ArrayBuffer deserialization, and the
-  // view constructor throws when offset + length exceeds it, so `node.l` needs
-  // no separate bound here.
-  if (offset < 0 || offset > source.byteLength) {
-    throw new SerovalMalformedNodeError(node);
-  }
-  const result = assignIndexedValue(
-    ctx,
-    node.i,
-    new DataView(source, offset, node.l),
-  );
-  return result;
 }
 
 function deserializeDictionary<T extends AssignableValue>(
@@ -726,7 +667,12 @@ function deserializeStreamConstructor(
   depth: number,
   node: SerovalStreamConstructorNode,
 ): unknown {
-  const result = assignIndexedValue(ctx, node.i, createStream());
+  // Anything but the exact live marker builds a replay receiver.
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    STREAM_CONSTRUCTOR(node.l === 1 ? 1 : NIL),
+  );
   assignNodeType(ctx, node.i, SerovalNodeType.StreamConstructor);
   const items = node.a;
   const len = items.length;
@@ -834,9 +780,14 @@ function deserialize(
       return deserializeArrayBuffer(ctx, node);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
-      return deserializeTypedArray(ctx, depth, node);
+      return deserializeView(
+        ctx,
+        depth,
+        node,
+        getTypedArrayConstructor(node.c) as Int8ArrayConstructor,
+      );
     case SerovalNodeType.DataView:
-      return deserializeDataView(ctx, depth, node);
+      return deserializeView(ctx, depth, node);
     case SerovalNodeType.AggregateError:
       return deserializeAggregateError(ctx, depth, node);
     case SerovalNodeType.Error:

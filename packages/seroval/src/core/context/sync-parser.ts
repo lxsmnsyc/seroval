@@ -26,7 +26,7 @@ import {
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { isLiveStream, type LiveStream } from '../live-stream';
 import { OpaqueReference } from '../opaque-reference';
-import type { Plugin, SerovalMode } from '../plugin';
+import type { Plugin } from '../plugin';
 import {
   createSequenceFromIterable,
   isSequence,
@@ -99,17 +99,14 @@ export const enum ParserMode {
 export interface SyncParserContext {
   type: ParserMode.Sync;
   base: BaseParserContext;
-  child: SyncParsePluginContext | undefined;
 }
 
 export function createSyncParserContext(
-  mode: SerovalMode,
   options: SyncParserContextOptions,
 ): SyncParserContext {
   return {
     type: ParserMode.Sync,
-    base: createBaseParserContext(mode, options),
-    child: NIL,
+    base: createBaseParserContext(options),
   };
 }
 
@@ -434,12 +431,16 @@ function parseLiveStream(
   id: number,
   current: LiveStream<unknown>,
 ): SerovalNode {
+  // Only incremental output gets a live receiver: its factory subscribes while
+  // the root record is evaluated. A sync parse never delivers events.
+  const stream = ctx.type === ParserMode.Stream;
   const result = createStreamConstructorNode(
     id,
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
+    stream ? 1 : NIL,
   );
-  if (ctx.type === ParserMode.Stream) {
+  if (stream) {
     ctx.state.live(ctx, depth, id, current);
   }
   return result;

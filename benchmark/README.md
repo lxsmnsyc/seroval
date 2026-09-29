@@ -1,5 +1,9 @@
 # benchmarks
 
+## Object-key lengths
+
+[Object-key benchmark results and reproduction steps](./object-key-lengths.md) compare the string-codec PR with upstream using actual object properties of 2, 4, 8, 12, 16, and 32 code units.
+
 ## Libraries
 
 - [`devalue` by Rich Harris](https://github.com/Rich-Harris/devalue)

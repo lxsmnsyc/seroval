@@ -320,6 +320,26 @@ that produced the tree. To move a value across a boundary, send the JSON and
 call `fromJSON` on the receiving side, or send the output of `serialize` and
 evaluate it only where the sender is trusted.
 
+### Decoded values come from the sender
+
+`fromJSON` checks that a tree is well formed. It does not check whether the
+values in it are safe for your application to use. Treat every decoded value as
+input from the sender.
+
+A decoded `RegExp` is the sender's pattern. seroval rebuilds it but never runs
+it. Running an untrusted pattern against other input can take a very long time
+if the pattern backtracks, for example `/(a+)+$/`. Only run a decoded `RegExp`
+if you trust the sender.
+
+If you decode untrusted input and do not need `RegExp`, disable it. A tree that
+contains a `RegExp` is then rejected.
+
+```ts
+import { Feature, fromJSON } from 'seroval';
+
+const value = fromJSON(json, { disabledFeatures: Feature.RegExp });
+```
+
 ## Push-based streaming serialization
 
 > [!NOTE]

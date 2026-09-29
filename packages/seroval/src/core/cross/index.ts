@@ -23,7 +23,7 @@ import type {
   SyncParserContextOptions,
 } from '../context/sync-parser';
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
-import { resolvePlugins, SerovalMode } from '../plugin';
+import { resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 
 export interface CrossSerializeOptions
@@ -35,7 +35,7 @@ export function crossSerialize<T>(
   options: CrossSerializeOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Cross, {
+  const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,
@@ -61,7 +61,7 @@ export async function crossSerializeAsync<T>(
   options: CrossSerializeAsyncOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Cross, {
+  const ctx = createAsyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,
@@ -85,7 +85,7 @@ export function toCrossJSON<T>(
   options: ToCrossJSONOptions = {},
 ): SerovalNode {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Cross, {
+  const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,
@@ -102,7 +102,7 @@ export async function toCrossJSONAsync<T>(
   options: ToCrossJSONAsyncOptions = {},
 ): Promise<SerovalNode> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Cross, {
+  const ctx = createAsyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
     plugins,

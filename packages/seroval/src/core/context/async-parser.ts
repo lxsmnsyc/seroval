@@ -26,7 +26,6 @@ import {
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
-import type { SerovalMode } from '../plugin';
 import {
   createSequenceFromIterable,
   isSequence,
@@ -98,16 +97,13 @@ export type AsyncParserContextOptions = BaseParserContextOptions;
 
 export interface AsyncParserContext {
   base: BaseParserContext;
-  child: AsyncParsePluginContext | undefined;
 }
 
 export function createAsyncParserContext(
-  mode: SerovalMode,
   options: AsyncParserContextOptions,
 ): AsyncParserContext {
   return {
-    base: createBaseParserContext(mode, options),
-    child: undefined,
+    base: createBaseParserContext(options),
   };
 }
 
