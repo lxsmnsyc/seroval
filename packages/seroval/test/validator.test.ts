@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { v } from '../src';
+import { arrayBufferValidator, stringValidator, v } from '../src';
 
 describe('validator helpers', () => {
+  it('keeps named guards identical to the namespace guards', () => {
+    expect(stringValidator).toBe(v.string);
+    expect(arrayBufferValidator).toBe(v.arrayBuffer);
+    expect(stringValidator('value')).toBe(true);
+    expect(stringValidator(1)).toBe(false);
+    expect(arrayBufferValidator(new ArrayBuffer(1))).toBe(true);
+    expect(arrayBufferValidator(new Uint8Array(1))).toBe(false);
+  });
+
   it('validates primitives', () => {
     expect(v.string('a')).toBe(true);
     expect(v.string(1)).toBe(false);

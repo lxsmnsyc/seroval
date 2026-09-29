@@ -1,5 +1,10 @@
 import type { SerovalNode } from 'seroval';
-import { createPlugin, SerovalPluginValidationError, v } from 'seroval';
+import {
+  arrayBufferValidator,
+  createPlugin,
+  SerovalPluginValidationError,
+  stringValidator,
+} from 'seroval';
 
 const TAG = 'seroval-plugins/web/Blob';
 
@@ -37,10 +42,10 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
     const buffer = ctx.deserialize(node.buffer);
     const type = ctx.deserialize(node.type);
     // The payload is untrusted; reject anything that is not what we serialized.
-    if (!v.arrayBuffer(buffer)) {
+    if (!arrayBufferValidator(buffer)) {
       throw new SerovalPluginValidationError(TAG);
     }
-    if (!v.string(type)) {
+    if (!stringValidator(type)) {
       throw new SerovalPluginValidationError(TAG);
     }
     return new Blob([buffer], { type });
