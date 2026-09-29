@@ -1,5 +1,7 @@
 packages:
   - packages/**/*
   - benchmark
-onlyBuiltDependencies:
-  - esbuild
+allowBuilds:
+  esbuild: true
+linkWorkspacePackages: true
+preferWorkspacePackages: true
