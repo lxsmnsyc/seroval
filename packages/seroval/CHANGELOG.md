@@ -1,5 +1,16 @@
 # seroval
 
+## 1.6.8
+
+### Patch Changes
+
+- 5d3eb6b: Reject functions that carry a `then` method as promise values during `fromJSON` and `fromCrossJSON` deserialization, the same as thenable objects.
+- 15636e7: Stop reading an iterable at the first error thrown by its `next()` during serialization. An iterator that always threw previously made serialization loop forever.
+- 50926b3: Check that an iterator or async iterator's source is a genuine sequence or stream during `fromJSON` deserialization. Previously the check used the type recorded for the source's id, and an id missing from `m` could be reused to pass a plain object as the source.
+- 3edc78b: Back the internal `Stream` and `Sequence` types with real classes and check their identity with `instanceof` instead of a marker property. Untrusted input can no longer forge a stream or sequence by copying a `__SEROVAL_STREAM__` or `__SEROVAL_SEQUENCE__` key. A stream or sequence read back through the eval-based `deserialize` is a plain object rather than a class instance, so re-serializing that value no longer detects it as a stream or sequence.
+- cdcee3e: Validate that a node's element list is a genuine array during `fromJSON` and `fromCrossJSON` deserialization, rejecting malformed input where the list is replaced by an array-like object.
+- e176f92: Validate a sequence node's throw and done indices during `fromJSON` and `fromCrossJSON` deserialization. Each must be an integer from -1 up to the last element index. A malformed index could previously produce an iterator that never finishes.
+
 ## 1.6.7
 
 ### Patch Changes
