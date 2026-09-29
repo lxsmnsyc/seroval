@@ -330,7 +330,10 @@ function onEnd() {
 
 `pending` increases when a promise or stream is created and decreases when
 its resolve, reject, return, or throw record is deserialized; stream values do
-not change it. `abort` is idempotent, and a session that has been aborted
+not change it. Synchronous iterables are not pending deferred values. If a
+listener throws during `abort`, the remaining deferred values are still aborted
+before the first listener error is rethrown. `abort` is idempotent, and a session
+that has been aborted
 throws `SerovalAbortedError` from `deserialize` instead of creating new
 deferred values that nothing could abort. Rejections produced by `abort` are
 not suppressed; observe them the same way as server-sent rejections. Values

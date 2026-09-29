@@ -322,7 +322,6 @@ function assignNodeType(
   type: SerovalNodeType,
 ): void {
   ctx.base.refs.types.set(id, type);
-  ctx.base.pending?.add(id);
 }
 
 function validateNodeType(
@@ -608,6 +607,7 @@ function deserializePromiseConstructor(
     assignIndexedValue(ctx, node.s, PROMISE_CONSTRUCTOR()).p,
   );
   assignNodeType(ctx, node.s, SerovalNodeType.PromiseConstructor);
+  ctx.base.pending?.add(node.s);
   return value;
 }
 
@@ -684,6 +684,7 @@ function deserializeStreamConstructor(
     STREAM_CONSTRUCTOR(node.l === 1 ? 1 : NIL),
   );
   assignNodeType(ctx, node.i, SerovalNodeType.StreamConstructor);
+  ctx.base.pending?.add(node.i);
   const items = node.a;
   const len = items.length;
   if (len) {
@@ -868,13 +869,21 @@ export function abortDeferred(ctx: DeserializerContext, reason: unknown): void {
   if (pending) {
     ctx.base.pending = NIL;
     const refs = ctx.base.refs;
+    const errors: unknown[] = [];
     for (const id of pending) {
-      const value = refs.get(id);
-      if (refs.types.get(id) === SerovalNodeType.PromiseConstructor) {
-        (value as PromiseConstructorResolver).f(reason);
-      } else {
-        (value as Stream<unknown>).throw(reason);
+      try {
+        const value = refs.get(id);
+        if (refs.types.get(id) === SerovalNodeType.PromiseConstructor) {
+          (value as PromiseConstructorResolver).f(reason);
+        } else {
+          (value as Stream<unknown>).throw(reason);
+        }
+      } catch (error) {
+        errors.push(error);
       }
+    }
+    if (errors.length) {
+      throw errors[0];
     }
   }
 }

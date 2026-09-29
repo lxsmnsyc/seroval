@@ -47,6 +47,65 @@ function listener<T>(): StreamListener<T> {
 }
 
 describe('createCrossDeserializer', () => {
+  it('does not count synchronous iterables as pending', async () => {
+    const records = await collect({
+      it: {
+        *[Symbol.iterator]() {
+          yield 1;
+        },
+      },
+      promise: Promise.resolve('done'),
+    });
+    const session = createCrossDeserializer({});
+    const result = session.deserialize<{
+      it: Iterable<number>;
+      promise: Promise<string>;
+    }>(records[0]);
+    expect(session.pending).toBe(1);
+    for (const record of records.slice(1)) {
+      session.deserialize(record);
+    }
+    expect([...result.it]).toEqual([1]);
+    await expect(result.promise).resolves.toBe('done');
+    expect(session.pending).toBe(0);
+    expect(() => session.abort(new Error('closed'))).not.toThrow();
+  });
+
+  it('aborts every deferred even when a stream listener throws', async () => {
+    const first = createStream();
+    const second = createStream();
+    const records = await collect(
+      { first, second, promise: Promise.resolve('done') },
+      {
+        after() {
+          first.return(undefined);
+          second.return(undefined);
+        },
+      },
+    );
+    const session = createCrossDeserializer({});
+    const result = session.deserialize<{
+      first: Stream<unknown>;
+      second: Stream<unknown>;
+      promise: Promise<string>;
+    }>(records[0]);
+    const failure = new Error('listener failed');
+    result.first.on({
+      ...listener(),
+      throw() {
+        throw failure;
+      },
+    });
+    const secondListener = listener();
+    result.second.on(secondListener);
+    const reason = new Error('transport failed');
+    expect(() => session.abort(reason)).toThrow(failure);
+    expect(secondListener.throw).toHaveBeenCalledWith(reason);
+    await expect(result.promise).rejects.toBe(reason);
+    expect(session.pending).toBe(0);
+    expect(() => session.abort(reason)).not.toThrow();
+  });
+
   it('rejects pending promises with the abort reason', async () => {
     const records = await collect({
       settled: Promise.resolve('done'),
