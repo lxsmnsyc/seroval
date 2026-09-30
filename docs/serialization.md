@@ -328,10 +328,12 @@ function onEnd() {
 }
 ```
 
-`pending` increases when a promise or stream is created and decreases when
-its resolve, reject, return, or throw record is deserialized; stream values do
-not change it. Synchronous iterables are not pending deferred values. If a
-listener throws during `abort`, the remaining deferred values are still aborted
+`pending` increases when a promise or stream is created and decreases after
+its resolve, reject, return, or throw record is processed successfully; stream
+values do not change it. Malformed settlement records leave deferred values
+pending so `abort` can still fail them. Synchronous iterables are not pending
+deferred values. If a listener throws during `abort`, the remaining deferred
+values are still aborted
 before the first listener error is rethrown. `abort` is idempotent, and a session
 that has been aborted
 throws `SerovalAbortedError` from `deserialize` instead of creating new
@@ -340,6 +342,20 @@ not suppressed; observe them the same way as server-sent rejections. Values
 produced by plugins are not tracked, so a plugin that returns its own promise
 must settle it itself. `fromCrossJSON` keeps working with a bare `refs` map and
 does not track anything.
+
+## Streaming completion and errors
+
+The dispose functions returned by `crossSerializeStream` and `toCrossJSONStream`
+abandon output and cancel their sources without calling `onDone`. Close any
+transport owned by the caller when disposing, rather than relying on `onDone`.
+Normal completion still calls `onDone` after accepted output drains.
+
+`Serializer.close()` continues to call `onDone`. A failure in one
+`Serializer.write()` is reported to the required `onError` handler and stops only
+that write; healthy sibling streams and later writes continue. After `flush()`,
+`onDone` runs once all writes have either completed or failed. Handle errors in
+`onError`: throwing from a handler invoked asynchronously can cause an unhandled
+promise rejection.
 
 ## Trust boundary
 

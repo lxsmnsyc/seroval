@@ -270,7 +270,8 @@ describe('ReadableStream', () => {
 
       expect(cancelSpy).toBeCalledTimes(1);
       expect(onSerializeSpy).toBeCalledTimes(1);
-      expect(onDoneSpy).toBeCalledTimes(1);
+      // Explicit interruption is cancellation, not successful completion.
+      expect(onDoneSpy).not.toHaveBeenCalled();
     });
     describe('scoped', () => {
       it('supports ReadableStream', async () =>

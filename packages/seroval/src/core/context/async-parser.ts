@@ -24,6 +24,7 @@ import {
   SerovalUnsupportedTypeError,
 } from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
+import { isLiveStream, type LiveStream } from '../live-stream';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
 import {
@@ -115,6 +116,14 @@ export class AsyncParsePluginContext {
 
   parse<T>(current: T): Promise<SerovalNode> {
     return parseAsync(this._p, this.depth, current);
+  }
+
+  parseStreamSource(current: AsyncIterable<unknown>): Promise<SerovalNode> {
+    const ctx = this._p;
+    if (this.depth >= ctx.base.depthLimit) {
+      throw new SerovalDepthLimitError(ctx.base.depthLimit);
+    }
+    return parseAsyncIterable(ctx, this.depth + 1, current);
   }
 }
 
@@ -374,11 +383,26 @@ function parseStreamHandle<T>(
   this: AsyncParserContext,
   depth: number,
   id: number,
-  current: Stream<T>,
+  current: Stream<T> | LiveStream<T>,
   resolve: (value: SerovalNode[] | PromiseLike<SerovalNode[]>) => void,
   reject: (reason?: any) => void,
 ): void {
-  const sequence: SerovalNode[] = [];
+  // Reserve arrival order; a terminal event must wait for earlier parses.
+  const sequence: (SerovalNode | undefined)[] = [];
+  let unparsed = 0;
+  let ended = false;
+  let settled = false;
+  const fail = (error: unknown): void => {
+    if (!settled) {
+      settled = true;
+      try {
+        cleanup(error);
+      } catch (_error) {
+        // A cleanup failure must not replace the parse failure.
+      }
+      reject(error);
+    }
+  };
   const handle =
     (
       type:
@@ -386,34 +410,50 @@ function parseStreamHandle<T>(
         | SerovalNodeType.StreamThrow
         | SerovalNodeType.StreamReturn,
     ) =>
-    (value: unknown): void => {
+    (value: unknown, accept?: () => void): void => {
+      if (settled) {
+        return;
+      }
       markParserRef(this.base, id);
-      parseAsync(this, depth, value).then(
-        data => {
-          sequence.push(createStreamEventNode(type, id, data));
-          if (type !== SerovalNodeType.StreamNext) {
-            resolve(sequence);
-            cleanup();
+      const slot = sequence.push(NIL) - 1;
+      unparsed++;
+      if (type !== SerovalNodeType.StreamNext) {
+        ended = true;
+      }
+      parseAsync(this, depth, value).then(data => {
+        if (!settled) {
+          sequence[slot] = createStreamEventNode(type, id, data);
+          unparsed--;
+          accept?.();
+          if (ended && unparsed === 0) {
+            settled = true;
+            try {
+              cleanup();
+            } catch (error) {
+              reject(error);
+              return;
+            }
+            // Every reserved slot has been filled.
+            resolve(sequence as SerovalNode[]);
           }
-        },
-        data => {
-          reject(data);
-          cleanup();
-        },
-      );
+        }
+      }, fail);
     };
-  const cleanup = current.on({
+  const listener = {
     next: handle(SerovalNodeType.StreamNext),
     throw: handle(SerovalNodeType.StreamThrow),
     return: handle(SerovalNodeType.StreamReturn),
-  });
+  };
+  const cleanup: (reason?: unknown) => void = isLiveStream(current)
+    ? current.pump(listener)
+    : current.on(listener);
 }
 
 async function parseStream(
   ctx: AsyncParserContext,
   depth: number,
   id: number,
-  current: Stream<unknown>,
+  current: Stream<unknown> | LiveStream<unknown>,
 ): Promise<SerovalStreamConstructorNode> {
   return createStreamConstructorNode(
     id,

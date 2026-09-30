@@ -1,0 +1,69 @@
+name: Bug report
+description: Report something in seroval or seroval-plugins that does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report security vulnerabilities here. Follow the [security policy](https://github.com/lxsmnsyc/seroval/blob/main/SECURITY.md) instead.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - seroval
+        - seroval-plugins
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version of the package you use.
+      placeholder: 1.6.8
+    validations:
+      required: true
+  - type: dropdown
+    id: api
+    attributes:
+      label: API
+      description: Which APIs show the bug?
+      multiple: true
+      options:
+        - serialize / serializeAsync
+        - deserialize
+        - toJSON / toJSONAsync / fromJSON
+        - crossSerialize / crossSerializeAsync / crossSerializeStream
+        - toCrossJSON / toCrossJSONAsync / toCrossJSONStream / fromCrossJSON
+        - compileJSON
+        - Serializer
+        - Plugins
+        - Other
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened
+      description: Describe the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: The smallest code that shows the bug. A link to a repository or playground also works.
+      render: js
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Runtime and version, for example Node.js 22, Bun 1.2, or Chrome 140.
+    validations:
+      required: true

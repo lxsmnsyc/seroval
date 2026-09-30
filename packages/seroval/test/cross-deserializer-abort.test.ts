@@ -10,6 +10,7 @@ import {
   toCrossJSONStream,
   toJSON,
 } from '../src';
+import { SerovalNodeType } from '../src/core/constants';
 
 interface CollectOptions {
   plugins?: Parameters<typeof toCrossJSONStream>[1]['plugins'];
@@ -123,6 +124,22 @@ describe('createCrossDeserializer', () => {
     await expect(result.pending).rejects.toBe(reason);
   });
 
+  it('keeps a promise abortable when its settlement record is malformed', async () => {
+    const records = await collect(Promise.resolve('done'));
+    const session = createCrossDeserializer({});
+    const promise = session.deserialize<Promise<string>>(records[0]);
+    const settlement = records[1];
+    if (settlement.t !== SerovalNodeType.PromiseSuccess) {
+      throw new Error('Expected a promise settlement record');
+    }
+    Object.assign(settlement.a[1], { t: SerovalNodeType.IndexedValue, i: 0 });
+    expect(() => session.deserialize(settlement)).toThrow();
+    expect(session.pending).toBe(1);
+    const reason = new Error('transport failed');
+    session.abort(reason);
+    await expect(promise).rejects.toBe(reason);
+  });
+
   it('rejects promises created by later records', async () => {
     const records = await collect(Promise.resolve({ inner: later('inner') }));
     const session = createCrossDeserializer({});
@@ -173,6 +190,32 @@ describe('createCrossDeserializer', () => {
     expect(doneListener.next).toHaveBeenCalledWith('done');
     expect(doneListener.return).toHaveBeenCalledWith('end');
     expect(doneListener.throw).not.toHaveBeenCalled();
+  });
+
+  it('keeps a stream abortable when its return record is malformed', async () => {
+    const stream = createStream<number>();
+    const records = await collect(stream, {
+      after() {
+        stream.return(1);
+      },
+    });
+    const session = createCrossDeserializer({});
+    const result = session.deserialize<Stream<number>>(records[0]);
+    const settlement = records[records.length - 1];
+    if (settlement.t !== SerovalNodeType.StreamReturn) {
+      throw new Error('Expected a stream return record');
+    }
+    Object.assign(settlement.f, {
+      t: SerovalNodeType.BigInt,
+      s: 'not-a-bigint',
+    });
+    expect(() => session.deserialize(settlement)).toThrow();
+    expect(session.pending).toBe(1);
+    const sink = listener<number>();
+    result.on(sink);
+    const reason = new Error('transport failed');
+    session.abort(reason);
+    expect(sink.throw).toHaveBeenCalledWith(reason);
   });
 
   it('rejects a pending next() of an async iterable', async () => {

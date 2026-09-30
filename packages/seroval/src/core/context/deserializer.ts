@@ -1,3 +1,4 @@
+import { decodeArrayBuffer } from '../binary-neutral';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import {
   CONSTANT_VAL,
@@ -9,7 +10,6 @@ import {
   TEMPORAL_TYPE_NAME,
 } from '../constants';
 import {
-  ARRAY_BUFFER_CONSTRUCTOR,
   PROMISE_CONSTRUCTOR,
   type PromiseConstructorResolver,
   STREAM_CONSTRUCTOR,
@@ -75,7 +75,6 @@ import { getTypedArrayConstructor } from '../utils/typed-array';
 import { isValidKey, isValidSymbol } from '../utils/valid-properties';
 
 const DEFAULT_MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
-const MIN_NATIVE_BASE64_LENGTH = 512;
 const MAX_BIGINT_LENGTH = 10_000;
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
@@ -329,13 +328,9 @@ function validateNodeType(
   node: SerovalNode,
   id: number,
   type: SerovalNodeType,
-  settles?: 1,
 ): asserts id is SerovalNodeType {
   if (ctx.base.refs.types.get(id) !== type) {
     throw new SerovalMalformedNodeError(node);
-  }
-  if (settles) {
-    ctx.base.pending?.delete(id);
   }
 }
 
@@ -453,18 +448,7 @@ function deserializeArrayBuffer(
     );
   }
   const source = deserializeString(node.s);
-  let buffer: ArrayBuffer;
-  if (
-    source.length < MIN_NATIVE_BASE64_LENGTH ||
-    typeof Buffer === 'undefined'
-  ) {
-    buffer = ARRAY_BUFFER_CONSTRUCTOR(source);
-  } else {
-    // Keep atob's validation; Buffer's base64 decoder accepts malformed input.
-    const decoded = atob(source);
-    buffer = new ArrayBuffer(decoded.length);
-    Buffer.from(buffer).write(decoded, 'latin1');
-  }
+  const buffer = decodeArrayBuffer(source);
   return assignIndexedValue(ctx, node.i, buffer);
 }
 
@@ -620,7 +604,7 @@ function deserializePromiseFulfill(
     | PromiseConstructorResolver
     | undefined;
   if (deferred) {
-    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor, 1);
+    validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
     const deserialized = deserialize(ctx, depth, node.a[1]);
     if (isThennable(deserialized)) {
       throw new SerovalMalformedNodeError(node.a[1]);
@@ -630,6 +614,7 @@ function deserializePromiseFulfill(
     } else {
       deferred.f(deserialized);
     }
+    ctx.base.pending?.delete(node.i);
     return NIL;
   }
   throw new SerovalMissingInstanceError('Promise');
@@ -706,14 +691,11 @@ function deserializeStreamCall(
 ): unknown {
   const deferred = ctx.base.refs.get(node.i) as Stream<unknown> | undefined;
   if (deferred) {
-    validateNodeType(
-      ctx,
-      node,
-      node.i,
-      SerovalNodeType.StreamConstructor,
-      method === 'next' ? undefined : 1,
-    );
+    validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
     deferred[method](deserialize(ctx, depth, node.f));
+    if (method !== 'next') {
+      ctx.base.pending?.delete(node.i);
+    }
     return NIL;
   }
   throw new SerovalMissingInstanceError('Stream');

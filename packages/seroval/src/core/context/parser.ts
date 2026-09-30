@@ -1,3 +1,4 @@
+import { encodeArrayBuffer } from '../binary-neutral';
 import {
   createIndexedValueNode,
   createReferenceNode,
@@ -410,21 +411,6 @@ export function getArrayBufferView<T extends ArrayBufferView>(
   ).slice().buffer;
   const Constructor = current.constructor as new (buffer: ArrayBuffer) => T;
   return new Constructor(buffer);
-}
-
-function encodeArrayBuffer(current: ArrayBuffer): string {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(current).toString('base64');
-  }
-  const bytes = new Uint8Array(current);
-  if (typeof bytes.toBase64 === 'function') {
-    return bytes.toBase64();
-  }
-  let result = '';
-  for (let i = 0, len = bytes.length; i < len; i++) {
-    result += String.fromCharCode(bytes[i]);
-  }
-  return btoa(result);
 }
 
 export function createArrayBufferNode(
