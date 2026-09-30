@@ -30,12 +30,15 @@ function signed(value, digits = 0) {
   return `${value > 0 ? '+' : ''}${value.toFixed(digits)}`;
 }
 
-function delta(value, baseline, digits = 0) {
+function sizeDelta(value, baseline, percent = false) {
   if (baseline === undefined) {
     return 'baseline unavailable';
   }
+  if (value === baseline) {
+    return '—';
+  }
   const change = difference(value, baseline);
-  return `${signed(change.absolute, digits)} (${change.percent === null ? 'n/a' : `${signed(change.percent, 2)}%`})`;
+  return `${signed(change.absolute)} B${percent ? ` (${signed(change.percent, 2)}%)` : ''}`;
 }
 
 function sparkline(values) {
@@ -59,18 +62,55 @@ export function comment(
 ) {
   validateReport(report);
   validateHistory(history);
-  const title =
-    report.kind === 'size'
-      ? 'Bundle Size Benchmarks'
-      : 'Runtime Speed Benchmarks';
+  const size = report.kind === 'size';
+  const rows = report.candidate.rows
+    .map(row => {
+      const before = report.baseline?.rows.find(item => item.id === row.id);
+      const current = size ? row : statistics(row.samples);
+      const base = before && (size ? before : statistics(before.samples));
+      const change =
+        base &&
+        difference(
+          size ? current.gzip : current.median,
+          size ? base.gzip : base.median,
+        );
+      return { row, current, base, change };
+    })
+    .filter(
+      ({ current, base, change }) =>
+        !base ||
+        (size
+          ? current.raw !== base.raw ||
+            current.gzip !== base.gzip ||
+            current.brotli !== base.brotli
+          : Math.abs(change.percent) >= 5),
+    )
+    .sort((a, b) => {
+      if (!(a.change && b.change)) {
+        return 0;
+      }
+      return size
+        ? b.change.absolute - a.change.absolute
+        : a.change.percent - b.change.percent;
+    })
+    .map(entry => ({
+      ...entry,
+      historyValues: trend(history, report, entry.row.id),
+    }));
+  const hasTrend = rows.some(entry => entry.historyValues.length > 0);
+  const hidden = report.candidate.rows.length - rows.length;
   const lines = [
     `<!-- seroval-benchmark-${report.kind} -->`,
-    `## ${title}`,
+    `## ${size ? 'Bundle Size Benchmarks' : 'Runtime Speed Benchmarks'}`,
     '',
-    `- Candidate: \`${report.candidate.revision}\``,
-    `- Baseline: ${report.baseline ? `\`${report.baseline.revision}\` (paired run)` : 'unavailable'}`,
-    `- Measured: ${report.measuredAt}`,
-    `- Series: \`${seriesId(report).slice(0, 12)}\``,
+    `${report.baseline ? `\`${report.baseline.revision.slice(0, 8)}\`` : 'baseline unavailable'} → \`${report.candidate.revision.slice(0, 8)}\``,
+    '',
+    report.baseline
+      ? size
+        ? `**${rows.length} changed · ${hidden} unchanged hidden.**`
+        : `**${rows.length} shown · ${hidden} below the 5% display filter hidden.**`
+      : `**${rows.length} shown · baseline unavailable; no rows filtered.**`,
+    '',
   ];
   if (links.dashboard) {
     lines.push(`- [History dashboard](${links.dashboard}/${report.kind}/)`);
@@ -78,42 +118,66 @@ export function comment(
   if (links.run) {
     lines.push(`- [Run and raw result artifacts](${links.run})`);
   }
-  lines.push(
-    '',
-    report.kind === 'size'
-      ? '| Scenario | Gzip B | Change | Raw B | Change | Brotli B | Change | Gzip trend |'
-      : '| Scenario | Median ms/op | Change | Baseline range ms | Candidate range ms | Observation | Median trend |',
-    report.kind === 'size'
-      ? '| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |'
-      : '| --- | ---: | ---: | --- | --- | --- | --- |',
-  );
-  for (const row of report.candidate.rows) {
-    const before = report.baseline?.rows.find(item => item.id === row.id);
-    const current =
-      report.kind === 'size' ? row.gzip : statistics(row.samples).median;
-    const historyValues = trend(history, report, row.id);
-    const chart = sparkline([...historyValues, current]);
-    if (report.kind === 'size') {
+  if (rows.length) {
+    lines.push(
+      '',
+      size
+        ? `| Scenario | Gzip size | Gzip change | Raw change | Brotli change |${hasTrend ? ' Gzip trend |' : ''}`
+        : `| Scenario | Median µs/op | Time change |${hasTrend ? ' Median trend |' : ''}`,
+      `${size ? '| --- | ---: | ---: | ---: | ---: |' : '| --- | ---: | ---: |'}${hasTrend ? ' --- |' : ''}`,
+    );
+    for (const { row, current, base, change, historyValues } of rows) {
+      const chart = hasTrend
+        ? ` ${sparkline([...historyValues, size ? current.gzip : current.median])} |`
+        : '';
       lines.push(
-        `| \`${row.id}\` | ${row.gzip} | ${delta(row.gzip, before?.gzip)} | ${row.raw} | ${delta(row.raw, before?.raw)} | ${row.brotli} | ${delta(row.brotli, before?.brotli)} | ${chart} |`,
-      );
-    } else {
-      const stats = statistics(row.samples);
-      const base = before && statistics(before.samples);
-      const overlap = base && stats.min <= base.max && base.min <= stats.max;
-      lines.push(
-        `| \`${row.id}\` | ${stats.median.toFixed(6)} | ${delta(stats.median, base?.median, 6)} | ${base ? `${base.min.toFixed(6)}–${base.max.toFixed(6)}` : 'unavailable'} | ${stats.min.toFixed(6)}–${stats.max.toFixed(6)} | ${base ? (overlap ? 'ranges overlap' : 'ranges separate') : 'no baseline'} | ${chart} |`,
+        size
+          ? `| \`${row.id}\` | ${current.gzip.toLocaleString('en-US')} B | ${sizeDelta(current.gzip, base?.gzip, true)} | ${sizeDelta(current.raw, base?.raw)} | ${sizeDelta(current.brotli, base?.brotli)} |${chart}`
+          : `| \`${row.id}\` | ${(current.median * 1000).toFixed(3)} | ${change ? `${signed(change.percent, 2)}%` : 'baseline unavailable'} |${chart}`,
       );
     }
   }
   lines.push(
     '',
-    report.kind === 'size'
-      ? 'Production Seroval ESM import costs, not package tarball sizes. Compression settings are fixed. Lower is smaller.'
-      : 'Informational, not a performance gate. Ranges show sample min–max, not confidence intervals. Warm decode reuses code; cold decode uses a fresh process and excludes startup/import/encoding. Streaming first-output includes the initial record; completion measures emission, not decoding.',
+    size
+      ? '— = unchanged. Rows are hidden only when raw, gzip, and Brotli sizes are all unchanged. Lower is smaller.'
+      : 'Only median changes of at least 5% in either direction are shown when a baseline is available. This is a display filter, not a statistical test or performance gate. Lower time is better.',
     '',
-    'Trends contain matching default-branch history plus this candidate. Changed harnesses or environments start separate series.',
+    'Full results remain in the JSON report.',
+    '',
+    '<details>',
+    '<summary>Measurement details</summary>',
+    '',
+    `- Candidate: \`${report.candidate.revision}\``,
+    `- Baseline: ${report.baseline ? `\`${report.baseline.revision}\` (paired run)` : 'unavailable'}`,
+    `- Measured: ${report.measuredAt}`,
+    `- Series: \`${seriesId(report).slice(0, 12)}\``,
+    '',
+    size
+      ? 'Production Seroval ESM import costs, not package tarball sizes. Compression settings are fixed.'
+      : 'Ranges show sample min–max, not confidence intervals. Median changes and range overlap do not establish improvements or regressions. Warm decode reuses code; cold decode uses a fresh process and excludes startup/import/encoding. Streaming first-output includes the initial record; completion measures emission, not decoding.',
   );
+  if (!size && rows.length) {
+    lines.push(
+      '',
+      '| Scenario | Baseline range µs/op | Candidate range µs/op | Observation |',
+      '| --- | ---: | ---: | --- |',
+    );
+    for (const { row, current, base } of rows) {
+      const overlap =
+        base && current.min <= base.max && base.min <= current.max;
+      lines.push(
+        `| \`${row.id}\` | ${base ? `${(base.min * 1000).toFixed(3)}–${(base.max * 1000).toFixed(3)}` : 'unavailable'} | ${(current.min * 1000).toFixed(3)}–${(current.max * 1000).toFixed(3)} | ${base ? (overlap ? 'ranges overlap' : 'ranges separate') : 'no baseline'} |`,
+      );
+    }
+  }
+  if (hasTrend) {
+    lines.push(
+      '',
+      'Trends contain matching default-branch history plus this candidate. Changed harnesses or environments start separate series.',
+    );
+  }
+  lines.push('', '</details>');
   return `${lines.join('\n')}\n`;
 }
 

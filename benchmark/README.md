@@ -52,9 +52,17 @@ The workloads cover small objects, large collections, shared references and cycl
 - Outside the clock, each batch's final result is checked. Stream checks restore all records and check chunk values and order. Graph checks require cycles and shared identities to survive.
 - Warm runs use two rounds in baseline/candidate then candidate/baseline order, five warmups and nine samples per round. Cold samples alternate revision order. Timing runs are sequential, not parallel.
 
-Reports show medians and sample min/max. Range overlap is descriptive, not a confidence interval or a statistical significance test. There are no speed or size regression thresholds yet; broken measurements and correctness failures still fail CI.
+Reports show medians and sample min/max. Range overlap is descriptive, not a confidence interval or a statistical significance test. There are no speed or size regression gates; broken measurements and correctness failures still fail CI.
 
 ### PR comments, history, and dashboards
+
+PR comments and Markdown reports show compact summaries:
+
+- Size rows are hidden only when raw, gzip, and Brotli bytes are all unchanged. Changed rows show the gzip size and byte deltas, sorted by the largest gzip increase. A dash means that metric is unchanged.
+- Speed rows show median changes of at least 5% in either direction, sorted from time decreases to time increases. Filtering uses the unrounded change. Times are displayed in microseconds per operation. The 5% filter is for display only, not a statistical test or CI gate.
+- Each summary counts hidden rows. Without a baseline, every row remains visible and comparisons are explicitly unavailable.
+- Full revisions, measurement time, series ID, and sample ranges for displayed speed rows are in a collapsed **Measurement details** section. Trend columns appear only when compatible history exists.
+- JSON artifacts retain all scenarios and measurements, including hidden rows. Raw timing units remain milliseconds. History and dashboards remain unfiltered.
 
 [Measurement CI](../.github/workflows/benchmarks.yml) compares the exact PR base/head revisions. Default-branch pushes compare the previous tip with the new tip. If that baseline cannot be checked out (for example, the old tip is unavailable after a force push), CI warns and measures only the candidate: JSON has a null baseline, and Markdown explicitly says baseline unavailable rather than inventing a comparison. PR baseline checkout failures and all dependency, build, and measurement failures still fail the run. Manual runs compare a revision with itself as a noise control. Toolchain settings and scenario definitions come from the candidate harness for both sides; each revision is built using its own frozen lockfile.
 

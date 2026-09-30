@@ -138,16 +138,134 @@ test('statistics and deltas retain units, direction and zero-baseline absence', 
 test('report shows an injected size increase, speed change, sample spread and missing baseline', () => {
   const size = report();
   size.candidate.rows[0].gzip += 20;
-  assert.ok(comment(size).includes('+20 (+20.00%)'));
+  assert.ok(comment(size).includes('+20 B (+20.00%)'));
   const speed = report('speed');
   speed.candidate.rows[0].samples.fill(0.5);
-  assert.ok(comment(speed).includes('+0.250000 (+100.00%)'));
+  assert.ok(comment(speed).includes('| 500.000 | +100.00% |'));
   assert.ok(comment(speed).includes('ranges separate'));
-  assert.ok(comment(report('speed')).includes('ranges overlap'));
+  speed.candidate.rows[0].samples[0] = 0.2;
+  assert.ok(comment(speed).includes('ranges overlap'));
   for (const value of [size, speed]) {
     value.baseline = null;
     assert.ok(comment(value).includes('baseline unavailable'));
     assert.equal(validateReport(value).baseline, null);
+  }
+});
+
+test('size comments hide only rows unchanged in every metric and sort by gzip increase', () => {
+  const size = report();
+  const [gzip, raw, brotli, smaller, unchanged] = size.candidate.rows;
+  gzip.gzip += 38;
+  raw.raw += 1;
+  brotli.brotli += 2;
+  smaller.gzip -= 20;
+  const original = structuredClone(size);
+  const body = comment(size);
+  assert.ok(
+    body.includes(
+      `4 changed · ${size.candidate.rows.length - 4} unchanged hidden`,
+    ),
+  );
+  assert.ok(
+    body.includes(`| \`${gzip.id}\` | 138 B | +38 B (+38.00%) | — | — |`),
+  );
+  assert.ok(body.includes(`| \`${raw.id}\` | 100 B | — | +1 B | — |`));
+  assert.ok(body.includes(`| \`${brotli.id}\` | 100 B | — | — | +2 B |`));
+  assert.ok(
+    body.includes(`| \`${smaller.id}\` | 80 B | -20 B (-20.00%) | — | — |`),
+  );
+  assert.ok(!body.includes(`\`${unchanged.id}\``));
+  assert.ok(body.indexOf(`\`${gzip.id}\``) < body.indexOf(`\`${smaller.id}\``));
+  assert.deepEqual(size, original);
+});
+
+test('speed comments filter at exactly five percent in both directions before rounding', () => {
+  const speed = report('speed');
+  for (const row of speed.baseline.rows) {
+    row.samples.fill(100);
+  }
+  for (const row of speed.candidate.rows) {
+    row.samples.fill(100);
+  }
+  const [slower, faster, below, above, unchanged] = speed.candidate.rows;
+  slower.samples.fill(105);
+  faster.samples.fill(95);
+  below.samples.fill(104.999);
+  above.samples.fill(95.001);
+  const original = structuredClone(speed);
+  const body = comment(speed);
+  const [summary, details] = body.split('<details>');
+  assert.ok(
+    summary.includes(
+      `2 shown · ${speed.candidate.rows.length - 2} below the 5% display filter hidden`,
+    ),
+  );
+  assert.ok(summary.includes('| Scenario | Median µs/op | Time change |'));
+  assert.ok(summary.includes(`| \`${slower.id}\` | 105000.000 | +5.00% |`));
+  assert.ok(summary.includes(`| \`${faster.id}\` | 95000.000 | -5.00% |`));
+  for (const row of [below, above, unchanged]) {
+    assert.ok(!body.includes(`\`${row.id}\``));
+  }
+  assert.ok(
+    summary.indexOf(`\`${faster.id}\``) < summary.indexOf(`\`${slower.id}\``),
+  );
+  assert.ok(summary.includes('not a statistical test'));
+  assert.ok(details.includes('Baseline range µs/op'));
+  assert.ok(details.includes('100000.000–100000.000'));
+  assert.ok(details.includes('ranges separate'));
+  assert.ok(details.includes('not confidence intervals'));
+  assert.deepEqual(speed, original);
+});
+
+test('comments show explicit empty comparisons and retain every row without a baseline', () => {
+  for (const kind of ['size', 'speed']) {
+    const value = report(kind);
+    const body = comment(value);
+    assert.ok(body.includes(kind === 'size' ? '0 changed' : '0 shown'));
+    assert.ok(!body.includes('| Scenario |'));
+    value.baseline = null;
+    const missing = comment(value);
+    assert.ok(missing.includes('baseline unavailable'));
+    for (const row of value.candidate.rows) {
+      assert.ok(missing.includes(`| \`${row.id}\` |`));
+    }
+  }
+});
+
+test('comments collapse metadata and omit trends until compatible history exists', () => {
+  for (const kind of ['size', 'speed']) {
+    const value = report(kind);
+    if (kind === 'size') {
+      value.candidate.rows[0].gzip += 10;
+    } else {
+      value.candidate.rows[0].samples.fill(0.5);
+    }
+    const body = comment(value, empty(), { run: 'https://example.com/run' });
+    const [summary, details] = body.split('<details>');
+    assert.ok(summary.includes('`bbbbbbbb` → `aaaaaaaa`'));
+    assert.ok(
+      summary.includes(
+        '[Run and raw result artifacts](https://example.com/run)',
+      ),
+    );
+    assert.ok(
+      details.startsWith('\n<summary>Measurement details</summary>\n\n'),
+    );
+    assert.ok(details.includes(value.measuredAt));
+    assert.ok(details.includes(value.candidate.revision));
+    assert.ok(details.includes(seriesId(value).slice(0, 12)));
+    assert.ok(!summary.includes(value.measuredAt));
+    assert.ok(!summary.includes('trend'));
+    assert.ok(!body.includes('collecting history'));
+    assert.ok(body.endsWith('</details>\n'));
+    const history = appendHistory(empty(), [report(kind)]);
+    assert.ok(
+      comment(value, history).includes(
+        kind === 'size' ? 'Gzip trend' : 'Median trend',
+      ),
+    );
+    history.reports[0].settings.node = 'v24.0.0';
+    assert.ok(!comment(value, history).includes('trend'));
   }
 });
 
@@ -330,7 +448,10 @@ test('fork publication discovers by trusted head, rechecks identity and updates 
     JSON.stringify({ workflow_run: { id: 11, pull_requests: [] } }),
   );
   for (const kind of ['size', 'speed']) {
-    writeFileSync(join(directory, `${kind}.json`), JSON.stringify(report(kind)));
+    writeFileSync(
+      join(directory, `${kind}.json`),
+      JSON.stringify(report(kind)),
+    );
   }
   const before = { ...process.env };
   Object.assign(process.env, {
@@ -473,7 +594,9 @@ test('measurement workflow tolerates only push baseline checkout failures and om
     steps.filter(step => step.includes('continue-on-error:')).length,
     1,
   );
-  const baselineBuild = steps.find(step => step.includes('pnpm --dir baseline'));
+  const baselineBuild = steps.find(step =>
+    step.includes('pnpm --dir baseline'),
+  );
   assert.ok(baselineBuild.includes("if: steps.baseline.outcome == 'success'"));
   const candidateBuild = steps.find(step =>
     step.includes('pnpm --dir candidate'),
