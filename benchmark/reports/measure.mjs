@@ -83,21 +83,75 @@ export async function measureSize(root) {
   return { rows, attribution };
 }
 
-function runtimePass(root, cold = false) {
+function runtimePass(root, scenario, iterations) {
   return JSON.parse(
     execFileSync(
       process.execPath,
       [
         fileURLToPath(new URL('runtime.mjs', import.meta.url)),
         root,
-        ...(cold ? ['cold'] : []),
+        scenario,
+        iterations === undefined ? 'calibrate' : String(iterations),
       ],
       { encoding: 'utf8', timeout: 180000, maxBuffer: 16 * 1024 * 1024 },
     ),
   );
 }
 
-export async function measure({ candidate, baseline, kind, output }) {
+export function measureRuntime(roots, scenarios = speedIds) {
+  const result = Object.fromEntries(Object.keys(roots).map(side => [side, []]));
+  const sides = roots.baseline ? ['baseline', 'candidate'] : ['candidate'];
+  for (const scenario of scenarios) {
+    if (scenario === 'stream.completion') {
+      continue;
+    }
+    const cold = scenario.endsWith('-cold');
+    const latency = cold || scenario === 'stream.first-output';
+    const iterations = latency
+      ? 1
+      : Math.max(...sides.map(side => runtimePass(roots[side], scenario)));
+    assert.ok(
+      Number.isSafeInteger(iterations) && iterations > 0,
+      'Invalid calibrated iterations',
+    );
+    for (
+      let round = 0;
+      round < (cold ? protocol.samples : protocol.rounds);
+      round++
+    ) {
+      const order = round % 2 ? [...sides].reverse() : sides;
+      for (const side of order) {
+        const rows = runtimePass(roots[side], scenario, iterations);
+        for (const row of rows) {
+          const previous = result[side].find(item => item.id === row.id);
+          if (previous) {
+            previous.samples.push(...row.samples);
+          } else {
+            result[side].push(row);
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
+export async function measure({ candidate, baseline, kind, output, scenario }) {
+  assert.ok(!scenario || kind === 'speed', '--scenario requires --kind speed');
+  if (scenario) {
+    assert.ok(
+      scenario.length > 0 && scenario.every(id => speedIds.includes(id)),
+      'Unknown runtime scenario',
+    );
+  }
+  const selected = new Set(scenario ?? speedIds);
+  if (
+    selected.has('stream.first-output') ||
+    selected.has('stream.completion')
+  ) {
+    selected.add('stream.first-output');
+    selected.add('stream.completion');
+  }
   const roots = { candidate: resolve(candidate) };
   if (baseline) {
     roots.baseline = resolve(baseline);
@@ -105,7 +159,9 @@ export async function measure({ candidate, baseline, kind, output }) {
   const settings = {
     ...protocol,
     scenarios:
-      kind === 'size' ? sizeFixtures.map(fixture => fixture.id) : speedIds,
+      kind === 'size'
+        ? sizeFixtures.map(fixture => fixture.id)
+        : speedIds.filter(id => selected.has(id)),
     harness: harnessHash(),
     esbuild: esbuildVersion,
     node: process.version,
@@ -144,39 +200,9 @@ export async function measure({ candidate, baseline, kind, output }) {
       );
     }
   } else {
-    for (let round = 0; round < protocol.rounds; round++) {
-      const sides = baseline ? ['baseline', 'candidate'] : ['candidate'];
-      if (round % 2) {
-        sides.reverse();
-      }
-      for (const side of sides) {
-        const rows = runtimePass(roots[side]);
-        for (const row of rows) {
-          const previous = report[side].rows.find(item => item.id === row.id);
-          if (previous) {
-            previous.samples.push(...row.samples);
-          } else {
-            report[side].rows.push(row);
-          }
-        }
-      }
-    }
-    const cold = { candidate: [], baseline: [] };
-    for (let sample = 0; sample < protocol.samples; sample++) {
-      const sides = baseline ? ['baseline', 'candidate'] : ['candidate'];
-      if (sample % 2) {
-        sides.reverse();
-      }
-      for (const side of sides) {
-        cold[side].push(...runtimePass(roots[side], true)[0].samples);
-      }
-    }
+    const rows = measureRuntime(roots, settings.scenarios);
     for (const side of Object.keys(roots)) {
-      report[side].rows.push({
-        id: 'object.collection.deserialize-cold',
-        unit: 'ms',
-        samples: cold[side],
-      });
+      report[side].rows = rows[side];
     }
   }
   validateReport(report);
@@ -198,6 +224,7 @@ if (
       },
       baseline: { type: 'string' },
       kind: { type: 'string' },
+      scenario: { type: 'string', multiple: true },
       output: {
         type: 'string',
         default: resolve(import.meta.dirname, '../results/reports'),

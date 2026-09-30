@@ -61,6 +61,16 @@ export function validateReport(report) {
       `Invalid protocol setting: ${key}`,
     );
   }
+  if (report.kind === 'speed' && report.settings.version >= 2) {
+    for (const key of ['warmupMs', 'minSampleMs']) {
+      assert.ok(
+        Number.isFinite(report.settings[key]) &&
+          report.settings[key] > 0 &&
+          report.settings[key] <= 10000,
+        `Invalid timing budget: ${key}`,
+      );
+    }
+  }
   for (const key of [
     'esbuild',
     'node',
@@ -122,6 +132,25 @@ export function validateReport(report) {
         }
       } else {
         assert.equal(row.unit, 'ms');
+        if (
+          report.settings.version >= 2 &&
+          !row.id.endsWith('-cold') &&
+          !row.id.startsWith('stream.')
+        ) {
+          assert.ok(
+            Number.isSafeInteger(row.iterations) &&
+              row.iterations > 0 &&
+              row.iterations <= 2 ** 24,
+            'Invalid batch iterations',
+          );
+          if (report.baseline) {
+            assert.equal(
+              row.iterations,
+              report.baseline.rows.find(item => item.id === row.id)?.iterations,
+              'Paired batch iterations differ',
+            );
+          }
+        }
         assert.ok(Array.isArray(row.samples));
         const expected = row.id.endsWith('-cold')
           ? report.settings.samples
@@ -149,6 +178,37 @@ export function statistics(samples) {
     min: sorted[0],
     max: sorted.at(-1),
   };
+}
+
+export function timingStatistics(row, settings) {
+  const stats = statistics(row.samples);
+  if (settings.version < 2 || row.id.endsWith('-cold')) {
+    return stats;
+  }
+  const medians = [];
+  for (let start = 0; start < row.samples.length; start += settings.samples) {
+    medians.push(
+      statistics(row.samples.slice(start, start + settings.samples)).median,
+    );
+  }
+  return { ...stats, median: statistics(medians).median };
+}
+
+export function pairedChanges(current, baseline, settings) {
+  if (settings.version < 2) {
+    return null;
+  }
+  const count = current.id.endsWith('-cold') ? 1 : settings.samples;
+  const changes = [];
+  for (let start = 0; start < current.samples.length; start += count) {
+    changes.push(
+      difference(
+        statistics(current.samples.slice(start, start + count)).median,
+        statistics(baseline.samples.slice(start, start + count)).median,
+      ).percent,
+    );
+  }
+  return statistics(changes);
 }
 
 export function difference(current, baseline) {
@@ -209,6 +269,8 @@ export function trend(history, report, id) {
     .map(item => {
       const row = item.candidate.rows.find(value => value.id === id);
       assert.ok(row, 'History scenario missing');
-      return report.kind === 'size' ? row.gzip : statistics(row.samples).median;
+      return report.kind === 'size'
+        ? row.gzip
+        : timingStatistics(row, report.settings).median;
     });
 }
