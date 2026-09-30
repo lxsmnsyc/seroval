@@ -3,9 +3,13 @@
  * fields of the stream parser state, which only `createStreamParserContext`
  * sets, so synchronous consumers (`serialize`, `toJSON`) never bundle it.
  */
-import { createPluginNode, createStreamEventNode } from '../base-primitives';
+import {
+  createPluginNode,
+  createStreamConstructorNode,
+  createStreamEventNode,
+} from '../base-primitives';
 import { NIL, SerovalNodeType } from '../constants';
-import { SerovalParserError } from '../errors';
+import { SerovalDepthLimitError, SerovalParserError } from '../errors';
 import type { LiveStream, LiveStreamSink } from '../live-stream';
 import { createSerovalNode } from '../node';
 import type { Plugin } from '../plugin';
@@ -13,7 +17,11 @@ import { SpecialReference } from '../special-reference';
 import type { Stream, StreamListener } from '../stream';
 import { SYM_ASYNC_ITERATOR } from '../symbols';
 import type { SerovalNode, SerovalPluginNode } from '../types';
-import { createBaseParserContext, parseSpecialReference } from './parser';
+import {
+  createBaseParserContext,
+  createIndexForValue,
+  parseSpecialReference,
+} from './parser';
 import {
   type OutputRecord,
   ParserMode,
@@ -38,6 +46,31 @@ export class StreamParsePluginContext {
       state.parsing--;
       if (!state.alive) {
         releaseParserValues(this._p);
+      }
+    }
+  }
+
+  parseStreamSource(current: AsyncIterable<unknown>): SerovalNode {
+    const ctx = this._p;
+    const state = ctx.state;
+    state.parsing++;
+    try {
+      if (this.depth >= ctx.base.depthLimit) {
+        throw new SerovalDepthLimitError(ctx.base.depthLimit);
+      }
+      const id = createIndexForValue(ctx.base, {});
+      const node = createStreamConstructorNode(
+        id,
+        parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
+        [],
+        1,
+      );
+      iterateAsync(ctx, this.depth + 1, id, current, true);
+      return node;
+    } finally {
+      state.parsing--;
+      if (!state.alive) {
+        releaseParserValues(ctx);
       }
     }
   }
@@ -289,6 +322,7 @@ function iterateAsync(
   depth: number,
   id: number,
   current: AsyncIterable<unknown>,
+  forwardReason?: boolean,
 ): void {
   const iterator = current[SYM_ASYNC_ITERATOR]();
   const listener = streamListener(ctx, depth, id);
@@ -296,7 +330,17 @@ function iterateAsync(
   function stop(): void {
     if (active) {
       active = false;
-      returnIterator(iterator);
+      if (forwardReason) {
+        try {
+          Promise.resolve(iterator.return?.(ctx.state.reason)).catch(() => {
+            // no-op
+          });
+        } catch (_error) {
+          // no-op
+        }
+      } else {
+        returnIterator(iterator);
+      }
     }
   }
   function pull(): void {

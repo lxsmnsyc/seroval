@@ -117,6 +117,14 @@ export class AsyncParsePluginContext {
   parse<T>(current: T): Promise<SerovalNode> {
     return parseAsync(this._p, this.depth, current);
   }
+
+  parseStreamSource(current: AsyncIterable<unknown>): Promise<SerovalNode> {
+    const ctx = this._p;
+    if (this.depth >= ctx.base.depthLimit) {
+      throw new SerovalDepthLimitError(ctx.base.depthLimit);
+    }
+    return parseAsyncIterable(ctx, this.depth + 1, current);
+  }
 }
 
 // Only objects and functions can produce a Promise; awaiting a plain node
