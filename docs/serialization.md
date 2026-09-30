@@ -299,6 +299,20 @@ according to the receiving application's needs; it is a per-buffer limit, not a
 total payload or memory budget. JavaScript evaluation through `deserialize` does
 not use these JSON decoding limits.
 
+## Streaming completion and errors
+
+The dispose functions returned by `crossSerializeStream` and `toCrossJSONStream`
+abandon output and cancel their sources without calling `onDone`. Close any
+transport owned by the caller when disposing, rather than relying on `onDone`.
+Normal completion still calls `onDone` after accepted output drains.
+
+`Serializer.close()` continues to call `onDone`. A failure in one
+`Serializer.write()` is reported to the required `onError` handler and stops only
+that write; healthy sibling streams and later writes continue. After `flush()`,
+`onDone` runs once all writes have either completed or failed. Handle errors in
+`onError`: throwing from a handler invoked asynchronously can cause an unhandled
+promise rejection.
+
 ## Trust boundary
 
 The JSON form is safe to receive from an untrusted source only in one

@@ -126,8 +126,10 @@ export interface CrossSerializeStreamOptions
 export function crossSerializeStream<T>(
   source: T,
   options: CrossSerializeStreamOptions,
-): () => void {
+): (reason?: unknown) => void {
   const plugins = resolvePlugins(options.plugins);
+  const onSerialize = options.onSerialize;
+  const scopeId = options.scopeId;
   const ctx = createStreamParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
@@ -138,22 +140,11 @@ export function crossSerializeStream<T>(
       const serial = createCrossSerializerContext({
         plugins,
         features: ctx.base.features,
-        scopeId: options.scopeId,
+        scopeId,
         markedRefs: ctx.base.marked,
       });
 
-      let serialized: string;
-
-      try {
-        serialized = serializeTopCross(serial, node);
-      } catch (err) {
-        if (options.onError) {
-          options.onError(err);
-        }
-        return;
-      }
-
-      return options.onSerialize(serialized, initial);
+      return onSerialize(serializeTopCross(serial, node), initial);
     },
     onError: options.onError,
     onDone: options.onDone,
@@ -169,7 +160,7 @@ export type ToCrossJSONStreamOptions = StreamParserContextOptions;
 export function toCrossJSONStream<T>(
   source: T,
   options: ToCrossJSONStreamOptions,
-): () => void {
+): (reason?: unknown) => void {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createStreamParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,

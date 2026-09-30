@@ -3,17 +3,25 @@
  * fields of the stream parser state, which only `createStreamParserContext`
  * sets, so synchronous consumers (`serialize`, `toJSON`) never bundle it.
  */
-import { createPluginNode, createStreamEventNode } from '../base-primitives';
+import {
+  createPluginNode,
+  createStreamConstructorNode,
+  createStreamEventNode,
+} from '../base-primitives';
 import { NIL, SerovalNodeType } from '../constants';
-import { SerovalParserError } from '../errors';
+import { SerovalDepthLimitError, SerovalParserError } from '../errors';
 import type { LiveStream, LiveStreamSink } from '../live-stream';
 import { createSerovalNode } from '../node';
 import type { Plugin } from '../plugin';
 import { SpecialReference } from '../special-reference';
-import type { Stream } from '../stream';
+import type { Stream, StreamListener } from '../stream';
 import { SYM_ASYNC_ITERATOR } from '../symbols';
 import type { SerovalNode, SerovalPluginNode } from '../types';
-import { createBaseParserContext, parseSpecialReference } from './parser';
+import {
+  createBaseParserContext,
+  createIndexForValue,
+  parseSpecialReference,
+} from './parser';
 import {
   type OutputRecord,
   ParserMode,
@@ -21,8 +29,93 @@ import {
   type StreamParserContext,
   type StreamParserContextOptions,
   type StreamParserState,
-  SyncParsePluginContext,
 } from './sync-parser';
+
+export class StreamParsePluginContext {
+  constructor(
+    private _p: StreamParserContext,
+    private depth: number,
+  ) {}
+
+  parse<T>(current: T): SerovalNode {
+    const state = this._p.state;
+    state.parsing++;
+    try {
+      return parseSOS(this._p, this.depth, current);
+    } finally {
+      state.parsing--;
+      if (!state.alive) {
+        releaseParserValues(this._p);
+      }
+    }
+  }
+
+  parseStreamSource(current: AsyncIterable<unknown>): SerovalNode {
+    const ctx = this._p;
+    const state = ctx.state;
+    state.parsing++;
+    try {
+      if (this.depth >= ctx.base.depthLimit) {
+        throw new SerovalDepthLimitError(ctx.base.depthLimit);
+      }
+      const id = createIndexForValue(ctx.base, {});
+      const node = createStreamConstructorNode(
+        id,
+        parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
+        [],
+        1,
+      );
+      iterateAsync(ctx, this.depth + 1, id, current, true);
+      return node;
+    } finally {
+      state.parsing--;
+      if (!state.alive) {
+        releaseParserValues(ctx);
+      }
+    }
+  }
+
+  parseWithError<T>(current: T): SerovalNode | undefined {
+    try {
+      return this.parse(current);
+    } catch (error) {
+      stopStreamParse(this._p, 1, error);
+      return NIL;
+    }
+  }
+
+  isAlive(): boolean {
+    return this._p.state.alive;
+  }
+  pushPendingState(): void {
+    pushPendingState(this._p);
+  }
+  popPendingState(): void {
+    popPendingState(this._p);
+  }
+
+  onParse(node: SerovalNode): void {
+    if (this.isAlive()) {
+      this._p.state.queue.push({ node, initial: false, accept: NIL });
+      drainOutput(this._p);
+    }
+  }
+
+  onError(error: unknown): void {
+    stopStreamParse(this._p, 1, error);
+  }
+  addCleanup(callback: () => void): void {
+    addCleanup(this._p, callback);
+  }
+}
+
+function addCleanup(ctx: StreamParserContext, callback: () => void): void {
+  if (ctx.state.alive) {
+    ctx.state.cleanups.push(callback);
+  } else {
+    callback();
+  }
+}
 
 function parsePluginStream(
   ctx: StreamParserContext,
@@ -37,7 +130,7 @@ function parsePluginStream(
       return createPluginNode(
         id,
         plugin.tag,
-        plugin.parse.stream(current, new SyncParsePluginContext(ctx, depth), {
+        plugin.parse.stream(current, new StreamParsePluginContext(ctx, depth), {
           id,
         }),
       );
@@ -51,6 +144,11 @@ type StreamEventType =
   | SerovalNodeType.StreamThrow
   | SerovalNodeType.StreamReturn;
 
+interface SynchronousSubscription {
+  active: boolean;
+  failure: { value: unknown } | undefined;
+}
+
 /**
  * One listener shape serves both `Stream.on` (no accept) and
  * `LiveStream.pump` (accept tied to record acceptance). Handlers return the
@@ -60,19 +158,30 @@ function streamListener(
   ctx: StreamParserContext,
   depth: number,
   id: number,
-): LiveStreamSink<unknown> {
+  subscription?: SynchronousSubscription,
+): LiveStreamSink<unknown> & StreamListener<unknown> {
   const handle =
     (type: StreamEventType, terminal: boolean) =>
     (value: unknown, accept?: () => void): unknown => {
       let failure: unknown = NIL;
       if (ctx.state.alive) {
-        failure = parseEvent(
-          ctx,
-          depth,
-          value,
-          createStreamEventNode.bind(null, type, id),
-          accept,
-        );
+        try {
+          failure = parseEvent(
+            ctx,
+            depth,
+            value,
+            createStreamEventNode.bind(null, type, id),
+            accept,
+          );
+        } catch (error) {
+          // on() can replay synchronously before it returns the unsubscribe.
+          // Defer reporting exceptions until that cleanup can be registered.
+          if (!subscription?.active) {
+            throw error;
+          }
+          subscription.failure ??= { value: error };
+          failure = error;
+        }
       }
       // A replay stream has no completion callback, so its terminal event
       // ends the pending slot here; a live stream reports through `done`.
@@ -90,8 +199,7 @@ function streamListener(
     },
     error(reason) {
       if (ctx.state.alive) {
-        popPendingState(ctx);
-        onError(ctx, reason);
+        stopStreamParse(ctx, 1, reason);
       }
     },
   };
@@ -104,7 +212,23 @@ function subscribeStream(
   current: Stream<unknown>,
 ): void {
   pushPendingState(ctx);
-  ctx.state.cleanups.push(current.on(streamListener(ctx, depth, id)));
+  const subscription: SynchronousSubscription = { active: true, failure: NIL };
+  let cleanup: () => void;
+  try {
+    cleanup = current.on(streamListener(ctx, depth, id, subscription));
+  } finally {
+    subscription.active = false;
+  }
+  try {
+    addCleanup(ctx, cleanup);
+  } catch (error) {
+    subscription.failure ??= { value: error };
+  }
+  const failure = subscription.failure;
+  subscription.failure = NIL;
+  if (failure) {
+    throw failure.value;
+  }
 }
 
 function consumeLiveStream(
@@ -115,7 +239,7 @@ function consumeLiveStream(
 ): void {
   const cancel = current.pump(streamListener(ctx, depth, id));
   pushPendingState(ctx);
-  ctx.state.cleanups.push(() => cancel(ctx.state.reason));
+  addCleanup(ctx, () => cancel(ctx.state.reason));
 }
 
 function wrapPromiseResult(
@@ -198,6 +322,7 @@ function iterateAsync(
   depth: number,
   id: number,
   current: AsyncIterable<unknown>,
+  forwardReason?: boolean,
 ): void {
   const iterator = current[SYM_ASYNC_ITERATOR]();
   const listener = streamListener(ctx, depth, id);
@@ -205,7 +330,17 @@ function iterateAsync(
   function stop(): void {
     if (active) {
       active = false;
-      returnIterator(iterator);
+      if (forwardReason) {
+        try {
+          Promise.resolve(iterator.return?.(ctx.state.reason)).catch(() => {
+            // no-op
+          });
+        } catch (_error) {
+          // no-op
+        }
+      } else {
+        returnIterator(iterator);
+      }
     }
   }
   function pull(): void {
@@ -233,7 +368,7 @@ function iterateAsync(
     }
   }
   pushPendingState(ctx);
-  ctx.state.cleanups.push(stop);
+  addCleanup(ctx, stop);
   pull();
 }
 
@@ -246,6 +381,7 @@ function createStreamParserState(
     parsing: 0,
     queue: [],
     writing: false,
+    inFlight: NIL,
     reason: NIL,
     onParse: options.onParse,
     onError: options.onError,
@@ -269,23 +405,17 @@ export function createStreamParserContext(
   };
 }
 
-function onError(ctx: StreamParserContext, error: unknown): void {
-  if (ctx.state.onError) {
-    ctx.state.onError(error);
-  } else {
-    throw error instanceof SerovalParserError
-      ? error
-      : new SerovalParserError(error);
+function pushPendingState(ctx: StreamParserContext): void {
+  if (ctx.state.alive) {
+    ctx.state.pending++;
   }
 }
 
-function pushPendingState(ctx: StreamParserContext): void {
-  ctx.state.pending++;
-}
-
 function popPendingState(ctx: StreamParserContext): void {
-  ctx.state.pending--;
-  checkStreamParse(ctx);
+  if (ctx.state.alive) {
+    ctx.state.pending--;
+    checkStreamParse(ctx);
+  }
 }
 
 /**
@@ -303,22 +433,25 @@ function parseEvent(
 ): unknown {
   const state = ctx.state;
   const record: OutputRecord = { node: NIL, initial: false, accept };
-  let failure: unknown = NIL;
+  let failure: { value: unknown } | undefined;
   state.queue.push(record);
   state.parsing++;
   try {
     record.node = wrap(parseSOS(ctx, depth, value));
   } catch (error) {
-    failure = error;
+    failure = { value: error };
   } finally {
     state.parsing--;
+    if (!state.alive) {
+      releaseParserValues(ctx);
+    }
   }
-  if (failure === NIL) {
-    drainOutput(ctx);
+  if (failure) {
+    stopStreamParse(ctx, 1, failure.value);
   } else {
-    onError(ctx, failure);
+    drainOutput(ctx);
   }
-  return failure;
+  return failure?.value;
 }
 
 /**
@@ -336,35 +469,74 @@ function drainOutput(ctx: StreamParserContext): void {
     if (!record.node) {
       continue;
     }
-    let result: void | PromiseLike<void>;
+    let pending: Promise<void> | undefined;
+    state.writing = true;
+    state.inFlight = record;
+    state.parsing++;
     try {
-      result = state.onParse(record.node, record.initial);
+      if (!state.onParse) {
+        throw new Error('Stream output callback is unavailable');
+      }
+      const result: unknown = state.onParse(record.node, record.initial);
+      // Only objects and functions can be thenables; primitive prototypes
+      // must not affect incidental callback returns.
+      if (
+        result !== null &&
+        (typeof result === 'object' || typeof result === 'function')
+      ) {
+        const then: unknown = Reflect.get(result, 'then');
+        if (typeof then === 'function') {
+          pending = new Promise<void>((resolve, reject) => {
+            Reflect.apply(then, result, [resolve, reject]);
+          });
+        }
+      }
     } catch (error) {
-      onError(ctx, error);
-      continue;
+      releaseRecord(record);
+      stopStreamParse(ctx, 1, error);
+      return;
+    } finally {
+      state.parsing--;
+      if (!state.alive) {
+        releaseParserValues(ctx);
+      }
     }
-    if (result && typeof result.then === 'function') {
-      state.writing = true;
-      result.then(
+    record.node = NIL;
+    if (pending) {
+      // Cancellation inside the callback must still observe its returned
+      // thenable's rejection, without retaining the event or accepting it.
+      if (!state.alive) {
+        releaseRecord(record);
+      }
+      pending.then(
         () => {
           state.writing = false;
+          state.inFlight = NIL;
           if (state.alive) {
-            if (record.accept) {
-              record.accept();
-            }
+            const accept = record.accept;
+            releaseRecord(record);
+            accept?.();
             drainOutput(ctx);
           }
         },
         error => {
           state.writing = false;
-          stopStreamParse(ctx, error);
+          state.inFlight = NIL;
+          releaseRecord(record);
+          stopStreamParse(ctx, 1, error);
         },
       );
       return;
     }
-    if (record.accept) {
-      record.accept();
+    if (!state.alive) {
+      releaseRecord(record);
+      return;
     }
+    state.writing = false;
+    state.inFlight = NIL;
+    const accept = record.accept;
+    releaseRecord(record);
+    accept?.();
   }
   checkStreamParse(ctx);
 }
@@ -378,7 +550,7 @@ function checkStreamParse(ctx: StreamParserContext): void {
     state.queue.length === 0 &&
     !state.writing
   ) {
-    destroyStreamParse(ctx);
+    stopStreamParse(ctx, 0);
   }
 }
 
@@ -388,18 +560,25 @@ export function startStreamParse<T>(
 ): void {
   const state = ctx.state;
   let parsed: SerovalNode | undefined;
-  let failure: unknown = NIL;
+  let failure: { value: unknown } | undefined;
   state.parsing++;
   try {
     parsed = parseSOS(ctx, 0, current);
   } catch (error) {
-    failure = error;
+    failure = { value: error };
   } finally {
     state.parsing--;
+    if (!state.alive) {
+      releaseParserValues(ctx);
+    }
   }
-  if (failure !== NIL) {
-    stopStreamParse(ctx, failure);
-  } else if (parsed) {
+  if (failure) {
+    if (state.alive) {
+      stopStreamParse(ctx, 1, failure.value);
+    } else {
+      throw failure.value;
+    }
+  } else if (parsed && state.alive) {
     state.queue.unshift({ node: parsed, initial: true, accept: NIL });
     drainOutput(ctx);
   }
@@ -408,20 +587,43 @@ export function startStreamParse<T>(
 // Runs every cleanup once, even if one throws, then rethrows the first error.
 function runCleanups(state: StreamParserState): void {
   const cleanups = state.cleanups;
-  let failure: unknown = NIL;
+  let failure: { value: unknown } | undefined;
   state.cleanups = [];
+  for (const record of state.queue) {
+    releaseRecord(record);
+  }
   state.queue.length = 0;
+  if (state.inFlight) {
+    releaseRecord(state.inFlight);
+  }
+  state.inFlight = NIL;
   for (let i = 0, len = cleanups.length; i < len; i++) {
     try {
       cleanups[i]();
     } catch (error) {
-      if (failure === NIL) {
-        failure = error;
-      }
+      failure ??= { value: error };
     }
   }
-  if (failure !== NIL) {
-    throw failure;
+  if (failure) {
+    throw failure.value;
+  }
+}
+
+function releaseRecord(record: OutputRecord): void {
+  record.node = NIL;
+  record.accept = NIL;
+}
+
+function releaseParserValues(ctx: StreamParserContext): void {
+  // Detach, never clear, a possibly caller-owned map. Also run after an
+  // interrupted synchronous parse unwinds, in case it produced more nodes.
+  ctx.base.refs = new Map();
+  ctx.base.marked.clear();
+  ctx.base.plugins = NIL;
+  // Late cleanup can still register while a parser/output/terminal callback
+  // unwinds. Live producers already own any reason needed for future writes.
+  if (ctx.state.parsing === 0) {
+    ctx.state.reason = NIL;
   }
 }
 
@@ -429,23 +631,57 @@ function runCleanups(state: StreamParserState): void {
  * Ends the parse once: `onDone` on success, `onError` on failure, and every
  * cleanup either way.
  */
-function stopStreamParse(ctx: StreamParserContext, failure: unknown): void {
+function stopStreamParse(
+  ctx: StreamParserContext,
+  mode: 0 | 1 | 2,
+  reason?: unknown,
+): void {
   const state = ctx.state;
   if (state.alive) {
     state.alive = false;
-    state.reason = failure;
+    const onError = state.onError;
+    const onDone = state.onDone;
+    if (mode === 1 && !onError && !(reason instanceof SerovalParserError)) {
+      reason = new SerovalParserError(reason);
+    }
+    state.reason = reason;
+    state.onParse = NIL;
+    state.onError = NIL;
+    state.onDone = NIL;
+    state.writing = false;
+    state.parsing++;
+    let failure: { value: unknown } | undefined;
     try {
-      if (failure !== NIL) {
-        onError(ctx, failure);
-      } else if (state.onDone) {
-        state.onDone();
+      if (mode === 1) {
+        if (onError) {
+          onError(reason);
+        } else {
+          throw reason;
+        }
+      } else if (mode === 0) {
+        onDone?.();
       }
-    } finally {
+    } catch (error) {
+      failure = { value: error };
+    }
+    try {
       runCleanups(state);
+    } catch (error) {
+      failure ??= { value: error };
+    } finally {
+      state.parsing--;
+      releaseParserValues(ctx);
+      state.pending = 0;
+    }
+    if (failure) {
+      throw failure.value;
     }
   }
 }
 
-export function destroyStreamParse(ctx: StreamParserContext): void {
-  stopStreamParse(ctx, NIL);
+export function destroyStreamParse(
+  ctx: StreamParserContext,
+  reason?: unknown,
+): void {
+  stopStreamParse(ctx, 2, reason);
 }

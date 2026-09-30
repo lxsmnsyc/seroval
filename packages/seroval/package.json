@@ -53,9 +53,19 @@
   "exports": {
     ".": {
       "development": {
+        "browser": {
+          "import": "./dist/dev/index.js",
+          "require": "./dist/dev/index.cjs",
+          "default": "./dist/dev/index.js"
+        },
         "import": "./dist/dev/index.js",
         "require": "./dist/dev/index.cjs",
         "default": "./dist/dev/index.js"
+      },
+      "browser": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs",
+        "default": "./dist/index.js"
       },
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",

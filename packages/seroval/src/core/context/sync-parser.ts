@@ -150,17 +150,21 @@ export interface StreamParserState {
   alive: boolean;
   // Number of pending things
   pending: number;
-  // Depth of synchronous parses in progress. Records are held back until the
-  // record that introduces their references has been queued.
+  // Depth of synchronous parsing/output/terminal callback frames. Records are
+  // held until their containing parse is queued; terminal reason release waits
+  // until all frames that can register late cleanup have unwound.
   parsing: number;
   // Records waiting to be emitted, in order.
   queue: OutputRecord[];
   // An output callback returned a promise that has not settled yet.
   writing: boolean;
+  inFlight: OutputRecord | undefined;
   // Why the parse stopped early, handed to live stream sources on cleanup.
   reason: unknown;
   // Callbacks
-  onParse: (node: SerovalNode, initial: boolean) => void | PromiseLike<void>;
+  onParse:
+    | ((node: SerovalNode, initial: boolean) => void | PromiseLike<void>)
+    | undefined;
   onError?: (error: unknown) => void;
   onDone?: () => void;
 
