@@ -15,8 +15,10 @@ import { comment, dashboard, writeDashboard } from './report.mjs';
 import {
   appendHistory,
   difference,
+  pairedChanges,
   seriesId,
   statistics,
+  timingStatistics,
   trend,
   validateHistory,
   validateReport,
@@ -47,6 +49,9 @@ function report(kind = 'size') {
         ].map(id => ({
           id,
           unit: 'ms',
+          ...(id.endsWith('-cold') || id.startsWith('stream.')
+            ? {}
+            : { iterations: 1000 }),
           samples: new Array(
             id.endsWith('-cold')
               ? protocol.samples
@@ -135,6 +140,45 @@ test('statistics and deltas retain units, direction and zero-baseline absence', 
   assert.deepEqual(difference(10, 0), { absolute: 10, percent: null });
 });
 
+test('timing summaries compare independent process medians and preserve legacy history', () => {
+  const value = report('speed');
+  const row = value.candidate.rows[0];
+  row.samples = Array.from({ length: protocol.rounds }, (_, round) => [
+    ...new Array(4).fill(0.1),
+    ...new Array(5).fill(round + 1),
+  ]).flat();
+  assert.equal(timingStatistics(row, value.settings).median, 3.5);
+  assert.equal(
+    timingStatistics(row, { ...value.settings, version: 1 }).median,
+    statistics(row.samples).median,
+  );
+  for (const side of [value.candidate, value.baseline]) {
+    for (const item of side.rows) {
+      delete item.iterations;
+    }
+  }
+  assert.throws(() => validateReport(value));
+  value.settings.version = 1;
+  delete value.settings.warmupMs;
+  delete value.settings.minSampleMs;
+  assert.equal(validateReport(value), value);
+  assert.ok(comment(value).includes('Time change'));
+  assert.ok(
+    dashboard(appendHistory(empty(), [value]), 'speed').includes(
+      'object.small.serialize',
+    ),
+  );
+});
+
+test('version two rejects unequal batches and missing timing budgets', () => {
+  const value = report('speed');
+  value.candidate.rows[0].iterations++;
+  assert.throws(() => validateReport(value));
+  value.candidate.rows[0].iterations--;
+  delete value.settings.warmupMs;
+  assert.throws(() => validateReport(value));
+});
+
 test('report shows an injected size increase, speed change, sample spread and missing baseline', () => {
   const size = report();
   size.candidate.rows[0].gzip += 20;
@@ -197,7 +241,7 @@ test('speed comments filter at exactly five percent in both directions before ro
   const [summary, details] = body.split('<details>');
   assert.ok(
     summary.includes(
-      `2 shown · ${speed.candidate.rows.length - 2} below the 5% display filter hidden`,
+      `2 repeatable changes shown · 0 inconclusive · ${speed.candidate.rows.length - 2} below the 5% display filter hidden`,
     ),
   );
   assert.ok(summary.includes('| Scenario | Median µs/op | Time change |'));
@@ -221,7 +265,11 @@ test('comments show explicit empty comparisons and retain every row without a ba
   for (const kind of ['size', 'speed']) {
     const value = report(kind);
     const body = comment(value);
-    assert.ok(body.includes(kind === 'size' ? '0 changed' : '0 shown'));
+    assert.ok(
+      body.includes(
+        kind === 'size' ? '0 changed' : '0 repeatable changes shown',
+      ),
+    );
     assert.ok(!body.includes('| Scenario |'));
     value.baseline = null;
     const missing = comment(value);
@@ -230,6 +278,23 @@ test('comments show explicit empty comparisons and retain every row without a ba
       assert.ok(missing.includes(`| \`${row.id}\` |`));
     }
   }
+});
+
+test('inconsistent timing changes remain in details rather than the headline table', () => {
+  const value = report('speed');
+  const row = value.candidate.rows[0];
+  const base = value.baseline.rows[0];
+  row.samples = [1.2, 0.99, 1.3, 1.1, 0.98, 1.4].flatMap(ratio =>
+    new Array(protocol.samples).fill(0.25 * ratio),
+  );
+  const pairs = pairedChanges(row, base, value.settings);
+  assert.ok(pairs.min < 0 && pairs.max > 5 && pairs.median > 5);
+  const [summary, details] = comment(value).split('<details>');
+  assert.ok(summary.includes('0 repeatable changes shown · 1 inconclusive'));
+  assert.ok(!summary.includes(`\`${row.id}\``));
+  assert.ok(details.includes(`\`${row.id}\``));
+  assert.ok(details.includes('inconclusive'));
+  assert.ok(details.includes('Paired change range'));
 });
 
 test('comments collapse metadata and omit trends until compatible history exists', () => {

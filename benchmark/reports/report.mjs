@@ -5,8 +5,9 @@ import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import {
   difference,
+  pairedChanges,
   seriesId,
-  statistics,
+  timingStatistics,
   trend,
   validateHistory,
   validateReport,
@@ -63,18 +64,24 @@ export function comment(
   validateReport(report);
   validateHistory(history);
   const size = report.kind === 'size';
-  const rows = report.candidate.rows
+  const compared = report.candidate.rows
     .map(row => {
       const before = report.baseline?.rows.find(item => item.id === row.id);
-      const current = size ? row : statistics(row.samples);
-      const base = before && (size ? before : statistics(before.samples));
+      const current = size ? row : timingStatistics(row, report.settings);
+      const base =
+        before && (size ? before : timingStatistics(before, report.settings));
+      const pairs =
+        !size && before && pairedChanges(row, before, report.settings);
       const change =
         base &&
         difference(
           size ? current.gzip : current.median,
           size ? base.gzip : base.median,
         );
-      return { row, current, base, change };
+      if (pairs) {
+        change.percent = pairs.median;
+      }
+      return { row, current, base, change, pairs };
     })
     .filter(
       ({ current, base, change }) =>
@@ -92,7 +99,12 @@ export function comment(
       return size
         ? b.change.absolute - a.change.absolute
         : a.change.percent - b.change.percent;
-    })
+    });
+  const inconclusive = compared.filter(
+    ({ pairs }) => pairs && pairs.min < 5 && pairs.max > -5,
+  );
+  const rows = compared
+    .filter(({ pairs }) => !pairs || pairs.min >= 5 || pairs.max <= -5)
     .map(entry => ({
       ...entry,
       historyValues: trend(history, report, entry.row.id),
@@ -108,7 +120,9 @@ export function comment(
     report.baseline
       ? size
         ? `**${rows.length} changed · ${hidden} unchanged hidden.**`
-        : `**${rows.length} shown · ${hidden} below the 5% display filter hidden.**`
+        : report.settings.version >= 2
+          ? `**${rows.length} repeatable changes shown · ${inconclusive.length} inconclusive · ${report.candidate.rows.length - compared.length} below the 5% display filter hidden.**`
+          : `**${rows.length} shown · ${hidden} below the 5% display filter hidden.**`
       : `**${rows.length} shown · baseline unavailable; no rows filtered.**`,
     '',
   ];
@@ -141,7 +155,9 @@ export function comment(
     '',
     size
       ? '— = unchanged. Rows are hidden only when raw, gzip, and Brotli sizes are all unchanged. Lower is smaller.'
-      : 'Only median changes of at least 5% in either direction are shown when a baseline is available. This is a display filter, not a statistical test or performance gate. Lower time is better.',
+      : report.settings.version >= 2
+        ? 'Time change is the median of paired process changes. A change is shown only when every pair changes by at least 5% in the same direction. Other changes of at least 5% are inconclusive and remain in details. This is a repeatability filter, not a statistical test or performance gate. Lower time is better.'
+        : 'Only median changes of at least 5% in either direction are shown when a baseline is available. This is a display filter, not a statistical test or performance gate. Lower time is better.',
     '',
     'Full results remain in the JSON report.',
     '',
@@ -157,17 +173,23 @@ export function comment(
       ? 'Production Seroval ESM import costs, not package tarball sizes. Compression settings are fixed.'
       : 'Ranges show sample min–max, not confidence intervals. Median changes and range overlap do not establish improvements or regressions. Warm decode reuses code; cold decode uses a fresh process and excludes startup/import/encoding. Streaming first-output includes the initial record; completion measures emission, not decoding.',
   );
-  if (!size && rows.length) {
+  if (!size && compared.length) {
+    if (report.settings.version >= 2) {
+      lines.push(
+        '',
+        `Warm timings use the median of ${report.settings.rounds} independent process medians. Each process warms up for at least ${report.settings.warmupMs} ms of timed work. Sync and async throughput batches target ${report.settings.minSampleMs} ms, with the same calibrated iteration count on both sides. Cold and streaming latency remain per-operation measurements.`,
+      );
+    }
     lines.push(
       '',
-      '| Scenario | Baseline range µs/op | Candidate range µs/op | Observation |',
-      '| --- | ---: | ---: | --- |',
+      `| Scenario | Baseline range µs/op | Candidate range µs/op | Observation |${report.settings.version >= 2 ? ' Paired change range | Repeatability |' : ''}`,
+      `| --- | ---: | ---: | --- |${report.settings.version >= 2 ? ' ---: | --- |' : ''}`,
     );
-    for (const { row, current, base } of rows) {
+    for (const { row, current, base, pairs } of compared) {
       const overlap =
         base && current.min <= base.max && base.min <= current.max;
       lines.push(
-        `| \`${row.id}\` | ${base ? `${(base.min * 1000).toFixed(3)}–${(base.max * 1000).toFixed(3)}` : 'unavailable'} | ${(current.min * 1000).toFixed(3)}–${(current.max * 1000).toFixed(3)} | ${base ? (overlap ? 'ranges overlap' : 'ranges separate') : 'no baseline'} |`,
+        `| \`${row.id}\` | ${base ? `${(base.min * 1000).toFixed(3)}–${(base.max * 1000).toFixed(3)}` : 'unavailable'} | ${(current.min * 1000).toFixed(3)}–${(current.max * 1000).toFixed(3)} | ${base ? (overlap ? 'ranges overlap' : 'ranges separate') : 'no baseline'} |${report.settings.version >= 2 ? (pairs ? ` ${signed(pairs.min, 2)}% to ${signed(pairs.max, 2)}% | ${pairs.min >= 5 || pairs.max <= -5 ? 'same direction in every pair' : 'inconclusive'} |` : ' unavailable | no baseline |') : ''}`,
       );
     }
   }
@@ -208,7 +230,7 @@ export function dashboard(history, kind) {
             kind === 'size'
               ? [value.raw, value.gzip, value.brotli]
               : (() => {
-                  const stats = statistics(value.samples);
+                  const stats = timingStatistics(value, report.settings);
                   return [
                     stats.median.toFixed(6),
                     stats.min.toFixed(6),
