@@ -44,11 +44,20 @@ npx vitest run
 
 Rebuild `seroval` after changing it, or the plugins tests will run against the old build.
 
+## Linting and formatting
+
+Run both from the repository root:
+
+```bash
+pnpm exec oxlint
+pnpm exec oxfmt
+```
+
 ## Pull requests
 
 - Keep each pull request to one change.
 - Add tests for new behavior and for every bug fix. A bug fix test should fail without the fix.
-- Format and lint with [Biome](https://biomejs.dev/). The configuration is in `biome.json`.
+- Lint with [oxlint](https://oxc.rs/docs/guide/usage/linter) and format with [oxfmt](https://oxc.rs/docs/guide/usage/formatter). The configuration is in `oxlint.config.ts` and `oxfmt.config.ts`.
 - Add a changeset for any change that affects users. Skip it for changes to tests, docs, CI or benchmarks.
 
 ```bash
