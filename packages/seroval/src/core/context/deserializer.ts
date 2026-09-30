@@ -1,3 +1,4 @@
+import { decodeArrayBuffer } from '../binary-neutral';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import {
   CONSTANT_VAL,
@@ -9,7 +10,6 @@ import {
   TEMPORAL_TYPE_NAME,
 } from '../constants';
 import {
-  ARRAY_BUFFER_CONSTRUCTOR,
   PROMISE_CONSTRUCTOR,
   type PromiseConstructorResolver,
   STREAM_CONSTRUCTOR,
@@ -75,7 +75,6 @@ import { getTypedArrayConstructor } from '../utils/typed-array';
 import { isValidKey, isValidSymbol } from '../utils/valid-properties';
 
 const DEFAULT_MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
-const MIN_NATIVE_BASE64_LENGTH = 512;
 const MAX_BIGINT_LENGTH = 10_000;
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
@@ -444,18 +443,7 @@ function deserializeArrayBuffer(
     );
   }
   const source = deserializeString(node.s);
-  let buffer: ArrayBuffer;
-  if (
-    source.length < MIN_NATIVE_BASE64_LENGTH ||
-    typeof Buffer === 'undefined'
-  ) {
-    buffer = ARRAY_BUFFER_CONSTRUCTOR(source);
-  } else {
-    // Keep atob's validation; Buffer's base64 decoder accepts malformed input.
-    const decoded = atob(source);
-    buffer = new ArrayBuffer(decoded.length);
-    Buffer.from(buffer).write(decoded, 'latin1');
-  }
+  const buffer = decodeArrayBuffer(source);
   return assignIndexedValue(ctx, node.i, buffer);
 }
 
