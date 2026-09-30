@@ -6,14 +6,16 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const protocol = {
-  version: 1,
+  version: 2,
   target: 'es2020',
   format: 'esm',
   bundlerPlatform: 'browser',
   gzipLevel: 9,
   brotliQuality: 11,
-  rounds: 2,
-  warmups: 5,
+  rounds: 6,
+  warmups: 0,
+  warmupMs: 250,
+  minSampleMs: 50,
   samples: 9,
 };
 

@@ -46,20 +46,31 @@ Each unsplit fixture reports minified raw, gzip, and Brotli bytes. The target is
 The workloads cover small objects, large collections, shared references and cycles, short/large/HTML-heavy strings, binary buffers, promises, async iterables, and streaming emission.
 
 - Serialization and JSON encode/decode are separate rows. `toJSON`/`fromJSON` timings do not include `JSON.stringify`/`JSON.parse`.
-- Inputs and pre-encoded decode values are prepared outside the clock. Sync samples measure a fixed batch and report milliseconds per operation. Warmup batches are discarded.
+- Inputs and pre-encoded decode values are prepared outside the clock. Sync and async throughput samples measure calibrated batches and report milliseconds per operation. Async batches use fresh inputs for every operation. Each batch's final output is checked outside the clock.
 - Warm JavaScript deserialization reuses the same source text, so V8 can reuse compiled code. Cold collection deserialization runs once per fresh process; its timer excludes startup, module import, and input encoding.
 - Async operations are awaited. Streaming first-output measures the initial record, not the first source chunk. Completion measures all emitted records, not receiver decoding.
 - Outside the clock, each batch's final result is checked. Stream checks restore all records and check chunk values and order. Graph checks require cycles and shared identities to survive.
-- Warm runs use two rounds in baseline/candidate then candidate/baseline order, five warmups and nine samples per round. Cold samples alternate revision order. Timing runs are sequential, not parallel.
+- Each sync and async throughput scenario is calibrated separately on both revisions. Batches double until they reach a 50 ms target after at least 250 ms of timed work. Both revisions then use the larger iteration count. Iteration limits and process timeouts fail the run if calibration cannot complete.
+- Each warm scenario runs in six independent process pairs, alternating baseline/candidate order. Each process discards at least 250 ms of timed warmup work, then records nine samples. No other scenario runs in that process. Reports use the median of the six process medians, rather than pooling samples across processes.
+- Streaming first-output and completion remain latency measurements of one stream, not batch averages. They share a process because both describe the same stream. They use the timed warmup and six paired rounds.
+- Cold decoding still uses nine fresh processes per revision with no decode warmup, alternating revision order. Timing runs are sequential, not parallel.
 
-Reports show medians and sample min/max. Range overlap is descriptive, not a confidence interval or a statistical significance test. There are no speed or size regression gates; broken measurements and correctness failures still fail CI.
+Reports show medians and sample min/max. Time changes use the median of the paired process percentage changes. Cold comparisons pair individual fresh-process samples. A headline change must reach 5% in the same direction in every pair; changes whose median reaches 5% but do not meet that repeatability rule remain in measurement details as **inconclusive**. This rule and range overlap are descriptive, not confidence intervals or statistical significance tests. There are no speed or size regression gates; broken measurements and correctness failures still fail CI.
+
+For a bounded unchanged-code control, select one or more scenarios. Each command still uses the complete calibration and paired-process protocol:
+
+```sh
+node benchmark/reports/measure.mjs --kind speed --candidate . --baseline . --scenario object.small.toJSON --scenario string.short.deserialize-warm
+```
+
+Selecting either streaming metric includes both. A different scenario set starts a separate history series. Run repeated unchanged-code controls on the intended runner before interpreting small speed differences; the 5% display filter is not a measured noise bound. Protocol version 2 retains batch iteration counts and ordered raw samples in JSON. Older version 1 history remains readable and uses its original pooled median.
 
 ### PR comments, history, and dashboards
 
 PR comments and Markdown reports show compact summaries:
 
 - Size rows are hidden only when raw, gzip, and Brotli bytes are all unchanged. Changed rows show the gzip size and byte deltas, sorted by the largest gzip increase. A dash means that metric is unchanged.
-- Speed rows show median changes of at least 5% in either direction, sorted from time decreases to time increases. Filtering uses the unrounded change. Times are displayed in microseconds per operation. The 5% filter is for display only, not a statistical test or CI gate.
+- Speed rows show repeatable paired changes of at least 5% in either direction, sorted from time decreases to time increases. Filtering uses unrounded changes. Inconclusive changes remain in collapsed details. Legacy version 1 reports retain the original pooled-median display filter. Times are displayed in microseconds per operation. These filters are for display only, not statistical tests or CI gates.
 - Each summary counts hidden rows. Without a baseline, every row remains visible and comparisons are explicitly unavailable.
 - Full revisions, measurement time, series ID, and sample ranges for displayed speed rows are in a collapsed **Measurement details** section. Trend columns appear only when compatible history exists.
 - JSON artifacts retain all scenarios and measurements, including hidden rows. Raw timing units remain milliseconds. History and dashboards remain unfiltered.
