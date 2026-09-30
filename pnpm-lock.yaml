@@ -99,7 +99,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2))
+        version: 5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2)(yaml@2.9.1))
 
   packages/seroval:
     devDependencies:
@@ -129,7 +129,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2))
+        version: 5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2)(yaml@2.9.1))
 
 packages:
 
@@ -918,8 +918,8 @@ packages:
     resolution: {integrity: sha512-USzYxODdVfOS7JuQq/L0naxB788dWCiUgUTxvN+WLPt/JfcDURNNj8kN/N+uK6PDvuR67/9/55cVKGPleFQINA==}
     engines: {node: '>=12'}
 
-  brace-expansion@1.1.18:
-    resolution: {integrity: sha512-Edep/X9fGqVNmzKBVsDYIOtD+z1tuezV70LBjdCst9Tqu76lsnvRiZ6oTic1n+/BIwX6QDGAO94PN4N2SADvtw==}
+  brace-expansion@1.1.21:
+    resolution: {integrity: sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==}
 
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
@@ -2110,7 +2110,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@vitest/mocker@5.0.2(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2))':
+  '@vitest/mocker@5.0.2(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2)(yaml@2.9.1))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.2
@@ -2133,7 +2133,7 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.2
       tinyrainbow: 3.1.1
-      vitest: 5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2))
+      vitest: 5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2)(yaml@2.9.1))
 
   '@vitest/utils@5.0.2':
     dependencies:
@@ -2248,7 +2248,7 @@ snapshots:
       kleur: 4.1.5
       log-update: 4.0.0
 
-  brace-expansion@1.1.18:
+  brace-expansion@1.1.21:
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
@@ -2540,7 +2540,7 @@ snapshots:
 
   minimatch@3.1.5:
     dependencies:
-      brace-expansion: 1.1.18
+      brace-expansion: 1.1.21
 
   mkdirp@1.0.4: {}
 
@@ -2815,10 +2815,10 @@ snapshots:
       fsevents: 2.3.3
       yaml: 2.9.1
 
-  vitest@5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2)):
+  vitest@5.0.2(@types/node@26.6.3)(@vitest/ui@5.0.2)(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.2(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2))
+      '@vitest/mocker': 5.0.2(vite@8.2.0(@types/node@26.6.3)(esbuild@0.28.2)(yaml@2.9.1))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
