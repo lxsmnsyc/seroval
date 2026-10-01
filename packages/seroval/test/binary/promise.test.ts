@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { binary } from '../../src';
+import { SerovalMalformedBinarySourceError } from '../../src/core/errors';
 import {
   createTransport,
   roundtrip,
@@ -282,12 +283,16 @@ describe('binary Promise', () => {
 
       const transport = createTransport();
       const errors: unknown[] = [];
-      void binary.deserialize<unknown>({
-        read: () => transport.read(),
-        onError(error) {
-          errors.push(error);
-        },
-      });
+      binary
+        .deserialize<unknown>({
+          read: () => transport.read(),
+          onError(error) {
+            errors.push(error);
+          },
+        })
+        .catch(() => {
+          // The root is rejected along with `onError`.
+        });
 
       // Drop the Promise declaration (chunk 1, right after the preamble) so
       // the trailing PromiseSuccess has no resolver to attach to.
@@ -302,7 +307,7 @@ describe('binary Promise', () => {
       expect(errors[0]).toBeInstanceOf(Error);
     });
 
-    it('leaves the Promise pending when the stream ends early', async () => {
+    it('rejects the Promise when the stream ends early', async () => {
       const deferred = defer<number>();
       const handle = startSerialize(deferred.promise);
 
@@ -317,18 +322,14 @@ describe('binary Promise', () => {
         () => 'rejected',
       );
 
-      // Cut the stream short instead of letting the Promise settle. The root
-      // was already decoded, so this is not a malformed source — the Promise
-      // simply never settles.
+      // Cut the stream short instead of letting the Promise settle. No more
+      // nodes can arrive, so the Promise is rejected instead of waiting
+      // forever.
       handle.transport.push(undefined);
 
-      await expect(
-        Promise.race([
-          settled,
-          new Promise(resolve => setTimeout(() => resolve('pending'), 10)),
-        ]),
-      ).resolves.toBe('pending');
-      expect(errors).toEqual([]);
+      await expect(settled).resolves.toBe('rejected');
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toBeInstanceOf(SerovalMalformedBinarySourceError);
 
       deferred.resolve(0);
     });

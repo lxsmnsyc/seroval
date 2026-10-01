@@ -335,7 +335,8 @@ describe('binary malformed input', () => {
       const attempt = feed([preamble(), promiseNode(1), pending(1, 0), root(1)]);
 
       await expectRejected(attempt);
-      // The stream is abandoned at the bad node, so no value is handed over.
+      // The stream is abandoned at the bad node, so the root is rejected
+      // instead of handed over.
       const delivered = await Promise.race([
         attempt.value.then(
           () => 'delivered',
@@ -343,14 +344,13 @@ describe('binary malformed input', () => {
         ),
         new Promise(resolve => setTimeout(() => resolve('pending'), 10)),
       ]);
-      expect(delivered).toBe('pending');
+      expect(delivered).toBe('rejected');
     });
 
-    it('leaves the root pending when a Pending count never balances', async () => {
-      // A container is complete when its pending count reaches zero, so a
-      // payload that over-declares one is never complete and the root is never
-      // handed over. No error either - the deserializer cannot tell this apart
-      // from a container still waiting on data that has not arrived yet.
+    it('rejects the root when a Pending count never balances', async () => {
+      // A container is complete when its pending count reaches zero. A
+      // payload that over-declares one can never complete, so the root is
+      // rejected once the input ends.
       const attempt = feed([
         preamble(),
         objectNode(1),
@@ -368,7 +368,7 @@ describe('binary malformed input', () => {
         ),
         new Promise(resolve => setTimeout(() => resolve('pending'), 20)),
       ]);
-      expect(delivered).toBe('pending');
+      expect(delivered).toBe('rejected');
     });
 
     it('still hands over when a failed assignment releases the count', async () => {

@@ -61,6 +61,12 @@ const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 // outstanding, and a resolver that fires once the count reaches zero.
 interface PendingState {
   count: number;
+  // Set once the container's `Pending` node is read. Assignments after it,
+  // or a second `Pending`, are malformed.
+  declared: boolean;
+  // Assignments waiting on a Plugin value. They release the count later, so
+  // a payload may end while they are still running.
+  inflight: number;
   resolver: PromiseConstructorResolver;
 }
 
@@ -118,8 +124,18 @@ export interface DeserializerContext {
   };
   done: boolean;
   buffer: Uint8Array;
+  // Chunks read but not yet joined into `buffer`, and their total size.
+  // Joining once per read target keeps many small chunks from being copied
+  // over and over.
+  chunks: Uint8Array[];
+  chunkSize: number;
   endianness: SerovalEndianness;
   features: number;
+  // Values created by this payload that must settle before it ends.
+  containers: number[];
+  openPromises: Set<number>;
+  openStreams: Set<number>;
+  aborted: boolean;
 }
 
 export function createDeserializerContext(
@@ -133,6 +149,12 @@ export function createDeserializerContext(
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
     done: false,
     buffer: new Uint8Array(),
+    chunks: [],
+    chunkSize: 0,
+    containers: [],
+    openPromises: new Set(),
+    openStreams: new Set(),
+    aborted: false,
     root: {
       resolver: PROMISE_CONSTRUCTOR(),
       found: false,
@@ -143,16 +165,34 @@ export function createDeserializerContext(
 }
 
 async function readChunk(ctx: DeserializerContext) {
-  // if there's no chunk, read again
   const chunk = await ctx.read();
   if (chunk) {
-    // repopulate the buffer
-    const newBuffer = new Uint8Array(ctx.buffer.length + chunk.length);
-    newBuffer.set(ctx.buffer);
-    newBuffer.set(chunk, ctx.buffer.length);
-    ctx.buffer = newBuffer;
+    if (chunk.length) {
+      ctx.chunks.push(chunk);
+      ctx.chunkSize += chunk.length;
+    }
   } else {
     ctx.done = true;
+  }
+}
+
+function availableBytes(ctx: DeserializerContext): number {
+  return ctx.buffer.length + ctx.chunkSize;
+}
+
+// Joins the chunks read so far onto the buffer, in one copy.
+function joinChunks(ctx: DeserializerContext): void {
+  if (ctx.chunks.length) {
+    const result = new Uint8Array(ctx.buffer.length + ctx.chunkSize);
+    result.set(ctx.buffer);
+    let offset = ctx.buffer.length;
+    for (let i = 0, len = ctx.chunks.length; i < len; i++) {
+      result.set(ctx.chunks[i], offset);
+      offset += ctx.chunks[i].length;
+    }
+    ctx.buffer = result;
+    ctx.chunks = [];
+    ctx.chunkSize = 0;
   }
 }
 
@@ -164,7 +204,7 @@ function resizeBuffer(ctx: DeserializerContext, consumedLength: number) {
 
 async function ensureChunk(ctx: DeserializerContext, requiredLength: number) {
   // Check if the buffer has enough bytes to be parsed
-  while (requiredLength > ctx.buffer.length) {
+  while (requiredLength > availableBytes(ctx)) {
     // If it's not enough, and the reader is done
     // then the chunk is invalid.
     if (ctx.done) {
@@ -173,6 +213,9 @@ async function ensureChunk(ctx: DeserializerContext, requiredLength: number) {
     // Otherwise, we read more chunks
     await readChunk(ctx);
   }
+  if (requiredLength > ctx.buffer.length) {
+    joinChunks(ctx);
+  }
 
   return resizeBuffer(ctx, requiredLength);
 }
@@ -180,7 +223,7 @@ async function ensureChunk(ctx: DeserializerContext, requiredLength: number) {
 function isThenable(value: unknown): boolean {
   return (
     !!value &&
-    typeof value === 'object' &&
+    (typeof value === 'object' || typeof value === 'function') &&
     'then' in value &&
     typeof value.then === 'function'
   );
@@ -232,6 +275,11 @@ async function deserializeId(
 ): Promise<number> {
   // parse ID
   const id = await deserializeUint(ctx);
+  // An id is declared once. Redeclaring it would swap the value behind refs
+  // that were already validated against the first declaration.
+  if (ctx.refs.types.has(id)) {
+    throw new SerovalMalformedBinaryTypeError(type);
+  }
   // Mark id
   ctx.refs.types.set(id, type);
   return id;
@@ -380,15 +428,17 @@ function getRefSync(ctx: DeserializerContext, ref: number): unknown {
 }
 
 // Used only where a slot may hold a Plugin, whose identity resolves later.
-function getRefAsync(ctx: DeserializerContext, ref: number): Promise<unknown> {
+// The value is boxed so a promise or thenable value is passed on as is and
+// never adopted by `await`.
+async function getRefAsync(
+  ctx: DeserializerContext,
+  ref: number,
+): Promise<{ value: unknown }> {
   const pending = ctx.refs.deferred.get(ref);
   if (pending) {
-    return pending;
+    return { value: await pending };
   }
-  if (ctx.refs.values.has(ref)) {
-    return Promise.resolve(ctx.refs.values.get(ref));
-  }
-  throw new SerovalMissingBinaryRefError(ref);
+  return { value: getRefSync(ctx, ref) };
 }
 
 function invalidatePending(entry: PendingState) {
@@ -405,11 +455,37 @@ function popPendingState(ctx: DeserializerContext, id: number) {
   }
 }
 
+function trackInflight(ctx: DeserializerContext, id: number, delta: number) {
+  const entry = ctx.refs.pendingResolvers.get(id);
+  if (entry) {
+    entry.inflight += delta;
+  }
+}
+
 function createPending(ctx: DeserializerContext, id: number) {
   ctx.refs.pendingResolvers.set(id, {
     count: 0,
+    declared: false,
+    inflight: 0,
     resolver: PROMISE_CONSTRUCTOR(),
   });
+  ctx.containers.push(id);
+}
+
+// Rejects an assignment to a container whose `Pending` node was already read.
+function assertOpenContainer(
+  ctx: DeserializerContext,
+  type: SerovalBinaryType,
+  id: number,
+): void {
+  const entry = ctx.refs.pendingResolvers.get(id);
+  if (!entry || entry.declared) {
+    throw new SerovalMalformedBinaryTypeError(type);
+  }
+}
+
+function isSequenceIndex(value: number, size: number): boolean {
+  return value >= -1 && value < size;
 }
 
 async function deserializePending(ctx: DeserializerContext) {
@@ -421,10 +497,27 @@ async function deserializePending(ctx: DeserializerContext) {
   const amount = await deserializeUint(ctx);
 
   const entry = ctx.refs.pendingResolvers.get(id);
-  if (entry) {
-    entry.count += amount;
-    invalidatePending(entry);
+  if (!entry || entry.declared) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Pending);
   }
+  // The serializer sends every assignment of a container before its
+  // `Pending` node, so the amount must match what was received.
+  const received = ctx.refs.children.get(id)?.length ?? 0;
+  if (ctx.refs.types.get(id) === SerovalBinaryType.Sequence) {
+    // A sequence iterator stops only once its index passes the done index, so
+    // both indices must point inside the values that were actually sent.
+    const sequence = getRefSync(ctx, id) as Sequence;
+    if (
+      amount !== received ||
+      !isSequenceIndex(sequence.t, amount) ||
+      !isSequenceIndex(sequence.d, amount)
+    ) {
+      throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Sequence);
+    }
+  }
+  entry.declared = true;
+  entry.count += amount;
+  invalidatePending(entry);
 }
 
 async function deserializeConstant(ctx: DeserializerContext) {
@@ -535,6 +628,7 @@ function runAssignment(
 ): void {
   const pending = ctx.refs.deferred.get(valueRef);
   if (pending) {
+    trackInflight(ctx, container, 1);
     pending.then(
       value => {
         try {
@@ -542,11 +636,13 @@ function runAssignment(
         } catch (err) {
           ctx.onError(err);
         } finally {
+          trackInflight(ctx, container, -1);
           popPendingState(ctx, container);
         }
       },
       err => {
         ctx.onError(err);
+        trackInflight(ctx, container, -1);
         popPendingState(ctx, container);
       },
     );
@@ -576,6 +672,7 @@ async function deserializeObjectAssign(ctx: DeserializerContext) {
   ]);
   const value = await deserializeUint(ctx);
 
+  assertOpenContainer(ctx, SerovalBinaryType.ObjectAssign, object);
   trackChild(ctx, object, value);
   runAssignment(ctx, object, value, resolved => {
     assignProperty(
@@ -595,6 +692,7 @@ async function deserializeArrayAssign(ctx: DeserializerContext) {
   const index = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
+  assertOpenContainer(ctx, SerovalBinaryType.ArrayAssign, object);
   trackChild(ctx, object, value);
   runAssignment(ctx, object, value, resolved => {
     (getRefSync(ctx, object) as unknown[])[index] = resolved;
@@ -653,8 +751,22 @@ async function deserializeStream(ctx: DeserializerContext) {
   upsert(
     ctx,
     id,
-    live === 1 ? (STREAM_CONSTRUCTOR(1) as unknown as Stream<unknown>) : createStream(),
+    live === 1
+      ? (STREAM_CONSTRUCTOR(1) as unknown as Stream<unknown>)
+      : createStream(),
   );
+  ctx.openStreams.add(id);
+}
+
+// A stream accepts no events after it ends.
+function assertOpenStream(
+  ctx: DeserializerContext,
+  type: SerovalBinaryType,
+  stream: number,
+): void {
+  if (!ctx.openStreams.has(stream)) {
+    throw new SerovalMalformedBinaryTypeError(type);
+  }
 }
 
 async function deserializeStreamNextInner(
@@ -663,7 +775,7 @@ async function deserializeStreamNextInner(
   value: number,
 ) {
   const s = getRefSync(ctx, stream) as Stream<unknown>;
-  s.next(await getRefAsync(ctx, value));
+  s.next((await getRefAsync(ctx, value)).value);
 }
 
 async function deserializeStreamNext(ctx: DeserializerContext) {
@@ -673,6 +785,7 @@ async function deserializeStreamNext(ctx: DeserializerContext) {
     SerovalBinaryType.Stream,
   );
   const value = await deserializeUint(ctx);
+  assertOpenStream(ctx, SerovalBinaryType.StreamNext, stream);
   deserializeStreamNextInner(ctx, stream, value).catch(ctx.onError);
 }
 
@@ -682,7 +795,7 @@ async function deserializeStreamThrowInner(
   value: number,
 ) {
   const s = getRefSync(ctx, stream) as Stream<unknown>;
-  s.throw(await getRefAsync(ctx, value));
+  s.throw((await getRefAsync(ctx, value)).value);
 }
 
 async function deserializeStreamThrow(ctx: DeserializerContext) {
@@ -692,6 +805,8 @@ async function deserializeStreamThrow(ctx: DeserializerContext) {
     SerovalBinaryType.Stream,
   );
   const value = await deserializeUint(ctx);
+  assertOpenStream(ctx, SerovalBinaryType.StreamThrow, stream);
+  ctx.openStreams.delete(stream);
   deserializeStreamThrowInner(ctx, stream, value).catch(ctx.onError);
 }
 
@@ -701,7 +816,7 @@ async function deserializeStreamReturnInner(
   value: number,
 ) {
   const s = getRefSync(ctx, stream) as Stream<unknown>;
-  s.return(await getRefAsync(ctx, value));
+  s.return((await getRefAsync(ctx, value)).value);
 }
 
 async function deserializeStreamReturn(ctx: DeserializerContext) {
@@ -711,6 +826,8 @@ async function deserializeStreamReturn(ctx: DeserializerContext) {
     SerovalBinaryType.Stream,
   );
   const value = await deserializeUint(ctx);
+  assertOpenStream(ctx, SerovalBinaryType.StreamReturn, stream);
+  ctx.openStreams.delete(stream);
   deserializeStreamReturnInner(ctx, stream, value).catch(ctx.onError);
 }
 
@@ -728,6 +845,7 @@ async function deserializeSequencePush(ctx: DeserializerContext) {
     SerovalBinaryType.Sequence,
   );
   const value = await deserializeUint(ctx);
+  assertOpenContainer(ctx, SerovalBinaryType.SequencePush, sequence);
   trackChild(ctx, sequence, value);
   runAssignment(ctx, sequence, value, resolved => {
     (getRefSync(ctx, sequence) as Sequence).v.push(resolved);
@@ -765,6 +883,7 @@ async function deserializeError(ctx: DeserializerContext) {
     ERROR_CONSTRUCTOR,
     tag,
   );
+  createPending(ctx, id);
   upsert(ctx, id, new construct(getRefSync(ctx, message) as string));
 }
 
@@ -788,6 +907,16 @@ async function deserializeArrayBuffer(ctx: DeserializerContext) {
   );
 }
 
+// The view constructors throw a `RangeError` for an offset or length outside
+// the buffer, or a misaligned offset. Report that as malformed input.
+function createView<T>(type: SerovalBinaryType, create: () => T): T {
+  try {
+    return create();
+  } catch {
+    throw new SerovalMalformedBinaryTypeError(type);
+  }
+}
+
 async function deserializeTypedArray(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.TypedArray);
   const tag = (await deserializeByte(ctx)) as TypedArrayTag;
@@ -809,7 +938,13 @@ async function deserializeTypedArray(ctx: DeserializerContext) {
   upsert(
     ctx,
     id,
-    new construct(getRefSync(ctx, buffer) as ArrayBuffer, offset, length),
+    createView(SerovalBinaryType.TypedArray, () => {
+      return new construct(
+        getRefSync(ctx, buffer) as ArrayBuffer,
+        offset,
+        length,
+      );
+    }),
   );
 }
 
@@ -836,7 +971,13 @@ async function deserializeBigIntTypedArray(ctx: DeserializerContext) {
   upsert(
     ctx,
     id,
-    new construct(getRefSync(ctx, buffer) as ArrayBuffer, offset, length),
+    createView(SerovalBinaryType.BigIntTypedArray, () => {
+      return new construct(
+        getRefSync(ctx, buffer) as ArrayBuffer,
+        offset,
+        length,
+      );
+    }),
   );
 }
 
@@ -855,7 +996,13 @@ async function deserializeDataView(ctx: DeserializerContext) {
   upsert(
     ctx,
     id,
-    new DataView(getRefSync(ctx, buffer) as ArrayBuffer, offset, length),
+    createView(SerovalBinaryType.DataView, () => {
+      return new DataView(
+        getRefSync(ctx, buffer) as ArrayBuffer,
+        offset,
+        length,
+      );
+    }),
   );
 }
 
@@ -877,18 +1024,21 @@ function deserializeMapSetEntry(
     (getRefSync(ctx, id) as Map<unknown, unknown>).set(k, v);
   };
   if (ctx.refs.deferred.get(key) || ctx.refs.deferred.get(value)) {
+    trackInflight(ctx, id, 1);
     Promise.all([getRefAsync(ctx, key), getRefAsync(ctx, value)]).then(
       ([k, v]) => {
         try {
-          set(k, v);
+          set(k.value, v.value);
         } catch (err) {
           ctx.onError(err);
         } finally {
+          trackInflight(ctx, id, -1);
           popPendingState(ctx, id);
         }
       },
       err => {
         ctx.onError(err);
+        trackInflight(ctx, id, -1);
         popPendingState(ctx, id);
       },
     );
@@ -912,6 +1062,7 @@ async function deserializeMapSet(ctx: DeserializerContext) {
   const key = await deserializeUint(ctx);
   const value = await deserializeUint(ctx);
 
+  assertOpenContainer(ctx, SerovalBinaryType.MapSet, object);
   trackChild(ctx, object, key);
   trackChild(ctx, object, value);
   deserializeMapSetEntry(ctx, object, key, value);
@@ -931,6 +1082,7 @@ async function deserializeSetAdd(ctx: DeserializerContext) {
   );
   const value = await deserializeUint(ctx);
 
+  assertOpenContainer(ctx, SerovalBinaryType.SetAdd, object);
   trackChild(ctx, object, value);
   runAssignment(ctx, object, value, resolved => {
     (getRefSync(ctx, object) as Set<unknown>).add(resolved);
@@ -942,9 +1094,22 @@ async function deserializePromise(ctx: DeserializerContext) {
 
   const instance = PROMISE_CONSTRUCTOR();
   ctx.refs.promiseResolvers.set(promise, instance);
+  ctx.openPromises.add(promise);
   // A Promise node's identity - the user-facing promise object - is known
   // immediately, so it is stored raw like any other value, not deferred.
   upsert(ctx, promise, instance.p);
+}
+
+// A promise accepts one settle node.
+function settlePromiseNode(
+  ctx: DeserializerContext,
+  type: SerovalBinaryType,
+  promise: number,
+): void {
+  if (!ctx.openPromises.has(promise)) {
+    throw new SerovalMalformedBinaryTypeError(type);
+  }
+  ctx.openPromises.delete(promise);
 }
 
 async function deserializePromiseFulfillInner(
@@ -957,7 +1122,15 @@ async function deserializePromiseFulfillInner(
   if (currentResolver == null) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseSuccess);
   }
-  const resolvingValue = await getRefAsync(ctx, value);
+  // A promise never settles with another promise; the serializer only sends
+  // the settled value. Rejecting it here also stops a promise that settles
+  // with itself.
+  if (ctx.refs.types.get(value) === SerovalBinaryType.Promise) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseSuccess);
+  }
+  // Read the value without adopting it, then reject thenables before any
+  // `then` method can run.
+  const resolvingValue = (await getRefAsync(ctx, value)).value;
   if (isThenable(resolvingValue)) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.PromiseSuccess);
   }
@@ -979,8 +1152,11 @@ async function deserializePromiseSuccess(ctx: DeserializerContext) {
     SerovalBinaryType.Promise,
   );
   const value = await deserializeUint(ctx);
+  settlePromiseNode(ctx, SerovalBinaryType.PromiseSuccess, resolver);
 
-  deserializePromiseFulfillInner(ctx, true, resolver, value).catch(ctx.onError);
+  deserializePromiseFulfillInner(ctx, true, resolver, value).catch(error => {
+    rejectPromiseNode(ctx, resolver, error);
+  });
 }
 
 async function deserializePromiseFailure(ctx: DeserializerContext) {
@@ -990,10 +1166,22 @@ async function deserializePromiseFailure(ctx: DeserializerContext) {
     SerovalBinaryType.Promise,
   );
   const value = await deserializeUint(ctx);
+  settlePromiseNode(ctx, SerovalBinaryType.PromiseFailure, resolver);
 
-  deserializePromiseFulfillInner(ctx, false, resolver, value).catch(
-    ctx.onError,
-  );
+  deserializePromiseFulfillInner(ctx, false, resolver, value).catch(error => {
+    rejectPromiseNode(ctx, resolver, error);
+  });
+}
+
+// A settle node that cannot be applied still ends its promise, with the
+// error, so the promise does not wait for a node that will never come.
+function rejectPromiseNode(
+  ctx: DeserializerContext,
+  promise: number,
+  error: unknown,
+): void {
+  ctx.onError(error);
+  ctx.refs.promiseResolvers.get(promise)?.f(error);
 }
 
 async function deserializeRegExp(ctx: DeserializerContext) {
@@ -1025,6 +1213,7 @@ async function deserializeAggregateError(ctx: DeserializerContext) {
     SerovalBinaryType.AggregateError,
     SerovalBinaryType.String,
   );
+  createPending(ctx, id);
   upsert(
     ctx,
     id,
@@ -1134,6 +1323,11 @@ async function deserializeIterator(ctx: DeserializerContext) {
     SerovalBinaryType.Iterator,
     SerovalBinaryType.Sequence,
   );
+  // The sequence's indices are checked when its `Pending` node is read, so
+  // the iterator may only use a sequence that already has one.
+  if (!ctx.refs.pendingResolvers.get(sequence)?.declared) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Iterator);
+  }
   trackChild(ctx, id, sequence);
   upsert(ctx, id, sequenceToIterator(getRefSync(ctx, sequence) as Sequence));
 }
@@ -1337,14 +1531,29 @@ async function deserializeChunk(ctx: DeserializerContext) {
   }
 }
 
+// Checks that everything this payload started was finished before it ended.
+function assertComplete(ctx: DeserializerContext): void {
+  if (!ctx.root.found) {
+    throw new SerovalMalformedBinarySourceError();
+  }
+  for (let i = 0, len = ctx.containers.length; i < len; i++) {
+    const entry = ctx.refs.pendingResolvers.get(ctx.containers[i]);
+    // Every assignment still owed must be one that is already running.
+    if (entry && !(entry.declared && entry.count === entry.inflight)) {
+      throw new SerovalMalformedBinarySourceError();
+    }
+  }
+  if (ctx.openPromises.size || ctx.openStreams.size) {
+    throw new SerovalMalformedBinarySourceError();
+  }
+}
+
 async function drain(ctx: DeserializerContext) {
   while (true) {
-    if (ctx.buffer.length === 0) {
+    if (availableBytes(ctx) === 0) {
       if (ctx.done) {
-        if (ctx.root.found) {
-          return;
-        }
-        throw new SerovalMalformedBinarySourceError();
+        assertComplete(ctx);
+        return;
       }
       await readChunk(ctx);
     } else {
@@ -1353,7 +1562,46 @@ async function drain(ctx: DeserializerContext) {
   }
 }
 
+/**
+ * Ends a payload that failed. The root promise is rejected if it has not
+ * resolved yet, unsettled promises are rejected, and open streams are thrown
+ * into, all with `reason`. Without this they would wait forever for nodes
+ * that will never arrive.
+ */
+function abortDeserialize(ctx: DeserializerContext, reason: unknown): void {
+  if (ctx.aborted) {
+    return;
+  }
+  ctx.aborted = true;
+  ctx.root.resolver.f(reason);
+  // The failure is already reported through `onError`, and some of these
+  // promises may not be reachable from the root at all. Mark the rejections
+  // as handled so they are not reported again as unhandled. Code awaiting the
+  // promises still sees the rejection.
+  for (const id of ctx.openPromises) {
+    const resolver = ctx.refs.promiseResolvers.get(id);
+    if (resolver) {
+      resolver.p.catch(() => {
+        // no-op
+      });
+      resolver.f(reason);
+    }
+  }
+  ctx.openPromises.clear();
+  for (const id of ctx.openStreams) {
+    try {
+      (ctx.refs.values.get(id) as Stream<unknown>).throw(reason);
+    } catch {
+      // A listener error must not stop the other streams from ending.
+    }
+  }
+  ctx.openStreams.clear();
+}
+
 export function deserializeStart(ctx: DeserializerContext) {
-  void drain(ctx).catch(ctx.onError);
+  drain(ctx).catch(error => {
+    ctx.onError(error);
+    abortDeserialize(ctx, error);
+  });
   return ctx.root.resolver.p;
 }

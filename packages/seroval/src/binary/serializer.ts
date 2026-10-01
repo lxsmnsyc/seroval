@@ -583,11 +583,23 @@ function serializeError(ctx: SerializerContext, value: Error) {
     getErrorConstructor(value),
     serialize(ctx, value.message),
   ]);
+  serializeErrorProperties(ctx, id, value);
+  return id;
+}
+
+// Errors always end with a `Pending` node, even with no extra properties, so
+// the decoder can tell when the error is complete.
+function serializeErrorProperties(
+  ctx: SerializerContext,
+  id: Uint8Array,
+  value: Error,
+): void {
   const properties = getErrorOptions(value, ctx.features);
   if (properties) {
     serializeProperties(ctx, id, properties);
+  } else {
+    serializePending(ctx, id, 0);
   }
-  return id;
 }
 
 function serializeBoxed(ctx: SerializerContext, value: object) {
@@ -750,10 +762,7 @@ function serializeAggregateError(
     id,
     serialize(ctx, value.message),
   ]);
-  const properties = getErrorOptions(value, ctx.features);
-  if (properties) {
-    serializeProperties(ctx, id, properties);
-  }
+  serializeErrorProperties(ctx, id, value);
   return id;
 }
 

@@ -34,6 +34,26 @@ A serialized payload is a stream of `node`s, not a single tree:
 Numeric fields (`int`, `uint`, `number`) are encoded using the endianness
 declared in the `Preamble`.
 
+## Validation
+
+The deserializer treats its input as untrusted. It rejects a payload that
+breaks any of these rules:
+
+- An `id` is declared once.
+- A `ref` points to an `id` that was already declared, with a node type that
+  the referencing node accepts.
+- A `Promise` gets at most one `PromiseSuccess` or `PromiseFailure`, and does not
+  settle with a `Promise`.
+- A `Stream` gets no events after its `StreamThrow` or `StreamReturn`.
+- A typed array or `DataView` fits inside its `ArrayBuffer`.
+- When the input ends, the `Root` has been read, every container has its
+  `Pending` node and all its assignments, and every `Promise` and `Stream` has
+  settled.
+
+When a payload is rejected, the error is passed to `onError`, the root promise
+is rejected if it has not resolved yet, unsettled promises are rejected, and
+open streams are thrown into.
+
 ## Node Types
 
 ### `Preamble`
@@ -219,6 +239,12 @@ nodes for that stream follow.
 
 Since `throws-at` will have the value of `-1` if `done-at` has a value greater than or equal to `0`.
 The same also applies to `done-at`.
+
+The values follow as `SequencePush` nodes, then a `Pending` node whose `amount`
+is the number of values. Both `throws-at` and `done-at` must be between `-1` and
+`amount - 1`, and `amount` must equal the number of `SequencePush` nodes. The
+deserializer rejects a sequence that breaks either rule, because its iterator
+would otherwise never finish.
 
 ### `SequencePush`
 
@@ -430,7 +456,8 @@ own properties follow as `ObjectAssign` nodes targeting this `id`.
 <byte:iterator=36> <id> <ref:sequence>
 ```
 
-`Iterator` is for generating the callbacks for `Symbol.iterator` derived from a `Sequence`
+`Iterator` is for generating the callbacks for `Symbol.iterator` derived from a `Sequence`.
+The `Sequence` must already have its `Pending` node.
 
 ### `AsyncIterator`
 
@@ -452,6 +479,10 @@ A `Pending` node tells the deserializer how many child assignments a container
 after the container's assignment nodes, and its `amount` is the number of those
 assignments. The deserializer counts assignments down against it so a consumer
 can wait for the container to be fully populated.
+
+Every container gets exactly one `Pending` node, including an `Error` or
+`AggregateError` with no extra properties (`amount` is `0`). An assignment to a
+container after its `Pending` node, or a second `Pending` node, is malformed.
 
 ### `Temporal`
 
