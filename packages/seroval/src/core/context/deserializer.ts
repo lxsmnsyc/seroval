@@ -111,6 +111,11 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
   features: number;
   depthLimit: number;
   maxBase64Length: number;
+  /**
+   * Ids of promise resolvers and streams that were created but not yet
+   * settled. Only maintained by `createCrossDeserializer`.
+   */
+  pending?: Set<number>;
 }
 
 const DEFAULT_DEPTH_LIMIT = 1000;
@@ -586,6 +591,7 @@ function deserializePromiseConstructor(
     assignIndexedValue(ctx, node.s, PROMISE_CONSTRUCTOR()).p,
   );
   assignNodeType(ctx, node.s, SerovalNodeType.PromiseConstructor);
+  ctx.base.pending?.add(node.s);
   return value;
 }
 
@@ -608,6 +614,7 @@ function deserializePromiseFulfill(
     } else {
       deferred.f(deserialized);
     }
+    ctx.base.pending?.delete(node.i);
     return NIL;
   }
   throw new SerovalMissingInstanceError('Promise');
@@ -662,6 +669,7 @@ function deserializeStreamConstructor(
     STREAM_CONSTRUCTOR(node.l === 1 ? 1 : NIL),
   );
   assignNodeType(ctx, node.i, SerovalNodeType.StreamConstructor);
+  ctx.base.pending?.add(node.i);
   const items = node.a;
   const len = items.length;
   if (len) {
@@ -685,6 +693,9 @@ function deserializeStreamCall(
   if (deferred) {
     validateNodeType(ctx, node, node.i, SerovalNodeType.StreamConstructor);
     deferred[method](deserialize(ctx, depth, node.f));
+    if (method !== 'next') {
+      ctx.base.pending?.delete(node.i);
+    }
     return NIL;
   }
   throw new SerovalMissingInstanceError('Stream');
@@ -827,5 +838,34 @@ export function deserializeTop(
     return deserialize(ctx, 0, node);
   } catch (error) {
     throw new SerovalDeserializationError(error);
+  }
+}
+
+/**
+ * Rejects every pending promise and throws into every open stream tracked
+ * by `ctx.base.pending`, then drops the bookkeeping so the context no longer
+ * accepts deferred values. Does nothing once the bookkeeping is gone.
+ */
+export function abortDeferred(ctx: DeserializerContext, reason: unknown): void {
+  const pending = ctx.base.pending;
+  if (pending) {
+    ctx.base.pending = NIL;
+    const refs = ctx.base.refs;
+    const errors: unknown[] = [];
+    for (const id of pending) {
+      try {
+        const value = refs.get(id);
+        if (refs.types.get(id) === SerovalNodeType.PromiseConstructor) {
+          (value as PromiseConstructorResolver).f(reason);
+        } else {
+          (value as Stream<unknown>).throw(reason);
+        }
+      } catch (error) {
+        errors.push(error);
+      }
+    }
+    if (errors.length) {
+      throw errors[0];
+    }
   }
 }
