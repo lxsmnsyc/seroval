@@ -1352,7 +1352,8 @@ function deserializeTemporalInner(
   type: SerovalTemporalType,
   isoRef: number,
 ) {
-  if (!(ctx.features & Feature.Temporal)) {
+  // A runtime without the Temporal API cannot build the value.
+  if (!(ctx.features & Feature.Temporal) || typeof Temporal === 'undefined') {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Temporal);
   }
   const iso = getRefSync(ctx, isoRef) as string;

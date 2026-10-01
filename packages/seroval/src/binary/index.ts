@@ -64,5 +64,5 @@ export async function deserialize<T>(
 
 export { createReferenceMap };
 
-export type { DeserializerContext } from './deserializer';
+export type { DeserializerContext, ReferenceMap } from './deserializer';
 export type { SerializerContextOptions } from './serializer';

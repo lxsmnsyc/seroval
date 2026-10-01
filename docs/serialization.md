@@ -471,6 +471,120 @@ const { value } = await binary.deserialize({
 
 See the [binary mode specification](./binary-mode-spec.md) for the wire format.
 
+### Serializer options
+
+`binary.serialize(value, options)` takes:
+
+- `refs`: a `Map` of the values already sent. Pass the same map to later calls
+  to send references to values from earlier payloads (see below).
+- `onSerialize(bytes)`: receives each chunk. It may return a promise; see
+  [Live streams](#binary-live-streams).
+- `onDone()`: runs once every value, including promises and streams, has
+  settled.
+- `onError(error)`: runs when a value cannot be serialized.
+- `plugins`, `features`, `disabledFeatures` and `depthLimit`: the same as in the
+  other modes.
+
+`binary.serialize` returns an abort function. Calling it stops pulling from
+async iterables, unsubscribes from streams, cancels live streams and runs the
+plugin cleanups. It does not call `onDone`. If a cleanup throws, the first
+error goes to `onError`.
+
+If the root value itself fails, the error goes to `onError`, the sources it
+already started are stopped, and `onDone` is not called. A value that fails
+later, such as a promise that resolves to an unsupported value, is reported
+through `onError` and the rest of the payload continues.
+
+### Deserializer options
+
+`binary.deserialize(options)` takes:
+
+- `read()`: returns a promise for the next chunk, or for `undefined` at the end
+  of the input.
+- `onError(error)`: runs when the input is malformed or a value cannot be
+  rebuilt.
+- `refs`: the reference map from `binary.createReferenceMap()`. Pass the same
+  map to later calls to resolve references to values from earlier payloads.
+- `plugins`, `features` and `disabledFeatures`: the same as in the other modes.
+
+It returns a promise for `{ value }` that resolves as soon as the root value is
+ready. Promises and streams inside the value may still be pending at that
+point.
+
+The input is treated as untrusted. When it is malformed, or when it ends before
+every value has settled:
+
+- the error goes to `onError`,
+- the returned promise is rejected if it has not resolved yet,
+- promises that have not settled are rejected,
+- streams that have not ended are thrown into.
+
+If `read()` rejects, for example because the connection dropped, the same
+happens with that error.
+
+### Sharing references between payloads
+
+Values sent in one payload can be referenced from the next one by sharing the
+reference maps on both sides.
+
+```js
+const serializerRefs = new Map();
+const deserializerRefs = binary.createReferenceMap();
+
+// Use `serializerRefs` for every `binary.serialize` call and
+// `deserializerRefs` for every matching `binary.deserialize` call.
+```
+
+### Binary live streams
+
+A live stream from `createLiveStream` is sent one event at a time. If
+`onSerialize` returns a promise, the event that produced the chunk is accepted
+only after the promise resolves, so the producer waits for the transport.
+Other chunks are not delayed. Aborting the serializer cancels the live stream.
+
+On the receiving side, a live stream is decoded as a stream that keeps its
+values only until the first listener subscribes. After that it passes values
+on without storing them, and a second listener throws.
+
+### Isomorphic references
+
+Values registered with `createReference` are sent by their key, the same as in
+the other modes. The receiving side must register a value under the same key,
+otherwise the payload is rejected.
+
+### Plugins in binary mode
+
+A plugin supports binary mode through a `binary` section:
+
+```js
+const plugin = createPlugin({
+  tag: 'example/Point',
+  test: value => value instanceof Point,
+  // ...the other modes...
+  binary: {
+    // Turn the value into data seroval can serialize.
+    serialize(value, ctx) {
+      return { x: value.x, y: value.y };
+    },
+    // Build the value back from that data. May return a promise.
+    deserialize(data) {
+      return new Point(data.x, data.y);
+    },
+  },
+});
+```
+
+The `ctx` given to `binary.serialize` has two helpers:
+
+- `ctx.addCleanup(cleanup)` registers a function that runs when serialization
+  ends or is aborted.
+- `ctx.streamSource(asyncIterable)` turns an async iterable into a stream that
+  can be part of the returned data. The serializer stops pulling from it and
+  calls its `return` method when serialization ends or is aborted.
+
+`binary.deserialize` receives the data after all of it has been rebuilt,
+including nested values from other plugins.
+
 ## Plugins
 
 All serialization methods can accept plugins. Plugins allows extending the serialization capabilities of `seroval`. You can visit such examples on `seroval-plugins`.
