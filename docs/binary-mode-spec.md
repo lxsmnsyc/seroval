@@ -174,10 +174,15 @@ simply never assigned, so `length` may exceed the number of `ArrayAssign` nodes.
 ### `Stream`
 
 ```
-<byte:stream=11> <id>
+<byte:stream=11> <id> <byte:live>
 ```
 
 A `Stream` represents an observable data that sends and receives value over time.
+
+`live` is `1` for a live stream (`createLiveStream`) and `0` for a replay
+stream. A live stream is decoded as a receiver that keeps its values only until
+the first listener subscribes. After that it forwards values without storing
+them, and a second listener throws.
 
 ### `StreamNext`
 

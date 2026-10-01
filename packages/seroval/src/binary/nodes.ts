@@ -176,7 +176,12 @@ export type SerovalNodeMap = {
     length: Uint8Array,
   ];
 
-  [SerovalBinaryType.Stream]: [type: SerovalBinaryType.Stream, id: Uint8Array];
+  [SerovalBinaryType.Stream]: [
+    type: SerovalBinaryType.Stream,
+    id: Uint8Array,
+    // 1 for a live stream, 0 for a replay stream
+    live: number,
+  ];
   [SerovalBinaryType.StreamNext]: [
     type: SerovalBinaryType.StreamNext,
     id: Uint8Array,

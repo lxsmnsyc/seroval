@@ -53,28 +53,53 @@ export function createStream<T>(): Stream<T> {
 /**
  * Adapts an `AsyncIterable` into a {@link Stream}, pulling values from the
  * iterator and pushing them onto the stream until it is exhausted or throws.
+ *
+ * When `cleanups` is given, a function is added to it that stops pulling and
+ * calls the iterator's `return` method. Call it when the stream is no longer
+ * needed, for example when serialization is aborted.
  */
 export function createStreamFromAsyncIterable<T>(
   iterable: AsyncIterable<T>,
+  cleanups?: (() => void)[],
 ): Stream<T> {
   const stream = createStream<T>();
 
   const iterator = iterable[SYM_ASYNC_ITERATOR]();
+  let cancelled = false;
+  let done = false;
+
+  cleanups?.push(() => {
+    if (!(done || cancelled)) {
+      cancelled = true;
+      Promise.resolve()
+        .then(() => iterator.return?.())
+        .catch(() => {
+          // no-op
+        });
+    }
+  });
 
   // Pull in a loop rather than recursing, so a long iterable does not keep an
   // async call chain alive for every value.
   async function push(): Promise<void> {
     try {
-      while (true) {
+      while (!cancelled) {
         const value = await iterator.next();
+        if (cancelled) {
+          return;
+        }
         if (value.done) {
+          done = true;
           stream.return(value.value as T);
           return;
         }
         stream.next(value.value);
       }
     } catch (error) {
-      stream.throw(error);
+      done = true;
+      if (!cancelled) {
+        stream.throw(error);
+      }
     }
   }
 

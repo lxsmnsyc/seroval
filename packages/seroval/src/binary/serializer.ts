@@ -16,6 +16,7 @@ import {
   SerovalDepthLimitError,
   SerovalUnsupportedTypeError,
 } from '../core/errors';
+import { isLiveStream, type LiveStream } from '../core/live-stream';
 import { OpaqueReference } from '../core/opaque-reference';
 import type { PluginWithBinaryMode } from '../core/plugin';
 import {
@@ -56,8 +57,24 @@ const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 export type Cleanup = () => void;
 
 export interface BinarySerializerPluginContext {
+  /** Registers a function that runs once serialization ends or is aborted. */
   addCleanup(cleanup: Cleanup): void;
+  /**
+   * Turns an async iterable into a stream that the serializer can send. The
+   * serializer stops pulling from the source and calls its `return` method
+   * when serialization ends or is aborted.
+   */
+  streamSource<T>(source: AsyncIterable<T>): Stream<T>;
 }
+
+/**
+ * Receives each serialized chunk. Returning a promise holds back the
+ * acceptance of the live stream event behind the chunk until the promise
+ * settles. Other chunks are not delayed.
+ */
+export type BinarySerializeCallback = (
+  bytes: Uint8Array,
+) => void | PromiseLike<void>;
 
 export interface SerializerContext {
   alive: boolean;
@@ -66,7 +83,7 @@ export interface SerializerContext {
   refs: Map<unknown, Uint8Array>;
   features: number;
   plugins?: PluginWithBinaryMode<any, any, any>[];
-  onSerialize(bytes: Uint8Array): void;
+  onSerialize: BinarySerializeCallback;
   onDone(): void;
   onError(error: unknown): void;
   cleanups: Cleanup[];
@@ -80,7 +97,7 @@ export interface SerializerContextOptions {
   depthLimit?: number;
   refs: Map<unknown, Uint8Array>;
   plugins?: PluginWithBinaryMode<any, any, any>[];
-  onSerialize(bytes: Uint8Array): void;
+  onSerialize: BinarySerializeCallback;
   onDone(): void;
   onError(error: unknown): void;
 }
@@ -89,10 +106,26 @@ function registerCleanup(this: (() => void)[], cleanup: Cleanup) {
   this.push(cleanup);
 }
 
-function runCleanup(ctx: SerializerContext) {
-  for (const cleanup of ctx.cleanups) {
-    cleanup();
+function createStreamSource<T>(
+  this: (() => void)[],
+  source: AsyncIterable<T>,
+): Stream<T> {
+  return createStreamFromAsyncIterable(source, this);
+}
+
+// Runs every cleanup even if one throws, and returns the first error.
+function runCleanups(ctx: SerializerContext): { error: unknown } | undefined {
+  const cleanups = ctx.cleanups;
+  ctx.cleanups = [];
+  let failure: { error: unknown } | undefined;
+  for (let i = 0, len = cleanups.length; i < len; i++) {
+    try {
+      cleanups[i]();
+    } catch (error) {
+      failure ??= { error };
+    }
   }
+  return failure;
 }
 
 export function createSerializerContext(
@@ -114,6 +147,9 @@ export function createSerializerContext(
 
     pluginContext: {
       addCleanup: registerCleanup.bind(cleanups),
+      streamSource: createStreamSource.bind(cleanups) as <T>(
+        source: AsyncIterable<T>,
+      ) => Stream<T>,
     },
   };
 }
@@ -124,7 +160,7 @@ function pushPendingState(ctx: SerializerContext): void {
 
 function popPendingState(ctx: SerializerContext): void {
   if (--ctx.pending <= 0) {
-    endSerialize(ctx);
+    finishSerialize(ctx);
   }
 }
 
@@ -163,8 +199,11 @@ function createID(ctx: SerializerContext, value: unknown): Uint8Array {
   return id;
 }
 
-function onSerialize(ctx: SerializerContext, bytes: SerovalNode): void {
-  ctx.onSerialize(mergeBytes(bytes));
+function onSerialize(
+  ctx: SerializerContext,
+  bytes: SerovalNode,
+): void | PromiseLike<void> {
+  return ctx.onSerialize(mergeBytes(bytes));
 }
 
 function serializePending(
@@ -311,15 +350,102 @@ function serializeStreamReturn(
 function serializeStream(ctx: SerializerContext, current: Stream<unknown>) {
   const id = createID(ctx, current);
   pushPendingState(ctx);
-  onSerialize(ctx, [SerovalBinaryType.Stream, id]);
+  onSerialize(ctx, [SerovalBinaryType.Stream, id, 0]);
 
   const prevDepth = CURRENT_DEPTH;
 
-  current.on({
+  const unsubscribe = current.on({
     next: serializeStreamNext.bind(null, ctx, prevDepth, id),
     throw: serializeStreamThrow.bind(null, ctx, prevDepth, id),
     return: serializeStreamReturn.bind(null, ctx, prevDepth, id),
   });
+  // A stream that ended while subscribing has already released its slot.
+  if (ctx.alive) {
+    ctx.cleanups.push(unsubscribe);
+  }
+  return id;
+}
+
+type LiveEventType =
+  | SerovalBinaryType.StreamNext
+  | SerovalBinaryType.StreamThrow
+  | SerovalBinaryType.StreamReturn;
+
+// Sends one live stream event. The event is accepted, which lets the producer
+// continue, only after `onSerialize` has accepted the chunk. Returns the error
+// that stopped the stream, if any.
+function serializeLiveEvent(
+  ctx: SerializerContext,
+  depth: number,
+  id: Uint8Array,
+  type: LiveEventType,
+  value: unknown,
+  accept: () => void,
+): unknown {
+  if (!ctx.alive) {
+    return NIL;
+  }
+  let serialized: Uint8Array;
+  try {
+    serialized = serializeWithDepth(ctx, depth, value);
+  } catch (error) {
+    ctx.onError(error);
+    return error;
+  }
+  const result = onSerialize(ctx, [type, id, serialized]);
+  if (result && typeof result.then === 'function') {
+    result.then(accept, (error: unknown) => {
+      ctx.onError(error);
+    });
+  } else {
+    accept();
+  }
+  return NIL;
+}
+
+function serializeLiveStream(
+  ctx: SerializerContext,
+  current: LiveStream<unknown>,
+) {
+  const id = createID(ctx, current);
+  pushPendingState(ctx);
+  onSerialize(ctx, [SerovalBinaryType.Stream, id, 1]);
+
+  const depth = CURRENT_DEPTH;
+
+  const cancel = current.pump({
+    next: serializeLiveEvent.bind(
+      null,
+      ctx,
+      depth,
+      id,
+      SerovalBinaryType.StreamNext,
+    ),
+    throw: serializeLiveEvent.bind(
+      null,
+      ctx,
+      depth,
+      id,
+      SerovalBinaryType.StreamThrow,
+    ),
+    return: serializeLiveEvent.bind(
+      null,
+      ctx,
+      depth,
+      id,
+      SerovalBinaryType.StreamReturn,
+    ),
+    done() {
+      popPendingState(ctx);
+    },
+    error(reason) {
+      if (ctx.alive) {
+        ctx.onError(reason);
+        popPendingState(ctx);
+      }
+    },
+  });
+  ctx.cleanups.push(() => cancel());
   return id;
 }
 
@@ -400,6 +526,7 @@ function serializeProperties(
         ctx,
         createStreamFromAsyncIterable(
           properties as unknown as AsyncIterable<unknown>,
+          ctx.cleanups,
         ),
       ),
     ]);
@@ -820,6 +947,9 @@ function serializeObject(ctx: SerializerContext, value: object): Uint8Array {
       return serializeArray(ctx, value);
     }
     if (isStream(value)) {
+      if (isLiveStream(value)) {
+        return serializeLiveStream(ctx, value as unknown as LiveStream<unknown>);
+      }
       return serializeStream(ctx, value);
     }
     if (isSequence(value)) {
@@ -911,13 +1041,46 @@ export function startSerialize<T>(ctx: SerializerContext, value: T) {
     onSerialize(ctx, [SerovalBinaryType.Root, serialized]);
 
     popPendingState(ctx);
+  } else {
+    // The root failed and was reported through `onError`. Sources that already
+    // started would otherwise keep running with no root to attach to.
+    stopSerialize(ctx);
   }
 }
 
-export function endSerialize(ctx: SerializerContext) {
+// Serialization finished normally: every pending value has settled.
+function finishSerialize(ctx: SerializerContext): void {
   if (ctx.alive) {
-    ctx.onDone();
-    runCleanup(ctx);
     ctx.alive = false;
+    const failure = runCleanups(ctx);
+    if (failure) {
+      ctx.onError(failure.error);
+    } else {
+      ctx.onDone();
+    }
+  }
+}
+
+// Serialization ended early. Sources are stopped and `onDone` is not called.
+// A cleanup error is not reported, so it cannot hide the error that caused
+// the stop.
+function stopSerialize(ctx: SerializerContext): void {
+  if (ctx.alive) {
+    ctx.alive = false;
+    runCleanups(ctx);
+  }
+}
+
+/**
+ * Aborts serialization. Pending sources are stopped and their cleanups run.
+ * `onDone` is not called. A cleanup error is reported through `onError`.
+ */
+export function endSerialize(ctx: SerializerContext): void {
+  if (ctx.alive) {
+    ctx.alive = false;
+    const failure = runCleanups(ctx);
+    if (failure) {
+      ctx.onError(failure.error);
+    }
   }
 }

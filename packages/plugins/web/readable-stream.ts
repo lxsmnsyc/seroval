@@ -131,55 +131,6 @@ function toAsyncIterable<T>(
   };
 }
 
-// Binary mode pushes chunks into a seroval Stream. The reader logic is shared
-// with the other modes through `toAsyncIterable`. The returned cleanup cancels
-// the reader if serialization ends before the source does.
-function toStream<T>(
-  value: ReadableStream<T>,
-): [Stream<T | undefined>, () => void] {
-  const stream = createStream<T | undefined>();
-  const iterator = toAsyncIterable(value)[Symbol.asyncIterator]();
-  let active = true;
-
-  async function pump(): Promise<void> {
-    try {
-      while (active) {
-        const result = await iterator.next();
-        if (!active) {
-          return;
-        }
-        if (result.done) {
-          active = false;
-          stream.return(result.value);
-          return;
-        }
-        stream.next(result.value);
-      }
-    } catch (error) {
-      if (active) {
-        active = false;
-        stream.throw(error);
-      }
-    }
-  }
-
-  pump().catch(() => {
-    // no-op
-  });
-
-  return [
-    stream,
-    () => {
-      if (active) {
-        active = false;
-        iterator.return?.().catch(() => {
-          // no-op
-        });
-      }
-    },
-  ];
-}
-
 type ReadableStreamNode = {
   factory: SerovalNode;
   stream: SerovalNode;
@@ -237,9 +188,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   },
   binary: {
     serialize(value, ctx) {
-      const [stream, cleanup] = toStream(value);
-      ctx.addCleanup(cleanup);
-      return { stream };
+      return {
+        stream: ctx.streamSource(toAsyncIterable(value)) as Stream<unknown>,
+      };
     },
     deserialize(data) {
       return READABLE_STREAM_FACTORY_CONSTRUCTOR(data.stream);

@@ -16,6 +16,7 @@ import {
 import {
   PROMISE_CONSTRUCTOR,
   type PromiseConstructorResolver,
+  STREAM_CONSTRUCTOR,
 } from '../core/constructors';
 import {
   SerovalMalformedBinarySourceError,
@@ -646,7 +647,14 @@ async function deserializeArray(ctx: DeserializerContext) {
 
 async function deserializeStream(ctx: DeserializerContext) {
   const id = await deserializeId(ctx, SerovalBinaryType.Stream);
-  upsert(ctx, id, createStream());
+  const live = await deserializeByte(ctx);
+  // A live stream keeps its history only until the first listener, then
+  // forwards values without storing them, like the JSON live receiver.
+  upsert(
+    ctx,
+    id,
+    live === 1 ? (STREAM_CONSTRUCTOR(1) as unknown as Stream<unknown>) : createStream(),
+  );
 }
 
 async function deserializeStreamNextInner(
