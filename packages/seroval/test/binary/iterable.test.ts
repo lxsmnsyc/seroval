@@ -57,6 +57,24 @@ describe('binary Iterable', () => {
     expect(() => iterator.next()).toThrow('iteration failed');
   });
 
+  it('stops reading an Iterable at its first error', async () => {
+    let calls = 0;
+    const { value } = await roundtrip<Iterable<number>>({
+      [Symbol.iterator]() {
+        return {
+          next(): IteratorResult<number> {
+            calls++;
+            throw new Error('always fails');
+          },
+        };
+      },
+    });
+    expect(calls).toBe(1);
+    const iterator = value[Symbol.iterator]();
+    expect(() => iterator.next()).toThrow('always fails');
+    expect(iterator.next()).toEqual({ done: true, value: undefined });
+  });
+
   it('supports Iterables alongside other properties', async () => {
     const { value } = await roundtrip<{ id: number } & Iterable<string>>({
       id: 7,
