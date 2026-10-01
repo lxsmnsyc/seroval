@@ -501,6 +501,16 @@ container after its `Pending` node, or a second `Pending` node, is malformed.
 - `6`: `Temporal.PlainYearMonth`
 - `7`: `Temporal.ZonedDateTime`
 
+### `Reference`
+
+```
+<byte:reference=40> <id> <ref:key=string>
+```
+
+A value registered with `createReference`. Only its key is sent. The receiving
+side must have registered a value under the same key, otherwise the payload is
+rejected.
+
 ## Examples
 
 Each example lists the emitted bytes as hexadecimal pairs, using little-endian

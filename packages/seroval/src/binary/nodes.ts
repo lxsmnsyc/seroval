@@ -49,6 +49,7 @@ export const enum SerovalBinaryType {
   AsyncIterator = 37,
   Pending = 38,
   Temporal = 39,
+  Reference = 40,
 }
 
 export const NODE_TYPE_NAME: Record<SerovalBinaryType, string> = {
@@ -92,6 +93,7 @@ export const NODE_TYPE_NAME: Record<SerovalBinaryType, string> = {
   [SerovalBinaryType.AsyncIterator]: 'AsyncIterator',
   [SerovalBinaryType.Pending]: 'Pending',
   [SerovalBinaryType.Temporal]: 'Temporal',
+  [SerovalBinaryType.Reference]: 'Reference',
 };
 
 export const enum SerovalEndianness {
@@ -338,6 +340,12 @@ export type SerovalNodeMap = {
     type: SerovalTemporalType,
     // string ref
     iso: Uint8Array,
+  ];
+  [SerovalBinaryType.Reference]: [
+    type: SerovalBinaryType.Reference,
+    id: Uint8Array,
+    // string ref, the id given to `createReference`
+    key: Uint8Array,
   ];
 };
 

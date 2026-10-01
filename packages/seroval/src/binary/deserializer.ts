@@ -27,6 +27,7 @@ import {
   SerovalUnknownBinaryTypeError,
 } from '../core/errors';
 import type { PluginWithBinaryMode } from '../core/plugin';
+import { getReference } from '../core/reference';
 import {
   createSequence,
   type Sequence,
@@ -1401,6 +1402,17 @@ async function deserializeTemporal(ctx: DeserializerContext) {
   upsert(ctx, id, deserializeTemporalInner(ctx, type, isoRef));
 }
 
+async function deserializeReference(ctx: DeserializerContext) {
+  const id = await deserializeId(ctx, SerovalBinaryType.Reference);
+  const key = await deserializeRef(
+    ctx,
+    SerovalBinaryType.Reference,
+    SerovalBinaryType.String,
+  );
+  // Throws if no value was registered under the key on this side.
+  upsert(ctx, id, getReference(getRefSync(ctx, key) as string));
+}
+
 async function deserializeChunk(ctx: DeserializerContext) {
   // Read first byte
   const firstByte = (await deserializeByte(ctx)) as SerovalBinaryType;
@@ -1525,6 +1537,9 @@ async function deserializeChunk(ctx: DeserializerContext) {
       break;
     case SerovalBinaryType.Temporal:
       await deserializeTemporal(ctx);
+      break;
+    case SerovalBinaryType.Reference:
+      await deserializeReference(ctx);
       break;
     default:
       throw new SerovalUnknownBinaryTypeError(firstByte);

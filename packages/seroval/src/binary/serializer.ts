@@ -18,6 +18,7 @@ import {
 } from '../core/errors';
 import { isLiveStream, type LiveStream } from '../core/live-stream';
 import { OpaqueReference } from '../core/opaque-reference';
+import { getReferenceID } from '../core/reference';
 import type { PluginWithBinaryMode } from '../core/plugin';
 import {
   createSequenceFromIterable,
@@ -981,6 +982,16 @@ function serializeObject(ctx: SerializerContext, value: object): Uint8Array {
   }
 }
 
+function serializeReference(
+  ctx: SerializerContext,
+  value: unknown,
+  key: string,
+) {
+  const id = createID(ctx, value);
+  onSerialize(ctx, [SerovalBinaryType.Reference, id, serialize(ctx, key)]);
+  return id;
+}
+
 function serializeFunction(ctx: SerializerContext, current: Function) {
   const plugin = serializePlugin(ctx, current);
   if (plugin) {
@@ -997,6 +1008,18 @@ function serialize<T>(ctx: SerializerContext, current: T): Uint8Array {
   const currentID = Object.is(current, -0) ? NIL : ctx.refs.get(current);
   if (currentID != null) {
     return currentID;
+  }
+  // A value registered with `createReference` is sent by its key, the same
+  // as in the other modes. The receiving side must register the same key.
+  if (
+    (typeof current === 'object' && current) ||
+    typeof current === 'function' ||
+    typeof current === 'symbol'
+  ) {
+    const key = getReferenceID(current);
+    if (key !== undefined) {
+      return serializeReference(ctx, current, key);
+    }
   }
   switch (typeof current) {
     case 'boolean':
