@@ -61,14 +61,17 @@ export function createStreamFromAsyncIterable<T>(
 
   const iterator = iterable[SYM_ASYNC_ITERATOR]();
 
+  // Pull in a loop rather than recursing, so a long iterable does not keep an
+  // async call chain alive for every value.
   async function push(): Promise<void> {
     try {
-      const value = await iterator.next();
-      if (value.done) {
-        stream.return(value.value as T);
-      } else {
+      while (true) {
+        const value = await iterator.next();
+        if (value.done) {
+          stream.return(value.value as T);
+          return;
+        }
         stream.next(value.value);
-        await push();
       }
     } catch (error) {
       stream.throw(error);
@@ -82,7 +85,7 @@ export function createStreamFromAsyncIterable<T>(
   return stream;
 }
 
-const createAsyncIterable = ASYNC_ITERATOR_CONSTRUCTOR(
+const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
   SYM_ASYNC_ITERATOR,
   PROMISE_CONSTRUCTOR,
 );

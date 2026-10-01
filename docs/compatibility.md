@@ -1,5 +1,21 @@
 # Compatibility
 
+## Package resolution
+
+The main `seroval` export supports `browser` and `development` conditions for
+both ESM and CommonJS. The browser condition intentionally selects the same
+bundle as the default condition in each format and development mode. It does
+not create another copy of Seroval's classes or reference registry.
+
+Binary helpers are bundled into these entry points; package `imports`
+resolution is not required. Resolvers that ignore browser conditions, including
+older bundlers and React Native configurations, can continue to use the default
+exports or the unchanged `main`/`module` fields. Binary encoding uses `Buffer`
+when available and portable browser APIs otherwise, with the same validation
+and wire format. There is no separately optimized browser-only bundle.
+
+## Serialization features
+
 All serialization methods can accept a `{ disabledFeatures: number }` option. This option influences how the serialization will process and emit a value.
 
 ```js

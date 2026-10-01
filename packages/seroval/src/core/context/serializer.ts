@@ -1,4 +1,4 @@
-import { Feature } from '../compat';
+import { FeatureFlag } from '../compat';
 import {
   BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING,
   CONSTANT_STRING,
@@ -6,8 +6,8 @@ import {
   NIL,
   SerovalNodeType,
   SerovalObjectFlags,
-  SerovalTemporalType,
   SYMBOL_STRING,
+  TEMPORAL_TYPE_NAME,
   TYPED_ARRAY_CONSTRUCTOR_STRING,
 } from '../constants';
 import {
@@ -64,7 +64,6 @@ import type {
 } from '../types';
 import getIdentifier from '../utils/get-identifier';
 import { isValidIdentifier } from '../utils/is-valid-identifier';
-import { isValidKey } from '../utils/valid-properties';
 
 const enum AssignmentType {
   Index = 0,
@@ -104,7 +103,7 @@ interface DeleteAssignment {
 
 // Defines an own `__proto__` data property (see `createObjectAssign`).
 // `k` holds the serialized value; `v` is unused so this never participates
-// in the value-based merging done by `mergeAssignments`.
+// in the value-based chaining done by `resolveAssignments`.
 interface DefineAssignment {
   t: AssignmentType.Define;
   s: string;
@@ -119,6 +118,15 @@ type Assignment =
   | SetAssignment
   | DeleteAssignment
   | DefineAssignment;
+
+const enum KeyKind {
+  // Needs a quoted string: `"a-b":` and `["a-b"]`
+  Quoted = 0,
+  // A valid identifier: `foo:` and `.foo`
+  Identifier = 1,
+  // A canonical non-negative number: `0:` and `[0]`
+  Numeric = 2,
+}
 
 export interface FlaggedObject {
   type: SerovalObjectFlags;
@@ -146,71 +154,55 @@ function getAssignmentExpression(assignment: Assignment): string {
   }
 }
 
-function mergeAssignments(assignments: Assignment[]): Assignment[] {
-  const newAssignments: Assignment[] = [];
-  let current = assignments[0];
-  for (
-    let i = 1, len = assignments.length, item: Assignment, prev = current;
-    i < len;
-    i++
-  ) {
-    item = assignments[i];
-    if (item.t === AssignmentType.Index && item.v === prev.v) {
-      // Merge if the right-hand value is the same
-      // saves at least 2 chars
-      current = {
-        t: AssignmentType.Index,
-        s: item.s,
-        k: NIL,
-        v: getAssignmentExpression(current),
-      } as IndexAssignment;
-    } else if (item.t === AssignmentType.Set && item.s === prev.s) {
-      // Maps has chaining methods, merge if source is the same
-      current = {
-        t: AssignmentType.Set,
-        s: getAssignmentExpression(current),
-        k: item.k,
-        v: item.v,
-      } as SetAssignment;
-    } else if (item.t === AssignmentType.Add && item.s === prev.s) {
-      // Sets has chaining methods too
-      current = {
-        t: AssignmentType.Add,
-        s: getAssignmentExpression(current),
-        k: NIL,
-        v: item.v,
-      } as AddAssignment;
-    } else if (item.t === AssignmentType.Delete && item.s === prev.s) {
-      // Maps has chaining methods, merge if source is the same
-      current = {
-        t: AssignmentType.Delete,
-        s: getAssignmentExpression(current),
-        k: item.k,
-        v: NIL,
-      } as DeleteAssignment;
-    } else {
-      // Different assignment, push current
-      newAssignments.push(current);
-      current = item;
-    }
-    prev = item;
-  }
-
-  newAssignments.push(current);
-
-  return newAssignments;
-}
+const MAX_ASSIGNMENT_CHAIN_LENGTH = 100;
 
 function resolveAssignments(assignments: Assignment[]): string | undefined {
-  if (assignments.length) {
-    let result = '';
-    const merged = mergeAssignments(assignments);
-    for (let i = 0, len = merged.length; i < len; i++) {
-      result += getAssignmentExpression(merged[i]) + ',';
-    }
-    return result;
+  if (!assignments.length) {
+    return NIL;
   }
-  return NIL;
+  let previous = assignments[0];
+  let expression = getAssignmentExpression(previous);
+  let result = '';
+  let chainLength = 1;
+  for (let index = 1, length = assignments.length; index < length; index++) {
+    const assignment = assignments[index];
+    if (chainLength === MAX_ASSIGNMENT_CHAIN_LENGTH) {
+      result += expression + ',';
+      expression = getAssignmentExpression(assignment);
+      chainLength = 0;
+    } else if (
+      assignment.t === AssignmentType.Index &&
+      previous.t === AssignmentType.Index &&
+      assignment.v === previous.v
+    ) {
+      expression = assignment.s + '=' + expression;
+    } else if (
+      assignment.t === AssignmentType.Set &&
+      previous.t === AssignmentType.Set &&
+      assignment.s === previous.s
+    ) {
+      expression += '.set(' + assignment.k + ',' + assignment.v + ')';
+    } else if (
+      assignment.t === AssignmentType.Add &&
+      previous.t === AssignmentType.Add &&
+      assignment.s === previous.s
+    ) {
+      expression += '.add(' + assignment.v + ')';
+    } else if (
+      assignment.t === AssignmentType.Delete &&
+      previous.t === AssignmentType.Set &&
+      assignment.s === previous.s
+    ) {
+      expression += '.delete(' + assignment.k + ')';
+    } else {
+      result += expression + ',';
+      expression = getAssignmentExpression(assignment);
+      chainLength = 0;
+    }
+    chainLength++;
+    previous = assignment;
+  }
+  return result + expression + ',';
 }
 
 const NULL_CONSTRUCTOR = 'Object.create(null)';
@@ -273,7 +265,12 @@ export function createBaseSerializerContext(
     mode,
     plugins: options.plugins,
     features: options.features,
-    marked: new Set(options.markedRefs),
+    // A Set passed by a parser is shared, not copied: streaming serializers
+    // create one context per emitted node, and copying the whole set each
+    // time made every emitted node cost O(references).
+    marked: Array.isArray(options.markedRefs)
+      ? new Set(options.markedRefs)
+      : options.markedRefs,
     stack: [],
     flags: [],
     assignments: [],
@@ -507,7 +504,7 @@ function createObjectAssign(
   key: string,
   value: string,
 ): void {
-  if (!isValidKey(key)) {
+  if (key === '__proto__') {
     // `obj.__proto__ = x`, including the bracket form `obj["__proto__"] = x`,
     // invokes the prototype setter rather than creating an own property.
     // Define the property instead so the round-trip preserves it as an actual
@@ -540,6 +537,24 @@ function createSequenceAssign(
  * Checks if the value is in the stack. Stack here is a reference
  * structure to know if a object is to be accessed in a TDZ.
  */
+function getKeyKind(key: string): KeyKind {
+  const first = key.charCodeAt(0);
+  // Canonical non-negative numbers start with a digit ('0'..'9') or are
+  // "Infinity"; every other key skips the number parse.
+  if (first >= 48 && first <= 57) {
+    const check = Number(key);
+    // Converting the number back must yield the original key, so that
+    // `{ '0x1': 1 }` is not confused with `{ 0x1: 1 }`.
+    return check >= 0 && check.toString() === key
+      ? KeyKind.Numeric
+      : KeyKind.Quoted;
+  }
+  if (key === 'Infinity') {
+    return KeyKind.Numeric;
+  }
+  return isValidIdentifier(key) ? KeyKind.Identifier : KeyKind.Quoted;
+}
+
 function isIndexedValueInStack(
   ctx: BaseSerializerContext,
   node: SerovalNode,
@@ -637,39 +652,28 @@ function serializeProperty(
   val: SerovalNode,
 ): string {
   if (typeof key === 'string') {
-    const check = Number(key);
-    const isIdentifier =
-      // Test if key is a valid positive number or JS identifier
-      // so that we don't have to serialize the key and wrap with brackets
-      (check >= 0 &&
-        // It's also important to consider that if the key is
-        // indeed numeric, we need to make sure that when
-        // converted back into a string, it's still the same
-        // to the original key. This allows us to differentiate
-        // keys that has numeric formats but in a different
-        // format, which can cause unintentional key declaration
-        // Example: { 0x1: 1 } vs { '0x1': 1 }
-        check.toString() === key) ||
-      isValidIdentifier(key);
+    const kind = getKeyKind(key);
     if (isIndexedValueInStack(ctx.base, val)) {
       const refParam = getRefParam(ctx, (val as SerovalIndexedValueNode).i);
       markSerializerRef(ctx.base, source.i);
-      // Strict identifier check, make sure
-      // that it isn't numeric (except NaN)
-      if (isIdentifier && check !== check) {
+      if (kind === KeyKind.Identifier) {
         createObjectAssign(ctx, source.i, key, refParam);
       } else {
         createArrayAssign(
           ctx,
           source.i,
-          isIdentifier ? key : '"' + key + '"',
+          kind === KeyKind.Numeric ? key : '"' + key + '"',
           refParam,
         );
       }
       return '';
     }
-    if (isValidKey(key)) {
-      return (isIdentifier ? key : '"' + key + '"') + ':' + serialize(ctx, val);
+    if (key !== '__proto__') {
+      return (
+        (kind === KeyKind.Quoted ? '"' + key + '"' : key) +
+        ':' +
+        serialize(ctx, val)
+      );
     }
     // `__proto__` as an identifier or string key in an object literal is the
     // prototype setter, not an own property; use a computed key so the
@@ -730,47 +734,32 @@ function serializeStringKeyAssignment(
 ): void {
   const base = ctx.base;
   const serialized = serialize(ctx, value);
-  const check = Number(key);
-  const isIdentifier =
-    // Test if key is a valid positive number or JS identifier
-    // so that we don't have to serialize the key and wrap with brackets
-    (check >= 0 &&
-      // It's also important to consider that if the key is
-      // indeed numeric, we need to make sure that when
-      // converted back into a string, it's still the same
-      // to the original key. This allows us to differentiate
-      // keys that has numeric formats but in a different
-      // format, which can cause unintentional key declaration
-      // Example: { 0x1: 1 } vs { '0x1': 1 }
-      check.toString() === key) ||
-    isValidIdentifier(key);
-  if (isIndexedValueInStack(base, value)) {
-    // Strict identifier check, make sure
-    // that it isn't numeric (except NaN)
-    if (isIdentifier && check !== check) {
-      createObjectAssign(ctx, source.i, key, serialized);
-    } else {
-      createArrayAssign(
-        ctx,
-        source.i,
-        isIdentifier ? key : '"' + key + '"',
-        serialized,
-      );
-    }
-  } else {
-    const parentAssignment = base.assignments;
+  const parentAssignment = base.assignments;
+  // A value that references a parent must wait for the parent to exist,
+  // so it stays in the outer assignment list.
+  if (!isIndexedValueInStack(base, value)) {
     base.assignments = mainAssignments;
-    if (isIdentifier && check !== check) {
-      createObjectAssign(ctx, source.i, key, serialized);
-    } else {
-      createArrayAssign(
-        ctx,
-        source.i,
-        isIdentifier ? key : '"' + key + '"',
-        serialized,
-      );
-    }
-    base.assignments = parentAssignment;
+  }
+  createKeyAssign(ctx, source.i, getKeyKind(key), key, serialized);
+  base.assignments = parentAssignment;
+}
+
+function createKeyAssign(
+  ctx: SerializerContext,
+  ref: number,
+  kind: KeyKind,
+  key: string,
+  value: string,
+): void {
+  if (kind === KeyKind.Identifier) {
+    createObjectAssign(ctx, ref, key, value);
+  } else {
+    createArrayAssign(
+      ctx,
+      ref,
+      kind === KeyKind.Numeric ? key : '"' + key + '"',
+      value,
+    );
   }
 }
 
@@ -823,7 +812,10 @@ function serializeDictionary(
 ): string {
   if (node.p) {
     const base = ctx.base;
-    if (base.features & Feature.ObjectAssign) {
+    if (
+      base.features & FeatureFlag.ObjectAssign &&
+      !node.p.k.includes('__proto__')
+    ) {
       init = serializeWithObjectAssign(ctx, node, node.p, init);
     } else {
       markSerializerRef(base, node.i);
@@ -855,23 +847,12 @@ function serializeDate(node: SerovalDateNode): string {
   return 'new Date("' + node.s + '")';
 }
 
-const TEMPORAL_CONSTRUCTOR: Record<SerovalTemporalType, string> = {
-  [SerovalTemporalType.Instant]: 'Temporal.Instant',
-  [SerovalTemporalType.Duration]: 'Temporal.Duration',
-  [SerovalTemporalType.PlainDate]: 'Temporal.PlainDate',
-  [SerovalTemporalType.PlainDateTime]: 'Temporal.PlainDateTime',
-  [SerovalTemporalType.PlainMonthDay]: 'Temporal.PlainMonthDay',
-  [SerovalTemporalType.PlainTime]: 'Temporal.PlainTime',
-  [SerovalTemporalType.PlainYearMonth]: 'Temporal.PlainYearMonth',
-  [SerovalTemporalType.ZonedDateTime]: 'Temporal.ZonedDateTime',
-};
-
 function serializeTemporal(
   ctx: SerializerContext,
   node: SerovalTemporalNode,
 ): string {
-  if (ctx.base.features & Feature.Temporal) {
-    return TEMPORAL_CONSTRUCTOR[node.c] + '.from("' + node.s + '")';
+  if (ctx.base.features & FeatureFlag.Temporal) {
+    return 'Temporal.' + TEMPORAL_TYPE_NAME[node.c] + '.from("' + node.s + '")';
   }
   throw new SerovalUnsupportedNodeError(node);
 }
@@ -880,7 +861,7 @@ function serializeRegExp(
   ctx: SerializerContext,
   node: SerovalRegExpNode,
 ): string {
-  if (ctx.base.features & Feature.RegExp) {
+  if (ctx.base.features & FeatureFlag.RegExp) {
     return '/' + deserializeString(node.c) + '/' + node.m;
   }
   throw new SerovalUnsupportedNodeError(node);
@@ -1157,26 +1138,9 @@ function serializePromiseConstructor(
   return '(' + resolver + ').p';
 }
 
-function serializePromiseResolve(
+function serializePromiseResult(
   ctx: SerializerContext,
-  node: SerovalPromiseResolveNode,
-): string {
-  if (ctx.mode === SerovalMode.Vanilla) {
-    throw new SerovalUnsupportedNodeError(node);
-  }
-  return (
-    getConstructor(ctx, node.a[0]) +
-    '(' +
-    getRefParam(ctx, node.i) +
-    ',' +
-    serialize(ctx, node.a[1]) +
-    ')'
-  );
-}
-
-function serializePromiseReject(
-  ctx: SerializerContext,
-  node: SerovalPromiseRejectNode,
+  node: SerovalPromiseResolveNode | SerovalPromiseRejectNode,
 ): string {
   if (ctx.mode === SerovalMode.Vanilla) {
     throw new SerovalUnsupportedNodeError(node);
@@ -1240,7 +1204,9 @@ function serializeIteratorFactory(
 
 function serializeIteratorFactoryInstance(
   ctx: SerializerContext,
-  node: SerovalIteratorFactoryInstanceNode,
+  node:
+    | SerovalIteratorFactoryInstanceNode
+    | SerovalAsyncIteratorFactoryInstanceNode,
 ): string {
   return getConstructor(ctx, node.a[0]) + '(' + serialize(ctx, node.a[1]) + ')';
 }
@@ -1286,13 +1252,6 @@ function serializeAsyncIteratorFactory(
   return iterator;
 }
 
-function serializeAsyncIteratorFactoryInstance(
-  ctx: SerializerContext,
-  node: SerovalAsyncIteratorFactoryInstanceNode,
-): string {
-  return getConstructor(ctx, node.a[0]) + '(' + serialize(ctx, node.a[1]) + ')';
-}
-
 function serializeStreamConstructor(
   ctx: SerializerContext,
   node: SerovalStreamConstructorNode,
@@ -1300,7 +1259,7 @@ function serializeStreamConstructor(
   const result = assignIndexedValue(
     ctx,
     node.i,
-    getConstructor(ctx, node.f) + '()',
+    getConstructor(ctx, node.f) + (node.l === 1 ? '(1)' : '()'),
   );
   const len = node.a.length;
   if (len) {
@@ -1313,25 +1272,17 @@ function serializeStreamConstructor(
   return result;
 }
 
-function serializeStreamNext(
+function serializeStreamCall(
   ctx: SerializerContext,
-  node: SerovalStreamNextNode,
+  node:
+    | SerovalStreamNextNode
+    | SerovalStreamThrowNode
+    | SerovalStreamReturnNode,
+  method: string,
 ): string {
-  return getRefParam(ctx, node.i) + '.next(' + serialize(ctx, node.f) + ')';
-}
-
-function serializeStreamThrow(
-  ctx: SerializerContext,
-  node: SerovalStreamThrowNode,
-): string {
-  return getRefParam(ctx, node.i) + '.throw(' + serialize(ctx, node.f) + ')';
-}
-
-function serializeStreamReturn(
-  ctx: SerializerContext,
-  node: SerovalStreamReturnNode,
-): string {
-  return getRefParam(ctx, node.i) + '.return(' + serialize(ctx, node.f) + ')';
+  return (
+    getRefParam(ctx, node.i) + '.' + method + '(' + serialize(ctx, node.f) + ')'
+  );
 }
 
 function serializeSequenceItem(
@@ -1450,44 +1401,29 @@ function serialize(ctx: SerializerContext, node: SerovalNode): string {
     case SerovalNodeType.IndexedValue:
       return getRefParam(ctx, node.i);
     case SerovalNodeType.PromiseSuccess:
-      return serializePromiseResolve(ctx, node);
     case SerovalNodeType.PromiseFailure:
-      return serializePromiseReject(ctx, node);
+      return serializePromiseResult(ctx, node);
     case SerovalNodeType.IteratorFactory:
       return serializeIteratorFactory(ctx, node);
     case SerovalNodeType.IteratorFactoryInstance:
+    case SerovalNodeType.AsyncIteratorFactoryInstance:
       return serializeIteratorFactoryInstance(ctx, node);
     case SerovalNodeType.AsyncIteratorFactory:
       return serializeAsyncIteratorFactory(ctx, node);
-    case SerovalNodeType.AsyncIteratorFactoryInstance:
-      return serializeAsyncIteratorFactoryInstance(ctx, node);
     case SerovalNodeType.StreamConstructor:
       return serializeStreamConstructor(ctx, node);
     case SerovalNodeType.StreamNext:
-      return serializeStreamNext(ctx, node);
+      return serializeStreamCall(ctx, node, 'next');
     case SerovalNodeType.StreamThrow:
-      return serializeStreamThrow(ctx, node);
+      return serializeStreamCall(ctx, node, 'throw');
     case SerovalNodeType.StreamReturn:
-      return serializeStreamReturn(ctx, node);
+      return serializeStreamCall(ctx, node, 'return');
     default:
       return assignIndexedValue(ctx, node.i, serializeAssignable(ctx, node));
   }
 }
 
-export function serializeRoot(
-  ctx: SerializerContext,
-  node: SerovalNode,
-): string {
-  try {
-    return serialize(ctx, node);
-  } catch (error) {
-    throw error instanceof SerovalSerializationError
-      ? error
-      : new SerovalSerializationError(error);
-  }
-}
-
-export function serializeTopVanilla(
+function serializeVanilla(
   ctx: VanillaSerializerContext,
   tree: SerovalNode,
 ): string {
@@ -1513,7 +1449,7 @@ export function serializeTopVanilla(
   return result;
 }
 
-export function serializeTopCross(
+function serializeCross(
   ctx: CrossSerializerContext,
   tree: SerovalNode,
 ): string {
@@ -1552,4 +1488,32 @@ export function serializeTopCross(
         '"])';
   // Create the IIFE
   return '(' + createFunction([params], body) + ')' + args;
+}
+
+function wrapSerializationError(error: unknown): SerovalSerializationError {
+  return error instanceof SerovalSerializationError
+    ? error
+    : new SerovalSerializationError(error);
+}
+
+export function serializeTopVanilla(
+  ctx: VanillaSerializerContext,
+  tree: SerovalNode,
+): string {
+  try {
+    return serializeVanilla(ctx, tree);
+  } catch (error) {
+    throw wrapSerializationError(error);
+  }
+}
+
+export function serializeTopCross(
+  ctx: CrossSerializerContext,
+  tree: SerovalNode,
+): string {
+  try {
+    return serializeCross(ctx, tree);
+  } catch (error) {
+    throw wrapSerializationError(error);
+  }
 }

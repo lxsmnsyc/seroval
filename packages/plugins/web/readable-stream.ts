@@ -69,43 +69,115 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
   },
 });
 
-async function drainStream<T>(
-  stream: Stream<T | undefined>,
-  reader: ReadableStreamDefaultReader<T>,
-): Promise<void> {
-  try {
-    const result = await reader.read();
-    if (result.done) {
-      stream.return(result.value);
-      reader.releaseLock();
-    } else {
-      stream.next(result.value);
-      await drainStream(stream, reader);
-    }
-  } catch (error) {
-    stream.throw(error);
-  }
+function toAsyncIterable<T>(
+  value: ReadableStream<T>,
+): AsyncIterable<T | undefined> {
+  return {
+    [Symbol.asyncIterator]() {
+      const reader = value.getReader();
+      let active = true;
+      let reading = false;
+      const release = (): void => {
+        try {
+          reader.releaseLock();
+        } catch (_error) {
+          // no-op
+        }
+      };
+      return {
+        async next() {
+          if (!active) {
+            return { done: true, value: undefined };
+          }
+          reading = true;
+          let result: ReadableStreamReadResult<T>;
+          try {
+            result = await reader.read();
+          } catch (error) {
+            reading = false;
+            release();
+            if (!active) {
+              return { done: true, value: undefined };
+            }
+            active = false;
+            throw error;
+          }
+          reading = false;
+          if (!active || result.done) {
+            active = false;
+            release();
+            return { done: true, value: undefined };
+          }
+          return result;
+        },
+        return(reason?: unknown) {
+          if (active) {
+            active = false;
+            try {
+              reader.cancel(reason).catch(() => {
+                // no-op
+              });
+            } catch (_error) {
+              // no-op
+            }
+            if (!reading) {
+              release();
+            }
+          }
+          return Promise.resolve({ done: true, value: undefined });
+        },
+      };
+    },
+  };
 }
 
-function cleanupStream<T>(reader: ReadableStreamDefaultReader<T>): void {
-  reader.cancel().catch(() => {
-    // no-op
-  });
-  reader.releaseLock();
-}
-
+// Binary mode pushes chunks into a seroval Stream. The reader logic is shared
+// with the other modes through `toAsyncIterable`. The returned cleanup cancels
+// the reader if serialization ends before the source does.
 function toStream<T>(
   value: ReadableStream<T>,
 ): [Stream<T | undefined>, () => void] {
   const stream = createStream<T | undefined>();
+  const iterator = toAsyncIterable(value)[Symbol.asyncIterator]();
+  let active = true;
 
-  const reader = value.getReader();
+  async function pump(): Promise<void> {
+    try {
+      while (active) {
+        const result = await iterator.next();
+        if (!active) {
+          return;
+        }
+        if (result.done) {
+          active = false;
+          stream.return(result.value);
+          return;
+        }
+        stream.next(result.value);
+      }
+    } catch (error) {
+      if (active) {
+        active = false;
+        stream.throw(error);
+      }
+    }
+  }
 
-  const cleanup = cleanupStream.bind(null, reader);
+  pump().catch(() => {
+    // no-op
+  });
 
-  drainStream(stream, reader).catch(cleanup);
-
-  return [stream, cleanup];
+  return [
+    stream,
+    () => {
+      if (active) {
+        active = false;
+        iterator.return?.().catch(() => {
+          // no-op
+        });
+      }
+    },
+  ];
 }
 
 type ReadableStreamNode = {
@@ -140,15 +212,13 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
     async async(value, ctx) {
       return {
         factory: await ctx.parse(READABLE_STREAM_FACTORY),
-        stream: await ctx.parse(toStream(value)[0]),
+        stream: await ctx.parseStreamSource(toAsyncIterable(value)),
       };
     },
     stream(value, ctx) {
-      const [stream, cleanup] = toStream(value);
-      ctx.addCleanup(cleanup);
       return {
         factory: ctx.parse(READABLE_STREAM_FACTORY),
-        stream: ctx.parse(stream),
+        stream: ctx.parseStreamSource(toAsyncIterable(value)),
       };
     },
   },

@@ -1,8 +1,10 @@
+import { ALL_ENABLED } from '../compat';
 import {
   createAsyncParserContext,
   parseTopAsync,
 } from '../context/async-parser';
 import {
+  type BaseDeserializerContextOptions,
   createVanillaDeserializerContext,
   deserializeTop,
 } from '../context/deserializer';
@@ -12,13 +14,8 @@ import {
   serializeTopVanilla,
 } from '../context/serializer';
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
-import {
-  type PluginAccessOptions,
-  resolvePlugins,
-  SerovalMode,
-} from '../plugin';
+import { type PluginAccessOptions, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
-import { ALL_ENABLED } from '../compat';
 /** Options accepted by the synchronous parsers ({@link serialize}, {@link toJSON}). */
 export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
 /** Options accepted by the asynchronous parsers ({@link serializeAsync}, {@link toJSONAsync}). */
@@ -43,7 +40,9 @@ export function serialize<T>(
   options: SyncParserContextOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createSyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -70,7 +69,9 @@ export async function serializeAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createAsyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -109,7 +110,9 @@ export interface SerovalJSON {
 }
 
 /** Options for {@link fromJSON}. */
-export interface FromJSONOptions extends PluginAccessOptions {
+export interface FromJSONOptions
+  extends PluginAccessOptions,
+    Pick<BaseDeserializerContextOptions, 'depthLimit' | 'maxBase64Length'> {
   /** Feature flags to disable when rebuilding the value. */
   disabledFeatures?: number;
 }
@@ -127,7 +130,9 @@ export function toJSON<T>(
   options: SyncParserContextOptions = {},
 ): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createSyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -147,7 +152,9 @@ export async function toJSONAsync<T>(
   options: AsyncParserContextOptions = {},
 ): Promise<SerovalJSON> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Vanilla, {
+  const ctx = createAsyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
   });
@@ -195,6 +202,8 @@ export function fromJSON<T>(
   const disabledFeatures = options.disabledFeatures || 0;
   const sourceFeatures = source.f ?? ALL_ENABLED;
   const ctx = createVanillaDeserializerContext({
+    depthLimit: options.depthLimit,
+    maxBase64Length: options.maxBase64Length,
     plugins,
     markedRefs: source.m,
     features: sourceFeatures & ~disabledFeatures,

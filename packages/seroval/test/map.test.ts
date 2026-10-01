@@ -29,6 +29,42 @@ ASYNC_RECURSIVE.set(
 );
 
 describe('Map', () => {
+  describe.each([
+    ['serialize', serialize],
+    ['serializeAsync', serializeAsync],
+    ['crossSerialize', crossSerialize],
+    ['crossSerializeAsync', crossSerializeAsync],
+  ])('%s deferred assignments', (_name, encode) => {
+    it.each(['keys', 'values'])(
+      'preserves ancestor %s and repeated objects',
+      async side => {
+        const source = {
+          inner: { map: new Map<unknown, unknown>() },
+          first: { name: 'first' },
+          second: { name: 'second' },
+        };
+        if (side === 'keys') {
+          source.inner.map.set(source, source.first);
+          source.inner.map.set(source.inner, source.second);
+        } else {
+          source.inner.map.set(source.first, source);
+          source.inner.map.set(source.second, source.inner);
+        }
+        const payload = await encode(source);
+        const back = new Function('$R', `return (${payload})`)(
+          [],
+        ) as typeof source;
+        expect(back.inner.map.size).toBe(2);
+        if (side === 'keys') {
+          expect(back.inner.map.get(back)).toBe(back.first);
+          expect(back.inner.map.get(back.inner)).toBe(back.second);
+        } else {
+          expect(back.inner.map.get(back.first)).toBe(back);
+          expect(back.inner.map.get(back.second)).toBe(back.inner);
+        }
+      },
+    );
+  });
   describe('serialize', () => {
     it('supports Map', () => {
       const result = serialize(EXAMPLE);

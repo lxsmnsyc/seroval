@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createStream, type Stream, streamToAsyncIterable } from '../../src';
+import { createStream, type Stream } from '../../src';
+import { streamToAsyncIterable } from '../../src/core/stream';
 import { roundtrip, startDeserialize, startSerialize } from './utils';
 
 function collect(stream: Stream<unknown>) {

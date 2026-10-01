@@ -4,12 +4,14 @@ import { NODE_TYPE_NAME, type SerovalBinaryType } from '../binary/nodes';
 import { serializeString } from './string';
 import type { SerovalNode } from './types';
 
-const { toString: objectToString } = Object.prototype;
-
 const enum StepErrorCodes {
   Parse = 1,
   Serialize = 2,
   Deserialize = 3,
+}
+
+function objectToString(value: unknown): string {
+  return Object.prototype.toString.call(value);
 }
 
 function getErrorMessageDev(type: string, cause: unknown): string {
@@ -24,7 +26,7 @@ ${cause.message}
   }
   return `Seroval caught an error during the ${type} process.
 
-"${objectToString.call(cause)}"
+"${objectToString(cause)}"
 
 For more information, please check the "cause" property of this error.`;
 }
@@ -39,17 +41,16 @@ function getErrorMessageProd(type: string): string {
   return `Seroval Error (step: ${STEP_ERROR_CODES[type]})`;
 }
 
-const getErrorMessage = (type: string, cause: any) =>
-  import.meta.env.PROD
-    ? getErrorMessageProd(type)
-    : getErrorMessageDev(type, cause);
-
 export class SerovalError extends Error {
   constructor(
     type: string,
     public cause: unknown,
   ) {
-    super(getErrorMessage(type, cause));
+    super(
+      import.meta.env.PROD
+        ? getErrorMessageProd(type)
+        : getErrorMessageDev(type, cause),
+    );
   }
 }
 
@@ -82,11 +83,12 @@ const enum SpecificErrorCodes {
   MalformedNode = 8,
   ConflictedNodeId = 9,
   DepthLimit = 10,
-  MalformedBinarySource = 11,
-  MalformedBinaryType = 12,
-  UnknownBinaryType = 13,
-  UnexpectedBinaryType = 14,
-  MissingBinaryRef = 15,
+  Aborted = 11,
+  MalformedBinarySource = 12,
+  MalformedBinaryType = 13,
+  UnknownBinaryType = 14,
+  UnexpectedBinaryType = 15,
+  MissingBinaryRef = 16,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -98,7 +100,7 @@ export class SerovalUnsupportedTypeError extends Error {
     super(
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnsupportedType)
-        : `The value ${objectToString.call(value)} of type "${typeof value}" cannot be parsed/serialized.
+        : `The value ${objectToString(value)} of type "${typeof value}" cannot be parsed/serialized.
       
 There are few workarounds for this problem:
 - Transform the value in a way that it can be serialized.
@@ -143,7 +145,7 @@ export class SerovalMissingReferenceError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.MissingReference)
         : 'Missing reference for the value "' +
-            objectToString.call(value) +
+            objectToString(value) +
             '" of type "' +
             typeof value +
             '"',
@@ -195,8 +197,18 @@ export class SerovalDepthLimitError extends Error {
   constructor(limit: number) {
     super(
       import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.ConflictedNodeId)
+        ? getSpecificErrorMessage(SpecificErrorCodes.DepthLimit)
         : 'Depth limit of ' + limit + ' reached',
+    );
+  }
+}
+
+export class SerovalAbortedError extends Error {
+  constructor() {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.Aborted)
+        : 'Cross deserializer has been aborted.',
     );
   }
 }
@@ -251,6 +263,29 @@ export class SerovalUnexpectedBinaryTypeError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnexpectedBinaryType)
         : `Unexpected binary type from type ${NODE_TYPE_NAME[from]}. (expected: ${NODE_TYPE_NAME[expected]}, received: ${NODE_TYPE_NAME[received]}) `,
+    );
+  }
+}
+
+export type LiveStreamErrorReason =
+  | 'consumed'
+  | 'pending'
+  | 'reading'
+  | 'closed';
+
+const LIVE_STREAM_ERROR_MESSAGES: Record<LiveStreamErrorReason, string> = {
+  consumed: 'Live stream already has a consumer',
+  pending: 'Live stream already has a pending event',
+  reading: 'Live stream already has a pending read',
+  closed: 'Live stream is closed',
+};
+
+export class SerovalLiveStreamError extends Error {
+  constructor(public reason: LiveStreamErrorReason) {
+    super(
+      import.meta.env.PROD
+        ? 'Live stream error: ' + reason
+        : LIVE_STREAM_ERROR_MESSAGES[reason],
     );
   }
 }

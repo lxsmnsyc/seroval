@@ -1,5 +1,31 @@
 # seroval-plugins
 
+## 1.6.7
+
+## 1.6.6
+
+### Patch Changes
+
+- 7770e48: Drain async iterables and ReadableStreams iteratively to avoid retaining an async call chain for every streamed value.
+- f97aea7: Release ReadableStream reader locks when reading fails during async serialization.
+
+## 1.6.5
+
+### Patch Changes
+
+- Throw when the `AbortController` factory helper is deserialized directly instead of returning its internal function.
+- Validate the backing source of an iterator, async iterator, readable stream, and abort signal during deserialization, and export `isStream`.
+
+## 1.6.4
+
+### Patch Changes
+
+- Validate the buffer source of a typed array or `DataView` during deserialization.
+
+## 1.6.3
+
+## 1.6.2
+
 ## 1.6.1
 
 ### Patch Changes

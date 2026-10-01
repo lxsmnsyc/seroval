@@ -17,8 +17,8 @@ import {
   NEG_INFINITY_NODE,
   NEG_ZERO_NODE,
 } from './literals';
+import { SerovalUnsupportedTypeError } from './errors';
 import { createSerovalNode } from './node';
-import { getReferenceID } from './reference';
 import { serializeString } from './string';
 import type {
   SerovalAggregateErrorNode,
@@ -69,71 +69,19 @@ export function createNumberNode(
   if (Object.is(value, -0)) {
     return NEG_ZERO_NODE;
   }
-  return createSerovalNode(
-    SerovalNodeType.Number,
-    NIL,
-    value,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.Number, NIL, value);
 }
 
 export function createStringNode(value: string): SerovalStringNode {
-  return createSerovalNode(
-    SerovalNodeType.String,
-    NIL,
-    serializeString(value),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.String, NIL, serializeString(value));
 }
 
 export function createBigIntNode(current: bigint): SerovalBigIntNode {
-  return createSerovalNode(
-    SerovalNodeType.BigInt,
-    NIL,
-    '' + current,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.BigInt, NIL, '' + current);
 }
 
 export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
-  return createSerovalNode(
-    SerovalNodeType.IndexedValue,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+  return createSerovalNode(SerovalNodeType.IndexedValue, id);
 }
 
 export function createDateNode(id: number, current: Date): SerovalDateNode {
@@ -141,16 +89,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   return createSerovalNode(
     SerovalNodeType.Date,
     id,
-    timestamp !== timestamp ? '' : current.toISOString(),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
+    timestamp === timestamp ? current.toISOString() : '',
   );
 }
 
@@ -174,14 +113,6 @@ export function createTemporalNode(
     id,
     current.toString(),
     type,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -195,13 +126,6 @@ export function createRegExpNode(
     NIL,
     serializeString(current.source),
     current.flags,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -213,35 +137,17 @@ export function createWKSymbolNode(
     SerovalNodeType.WKSymbol,
     id,
     INV_SYMBOL_REF[current],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
-export function createReferenceNode<T>(
+export function createReferenceNode(
   id: number,
-  ref: T,
+  referenceId: string,
 ): SerovalReferenceNode {
   return createSerovalNode(
     SerovalNodeType.Reference,
     id,
-    serializeString(getReferenceID(ref)),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
+    serializeString(referenceId),
   );
 }
 
@@ -255,14 +161,6 @@ export function createPluginNode(
     id,
     value,
     serializeString(tag),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -283,7 +181,6 @@ export function createArrayNode(
     NIL,
     NIL,
     getObjectFlag(current),
-    NIL,
   );
 }
 
@@ -301,42 +198,28 @@ export function createBoxedNode(
     NIL,
     NIL,
     boxed,
-    NIL,
-    NIL,
-    NIL,
   );
 }
+
+// Same default cap as the ArrayBuffer deserialization limit
+// (DEFAULT_MAX_BASE64_LENGTH).
+const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
 export function createTypedArrayNode(
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
   id: number,
-  current: TypedArrayValue,
+  current: TypedArrayValue | BigIntTypedArrayValue,
   buffer: SerovalNode,
-): SerovalTypedArrayNode {
+): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode {
+  if (current.length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   return createSerovalNode(
-    SerovalNodeType.TypedArray,
+    type,
     id,
-    getTypedArrayTag(current),
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    buffer,
-    current.byteOffset,
-    NIL,
-    current.length,
-  );
-}
-
-export function createBigIntTypedArrayNode(
-  id: number,
-  current: BigIntTypedArrayValue,
-  buffer: SerovalNode,
-): SerovalBigIntTypedArrayNode {
-  return createSerovalNode(
-    SerovalNodeType.BigIntTypedArray,
-    id,
-    getBigIntTypedArrayTag(current),
+    type === SerovalNodeType.BigIntTypedArray
+      ? getBigIntTypedArrayTag(current as BigIntTypedArrayValue)
+      : getTypedArrayTag(current as TypedArrayValue),
     NIL,
     NIL,
     NIL,
@@ -354,6 +237,9 @@ export function createDataViewNode(
   current: DataView,
   buffer: SerovalNode,
 ): SerovalDataViewNode {
+  if (current.byteLength > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   return createSerovalNode(
     SerovalNodeType.DataView,
     id,
@@ -371,44 +257,18 @@ export function createDataViewNode(
 }
 
 export function createErrorNode(
+  type: SerovalNodeType.Error | SerovalNodeType.AggregateError,
   id: number,
   current: Error,
   options: SerovalObjectRecordNode | undefined,
-): SerovalErrorNode {
+): SerovalErrorNode | SerovalAggregateErrorNode {
   return createSerovalNode(
-    SerovalNodeType.Error,
+    type,
     id,
     getErrorConstructor(current),
     NIL,
     serializeString(current.message),
     options,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
-}
-
-export function createAggregateErrorNode(
-  id: number,
-  current: AggregateError,
-  options: SerovalObjectRecordNode | undefined,
-): SerovalAggregateErrorNode {
-  return createSerovalNode(
-    SerovalNodeType.AggregateError,
-    id,
-    getErrorConstructor(current),
-    NIL,
-    serializeString(current.message),
-    options,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
@@ -425,57 +285,29 @@ export function createSetNode(
     NIL,
     NIL,
     items,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
 export function createIteratorFactoryInstanceNode(
+  type:
+    | SerovalNodeType.IteratorFactoryInstance
+    | SerovalNodeType.AsyncIteratorFactoryInstance,
   factory: SerovalNodeWithID,
   items: SerovalNodeWithID,
-): SerovalIteratorFactoryInstanceNode {
-  return createSerovalNode(
-    SerovalNodeType.IteratorFactoryInstance,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    [factory, items],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
-}
-
-export function createAsyncIteratorFactoryInstanceNode(
-  factory: SerovalNodeWithID,
-  items: SerovalNodeWithID,
-): SerovalAsyncIteratorFactoryInstanceNode {
-  return createSerovalNode(
-    SerovalNodeType.AsyncIteratorFactoryInstance,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    [factory, items],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-  );
+):
+  | SerovalIteratorFactoryInstanceNode
+  | SerovalAsyncIteratorFactoryInstanceNode {
+  return createSerovalNode(type, NIL, NIL, NIL, NIL, NIL, NIL, [
+    factory,
+    items,
+  ]);
 }
 
 export function createStreamConstructorNode(
   id: number,
   factory: SerovalNodeWithID,
   sequence: SerovalNode[],
+  live?: 1,
 ): SerovalStreamConstructorNode {
   return createSerovalNode(
     SerovalNodeType.StreamConstructor,
@@ -489,16 +321,22 @@ export function createStreamConstructorNode(
     factory,
     NIL,
     NIL,
-    NIL,
+    live,
   );
 }
 
-export function createStreamNextNode(
+export type SerovalStreamEventNode =
+  | SerovalStreamNextNode
+  | SerovalStreamThrowNode
+  | SerovalStreamReturnNode;
+
+export function createStreamEventNode(
+  type: SerovalStreamEventNode['t'],
   id: number,
   parsed: SerovalNode,
-): SerovalStreamNextNode {
+): SerovalStreamEventNode {
   return createSerovalNode(
-    SerovalNodeType.StreamNext,
+    type,
     id,
     NIL,
     NIL,
@@ -507,50 +345,7 @@ export function createStreamNextNode(
     NIL,
     NIL,
     parsed,
-    NIL,
-    NIL,
-    NIL,
-  );
-}
-
-export function createStreamThrowNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamThrowNode {
-  return createSerovalNode(
-    SerovalNodeType.StreamThrow,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    parsed,
-    NIL,
-    NIL,
-    NIL,
-  );
-}
-
-export function createStreamReturnNode(
-  id: number,
-  parsed: SerovalNode,
-): SerovalStreamReturnNode {
-  return createSerovalNode(
-    SerovalNodeType.StreamReturn,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    parsed,
-    NIL,
-    NIL,
-    NIL,
-  );
+  ) as SerovalStreamEventNode;
 }
 
 export function createSequenceNode(

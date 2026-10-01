@@ -169,7 +169,7 @@ exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 		}
 	};
 	return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+})($R[1],$R[3])))(($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -177,9 +177,11 @@ exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -193,16 +195,35 @@ exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -214,13 +235,11 @@ exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -229,7 +248,6 @@ exports[`frozen object > crossSerializeAsync > scoped > supports Symbol.asyncIte
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -374,7 +392,7 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 		}
 	};
 	return instance;
-})($R[1],$R[3])))(($R[4]=($R[5]=() => {
+})($R[1],$R[3])))(($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -382,9 +400,11 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -398,16 +418,35 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -419,13 +458,11 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -434,7 +471,6 @@ exports[`frozen object > crossSerializeAsync > supports Symbol.asyncIterator 1`]
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -600,7 +636,7 @@ exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIt
 		}
 	};
 	return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=() => {
+})($R[1],$R[3])))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -608,9 +644,11 @@ exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIt
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -624,16 +662,35 @@ exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIt
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -645,13 +702,11 @@ exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIt
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -660,7 +715,6 @@ exports[`frozen object > crossSerializeStream > scoped > supports Symbol.asyncIt
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -876,7 +930,7 @@ exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`
 		}
 	};
 	return instance;
-})($R[1],$R[3])))($R[4]=($R[5]=() => {
+})($R[1],$R[3])))($R[4]=($R[5]=(live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -884,9 +938,11 @@ exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -900,16 +956,35 @@ exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -921,13 +996,11 @@ exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -936,7 +1009,6 @@ exports[`frozen object > crossSerializeStream > supports Symbol.asyncIterator 1`
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;
@@ -1164,7 +1236,7 @@ exports[`frozen object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 		}
 	};
 	return instance;
-})(j,k)))((m=(() => {
+})(j,k)))((m=((live) => {
 	const buffer = [];
 	const listeners = [];
 	let alive = true;
@@ -1172,9 +1244,11 @@ exports[`frozen object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 	let count = 0;
 	const internal = {
 		flush(value, mode, x) {
+			live > 1 || buffer.push(value);
 			for (x = 0; x < count; x++) {
-				if (listeners[x]) {
-					listeners[x][mode](value);
+				const listener = listeners[x];
+				if (listener) {
+					listener[mode](value);
 				}
 			}
 		},
@@ -1188,16 +1262,35 @@ exports[`frozen object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 				}
 			}
 		},
-		on(listener, temp) {
+		on(listener, temp = 0) {
+			if (live > 1) {
+				throw new Error("Stream consumed");
+			};
+			let subscribed = alive;
 			if (alive) {
-				temp = count++;
+				for (temp = 0; temp < count; temp++) {
+					if (!listeners[temp]) {
+						break;
+					}
+				};
+				if (temp === count) {
+					count++;
+				};
 				listeners[temp] = listener;
 			};
 			internal.up(listener);
+			if (live) {
+				live = 2;
+				buffer.length = 0;
+			};
 			return () => {
-				if (alive) {
-					listeners[temp] = listeners[count];
-					listeners[count--] = undefined;
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = undefined;
+					while (count > 0 && !listeners[count - 1]) {
+						count--;
+					};
+					listeners.length = count;
 				}
 			};
 		}
@@ -1209,13 +1302,11 @@ exports[`frozen object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 		},
 		next(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "next");
 			}
 		},
 		throw(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "throw");
 				alive = false;
 				success = false;
@@ -1224,7 +1315,6 @@ exports[`frozen object > serializeAsync > supports Symbol.asyncIterator 1`] = `
 		},
 		return(value) {
 			if (alive) {
-				buffer.push(value);
 				internal.flush(value, "return");
 				alive = false;
 				success = true;

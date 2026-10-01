@@ -3,8 +3,12 @@ import {
   createAsyncParserContext,
   parseTopAsync,
 } from '../context/async-parser';
-import type { CrossDeserializerContextOptions } from '../context/deserializer';
+import type {
+  CrossDeserializerContext,
+  CrossDeserializerContextOptions,
+} from '../context/deserializer';
 import {
+  abortDeferred,
   createCrossDeserializerContext,
   deserializeTop,
 } from '../context/deserializer';
@@ -13,18 +17,18 @@ import {
   createCrossSerializerContext,
   serializeTopCross,
 } from '../context/serializer';
+import {
+  createStreamParserContext,
+  destroyStreamParse,
+  startStreamParse,
+} from '../context/stream-parser';
 import type {
   StreamParserContextOptions,
   SyncParserContextOptions,
 } from '../context/sync-parser';
-import {
-  createStreamParserContext,
-  createSyncParserContext,
-  destroyStreamParse,
-  parseTop,
-  startStreamParse,
-} from '../context/sync-parser';
-import { resolvePlugins, SerovalMode } from '../plugin';
+import { createSyncParserContext, parseTop } from '../context/sync-parser';
+import { SerovalAbortedError } from '../errors';
+import { resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 
 export interface CrossSerializeOptions
@@ -46,7 +50,9 @@ export function crossSerialize<T>(
   options: CrossSerializeOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Cross, {
+  const ctx = createSyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -74,7 +80,9 @@ export async function crossSerializeAsync<T>(
   options: CrossSerializeAsyncOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Cross, {
+  const ctx = createAsyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -104,7 +112,9 @@ export function toCrossJSON<T>(
   options: ToCrossJSONOptions = {},
 ): SerovalNode {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createSyncParserContext(SerovalMode.Cross, {
+  const ctx = createSyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -123,7 +133,9 @@ export async function toCrossJSONAsync<T>(
   options: ToCrossJSONAsyncOptions = {},
 ): Promise<SerovalNode> {
   const plugins = resolvePlugins(options.plugins);
-  const ctx = createAsyncParserContext(SerovalMode.Cross, {
+  const ctx = createAsyncParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     disabledFeatures: options.disabledFeatures,
     refs: options.refs,
@@ -137,9 +149,11 @@ export interface CrossSerializeStreamOptions
   /**
    * Called for each serialized chunk. `initial` is `true` for the first chunk
    * (the synchronous part of the value) and `false` for chunks emitted later as
-   * Promises and streams resolve.
+   * Promises and streams resolve. Returning a promise defers the next
+   * record, and the acceptance of the live stream event behind this one,
+   * until the promise settles.
    */
-  onSerialize: (data: string, initial: boolean) => void;
+  onSerialize: (data: string, initial: boolean) => void | PromiseLike<void>;
 }
 
 /**
@@ -153,32 +167,25 @@ export interface CrossSerializeStreamOptions
 export function crossSerializeStream<T>(
   source: T,
   options: CrossSerializeStreamOptions,
-): () => void {
+): (reason?: unknown) => void {
   const plugins = resolvePlugins(options.plugins);
+  const onSerialize = options.onSerialize;
+  const scopeId = options.scopeId;
   const ctx = createStreamParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
+    depthLimit: options.depthLimit,
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
-    onParse(node, initial): void {
+    onParse(node, initial): void | PromiseLike<void> {
       const serial = createCrossSerializerContext({
         plugins,
         features: ctx.base.features,
-        scopeId: options.scopeId,
+        scopeId,
         markedRefs: ctx.base.marked,
       });
 
-      let serialized: string;
-
-      try {
-        serialized = serializeTopCross(serial, node);
-      } catch (err) {
-        if (options.onError) {
-          options.onError(err);
-        }
-        return;
-      }
-
-      options.onSerialize(serialized, initial);
+      return onSerialize(serializeTopCross(serial, node), initial);
     },
     onError: options.onError,
     onDone: options.onDone,
@@ -202,9 +209,10 @@ export type ToCrossJSONStreamOptions = StreamParserContextOptions;
 export function toCrossJSONStream<T>(
   source: T,
   options: ToCrossJSONStreamOptions,
-): () => void {
+): (reason?: unknown) => void {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createStreamParserContext({
+    compactArrayBufferViews: options.compactArrayBufferViews,
     plugins,
     refs: options.refs,
     disabledFeatures: options.disabledFeatures,
@@ -221,6 +229,19 @@ export function toCrossJSONStream<T>(
 
 export type FromCrossJSONOptions = CrossDeserializerContextOptions;
 
+function createFromCrossJSONContext(
+  options: FromCrossJSONOptions,
+): CrossDeserializerContext {
+  return createCrossDeserializerContext({
+    maxBase64Length: options.maxBase64Length,
+    plugins: resolvePlugins(options.plugins),
+    refs: options.refs,
+    features: options.features,
+    disabledFeatures: options.disabledFeatures,
+    depthLimit: options.depthLimit,
+  });
+}
+
 /**
  * Rebuilds a value from a {@link SerovalNode} tree produced by the
  * cross-reference parsers ({@link toCrossJSON}, {@link toCrossJSONAsync},
@@ -232,13 +253,37 @@ export function fromCrossJSON<T>(
   source: SerovalNode,
   options: FromCrossJSONOptions,
 ): T {
-  const plugins = resolvePlugins(options.plugins);
-  const ctx = createCrossDeserializerContext({
-    plugins,
-    refs: options.refs,
-    features: options.features,
-    disabledFeatures: options.disabledFeatures,
-    depthLimit: options.depthLimit,
-  });
-  return deserializeTop(ctx, source) as T;
+  return deserializeTop(createFromCrossJSONContext(options), source) as T;
+}
+
+export interface CrossDeserializer {
+  /** Deserializes one streamed record. Records share references. */
+  deserialize<T>(node: SerovalNode): T;
+  /** Deferred values (promises, streams) created but not yet settled. */
+  readonly pending: number;
+  /** Rejects pending promises and throws into open streams; idempotent. */
+  abort(reason: unknown): void;
+}
+
+export type CrossDeserializerOptions = FromCrossJSONOptions;
+
+export function createCrossDeserializer(
+  options: CrossDeserializerOptions,
+): CrossDeserializer {
+  const ctx = createFromCrossJSONContext(options);
+  ctx.base.pending = new Set();
+  return {
+    deserialize<T>(node: SerovalNode): T {
+      if (!ctx.base.pending) {
+        throw new SerovalAbortedError();
+      }
+      return deserializeTop(ctx, node) as T;
+    },
+    get pending(): number {
+      return ctx.base.pending?.size || 0;
+    },
+    abort(reason: unknown): void {
+      abortDeferred(ctx, reason);
+    },
+  };
 }

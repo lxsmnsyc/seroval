@@ -1,27 +1,27 @@
 {
   "name": "seroval-plugins",
   "type": "module",
-  "version": "1.6.1",
+  "version": "1.6.7",
   "files": [
     "dist"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=20"
   },
   "license": "MIT",
   "keywords": [
     "pridepack"
   ],
   "devDependencies": {
-    "@types/node": "^26.1.2",
-    "@vitest/coverage-v8": "4.1.10",
-    "@vitest/ui": "^4.1.10",
-    "esbuild": "^0.28.1",
-    "seroval": "1.6.1",
-    "tsdown": "^0.22.14",
+    "@types/node": "^26.6.3",
+    "@vitest/coverage-v8": "^5.0.2",
+    "@vitest/ui": "^5.0.2",
+    "esbuild": "^0.28.2",
+    "seroval": "workspace:*",
+    "tsdown": "^0.23.0",
     "tslib": "^2.8.1",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.2"
   },
   "peerDependencies": {
     "seroval": "^1.0"
@@ -48,6 +48,9 @@
     "access": "public"
   },
   "author": "Alexis Munsayac",
+  "types": "./dist/index.d.cts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "exports": {
     ".": {
       "development": {
@@ -74,7 +77,7 @@
   "typesVersions": {
     "*": {
       "web": [
-        "./dist/types/web/index.d.ts"
+        "./dist/web.d.ts"
       ]
     }
   }

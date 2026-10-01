@@ -59,17 +59,22 @@ interface StreamListener<T> {
 // for them; arrows, function expressions and local function declarations all
 // get rewritten to call a bundle-scoped helper that does not exist in the
 // receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
-export const STREAM_CONSTRUCTOR = () => {
+// `live` = 1 keeps history only until the first listener subscribes, then
+// forwards each value and refuses a second listener, so delivered values are
+// not retained. Absent, every listener gets the full history.
+export const STREAM_CONSTRUCTOR = (live?: number) => {
   const buffer: unknown[] = [];
-  const listeners: StreamListener<unknown>[] = [];
+  const listeners: (StreamListener<unknown> | undefined)[] = [];
   let alive = true;
   let success = false;
   let count = 0;
   const internal = {
     flush(value: unknown, mode: keyof StreamListener<unknown>, x?: number) {
+      (live as number) > 1 || buffer.push(value);
       for (x = 0; x < count; x++) {
-        if (listeners[x]) {
-          listeners[x][mode](value);
+        const listener = listeners[x];
+        if (listener) {
+          listener[mode](value);
         }
       }
     },
@@ -88,16 +93,35 @@ export const STREAM_CONSTRUCTOR = () => {
         }
       }
     },
-    on(listener: StreamListener<unknown>, temp?: number) {
+    on(listener: StreamListener<unknown>, temp = 0) {
+      if ((live as number) > 1) {
+        throw new Error('Stream consumed');
+      }
+      let subscribed = alive;
       if (alive) {
-        temp = count++;
+        for (temp = 0; temp < count; temp++) {
+          if (!listeners[temp]) {
+            break;
+          }
+        }
+        if (temp === count) {
+          count++;
+        }
         listeners[temp] = listener;
       }
       internal.up(listener);
+      if (live) {
+        live = 2;
+        buffer.length = 0;
+      }
       return () => {
-        if (alive) {
-          listeners[temp!] = listeners[count];
-          listeners[count--] = undefined as any;
+        if (alive && subscribed) {
+          subscribed = false;
+          listeners[temp] = undefined;
+          while (count > 0 && !listeners[count - 1]) {
+            count--;
+          }
+          listeners.length = count;
         }
       };
     },
@@ -109,13 +133,11 @@ export const STREAM_CONSTRUCTOR = () => {
     },
     next(value: unknown) {
       if (alive) {
-        buffer.push(value);
         internal.flush(value, 'next');
       }
     },
     throw(value: unknown) {
       if (alive) {
-        buffer.push(value);
         internal.flush(value, 'throw');
         alive = false;
         success = false;
@@ -124,7 +146,6 @@ export const STREAM_CONSTRUCTOR = () => {
     },
     return(value: unknown) {
       if (alive) {
-        buffer.push(value);
         internal.flush(value, 'return');
         alive = false;
         success = true;

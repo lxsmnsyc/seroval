@@ -1,4 +1,5 @@
 import { crossSerializeStream } from './cross';
+import { SerovalParserError } from './errors';
 import {
   type Plugin,
   type PluginAccessOptions,
@@ -14,6 +15,10 @@ export interface SerializerOptions extends PluginAccessOptions {
   scopeId?: string;
   /** Feature flags to disable; see {@link Feature}. */
   disabledFeatures?: number;
+  /** Encodes typed arrays and DataViews compactly; see the compact views docs. */
+  compactArrayBufferViews?: boolean;
+  /** Maximum nesting depth before serialization throws. */
+  depthLimit?: number;
   /** Called with each serialized chunk. */
   onData: (result: string) => void;
   /** Called when serializing a value fails. */
@@ -39,13 +44,16 @@ export default class Serializer {
 
   private pending = 0;
 
-  private cleanups: (() => void)[] = [];
+  private cleanups: ((reason?: unknown) => void)[] = [];
 
   private refs = new Map<unknown, number>();
 
   private plugins?: Plugin<any, any>[];
 
-  constructor(private options: SerializerOptions) {
+  private options: SerializerOptions | undefined;
+
+  constructor(options: SerializerOptions) {
+    this.options = options;
     this.plugins = resolvePlugins(options.plugins);
   }
 
@@ -56,45 +64,69 @@ export default class Serializer {
    * target realm, streaming chunks through `onData` as async parts resolve.
    */
   write(key: string, value: unknown): void {
-    if (this.alive && !this.flushed) {
+    const options = this.options;
+    if (this.alive && !this.flushed && options) {
       this.pending++;
       this.keys.add(key);
-      this.cleanups.push(
-        crossSerializeStream(value, {
-          plugins: this.plugins,
-          scopeId: this.options.scopeId,
-          refs: this.refs,
-          disabledFeatures: this.options.disabledFeatures,
-          onError: this.options.onError,
-          onSerialize: (data, initial) => {
-            if (this.alive) {
-              this.options.onData(
-                initial
-                  ? this.options.globalIdentifier +
-                      '["' +
-                      serializeString(key) +
-                      '"]=' +
-                      data
-                  : data,
-              );
+      const cleanup = crossSerializeStream(value, {
+        plugins: this.plugins,
+        scopeId: options.scopeId,
+        refs: this.refs,
+        disabledFeatures: options.disabledFeatures,
+        compactArrayBufferViews: options.compactArrayBufferViews,
+        depthLimit: options.depthLimit,
+        onError: error => {
+          let failure: { value: unknown } | undefined;
+          try {
+            if (options.onError) {
+              options.onError(error);
+            } else {
+              throw error instanceof SerovalParserError
+                ? error
+                : new SerovalParserError(error);
             }
-          },
-          onDone: () => {
-            if (this.alive) {
-              this.pending--;
-              if (
-                this.pending <= 0 &&
-                this.flushed &&
-                !this.done &&
-                this.options.onDone
-              ) {
-                this.options.onDone();
-                this.done = true;
-              }
-            }
-          },
-        }),
-      );
+          } catch (error) {
+            failure = { value: error };
+          }
+          try {
+            this.finishWrite();
+          } catch (error) {
+            failure ??= { value: error };
+          }
+          if (failure) {
+            throw failure.value;
+          }
+        },
+        onSerialize: (data, initial) => {
+          const current = this.options;
+          if (this.alive && current) {
+            current.onData(
+              initial
+                ? current.globalIdentifier +
+                    '["' +
+                    serializeString(key) +
+                    '"]=' +
+                    data
+                : data,
+            );
+          }
+        },
+        onDone: () => this.finishWrite(),
+      });
+      if (this.alive) {
+        this.cleanups.push(cleanup);
+      } else {
+        cleanup();
+      }
+    }
+  }
+
+  private finishWrite(): void {
+    if (this.alive) {
+      this.pending--;
+      if (this.pending <= 0 && this.flushed && !this.done) {
+        this.close();
+      }
     }
   }
 
@@ -124,9 +156,8 @@ export default class Serializer {
   flush(): void {
     if (this.alive) {
       this.flushed = true;
-      if (this.pending <= 0 && !this.done && this.options.onDone) {
-        this.options.onDone();
-        this.done = true;
+      if (this.pending <= 0 && !this.done) {
+        this.close();
       }
     }
   }
@@ -136,15 +167,37 @@ export default class Serializer {
    * releasing their resources, then calls `onDone`.
    */
   close(): void {
+    this.finish();
+  }
+
+  private finish(): void {
     if (this.alive) {
-      for (let i = 0, len = this.cleanups.length; i < len; i++) {
-        this.cleanups[i]();
-      }
-      if (!this.done && this.options.onDone) {
-        this.options.onDone();
-        this.done = true;
-      }
       this.alive = false;
+      const options = this.options;
+      this.options = undefined;
+      this.plugins = undefined;
+      const cleanups = this.cleanups;
+      this.cleanups = [];
+      let failure: { value: unknown } | undefined;
+      for (let index = 0, length = cleanups.length; index < length; index++) {
+        try {
+          cleanups[index]();
+        } catch (error) {
+          failure ??= { value: error };
+        }
+      }
+      this.refs.clear();
+      if (!this.done) {
+        this.done = true;
+        try {
+          options?.onDone?.();
+        } catch (error) {
+          failure ??= { value: error };
+        }
+      }
+      if (failure) {
+        throw failure.value;
+      }
     }
   }
 }
