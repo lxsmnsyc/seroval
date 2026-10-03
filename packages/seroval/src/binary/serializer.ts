@@ -9,6 +9,7 @@ import {
   isWellKnownSymbol,
   NIL,
   SerovalConstant,
+  SerovalObjectFlags,
   SerovalTemporalType,
   type TypedArrayValue,
 } from '../core/constants';
@@ -346,6 +347,18 @@ function serializeWellKnownSymbol(ctx: SerializerContext, value: symbol) {
   throw new SerovalUnsupportedTypeError(value);
 }
 
+// Extensible values need no flag, so the node is only sent for the others.
+function serializeObjectFlag(
+  ctx: SerializerContext,
+  id: number,
+  value: object,
+): void {
+  const flag = getObjectFlag(value);
+  if (flag !== SerovalObjectFlags.None) {
+    writeByteNode(ctx, SerovalBinaryType.ObjectFlag, id, flag);
+  }
+}
+
 function serializeArray(ctx: SerializerContext, value: unknown[]) {
   const id = createID(ctx, value);
   const len = value.length;
@@ -367,7 +380,7 @@ function serializeArray(ctx: SerializerContext, value: unknown[]) {
     }
   }
   serializePending(ctx, id, pending);
-  writeByteNode(ctx, SerovalBinaryType.ObjectFlag, id, getObjectFlag(value));
+  serializeObjectFlag(ctx, id, value);
   return id;
 }
 
@@ -636,7 +649,7 @@ function serializePlainObject(
     0,
   );
   serializeProperties(ctx, id, value);
-  writeByteNode(ctx, SerovalBinaryType.ObjectFlag, id, getObjectFlag(value));
+  serializeObjectFlag(ctx, id, value);
   return id;
 }
 

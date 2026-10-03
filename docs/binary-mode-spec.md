@@ -181,6 +181,9 @@ An `ObjectFlag` is an action node type for changing the state of the `ref:target
 - `2`: `Object.seal`
 - `3`: `Object.freeze`
 
+The serializer only sends an `ObjectFlag` for a target that is not extensible.
+A decoder still accepts flag `0` and leaves the target unchanged.
+
 ### `Array`
 
 ```
@@ -271,8 +274,8 @@ value; it is not required to be an object.
 ```
 
 Declares a plain object (`{}`). Its properties are assigned afterwards through
-`ObjectAssign` nodes, and its final extensibility state through an `ObjectFlag`
-node.
+`ObjectAssign` nodes. If it is frozen, sealed or not extensible, an `ObjectFlag`
+node follows.
 
 ### `NullConstructor`
 
@@ -562,8 +565,8 @@ Result: `"hi"`.
 ### `{ a: 1 }`
 
 This shows the full lifecycle of a container: declare, fill by reference,
-announce how many assignments to expect, set the object flag, then point the
-root at it.
+announce how many assignments to expect, then point the root at it. The object
+is extensible, so no `ObjectFlag` node is sent.
 
 ```
 00 01
@@ -572,7 +575,6 @@ root at it.
 03 03 00 00 00  00 00 00 00 00 00 F0 3F
 07 01 00 00 00  02 00 00 00  03 00 00 00
 26 01 00 00 00  01 00 00 00
-09 01 00 00 00  00
 01 01 00 00 00
 ```
 
@@ -584,7 +586,6 @@ root at it.
 | `03  03 00 00 00  … F0 3F` | `Number` | id `3`, value `1.0` — the value |
 | `07  01 00 00 00  02 00 00 00  03 00 00 00` | `ObjectAssign` | on id `1`, assign key id `2` (`"a"`) the value id `3` (`1`) |
 | `26  01 00 00 00  01 00 00 00` | `Pending` | `26` = pending (`38`), id `1` expects `1` assignment |
-| `09  01 00 00 00  00` | `ObjectFlag` | id `1`, flag `00` (unmodified / extensible) |
 | `01  01 00 00 00` | `Root` | references id `1` |
 
 Result: `{ a: 1 }`.
