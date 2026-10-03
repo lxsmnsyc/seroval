@@ -477,7 +477,9 @@ See the [binary mode specification](./binary-mode-spec.md) for the wire format.
 
 - `refs`: a `Map` of the values already sent. Pass the same map to later calls
   to send references to values from earlier payloads (see below).
-- `onSerialize(bytes)`: receives each chunk. It may return a promise; see
+- `onSerialize(bytes)`: receives each chunk. The synchronous part of the
+  value is sent as one chunk, and each settled promise or stream event is sent
+  as another. It may return a promise; see
   [Live streams](#binary-live-streams).
 - `onDone()`: runs once every value, including promises and streams, has
   settled.

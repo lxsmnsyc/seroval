@@ -294,9 +294,14 @@ describe('binary Promise', () => {
           // The root is rejected along with `onError`.
         });
 
-      // Drop the Promise declaration (chunk 1, right after the preamble) so
-      // the trailing PromiseSuccess has no resolver to attach to.
-      for (const chunk of source.transport.chunks.filter((_, i) => i !== 1)) {
+      // The first chunk starts with the 2-byte preamble, followed by the
+      // 5-byte Promise declaration (type 31). Drop the declaration so the
+      // trailing PromiseSuccess has no resolver to attach to.
+      const [first, ...rest] = source.transport.chunks;
+      expect(first[2]).toBe(31);
+      transport.push(first.subarray(0, 2));
+      transport.push(first.subarray(7));
+      for (const chunk of rest) {
         transport.push(chunk);
       }
       transport.push(undefined);

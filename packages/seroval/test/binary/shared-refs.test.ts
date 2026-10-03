@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { binary } from '../../src';
 
-function send(value: unknown, refs: Map<unknown, Uint8Array>) {
+function send(value: unknown, refs: Map<unknown, number>) {
   return new Promise<Uint8Array[]>((resolve, reject) => {
     const chunks: Uint8Array[] = [];
     binary.serialize(value, {
@@ -28,7 +28,7 @@ function receive<T>(chunks: Uint8Array[], refs: binary.ReferenceMap) {
 
 describe('binary shared references', () => {
   it('resolves a value sent in an earlier payload', async () => {
-    const serializerRefs = new Map<unknown, Uint8Array>();
+    const serializerRefs = new Map<unknown, number>();
     const deserializerRefs = binary.createReferenceMap();
     const shared = { name: 'shared' };
 
