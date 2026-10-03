@@ -16,7 +16,16 @@ type ResponseNode = {
   options: SerovalNode;
 };
 
-const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
+type ResponseBinarydata = {
+  body: ReadableStream<Uint8Array> | null;
+  options: ResponseInit;
+};
+
+const ResponsePlugin = /* @__PURE__ */ createPlugin<
+  Response,
+  ResponseNode,
+  ResponseBinarydata
+>({
   tag: 'seroval-plugins/web/Response',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   test(value) {
@@ -59,6 +68,17 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
       ctx.deserialize(node.body) as BodyInit,
       ctx.deserialize(node.options) as ResponseInit,
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        body: value.body && !value.bodyUsed ? value.clone().body : null,
+        options: createResponseOptions(value),
+      };
+    },
+    deserialize(data) {
+      return new Response(data.body, data.options);
+    },
   },
 });
 

@@ -1,5 +1,6 @@
 /// <reference types="tsdown" />
 
+import { NODE_TYPE_NAME, type SerovalBinaryType } from '../binary/nodes';
 import { serializeString } from './string';
 import type { SerovalNode } from './types';
 
@@ -83,6 +84,11 @@ const enum SpecificErrorCodes {
   ConflictedNodeId = 9,
   DepthLimit = 10,
   Aborted = 11,
+  MalformedBinarySource = 12,
+  MalformedBinaryType = 13,
+  UnknownBinaryType = 14,
+  UnexpectedBinaryType = 15,
+  MissingBinaryRef = 16,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -158,11 +164,11 @@ export class SerovalMissingReferenceForIdError extends Error {
 }
 
 export class SerovalUnknownTypedArrayError extends Error {
-  constructor(name: string) {
+  constructor() {
     super(
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnknownTypedArray)
-        : 'Unknown TypedArray "' + name + '"',
+        : 'Unknown TypedArray detected',
     );
   }
 }
@@ -203,6 +209,60 @@ export class SerovalAbortedError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.Aborted)
         : 'Cross deserializer has been aborted.',
+    );
+  }
+}
+
+export class SerovalMalformedBinarySourceError extends Error {
+  constructor() {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinarySource)
+        : 'Malformed binary source detected. ',
+    );
+  }
+}
+
+export class SerovalMalformedBinaryTypeError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinaryType)
+        : `Malformed binary type detected. (type: ${NODE_TYPE_NAME[nodeType]}) `,
+    );
+  }
+}
+
+export class SerovalUnknownBinaryTypeError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.UnknownBinaryType)
+        : `Malformed binary detected. (type: ${nodeType}) `,
+    );
+  }
+}
+
+export class SerovalMissingBinaryRefError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MissingBinaryRef)
+        : `Missing binary ref detected. (type: ${nodeType}) `,
+    );
+  }
+}
+
+export class SerovalUnexpectedBinaryTypeError extends Error {
+  constructor(
+    from: SerovalBinaryType,
+    expected: SerovalBinaryType,
+    received: SerovalBinaryType,
+  ) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.UnexpectedBinaryType)
+        : `Unexpected binary type from type ${NODE_TYPE_NAME[from]}. (expected: ${NODE_TYPE_NAME[expected]}, received: ${NODE_TYPE_NAME[received]}) `,
     );
   }
 }

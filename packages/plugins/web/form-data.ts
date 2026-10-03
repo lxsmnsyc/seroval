@@ -28,7 +28,7 @@ const FORM_DATA_FACTORY_CONSTRUCTOR = (
   return f;
 };
 
-const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
+const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}, {}>({
   tag: 'seroval-plugins/web/FormDataFactory',
   test(value) {
     return value === FORM_DATA_FACTORY;
@@ -50,6 +50,14 @@ const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   deserialize() {
     return FORM_DATA_FACTORY;
   },
+  binary: {
+    serialize() {
+      return FORM_DATA_FACTORY;
+    },
+    deserialize() {
+      return FORM_DATA_FACTORY;
+    },
+  },
 });
 
 type FormDataNode = {
@@ -57,7 +65,15 @@ type FormDataNode = {
   entries: SerovalNode;
 };
 
-const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
+type FormDataBinaryData = {
+  entries: FormDataInit;
+};
+
+const FormDataPlugin = /* @__PURE__ */ createPlugin<
+  FormData,
+  FormDataNode,
+  FormDataBinaryData
+>({
   tag: 'seroval-plugins/web/FormData',
   extends: [FilePlugin, FormDataFactoryPlugin],
   test(value) {
@@ -99,6 +115,16 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
     return FORM_DATA_FACTORY_CONSTRUCTOR(
       ctx.deserialize(node.entries) as FormDataInit,
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        entries: convertFormData(value),
+      };
+    },
+    deserialize(data) {
+      return FORM_DATA_FACTORY_CONSTRUCTOR(data.entries);
+    },
   },
 });
 

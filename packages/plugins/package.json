@@ -14,6 +14,7 @@
   ],
   "devDependencies": {
     "@types/node": "^26.6.3",
+    "@vitest/coverage-v8": "^5.0.2",
     "@vitest/ui": "^5.0.2",
     "esbuild": "^0.28.2",
     "seroval": "workspace:*",
@@ -30,6 +31,7 @@
     "build": "tsdown",
     "watch": "tsdown --watch",
     "test": "vitest",
+    "test:coverage": "vitest run --coverage --coverage.provider=v8 --coverage.include='web/**'",
     "test:ui": "vitest --ui"
   },
   "private": false,

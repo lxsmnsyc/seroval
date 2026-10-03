@@ -20,18 +20,31 @@ export const enum FeatureFlag {
 }
 
 /**
- * Public feature bits for `disabledFeatures`. Stays a runtime `enum` so the
- * published declaration is unchanged for consumers. Its values must match
- * the internal bits (checked by test/feature.test.ts).
+ * Flags for runtime features the deserializing target is assumed to support.
+ * Every flag is enabled by default; pass a bitwise-OR of the ones to switch off
+ * as `disabledFeatures` so the output avoids syntax or globals the target lacks
+ * (for example disable {@link Feature.Temporal} for a runtime without the
+ * Temporal API). A value that requires a disabled feature throws instead of
+ * being serialized.
+ *
+ * Stays a runtime `enum` so the published declaration is unchanged for
+ * consumers. Its values must match the internal bits (checked by
+ * test/feature.test.ts).
  */
 export enum Feature {
+  /** `AggregateError`. */
   AggregateError = 0x01,
-  // @deprecated
+  /** Arrow-function syntax in the output. @deprecated always enabled */
   ArrowFunction = 0x02,
+  /** Preserving `Error.prototype.stack`. */
   ErrorPrototypeStack = 0x04,
+  /** `Object.assign`, used to rebuild objects with special keys. */
   ObjectAssign = 0x08,
+  /** `BigInt64Array` / `BigUint64Array`. */
   BigIntTypedArray = 0x10,
+  /** `RegExp`. */
   RegExp = 0x20,
+  /** The `Temporal` API. */
   Temporal = 0x40,
 }
 

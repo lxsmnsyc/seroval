@@ -3,7 +3,6 @@ import {
   fromJSON,
   SerovalDeserializationError,
   SerovalMalformedNodeError,
-  SerovalUnknownTypedArrayError,
   toJSON,
 } from '../src';
 import { SerovalNodeType } from '../src/core/constants';
@@ -27,14 +26,14 @@ describe('decoder validation ordering', () => {
     if (json.t.t !== SerovalNodeType.TypedArray) {
       throw new Error('Wrong fixture');
     }
-    Object.defineProperty(json.t, 'c', { value: 'MissingConstructor' });
+    Object.defineProperty(json.t, 's', { value: 999 });
     Object.defineProperty(json.t, 'f', {
       get() {
         throw new Error('buffer read first');
       },
     });
     expect(cause(() => fromJSON(json))).toBeInstanceOf(
-      SerovalUnknownTypedArrayError,
+      SerovalMalformedNodeError,
     );
   });
 

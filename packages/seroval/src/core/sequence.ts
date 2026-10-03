@@ -42,8 +42,12 @@ export function createSequenceFromIterable<T>(source: Iterable<T>): Sequence {
         break;
       }
     } catch (error) {
+      // Stop at the first error. An iterator that keeps throwing would
+      // otherwise never finish.
       throwsAt = values.length;
+      doneAt = throwsAt;
       values.push(error);
+      break;
     }
   }
 

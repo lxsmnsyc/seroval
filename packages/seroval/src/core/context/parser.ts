@@ -5,9 +5,9 @@ import {
   createWKSymbolNode,
 } from '../base-primitives';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
-import type { WellKnownSymbols } from '../constants';
 import {
-  INV_SYMBOL_REF,
+  DEFAULT_DEPTH_LIMIT,
+  isWellKnownSymbol,
   NIL,
   SerovalNodeType,
   SerovalTemporalType,
@@ -67,7 +67,7 @@ export function createBaseParserContext(
     marked: new Set(),
     features: ALL_ENABLED ^ (options.disabledFeatures || 0),
     refs: options.refs || new Map(),
-    depthLimit: options.depthLimit || 1000,
+    depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
     compactArrayBufferViews: options.compactArrayBufferViews ?? false,
   };
 }
@@ -136,8 +136,8 @@ export function parseWellKnownSymbol(
   if (typeof ref !== 'number') {
     return ref;
   }
-  if (current in INV_SYMBOL_REF) {
-    return createWKSymbolNode(ref, current as WellKnownSymbols);
+  if (isWellKnownSymbol(current)) {
+    return createWKSymbolNode(ref, current);
   }
   throw new SerovalUnsupportedTypeError(current);
 }

@@ -16,7 +16,7 @@ import {
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
-import { FeatureFlag } from '../compat';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
 import {
   SerovalDepthLimitError,
@@ -63,10 +63,6 @@ import type {
   SerovalTypedArrayNode,
 } from '../types';
 import { getErrorOptions } from '../utils/error';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createArrayBufferNode,
@@ -86,7 +82,6 @@ import {
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
-
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
 export type SyncParserContextOptions = BaseParserContextOptions;

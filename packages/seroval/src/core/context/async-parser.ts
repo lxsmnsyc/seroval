@@ -17,6 +17,11 @@ import {
   createTemporalNode,
   createTypedArrayNode,
 } from '../base-primitives';
+import type {
+  BigIntTypedArrayValue,
+  SerovalTemporalType,
+  TypedArrayValue,
+} from '../constants';
 import { NIL, SerovalNodeType } from '../constants';
 import {
   SerovalDepthLimitError,
@@ -65,10 +70,6 @@ import type {
 } from '../types';
 import { getErrorOptions } from '../utils/error';
 import promiseToResult from '../utils/promise-to-result';
-import type {
-  BigIntTypedArrayValue,
-  TypedArrayValue,
-} from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   createArrayBufferNode,

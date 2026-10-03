@@ -1,3 +1,4 @@
+export * as binary from './binary';
 export { Feature } from './core/compat';
 export type {
   AsyncParsePluginContext,

@@ -7,17 +7,34 @@ import {
 } from './plugin';
 import { serializeString } from './string';
 
+/** Options for the incremental {@link Serializer}. */
 export interface SerializerOptions extends PluginAccessOptions {
+  /** Expression the emitted chunks assign onto on the target realm, e.g. `self.$R`. */
   globalIdentifier: string;
+  /** Scopes the shared cross-reference table; see {@link getCrossReferenceHeader}. */
   scopeId?: string;
+  /** Feature flags to disable; see {@link Feature}. */
   disabledFeatures?: number;
+  /** Encodes typed arrays and DataViews compactly; see the compact views docs. */
   compactArrayBufferViews?: boolean;
+  /** Maximum nesting depth before serialization throws. */
   depthLimit?: number;
+  /** Called with each serialized chunk. */
   onData: (result: string) => void;
+  /** Called when serializing a value fails. */
   onError: (error: unknown) => void;
+  /** Called after {@link Serializer.flush} once all pending values have settled. */
   onDone?: () => void;
 }
 
+/**
+ * A stateful, incremental cross-serializer. Feed it values one at a time with
+ * {@link Serializer.write} or {@link Serializer.push}; each produces cross-
+ * referenced chunks through `onData` that assign onto the `globalIdentifier`
+ * object on the target realm. Call {@link Serializer.flush} once every value
+ * has been written, or {@link Serializer.close} to abort. It shares one `refs`
+ * map across all writes, so values repeated between them are emitted once.
+ */
 export default class Serializer {
   private alive = true;
 
@@ -42,6 +59,10 @@ export default class Serializer {
 
   keys = new Set<string>();
 
+  /**
+   * Serializes `value` and assigns the result to `globalIdentifier[key]` on the
+   * target realm, streaming chunks through `onData` as async parts resolve.
+   */
   write(key: string, value: unknown): void {
     const options = this.options;
     if (this.alive && !this.flushed && options) {
@@ -118,12 +139,20 @@ export default class Serializer {
     return '' + this.ids;
   }
 
+  /**
+   * Like {@link Serializer.write} but generates a fresh key for the value.
+   * @returns The generated key the value was assigned to.
+   */
   push(value: unknown): string {
     const newID = this.getNextID();
     this.write(newID, value);
     return newID;
   }
 
+  /**
+   * Signals that no more values will be written. Once every pending async value
+   * has settled, `onDone` is called. Writes after this are ignored.
+   */
   flush(): void {
     if (this.alive) {
       this.flushed = true;
@@ -133,6 +162,10 @@ export default class Serializer {
     }
   }
 
+  /**
+   * Aborts serialization immediately, cancelling any pending async values and
+   * releasing their resources, then calls `onDone`.
+   */
   close(): void {
     this.finish();
   }
