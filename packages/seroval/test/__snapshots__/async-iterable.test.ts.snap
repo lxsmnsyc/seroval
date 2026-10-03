@@ -92,7 +92,7 @@ exports[`AsyncIterable > crossSerializeAsync > scoped > supports AsyncIterables 
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -282,7 +282,7 @@ exports[`AsyncIterable > crossSerializeAsync > supports AsyncIterables 1`] = `
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -472,7 +472,7 @@ exports[`AsyncIterable > crossSerializeStream > scoped > supports AsyncIterables
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -670,7 +670,7 @@ exports[`AsyncIterable > crossSerializeStream > supports AsyncIterables 1`] = `
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -868,7 +868,7 @@ exports[`AsyncIterable > serializeAsync > supports AsyncIterables 1`] = `
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
