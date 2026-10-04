@@ -2,8 +2,9 @@ import { defineConfig } from 'tsdown';
 
 export default defineConfig([
   {
-    entry: 'src/index.ts',
+    entry: ['src/index.ts', 'src/tree.ts'],
     platform: 'neutral',
+    unbundle: true,
     target: 'es2020',
     dts: true,
     outDir: './dist/dev',
@@ -13,8 +14,9 @@ export default defineConfig([
     },
   },
   {
-    entry: 'src/index.ts',
+    entry: ['src/index.ts', 'src/tree.ts'],
     platform: 'neutral',
+    unbundle: true,
     target: 'es2020',
     dts: true,
 

@@ -138,6 +138,39 @@ describe('built package exports (run build first)', () => {
           );
         });
 
+        it(`resolves seroval/tree to the main entry's functions in Node (${label})`, async () => {
+          const treeTarget = target.replace('index.', 'tree.');
+          const load =
+            format === 'import'
+              ? `const tree = await import('seroval/tree');
+                 const main = await import('seroval');
+                 assert.equal(import.meta.resolve('seroval/tree'), new URL('./${treeTarget}', import.meta.url).href);`
+              : `const tree = require('seroval/tree');
+                 const main = require('seroval');
+                 assert.equal(require.resolve('seroval/tree'), fileURLToPath(new URL('./${treeTarget}', import.meta.url)));`;
+          await execFileAsync(
+            process.execPath,
+            [
+              ...conditions.map(condition => `--conditions=${condition}`),
+              '--input-type=module',
+              '--eval',
+              `import assert from 'node:assert/strict';
+               import { createRequire } from 'node:module';
+               import { fileURLToPath } from 'node:url';
+               const require = createRequire(import.meta.url);
+               ${load}
+               const keys = Object.keys(tree).filter(key => key !== 'default').sort();
+               assert.deepEqual(keys, ['compileJSON', 'deserialize', 'fromJSON', 'serialize', 'serializeAsync', 'toJSON', 'toJSONAsync']);
+               for (const key of keys) {
+                 assert.equal(tree[key], main[key], key);
+               }
+               const ref = main.createReference('tree-entry', () => 42);
+               assert.equal(main.fromJSON(await tree.toJSONAsync(ref)), ref);`,
+            ],
+            { cwd: packageDir },
+          );
+        });
+
         it(`bundles dist without aliases and preserves identities and binary semantics (${label})`, async () => {
           const contents =
             format === 'import'

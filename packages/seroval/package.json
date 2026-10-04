@@ -71,6 +71,26 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
+    "./tree": {
+      "development": {
+        "browser": {
+          "import": "./dist/dev/tree.js",
+          "require": "./dist/dev/tree.cjs",
+          "default": "./dist/dev/tree.js"
+        },
+        "import": "./dist/dev/tree.js",
+        "require": "./dist/dev/tree.cjs",
+        "default": "./dist/dev/tree.js"
+      },
+      "browser": {
+        "import": "./dist/tree.js",
+        "require": "./dist/tree.cjs",
+        "default": "./dist/tree.js"
+      },
+      "import": "./dist/tree.js",
+      "require": "./dist/tree.cjs",
+      "default": "./dist/tree.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",

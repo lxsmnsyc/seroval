@@ -7,12 +7,32 @@ both ESM and CommonJS. The browser condition intentionally selects the same
 bundle as the default condition in each format and development mode. It does
 not create another copy of Seroval's classes or reference registry.
 
-Binary helpers are bundled into these entry points; package `imports`
+Binary helpers are part of the published files; package `imports`
 resolution is not required. Resolvers that ignore browser conditions, including
 older bundlers and React Native configurations, can continue to use the default
 exports or the unchanged `main`/`module` fields. Binary encoding uses `Buffer`
 when available and portable browser APIs otherwise, with the same validation
 and wire format. There is no separately optimized browser-only bundle.
+
+The package is published as one file per source module, so bundlers can split
+it at module boundaries. The `seroval/tree` export has the same conditions as
+the main export and contains `serialize`, `serializeAsync`, `deserialize`,
+`toJSON`, `toJSONAsync`, `fromJSON` and `compileJSON`. Its functions are the
+same objects as the main export's functions. An app that only reads
+cross-reference payloads at startup can load it later:
+
+```js
+import { fromCrossJSON } from 'seroval';
+
+async function send(value) {
+  const { toJSONAsync } = await import('seroval/tree');
+  return JSON.stringify(await toJSONAsync(value));
+}
+```
+
+Whether this moves the serializer out of the first chunk depends on the
+bundler. Rolldown, which Vite uses, moves it. esbuild assigns chunks by which
+files the entry can reach and keeps the serializer in the first chunk.
 
 ## Serialization features
 
