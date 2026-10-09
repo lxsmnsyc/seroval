@@ -1,5 +1,11 @@
 # seroval
 
+## 1.6.9
+
+### Patch Changes
+
+- 5754cfd: Use TypeScript `private` members in the internal `Stream` class instead of `#` private fields. Builds that target older Node.js versions no longer convert each field access into a helper function call.
+
 ## 1.6.8
 
 ### Patch Changes
