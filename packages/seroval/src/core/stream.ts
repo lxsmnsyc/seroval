@@ -19,23 +19,23 @@ export interface StreamListener<T> {
  * implementations in sync.
  */
 export class Stream<T> {
-  #buffer: unknown[] = [];
-  #listeners: (StreamListener<T> | undefined)[] = [];
-  #alive = true;
-  #success = false;
-  #count = 0;
+  private buffer: unknown[] = [];
+  private listeners: (StreamListener<T> | undefined)[] = [];
+  private alive = true;
+  private success = false;
+  private count = 0;
 
-  #flush(value: unknown, mode: 'next' | 'throw' | 'return'): void {
-    for (let x = 0; x < this.#count; x++) {
-      this.#listeners[x]?.[mode](value as T);
+  private flush(value: unknown, mode: 'next' | 'throw' | 'return'): void {
+    for (let x = 0; x < this.count; x++) {
+      this.listeners[x]?.[mode](value as T);
     }
   }
 
-  #replay(listener: StreamListener<T>): void {
-    for (let x = 0, z = this.#buffer.length; x < z; x++) {
-      const current = this.#buffer[x];
-      if (!this.#alive && x === z - 1) {
-        listener[this.#success ? 'return' : 'throw'](current as T);
+  private replay(listener: StreamListener<T>): void {
+    for (let x = 0, z = this.buffer.length; x < z; x++) {
+      const current = this.buffer[x];
+      if (!this.alive && x === z - 1) {
+        listener[this.success ? 'return' : 'throw'](current as T);
       } else {
         listener.next(current as T);
       }
@@ -43,56 +43,56 @@ export class Stream<T> {
   }
 
   on(listener: StreamListener<T>): () => void {
-    let subscribed = this.#alive;
+    let subscribed = this.alive;
     let temp = 0;
     if (subscribed) {
-      for (; temp < this.#count; temp++) {
-        if (!this.#listeners[temp]) {
+      for (; temp < this.count; temp++) {
+        if (!this.listeners[temp]) {
           break;
         }
       }
-      if (temp === this.#count) {
-        this.#count++;
+      if (temp === this.count) {
+        this.count++;
       }
-      this.#listeners[temp] = listener;
+      this.listeners[temp] = listener;
     }
-    this.#replay(listener);
+    this.replay(listener);
     return () => {
-      if (this.#alive && subscribed) {
+      if (this.alive && subscribed) {
         subscribed = false;
-        this.#listeners[temp] = undefined;
-        while (this.#count > 0 && !this.#listeners[this.#count - 1]) {
-          this.#count--;
+        this.listeners[temp] = undefined;
+        while (this.count > 0 && !this.listeners[this.count - 1]) {
+          this.count--;
         }
-        this.#listeners.length = this.#count;
+        this.listeners.length = this.count;
       }
     };
   }
 
   next(value: T): void {
-    if (this.#alive) {
-      this.#buffer.push(value);
-      this.#flush(value, 'next');
+    if (this.alive) {
+      this.buffer.push(value);
+      this.flush(value, 'next');
     }
   }
 
   throw(value: unknown): void {
-    if (this.#alive) {
-      this.#buffer.push(value);
-      this.#flush(value, 'throw');
-      this.#alive = false;
-      this.#success = false;
-      this.#listeners.length = 0;
+    if (this.alive) {
+      this.buffer.push(value);
+      this.flush(value, 'throw');
+      this.alive = false;
+      this.success = false;
+      this.listeners.length = 0;
     }
   }
 
   return(value: T): void {
-    if (this.#alive) {
-      this.#buffer.push(value);
-      this.#flush(value, 'return');
-      this.#alive = false;
-      this.#success = true;
-      this.#listeners.length = 0;
+    if (this.alive) {
+      this.buffer.push(value);
+      this.flush(value, 'return');
+      this.alive = false;
+      this.success = true;
+      this.listeners.length = 0;
     }
   }
 }
