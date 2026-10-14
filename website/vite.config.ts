@@ -1,7 +1,7 @@
 import path from 'node:path';
 import solid from '@solidjs/vite-plugin';
 import { defineConfig, type Plugin } from 'vite';
-import markdown from './plugins/markdown.ts';
+import content from './plugins/content.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 
@@ -37,16 +37,21 @@ function workspaceDevBuilds(): Plugin {
 export default defineConfig({
   plugins: [
     workspaceDevBuilds(),
-    markdown(ROOT),
+    content(ROOT),
     solid({
       ssr: true,
       // Pages are prerendered to static files, so each one renders in full.
       start: { renderMode: 'async' },
     }),
   ],
+  build: {
+    // The playground editor (CodeMirror and the development builds of
+    // seroval) is one large chunk, but only the playground page loads it.
+    chunkSizeWarningLimit: 700,
+  },
   server: {
     fs: {
-      // The docs live in the repository root.
+      // The site reads the workspace packages outside this folder.
       allow: [ROOT],
     },
   },

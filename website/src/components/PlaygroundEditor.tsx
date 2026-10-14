@@ -1,6 +1,14 @@
+import { javascript } from '@codemirror/lang-javascript';
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { EditorState, type Extension, Prec } from '@codemirror/state';
+import { EditorView, keymap } from '@codemirror/view';
+import { tags } from '@lezer/highlight';
+import { basicSetup } from 'codemirror';
 import * as seroval from 'seroval';
 import * as webPlugins from 'seroval-plugins/web';
-import { createSignal, For, onSettled, Show } from 'solid-js';
+import { createEffect, createSignal, For, onSettled, Show } from 'solid-js';
+import { Tab, TabGroup, TabList } from 'terracotta/tabs';
+import { PlayIcon, ShareIcon } from './Icons';
 
 const PLUGINS = Object.values(webPlugins);
 
@@ -11,46 +19,123 @@ type Mode =
   | 'crossSerializeAsync'
   | 'crossSerializeStream';
 
-const MODES: { id: Mode; label: string; description: string }[] = [
+const MODES: { id: Mode; description: string }[] = [
   {
     id: 'serialize',
-    label: 'serialize',
-    description: 'A JavaScript expression. Sync values only.',
+    description:
+      'A JavaScript expression that rebuilds the value. Synchronous values only.',
   },
   {
     id: 'serializeAsync',
-    label: 'serializeAsync',
-    description: 'A JavaScript expression, after every promise settles.',
+    description:
+      'A JavaScript expression, produced after every promise settles.',
   },
   {
     id: 'toJSONAsync',
-    label: 'toJSONAsync',
-    description: 'A JSON tree, decoded with fromJSON.',
+    description: 'A JSON tree, decoded with fromJSON and never evaluated.',
   },
   {
     id: 'crossSerializeAsync',
-    label: 'crossSerializeAsync',
-    description: 'An expression that uses a shared reference store.',
+    description:
+      'A script that stores values in a shared $R array, so later scripts can refer back to them.',
   },
   {
     id: 'crossSerializeStream',
-    label: 'crossSerializeStream',
-    description: 'One chunk per settled value, as a stream would send them.',
+    description:
+      'One script per settled value, in the order a server would stream them.',
   },
 ];
 
-const DEFAULT_CODE = `// Return the value to serialize.
-// \`seroval\` holds the library exports.
+const EXAMPLES: { id: string; label: string; code: string }[] = [
+  {
+    id: 'basics',
+    label: 'Built-in types',
+    code: `// Return the value to serialize.
+// \`seroval\` holds every export of the library.
 const user = {
   name: 'Ada',
-  joined: new Date(0),
-  roles: new Set(['admin']),
-  settings: new Map([['theme', 'dark']]),
+  joined: new Date('2026-01-01'),
+  roles: new Set(['admin', 'editor']),
+  prefs: new Map([['theme', 'dark']]),
   score: 10n ** 20n,
-  avatar: Promise.resolve(new URL('https://example.com/ada.png')),
+  pattern: /^[a-z]+$/i,
+  missing: undefined,
+  weird: [NaN, -0, Infinity],
 };
-user.self = user;
-return user;`;
+return user;`,
+  },
+  {
+    id: 'cyclic',
+    label: 'Cyclic references',
+    code: `const parent = { name: 'root', children: [] };
+const child = { name: 'leaf', parent };
+parent.children.push(child);
+parent.self = parent;
+
+return parent;`,
+  },
+  {
+    id: 'async',
+    label: 'Promises',
+    code: `// Try serializeAsync or crossSerializeStream.
+const wait = (ms, value) =>
+  new Promise(resolve => setTimeout(() => resolve(value), ms));
+
+return {
+  user: 'Ada',
+  posts: wait(200, ['Hello', 'World']),
+  comments: wait(400, [{ text: 'Nice!' }]),
+};`,
+  },
+  {
+    id: 'stream',
+    label: 'Streams',
+    code: `// Try crossSerializeStream to see one chunk per event.
+const stream = seroval.createStream();
+
+let count = 0;
+const timer = setInterval(() => {
+  count += 1;
+  if (count < 4) {
+    stream.next({ tick: count });
+  } else {
+    clearInterval(timer);
+    stream.return('done');
+  }
+}, 150);
+
+return { stream };`,
+  },
+  {
+    id: 'web',
+    label: 'Web types',
+    code: `// seroval-plugins/web is enabled in the playground.
+const form = new FormData();
+form.append('name', 'Ada');
+
+return {
+  url: new URL('https://example.com/search?q=seroval'),
+  headers: new Headers({ 'content-type': 'application/json' }),
+  form,
+  request: new Request('https://example.com/api', {
+    method: 'POST',
+    body: 'hi',
+  }),
+};`,
+  },
+  {
+    id: 'errors',
+    label: 'Errors',
+    code: `const cause = new TypeError('Bad input');
+const error = new Error('Request failed', { cause });
+error.code = 'E_REQUEST';
+
+return {
+  error,
+  many: new AggregateError([cause, new RangeError('Too big')], 'Several'),
+};`,
+  },
+];
 
 const HASH_PREFIX = '#code=';
 
@@ -66,8 +151,9 @@ function encodeCode(code: string): string {
 function decodeCode(value: string): string | undefined {
   try {
     const binary = atob(value.replaceAll('-', '+').replaceAll('_', '/'));
-    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
-    return new TextDecoder().decode(bytes);
+    return new TextDecoder().decode(
+      Uint8Array.from(binary, char => char.charCodeAt(0)),
+    );
   } catch {
     return undefined;
   }
@@ -80,8 +166,8 @@ function readSharedCode(): string | undefined {
   return undefined;
 }
 
-// Runs the user's code. The code runs in the reader's own browser, the same
-// as code typed into the developer console.
+// Runs the reader's code in their own browser, the same as code typed into
+// the developer console.
 function evaluate(code: string): unknown {
   return new Function('seroval', code)(seroval);
 }
@@ -101,15 +187,6 @@ function collectStream(value: unknown): Promise<string[]> {
       onError: reject,
     });
   });
-}
-
-// Seroval wraps the error that stopped it, so the cause is shown as well.
-function formatError(error: unknown): string {
-  if (!(error instanceof Error)) {
-    return String(error);
-  }
-  const message = `${error.name}: ${error.message}`;
-  return error.cause ? `${message}\n\nCaused by ${formatError(error.cause)}` : message;
 }
 
 async function run(mode: Mode, code: string): Promise<string[]> {
@@ -139,112 +216,302 @@ async function run(mode: Mode, code: string): Promise<string[]> {
   }
 }
 
-export default function PlaygroundEditor() {
-  const [code, setCode] = createSignal(readSharedCode() ?? DEFAULT_CODE);
-  const [mode, setMode] = createSignal<Mode>('serializeAsync');
-  const [output, setOutput] = createSignal<string[]>([]);
-  const [error, setError] = createSignal<string>();
-  const [copied, setCopied] = createSignal(false);
+// Seroval wraps the error that stopped it, so the cause is shown as well.
+function formatError(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return String(error);
+  }
+  const message = `${error.name}: ${error.message}`;
+  return error.cause
+    ? `${message}\n\nCaused by ${formatError(error.cause)}`
+    : message;
+}
 
+function formatOutput(chunks: string[]): string {
+  if (chunks.length === 1) {
+    return chunks[0];
+  }
+  return chunks.map((chunk, i) => `// Chunk ${i + 1}\n${chunk}`).join('\n\n');
+}
+
+// Colors come from CSS variables, so the editor follows the site theme.
+const HIGHLIGHT = HighlightStyle.define([
+  { tag: [tags.keyword, tags.operatorKeyword], color: 'var(--syntax-keyword)' },
+  { tag: [tags.string, tags.regexp], color: 'var(--syntax-string)' },
+  { tag: [tags.number, tags.bool, tags.null], color: 'var(--syntax-number)' },
+  { tag: tags.comment, color: 'var(--syntax-comment)', fontStyle: 'italic' },
+  {
+    tag: [tags.function(tags.variableName), tags.function(tags.propertyName)],
+    color: 'var(--syntax-function)',
+  },
+  { tag: [tags.className, tags.typeName], color: 'var(--syntax-type)' },
+  { tag: tags.propertyName, color: 'var(--syntax-property)' },
+]);
+
+const THEME = EditorView.theme({
+  '&': {
+    height: '100%',
+    backgroundColor: 'transparent',
+    color: 'var(--fg)',
+    fontSize: '13.5px',
+  },
+  '.cm-scroller': {
+    fontFamily: 'var(--font-mono)',
+    fontVariantLigatures: 'none',
+    lineHeight: '1.65',
+  },
+  '.cm-content': { caretColor: 'var(--accent)', padding: '14px 0' },
+  '.cm-gutters': {
+    backgroundColor: 'transparent',
+    color: 'var(--fg-subtle)',
+    border: 'none',
+  },
+  '.cm-activeLine, .cm-activeLineGutter': {
+    backgroundColor: 'var(--editor-active-line)',
+  },
+  '&.cm-focused': { outline: 'none' },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection':
+    {
+      backgroundColor: 'var(--editor-selection) !important',
+    },
+  '.cm-cursor': { borderLeftColor: 'var(--accent)' },
+});
+
+function createEditor(
+  parent: HTMLElement,
+  doc: string,
+  extensions: Extension[],
+): EditorView {
+  return new EditorView({
+    parent,
+    state: EditorState.create({
+      doc,
+      extensions: [
+        basicSetup,
+        javascript(),
+        THEME,
+        syntaxHighlighting(HIGHLIGHT),
+        ...extensions,
+      ],
+    }),
+  });
+}
+
+interface Stats {
+  bytes: number;
+  ms: number;
+  chunks: number;
+}
+
+export default function PlaygroundEditor() {
+  const initialCode = readSharedCode() ?? EXAMPLES[0].code;
+  const [mode, setMode] = createSignal<Mode>('serializeAsync');
+  const [output, setOutput] = createSignal('');
+  const [error, setError] = createSignal<string>();
+  const [stats, setStats] = createSignal<Stats>();
+  const [running, setRunning] = createSignal(false);
+  const [shared, setShared] = createSignal(false);
+
+  let input: EditorView | undefined;
+  let outputView: EditorView | undefined;
   let runId = 0;
 
-  async function execute(nextMode: Mode, nextCode: string) {
+  async function execute(nextMode = mode()) {
+    if (!input) {
+      return;
+    }
     const id = ++runId;
+    const code = input.state.doc.toString();
+    const started = performance.now();
+    setRunning(true);
     try {
-      const result = await run(nextMode, nextCode);
+      const chunks = await run(nextMode, code);
       if (id === runId) {
-        setOutput(result);
+        setOutput(formatOutput(chunks));
         setError(undefined);
+        setStats({
+          bytes: new TextEncoder().encode(chunks.join('')).length,
+          ms: performance.now() - started,
+          chunks: chunks.length,
+        });
       }
     } catch (err) {
       if (id === runId) {
-        setOutput([]);
+        setOutput('');
         setError(formatError(err));
+        setStats(undefined);
+      }
+    } finally {
+      if (id === runId) {
+        setRunning(false);
       }
     }
   }
 
+  function loadExample(id: string) {
+    const example = EXAMPLES.find(item => item.id === id);
+    if (example && input) {
+      input.dispatch({
+        changes: { from: 0, to: input.state.doc.length, insert: example.code },
+      });
+      execute();
+    }
+  }
+
   function share() {
-    const url = `${location.origin}${location.pathname}${HASH_PREFIX}${encodeCode(code())}`;
+    if (!input) {
+      return;
+    }
+    const url = `${location.origin}${location.pathname}${HASH_PREFIX}${encodeCode(input.state.doc.toString())}`;
     history.replaceState(null, '', url);
     navigator.clipboard?.writeText(url).then(
       () => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
+        setShared(true);
+        setTimeout(() => setShared(false), 1500);
       },
       () => {
-        // The URL is still in the address bar when the clipboard is blocked.
+        // The link is still in the address bar when the clipboard is blocked.
       },
     );
   }
 
+  createEffect(
+    () => output(),
+    text => {
+      outputView?.dispatch({
+        changes: { from: 0, to: outputView.state.doc.length, insert: text },
+      });
+    },
+  );
+
   onSettled(() => {
-    execute(mode(), code());
+    execute();
+    return () => {
+      input?.destroy();
+      outputView?.destroy();
+    };
   });
 
   return (
     <div class="playground">
       <div class="playground-toolbar">
-        <label class="mode-select">
-          <span>Mode</span>
-          <select
-            value={mode()}
-            onChange={event => {
-              const next = event.currentTarget.value as Mode;
-              setMode(next);
-              execute(next, code());
-            }}
-          >
-            <For each={MODES}>
-              {item => <option value={item.id}>{item.label}</option>}
-            </For>
-          </select>
-        </label>
-        <button
-          type="button"
-          class="button primary"
-          onClick={() => execute(mode(), code())}
+        <TabGroup<Mode>
+          class="mode-tabs"
+          horizontal={true}
+          value={mode()}
+          onChange={value => {
+            if (value) {
+              setMode(value);
+              execute(value);
+            }
+          }}
         >
-          Run
-        </button>
-        <button type="button" class="button" onClick={share}>
-          {copied() ? 'Link copied' : 'Share'}
-        </button>
+          <TabList class="segmented" aria-label="Output mode">
+            <For each={MODES}>
+              {item => (
+                <Tab class="segmented-item" value={item.id}>
+                  {item.id}
+                </Tab>
+              )}
+            </For>
+          </TabList>
+        </TabGroup>
+        <div class="toolbar-actions">
+          <label class="example-select">
+            <span class="visually-hidden">Load an example</span>
+            <select
+              onChange={event => {
+                loadExample(event.currentTarget.value);
+                event.currentTarget.value = '';
+              }}
+            >
+              <option value="">Examples…</option>
+              <For each={EXAMPLES}>
+                {example => (
+                  <option value={example.id}>{example.label}</option>
+                )}
+              </For>
+            </select>
+          </label>
+          <button
+            type="button"
+            class="button button-secondary button-small"
+            onClick={share}
+          >
+            <ShareIcon /> {shared() ? 'Link copied' : 'Share'}
+          </button>
+          <button
+            type="button"
+            class="button button-primary button-small"
+            onClick={() => execute()}
+          >
+            <PlayIcon /> Run
+          </button>
+        </div>
       </div>
       <p class="mode-description">
         {MODES.find(item => item.id === mode())?.description}
       </p>
       <div class="playground-panes">
-        <textarea
-          class="code-input"
-          spellcheck={false}
-          aria-label="Code"
-          value={code()}
-          onInput={event => setCode(event.currentTarget.value)}
-          onKeyDown={event => {
-            if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-              event.preventDefault();
-              execute(mode(), event.currentTarget.value);
-            }
-          }}
-        />
-        <div class="code-output" aria-live="polite">
+        <section class="pane" aria-label="Input">
+          <header class="pane-header">
+            <span>Input</span>
+            <kbd>⌘ Enter to run</kbd>
+          </header>
+          <div
+            class="pane-editor"
+            ref={element => {
+              // The default keymap binds Mod-Enter too, so this one must win.
+              input = createEditor(element, initialCode, [
+                Prec.highest(
+                  keymap.of([
+                  {
+                    key: 'Mod-Enter',
+                    run: () => {
+                      execute();
+                      return true;
+                    },
+                  },
+                  ]),
+                ),
+              ]);
+            }}
+          />
+        </section>
+        <section class="pane" aria-label="Output">
+          <header class="pane-header">
+            <span>Output</span>
+            <Show when={running()}>
+              <span class="pane-status">Running…</span>
+            </Show>
+          </header>
           <Show when={error()}>
             {message => <pre class="output-error">{message()}</pre>}
           </Show>
-          <For each={output()}>
-            {(chunk, index) => (
-              <div class="output-chunk">
-                <Show when={output().length > 1}>
-                  <span class="chunk-label">Chunk {index() + 1}</span>
-                </Show>
-                <pre>
-                  <code>{chunk}</code>
-                </pre>
-              </div>
-            )}
-          </For>
-        </div>
+          <div
+            class={['pane-editor', { hidden: !!error() }]}
+            ref={element => {
+              outputView = createEditor(element, '', [
+                EditorState.readOnly.of(true),
+                EditorView.editable.of(false),
+                EditorView.lineWrapping,
+              ]);
+            }}
+          />
+          <footer class="pane-footer">
+            <Show when={stats()} fallback={<span>Ready</span>}>
+              {current => (
+                <>
+                  <span>{current().bytes.toLocaleString()} bytes</span>
+                  <Show when={current().chunks > 1}>
+                    <span>{current().chunks} chunks</span>
+                  </Show>
+                  <span>{current().ms.toFixed(1)} ms</span>
+                </>
+              )}
+            </Show>
+          </footer>
+        </section>
       </div>
     </div>
   );

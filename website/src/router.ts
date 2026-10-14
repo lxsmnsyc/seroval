@@ -1,15 +1,12 @@
 import { createRouter } from '@solidjs/router';
 import { lazy } from 'solid-js';
-import { DOCS } from './docs';
+import { DOC_ROUTES } from './lib/docs';
 import Home from './pages/Home';
 
 export const Router = createRouter({
   routes: [
     { path: '/', component: Home },
-    ...DOCS.map(entry => ({
-      path: `/docs/${entry.slug}`,
-      component: entry.page,
-    })),
+    ...DOC_ROUTES,
     {
       path: '/playground',
       component: lazy(() => import('./pages/Playground')),

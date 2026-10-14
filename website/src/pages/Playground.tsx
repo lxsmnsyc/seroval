@@ -13,11 +13,13 @@ export default function Playground() {
         title="Playground"
         description="Try seroval in the browser and compare its output modes."
       />
-      <h1>Playground</h1>
-      <p>
-        Write code that returns a value, pick a mode, and see what seroval
-        produces. Press Ctrl+Enter or ⌘+Enter to run.
-      </p>
+      <header class="page-header">
+        <h1>Playground</h1>
+        <p>
+          Write code that returns a value, pick an output mode, and see what
+          seroval produces. Your code runs only in this browser.
+        </p>
+      </header>
       <PlaygroundEditor
         fallback={<div class="playground-loading">Loading the editor…</div>}
       />

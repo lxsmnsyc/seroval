@@ -1,3 +1,5 @@
+import { MoonIcon, SunIcon } from './Icons';
+
 type Theme = 'light' | 'dark';
 
 function currentTheme(): Theme {
@@ -21,15 +23,18 @@ function toggleTheme() {
   }
 }
 
+// Both icons are rendered and CSS shows the one for the current theme, so
+// the server-rendered markup does not depend on the reader's theme.
 export default function ThemeToggle() {
   return (
     <button
       type="button"
-      class="theme-toggle"
+      class="icon-button theme-toggle"
       aria-label="Toggle color theme"
       onClick={toggleTheme}
     >
-      <span class="theme-icon" aria-hidden="true" />
+      <SunIcon class="theme-icon-light" />
+      <MoonIcon class="theme-icon-dark" />
     </button>
   );
 }
