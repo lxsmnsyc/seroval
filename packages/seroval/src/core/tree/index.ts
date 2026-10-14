@@ -16,12 +16,22 @@ import {
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
 import { type PluginAccessOptions, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
-export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
-export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
+
+/**
+ * Options for `serialize`. The same as the parser options, without `refs`:
+ * the output is self-contained, so there is nothing to share between calls.
+ */
+export type SerializeOptions = Omit<BaseParserContextOptions, 'refs'>;
+/** Options for `serializeAsync`. */
+export type SerializeAsyncOptions = Omit<BaseParserContextOptions, 'refs'>;
+/** Options for `toJSON`. */
+export type ToJSONOptions = SerializeOptions;
+/** Options for `toJSONAsync`. */
+export type ToJSONAsyncOptions = SerializeAsyncOptions;
 
 export function serialize<T>(
   source: T,
-  options: SyncParserContextOptions = {},
+  options: SerializeOptions = {},
 ): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext({
@@ -41,7 +51,7 @@ export function serialize<T>(
 
 export async function serializeAsync<T>(
   source: T,
-  options: AsyncParserContextOptions = {},
+  options: SerializeAsyncOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext({
@@ -77,7 +87,7 @@ export interface FromJSONOptions
 
 export function toJSON<T>(
   source: T,
-  options: SyncParserContextOptions = {},
+  options: ToJSONOptions = {},
 ): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext({
@@ -95,7 +105,7 @@ export function toJSON<T>(
 
 export async function toJSONAsync<T>(
   source: T,
-  options: AsyncParserContextOptions = {},
+  options: ToJSONAsyncOptions = {},
 ): Promise<SerovalJSON> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext({
