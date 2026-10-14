@@ -29,7 +29,7 @@ The `Serializer` class wraps `crossSerializeStream` for apps that write many val
 
 ## One result or a stream?
 
-**`serialize` and `toJSON`** handle synchronous values only. They cannot wait for a promise: `serialize` throws, and `toJSON` sends a promise that never settles.
+**`serialize` and `toJSON`** handle synchronous values only. They cannot wait, so a promise in the value throws an error.
 
 **The async functions** wait until every promise settles and every stream ends, then return one result. They are simple to use, but the receiver waits for the slowest value. A stream that never ends makes them wait forever.
 

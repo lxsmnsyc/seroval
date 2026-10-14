@@ -15,7 +15,7 @@ serialize({ foo: 'bar' }); // ({foo:"bar"})
 
 `serialize` handles synchronous values. It cannot wait, so:
 
-- A promise throws a `SerovalSerializationError`.
+- A promise throws a `SerovalParserError`, whose `cause` is a `SerovalUnsupportedTypeError`.
 - A [stream](./streams-and-iterables.md) or async iterable becomes an empty stream that never ends. Reading it waits forever.
 
 Use `serializeAsync` or a [streaming function](./streaming.md) for those values.

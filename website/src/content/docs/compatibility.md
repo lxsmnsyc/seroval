@@ -41,7 +41,7 @@ The modes are:
 [^stack]: The `stack` property is sent only while `Feature.ErrorPrototypeStack` is on.
 [^aggregate]: Sent as an `Error` when `Feature.AggregateError` is off.
 [^temporal]: Requires `Feature.Temporal`, and a runtime that has the `Temporal` global on both sides.
-[^promise]: Sync functions cannot wait for promises. `serialize` throws a `SerovalSerializationError`. `toJSON`, `crossSerialize` and `toCrossJSON` send a promise that never settles.
+[^promise]: Sync functions cannot wait for promises, so a promise throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
 [^empty]: Sync functions cannot wait for values, so these are sent as an empty stream that never ends. Reading it waits forever.
 
 Web types such as `URL`, `Request` and `FormData` are supported through [plugins](./using-plugins.md#seroval-plugins).

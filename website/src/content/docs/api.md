@@ -77,4 +77,4 @@ All options in one place. Each function lists the ones it accepts above.
 
 ## Types
 
-seroval also exports TypeScript types for the values above, including `SerovalJSON`, `SerovalNode`, `Plugin`, `Stream`, `StreamListener`, `LiveStream`, `LiveStreamProducer`, `LiveStreamConsumer`, `CrossDeserializer` and the options type of each function.
+seroval also exports TypeScript types for the values above, including `SerovalJSON`, `SerovalNode`, `Plugin`, `SerializeOptions`, `SerializeAsyncOptions`, `ToJSONOptions`, `ToJSONAsyncOptions`, `CrossSerializeOptions`, `Stream`, `StreamListener`, `LiveStream`, `LiveStreamProducer`, `LiveStreamConsumer`, `CrossDeserializer` and the options type of each function.

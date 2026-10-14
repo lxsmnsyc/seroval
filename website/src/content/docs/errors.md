@@ -39,14 +39,14 @@ These usually arrive as the `cause` of a wrapper error.
 | `SerovalUnsupportedNodeError` | 2 | The input has an unknown node type, or one that uses a disabled feature. |
 | `SerovalMissingPluginError` | 3 | No plugin has the tag the input asks for. |
 | `SerovalMissingInstanceError` | 4 | The input settles a promise or stream that does not exist. |
-| `SerovalMissingReferenceError` | 5 | Not thrown by current versions. |
+| `SerovalMissingReferenceError` | 5 | Deprecated. Not thrown by seroval. |
 | `SerovalMissingReferenceForIdError` | 6 | The input refers to a [`createReference`](./isomorphic-references.md) key that is not registered. |
 | `SerovalUnknownTypedArrayError` | 7 | The input names an unknown typed array. |
 | `SerovalMalformedNodeError` | 8 | A node in the input is malformed. |
 | `SerovalConflictedNodeIdError` | 9 | The input declares the same value twice. |
 | `SerovalDepthLimitError` | 10 | The value or input is nested deeper than `depthLimit`. |
 | `SerovalAbortedError` | 11 | `deserialize` was called on a [cross deserializer](./streaming.md#receiving-a-json-stream) after `abort`. |
-| `SerovalLiveStreamError` | | A [live stream](./streams-and-iterables.md#live-streams) was misused. `reason` is `'consumed'`, `'pending'`, `'reading'` or `'closed'`. |
+| `SerovalLiveStreamError` | 12 | A [live stream](./streams-and-iterables.md#live-streams) was misused. `reason` is `'consumed'`, `'pending'`, `'reading'` or `'closed'`. |
 
 ## Messages in production
 
