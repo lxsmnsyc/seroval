@@ -37,6 +37,10 @@ pnpm add seroval-plugins
 - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
 - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
 
+## Docs
+
+See [Using plugins](https://seroval.vercel.app/docs/using-plugins) for which modes each plugin supports, and [Writing plugins](https://seroval.vercel.app/docs/writing-plugins) to build your own.
+
 ## Sponsors
 
 ![Sponsors](https://github.com/lxsmnsyc/sponsors/blob/main/sponsors.svg?raw=true)
