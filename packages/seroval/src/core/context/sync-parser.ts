@@ -456,11 +456,14 @@ function parsePromise(
   id: number,
   current: Promise<unknown>,
 ): SerovalPromiseConstructorNode {
+  // Only the stream mode can send the settled value later. The other sync
+  // modes would send a promise that never settles.
+  if (ctx.type !== ParserMode.Stream) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   // Creates a unique reference for the promise resolver
   const resolver = createIndexForValue(ctx.base, {});
-  if (ctx.type === ParserMode.Stream) {
-    ctx.state.promise(ctx, resolver, depth, current);
-  }
+  ctx.state.promise(ctx, resolver, depth, current);
   return createPromiseConstructorNode(ctx.base, id, resolver);
 }
 
