@@ -3,7 +3,6 @@ import { createPlugin } from 'seroval';
 
 function convertHeaders(instance: Headers): HeadersInit {
   const items: HeadersInit = [];
-  // biome-ignore lint/complexity/noForEach: <explanation>
   instance.forEach((value, key) => {
     items.push([key, value]);
   });

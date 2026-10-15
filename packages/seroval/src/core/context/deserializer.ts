@@ -552,7 +552,6 @@ function deserializeBoxed(
   return assignIndexedValue(
     ctx,
     node.i,
-    // biome-ignore lint/style/useConsistentBuiltinInstantiation: intended
     Object(deserialize(ctx, depth, node.f)),
   );
 }

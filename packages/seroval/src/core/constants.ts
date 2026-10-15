@@ -175,11 +175,8 @@ export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.Undefined]: NIL,
   [SerovalConstant.Null]: null,
   [SerovalConstant.NegZero]: -0,
-  // biome-ignore lint/style/useNumberNamespace: see above
   [SerovalConstant.Inf]: Infinity,
-  // biome-ignore lint/style/useNumberNamespace: see above
   [SerovalConstant.NegInf]: -Infinity,
-  // biome-ignore lint/style/useNumberNamespace: see above
   [SerovalConstant.Nan]: NaN,
 };
 
