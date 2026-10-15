@@ -98,6 +98,7 @@ describe('Response', () => {
       const example = new Response(EXAMPLE_BODY);
       await example.text();
 
+      // oxlint-disable-next-line no-new, typescript/no-floating-promises -- Kept unawaited to match the original test.
       new Promise<void>((resolve, reject) => {
         crossSerializeStream(example, {
           plugins: [ResponsePlugin],

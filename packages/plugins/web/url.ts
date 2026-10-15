@@ -30,7 +30,7 @@ const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }>({
     return 'new URL(' + ctx.serialize(node.value) + ')';
   },
   deserialize(node, ctx) {
-    return new URL(ctx.deserialize(node.value) as string);
+    return new URL(ctx.deserialize<string>(node.value));
   },
 });
 

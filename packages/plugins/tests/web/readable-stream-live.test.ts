@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { ReadableStreamPlugin } from '../../web';
 
 async function tick(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
 }
 
 async function readAll<T>(stream: ReadableStream<T>): Promise<T[]> {
@@ -36,14 +38,15 @@ describe('ReadableStream streaming parse', () => {
     const done = new Promise<void>((resolve, reject) => {
       crossSerializeStream(source, {
         plugins: [ReadableStreamPlugin],
+        // oxlint-disable-next-line typescript/promise-function-async -- The initial call must stay synchronous.
         onSerialize(_data, initial) {
           if (initial) {
-            return;
+            return undefined;
           }
-          return new Promise<void>((resolve) => {
+          return new Promise<void>((accept) => {
             release = () => {
               accepted++;
-              resolve();
+              accept();
             };
           });
         },
@@ -51,11 +54,13 @@ describe('ReadableStream streaming parse', () => {
         onError: reject,
       });
     });
+    // oxlint-disable-next-line no-unmodified-loop-condition -- The release callback increments it.
     while (accepted < 4) {
       await tick();
       // Node's default high-water mark lets the source pull one chunk ahead
       // of the reader; the parser itself never reads more than one ahead.
       expect(pulls.length - accepted).toBeLessThanOrEqual(2);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onSerialize sets it during tick().
       (release as () => void)();
       release = undefined;
     }
@@ -95,14 +100,16 @@ describe('ReadableStream streaming parse', () => {
       cancel: cancelled,
     });
     const failure = new Error('closed');
-    const onError = vi.fn();
-    const onDone = vi.fn();
+    const onError = vi.fn<(error: unknown) => void>();
+    const onDone = vi.fn<() => void>();
     crossSerializeStream(source, {
       plugins: [ReadableStreamPlugin],
+      // oxlint-disable-next-line typescript/promise-function-async -- The initial call must stay synchronous.
       onSerialize(_data, initial) {
         if (!initial) {
           return Promise.reject(failure);
         }
+        return undefined;
       },
       onError,
       onDone,
@@ -143,7 +150,7 @@ describe('ReadableStream streaming parse', () => {
         onError: reject,
       });
     });
-    expect(await readAll(restored as ReadableStream<string>)).toEqual(['a', 'b']);
+    expect(await readAll(restored!)).toEqual(['a', 'b']);
     const materialized = fromCrossJSON<ReadableStream<string>>(
       await toCrossJSONAsync(source(), { plugins: [ReadableStreamPlugin] }),
       { plugins: [ReadableStreamPlugin], refs: new Map() },

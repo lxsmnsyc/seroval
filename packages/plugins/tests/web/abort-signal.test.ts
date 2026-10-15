@@ -1,4 +1,6 @@
+import type { SerovalNode } from 'seroval';
 import {
+  createReference,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
@@ -12,13 +14,11 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
-  createReference,
-  type SerovalNode,
 } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import { AbortSignalPlugin } from '../../web';
 
-const delayedAbortSignal = () => {
+const delayedAbortSignal = (): AbortSignal => {
   const controller = new AbortController();
   setTimeout(() => {
     controller.abort('aborted!');
@@ -342,6 +342,7 @@ describe('AbortSignal', () => {
       });
       // Aim the controller slot at a non-Promise node so the guard trips before
       // `then` would be called.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: toJSON(42).t,
       };
@@ -353,11 +354,13 @@ describe('AbortSignal', () => {
       // a function-returning plugin). Build one and aim the controller slot at
       // an object carrying it: the guard must reject before it is called.
       const thenSpy = vi.fn();
+      // oxlint-disable-next-line unicorn/no-thenable -- The test needs a fake thenable.
       const thenable = { then: createReference('test/abort-fake-then', thenSpy) };
       const template = toJSON(thenable);
       const result = toJSON(SYNC_EXAMPLE, {
         plugins: [AbortSignalPlugin],
       });
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: template.t,
       };
@@ -368,6 +371,7 @@ describe('AbortSignal', () => {
     it('rejects deserializing the AbortController factory directly', () => {
       // The factory is a serialize-only helper; deserializing it would hand
       // back the raw `PROMISE_TO_ABORT_SIGNAL` function as a callable gadget.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       const json = {
         t: {
           t: 25,

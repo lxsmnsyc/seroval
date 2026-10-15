@@ -43,19 +43,10 @@ const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
     },
   },
   serialize(node, ctx) {
-    return (
-      'new Event(' +
-      ctx.serialize(node.type) +
-      ',' +
-      ctx.serialize(node.options) +
-      ')'
-    );
+    return 'new Event(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
   deserialize(node, ctx) {
-    return new Event(
-      ctx.deserialize(node.type) as string,
-      ctx.deserialize(node.options) as EventInit,
-    );
+    return new Event(ctx.deserialize<string>(node.type), ctx.deserialize<EventInit>(node.options));
   },
 });
 

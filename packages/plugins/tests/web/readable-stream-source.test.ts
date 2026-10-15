@@ -12,7 +12,10 @@ import ReadableStreamPlugin from '../../web/readable-stream';
 
 const plugins = [ReadableStreamPlugin];
 const DEPTH_ERROR = /depth/i;
-const tick = async () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+const tick = async (): Promise<void> =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
 
 async function drain<T>(stream: ReadableStream<T>): Promise<T[]> {
   const reader = stream.getReader();
@@ -36,6 +39,7 @@ describe('ReadableStream source', () => {
     const source: AsyncIterable<unknown> = {
       [Symbol.asyncIterator]() {
         acquired++;
+        // oxlint-disable-next-line typescript/require-await -- The iterator protocol needs a promise.
         return { next: async () => ({ done: true, value: undefined }) };
       },
     };
@@ -55,6 +59,7 @@ describe('ReadableStream source', () => {
       deserialize: () => marker,
     });
     await expect(toJSONAsync(marker, { plugins: [plugin], depthLimit: 1 })).rejects.toMatchObject({
+      // oxlint-disable-next-line typescript/no-unsafe-assignment -- Vitest types asymmetric matchers as any.
       cause: { message: expect.stringMatching(DEPTH_ERROR) },
     });
     const error = await new Promise<unknown>((resolve) => {
@@ -66,6 +71,7 @@ describe('ReadableStream source', () => {
       });
     });
     expect(error).toMatchObject({
+      // oxlint-disable-next-line typescript/no-unsafe-assignment -- Vitest types asymmetric matchers as any.
       message: expect.stringMatching(DEPTH_ERROR),
     });
     expect(acquired).toBe(0);
@@ -84,11 +90,12 @@ describe('ReadableStream source', () => {
         controller.close();
       },
     });
-    const decoded = fromJSON(await toJSONAsync(outer, { plugins }), {
+    const decoded = fromJSON<typeof outer>(await toJSONAsync(outer, { plugins }), {
       plugins,
-    }) as typeof outer;
-    const chunks = await drain(decoded.stream as ReadableStream<unknown>);
+    });
+    const chunks = await drain(decoded.stream!);
     expect(chunks[0]).toEqual(new Uint8Array([1, 2]));
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test input sets the chunk shape.
     await expect((chunks[1] as { deferred: Promise<string> }).deferred).resolves.toBe('ready');
     expect(chunks[2]).toBe(chunks[3]);
     expect(chunks[4]).toBe(decoded);
@@ -123,8 +130,9 @@ describe('ReadableStream source', () => {
         onError: reject,
       });
     });
-    const chunks = await drain(decoded?.stream as ReadableStream<unknown>);
+    const chunks = await drain(decoded!.stream!);
     expect(chunks[0]).toEqual(new Uint8Array([1, 2]));
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test input sets the chunk shape.
     await expect((chunks[1] as { deferred: Promise<string> }).deferred).resolves.toBe('ready');
     expect(chunks[2]).toBe(chunks[3]);
     expect(chunks[4]).toBe(decoded);
@@ -159,7 +167,8 @@ describe('ReadableStream source', () => {
     await tick();
     expect(pulls).toBe(1);
     settle(1);
-    const chunks = await drain(fromJSON(await output, { plugins }));
+    const chunks = await drain(fromJSON<ReadableStream<unknown>>(await output, { plugins }));
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test input sets the chunk shape.
     await expect((chunks[0] as { deferred: Promise<number> }).deferred).resolves.toBe(1);
     expect(chunks[1]).toBe('tail');
     expect(source.locked).toBe(false);

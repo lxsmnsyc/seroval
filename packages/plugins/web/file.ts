@@ -40,9 +40,9 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
   },
   deserialize(node, ctx) {
     return new File(
-      [ctx.deserialize(node.buffer) as ArrayBuffer],
-      ctx.deserialize(node.name) as string,
-      ctx.deserialize(node.options) as FilePropertyBag,
+      [ctx.deserialize<ArrayBuffer>(node.buffer)],
+      ctx.deserialize<string>(node.name),
+      ctx.deserialize<FilePropertyBag>(node.options),
     );
   },
 });

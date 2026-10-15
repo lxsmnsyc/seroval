@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { describe, expect, it } from 'vitest';
@@ -67,7 +68,7 @@ interface Payloads {
 let cached: Promise<Payloads> | undefined;
 
 async function getBundledPayloads(): Promise<Payloads> {
-  cached ||= bundleAndRun();
+  cached ??= bundleAndRun();
   return cached;
 }
 
@@ -92,11 +93,18 @@ async function bundleAndRun(): Promise<Payloads> {
     write: false,
   });
   const code = result.outputFiles[0].text;
-  const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A data URL import has no static type.
+  const mod = (await import(
+    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+  )) as {
+    getPayloads: () => Promise<Payloads>;
+  };
   return mod.getPayloads();
 }
 
+// oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- Callers name the payload type.
 function evaluate<T>(payload: string): T {
+  // oxlint-disable-next-line no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion -- The test evaluates payloads in a global scope.
   return new Function(`return (${payload})`)() as T;
 }
 
@@ -117,7 +125,9 @@ describe('keep-names bundled payloads', () => {
   it('supports AbortSignal', async () => {
     const payloads = await getBundledPayloads();
     const $R: unknown[] = [];
+    // oxlint-disable-next-line no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- The test evaluates payloads in a global scope.
     new Function('$R', payloads.abortSignalChunks.join(';\n'))($R);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The payload stores an AbortSignal here.
     const back = $R[0] as AbortSignal;
     // the deserialized promise aborts the controller in a microtask
     await new Promise((resolve) => {

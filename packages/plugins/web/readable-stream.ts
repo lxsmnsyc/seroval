@@ -8,13 +8,14 @@ const READABLE_STREAM_FACTORY = {};
 // transforms (esbuild keepNames) have nothing to wrap; any other shape gets
 // rewritten to call a bundle-scoped helper that does not exist in the
 // receiving realm. https://github.com/lxsmnsyc/seroval/issues/87
-const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
+const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>): ReadableStream<unknown> =>
   new ReadableStream({
     start(controller) {
       stream.on({
         next(value) {
           try {
             controller.enqueue(value);
+            // oxlint-disable-next-line no-unused-vars -- Serialized via toString(), so the binding stays.
           } catch (_error) {
             // no-op
           }
@@ -25,6 +26,7 @@ const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
         return() {
           try {
             controller.close();
+            // oxlint-disable-next-line no-unused-vars -- Serialized via toString(), so the binding stays.
           } catch (_error) {
             // no-op
           }
@@ -33,7 +35,7 @@ const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>) =>
     },
   });
 
-const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
+const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<string, never>>({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
   test(value) {
     return value === READABLE_STREAM_FACTORY;
@@ -57,9 +59,7 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}>({
   },
 });
 
-function toAsyncIterable<T>(
-  value: ReadableStream<T>,
-): AsyncIterable<T | undefined> {
+function toAsyncIterable<T>(value: ReadableStream<T>): AsyncIterable<T | undefined> {
   return {
     [Symbol.asyncIterator]() {
       const reader = value.getReader();
@@ -68,7 +68,7 @@ function toAsyncIterable<T>(
       const release = (): void => {
         try {
           reader.releaseLock();
-        } catch (_error) {
+        } catch {
           // no-op
         }
       };
@@ -84,6 +84,7 @@ function toAsyncIterable<T>(
           } catch (error) {
             reading = false;
             release();
+            // oxlint-disable-next-line typescript/no-unnecessary-condition -- return() can clear it during the await.
             if (!active) {
               return { done: true, value: undefined };
             }
@@ -91,6 +92,7 @@ function toAsyncIterable<T>(
             throw error;
           }
           reading = false;
+          // oxlint-disable-next-line typescript/no-unnecessary-condition -- return() can clear it during the await.
           if (!active || result.done) {
             active = false;
             release();
@@ -98,6 +100,7 @@ function toAsyncIterable<T>(
           }
           return result;
         },
+        // oxlint-disable-next-line typescript/promise-function-async -- async would change the timing.
         return(reason?: unknown) {
           if (active) {
             active = false;
@@ -105,7 +108,7 @@ function toAsyncIterable<T>(
               reader.cancel(reason).catch(() => {
                 // no-op
               });
-            } catch (_error) {
+            } catch {
               // no-op
             }
             if (!reading) {
@@ -124,10 +127,7 @@ type ReadableStreamNode = {
   stream: SerovalNode;
 };
 
-const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
-  ReadableStream,
-  ReadableStreamNode
->({
+const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, ReadableStreamNode>({
   tag: 'seroval/plugins/web/ReadableStream',
   extends: [ReadableStreamFactoryPlugin],
   test(value) {
@@ -157,16 +157,10 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
     },
   },
   serialize(node, ctx) {
-    return (
-      '(' +
-      ctx.serialize(node.factory) +
-      ')(' +
-      ctx.serialize(node.stream) +
-      ')'
-    );
+    return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.stream) + ')';
   },
   deserialize(node, ctx) {
-    const stream = ctx.deserialize(node.stream) as Stream<any>;
+    const stream = ctx.deserialize<Stream<unknown>>(node.stream);
     return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);
   },
 });
