@@ -278,12 +278,16 @@ export function createBaseSerializerContext(
 export interface VanillaSerializerState {
   valid: Map<number, number>;
   vars: string[];
+  // Indexes into `vars` of the Map sentinels. They are declared at the start
+  // of the function body, so they exist before any expression uses them.
+  sentinels: Set<number>;
 }
 
 function createVanillaSerializerState(): VanillaSerializerState {
   return {
     valid: new Map(),
     vars: [],
+    sentinels: new Set(),
   };
 }
 
@@ -908,7 +912,7 @@ function serializeMapEntry(
   id: number,
   key: SerovalNode,
   val: SerovalNode,
-  sentinel: string,
+  getSentinel: () => string,
 ): string {
   const base = ctx.base;
   if (isIndexedValueInStack(base, key)) {
@@ -938,6 +942,7 @@ function serializeMapEntry(
       // basically we serialize the intended object in place WITHOUT
       // actually returning it, this is by returning a placeholder
       // value that we will remove sometime after.
+      const sentinel = getSentinel();
       const serialized =
         '(' + serialize(ctx, val) + ',[' + sentinel + ',' + sentinel + '])';
       createSetAssignment(ctx, id, keyRef, getRefParam(ctx, val.i));
@@ -959,6 +964,7 @@ function serializeMapEntry(
       key.i != null &&
       isSerializerRefMarked(base, key.i)
     ) {
+      const sentinel = getSentinel();
       const serialized =
         '(' + serialize(ctx, key) + ',[' + sentinel + ',' + sentinel + '])';
       createSetAssignment(ctx, id, getRefParam(ctx, key.i), valueRef);
@@ -982,14 +988,25 @@ function serializeMap(ctx: SerializerContext, node: SerovalMapNode): string {
   const size = keys.length;
   const id = node.i;
   const sentinel = node.f;
-  const sentinelId = getRefParam(ctx, sentinel.i);
+  // The sentinel is a placeholder entry for values that are assigned later.
+  // Its reference is only created when an entry needs it.
+  let sentinelRef: string | undefined;
+  const getSentinel = (): string => {
+    if (sentinelRef == null) {
+      sentinelRef = getRefParam(ctx, sentinel.i);
+      if (ctx.mode === SerovalMode.Vanilla) {
+        ctx.state.sentinels.add(ctx.state.valid.get(sentinel.i) as number);
+      }
+    }
+    return sentinelRef;
+  };
   const base = ctx.base;
   if (size > 0) {
     const vals = node.e.v;
     base.stack.push(id);
-    let result = serializeMapEntry(ctx, id, keys[0], vals[0], sentinelId);
+    let result = serializeMapEntry(ctx, id, keys[0], vals[0], getSentinel);
     for (let i = 1, item = result; i < size; i++) {
-      item = serializeMapEntry(ctx, id, keys[i], vals[i], sentinelId);
+      item = serializeMapEntry(ctx, id, keys[i], vals[i], getSentinel);
       result += (item && result && ',') + item;
     }
     base.stack.pop();
@@ -1000,7 +1017,14 @@ function serializeMap(ctx: SerializerContext, node: SerovalMapNode): string {
       serialized += '([' + result + '])';
     }
   }
-  if (sentinel.t === SerovalNodeType.SpecialReference) {
+  // Cross-reference output declares the sentinel where it first appears,
+  // because a later script that shares the same refs may use it. Vanilla
+  // output declares it at the start of the function body instead (see
+  // `serializeVanilla`), and only when an entry used it.
+  if (
+    ctx.mode === SerovalMode.Cross &&
+    sentinel.t === SerovalNodeType.SpecialReference
+  ) {
     markSerializerRef(base, sentinel.i);
     serialized = '(' + serialize(ctx, sentinel) + ',' + serialized + ')';
   }
@@ -1434,6 +1458,14 @@ function serializeVanilla(
         body = index + '=' + body;
       }
       body = '(' + body + ')';
+    }
+    const sentinels = ctx.state.sentinels;
+    if (sentinels.size) {
+      let declarations = '';
+      for (const index of sentinels) {
+        declarations += ctx.state.vars[index] + '=[],';
+      }
+      body = '(' + declarations + body + ')';
     }
     return '(' + createFunction(ctx.state.vars, body) + ')()';
   }
