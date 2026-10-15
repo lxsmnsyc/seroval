@@ -12,8 +12,9 @@ import {
   toCrossJSONStream,
   toJSON,
   toJSONAsync,
+  createReference,
+  type SerovalNode,
 } from 'seroval';
-import { createReference, type SerovalNode } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import { AbortSignalPlugin } from '../../web';
 
@@ -165,13 +166,10 @@ describe('AbortSignal', () => {
     });
     describe('scoped', () => {
       it('supports aborted AbortSignal', async () => {
-        const result = await crossSerializeAsync(
-          Promise.resolve(SYNC_EXAMPLE),
-          {
-            scopeId: 'example',
-            plugins: [AbortSignalPlugin],
-          },
-        );
+        const result = await crossSerializeAsync(Promise.resolve(SYNC_EXAMPLE), {
+          scopeId: 'example',
+          plugins: [AbortSignalPlugin],
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports future AbortSignal', async () => {
@@ -347,9 +345,7 @@ describe('AbortSignal', () => {
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: toJSON(42).t,
       };
-      expect(() =>
-        fromJSON(result, { plugins: [AbortSignalPlugin] }),
-      ).toThrow();
+      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
     });
 
     it('never invokes `then` on a fake thenable controller', () => {
@@ -365,9 +361,7 @@ describe('AbortSignal', () => {
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: template.t,
       };
-      expect(() =>
-        fromJSON(result, { plugins: [AbortSignalPlugin] }),
-      ).toThrow();
+      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
       expect(thenSpy).not.toHaveBeenCalled();
     });
 
@@ -384,9 +378,7 @@ describe('AbortSignal', () => {
         f: 0x7f,
         m: [] as number[],
       } as unknown as Parameters<typeof fromJSON>[0];
-      expect(() =>
-        fromJSON(json, { plugins: [AbortSignalPlugin] }),
-      ).toThrow();
+      expect(() => fromJSON(json, { plugins: [AbortSignalPlugin] })).toThrow();
     });
   });
 });

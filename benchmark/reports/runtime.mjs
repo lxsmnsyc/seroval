@@ -61,10 +61,7 @@ function syncBatch(operation, verify, iterations) {
 }
 
 export function calibrateSync(operation, verify, iterations, settings) {
-  assert.ok(
-    Number.isSafeInteger(iterations) && iterations > 0,
-    'Invalid batch iterations',
-  );
+  assert.ok(Number.isSafeInteger(iterations) && iterations > 0, 'Invalid batch iterations');
   let elapsed = 0;
   for (;;) {
     const duration = syncBatch(operation, verify, iterations);
@@ -74,19 +71,13 @@ export function calibrateSync(operation, verify, iterations, settings) {
     }
     if (duration < settings.minSampleMs) {
       iterations *= 2;
-      assert.ok(
-        iterations <= 2 ** 24,
-        'Sync batch calibration exceeded iteration limit',
-      );
+      assert.ok(iterations <= 2 ** 24, 'Sync batch calibration exceeded iteration limit');
     }
   }
 }
 
 export function measureSync(operation, verify, iterations, settings) {
-  assert.ok(
-    Number.isSafeInteger(iterations) && iterations > 0,
-    'Invalid batch iterations',
-  );
+  assert.ok(Number.isSafeInteger(iterations) && iterations > 0, 'Invalid batch iterations');
   const samples = [];
   let warmup = 0;
   for (let batch = 0; samples.length < settings.samples; batch++) {
@@ -123,25 +114,13 @@ export async function calibrateAsync(prepare, operation, verify, settings) {
     }
     if (duration < settings.minSampleMs) {
       iterations *= 2;
-      assert.ok(
-        iterations <= 2 ** 20,
-        'Async batch calibration exceeded iteration limit',
-      );
+      assert.ok(iterations <= 2 ** 20, 'Async batch calibration exceeded iteration limit');
     }
   }
 }
 
-export async function measureAsync(
-  prepare,
-  operation,
-  verify,
-  settings,
-  iterations = 1,
-) {
-  assert.ok(
-    Number.isSafeInteger(iterations) && iterations > 0,
-    'Invalid batch iterations',
-  );
+export async function measureAsync(prepare, operation, verify, settings, iterations = 1) {
+  assert.ok(Number.isSafeInteger(iterations) && iterations > 0, 'Invalid batch iterations');
   const samples = [];
   let warmup = 0;
   for (let batch = 0; samples.length < settings.samples; batch++) {
@@ -220,28 +199,35 @@ export async function runtime(root, scenario, iterations) {
       continue;
     }
     const json = scenario === `${id}.fromJSON` ? api.toJSON(input) : undefined;
-    const js =
-      scenario === `${id}.deserialize-warm` ? api.serialize(input) : undefined;
+    const js = scenario === `${id}.deserialize-warm` ? api.serialize(input) : undefined;
     const operations = [
       [
         'serialize',
         () => api.serialize(input),
-        value => verifyValue(api.deserialize(value), input),
+        (value) => {
+          verifyValue(api.deserialize(value), input);
+        },
       ],
       [
         'toJSON',
         () => api.toJSON(input),
-        value => verifyValue(api.fromJSON(value), input),
+        (value) => {
+          verifyValue(api.fromJSON(value), input);
+        },
       ],
       [
         'fromJSON',
         () => api.fromJSON(json),
-        value => verifyValue(value, input),
+        (value) => {
+          verifyValue(value, input);
+        },
       ],
       [
         'deserialize-warm',
         () => api.deserialize(js),
-        value => verifyValue(value, input),
+        (value) => {
+          verifyValue(value, input);
+        },
       ],
     ];
     for (const [name, operation, verify] of operations) {
@@ -267,20 +253,16 @@ export async function runtime(root, scenario, iterations) {
   let verify;
   if (scenario === 'async.promise.toJSONAsync') {
     prepare = () => ({ value: Promise.resolve({ id: 1 }) });
-    operation = input => api.toJSONAsync(input);
-    verify = async output => {
+    operation = (input) => api.toJSONAsync(input);
+    verify = async (output) => {
       const restored = api.fromJSON(output);
       verifyValue(await restored.value, { id: 1 });
     };
   } else {
-    assert.equal(
-      scenario,
-      'async.iterable.toJSONAsync',
-      'Unknown runtime scenario',
-    );
+    assert.equal(scenario, 'async.iterable.toJSONAsync', 'Unknown runtime scenario');
     prepare = chunks;
-    operation = input => api.toJSONAsync(input);
-    verify = output => verifyIterable(api.fromJSON(output));
+    operation = (input) => api.toJSONAsync(input);
+    verify = async (output) => verifyIterable(api.fromJSON(output));
   }
   if (iterations === undefined) {
     return calibrateAsync(prepare, operation, verify, protocol);
@@ -290,21 +272,12 @@ export async function runtime(root, scenario, iterations) {
       id: scenario,
       unit: 'ms',
       iterations,
-      samples: await measureAsync(
-        prepare,
-        operation,
-        verify,
-        protocol,
-        iterations,
-      ),
+      samples: await measureAsync(prepare, operation, verify, protocol, iterations),
     },
   ];
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   console.log(
     JSON.stringify(
       await runtime(

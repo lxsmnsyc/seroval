@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  Feature,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
   deserialize,
-  Feature,
   fromJSON,
   serialize,
   serializeAsync,
@@ -41,10 +41,8 @@ describe('Error', () => {
 
     it.each([0, Feature.ObjectAssign])(
       'preserves the field through serialize with disabled features %i',
-      disabledFeatures => {
-        expectPreserved(
-          deserialize(serialize(makeError(), { disabledFeatures })),
-        );
+      (disabledFeatures) => {
+        expectPreserved(deserialize(serialize(makeError(), { disabledFeatures })));
       },
     );
 
@@ -126,9 +124,7 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(a))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
     });
     it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
@@ -140,9 +136,7 @@ describe('Error', () => {
     it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(a))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
     });
   });
   describe('crossSerialize', () => {
@@ -218,9 +212,7 @@ describe('Error', () => {
         const b = new Error('B', { cause: Promise.resolve(a) });
         a.stack = '';
         b.stack = '';
-        expect(
-          await crossSerializeAsync(b, { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        expect(await crossSerializeAsync(b, { scopeId: 'example' })).toMatchSnapshot();
       });
       it('supports other Error classes', async () => {
         const a = new ReferenceError('A');
@@ -367,9 +359,7 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(a))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
     });
     it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
@@ -381,9 +371,7 @@ describe('Error', () => {
     it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(a))),
-      ).toMatchSnapshot();
+      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
     });
   });
 

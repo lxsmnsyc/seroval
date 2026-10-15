@@ -12,12 +12,14 @@ import './styles.css';
 export default function App() {
   onSettled(() => {
     document.addEventListener('click', onCopyClick);
-    return () => document.removeEventListener('click', onCopyClick);
+    return () => {
+      document.removeEventListener('click', onCopyClick);
+    };
   });
 
   return (
     <Router>
-      {props => (
+      {(props) => (
         <>
           <Header />
           <main class="site-main">{props.children}</main>

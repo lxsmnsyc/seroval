@@ -10,10 +10,7 @@ export interface ShowcaseExample {
   output: string;
 }
 
-const SEROVAL = path.join(
-  import.meta.dirname,
-  '../../packages/seroval/dist/index.js',
-);
+const SEROVAL = path.join(import.meta.dirname, '../../packages/seroval/dist/index.js');
 
 const USER_SOURCE = `const user = {
   name: 'Ada',
@@ -50,7 +47,11 @@ export async function renderShowcase(): Promise<ShowcaseExample[]> {
     seroval.crossSerializeStream(
       {
         user: 'Ada',
-        posts: new Promise(done => setTimeout(() => done(['Hello', 'World']), 10)),
+        posts: new Promise((done) =>
+          setTimeout(() => {
+            done(['Hello', 'World']);
+          }, 10),
+        ),
       },
       {
         scopeId: 'page',
@@ -105,15 +106,12 @@ export async function renderShowcase(): Promise<ShowcaseExample[]> {
   ];
 
   return Promise.all(
-    examples.map(async example => ({
+    examples.map(async (example) => ({
       id: example.id,
       label: example.label,
       description: example.description,
       input: codeFrame(await highlight(example.input, 'js'), 'Input'),
-      output: codeFrame(
-        await highlight(example.output, example.outputLang),
-        example.outputLabel,
-      ),
+      output: codeFrame(await highlight(example.output, example.outputLang), example.outputLabel),
     })),
   );
 }

@@ -1,14 +1,9 @@
-import {
-  crossSerializeStream,
-  fromCrossJSON,
-  toCrossJSONAsync,
-  toCrossJSONStream,
-} from 'seroval';
+import { crossSerializeStream, fromCrossJSON, toCrossJSONAsync, toCrossJSONStream } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import { ReadableStreamPlugin } from '../../web';
 
-function tick(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 0));
+async function tick(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 async function readAll<T>(stream: ReadableStream<T>): Promise<T[]> {
@@ -45,7 +40,7 @@ describe('ReadableStream streaming parse', () => {
           if (initial) {
             return;
           }
-          return new Promise<void>(resolve => {
+          return new Promise<void>((resolve) => {
             release = () => {
               accepted++;
               resolve();
@@ -148,10 +143,7 @@ describe('ReadableStream streaming parse', () => {
         onError: reject,
       });
     });
-    expect(await readAll(restored as ReadableStream<string>)).toEqual([
-      'a',
-      'b',
-    ]);
+    expect(await readAll(restored as ReadableStream<string>)).toEqual(['a', 'b']);
     const materialized = fromCrossJSON<ReadableStream<string>>(
       await toCrossJSONAsync(source(), { plugins: [ReadableStreamPlugin] }),
       { plugins: [ReadableStreamPlugin], refs: new Map() },

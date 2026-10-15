@@ -2,12 +2,12 @@ import v8 from 'node:v8';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import {
+  type SerovalNode,
+  type Stream,
   createLiveStream,
   createStream,
   crossSerializeStream,
   fromCrossJSON,
-  type SerovalNode,
-  type Stream,
   toCrossJSONStream,
 } from '../src';
 import { STREAM_CONSTRUCTOR } from '../src/core/constructors';
@@ -15,8 +15,8 @@ import { STREAM_CONSTRUCTOR } from '../src/core/constructors';
 v8.setFlagsFromString('--expose-gc');
 const gc = vm.runInNewContext('gc') as () => void;
 
-function tick(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 0));
+async function tick(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 function listen<T>(stream: Stream<T>, into: T[]): () => void {
@@ -54,11 +54,7 @@ describe('live receiver', () => {
     gc();
     await tick();
     gc();
-    expect(refs.map(ref => ref.deref())).toEqual([
-      undefined,
-      undefined,
-      undefined,
-    ]);
+    expect(refs.map((ref) => ref.deref())).toEqual([undefined, undefined, undefined]);
     receiver.return({ i: 3 });
   });
 

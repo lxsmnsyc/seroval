@@ -1,4 +1,4 @@
-import { serialize, deserialize } from 'seroval';
+import { deserialize, serialize } from 'seroval';
 
 export const name = 'seroval';
 

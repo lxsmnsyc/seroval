@@ -1,4 +1,4 @@
-import { createSignal, For } from 'solid-js';
+import { For, createSignal } from 'solid-js';
 import { Tab, TabGroup, TabList, TabPanel } from 'terracotta/tabs';
 import showcase from 'virtual:showcase';
 import {
@@ -97,7 +97,9 @@ function InstallCommand() {
   function copy(id: string, command: string) {
     navigator.clipboard.writeText(command).then(() => {
       setCopied(id);
-      setTimeout(() => setCopied(undefined), 1500);
+      setTimeout(() => {
+        setCopied(undefined);
+      }, 1500);
     });
   }
 
@@ -105,7 +107,7 @@ function InstallCommand() {
     <TabGroup<string> class="install" horizontal={true} defaultValue="npm">
       <TabList class="install-tabs" aria-label="Package manager">
         <For each={PACKAGE_MANAGERS}>
-          {manager => (
+          {(manager) => (
             <Tab class="install-tab" value={manager.id}>
               {manager.id}
             </Tab>
@@ -113,7 +115,7 @@ function InstallCommand() {
         </For>
       </TabList>
       <For each={PACKAGE_MANAGERS}>
-        {manager => (
+        {(manager) => (
           <TabPanel class="install-panel" value={manager.id}>
             <code>
               <span class="prompt">$</span> {manager.command}
@@ -121,7 +123,9 @@ function InstallCommand() {
             <button
               type="button"
               class="copy-button"
-              onClick={() => copy(manager.id, manager.command)}
+              onClick={() => {
+                copy(manager.id, manager.command);
+              }}
             >
               {copied() === manager.id ? 'Copied' : 'Copy'}
             </button>
@@ -134,14 +138,10 @@ function InstallCommand() {
 
 function Showcase() {
   return (
-    <TabGroup<string>
-      class="showcase"
-      horizontal={true}
-      defaultValue={showcase[0].id}
-    >
+    <TabGroup<string> class="showcase" horizontal={true} defaultValue={showcase[0].id}>
       <TabList class="showcase-tabs" aria-label="Output format">
         <For each={showcase}>
-          {example => (
+          {(example) => (
             <Tab class="showcase-tab" value={example.id}>
               {example.label}
             </Tab>
@@ -149,7 +149,7 @@ function Showcase() {
         </For>
       </TabList>
       <For each={showcase}>
-        {example => (
+        {(example) => (
           <TabPanel class="showcase-panel" value={example.id}>
             <p class="showcase-description">{example.description}</p>
             <div class="showcase-grid">
@@ -171,17 +171,15 @@ export default function Home() {
       <section class="hero">
         <div class="hero-glow" aria-hidden="true" />
         <p class="hero-badge">
-          Powers server rendering in <strong>SolidJS</strong> and{' '}
-          <strong>TanStack Start</strong>
+          Powers server rendering in <strong>SolidJS</strong> and <strong>TanStack Start</strong>
         </p>
         <h1 class="hero-title">
           Serialize the values <span class="gradient-text">JSON can't.</span>
         </h1>
         <p class="hero-lead">
-          seroval turns any JavaScript value into a string and back: cyclic
-          references, Dates, Maps, promises, streams and more. Stream it to
-          the browser as it resolves, or send it as JSON that is safe to
-          receive.
+          seroval turns any JavaScript value into a string and back: cyclic references, Dates, Maps,
+          promises, streams and more. Stream it to the browser as it resolves, or send it as JSON
+          that is safe to receive.
         </p>
         <div class="hero-actions">
           <a class="button button-primary" href={FIRST_PAGE.href}>
@@ -207,14 +205,14 @@ export default function Home() {
           </p>
         </div>
         <ul class="type-cloud">
-          <For each={TYPES}>{type => <li>{type}</li>}</For>
+          <For each={TYPES}>{(type) => <li>{type}</li>}</For>
         </ul>
       </section>
 
       <section class="section">
         <div class="feature-grid">
           <For each={FEATURES}>
-            {feature => (
+            {(feature) => (
               <a class="feature-card" href={feature.href}>
                 <span class="feature-icon">
                   <feature.icon />

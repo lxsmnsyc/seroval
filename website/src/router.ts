@@ -9,8 +9,8 @@ export const Router = createRouter({
     ...DOC_ROUTES,
     {
       path: '/playground',
-      component: lazy(() => import('./pages/Playground')),
+      component: lazy(async () => import('./pages/Playground')),
     },
-    { path: '*404', component: lazy(() => import('./pages/NotFound')) },
+    { path: '*404', component: lazy(async () => import('./pages/NotFound')) },
   ],
 });

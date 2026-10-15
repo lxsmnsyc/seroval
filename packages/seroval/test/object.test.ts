@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  Feature,
   compileJSON,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
   deserialize,
-  Feature,
   fromCrossJSON,
   fromJSON,
   serialize,
@@ -63,9 +63,7 @@ describe('objects', () => {
 
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', () => {
@@ -91,9 +89,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', async () => {
@@ -126,9 +122,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', () => {
@@ -154,9 +148,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', async () => {
@@ -384,9 +376,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', () => {
@@ -421,9 +411,7 @@ describe('objects', () => {
       expect(back.constructor).toBe(Object);
       for (const key in EXAMPLE) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(
-          EXAMPLE[key as keyof typeof EXAMPLE],
-        );
+        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
       }
     });
     it('supports self-recursion', async () => {
@@ -540,10 +528,7 @@ describe('objects', () => {
     // `JSON.parse` creates an own enumerable `__proto__` data property
     // (not a prototype), as does any record with a `__proto__` field.
     function makeProtoObject(): Record<string, unknown> {
-      return JSON.parse('{"__proto__":5,"value":42}') as Record<
-        string,
-        unknown
-      >;
+      return JSON.parse('{"__proto__":5,"value":42}') as Record<string, unknown>;
     }
     function expectPreserved(back: Record<string, unknown>): void {
       const descriptor = Object.getOwnPropertyDescriptor(back, '__proto__');
@@ -554,21 +539,15 @@ describe('objects', () => {
     }
 
     it('supports serialize', () => {
-      expectPreserved(
-        deserialize<Record<string, unknown>>(serialize(makeProtoObject())),
-      );
+      expectPreserved(deserialize<Record<string, unknown>>(serialize(makeProtoObject())));
     });
     it('supports serializeAsync', async () => {
       expectPreserved(
-        deserialize<Record<string, unknown>>(
-          await serializeAsync(makeProtoObject()),
-        ),
+        deserialize<Record<string, unknown>>(await serializeAsync(makeProtoObject())),
       );
     });
     it('supports toJSON', () => {
-      expectPreserved(
-        fromJSON<Record<string, unknown>>(toJSON(makeProtoObject())),
-      );
+      expectPreserved(fromJSON<Record<string, unknown>>(toJSON(makeProtoObject())));
     });
   });
   describe('with a circular own __proto__ property', () => {
@@ -597,23 +576,15 @@ describe('objects', () => {
     }
 
     it('supports serialize', () => {
-      expectPreserved(
-        deserialize<Record<string, unknown>>(
-          serialize(makeCircularProtoObject()),
-        ),
-      );
+      expectPreserved(deserialize<Record<string, unknown>>(serialize(makeCircularProtoObject())));
     });
     it('supports serializeAsync', async () => {
       expectPreserved(
-        deserialize<Record<string, unknown>>(
-          await serializeAsync(makeCircularProtoObject()),
-        ),
+        deserialize<Record<string, unknown>>(await serializeAsync(makeCircularProtoObject())),
       );
     });
     it('supports toJSON', () => {
-      expectPreserved(
-        fromJSON<Record<string, unknown>>(toJSON(makeCircularProtoObject())),
-      );
+      expectPreserved(fromJSON<Record<string, unknown>>(toJSON(makeCircularProtoObject())));
     });
   });
   describe.each([
@@ -624,7 +595,7 @@ describe('objects', () => {
     '__defineSetter__',
     '__lookupGetter__',
     '__lookupSetter__',
-  ])('with a circular reserved property %s', key => {
+  ])('with a circular reserved property %s', (key) => {
     function makeCircularObject(): Record<string, unknown> {
       const parent: Record<string, unknown> = {};
       const child = {};
@@ -666,28 +637,19 @@ describe('objects', () => {
       expectPreserved(new Function('$R', `return (${payload})`)([]));
     });
   });
-  it.each([
-    '',
-    '0',
-    '-0',
-    '01',
-    '1.5',
-    '1e3',
-    '1e+21',
-    'Infinity',
-    'NaN',
-    '1e400',
-    'needs-quote',
-  ])('preserves property spelling %j in deferred assignments', key => {
-    const source: Record<string, unknown> = {};
-    source[key] = source;
-    for (const payload of [serialize(source), compileJSON(toJSON(source))]) {
-      const back = deserialize<Record<string, unknown>>(payload);
-      expect(Object.keys(back)).toEqual([key]);
-      expect(back[key]).toBe(back);
-      expect(Object.getPrototypeOf(back)).toBe(Object.prototype);
-    }
-  });
+  it.each(['', '0', '-0', '01', '1.5', '1e3', '1e+21', 'Infinity', 'NaN', '1e400', 'needs-quote'])(
+    'preserves property spelling %j in deferred assignments',
+    (key) => {
+      const source: Record<string, unknown> = {};
+      source[key] = source;
+      for (const payload of [serialize(source), compileJSON(toJSON(source))]) {
+        const back = deserialize<Record<string, unknown>>(payload);
+        expect(Object.keys(back)).toEqual([key]);
+        expect(back[key]).toBe(back);
+        expect(Object.getPrototypeOf(back)).toBe(Object.prototype);
+      }
+    },
+  );
   describe('with a shadowed constructor property', () => {
     const SHADOWED = { constructor: 'not a constructor', value: 42 };
 

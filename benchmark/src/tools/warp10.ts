@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error
 import { serialize } from 'warp10';
 
 export const name = 'warp10';

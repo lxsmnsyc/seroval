@@ -1,10 +1,10 @@
-import { createHighlighter, type Highlighter } from 'shiki';
+import { type Highlighter, createHighlighter } from 'shiki';
 
 const LANGUAGES = ['js', 'ts', 'tsx', 'json', 'bash', 'sh', 'html', 'css'];
 
 let highlighter: Promise<Highlighter> | undefined;
 
-function getHighlighter(): Promise<Highlighter> {
+async function getHighlighter(): Promise<Highlighter> {
   highlighter ??= createHighlighter({
     themes: ['github-light', 'github-dark'],
     langs: LANGUAGES,
@@ -45,4 +45,3 @@ export function codeFrame(html: string, label: string): string {
     '</div>',
   ].join('');
 }
-

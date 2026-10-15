@@ -1,5 +1,5 @@
 import { Show } from 'solid-js';
-import { menuOpen, REPOSITORY_URL, setMenuOpen } from '../lib/ui';
+import { REPOSITORY_URL, menuOpen, setMenuOpen } from '../lib/ui';
 import DocsNav from './DocsNav';
 import { CloseIcon } from './Icons';
 
@@ -13,8 +13,10 @@ export default function Drawer() {
           role="dialog"
           aria-modal="true"
           aria-label="Navigation"
-          onClick={event => event.stopPropagation()}
-          onKeyDown={event => {
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+          onKeyDown={(event) => {
             if (event.key === 'Escape') {
               setMenuOpen(false);
             }

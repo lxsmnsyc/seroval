@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  compileJSON,
-  createPlugin,
-  crossSerialize,
-  crossSerializeAsync,
-  crossSerializeStream,
-  fromJSON,
   Serializer,
   SerovalConflictedNodeIdError,
   SerovalDepthLimitError,
@@ -13,6 +7,12 @@ import {
   SerovalMissingPluginError,
   SerovalParserError,
   SerovalSerializationError,
+  compileJSON,
+  createPlugin,
+  crossSerialize,
+  crossSerializeAsync,
+  crossSerializeStream,
+  fromJSON,
   serialize,
   serializeAsync,
   toCrossJSON,
@@ -37,9 +37,7 @@ const OPTIONS = { depthLimit: 4 };
 
 function expectDepthLimit(error: unknown): void {
   expect(error).toBeInstanceOf(SerovalParserError);
-  expect((error as SerovalParserError).cause).toBeInstanceOf(
-    SerovalDepthLimitError,
-  );
+  expect((error as SerovalParserError).cause).toBeInstanceOf(SerovalDepthLimitError);
 }
 
 describe('depthLimit', () => {
@@ -57,19 +55,14 @@ describe('depthLimit', () => {
   });
 
   it('is honored by the async entry points', async () => {
-    for (const entry of [
-      serializeAsync,
-      toJSONAsync,
-      crossSerializeAsync,
-      toCrossJSONAsync,
-    ]) {
+    for (const entry of [serializeAsync, toJSONAsync, crossSerializeAsync, toCrossJSONAsync]) {
       await expect(entry(createNested(2), OPTIONS)).resolves.toBeDefined();
-      expectDepthLimit(await entry(DEEP, OPTIONS).catch(error => error));
+      expectDepthLimit(await entry(DEEP, OPTIONS).catch((error) => error));
     }
   });
 
   it('is honored by crossSerializeStream', async () => {
-    const error = await new Promise<unknown>(resolve => {
+    const error = await new Promise<unknown>((resolve) => {
       crossSerializeStream(DEEP, {
         ...OPTIONS,
         onSerialize() {
@@ -82,7 +75,7 @@ describe('depthLimit', () => {
   });
 
   it('is honored by Serializer', async () => {
-    const error = await new Promise<unknown>(resolve => {
+    const error = await new Promise<unknown>((resolve) => {
       const writer = new Serializer({
         ...OPTIONS,
         globalIdentifier: '_$',
@@ -106,9 +99,7 @@ describe('depthLimit', () => {
       caught = error;
     }
     expect(caught).toBeInstanceOf(SerovalDeserializationError);
-    expect((caught as SerovalDeserializationError).cause).toBeInstanceOf(
-      SerovalDepthLimitError,
-    );
+    expect((caught as SerovalDeserializationError).cause).toBeInstanceOf(SerovalDepthLimitError);
   });
 });
 
@@ -142,17 +133,13 @@ describe('SerovalSerializationError', () => {
       caught = error;
     }
     expect(caught).toBeInstanceOf(SerovalSerializationError);
-    expect((caught as SerovalSerializationError).cause).toBeInstanceOf(
-      SerovalMissingPluginError,
-    );
+    expect((caught as SerovalSerializationError).cause).toBeInstanceOf(SerovalMissingPluginError);
   });
 });
 
 describe('SerovalConflictedNodeIdError', () => {
   it('reports a node id that is assigned twice', () => {
-    const json = JSON.parse(
-      '{"t":{"t":9,"i":0,"a":[{"t":9,"i":0,"a":[]}]},"f":127,"m":[0]}',
-    );
+    const json = JSON.parse('{"t":{"t":9,"i":0,"a":[{"t":9,"i":0,"a":[]}]},"f":127,"m":[0]}');
     let caught: unknown;
     try {
       fromJSON(json);

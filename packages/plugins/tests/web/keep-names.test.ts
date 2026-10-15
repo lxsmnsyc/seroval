@@ -66,7 +66,7 @@ interface Payloads {
 
 let cached: Promise<Payloads> | undefined;
 
-function getBundledPayloads(): Promise<Payloads> {
+async function getBundledPayloads(): Promise<Payloads> {
   cached ||= bundleAndRun();
   return cached;
 }
@@ -82,9 +82,7 @@ async function bundleAndRun(): Promise<Payloads> {
     // guards the workspace code — bundle against the local build (CI builds
     // all packages before running tests).
     alias: {
-      seroval: fileURLToPath(
-        new URL('../../../seroval/dist/index.js', import.meta.url),
-      ),
+      seroval: fileURLToPath(new URL('../../../seroval/dist/index.js', import.meta.url)),
     },
     bundle: true,
     keepNames: true,
@@ -94,9 +92,7 @@ async function bundleAndRun(): Promise<Payloads> {
     write: false,
   });
   const code = result.outputFiles[0].text;
-  const mod = await import(
-    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  );
+  const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
   return mod.getPayloads();
 }
 
@@ -124,7 +120,7 @@ describe('keep-names bundled payloads', () => {
     new Function('$R', payloads.abortSignalChunks.join(';\n'))($R);
     const back = $R[0] as AbortSignal;
     // the deserialized promise aborts the controller in a microtask
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       setTimeout(resolve, 0);
     });
     expect(back.aborted).toBe(true);

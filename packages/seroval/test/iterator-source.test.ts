@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  createPlugin,
-  fromJSON,
   SerovalMalformedNodeError,
   type SerovalObjectNode,
+  createPlugin,
+  fromJSON,
   toJSON,
   toJSONAsync,
 } from '../src';
@@ -15,7 +15,7 @@ import {
  * at some other node must be rejected instead of type-confused.
  */
 function iteratorInstance(node: SerovalObjectNode): { a: unknown[] } {
-  return node.p.v[0] as unknown as { a: unknown[] };
+  return node.p.v[0];
 }
 
 describe('iterator factory instance source validation', () => {
@@ -32,9 +32,7 @@ describe('iterator factory instance source validation', () => {
     } catch (error) {
       caught = error;
     }
-    expect((caught as { cause: unknown }).cause).toBeInstanceOf(
-      SerovalMalformedNodeError,
-    );
+    expect((caught as { cause: unknown }).cause).toBeInstanceOf(SerovalMalformedNodeError);
   });
 
   it('rejects an async iterator whose source is not a Stream', async () => {
@@ -49,9 +47,7 @@ describe('iterator factory instance source validation', () => {
     } catch (error) {
       caught = error;
     }
-    expect((caught as { cause: unknown }).cause).toBeInstanceOf(
-      SerovalMalformedNodeError,
-    );
+    expect((caught as { cause: unknown }).cause).toBeInstanceOf(SerovalMalformedNodeError);
   });
 
   it('rejects a plugin-forged branded stream as an async iterator source', () => {
@@ -64,8 +60,7 @@ describe('iterator factory instance source validation', () => {
       test: () => false,
       parse: { sync: () => ({}) },
       serialize: () => '',
-      deserialize: () =>
-        ({ __SEROVAL_STREAM__: 1, on: onSpy }) as unknown as never,
+      deserialize: () => ({ __SEROVAL_STREAM__: 1, on: onSpy }) as unknown,
     });
     // AsyncIteratorFactoryInstance { a: [instance, source] }, source = plugin.
     const json = {

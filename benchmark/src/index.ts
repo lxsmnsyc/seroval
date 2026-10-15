@@ -1,5 +1,5 @@
 import util from 'util';
-import { suite, add, cycle, complete, save } from 'benny';
+import { add, complete, cycle, save, suite } from 'benny';
 
 // fixtures
 import circularDedupe from './fixtures/circular-dedupe';
@@ -60,7 +60,7 @@ async function run() {
 
     // Skip benchmarks that couldn't properly serialize and hydrate the structure.
     const toolsForFixture = await Promise.all(
-      tools.map(async tool => {
+      tools.map(async (tool) => {
         let skip = false;
         try {
           skip = !util.isDeepStrictEqual(

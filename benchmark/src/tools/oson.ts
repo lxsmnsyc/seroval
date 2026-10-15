@@ -1,4 +1,4 @@
-import { stringify, parse } from 'o-son';
+import { parse, stringify } from 'o-son';
 
 export const name = 'o-son';
 

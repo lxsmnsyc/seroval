@@ -12,7 +12,7 @@ import ReadableStreamPlugin from '../../web/readable-stream';
 
 const plugins = [ReadableStreamPlugin];
 const DEPTH_ERROR = /depth/i;
-const tick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+const tick = async () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 async function drain<T>(stream: ReadableStream<T>): Promise<T[]> {
   const reader = stream.getReader();
@@ -42,7 +42,7 @@ describe('ReadableStream source', () => {
     const marker = {};
     const plugin = createPlugin<object, { s: SerovalNode }>({
       tag: 'test/stream-source',
-      test: value => value === marker,
+      test: (value) => value === marker,
       parse: {
         async async(_value, ctx) {
           return { s: await ctx.parseStreamSource(source) };
@@ -54,12 +54,10 @@ describe('ReadableStream source', () => {
       serialize: () => 'undefined',
       deserialize: () => marker,
     });
-    await expect(
-      toJSONAsync(marker, { plugins: [plugin], depthLimit: 1 }),
-    ).rejects.toMatchObject({
+    await expect(toJSONAsync(marker, { plugins: [plugin], depthLimit: 1 })).rejects.toMatchObject({
       cause: { message: expect.stringMatching(DEPTH_ERROR) },
     });
-    const error = await new Promise<unknown>(resolve => {
+    const error = await new Promise<unknown>((resolve) => {
       crossSerializeStream(marker, {
         plugins: [plugin],
         depthLimit: 1,
@@ -91,9 +89,7 @@ describe('ReadableStream source', () => {
     }) as typeof outer;
     const chunks = await drain(decoded.stream as ReadableStream<unknown>);
     expect(chunks[0]).toEqual(new Uint8Array([1, 2]));
-    await expect(
-      (chunks[1] as { deferred: Promise<string> }).deferred,
-    ).resolves.toBe('ready');
+    await expect((chunks[1] as { deferred: Promise<string> }).deferred).resolves.toBe('ready');
     expect(chunks[2]).toBe(chunks[3]);
     expect(chunks[4]).toBe(decoded);
     expect(outer.stream.locked).toBe(false);
@@ -129,9 +125,7 @@ describe('ReadableStream source', () => {
     });
     const chunks = await drain(decoded?.stream as ReadableStream<unknown>);
     expect(chunks[0]).toEqual(new Uint8Array([1, 2]));
-    await expect(
-      (chunks[1] as { deferred: Promise<string> }).deferred,
-    ).resolves.toBe('ready');
+    await expect((chunks[1] as { deferred: Promise<string> }).deferred).resolves.toBe('ready');
     expect(chunks[2]).toBe(chunks[3]);
     expect(chunks[4]).toBe(decoded);
     expect(outer.stream.locked).toBe(false);
@@ -148,7 +142,7 @@ describe('ReadableStream source', () => {
           pulls++;
           if (pulls === 1) {
             controller.enqueue({
-              deferred: new Promise<number>(resolve => {
+              deferred: new Promise<number>((resolve) => {
                 settle = resolve;
               }),
             });
@@ -165,12 +159,8 @@ describe('ReadableStream source', () => {
     await tick();
     expect(pulls).toBe(1);
     settle(1);
-    const chunks = await drain(
-      fromJSON(await output, { plugins }) as ReadableStream<unknown>,
-    );
-    await expect(
-      (chunks[0] as { deferred: Promise<number> }).deferred,
-    ).resolves.toBe(1);
+    const chunks = await drain(fromJSON(await output, { plugins }));
+    await expect((chunks[0] as { deferred: Promise<number> }).deferred).resolves.toBe(1);
     expect(chunks[1]).toBe('tail');
     expect(source.locked).toBe(false);
   });
@@ -186,11 +176,11 @@ describe('ReadableStream source', () => {
     const source = new ReadableStream<string>();
     Object.defineProperty(source, 'getReader', {
       value: () => ({
-        read: () =>
-          new Promise<ReadableStreamReadResult<string>>(resolve => {
+        read: async () =>
+          new Promise<ReadableStreamReadResult<string>>((resolve) => {
             resolveRead = resolve;
           }),
-        cancel(value: unknown) {
+        async cancel(value: unknown) {
           cancellations.push(value);
           return Promise.resolve();
         },
@@ -251,9 +241,7 @@ describe('ReadableStream source', () => {
           },
         }),
     });
-    await expect(toJSONAsync(source, { plugins })).rejects.not.toThrow(
-      'hostile cancel',
-    );
+    await expect(toJSONAsync(source, { plugins })).rejects.not.toThrow('hostile cancel');
     await tick();
     expect(source.locked).toBe(false);
   });
@@ -274,7 +262,7 @@ describe('ReadableStream source', () => {
         }),
     });
     const failure = new Error('output failed');
-    const observed = await new Promise<unknown>(resolve => {
+    const observed = await new Promise<unknown>((resolve) => {
       crossSerializeStream(source, {
         plugins,
         onSerialize(_value, initial) {

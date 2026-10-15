@@ -1,6 +1,6 @@
 import path from 'node:path';
 import solid from '@solidjs/vite-plugin';
-import { defineConfig, type Plugin } from 'vite';
+import { type Plugin, defineConfig } from 'vite';
 import content from './plugins/content.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -14,10 +14,7 @@ const DEV_BUILDS: Record<string, string> = {
 };
 
 function workspaceDevBuilds(): Plugin {
-  const importers = [
-    path.join(import.meta.dirname, 'src'),
-    path.join(ROOT, 'packages'),
-  ];
+  const importers = [path.join(import.meta.dirname, 'src'), path.join(ROOT, 'packages')];
   return {
     name: 'seroval-workspace-dev-builds',
     enforce: 'pre',
@@ -25,7 +22,7 @@ function workspaceDevBuilds(): Plugin {
       if (
         Object.hasOwn(DEV_BUILDS, id) &&
         importer &&
-        importers.some(dir => importer.startsWith(dir))
+        importers.some((dir) => importer.startsWith(dir))
       ) {
         return DEV_BUILDS[id];
       }

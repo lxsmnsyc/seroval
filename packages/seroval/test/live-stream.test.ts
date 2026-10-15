@@ -2,12 +2,12 @@ import v8 from 'node:v8';
 import vm from 'node:vm';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  SerovalLiveStreamError,
+  type Stream,
   createLiveStream,
   createStream,
   crossSerializeStream,
   fromCrossJSON,
-  SerovalLiveStreamError,
-  type Stream,
   toCrossJSONAsync,
   toCrossJSONStream,
 } from '../src';
@@ -15,8 +15,8 @@ import {
 v8.setFlagsFromString('--expose-gc');
 const gc = vm.runInNewContext('gc') as () => void;
 
-function tick(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 0));
+async function tick(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 async function collect(): Promise<void> {
@@ -26,7 +26,7 @@ async function collect(): Promise<void> {
   gc();
 }
 
-function collectValues<T>(stream: Stream<T>): Promise<T[]> {
+async function collectValues<T>(stream: Stream<T>): Promise<T[]> {
   return new Promise((resolve, reject) => {
     const values: T[] = [];
     stream.on({
@@ -53,9 +53,7 @@ describe('createLiveStream', () => {
     const { stream, producer } = createLiveStream<number>();
     const consumer = stream.consume();
     const first = producer.write(1);
-    await expect(producer.write(2)).rejects.toBeInstanceOf(
-      SerovalLiveStreamError,
-    );
+    await expect(producer.write(2)).rejects.toBeInstanceOf(SerovalLiveStreamError);
     const delivery = await consumer.read();
     expect(delivery.event).toEqual({ type: 'next', value: 1 });
     delivery.accept();
@@ -103,12 +101,8 @@ describe('createLiveStream', () => {
       { type: 'next', value: 2 },
       { type: 'return', value: 3 },
     ]);
-    await expect(producer.write(4)).rejects.toBeInstanceOf(
-      SerovalLiveStreamError,
-    );
-    await expect(consumer.read()).rejects.toBeInstanceOf(
-      SerovalLiveStreamError,
-    );
+    await expect(producer.write(4)).rejects.toBeInstanceOf(SerovalLiveStreamError);
+    await expect(consumer.read()).rejects.toBeInstanceOf(SerovalLiveStreamError);
   });
 
   it('ignores a late or repeated accept', async () => {
@@ -173,11 +167,7 @@ describe('createLiveStream', () => {
       // no-op
     });
     await collect();
-    expect(refs.map(ref => ref.deref())).toEqual([
-      undefined,
-      undefined,
-      undefined,
-    ]);
+    expect(refs.map((ref) => ref.deref())).toEqual([undefined, undefined, undefined]);
     consumer.cancel();
     await pending;
     expect(stream).toBeDefined();
@@ -212,7 +202,7 @@ describe('live stream serialization', () => {
   it('calls the root callback synchronously and returns before it settles', () => {
     const { stream } = createLiveStream<number>();
     const onSerialize = vi.fn(
-      () =>
+      async () =>
         new Promise<void>(() => {
           // never settles
         }),
@@ -231,7 +221,7 @@ describe('live stream serialization', () => {
       onSerialize(_data, initial) {
         emitted.push(initial);
         if (initial) {
-          return new Promise<void>(resolve => {
+          return new Promise<void>((resolve) => {
             acceptRoot = resolve;
           });
         }
@@ -262,7 +252,7 @@ describe('live stream serialization', () => {
           if (initial) {
             return;
           }
-          return new Promise<void>(resolve => {
+          return new Promise<void>((resolve) => {
             release = () => {
               accepted.push(accepted.length);
               resolve();
@@ -293,10 +283,10 @@ describe('live stream serialization', () => {
     const onDone = vi.fn();
     const settled: (() => void)[] = [];
     crossSerializeStream(stream, {
-      onSerialize() {
+      async onSerialize() {
         inFlight++;
         maxInFlight = Math.max(maxInFlight, inFlight);
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve) => {
           settled.push(() => {
             inFlight--;
             resolve();
@@ -407,9 +397,7 @@ describe('live stream serialization', () => {
     await producer.close({ inner });
     await done;
     expect(records).toEqual(['root', 'patch', 'patch', 'patch']);
-    const outer = await collectValues(
-      restored as Stream<{ inner: Stream<number> }>,
-    );
+    const outer = await collectValues(restored as Stream<{ inner: Stream<number> }>);
     expect(outer).toHaveLength(1);
     expect(await collectValues(outer[0].inner)).toEqual([1, 2]);
   });
@@ -441,7 +429,7 @@ describe('live stream serialization', () => {
           if (initial) {
             return;
           }
-          return new Promise<void>(resolve => {
+          return new Promise<void>((resolve) => {
             release = resolve;
           });
         },
@@ -463,14 +451,14 @@ describe('live stream serialization', () => {
       const { stream, producer } = createLiveStream<string>();
       return {
         value: stream,
-        push: i => producer.write(chunk(i)),
+        push: async (i) => producer.write(chunk(i)),
       };
     });
     const replay = await retainedAfter(() => {
       const stream = createStream<string>();
       return {
         value: stream,
-        push: i => {
+        push: async (i) => {
           stream.next(chunk(i));
           return Promise.resolve();
         },

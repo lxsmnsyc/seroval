@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  SerovalParserError,
+  SerovalUnsupportedTypeError,
   crossSerialize,
   crossSerializeStream,
   deserialize,
-  SerovalParserError,
-  SerovalUnsupportedTypeError,
   serialize,
   serializeAsync,
   toCrossJSON,
@@ -46,9 +46,7 @@ describe('promises in sync functions', () => {
 
   it('serializeAsync still sends promises', async () => {
     const result = await serializeAsync({ value: Promise.resolve(1) });
-    expect(await deserialize<{ value: Promise<number> }>(result).value).toBe(
-      1,
-    );
+    expect(await deserialize<{ value: Promise<number> }>(result).value).toBe(1);
   });
 
   it('crossSerializeStream still sends promises', async () => {

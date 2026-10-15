@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SerovalNode, Stream, StreamListener } from '../src';
 import {
+  SerovalAbortedError,
   createCrossDeserializer,
   createPlugin,
   createStream,
   fromCrossJSON,
   fromJSON,
-  SerovalAbortedError,
   toCrossJSONStream,
   toJSON,
 } from '../src';
@@ -17,10 +17,7 @@ interface CollectOptions {
   after?: () => void;
 }
 
-function collect(
-  value: unknown,
-  options: CollectOptions = {},
-): Promise<SerovalNode[]> {
+async function collect(value: unknown, options: CollectOptions = {}): Promise<SerovalNode[]> {
   const records: SerovalNode[] = [];
   return new Promise((resolve, reject) => {
     toCrossJSONStream(value, {
@@ -37,9 +34,11 @@ function collect(
   });
 }
 
-function later<T>(value: T): Promise<T> {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(value), 0);
+async function later<T>(value: T): Promise<T> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(value);
+    }, 0);
   });
 }
 
@@ -69,7 +68,9 @@ describe('createCrossDeserializer', () => {
     expect([...result.it]).toEqual([1]);
     await expect(result.promise).resolves.toBe('done');
     expect(session.pending).toBe(0);
-    expect(() => session.abort(new Error('closed'))).not.toThrow();
+    expect(() => {
+      session.abort(new Error('closed'));
+    }).not.toThrow();
   });
 
   it('aborts every deferred even when a stream listener throws', async () => {
@@ -100,11 +101,15 @@ describe('createCrossDeserializer', () => {
     const secondListener = listener();
     result.second.on(secondListener);
     const reason = new Error('transport failed');
-    expect(() => session.abort(reason)).toThrow(failure);
+    expect(() => {
+      session.abort(reason);
+    }).toThrow(failure);
     expect(secondListener.throw).toHaveBeenCalledWith(reason);
     await expect(result.promise).rejects.toBe(reason);
     expect(session.pending).toBe(0);
-    expect(() => session.abort(reason)).not.toThrow();
+    expect(() => {
+      session.abort(reason);
+    }).not.toThrow();
   });
 
   it('rejects pending promises with the abort reason', async () => {
@@ -143,9 +148,7 @@ describe('createCrossDeserializer', () => {
   it('rejects promises created by later records', async () => {
     const records = await collect(Promise.resolve({ inner: later('inner') }));
     const session = createCrossDeserializer({});
-    const outer = session.deserialize<Promise<{ inner: Promise<string> }>>(
-      records[0],
-    );
+    const outer = session.deserialize<Promise<{ inner: Promise<string> }>>(records[0]);
     expect(session.pending).toBe(1);
     session.deserialize(records[1]);
     expect(session.pending).toBe(1);
@@ -308,7 +311,7 @@ describe('createCrossDeserializer', () => {
       serialize(node, ctx) {
         return ctx.serialize(node);
       },
-      deserialize(node, ctx) {
+      async deserialize(node, ctx) {
         ctx.deserialize(node);
         return new Promise(() => {
           // settled by the plugin owner, not by seroval

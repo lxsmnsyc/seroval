@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createStream, type StreamListener } from '../src';
+import { type StreamListener, createStream } from '../src';
 
 function listener(): StreamListener<number> {
   return { next: vi.fn(), throw: vi.fn(), return: vi.fn() };

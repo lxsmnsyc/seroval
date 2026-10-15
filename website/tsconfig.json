@@ -3,7 +3,11 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "jsx": "preserve",
     "jsxImportSource": "@solidjs/web",
     "strict": true,
@@ -11,7 +15,16 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
-    "types": ["vite/client", "node"]
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "allowJs": true
   },
-  "include": ["src", "plugins", "scripts", "vite.config.ts"]
+  "include": [
+    "src",
+    "plugins",
+    "scripts",
+    "vite.config.ts"
+  ]
 }

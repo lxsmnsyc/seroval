@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  fromJSON,
   SerovalDeserializationError,
   SerovalMalformedNodeError,
   SerovalUnknownTypedArrayError,
+  fromJSON,
   toJSON,
 } from '../src';
 import { SerovalNodeType } from '../src/core/constants';
@@ -33,21 +33,14 @@ describe('decoder validation ordering', () => {
         throw new Error('buffer read first');
       },
     });
-    expect(cause(() => fromJSON(json))).toBeInstanceOf(
-      SerovalUnknownTypedArrayError,
-    );
+    expect(cause(() => fromJSON(json))).toBeInstanceOf(SerovalUnknownTypedArrayError);
   });
 
   it.each(['typed', 'data'] as const)(
     'deserializes the %s buffer before offset validation',
-    kind => {
-      const json = toJSON(
-        kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)),
-      );
-      if (
-        json.t.t !== SerovalNodeType.TypedArray &&
-        json.t.t !== SerovalNodeType.DataView
-      ) {
+    (kind) => {
+      const json = toJSON(kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)));
+      if (json.t.t !== SerovalNodeType.TypedArray && json.t.t !== SerovalNodeType.DataView) {
         throw new Error('Wrong fixture');
       }
       const failure = new Error('buffer first');
@@ -63,14 +56,9 @@ describe('decoder validation ordering', () => {
 
   it.each(['typed', 'data'] as const)(
     'validates the %s offset before registering its id',
-    kind => {
-      const json = toJSON(
-        kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)),
-      );
-      if (
-        json.t.t !== SerovalNodeType.TypedArray &&
-        json.t.t !== SerovalNodeType.DataView
-      ) {
+    (kind) => {
+      const json = toJSON(kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)));
+      if (json.t.t !== SerovalNodeType.TypedArray && json.t.t !== SerovalNodeType.DataView) {
         throw new Error('Wrong fixture');
       }
       json.t.b = -1;

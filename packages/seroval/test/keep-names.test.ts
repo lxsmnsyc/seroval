@@ -70,7 +70,7 @@ interface Payloads {
 
 let cached: Promise<Payloads> | undefined;
 
-function getBundledPayloads(): Promise<Payloads> {
+async function getBundledPayloads(): Promise<Payloads> {
   cached ||= bundleAndRun();
   return cached;
 }
@@ -90,9 +90,7 @@ async function bundleAndRun(): Promise<Payloads> {
     write: false,
   });
   const code = result.outputFiles[0].text;
-  const mod = await import(
-    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  );
+  const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
   return mod.getPayloads();
 }
 

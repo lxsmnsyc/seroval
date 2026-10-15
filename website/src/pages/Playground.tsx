@@ -2,9 +2,7 @@ import { clientOnly } from '@solidjs/web';
 import PageMeta from '../components/PageMeta';
 
 // The editor runs the reader's code, so it only renders in the browser.
-const PlaygroundEditor = clientOnly(
-  () => import('../components/PlaygroundEditor'),
-);
+const PlaygroundEditor = clientOnly(async () => import('../components/PlaygroundEditor'));
 
 export default function Playground() {
   return (
@@ -16,13 +14,11 @@ export default function Playground() {
       <header class="page-header">
         <h1>Playground</h1>
         <p>
-          Write code that returns a value, pick an output mode, and see what
-          seroval produces. Your code runs only in this browser.
+          Write code that returns a value, pick an output mode, and see what seroval produces. Your
+          code runs only in this browser.
         </p>
       </header>
-      <PlaygroundEditor
-        fallback={<div class="playground-loading">Loading the editor…</div>}
-      />
+      <PlaygroundEditor fallback={<div class="playground-loading">Loading the editor…</div>} />
     </div>
   );
 }

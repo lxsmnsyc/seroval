@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  createLiveStream,
-  createPlugin,
-  createStream,
-  crossSerializeStream,
   Serializer,
   type SerovalNode,
   SerovalParserError,
   SerovalUnsupportedTypeError,
   type StreamParsePluginContext,
+  createLiveStream,
+  createPlugin,
+  createStream,
+  crossSerializeStream,
   toCrossJSONStream,
   toJSON,
 } from '../src';
@@ -18,10 +18,10 @@ import {
   startStreamParse,
 } from '../src/core/context/stream-parser';
 
-const tick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+const tick = async () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 function gate() {
   let resolve!: () => void;
-  const promise = new Promise<void>(r => {
+  const promise = new Promise<void>((r) => {
     resolve = r;
   });
   return { promise, resolve };
@@ -87,7 +87,9 @@ describe('fatal streaming failures', () => {
   it('calls a thenable without reading its call property', async () => {
     const onError = vi.fn();
     const onDone = vi.fn();
-    const then = (resolve: () => void) => resolve();
+    const then = (resolve: () => void) => {
+      resolve();
+    };
     Object.defineProperty(then, 'call', {
       get() {
         throw new Error('The callable then must not expose its call property');
@@ -138,7 +140,9 @@ describe('fatal streaming failures', () => {
       expect(ctx.state.reason).toBe(reason);
       throw cleanupError;
     });
-    expect(() => destroyStreamParse(ctx, reason)).toThrow(cleanupError);
+    expect(() => {
+      destroyStreamParse(ctx, reason);
+    }).toThrow(cleanupError);
     expect(ctx.state.reason).toBeUndefined();
   });
 
@@ -149,7 +153,7 @@ describe('fatal streaming failures', () => {
     const seen: unknown[] = [];
     const plugin = createPlugin<object, Record<string, never>>({
       tag: 'reason-unwind',
-      test: value => value === token,
+      test: (value) => value === token,
       parse: {
         stream(_value, pluginCtx) {
           pluginCtx.parse(channel.stream);
@@ -180,7 +184,7 @@ describe('fatal streaming failures', () => {
     let pluginCtx!: StreamParsePluginContext;
     const plugin = createPlugin<object, Record<string, never>>({
       tag: 'output-reason',
-      test: value => value === token,
+      test: (value) => value === token,
       parse: {
         stream(_value, current) {
           pluginCtx = current;
@@ -206,24 +210,26 @@ describe('fatal streaming failures', () => {
     const writer: Serializer = Reflect.construct(Serializer, [
       { globalIdentifier: 'X', onData: () => undefined },
     ]);
-    expect(() => writer.write('bad', () => undefined)).toThrow(
-      SerovalParserError,
-    );
-    expect(() => writer.write('after', 1)).not.toThrow();
+    expect(() => {
+      writer.write('bad', () => undefined);
+    }).toThrow(SerovalParserError);
+    expect(() => {
+      writer.write('after', 1);
+    }).not.toThrow();
     expect([...writer.keys]).toEqual(['bad', 'after']);
     writer.close();
   });
 
   it.each(['absent', 'throws'] as const)(
     'preserves the primary error without cancelling siblings when the handler %s',
-    mode => {
+    (mode) => {
       const cleanupError = new Error('cleanup failed');
       const handlerError = new Error('handler failed');
       const cleaned: number[] = [];
-      const sources = [0, 1].map(index => {
+      const sources = [0, 1].map((index) => {
         const source = createStream<number>();
         const subscribe = source.on;
-        source.on = listener => {
+        source.on = (listener) => {
           const off = subscribe(listener);
           return () => {
             off();
@@ -267,10 +273,14 @@ describe('fatal streaming failures', () => {
       }
       expect(cleaned).toEqual([]);
       expect(onDone).not.toHaveBeenCalled();
-      expect(() => writer.close()).toThrow(cleanupError);
+      expect(() => {
+        writer.close();
+      }).toThrow(cleanupError);
       expect(cleaned).toEqual([0, 1]);
       expect(onDone).toHaveBeenCalledTimes(1);
-      expect(() => writer.close()).not.toThrow();
+      expect(() => {
+        writer.close();
+      }).not.toThrow();
     },
   );
 
@@ -297,7 +307,7 @@ describe('fatal streaming failures', () => {
   });
   it.each(['throw', 'reject', 'getter', 'serialize', 'parse'] as const)(
     'rejects producer with the reported %s reason',
-    async kind => {
+    async (kind) => {
       const failure = new Error(kind);
       const onCancel = vi.fn();
       const onError = vi.fn();
@@ -306,7 +316,7 @@ describe('fatal streaming failures', () => {
       const token = {};
       const plugin = createPlugin<object, Record<string, never>>({
         tag: 'fatal',
-        test: value => value === token,
+        test: (value) => value === token,
         parse: {
           stream() {
             if (kind === 'parse') {
@@ -347,14 +357,12 @@ describe('fatal streaming failures', () => {
         },
       });
       let reason: unknown = 'pending';
-      const pending = producer.write(
-        kind === 'serialize' || kind === 'parse' ? token : 1,
-      );
+      const pending = producer.write(kind === 'serialize' || kind === 'parse' ? token : 1);
       pending.then(
         () => {
           reason = 'accepted';
         },
-        error => {
+        (error) => {
           reason = error;
         },
       );
@@ -377,7 +385,7 @@ describe('fatal streaming failures', () => {
     const { stream, producer } = createLiveStream<number>({ onCancel });
     let synchronous = false;
     const dispose = crossSerializeStream(stream, {
-      onSerialize() {
+      async onSerialize() {
         synchronous = true;
         return root.promise;
       },
@@ -471,7 +479,9 @@ describe('fatal streaming failures', () => {
         calls.push(2);
       },
     );
-    expect(() => startStreamParse(ctx, source)).toThrow();
+    expect(() => {
+      startStreamParse(ctx, source);
+    }).toThrow();
     expect(calls).toEqual([1, 2]);
     expect(refs.has(source)).toBe(true);
     expect(ctx.state.alive).toBe(false);
@@ -535,7 +545,7 @@ describe('fatal streaming failures', () => {
     source.next(() => undefined);
     const original = source.on;
     let subscribed = false;
-    source.on = listener => {
+    source.on = (listener) => {
       subscribed = true;
       const off = original(listener);
       return () => {
@@ -583,7 +593,7 @@ describe('fatal streaming failures', () => {
     const { stream, producer } = createLiveStream<number>({ onCancel });
     const pending = producer.write(1);
     let rejected: unknown;
-    pending.catch(error => {
+    pending.catch((error) => {
       rejected = error;
     });
     let thrown: unknown;
@@ -629,13 +639,15 @@ describe('fatal streaming failures', () => {
     const second = createLiveStream<number>({ onCancel: secondCancel });
     const root = gate();
     const dispose = toCrossJSONStream([first.stream, second.stream], {
-      onParse() {
+      async onParse() {
         return root.promise;
       },
     });
     const one = expect(first.producer.write(1)).rejects.toBe(reason);
     const two = expect(second.producer.write(2)).rejects.toBe(reason);
-    expect(() => dispose(reason)).toThrow(cleanupError);
+    expect(() => {
+      dispose(reason);
+    }).toThrow(cleanupError);
     await Promise.all([one, two]);
     expect(secondCancel).toHaveBeenCalledExactlyOnceWith(reason);
     root.resolve();

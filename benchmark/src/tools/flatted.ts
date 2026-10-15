@@ -1,4 +1,4 @@
-import { stringify, parse } from 'flatted';
+import { parse, stringify } from 'flatted';
 
 export const name = 'flatted';
 
