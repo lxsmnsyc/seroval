@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
   Feature,
   crossSerialize,
@@ -56,7 +56,10 @@ describe('Error', () => {
 
     it('preserves the field through crossSerialize', () => {
       const payload = crossSerialize(makeError());
-      expectPreserved(new Function('$R', `return (${payload})`)([]));
+      // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
+      const back: unknown = new Function('$R', `return (${payload})`)([]);
+      assert(back instanceof Error);
+      expectPreserved(back);
     });
   });
   describe('serialize', () => {

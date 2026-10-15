@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
   Feature,
   compileJSON,
@@ -17,7 +17,11 @@ import {
   toJSONAsync,
 } from '../src';
 
-const EXAMPLE = {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+const EXAMPLE: Record<string, string> = {
   example: 'valid identifier',
   '%example': 'invalid identifier',
   '0x1': 'hexadecimal',
@@ -61,9 +65,9 @@ describe('objects', () => {
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back.constructor).toBe(Object);
 
-      for (const key in EXAMPLE) {
+      for (const [key, value] of Object.entries(EXAMPLE)) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
+        expect(back[key]).toBe(value);
       }
     });
     it('supports self-recursion', () => {
@@ -87,9 +91,9 @@ describe('objects', () => {
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back.constructor).toBe(Object);
-      for (const key in EXAMPLE) {
+      for (const [key, value] of Object.entries(EXAMPLE)) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
+        expect(back[key]).toBe(value);
       }
     });
     it('supports self-recursion', async () => {
@@ -120,9 +124,9 @@ describe('objects', () => {
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(back.constructor).toBe(Object);
-      for (const key in EXAMPLE) {
+      for (const [key, value] of Object.entries(EXAMPLE)) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
+        expect(back[key]).toBe(value);
       }
     });
     it('supports self-recursion', () => {
@@ -146,9 +150,9 @@ describe('objects', () => {
       expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(back.constructor).toBe(Object);
-      for (const key in EXAMPLE) {
+      for (const [key, value] of Object.entries(EXAMPLE)) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
+        expect(back[key]).toBe(value);
       }
     });
     it('supports self-recursion', async () => {
@@ -374,9 +378,9 @@ describe('objects', () => {
       });
 
       expect(back.constructor).toBe(Object);
-      for (const key in EXAMPLE) {
+      for (const [key, value] of Object.entries(EXAMPLE)) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
+        expect(back[key]).toBe(value);
       }
     });
     it('supports self-recursion', () => {
@@ -409,9 +413,9 @@ describe('objects', () => {
       });
 
       expect(back.constructor).toBe(Object);
-      for (const key in EXAMPLE) {
+      for (const [key, value] of Object.entries(EXAMPLE)) {
         expect(key in back).toBeTruthy();
-        expect(back[key as keyof typeof back]).toBe(EXAMPLE[key as keyof typeof EXAMPLE]);
+        expect(back[key]).toBe(value);
       }
     });
     it('supports self-recursion', async () => {
@@ -528,7 +532,9 @@ describe('objects', () => {
     // `JSON.parse` creates an own enumerable `__proto__` data property
     // (not a prototype), as does any record with a `__proto__` field.
     function makeProtoObject(): Record<string, unknown> {
-      return JSON.parse('{"__proto__":5,"value":42}') as Record<string, unknown>;
+      const value: unknown = JSON.parse('{"__proto__":5,"value":42}');
+      assert(isRecord(value));
+      return value;
     }
     function expectPreserved(back: Record<string, unknown>): void {
       const descriptor = Object.getOwnPropertyDescriptor(back, '__proto__');
@@ -557,7 +563,8 @@ describe('objects', () => {
     // the inline object literal.
     function makeCircularProtoObject(): Record<string, unknown> {
       const parent: Record<string, unknown> = {};
-      const child = JSON.parse('{"__proto__":0}') as Record<string, unknown>;
+      const child: unknown = JSON.parse('{"__proto__":0}');
+      assert(isRecord(child));
       parent.child = child;
       Object.defineProperty(child, '__proto__', {
         value: parent,
@@ -568,7 +575,8 @@ describe('objects', () => {
       return parent;
     }
     function expectPreserved(back: Record<string, unknown>): void {
-      const child = back.child as Record<string, unknown>;
+      const child = back.child;
+      assert(isRecord(child));
       const descriptor = Object.getOwnPropertyDescriptor(child, '__proto__');
       expect(descriptor).toBeDefined();
       expect(descriptor?.value).toBe(back);
@@ -610,7 +618,8 @@ describe('objects', () => {
     }
 
     function expectPreserved(back: Record<string, unknown>): void {
-      const child = back.child as Record<string, unknown>;
+      const child = back.child;
+      assert(isRecord(child));
       expect(Object.getOwnPropertyDescriptor(child, key)).toEqual({
         value: back,
         configurable: true,
@@ -634,7 +643,10 @@ describe('objects', () => {
 
     it('preserves the key through crossSerialize', () => {
       const payload = crossSerialize(makeCircularObject());
-      expectPreserved(new Function('$R', `return (${payload})`)([]));
+      // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
+      const back: unknown = new Function('$R', `return (${payload})`)([]);
+      assert(isRecord(back));
+      expectPreserved(back);
     });
   });
   it.each(['', '0', '-0', '01', '1.5', '1e3', '1e+21', 'Infinity', 'NaN', '1e400', 'needs-quote'])(
@@ -672,15 +684,16 @@ describe('objects', () => {
       expect(back.value).toBe(42);
     });
     it('keeps a null-prototype object null-prototype', () => {
-      const shadowed = Object.create(null) as Record<string, unknown>;
-      shadowed.constructor = 1;
+      const shadowed: unknown = Object.create(null);
+      assert(isRecord(shadowed));
+      Reflect.set(shadowed, 'constructor', 1);
       const back = deserialize<Record<string, unknown>>(serialize(shadowed));
       expect(Object.getPrototypeOf(back)).toBe(null);
       expect(back.constructor).toBe(1);
     });
     it('keeps a shadowed Map a Map', () => {
       const shadowed = new Map([['a', 1]]);
-      (shadowed as unknown as Record<string, unknown>).constructor = 1;
+      Reflect.set(shadowed, 'constructor', 1);
       const back = deserialize<Map<string, number>>(serialize(shadowed));
       expect(back).toBeInstanceOf(Map);
       expect(back.get('a')).toBe(1);

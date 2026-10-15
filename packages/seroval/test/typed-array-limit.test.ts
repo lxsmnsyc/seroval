@@ -1,11 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import {
-  type SerovalDataViewNode,
-  type SerovalTypedArrayNode,
-  fromJSON,
-  serialize,
-  toJSON,
-} from '../src';
+import { assert, describe, expect, it } from 'vitest';
+import { fromJSON, serialize, toJSON } from '../src';
+import { SerovalNodeType } from '../src/core/constants';
 
 // Same cap as the ArrayBuffer deserialization limit (MAX_BASE64_LENGTH).
 const MAX = 1_000_000;
@@ -33,20 +28,23 @@ describe('typed array length limit', () => {
   describe('deserialization', () => {
     it('rejects a typed array node claiming a length over the limit', () => {
       const json = toJSON(new Uint8Array([1, 2, 3]));
-      (json.t as SerovalTypedArrayNode).l = MAX + 1;
+      assert(json.t.t === SerovalNodeType.TypedArray);
+      json.t.l = MAX + 1;
       expect(() => fromJSON(json)).toThrow();
     });
 
     it('rejects a typed array whose buffer source is not an ArrayBuffer', () => {
       const json = toJSON(new Uint8Array([1, 2, 3]));
       // Point the buffer source at a non-ArrayBuffer node.
-      (json.t as SerovalTypedArrayNode).f = toJSON(42).t;
+      assert(json.t.t === SerovalNodeType.TypedArray);
+      json.t.f = toJSON(42).t;
       expect(() => fromJSON(json)).toThrow();
     });
 
     it('rejects a DataView whose buffer source is not an ArrayBuffer', () => {
       const json = toJSON(new DataView(new Uint8Array([1, 2, 3]).buffer));
-      (json.t as SerovalDataViewNode).f = toJSON('nope').t;
+      assert(json.t.t === SerovalNodeType.DataView);
+      json.t.f = toJSON('nope').t;
       expect(() => fromJSON(json)).toThrow();
     });
   });

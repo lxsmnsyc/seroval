@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import type { SerovalNode, Stream, StreamListener } from '../src';
+import { type Mock, describe, expect, it, vi } from 'vitest';
+import type { SerovalNode, Stream } from '../src';
 import {
   SerovalAbortedError,
   createCrossDeserializer,
@@ -42,7 +42,13 @@ async function later<T>(value: T): Promise<T> {
   });
 }
 
-function listener<T>(): StreamListener<T> {
+interface MockListener<T> {
+  next: Mock<(value: T) => void>;
+  throw: Mock<(value: unknown) => void>;
+  return: Mock<(value: T) => void>;
+}
+
+function listener<T>(): MockListener<T> {
   return { next: vi.fn(), throw: vi.fn(), return: vi.fn() };
 }
 
@@ -222,7 +228,7 @@ describe('createCrossDeserializer', () => {
   });
 
   it('rejects a pending next() of an async iterable', async () => {
-    async function* source() {
+    async function* source(): AsyncGenerator<number> {
       yield 1;
       await later(undefined);
       yield 2;

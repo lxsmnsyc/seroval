@@ -12,7 +12,7 @@ const serializers = [
 describe.each(serializers)('%s stream subscriptions', (name, serialize) => {
   it.each(['cancel', 'return', 'throw'] as const)('releases its subscription after %s', (mode) => {
     const source = createStream<number>();
-    const subscribe = source.on;
+    const subscribe = source.on.bind(source);
     let subscribed = false;
     source.on = (listener) => {
       subscribed = true;
@@ -22,7 +22,7 @@ describe.each(serializers)('%s stream subscriptions', (name, serialize) => {
         unsubscribe();
       };
     };
-    const emit = vi.fn();
+    const emit = vi.fn<() => void>();
     const cancel = serialize(source, emit);
     expect(subscribed).toBe(true);
     if (mode === 'cancel') {
@@ -44,6 +44,7 @@ describe.each(serializers)('%s stream subscriptions', (name, serialize) => {
       onSerialize: vi.fn(),
       onDone() {
         completions++;
+        // oxlint-disable-next-line eslint/no-use-before-define -- onDone cancels the serialization it belongs to.
         cancel();
       },
     };
@@ -59,7 +60,7 @@ describe.each(serializers)('%s async iterator cancellation', (_name, serialize) 
   it('stops pulling and runs generator cleanup when serialization stops', async () => {
     let pulled = 0;
     let closed = false;
-    async function* source() {
+    async function* source(): AsyncGenerator<number> {
       await Promise.resolve();
       try {
         for (let i = 0; i < 1000; i++) {
@@ -86,7 +87,8 @@ describe.each(serializers)('%s async iterator cancellation', (_name, serialize) 
   });
 
   it('closes once and ignores a read that settles after cancellation', async () => {
-    let settle: (value: IteratorResult<number>) => void = vi.fn();
+    let settle: (value: IteratorResult<number>) => void =
+      vi.fn<(value: IteratorResult<number>) => void>();
     const pending = new Promise<IteratorResult<number>>((resolve) => {
       settle = resolve;
     });
@@ -100,12 +102,14 @@ describe.each(serializers)('%s async iterator cancellation', (_name, serialize) 
         return { next, return: close };
       },
     };
-    const emit = vi.fn();
+    const emit = vi.fn<() => void>();
     const cancel = serialize(source, emit);
     cancel();
     cancel();
     settle({ done: false, value: 1 });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     expect(next).toHaveBeenCalledTimes(1);
     expect(close).toHaveBeenCalledTimes(1);
     expect(emit).toHaveBeenCalledTimes(1);
@@ -119,8 +123,10 @@ describe.each(serializers)('%s async iterator cancellation', (_name, serialize) 
         return { next, return: close };
       },
     };
-    const cancel = serialize(source, vi.fn());
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    const cancel = serialize(source, vi.fn<() => void>());
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     cancel();
     expect(next).toHaveBeenCalledTimes(1);
     expect(close).not.toHaveBeenCalled();
@@ -143,9 +149,11 @@ describe.each(serializers)('%s async iterator cancellation', (_name, serialize) 
         return { next, return: close };
       },
     };
-    const cancel = serialize(source, vi.fn());
+    const cancel = serialize(source, vi.fn<() => void>());
     cancel();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     expect(next).toHaveBeenCalledTimes(1);
     expect(close).toHaveBeenCalledTimes(1);
   });

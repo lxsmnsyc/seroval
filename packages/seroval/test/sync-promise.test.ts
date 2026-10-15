@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
   SerovalParserError,
   SerovalUnsupportedTypeError,
@@ -18,17 +18,17 @@ const SYNC_FUNCTIONS = {
   toCrossJSON: (value: unknown) => toCrossJSON(value),
 };
 
-function expectUnsupportedPromise(run: () => unknown, promise: unknown) {
+function expectUnsupportedPromise(run: () => unknown, promise: unknown): void {
   let caught: unknown;
   try {
     run();
   } catch (error) {
     caught = error;
   }
-  expect(caught).toBeInstanceOf(SerovalParserError);
-  const cause = (caught as SerovalParserError).cause;
-  expect(cause).toBeInstanceOf(SerovalUnsupportedTypeError);
-  expect((cause as SerovalUnsupportedTypeError).value).toBe(promise);
+  assert(caught instanceof SerovalParserError);
+  const cause = caught.cause;
+  assert(cause instanceof SerovalUnsupportedTypeError);
+  expect(cause.value).toBe(promise);
 }
 
 describe('promises in sync functions', () => {

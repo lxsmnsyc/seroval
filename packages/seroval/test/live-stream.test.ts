@@ -1,6 +1,6 @@
 import v8 from 'node:v8';
 import vm from 'node:vm';
-import { describe, expect, it, vi } from 'vitest';
+import { assert, describe, expect, it, vi } from 'vitest';
 import {
   SerovalLiveStreamError,
   type Stream,
@@ -13,10 +13,13 @@ import {
 } from '../src';
 
 v8.setFlagsFromString('--expose-gc');
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runInNewContext returns any.
 const gc = vm.runInNewContext('gc') as () => void;
 
 async function tick(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
 }
 
 async function collect(): Promise<void> {
@@ -68,7 +71,7 @@ describe('createLiveStream', () => {
   it('resolves the producer only after acceptance', async () => {
     const { stream, producer } = createLiveStream<number>();
     const consumer = stream.consume();
-    const settled = vi.fn();
+    const settled = vi.fn<() => void>();
     const write = producer.write(1).then(settled);
     const delivery = await consumer.read();
     await tick();
@@ -115,16 +118,16 @@ describe('createLiveStream', () => {
     const second = producer.write(2);
     stale.accept();
     stale.accept();
-    const settled = vi.fn();
-    second.then(settled);
+    const settled = vi.fn<() => void>();
+    const observed = second.then(settled);
     await tick();
     expect(settled).not.toHaveBeenCalled();
     (await consumer.read()).accept();
-    await second;
+    await observed;
   });
 
   it('cancellation rejects pending operations and reports once', async () => {
-    const onCancel = vi.fn();
+    const onCancel = vi.fn<(reason: unknown) => void>();
     const { stream, producer } = createLiveStream<number>({ onCancel });
     const consumer = stream.consume();
     const reason = new Error('stop');
@@ -195,8 +198,8 @@ describe('live stream serialization', () => {
     await producer.write(2);
     await producer.close(3);
     await done;
-    expect(restored).toBeDefined();
-    expect(await collectValues(restored as Stream<number>)).toEqual([1, 2, 3]);
+    assert(restored);
+    expect(await collectValues(restored)).toEqual([1, 2, 3]);
   });
 
   it('calls the root callback synchronously and returns before it settles', () => {
@@ -218,6 +221,7 @@ describe('live stream serialization', () => {
     let acceptRoot!: () => void;
     const emitted: boolean[] = [];
     crossSerializeStream(stream, {
+      // oxlint-disable-next-line typescript/promise-function-async -- later output must stay synchronous.
       onSerialize(_data, initial) {
         emitted.push(initial);
         if (initial) {
@@ -225,6 +229,7 @@ describe('live stream serialization', () => {
             acceptRoot = resolve;
           });
         }
+        return undefined;
       },
     });
     const write = producer.write(1);
@@ -239,7 +244,7 @@ describe('live stream serialization', () => {
     const reads: number[] = [];
     const accepted: number[] = [];
     let release: (() => void) | undefined;
-    async function* source() {
+    async function* source(): AsyncGenerator<number> {
       for (let i = 0; i < 3; i++) {
         reads.push(i);
         await Promise.resolve();
@@ -248,14 +253,15 @@ describe('live stream serialization', () => {
     }
     const done = new Promise<void>((resolve, reject) => {
       toCrossJSONStream(source(), {
+        // oxlint-disable-next-line typescript/promise-function-async -- the initial output must stay synchronous.
         onParse(_node, initial) {
           if (initial) {
-            return;
+            return undefined;
           }
-          return new Promise<void>((resolve) => {
+          return new Promise<void>((accept) => {
             release = () => {
               accepted.push(accepted.length);
-              resolve();
+              accept();
             };
           });
         },
@@ -269,7 +275,8 @@ describe('live stream serialization', () => {
     while (accepted.length < 4) {
       await tick();
       expect(reads.length - accepted.length).toBeLessThanOrEqual(1);
-      (release as () => void)();
+      assert(release);
+      release();
       release = undefined;
     }
     await done;
@@ -280,7 +287,7 @@ describe('live stream serialization', () => {
     const { stream, producer } = createLiveStream<number>();
     let inFlight = 0;
     let maxInFlight = 0;
-    const onDone = vi.fn();
+    const onDone = vi.fn<() => void>();
     const settled: (() => void)[] = [];
     crossSerializeStream(stream, {
       async onSerialize() {
@@ -315,16 +322,18 @@ describe('live stream serialization', () => {
   });
 
   it('reports a rejected output callback and cancels the source', async () => {
-    const onCancel = vi.fn();
+    const onCancel = vi.fn<(reason: unknown) => void>();
     const { stream, producer } = createLiveStream<number>({ onCancel });
-    const onError = vi.fn();
-    const onDone = vi.fn();
+    const onError = vi.fn<(error: unknown) => void>();
+    const onDone = vi.fn<() => void>();
     const failure = new Error('output closed');
     crossSerializeStream(stream, {
+      // oxlint-disable-next-line typescript/promise-function-async -- the initial output must stay synchronous.
       onSerialize(_data, initial) {
         if (!initial) {
           return Promise.reject(failure);
         }
+        return undefined;
       },
       onError,
       onDone,
@@ -337,9 +346,9 @@ describe('live stream serialization', () => {
   });
 
   it('cancels the source with the parse error when an event cannot be parsed', async () => {
-    const onCancel = vi.fn();
+    const onCancel = vi.fn<(reason: unknown) => void>();
     const { stream, producer } = createLiveStream<unknown>({ onCancel });
-    const onError = vi.fn();
+    const onError = vi.fn<(error: unknown) => void>();
     crossSerializeStream(stream, {
       onSerialize() {
         // no-op
@@ -356,7 +365,7 @@ describe('live stream serialization', () => {
   });
 
   it('cancelling serialization cancels the live stream', async () => {
-    const onCancel = vi.fn();
+    const onCancel = vi.fn<(reason: unknown) => void>();
     const { stream, producer } = createLiveStream<number>({ onCancel });
     const cancel = crossSerializeStream(stream, {
       onSerialize() {
@@ -397,7 +406,8 @@ describe('live stream serialization', () => {
     await producer.close({ inner });
     await done;
     expect(records).toEqual(['root', 'patch', 'patch', 'patch']);
-    const outer = await collectValues(restored as Stream<{ inner: Stream<number> }>);
+    assert(restored);
+    const outer = await collectValues(restored);
     expect(outer).toHaveLength(1);
     expect(await collectValues(outer[0].inner)).toEqual([1, 2]);
   });
@@ -425,9 +435,10 @@ describe('live stream serialization', () => {
       const source = setup();
       let release: (() => void) | undefined;
       const cancel = crossSerializeStream(source.value, {
+        // oxlint-disable-next-line typescript/promise-function-async -- the initial output must stay synchronous.
         onSerialize(_data, initial) {
           if (initial) {
-            return;
+            return undefined;
           }
           return new Promise<void>((resolve) => {
             release = resolve;
@@ -439,7 +450,8 @@ describe('live stream serialization', () => {
       for (let i = 0; i < chunks; i++) {
         const pushed = source.push(i);
         await tick();
-        (release as () => void)();
+        assert(release);
+        release();
         await pushed;
       }
       await collect();

@@ -1,10 +1,11 @@
 import { Buffer } from 'node:buffer';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, assert, describe, expect, it, vi } from 'vitest';
 import {
   type BaseParserContextOptions,
   Serializer,
   SerovalDeserializationError,
   SerovalMalformedNodeError,
+  type SerovalNode,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
@@ -158,8 +159,10 @@ describe('compact ArrayBuffer views', () => {
     toJSONAsync: async (value, options) =>
       fromJSON(await toJSONAsync(Promise.resolve(value), options)),
     crossSerialize: (value, options) =>
+      // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-return -- evaluates the serialized output.
       new Function('$R', `return (${crossSerialize(value, options)})`)([]),
     crossSerializeAsync: async (value, options) =>
+      // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-return -- evaluates the serialized output.
       new Function('$R', `return (${await crossSerializeAsync(Promise.resolve(value), options)})`)(
         [],
       ),
@@ -194,7 +197,8 @@ describe('compact ArrayBuffer views', () => {
         crossSerializeStream(Promise.resolve(value), {
           ...options,
           onSerialize(source, initial) {
-            const result = new Function('$R', `return (${source})`)(refs);
+            // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
+            const result: unknown = new Function('$R', `return (${source})`)(refs);
             if (initial) {
               back = result;
             }
@@ -213,6 +217,7 @@ describe('compact ArrayBuffer views', () => {
           ...options,
           globalIdentifier: 'values',
           onData(source) {
+            // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
             new Function('values', '$R', source)(values, refs);
           },
           onDone() {
@@ -233,6 +238,7 @@ describe('compact ArrayBuffer views', () => {
         const second = new Uint16Array(buffer, 8, 4);
         const full = new Uint8Array(buffer);
         const input = { first, again: first, second, full, buffer };
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the round trip keeps the input shape.
         const back = (await roundTrip(input, {
           compactArrayBufferViews,
         })) as typeof input;
@@ -280,6 +286,7 @@ describe('compact ArrayBuffer views', () => {
         new Constructor(buffer, 8, 2),
         new Constructor(buffer, 32, 0),
       ]);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the round trip keeps the input shape.
       const back = (await roundTrip(views, {
         compactArrayBufferViews: true,
       })) as typeof views;
@@ -305,8 +312,8 @@ describe('binary decoding limits', () => {
   });
 
   for (const cross of [false, true]) {
-    const encode = (value: unknown) => (cross ? toCrossJSON(value) : toJSON(value).t);
-    const decode = (node: ReturnType<typeof encode>, maxBase64Length?: number) =>
+    const encode = (value: unknown): SerovalNode => (cross ? toCrossJSON(value) : toJSON(value).t);
+    const decode = (node: SerovalNode, maxBase64Length?: number): ArrayBuffer =>
       cross
         ? fromCrossJSON<ArrayBuffer>(node, { refs: new Map(), maxBase64Length })
         : fromJSON<ArrayBuffer>({ t: node, m: [], f: toJSON(null).f }, { maxBase64Length });
@@ -338,27 +345,28 @@ describe('binary decoding limits', () => {
 
     it(`rejects malformed base64 fields and reports oversize input (cross: ${cross})`, () => {
       for (const value of [null, 123, {}, { length: 0 }, ['AA==']]) {
-        const node = { ...encode(new ArrayBuffer(0)), s: value } as ReturnType<typeof encode>;
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the node is malformed on purpose.
+        const node = { ...encode(new ArrayBuffer(0)), s: value } as SerovalNode;
         try {
           decode(node);
           expect.unreachable();
         } catch (error) {
-          expect(error).toBeInstanceOf(SerovalDeserializationError);
-          expect((error as SerovalDeserializationError).cause).toBeInstanceOf(
-            SerovalMalformedNodeError,
-          );
+          assert(error instanceof SerovalDeserializationError);
+          expect(error.cause).toBeInstanceOf(SerovalMalformedNodeError);
         }
       }
       try {
         decode(encode(new ArrayBuffer(3)), 0);
         expect.unreachable();
       } catch (error) {
-        expect((error as SerovalDeserializationError).cause).toEqual(
+        expect(error).toHaveProperty(
+          'cause',
           new RangeError('ArrayBuffer exceeds maxBase64Length (0)'),
         );
       }
       expect(() =>
-        decode({ ...encode(new ArrayBuffer(0)), s: '!!!!' } as ReturnType<typeof encode>),
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the node is malformed on purpose.
+        decode({ ...encode(new ArrayBuffer(0)), s: '!!!!' } as SerovalNode),
       ).toThrow();
     });
   }

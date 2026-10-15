@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
   SerovalDeserializationError,
   SerovalMalformedNodeError,
@@ -64,8 +64,8 @@ describe('decoder validation ordering', () => {
       json.t.b = -1;
       json.t.i = -1;
       const error = cause(() => fromJSON(json));
-      expect(error).toBeInstanceOf(SerovalMalformedNodeError);
-      expect((error as Error).message).toContain(`"${json.t.t}"`);
+      assert(error instanceof SerovalMalformedNodeError);
+      expect(error.message).toContain(`"${json.t.t}"`);
     },
   );
 });

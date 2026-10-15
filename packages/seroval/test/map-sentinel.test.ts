@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -10,7 +10,7 @@ import {
 // An entry whose key is an ancestor and whose value is shared elsewhere is
 // assigned after the Map is built. A placeholder entry, the sentinel, holds
 // its position until then.
-function createValue() {
+function createValue(): Record<string, unknown> {
   const root: Record<string, unknown> = {};
   const shared = { x: 1 };
   const map = new Map<unknown, unknown>([
@@ -24,15 +24,17 @@ function createValue() {
   return root;
 }
 
-function expectValue(back: Record<string, unknown>) {
-  const map = back.map as Map<unknown, unknown>;
+function expectValue(back: Record<string, unknown>): void {
+  const map = back.map;
+  assert(map instanceof Map);
   expect(map.get(back)).toBe(back.shared);
   expect(map.get(undefined)).toBe('real');
   expect(map.size).toBe(3);
-  expect([...map.keys()].some(key => Array.isArray(key))).toBe(false);
+  expect([...map.keys()].some((key) => Array.isArray(key))).toBe(false);
 }
 
 function evaluateCross(source: string): Record<string, unknown> {
+  // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-return -- evaluates the serialized output.
   return new Function('$R', `return ${source}`)([]);
 }
 

@@ -10,10 +10,11 @@ describe('Serializer lifecycle', () => {
     const values: Record<string, unknown> = {};
     const refs: unknown[] = [];
     const events: string[] = [];
-    const onDone = vi.fn();
+    const onDone = vi.fn<() => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
       onData(source) {
+        // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
         new Function('values', '$R', source)(values, refs);
         events.push(source);
       },
@@ -32,7 +33,9 @@ describe('Serializer lifecycle', () => {
     expect(onDone).not.toHaveBeenCalled();
     resolve('done');
     await pending;
-    await new Promise<void>((r) => setTimeout(r, 0));
+    await new Promise<void>((r) => {
+      setTimeout(r, 0);
+    });
     await expect(values.a).resolves.toBe('done');
     expect(events).toHaveLength(4);
     expect(onDone).toHaveBeenCalledTimes(1);
@@ -41,9 +44,9 @@ describe('Serializer lifecycle', () => {
   it('settles only the failing async write after flush', async () => {
     const bad = createStream<unknown>();
     const good = createStream<number>();
-    const onData = vi.fn();
-    const onError = vi.fn();
-    const onDone = vi.fn();
+    const onData = vi.fn<(result: string) => void>();
+    const onError = vi.fn<(error: unknown) => void>();
+    const onDone = vi.fn<() => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
       onData,
@@ -59,17 +62,16 @@ describe('Serializer lifecycle', () => {
     onData.mockClear();
     good.next(1);
     good.return(2);
-    await new Promise<void>((r) => setTimeout(r, 0));
+    await new Promise<void>((r) => {
+      setTimeout(r, 0);
+    });
     expect(onData).toHaveBeenCalledTimes(2);
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
   it.each(['flush', 'close'] as const)('completes once when %s reenters close', (operation) => {
-    const onData = vi.fn();
-    const onDone = vi.fn(() => {
-      writer.write('late', 2);
-      writer.close();
-    });
+    const onData = vi.fn<(result: string) => void>();
+    const onDone = vi.fn<() => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
       onData,
@@ -77,6 +79,10 @@ describe('Serializer lifecycle', () => {
       onError: (error) => {
         throw error;
       },
+    });
+    onDone.mockImplementation(() => {
+      writer.write('late', 2);
+      writer.close();
     });
     writer.write('value', 1);
     onData.mockClear();
@@ -89,7 +95,7 @@ describe('Serializer lifecycle', () => {
 
   it('releases a subscription when onData closes an active write', () => {
     const source = createStream<number>();
-    const subscribe = source.on;
+    const subscribe = source.on.bind(source);
     let subscribed = false;
     source.on = (listener) => {
       subscribed = true;
@@ -99,15 +105,16 @@ describe('Serializer lifecycle', () => {
         unsubscribe();
       };
     };
-    const onData = vi.fn(() => {
-      writer.close();
-    });
+    const onData = vi.fn<(result: string) => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
       onData,
       onError: (error) => {
         throw error;
       },
+    });
+    onData.mockImplementation(() => {
+      writer.close();
     });
     writer.write('stream', source);
     expect(subscribed).toBe(false);
@@ -121,7 +128,7 @@ describe('Serializer lifecycle', () => {
     const sources = [createStream<number>(), createStream<number>()];
     const active = new Set<number>();
     sources.forEach((source, index) => {
-      const subscribe = source.on;
+      const subscribe = source.on.bind(source);
       source.on = (listener) => {
         active.add(index);
         const unsubscribe = subscribe(listener);
@@ -134,10 +141,10 @@ describe('Serializer lifecycle', () => {
         };
       };
     });
-    const onDone = vi.fn();
+    const onDone = vi.fn<() => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
-      onData: vi.fn(),
+      onData: vi.fn<(result: string) => void>(),
       onDone,
       onError: (error) => {
         throw error;
@@ -157,12 +164,12 @@ describe('Serializer lifecycle', () => {
   });
 
   it('ignores pending promise output after closure', async () => {
-    let resolveValue: (value: number) => void = vi.fn();
+    let resolveValue: (value: number) => void = vi.fn<(value: number) => void>();
     const pending = new Promise<number>((resolve) => {
       resolveValue = resolve;
     });
-    const onData = vi.fn();
-    const onDone = vi.fn();
+    const onData = vi.fn<(result: string) => void>();
+    const onDone = vi.fn<() => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
       onData,
@@ -183,16 +190,17 @@ describe('Serializer lifecycle', () => {
 
   it('completes once when a flushed promise closes the writer', async () => {
     const pending = Promise.resolve(1);
-    const onDone = vi.fn(() => {
-      writer.close();
-    });
+    const onDone = vi.fn<() => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
-      onData: vi.fn(),
+      onData: vi.fn<(result: string) => void>(),
       onDone,
       onError: (error) => {
         throw error;
       },
+    });
+    onDone.mockImplementation(() => {
+      writer.close();
     });
     writer.write('value', pending);
     writer.flush();
@@ -204,7 +212,7 @@ describe('Serializer lifecycle', () => {
 
   it('stays closed when its completion callback throws', () => {
     const failure = new Error('completion failed');
-    const onData = vi.fn();
+    const onData = vi.fn<(result: string) => void>();
     const writer = new Serializer({
       globalIdentifier: 'values',
       onData,
@@ -233,7 +241,10 @@ describe('Serializer lifecycle', () => {
       const refs: unknown[] = [];
       return new Serializer({
         globalIdentifier: 'values',
-        onData: (source) => new Function('values', '$R', source)(output, refs),
+        onData: (source) => {
+          // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
+          new Function('values', '$R', source)(output, refs);
+        },
         onError: (error) => {
           throw error;
         },

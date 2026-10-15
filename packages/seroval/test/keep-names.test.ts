@@ -71,7 +71,7 @@ interface Payloads {
 let cached: Promise<Payloads> | undefined;
 
 async function getBundledPayloads(): Promise<Payloads> {
-  cached ||= bundleAndRun();
+  cached ??= bundleAndRun();
   return cached;
 }
 
@@ -90,13 +90,18 @@ async function bundleAndRun(): Promise<Payloads> {
     write: false,
   });
   const code = result.outputFiles[0].text;
-  const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the bundled fixture exports getPayloads.
+  const mod = (await import(
+    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+  )) as { getPayloads: () => Promise<Payloads> };
   return mod.getPayloads();
 }
 
 // Function bodies only see globals — same visibility as a payload evaluated
 // in a browser that never loaded the server bundle.
+// oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- callers name the payload type.
 function evaluate<T>(payload: string): T {
+  // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion -- evaluates the serialized output.
   return new Function(`return (${payload})`)() as T;
 }
 
@@ -127,7 +132,9 @@ describe('keep-names bundled payloads', () => {
   it('supports crossSerializeStream', async () => {
     const payloads = await getBundledPayloads();
     const $R: unknown[] = [];
+    // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
     new Function('$R', payloads.streamChunks.join(';\n'))($R);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the payload stores an async iterable.
     const back = $R[0] as AsyncIterable<string>;
     expect(await drain(back)).toEqual(['foo', 'bar']);
   });
