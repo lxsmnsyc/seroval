@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "benchmark"
+    "benchmark",
+    "website"
   ],
   "scripts": {
     "cs:ver": "changeset version",
