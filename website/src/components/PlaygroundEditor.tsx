@@ -169,7 +169,12 @@ function evaluate(code: string): unknown {
   return new Function('seroval', code)(seroval);
 }
 
-async function collectStream(value: unknown): Promise<string[]> {
+// Calls onChunk with every chunk so far, so the output shows each chunk as
+// it arrives instead of waiting for the stream to end.
+async function collectStream(
+  value: unknown,
+  onChunk: (chunks: string[]) => void,
+): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const chunks: string[] = [];
     seroval.crossSerializeStream(value, {
@@ -177,6 +182,7 @@ async function collectStream(value: unknown): Promise<string[]> {
       scopeId: 'playground',
       onSerialize(chunk) {
         chunks.push(chunk);
+        onChunk(chunks);
       },
       onDone() {
         resolve(chunks);
@@ -186,7 +192,11 @@ async function collectStream(value: unknown): Promise<string[]> {
   });
 }
 
-async function run(mode: Mode, code: string): Promise<string[]> {
+async function run(
+  mode: Mode,
+  code: string,
+  onChunk: (chunks: string[]) => void,
+): Promise<string[]> {
   const value = evaluate(code);
   switch (mode) {
     case 'serialize':
@@ -204,7 +214,7 @@ async function run(mode: Mode, code: string): Promise<string[]> {
       ];
     case 'crossSerializeStream':
     default:
-      return collectStream(value);
+      return collectStream(value, onChunk);
   }
 }
 
@@ -303,8 +313,7 @@ export default function PlaygroundEditor(): JSX.Element {
     const code = input.state.doc.toString();
     const started = performance.now();
     setRunning(true);
-    try {
-      const chunks = await run(nextMode, code);
+    function show(chunks: string[]): void {
       if (id === runId) {
         setOutput(formatOutput(chunks));
         setError(undefined);
@@ -314,6 +323,9 @@ export default function PlaygroundEditor(): JSX.Element {
           chunks: chunks.length,
         });
       }
+    }
+    try {
+      show(await run(nextMode, code, show));
     } catch (err) {
       if (id === runId) {
         setOutput('');
