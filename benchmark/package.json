@@ -11,14 +11,14 @@
     "test:reports": "node --test reports/*.test.mjs"
   },
   "devDependencies": {
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.5",
     "esbuild": "^0.28.2",
     "tslib": "^2.6.2",
     "typescript": "^7.0.2"
   },
   "dependencies": {
     "benny": "^3.7.1",
-    "devalue": "^6.0.1",
+    "devalue": "^6.0.3",
     "flatted": "^3.4.4",
     "next-json": "^0.5.1",
     "o-son": "^1.0.4",
