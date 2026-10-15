@@ -37,21 +37,9 @@ export interface Plugin<Value, Info extends PluginInfo> {
    * Parsing modes
    */
   parse: {
-    sync?: (
-      value: Value,
-      ctx: SyncParsePluginContext,
-      data: PluginData,
-    ) => Info;
-    async?: (
-      value: Value,
-      ctx: AsyncParsePluginContext,
-      data: PluginData,
-    ) => Promise<Info>;
-    stream?: (
-      value: Value,
-      ctx: StreamParsePluginContext,
-      data: PluginData,
-    ) => Info;
+    sync?: (value: Value, ctx: SyncParsePluginContext, data: PluginData) => Info;
+    async?: (value: Value, ctx: AsyncParsePluginContext, data: PluginData) => Promise<Info>;
+    stream?: (value: Value, ctx: StreamParsePluginContext, data: PluginData) => Info;
   };
   /**
    * Convert the parsed node into a JS string
@@ -60,11 +48,7 @@ export interface Plugin<Value, Info extends PluginInfo> {
   /**
    * Convert the parsed node into its runtime equivalent.
    */
-  deserialize(
-    node: Info,
-    ctx: DeserializePluginContext,
-    data: PluginData,
-  ): Value;
+  deserialize(node: Info, ctx: DeserializePluginContext, data: PluginData): Value;
 }
 
 export function createPlugin<Value, Info extends PluginInfo>(

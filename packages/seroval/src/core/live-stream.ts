@@ -78,9 +78,7 @@ interface PendingRead<T> {
   reject: (reason: unknown) => void;
 }
 
-export function isLiveStream<T>(value: {
-  __SEROVAL_STREAM__: unknown;
-}): value is LiveStream<T> {
+export function isLiveStream<T>(value: { __SEROVAL_STREAM__: unknown }): value is LiveStream<T> {
   return value.__SEROVAL_STREAM__ === 2;
 }
 
@@ -211,7 +209,7 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
     let current: LiveStreamSink<T> | undefined = sink;
     function next(): void {
       consumer.read().then(
-        delivery => {
+        (delivery) => {
           const target = current;
           if (!target) {
             return;
@@ -220,12 +218,7 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
           let failure: unknown;
           let failed = false;
           try {
-            failure = (
-              target[event.type] as (
-                value: unknown,
-                accept: () => void,
-              ) => unknown
-            )(
+            failure = (target[event.type] as (value: unknown, accept: () => void) => unknown)(
               event.type === 'throw' ? event.error : event.value,
               // oxlint-disable-next-line unbound-method -- accept is a closure and does not use this.
               delivery.accept,
@@ -250,7 +243,7 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
           current = undefined;
           target.done?.();
         },
-        reason => {
+        (reason) => {
           const target = current;
           current = undefined;
           target?.error?.(reason);

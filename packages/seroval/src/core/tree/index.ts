@@ -1,18 +1,12 @@
 import { ALL_ENABLED } from '../compat';
-import {
-  createAsyncParserContext,
-  parseTopAsync,
-} from '../context/async-parser';
+import { createAsyncParserContext, parseTopAsync } from '../context/async-parser';
 import {
   type BaseDeserializerContextOptions,
   createVanillaDeserializerContext,
   deserializeTop,
 } from '../context/deserializer';
 import type { BaseParserContextOptions } from '../context/parser';
-import {
-  createVanillaSerializerContext,
-  serializeTopVanilla,
-} from '../context/serializer';
+import { createVanillaSerializerContext, serializeTopVanilla } from '../context/serializer';
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
 import { type PluginAccessOptions, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
@@ -29,10 +23,7 @@ export type ToJSONOptions = SerializeOptions;
 /** Options for `toJSONAsync`. */
 export type ToJSONAsyncOptions = SerializeAsyncOptions;
 
-export function serialize<T>(
-  source: T,
-  options: SerializeOptions = {},
-): string {
+export function serialize<T>(source: T, options: SerializeOptions = {}): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
@@ -81,15 +72,13 @@ export interface SerovalJSON {
 }
 
 export interface FromJSONOptions
-  extends PluginAccessOptions,
+  extends
+    PluginAccessOptions,
     Pick<BaseDeserializerContextOptions, 'depthLimit' | 'maxBase64Length'> {
   disabledFeatures?: number;
 }
 
-export function toJSON<T>(
-  source: T,
-  options: ToJSONOptions = {},
-): SerovalJSON {
+export function toJSON<T>(source: T, options: ToJSONOptions = {}): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
@@ -122,10 +111,7 @@ export async function toJSONAsync<T>(
   };
 }
 
-export function compileJSON(
-  source: SerovalJSON,
-  options: PluginAccessOptions = {},
-): string {
+export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = {}): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createVanillaSerializerContext({
     plugins,
@@ -135,10 +121,7 @@ export function compileJSON(
   return serializeTopVanilla(ctx, source.t);
 }
 
-export function fromJSON<T>(
-  source: SerovalJSON,
-  options: FromJSONOptions = {},
-): T {
+export function fromJSON<T>(source: SerovalJSON, options: FromJSONOptions = {}): T {
   const plugins = resolvePlugins(options.plugins);
   const disabledFeatures = options.disabledFeatures ?? 0;
   // oxlint-disable-next-line no-unnecessary-condition -- Untrusted JSON can omit the features.

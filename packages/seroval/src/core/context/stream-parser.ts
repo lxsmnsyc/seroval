@@ -17,11 +17,7 @@ import { SpecialReference } from '../special-reference';
 import type { Stream, StreamListener } from '../stream';
 import { SYM_ASYNC_ITERATOR } from '../symbols';
 import type { SerovalNode, SerovalPluginNode } from '../types';
-import {
-  createBaseParserContext,
-  createIndexForValue,
-  parseSpecialReference,
-} from './parser';
+import { createBaseParserContext, createIndexForValue, parseSpecialReference } from './parser';
 import {
   type OutputRecord,
   ParserMode,
@@ -284,13 +280,7 @@ function handlePromise(
   data: unknown,
 ): void {
   if (this.state.alive) {
-    parseEvent(
-      this,
-      depth,
-      data,
-      wrapPromiseResult.bind(null, this, type, id),
-      NIL,
-    );
+    parseEvent(this, depth, data, wrapPromiseResult.bind(null, this, type, id), NIL);
   }
   popPendingState(this);
 }
@@ -350,7 +340,7 @@ function iterateAsync(
   function pull(): void {
     if (active) {
       iterator.next().then(
-        result => {
+        (result) => {
           if (active) {
             if (result.done) {
               active = false;
@@ -362,7 +352,7 @@ function iterateAsync(
             }
           }
         },
-        error => {
+        (error) => {
           if (active) {
             active = false;
             listener.throw(error, NIL as unknown as () => void);
@@ -376,9 +366,7 @@ function iterateAsync(
   pull();
 }
 
-function createStreamParserState(
-  options: StreamParserContextOptions,
-): StreamParserState {
+function createStreamParserState(options: StreamParserContextOptions): StreamParserState {
   return {
     alive: true,
     pending: 0,
@@ -484,10 +472,7 @@ function drainOutput(ctx: StreamParserContext): void {
       const result: unknown = state.onParse(record.node, record.initial);
       // Only objects and functions can be thenables; primitive prototypes
       // must not affect incidental callback returns.
-      if (
-        result !== null &&
-        (typeof result === 'object' || typeof result === 'function')
-      ) {
+      if (result !== null && (typeof result === 'object' || typeof result === 'function')) {
         const then: unknown = Reflect.get(result, 'then');
         if (typeof then === 'function') {
           pending = new Promise<void>((resolve, reject) => {
@@ -525,7 +510,7 @@ function drainOutput(ctx: StreamParserContext): void {
             drainOutput(ctx);
           }
         },
-        error => {
+        (error) => {
           state.writing = false;
           state.inFlight = NIL;
           releaseRecord(record);
@@ -561,10 +546,7 @@ function checkStreamParse(ctx: StreamParserContext): void {
   }
 }
 
-export function startStreamParse(
-  ctx: StreamParserContext,
-  current: unknown,
-): void {
+export function startStreamParse(ctx: StreamParserContext, current: unknown): void {
   const state = ctx.state;
   let parsed: SerovalNode | undefined;
   let failure: { value: unknown } | undefined;
@@ -638,11 +620,7 @@ function releaseParserValues(ctx: StreamParserContext): void {
  * Ends the parse once: `onDone` on success, `onError` on failure, and every
  * cleanup either way.
  */
-function stopStreamParse(
-  ctx: StreamParserContext,
-  mode: 0 | 1 | 2,
-  reason?: unknown,
-): void {
+function stopStreamParse(ctx: StreamParserContext, mode: 0 | 1 | 2, reason?: unknown): void {
   const state = ctx.state;
   if (state.alive) {
     state.alive = false;
@@ -686,9 +664,6 @@ function stopStreamParse(
   }
 }
 
-export function destroyStreamParse(
-  ctx: StreamParserContext,
-  reason?: unknown,
-): void {
+export function destroyStreamParse(ctx: StreamParserContext, reason?: unknown): void {
   stopStreamParse(ctx, 2, reason);
 }

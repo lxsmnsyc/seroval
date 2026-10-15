@@ -34,10 +34,6 @@ const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
   PROMISE_CONSTRUCTOR,
 );
 
-export function streamToAsyncIterable<T>(
-  stream: Stream<T>,
-): () => AsyncIterableIterator<T> {
-  return createAsyncIterable(
-    stream,
-  ) as unknown as () => AsyncIterableIterator<T>;
+export function streamToAsyncIterable<T>(stream: Stream<T>): () => AsyncIterableIterator<T> {
+  return createAsyncIterable(stream) as unknown as () => AsyncIterableIterator<T>;
 }

@@ -22,30 +22,21 @@ export const PROMISE_CONSTRUCTOR = (): PromiseConstructorResolver => {
   return resolver;
 };
 
-export const PROMISE_SUCCESS = (
-  resolver: PromiseConstructorResolver,
-  data: unknown,
-): void => {
+export const PROMISE_SUCCESS = (resolver: PromiseConstructorResolver, data: unknown): void => {
   resolver.s(data);
   resolver.p.s = 1;
   resolver.p.v = data;
 };
 
-export const PROMISE_FAILURE = (
-  resolver: PromiseConstructorResolver,
-  data: unknown,
-): void => {
+export const PROMISE_FAILURE = (resolver: PromiseConstructorResolver, data: unknown): void => {
   resolver.f(data);
   resolver.p.s = 2;
   resolver.p.v = data;
 };
 
-export const SERIALIZED_PROMISE_CONSTRUCTOR =
-  /* @__PURE__ */ PROMISE_CONSTRUCTOR.toString();
-export const SERIALIZED_PROMISE_SUCCESS =
-  /* @__PURE__ */ PROMISE_SUCCESS.toString();
-export const SERIALIZED_PROMISE_FAILURE =
-  /* @__PURE__ */ PROMISE_FAILURE.toString();
+export const SERIALIZED_PROMISE_CONSTRUCTOR = /* @__PURE__ */ PROMISE_CONSTRUCTOR.toString();
+export const SERIALIZED_PROMISE_SUCCESS = /* @__PURE__ */ PROMISE_SUCCESS.toString();
+export const SERIALIZED_PROMISE_FAILURE = /* @__PURE__ */ PROMISE_FAILURE.toString();
 
 interface StreamListener<T> {
   next(value: T): void;
@@ -93,12 +84,7 @@ export const STREAM_CONSTRUCTOR = (live?: number): Stream<unknown> => {
         }
       }
     },
-    up(
-      listener: StreamListener<unknown>,
-      x?: number,
-      z?: number,
-      current?: unknown,
-    ) {
+    up(listener: StreamListener<unknown>, x?: number, z?: number, current?: unknown) {
       for (x = 0, z = buffer.length; x < z; x++) {
         current = buffer[x];
         if (!alive && x === z - 1) {
@@ -170,8 +156,7 @@ export const STREAM_CONSTRUCTOR = (live?: number): Stream<unknown> => {
   };
 };
 
-export const SERIALIZED_STREAM_CONSTRUCTOR =
-  /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
+export const SERIALIZED_STREAM_CONSTRUCTOR = /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
 
 // Serialized via toString() — nested functions must be shorthand methods
 // (see STREAM_CONSTRUCTOR).
@@ -203,8 +188,7 @@ export const ITERATOR_CONSTRUCTOR =
     return instance;
   };
 
-export const SERIALIZED_ITERATOR_CONSTRUCTOR =
-  /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
+export const SERIALIZED_ITERATOR_CONSTRUCTOR = /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
 
 // Serialized via toString() — nested functions must be shorthand methods
 // (see STREAM_CONSTRUCTOR).

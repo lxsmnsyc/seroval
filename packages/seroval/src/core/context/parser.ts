@@ -6,22 +6,12 @@ import {
 } from '../base-primitives';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import type { WellKnownSymbols } from '../constants';
-import {
-  INV_SYMBOL_REF,
-  NIL,
-  SerovalNodeType,
-  SerovalTemporalType,
-} from '../constants';
+import { INV_SYMBOL_REF, NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
 import type { PluginAccessOptions } from '../plugin';
 import { getReferenceID } from '../reference';
-import {
-  ASYNC_ITERATOR,
-  ITERATOR,
-  SPECIAL_REFS,
-  SpecialReference,
-} from '../special-reference';
+import { ASYNC_ITERATOR, ITERATOR, SPECIAL_REFS, SpecialReference } from '../special-reference';
 import { SYM_ASYNC_ITERATOR, SYM_ITERATOR } from '../symbols';
 import type {
   SerovalArrayBufferNode,
@@ -59,9 +49,7 @@ export interface BaseParserContext extends PluginAccessOptions {
   compactArrayBufferViews: boolean;
 }
 
-export function createBaseParserContext(
-  options: BaseParserContextOptions,
-): BaseParserContext {
+export function createBaseParserContext(options: BaseParserContextOptions): BaseParserContext {
   return {
     plugins: options.plugins,
     marked: new Set(),
@@ -91,10 +79,7 @@ export function isParserRefMarked(ctx: BaseParserContext, id: number): boolean {
  * @param ctx
  * @param current
  */
-export function createIndexForValue(
-  ctx: BaseParserContext,
-  current: unknown,
-): number {
+export function createIndexForValue(ctx: BaseParserContext, current: unknown): number {
   const id = ctx.refs.size;
   ctx.refs.set(current, id);
   return id;
@@ -121,9 +106,7 @@ export function getReferenceNode(
     return indexed;
   }
   const referenceId = getReferenceID(current);
-  return referenceId === undefined
-    ? indexed
-    : createReferenceNode(indexed, referenceId);
+  return referenceId === undefined ? indexed : createReferenceNode(indexed, referenceId);
 }
 
 /**
@@ -181,24 +164,13 @@ export function parseAsyncIteratorFactory(
   if (typeof result !== 'number') {
     return result;
   }
-  return createSerovalNode(
-    SerovalNodeType.AsyncIteratorFactory,
-    result,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    [
-      parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
-      parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR),
-    ],
-  );
+  return createSerovalNode(SerovalNodeType.AsyncIteratorFactory, result, NIL, NIL, NIL, NIL, NIL, [
+    parseSpecialReference(ctx, SpecialReference.PromiseConstructor),
+    parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR),
+  ]);
 }
 
-export function getTemporalType(
-  currentClass: unknown,
-): SerovalTemporalType | undefined {
+export function getTemporalType(currentClass: unknown): SerovalTemporalType | undefined {
   switch (currentClass) {
     case Temporal.Instant:
       return SerovalTemporalType.Instant;
@@ -405,11 +377,8 @@ export function getArrayBufferView<T extends ArrayBufferView>(
   if (!ctx.compactArrayBufferViews) {
     return current;
   }
-  const buffer = new Uint8Array(
-    current.buffer,
-    current.byteOffset,
-    current.byteLength,
-  ).slice().buffer;
+  const buffer = new Uint8Array(current.buffer, current.byteOffset, current.byteLength).slice()
+    .buffer;
   const Constructor = current.constructor as new (buffer: ArrayBuffer) => T;
   return new Constructor(buffer);
 }

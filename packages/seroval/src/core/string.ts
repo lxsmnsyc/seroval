@@ -39,10 +39,7 @@ export function serializeString(str: string): string {
   if (!NEEDS_ESCAPE.test(str)) {
     return str;
   }
-  if (
-    str.length >= MIN_JSON_STRINGIFY_LENGTH &&
-    !JSON_ESCAPE_DIFFERENCES.test(str)
-  ) {
+  if (str.length >= MIN_JSON_STRINGIFY_LENGTH && !JSON_ESCAPE_DIFFERENCES.test(str)) {
     let result = JSON.stringify(str).slice(1, -1);
     // JSON never emits these from an escape, so each one is an original
     // character that still needs Seroval's encoding.

@@ -1,10 +1,6 @@
 import { crossSerializeStream } from './cross';
 import { SerovalParserError } from './errors';
-import {
-  type Plugin,
-  type PluginAccessOptions,
-  resolvePlugins,
-} from './plugin';
+import { type Plugin, type PluginAccessOptions, resolvePlugins } from './plugin';
 import { serializeString } from './string';
 
 export interface SerializerOptions extends PluginAccessOptions {
@@ -55,16 +51,14 @@ export default class Serializer {
         disabledFeatures: options.disabledFeatures,
         compactArrayBufferViews: options.compactArrayBufferViews,
         depthLimit: options.depthLimit,
-        onError: error => {
+        onError: (error) => {
           let failure: { value: unknown } | undefined;
           try {
             // oxlint-disable-next-line no-unnecessary-condition -- JavaScript callers can omit onError.
             if (options.onError) {
               options.onError(error);
             } else {
-              throw error instanceof SerovalParserError
-                ? error
-                : new SerovalParserError(error);
+              throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
             }
           } catch (handlerError) {
             failure = { value: handlerError };
@@ -83,11 +77,7 @@ export default class Serializer {
           if (this.alive && current) {
             current.onData(
               initial
-                ? current.globalIdentifier +
-                    '["' +
-                    serializeString(key) +
-                    '"]=' +
-                    data
+                ? current.globalIdentifier + '["' + serializeString(key) + '"]=' + data
                 : data,
             );
           }

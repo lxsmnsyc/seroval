@@ -1,9 +1,5 @@
 import { FeatureFlag } from '../compat';
-import {
-  ERROR_CONSTRUCTOR,
-  ERROR_CONSTRUCTOR_STRING,
-  ErrorConstructorTag,
-} from '../constants';
+import { ERROR_CONSTRUCTOR, ERROR_CONSTRUCTOR_STRING, ErrorConstructorTag } from '../constants';
 
 type ErrorValue =
   | Error

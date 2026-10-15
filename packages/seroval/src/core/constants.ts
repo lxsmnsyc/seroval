@@ -199,22 +199,18 @@ type ErrorConstructors =
   | TypeErrorConstructor
   | URIErrorConstructor;
 
-export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
-  {
-    [ErrorConstructorTag.Error]: Error,
-    [ErrorConstructorTag.EvalError]: EvalError,
-    [ErrorConstructorTag.RangeError]: RangeError,
-    [ErrorConstructorTag.ReferenceError]: ReferenceError,
-    [ErrorConstructorTag.SyntaxError]: SyntaxError,
-    [ErrorConstructorTag.TypeError]: TypeError,
-    [ErrorConstructorTag.URIError]: URIError,
-  };
+export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> = {
+  [ErrorConstructorTag.Error]: Error,
+  [ErrorConstructorTag.EvalError]: EvalError,
+  [ErrorConstructorTag.RangeError]: RangeError,
+  [ErrorConstructorTag.ReferenceError]: ReferenceError,
+  [ErrorConstructorTag.SyntaxError]: SyntaxError,
+  [ErrorConstructorTag.TypeError]: TypeError,
+  [ErrorConstructorTag.URIError]: URIError,
+};
 
 // Each constructor's own name is the identifier the serializer emits.
-function createErrorConstructorStringTable(): Record<
-  ErrorConstructorTag,
-  string
-> {
+function createErrorConstructorStringTable(): Record<ErrorConstructorTag, string> {
   const result = {} as Record<ErrorConstructorTag, string>;
   for (let i: ErrorConstructorTag = 0; i <= ErrorConstructorTag.URIError; i++) {
     result[i] = ERROR_CONSTRUCTOR[i].name;
@@ -222,5 +218,4 @@ function createErrorConstructorStringTable(): Record<
   return result;
 }
 
-export const ERROR_CONSTRUCTOR_STRING =
-  /* @__PURE__ */ createErrorConstructorStringTable();
+export const ERROR_CONSTRUCTOR_STRING = /* @__PURE__ */ createErrorConstructorStringTable();
