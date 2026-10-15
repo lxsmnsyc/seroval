@@ -26,7 +26,9 @@ export const enum FeatureFlag {
  */
 export enum Feature {
   AggregateError = 0x01,
-  // @deprecated
+  /**
+   * @deprecated Has no effect. Output always uses arrow functions.
+   */
   ArrowFunction = 0x02,
   ErrorPrototypeStack = 0x04,
   ObjectAssign = 0x08,
