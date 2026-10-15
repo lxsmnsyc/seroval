@@ -1,6 +1,6 @@
 {
   "exclude": ["node_modules"],
-  "include": ["web", "tests", "index.ts"],
+  "include": ["web", "tests", "index.ts", "tsdown.config.ts"],
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
@@ -17,6 +17,7 @@
     "jsx": "react",
     "esModuleInterop": true,
     "target": "ESNext",
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "types": ["node"]
   }
 }
