@@ -13,7 +13,7 @@
     "pridepack"
   ],
   "devDependencies": {
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.5",
     "@vitest/ui": "^5.0.2",
     "esbuild": "^0.28.2",
     "seroval": "workspace:*",

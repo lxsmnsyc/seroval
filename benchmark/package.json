@@ -11,7 +11,7 @@
     "test:reports": "node --test reports/*.test.mjs"
   },
   "devDependencies": {
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.5",
     "esbuild": "^0.28.2",
     "tslib": "^2.6.2",
     "typescript": "^7.0.2"
