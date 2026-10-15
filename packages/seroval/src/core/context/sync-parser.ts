@@ -150,17 +150,21 @@ export interface StreamParserState {
   alive: boolean;
   // Number of pending things
   pending: number;
-  // Depth of synchronous parses in progress. Records are held back until the
-  // record that introduces their references has been queued.
+  // Depth of synchronous parsing/output/terminal callback frames. Records are
+  // held until their containing parse is queued; terminal reason release waits
+  // until all frames that can register late cleanup have unwound.
   parsing: number;
   // Records waiting to be emitted, in order.
   queue: OutputRecord[];
   // An output callback returned a promise that has not settled yet.
   writing: boolean;
+  inFlight: OutputRecord | undefined;
   // Why the parse stopped early, handed to live stream sources on cleanup.
   reason: unknown;
   // Callbacks
-  onParse: (node: SerovalNode, initial: boolean) => void | PromiseLike<void>;
+  onParse:
+    | ((node: SerovalNode, initial: boolean) => void | PromiseLike<void>)
+    | undefined;
   onError?: (error: unknown) => void;
   onDone?: () => void;
 
@@ -452,11 +456,14 @@ function parsePromise(
   id: number,
   current: Promise<unknown>,
 ): SerovalPromiseConstructorNode {
+  // Only the stream mode can send the settled value later. The other sync
+  // modes would send a promise that never settles.
+  if (ctx.type !== ParserMode.Stream) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   // Creates a unique reference for the promise resolver
   const resolver = createIndexForValue(ctx.base, {});
-  if (ctx.type === ParserMode.Stream) {
-    ctx.state.promise(ctx, resolver, depth, current);
-  }
+  ctx.state.promise(ctx, resolver, depth, current);
   return createPromiseConstructorNode(ctx.base, id, resolver);
 }
 

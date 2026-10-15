@@ -82,6 +82,8 @@ const enum SpecificErrorCodes {
   MalformedNode = 8,
   ConflictedNodeId = 9,
   DepthLimit = 10,
+  Aborted = 11,
+  LiveStream = 12,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -132,6 +134,10 @@ export class SerovalMissingInstanceError extends Error {
   }
 }
 
+/**
+ * @deprecated Not thrown by seroval. A missing `createReference` key throws
+ * {@link SerovalMissingReferenceForIdError} instead.
+ */
 export class SerovalMissingReferenceError extends Error {
   constructor(public value: unknown) {
     super(
@@ -196,6 +202,16 @@ export class SerovalDepthLimitError extends Error {
   }
 }
 
+export class SerovalAbortedError extends Error {
+  constructor() {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.Aborted)
+        : 'Cross deserializer has been aborted.',
+    );
+  }
+}
+
 export type LiveStreamErrorReason =
   | 'consumed'
   | 'pending'
@@ -213,7 +229,7 @@ export class SerovalLiveStreamError extends Error {
   constructor(public reason: LiveStreamErrorReason) {
     super(
       import.meta.env.PROD
-        ? 'Live stream error: ' + reason
+        ? getSpecificErrorMessage(SpecificErrorCodes.LiveStream)
         : LIVE_STREAM_ERROR_MESSAGES[reason],
     );
   }

@@ -17,6 +17,7 @@ export type {
   SerializePluginContext,
   VanillaSerializerContextOptions,
 } from './core/context/serializer';
+export type { StreamParsePluginContext } from './core/context/stream-parser';
 export type {
   StreamParserContextOptions,
   SyncParsePluginContext,

@@ -2,6 +2,68 @@ import { describe, expect, it, vi } from 'vitest';
 import { createStream, Serializer } from '../src';
 
 describe('Serializer lifecycle', () => {
+  it('isolates a failed write from later writes and pending siblings', async () => {
+    let resolve!: (value: string) => void;
+    const pending = new Promise<string>(r => {
+      resolve = r;
+    });
+    const values: Record<string, unknown> = {};
+    const refs: unknown[] = [];
+    const events: string[] = [];
+    const onDone = vi.fn();
+    const writer = new Serializer({
+      globalIdentifier: 'values',
+      onData(source) {
+        new Function('values', '$R', source)(values, refs);
+        events.push(source);
+      },
+      onError() {
+        events.push('error');
+      },
+      onDone,
+    });
+    writer.write('a', pending);
+    writer.write('b', () => 1);
+    writer.write('c', 'after');
+    writer.flush();
+    expect(events).toHaveLength(3);
+    expect(events[1]).toBe('error');
+    expect(values.c).toBe('after');
+    expect(onDone).not.toHaveBeenCalled();
+    resolve('done');
+    await pending;
+    await new Promise<void>(r => setTimeout(r, 0));
+    await expect(values.a).resolves.toBe('done');
+    expect(events).toHaveLength(4);
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it('settles only the failing async write after flush', async () => {
+    const bad = createStream<unknown>();
+    const good = createStream<number>();
+    const onData = vi.fn();
+    const onError = vi.fn();
+    const onDone = vi.fn();
+    const writer = new Serializer({
+      globalIdentifier: 'values',
+      onData,
+      onError,
+      onDone,
+    });
+    writer.write('bad', bad);
+    writer.write('good', good);
+    writer.flush();
+    bad.next(() => 1);
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onDone).not.toHaveBeenCalled();
+    onData.mockClear();
+    good.next(1);
+    good.return(2);
+    await new Promise<void>(r => setTimeout(r, 0));
+    expect(onData).toHaveBeenCalledTimes(2);
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
   it.each(['flush', 'close'] as const)(
     'completes once when %s reenters close',
     operation => {

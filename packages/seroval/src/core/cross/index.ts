@@ -3,8 +3,12 @@ import {
   createAsyncParserContext,
   parseTopAsync,
 } from '../context/async-parser';
-import type { CrossDeserializerContextOptions } from '../context/deserializer';
+import type {
+  CrossDeserializerContext,
+  CrossDeserializerContextOptions,
+} from '../context/deserializer';
 import {
+  abortDeferred,
   createCrossDeserializerContext,
   deserializeTop,
 } from '../context/deserializer';
@@ -23,6 +27,7 @@ import type {
   SyncParserContextOptions,
 } from '../context/sync-parser';
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
+import { SerovalAbortedError } from '../errors';
 import { resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 
@@ -126,8 +131,10 @@ export interface CrossSerializeStreamOptions
 export function crossSerializeStream<T>(
   source: T,
   options: CrossSerializeStreamOptions,
-): () => void {
+): (reason?: unknown) => void {
   const plugins = resolvePlugins(options.plugins);
+  const onSerialize = options.onSerialize;
+  const scopeId = options.scopeId;
   const ctx = createStreamParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
     depthLimit: options.depthLimit,
@@ -138,22 +145,11 @@ export function crossSerializeStream<T>(
       const serial = createCrossSerializerContext({
         plugins,
         features: ctx.base.features,
-        scopeId: options.scopeId,
+        scopeId,
         markedRefs: ctx.base.marked,
       });
 
-      let serialized: string;
-
-      try {
-        serialized = serializeTopCross(serial, node);
-      } catch (err) {
-        if (options.onError) {
-          options.onError(err);
-        }
-        return;
-      }
-
-      return options.onSerialize(serialized, initial);
+      return onSerialize(serializeTopCross(serial, node), initial);
     },
     onError: options.onError,
     onDone: options.onDone,
@@ -169,7 +165,7 @@ export type ToCrossJSONStreamOptions = StreamParserContextOptions;
 export function toCrossJSONStream<T>(
   source: T,
   options: ToCrossJSONStreamOptions,
-): () => void {
+): (reason?: unknown) => void {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createStreamParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
@@ -189,18 +185,54 @@ export function toCrossJSONStream<T>(
 
 export type FromCrossJSONOptions = CrossDeserializerContextOptions;
 
-export function fromCrossJSON<T>(
-  source: SerovalNode,
+function createFromCrossJSONContext(
   options: FromCrossJSONOptions,
-): T {
-  const plugins = resolvePlugins(options.plugins);
-  const ctx = createCrossDeserializerContext({
+): CrossDeserializerContext {
+  return createCrossDeserializerContext({
     maxBase64Length: options.maxBase64Length,
-    plugins,
+    plugins: resolvePlugins(options.plugins),
     refs: options.refs,
     features: options.features,
     disabledFeatures: options.disabledFeatures,
     depthLimit: options.depthLimit,
   });
-  return deserializeTop(ctx, source) as T;
+}
+
+export function fromCrossJSON<T>(
+  source: SerovalNode,
+  options: FromCrossJSONOptions,
+): T {
+  return deserializeTop(createFromCrossJSONContext(options), source) as T;
+}
+
+export interface CrossDeserializer {
+  /** Deserializes one streamed record. Records share references. */
+  deserialize<T>(node: SerovalNode): T;
+  /** Deferred values (promises, streams) created but not yet settled. */
+  readonly pending: number;
+  /** Rejects pending promises and throws into open streams; idempotent. */
+  abort(reason: unknown): void;
+}
+
+export type CrossDeserializerOptions = FromCrossJSONOptions;
+
+export function createCrossDeserializer(
+  options: CrossDeserializerOptions,
+): CrossDeserializer {
+  const ctx = createFromCrossJSONContext(options);
+  ctx.base.pending = new Set();
+  return {
+    deserialize<T>(node: SerovalNode): T {
+      if (!ctx.base.pending) {
+        throw new SerovalAbortedError();
+      }
+      return deserializeTop(ctx, node) as T;
+    },
+    get pending(): number {
+      return ctx.base.pending?.size || 0;
+    },
+    abort(reason: unknown): void {
+      abortDeferred(ctx, reason);
+    },
+  };
 }
