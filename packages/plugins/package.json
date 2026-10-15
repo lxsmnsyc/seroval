@@ -38,7 +38,7 @@
     "url": "https://github.com/lxsmnsyc/seroval.git",
     "type": "git"
   },
-  "homepage": "https://github.com/lxsmnsyc/seroval/tree/main/packages/plugins",
+  "homepage": "https://seroval.vercel.app/docs/using-plugins",
   "bugs": {
     "url": "https://github.com/lxsmnsyc/seroval/issues"
   },

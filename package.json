@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "benchmark"
+    "benchmark",
+    "website"
   ],
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
