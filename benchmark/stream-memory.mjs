@@ -7,12 +7,14 @@ if (!globalThis.gc) {
 }
 
 const chunks = Number(process.argv[2] || 100000);
+/** @type {(value?: unknown) => void} */
 let release;
+/** @type {(value?: unknown) => void} */
 let ready;
-const gate = new Promise(resolve => {
+const gate = new Promise((resolve) => {
   release = resolve;
 });
-const reached = new Promise(resolve => {
+const reached = new Promise((resolve) => {
   ready = resolve;
 });
 
@@ -39,8 +41,7 @@ const finished = new Promise((resolve, reject) => {
 await reached;
 globalThis.gc();
 const retainedBytes = process.memoryUsage().heapUsed - before;
-console.log(
-  JSON.stringify({ node: process.version, chunks, emitted, retainedBytes }),
-);
+// oxlint-disable-next-line no-console -- The script prints its measurement.
+console.log(JSON.stringify({ node: process.version, chunks, emitted, retainedBytes }));
 release();
 await finished;

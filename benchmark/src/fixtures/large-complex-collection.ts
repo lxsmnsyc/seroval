@@ -1,4 +1,35 @@
-export default () => [
+interface Item {
+  _id: string;
+  index: number;
+  guid: string;
+  isActive: boolean;
+  balance: string;
+  picture: string;
+  age: number;
+  eyeColor: string;
+  name: {
+    first: string;
+    last: string;
+  };
+  company: string;
+  email: string;
+  phone: string;
+  address: string;
+  about: string;
+  registered: string;
+  latitude: string;
+  longitude: string;
+  tags: string[];
+  range: number[];
+  friends: {
+    id: number;
+    name: string;
+  }[];
+  greeting: string;
+  favoriteFruit: string;
+}
+
+const largeComplexCollection = (): Item[] => [
   {
     _id: '57923a918e0803771dd95e99',
     index: 0,
@@ -328,3 +359,5 @@ export default () => [
     favoriteFruit: 'strawberry',
   },
 ];
+
+export default largeComplexCollection;

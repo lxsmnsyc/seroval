@@ -11,7 +11,7 @@ interface Child {
   mother: Parent;
 }
 
-export default () => {
+const circularDedupe = (): { mother: Parent; father: Parent } => {
   const mother: Parent = {
     name: 'Jane',
     age: 30,
@@ -46,3 +46,5 @@ export default () => {
     father,
   };
 };
+
+export default circularDedupe;

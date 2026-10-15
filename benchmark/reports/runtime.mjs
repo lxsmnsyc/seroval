@@ -3,8 +3,24 @@ import { performance } from 'node:perf_hooks';
 import { pathToFileURL } from 'node:url';
 import { protocol, publicEntry } from './config.mjs';
 
+/** @typedef {typeof import('seroval')} Seroval */
+/** @typedef {import('./results.mjs').Row} Row */
+/** @typedef {Pick<import('./results.mjs').Settings, 'samples' | 'warmups' | 'warmupMs' | 'minSampleMs'>} Timing */
+
+/**
+ * Only the graph value has shared references to check.
+ * @typedef {object} Graph
+ * @property {unknown} [self]
+ * @property {object} [left]
+ * @property {object} [right]
+ */
+
+/**
+ * @returns {Array<[id: string, value: unknown, iterations: number]>}
+ */
 export function values() {
   const shared = { id: 7, text: 'shared' };
+  /** @type {Graph} */
   const graph = { left: shared, right: shared };
   graph.self = graph;
   return [
@@ -23,6 +39,11 @@ export function values() {
   ];
 }
 
+/**
+ * @param {Graph} actual
+ * @param {Graph | undefined} expected
+ * @returns {void}
+ */
 export function verifyValue(actual, expected) {
   assert.deepStrictEqual(actual, expected);
   if (expected?.self === expected) {
@@ -31,6 +52,9 @@ export function verifyValue(actual, expected) {
   }
 }
 
+/**
+ * @returns {AsyncGenerator<{ id: number, text: string }>}
+ */
 async function* chunks() {
   for (let i = 0; i < 64; i++) {
     await Promise.resolve();
@@ -38,7 +62,12 @@ async function* chunks() {
   }
 }
 
+/**
+ * @param {AsyncIterable<unknown>} actual
+ * @returns {Promise<void>}
+ */
 async function verifyIterable(actual) {
+  /** @type {unknown[]} */
   const restored = [];
   for await (const value of actual) {
     restored.push(value);
@@ -49,8 +78,16 @@ async function verifyIterable(actual) {
   );
 }
 
+/**
+ * @template T
+ * @param {() => T} operation
+ * @param {(value: T) => void} verify
+ * @param {number} iterations
+ * @returns {number}
+ */
 function syncBatch(operation, verify, iterations) {
   const start = performance.now();
+  /** @type {T | undefined} */
   let output;
   for (let i = 0; i < iterations; i++) {
     output = operation();
@@ -60,6 +97,14 @@ function syncBatch(operation, verify, iterations) {
   return elapsed;
 }
 
+/**
+ * @template T
+ * @param {() => T} operation
+ * @param {(value: T) => void} verify
+ * @param {number} iterations
+ * @param {Timing} settings
+ * @returns {number}
+ */
 export function calibrateSync(operation, verify, iterations, settings) {
   assert.ok(Number.isSafeInteger(iterations) && iterations > 0, 'Invalid batch iterations');
   let elapsed = 0;
@@ -76,8 +121,17 @@ export function calibrateSync(operation, verify, iterations, settings) {
   }
 }
 
+/**
+ * @template T
+ * @param {() => T} operation
+ * @param {(value: T) => void} verify
+ * @param {number} iterations
+ * @param {Timing} settings
+ * @returns {number[]}
+ */
 export function measureSync(operation, verify, iterations, settings) {
   assert.ok(Number.isSafeInteger(iterations) && iterations > 0, 'Invalid batch iterations');
+  /** @type {number[]} */
   const samples = [];
   let warmup = 0;
   for (let batch = 0; samples.length < settings.samples; batch++) {
@@ -91,8 +145,17 @@ export function measureSync(operation, verify, iterations, settings) {
   return samples;
 }
 
+/**
+ * @template I, O
+ * @param {() => I} prepare
+ * @param {(input: I) => Promise<O>} operation
+ * @param {(output: O) => void | Promise<void>} verify
+ * @param {number} iterations
+ * @returns {Promise<number>}
+ */
 async function asyncBatch(prepare, operation, verify, iterations) {
   const inputs = Array.from({ length: iterations }, () => prepare());
+  /** @type {O | undefined} */
   let output;
   const start = performance.now();
   for (const input of inputs) {
@@ -103,6 +166,14 @@ async function asyncBatch(prepare, operation, verify, iterations) {
   return elapsed;
 }
 
+/**
+ * @template I, O
+ * @param {() => I} prepare
+ * @param {(input: I) => Promise<O>} operation
+ * @param {(output: O) => void | Promise<void>} verify
+ * @param {Timing} settings
+ * @returns {Promise<number>}
+ */
 export async function calibrateAsync(prepare, operation, verify, settings) {
   let iterations = 1;
   let elapsed = 0;
@@ -119,8 +190,18 @@ export async function calibrateAsync(prepare, operation, verify, settings) {
   }
 }
 
+/**
+ * @template I, O
+ * @param {() => I} prepare
+ * @param {(input: I) => Promise<O>} operation
+ * @param {(output: O) => void | Promise<void>} verify
+ * @param {Timing} settings
+ * @param {number} [iterations]
+ * @returns {Promise<number[]>}
+ */
 export async function measureAsync(prepare, operation, verify, settings, iterations = 1) {
   assert.ok(Number.isSafeInteger(iterations) && iterations > 0, 'Invalid batch iterations');
+  /** @type {number[]} */
   const samples = [];
   let warmup = 0;
   for (let batch = 0; samples.length < settings.samples; batch++) {
@@ -134,13 +215,22 @@ export async function measureAsync(prepare, operation, verify, settings, iterati
   return samples;
 }
 
+/**
+ * @param {Seroval} api
+ * @param {Timing} settings
+ * @returns {Promise<Row[]>}
+ */
 async function measureStream(api, settings) {
+  /** @type {number[]} */
   const first = [];
+  /** @type {number[]} */
   const total = [];
   let warmup = 0;
   for (let batch = 0; first.length < settings.samples; batch++) {
     const input = chunks();
+    /** @type {import('seroval').SerovalNode[]} */
     const events = [];
+    /** @type {number | undefined} */
     let firstMs;
     const start = performance.now();
     await new Promise((resolve, reject) => {
@@ -156,6 +246,7 @@ async function measureStream(api, settings) {
     const totalMs = performance.now() - start;
     assert.notEqual(firstMs, undefined, 'Stream emitted no output');
     const refs = new Map();
+    /** @type {AsyncIterable<unknown>} */
     const restored = api.fromCrossJSON(events[0], { refs });
     for (const event of events.slice(1)) {
       api.fromCrossJSON(event, { refs });
@@ -174,12 +265,22 @@ async function measureStream(api, settings) {
   ];
 }
 
+/**
+ * Without iterations, this calibrates and returns the iteration count.
+ * @param {string} root
+ * @param {string} scenario
+ * @param {number} [iterations]
+ * @returns {Promise<number | Row[]>}
+ */
 export async function runtime(root, scenario, iterations) {
+  /** @type {Seroval} */
+  // oxlint-disable-next-line typescript/no-unsafe-assignment -- The public entry exports the seroval API.
   const api = await import(pathToFileURL(publicEntry(root)).href);
   if (scenario === 'object.collection.deserialize-cold') {
     const [, input] = values()[1];
     const encoded = api.serialize(input);
     const start = performance.now();
+    /** @type {unknown} */
     const output = api.deserialize(encoded);
     const elapsed = performance.now() - start;
     verifyValue(output, input);
@@ -200,6 +301,7 @@ export async function runtime(root, scenario, iterations) {
     }
     const json = scenario === `${id}.fromJSON` ? api.toJSON(input) : undefined;
     const js = scenario === `${id}.deserialize-warm` ? api.serialize(input) : undefined;
+    /** @type {Array<[name: string, operation: () => unknown, verify: (value: unknown) => void]>} */
     const operations = [
       [
         'serialize',
@@ -248,19 +350,25 @@ export async function runtime(root, scenario, iterations) {
       ];
     }
   }
+  /** @type {() => unknown} */
   let prepare;
+  /** @type {(input: unknown) => Promise<unknown>} */
   let operation;
+  /** @type {(output: unknown) => Promise<void>} */
   let verify;
   if (scenario === 'async.promise.toJSONAsync') {
     prepare = () => ({ value: Promise.resolve({ id: 1 }) });
+    // oxlint-disable-next-line typescript/promise-function-async -- An async wrapper would add work to the timed operation.
     operation = (input) => api.toJSONAsync(input);
     verify = async (output) => {
+      /** @type {{ value: Promise<unknown> }} */
       const restored = api.fromJSON(output);
       verifyValue(await restored.value, { id: 1 });
     };
   } else {
     assert.equal(scenario, 'async.iterable.toJSONAsync', 'Unknown runtime scenario');
     prepare = chunks;
+    // oxlint-disable-next-line typescript/promise-function-async -- An async wrapper would add work to the timed operation.
     operation = (input) => api.toJSONAsync(input);
     verify = async (output) => verifyIterable(api.fromJSON(output));
   }
@@ -278,6 +386,7 @@ export async function runtime(root, scenario, iterations) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  // oxlint-disable-next-line no-console -- measure.mjs reads this JSON from stdout.
   console.log(
     JSON.stringify(
       await runtime(

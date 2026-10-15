@@ -10,6 +10,69 @@ const repositoryPattern = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const trailingSlash = /\/$/;
 const files = ['history.json', 'index.html', 'size/index.html', 'speed/index.html'];
 
+/** @typedef {import('./results.mjs').History} History */
+/** @typedef {import('./results.mjs').Report} Report */
+
+/**
+ * @typedef {object} Repository
+ * @property {string} full_name
+ */
+
+/**
+ * @typedef {object} WorkflowRun
+ * @property {number} id
+ * @property {Repository} repository
+ * @property {Repository} head_repository
+ * @property {string} path
+ * @property {string} conclusion
+ * @property {string} event
+ * @property {string} head_sha
+ * @property {string} head_branch
+ * @property {string} run_started_at
+ */
+
+/**
+ * @typedef {object} PullRequest
+ * @property {number} number
+ * @property {string} state
+ * @property {{ sha: string, repo: Repository }} base
+ * @property {{ sha: string, ref: string, repo: Repository | null }} head
+ */
+
+/**
+ * @typedef {object} IssueComment
+ * @property {number} id
+ * @property {{ login: string }} user
+ * @property {string} body
+ */
+
+/**
+ * @typedef {object} GitTree
+ * @property {string} sha
+ * @property {boolean} truncated
+ * @property {Array<{ path: string, type: string, sha: string, size: number }>} tree
+ */
+
+/**
+ * @typedef {object} RequestOptions
+ * @property {string} [method]
+ * @property {Record<string, unknown>} [body]
+ * @property {boolean} [allow404]
+ */
+
+/**
+ * Resolves to null for HTTP 204, and for HTTP 404 when `allow404` is set.
+ * @typedef {<T>(path: string, options?: RequestOptions) => Promise<T>} GitHubApi
+ */
+
+/**
+ * @param {WorkflowRun} run
+ * @param {string} repository
+ * @param {string} defaultBranch
+ * @param {Report[]} reports
+ * @param {PullRequest} [pull]
+ * @returns {'comment' | 'history'}
+ */
 export function verifyRun(run, repository, defaultBranch, reports, pull) {
   assert.equal(run.repository.full_name, repository, 'Wrong run repository');
   assert.equal(run.path, '.github/workflows/benchmarks.yml', 'Wrong workflow');
@@ -42,10 +105,20 @@ export function verifyRun(run, repository, defaultBranch, reports, pull) {
   return 'history';
 }
 
+/**
+ * @param {GitHubApi} api
+ * @param {string} prefix
+ * @param {number} number
+ * @param {string} kind
+ * @param {string} body
+ * @returns {Promise<unknown>}
+ */
 export async function upsertComment(api, prefix, number, kind, body) {
   const marker = `<!-- seroval-benchmark-${kind} -->`;
+  /** @type {IssueComment | undefined} */
   let existing;
   for (let page = 1; ; page++) {
+    /** @type {IssueComment[]} */
     const comments = await api(`${prefix}/issues/${number}/comments?per_page=100&page=${page}`);
     existing = comments.find(
       (item) => item.user.login === 'github-actions[bot]' && item.body.startsWith(marker),
@@ -66,11 +139,19 @@ export async function upsertComment(api, prefix, number, kind, body) {
       });
 }
 
+/**
+ * @param {string} path
+ * @returns {Report}
+ */
 function loadReport(path) {
   assert.ok(statSync(path).size <= 2 * 1024 * 1024, 'Report exceeds size limit');
   return validateReport(JSON.parse(readFileSync(path, 'utf8')));
 }
 
+/**
+ * The caller names the response type of the GitHub REST API.
+ * @type {GitHubApi}
+ */
 async function github(path, { method = 'GET', body, allow404 = false } = {}) {
   const response = await fetch(`https://api.github.com/${path}`, {
     method,
@@ -80,6 +161,7 @@ async function github(path, { method = 'GET', body, allow404 = false } = {}) {
       'X-GitHub-Api-Version': '2022-11-28',
       'Content-Type': 'application/json',
     },
+    // oxlint-disable-next-line unicorn/no-invalid-fetch-options -- GET requests pass no body.
     body: body && JSON.stringify(body),
   });
   if (allow404 && response.status === 404) {
@@ -89,26 +171,42 @@ async function github(path, { method = 'GET', body, allow404 = false } = {}) {
   return response.status === 204 ? null : response.json();
 }
 
+/**
+ * @param {string} prefix
+ * @returns {Promise<{ head: string | null, history: History }>}
+ */
 async function readHistory(prefix) {
+  /** @type {{ object: { sha: string } } | null} */
   const ref = await github(`${prefix}/git/ref/heads/${branch}`, {
     allow404: true,
   });
   if (!ref) {
     return { head: null, history: { schemaVersion: 1, reports: [] } };
   }
+  /** @type {{ tree: { sha: string } }} */
   const commit = await github(`${prefix}/git/commits/${ref.object.sha}`);
+  /** @type {GitTree} */
   const tree = await github(`${prefix}/git/trees/${commit.tree.sha}?recursive=1`);
   assert.equal(tree.truncated, false, 'History tree is truncated');
   const entry = tree.tree.find((item) => item.path === 'history.json');
   assert.ok(entry?.type === 'blob', 'History branch has no history.json');
   assert.ok(entry.size <= 16 * 1024 * 1024, 'History is too large');
+  /** @type {{ encoding: string, content: string }} */
   const blob = await github(`${prefix}/git/blobs/${entry.sha}`);
   assert.equal(blob.encoding, 'base64');
   const history = validateHistory(JSON.parse(Buffer.from(blob.content, 'base64').toString('utf8')));
   return { head: ref.object.sha, history };
 }
 
+/**
+ * @param {string} prefix
+ * @param {string | null} head
+ * @param {string} output
+ * @param {string} revision
+ * @returns {Promise<void>}
+ */
 async function saveHistory(prefix, head, output, revision) {
+  /** @type {{ sha: string }} */
   const tree = await github(`${prefix}/git/trees`, {
     method: 'POST',
     body: {
@@ -120,6 +218,7 @@ async function saveHistory(prefix, head, output, revision) {
       })),
     },
   });
+  /** @type {{ sha: string }} */
   const commit = await github(`${prefix}/git/commits`, {
     method: 'POST',
     body: {
@@ -141,19 +240,30 @@ async function saveHistory(prefix, head, output, revision) {
   }
 }
 
+/**
+ * @param {string} input
+ * @param {string} output
+ * @returns {Promise<void>}
+ */
 export async function publish(input, output) {
   assert.ok(process.env.GH_TOKEN, 'GH_TOKEN is required');
   const repository = process.env.GITHUB_REPOSITORY;
   assert.match(repository, repositoryPattern);
+  /** @type {{ workflow_run: { id: number } }} */
+  // oxlint-disable-next-line typescript/no-unsafe-assignment -- The Actions runner writes the event payload.
   const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
   const prefix = `repos/${repository}`;
+  /** @type {WorkflowRun} */
   const run = await github(`${prefix}/actions/runs/${event.workflow_run.id}`);
   if (run.event === 'workflow_dispatch') {
+    // oxlint-disable-next-line no-console -- The workflow log shows this message.
     console.log('Manual run: results remain in measurement artifacts; no publication.');
     return;
   }
   const reports = ['size', 'speed'].map((kind) => loadReport(resolve(input, `${kind}.json`)));
+  /** @type {{ default_branch: string }} */
   const repo = await github(prefix);
+  /** @type {PullRequest | undefined} */
   let pull;
   if (run.event === 'pull_request') {
     assert.match(run.head_repository.full_name, repositoryPattern);
@@ -162,6 +272,7 @@ export async function publish(input, output) {
     const head = encodeURIComponent(`${owner}:${run.head_branch}`);
     // Fork runs may have neither commit-associated PRs nor pull_requests.
     for (let page = 1; ; page++) {
+      /** @type {PullRequest[]} */
       const pulls = await github(
         `${prefix}/pulls?head=${head}&state=open&per_page=100&page=${page}`,
       );
@@ -186,6 +297,7 @@ export async function publish(input, output) {
   }
   const mode = verifyRun(run, repository, repo.default_branch, reports, pull);
   const { head, history } = await readHistory(prefix);
+  /** @type {{ html_url?: string, build_type?: string } | null} */
   const pages = await github(`${prefix}/pages`, { allow404: true });
   const links = {
     run: `https://github.com/${repository}/actions/runs/${run.id}`,
@@ -212,6 +324,7 @@ export async function publish(input, output) {
     await saveHistory(prefix, head, output, run.head_sha);
     const enabled = pages?.build_type === 'workflow';
     if (!enabled) {
+      // oxlint-disable-next-line no-console -- GitHub Actions reads this workflow command from stdout.
       console.log(
         '::warning::History saved on benchmark-results. Enable GitHub Pages with source GitHub Actions, then rerun this publisher to deploy the dashboards.',
       );
