@@ -134,7 +134,7 @@ export type WellKnownSymbols = (typeof SYMBOL_REF)[Symbols];
 function createSymbolStringTable(): Record<Symbols, string> {
   const result = {} as Record<Symbols, string>;
   for (let i: Symbols = 0; i <= Symbols.Unscopables; i++) {
-    result[i] = SYMBOL_REF[i].description as string;
+    result[i] = SYMBOL_REF[i].description!;
   }
   return result;
 }
@@ -165,7 +165,7 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.Nan]: '0/0',
 };
 
-export const NIL = void 0;
+export const NIL = undefined;
 
 // Global literals keep this table free of member accesses so bundlers can
 // drop it when unused (`Number.POSITIVE_INFINITY` is not known to be pure).

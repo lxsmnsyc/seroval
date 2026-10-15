@@ -53,6 +53,21 @@ interface StreamListener<T> {
   return(value: T): void;
 }
 
+interface IteratorResultValue {
+  done: boolean;
+  value: unknown;
+}
+
+interface IteratorInstance {
+  [key: symbol]: () => IteratorInstance;
+  next(): IteratorResultValue;
+}
+
+interface AsyncIteratorInstance {
+  [key: symbol]: () => AsyncIteratorInstance;
+  next(): Promise<unknown> | IteratorResultValue;
+}
+
 // Serialized via toString() — every nested function must be an object method
 // in shorthand form. Shorthand methods take their name from the property key
 // at runtime, so name-preserving transforms (esbuild keepNames) emit nothing
@@ -62,7 +77,7 @@ interface StreamListener<T> {
 // `live` = 1 keeps history only until the first listener subscribes, then
 // forwards each value and refuses a second listener, so delivered values are
 // not retained. Absent, every listener gets the full history.
-export const STREAM_CONSTRUCTOR = (live?: number) => {
+export const STREAM_CONSTRUCTOR = (live?: number): Stream<unknown> => {
   const buffer: unknown[] = [];
   const listeners: (StreamListener<unknown> | undefined)[] = [];
   let alive = true;
@@ -70,7 +85,7 @@ export const STREAM_CONSTRUCTOR = (live?: number) => {
   let count = 0;
   const internal = {
     flush(value: unknown, mode: keyof StreamListener<unknown>, x?: number) {
-      (live as number) > 1 || buffer.push(value);
+      live! > 1 || buffer.push(value);
       for (x = 0; x < count; x++) {
         const listener = listeners[x];
         if (listener) {
@@ -93,8 +108,8 @@ export const STREAM_CONSTRUCTOR = (live?: number) => {
         }
       }
     },
-    on(listener: StreamListener<unknown>, temp = 0) {
-      if ((live as number) > 1) {
+    on(listener: StreamListener<unknown>, temp = 0): () => void {
+      if (live! > 1) {
         throw new Error('Stream consumed');
       }
       let subscribed = alive;
@@ -161,7 +176,7 @@ export const SERIALIZED_STREAM_CONSTRUCTOR =
 // Serialized via toString() — nested functions must be shorthand methods
 // (see STREAM_CONSTRUCTOR).
 export const ITERATOR_CONSTRUCTOR =
-  (symbol: symbol) => (sequence: Sequence) => () => {
+  (symbol: symbol) => (sequence: Sequence) => (): IteratorInstance => {
     let index = 0;
     const instance = {
       [symbol]() {
@@ -196,7 +211,7 @@ export const SERIALIZED_ITERATOR_CONSTRUCTOR =
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
   (stream: Stream<unknown>) =>
-  () => {
+  (): AsyncIteratorInstance => {
     let count = 0;
     let doneAt = -1;
     let isThrow = false;
@@ -288,7 +303,7 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
 export const SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR =
   /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR.toString();
 
-export const ARRAY_BUFFER_CONSTRUCTOR = (b64: string) => {
+export const ARRAY_BUFFER_CONSTRUCTOR = (b64: string): ArrayBuffer => {
   const decoded = atob(b64);
   const length = decoded.length;
   const arr = new Uint8Array(length);

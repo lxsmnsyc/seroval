@@ -70,6 +70,7 @@ export async function serializeAsync<T>(
 }
 
 export function deserialize<T>(source: string): T {
+  // oxlint-disable-next-line no-eval -- Deserializing runs the serialized source by design.
   return (0, eval)(source) as T;
 }
 
@@ -139,7 +140,8 @@ export function fromJSON<T>(
   options: FromJSONOptions = {},
 ): T {
   const plugins = resolvePlugins(options.plugins);
-  const disabledFeatures = options.disabledFeatures || 0;
+  const disabledFeatures = options.disabledFeatures ?? 0;
+  // oxlint-disable-next-line no-unnecessary-condition -- Untrusted JSON can omit the features.
   const sourceFeatures = source.f ?? ALL_ENABLED;
   const ctx = createVanillaDeserializerContext({
     depthLimit: options.depthLimit,

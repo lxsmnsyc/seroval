@@ -34,6 +34,7 @@ export function getErrorOptions(
   error: Error,
   features: number,
 ): Record<string, unknown> | undefined {
+  // oxlint-disable-next-line no-unsafe-assignment -- Object.create returns any, and a null-prototype record is intended.
   const options: Record<string, unknown> = Object.create(null);
   const construct = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
   if (error.name !== construct) {

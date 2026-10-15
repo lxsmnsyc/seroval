@@ -83,8 +83,8 @@ const ESCAPE_SEQUENCE = /(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g;
 
 function createUnescapedTable(): Record<string, string> {
   const result: Record<string, string> = {};
-  for (const char in ESCAPED) {
-    result[ESCAPED[char] as string] = char;
+  for (const char of Object.keys(ESCAPED)) {
+    result[ESCAPED[char]!] = char;
   }
   return result;
 }

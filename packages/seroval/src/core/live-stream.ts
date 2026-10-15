@@ -100,13 +100,13 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
   let cancelled = false;
   let cancelReason: unknown;
 
-  function deliver(read: PendingRead<T>, record: PendingEvent<T>): void {
+  function deliver(reader: PendingRead<T>, record: PendingEvent<T>): void {
     record.delivered = true;
-    read.resolve({
-      event: record.event as LiveStreamEvent<T>,
+    reader.resolve({
+      event: record.event!,
       accept() {
         if (pending === record && record.delivered) {
-          const terminal = (record.event as LiveStreamEvent<T>).type !== 'next';
+          const terminal = record.event!.type !== 'next';
           record.event = undefined;
           pending = undefined;
           const resolve = record.resolve;
@@ -115,9 +115,9 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
           if (terminal) {
             closed = true;
             options = undefined;
-            const read = waiting;
+            const waiter = waiting;
             waiting = undefined;
-            read?.reject(new SerovalLiveStreamError('closed'));
+            waiter?.reject(new SerovalLiveStreamError('closed'));
           }
           resolve?.();
         }
@@ -127,6 +127,7 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
 
   function push(event: LiveStreamEvent<T>): Promise<void> {
     if (cancelled) {
+      // oxlint-disable-next-line prefer-promise-reject-errors -- Rejects with the cancel reason as given.
       return Promise.reject(cancelReason);
     }
     if (closed) {
@@ -144,9 +145,9 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
       };
       pending = record;
       if (waiting) {
-        const read = waiting;
+        const waiter = waiting;
         waiting = undefined;
-        deliver(read, record);
+        deliver(waiter, record);
       }
     });
   }
@@ -158,7 +159,7 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
     cancelled = true;
     cancelReason = reason;
     const record = pending;
-    const read = waiting;
+    const waiter = waiting;
     pending = undefined;
     waiting = undefined;
     const callbackOwner = options;
@@ -170,14 +171,15 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
       record.reject = undefined;
       reject?.(reason);
     }
-    if (read) {
-      read.reject(reason);
+    if (waiter) {
+      waiter.reject(reason);
     }
     callbackOwner?.onCancel?.(reason);
   }
 
   function read(): Promise<LiveStreamDelivery<T>> {
     if (cancelled) {
+      // oxlint-disable-next-line prefer-promise-reject-errors -- Rejects with the cancel reason as given.
       return Promise.reject(cancelReason);
     }
     if (closed) {
@@ -225,6 +227,7 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
               ) => unknown
             )(
               event.type === 'throw' ? event.error : event.value,
+              // oxlint-disable-next-line unbound-method -- accept is a closure and does not use this.
               delivery.accept,
             );
           } catch (error) {
@@ -255,6 +258,7 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
       );
     }
     next();
+    // oxlint-disable-next-line unbound-method -- cancel is a closure and does not use this.
     return consumer.cancel;
   }
 

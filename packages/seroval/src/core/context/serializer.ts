@@ -3,9 +3,9 @@ import {
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
   NIL,
+  SYMBOL_STRING,
   SerovalNodeType,
   SerovalObjectFlags,
-  SYMBOL_STRING,
   TEMPORAL_TYPE_NAME,
 } from '../constants';
 import {
@@ -131,6 +131,7 @@ export interface FlaggedObject {
   value: string;
 }
 
+// oxlint-disable-next-line consistent-return -- The switch covers every assignment type.
 function getAssignmentExpression(assignment: Assignment): string {
   switch (assignment.t) {
     case AssignmentType.Index:
@@ -338,9 +339,9 @@ export function createCrossSerializerContext(
 type SerializerContext = VanillaSerializerContext | CrossSerializerContext;
 
 export class SerializePluginContext {
-  constructor(private _p: SerializerContext) {}
+  constructor(private readonly _p: SerializerContext) {}
 
-  serialize(node: SerovalNode) {
+  serialize(node: SerovalNode): string {
     return serialize(this._p, node);
   }
 }
@@ -364,7 +365,7 @@ function getVanillaRefParam(
     actualIndex = state.valid.size;
     state.valid.set(index, actualIndex);
   }
-  let identifier = state.vars[actualIndex];
+  let identifier = state.vars[actualIndex] as string | undefined;
   if (identifier == null) {
     identifier = getIdentifier(actualIndex);
     state.vars[actualIndex] = identifier;
@@ -696,7 +697,7 @@ function serializeProperties(
     const values = record.v;
     ctx.base.stack.push(source.i);
     let result = serializeProperty(ctx, source, keys[0], values[0]);
-    for (let i = 1, item = result; i < len; i++) {
+    for (let i = 1, item: string; i < len; i++) {
       item = serializeProperty(ctx, source, keys[i], values[i]);
       result += (item && result && ',') + item;
     }
@@ -895,7 +896,7 @@ function serializeSet(ctx: SerializerContext, node: SerovalSetNode): string {
   if (size > 0) {
     ctx.base.stack.push(id);
     let result = serializeSetItem(ctx, id, items[0]);
-    for (let i = 1, item = result; i < size; i++) {
+    for (let i = 1, item: string; i < size; i++) {
       item = serializeSetItem(ctx, id, items[i]);
       result += (item && result && ',') + item;
     }
@@ -995,7 +996,7 @@ function serializeMap(ctx: SerializerContext, node: SerovalMapNode): string {
     if (sentinelRef == null) {
       sentinelRef = getRefParam(ctx, sentinel.i);
       if (ctx.mode === SerovalMode.Vanilla) {
-        ctx.state.sentinels.add(ctx.state.valid.get(sentinel.i) as number);
+        ctx.state.sentinels.add(ctx.state.valid.get(sentinel.i)!);
       }
     }
     return sentinelRef;
@@ -1005,7 +1006,7 @@ function serializeMap(ctx: SerializerContext, node: SerovalMapNode): string {
     const vals = node.e.v;
     base.stack.push(id);
     let result = serializeMapEntry(ctx, id, keys[0], vals[0], getSentinel);
-    for (let i = 1, item = result; i < size; i++) {
+    for (let i = 1, item: string; i < size; i++) {
       item = serializeMapEntry(ctx, id, keys[i], vals[i], getSentinel);
       result += (item && result && ',') + item;
     }
@@ -1182,9 +1183,7 @@ function serializePlugin(
     for (let i = 0, len = currentPlugins.length; i < len; i++) {
       const plugin = currentPlugins[i];
       if (plugin.tag === node.c) {
-        if (ctx.child == null) {
-          ctx.child = new SerializePluginContext(ctx);
-        }
+        ctx.child ??= new SerializePluginContext(ctx);
         return plugin.serialize(node.s, ctx.child, {
           id: node.i,
         });
@@ -1333,7 +1332,7 @@ function serializeSequence(
   if (size > 0) {
     ctx.base.stack.push(id);
     let result = serializeSequenceItem(ctx, id, 0, items[0]);
-    for (let i = 1, item = result; i < size; i++) {
+    for (let i = 1, item: string; i < size; i++) {
       item = serializeSequenceItem(ctx, id, i, items[i]);
       result += (item && result && ',') + item;
     }

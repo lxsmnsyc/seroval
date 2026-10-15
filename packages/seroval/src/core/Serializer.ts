@@ -29,8 +29,9 @@ export default class Serializer {
 
   private cleanups: ((reason?: unknown) => void)[] = [];
 
-  private refs = new Map<unknown, number>();
+  private readonly refs = new Map<unknown, number>();
 
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   private plugins?: Plugin<any, any>[];
 
   private options: SerializerOptions | undefined;
@@ -57,6 +58,7 @@ export default class Serializer {
         onError: error => {
           let failure: { value: unknown } | undefined;
           try {
+            // oxlint-disable-next-line no-unnecessary-condition -- JavaScript callers can omit onError.
             if (options.onError) {
               options.onError(error);
             } else {
@@ -64,13 +66,13 @@ export default class Serializer {
                 ? error
                 : new SerovalParserError(error);
             }
-          } catch (error) {
-            failure = { value: error };
+          } catch (handlerError) {
+            failure = { value: handlerError };
           }
           try {
             this.finishWrite();
-          } catch (error) {
-            failure ??= { value: error };
+          } catch (finishError) {
+            failure ??= { value: finishError };
           }
           if (failure) {
             throw failure.value;
@@ -90,8 +92,11 @@ export default class Serializer {
             );
           }
         },
-        onDone: () => this.finishWrite(),
+        onDone: () => {
+          this.finishWrite();
+        },
       });
+      // oxlint-disable-next-line no-unnecessary-condition -- The callbacks above can close the serializer.
       if (this.alive) {
         this.cleanups.push(cleanup);
       } else {

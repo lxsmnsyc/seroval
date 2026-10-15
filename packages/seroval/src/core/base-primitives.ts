@@ -1,9 +1,9 @@
-import type { WellKnownSymbols } from './constants';
 import {
   INV_SYMBOL_REF,
   NIL,
   SerovalNodeType,
   type SerovalTemporalType,
+  type WellKnownSymbols,
 } from './constants';
 import {
   INFINITY_NODE,

@@ -1,9 +1,9 @@
 declare const T: unknown;
 
-const RETURN = () => T;
+const RETURN = (): unknown => T;
 const SERIALIZED_RETURN = /* @__PURE__ */ RETURN.toString();
 
-const IS_MODERN = /* @__PURE__ */ /=>/.test(SERIALIZED_RETURN);
+const IS_MODERN = /* @__PURE__ */ SERIALIZED_RETURN.includes('=>');
 
 export function createFunction(parameters: string[], body: string): string {
   if (IS_MODERN) {

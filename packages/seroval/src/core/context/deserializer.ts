@@ -4,9 +4,9 @@ import {
   CONSTANT_VAL,
   ERROR_CONSTRUCTOR,
   NIL,
+  SYMBOL_REF,
   SerovalNodeType,
   SerovalObjectFlags,
-  SYMBOL_REF,
   TEMPORAL_TYPE_NAME,
 } from '../constants';
 import {
@@ -25,11 +25,7 @@ import {
 } from '../errors';
 import type { PluginAccessOptions } from '../plugin';
 import { getReference } from '../reference';
-import {
-  createSequence,
-  type Sequence,
-  sequenceToIterator,
-} from '../sequence';
+import { type Sequence, createSequence, sequenceToIterator } from '../sequence';
 import type { Stream, StreamListener } from '../stream';
 import { streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
@@ -127,7 +123,7 @@ export function createBaseDeserializerContext(
   if (!Number.isSafeInteger(maxBase64Length) || maxBase64Length < 0) {
     throw new RangeError('maxBase64Length must be a non-negative safe integer');
   }
-  const refs = options.refs || new Map();
+  const refs = options.refs ?? new Map<number, unknown>();
   if (!('types' in refs)) {
     Object.assign(refs, {
       types: new Map(),
@@ -136,7 +132,8 @@ export function createBaseDeserializerContext(
   return {
     plugins: options.plugins,
     refs: refs as BaseDeserializerContext['refs'],
-    features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
+    features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures ?? 0),
+    // oxlint-disable-next-line prefer-nullish-coalescing -- A zero limit falls back to the default.
     depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
     maxBase64Length,
   };
@@ -184,8 +181,8 @@ type DeserializerContext =
 
 export class DeserializePluginContext {
   constructor(
-    private _p: DeserializerContext,
-    private depth: number,
+    private readonly _p: DeserializerContext,
+    private readonly depth: number,
   ) {}
 
   deserialize<T>(node: SerovalNode): T {
@@ -343,7 +340,7 @@ function deserializeProperties(
   const keys = node.k;
   const len = keys.length;
   if (len > 0) {
-    for (let i = 0, vals = node.v, len = keys.length; i < len; i++) {
+    for (let i = 0, vals = node.v; i < len; i++) {
       assignProperty(ctx, depth, result, keys[i], vals[i]);
     }
   }
@@ -465,6 +462,7 @@ function deserializeView(
   if (!(source instanceof ArrayBuffer)) {
     throw new SerovalMalformedNodeError(node);
   }
+  // oxlint-disable-next-line no-unnecessary-condition -- Untrusted nodes can omit the offset.
   const offset = node.b ?? 0;
   // The backing buffer is already capped at ArrayBuffer deserialization, and the
   // view constructor throws when offset + length exceeds it, so `node.l` needs
@@ -749,10 +747,13 @@ function deserialize(
     case SerovalNodeType.Constant:
       return deserializeKnownValue(node, CONSTANT_VAL, node.s);
     case SerovalNodeType.Number:
+      // oxlint-disable-next-line no-unnecessary-type-conversion -- Untrusted nodes can hold any value.
       return Number(node.s);
     case SerovalNodeType.String:
+      // oxlint-disable-next-line no-unnecessary-type-conversion -- Untrusted nodes can hold any value.
       return deserializeString(String(node.s));
     case SerovalNodeType.BigInt:
+      // oxlint-disable-next-line no-unnecessary-type-conversion -- Untrusted nodes can hold any value.
       if (String(node.s).length > MAX_BIGINT_LENGTH) {
         throw new SerovalMalformedNodeError(node);
       }

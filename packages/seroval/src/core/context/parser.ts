@@ -65,8 +65,9 @@ export function createBaseParserContext(
   return {
     plugins: options.plugins,
     marked: new Set(),
-    features: ALL_ENABLED ^ (options.disabledFeatures || 0),
-    refs: options.refs || new Map(),
+    features: ALL_ENABLED ^ (options.disabledFeatures ?? 0),
+    refs: options.refs ?? new Map<unknown, number>(),
+    // oxlint-disable-next-line prefer-nullish-coalescing -- A zero limit falls back to the default.
     depthLimit: options.depthLimit || 1000,
     compactArrayBufferViews: options.compactArrayBufferViews ?? false,
   };
@@ -90,18 +91,18 @@ export function isParserRefMarked(ctx: BaseParserContext, id: number): boolean {
  * @param ctx
  * @param current
  */
-export function createIndexForValue<T>(
+export function createIndexForValue(
   ctx: BaseParserContext,
-  current: T,
+  current: unknown,
 ): number {
   const id = ctx.refs.size;
   ctx.refs.set(current, id);
   return id;
 }
 
-export function getNodeForIndexedValue<T>(
+export function getNodeForIndexedValue(
   ctx: BaseParserContext,
-  current: T,
+  current: unknown,
 ): number | SerovalIndexedValueNode {
   const registeredId = ctx.refs.get(current);
   if (registeredId != null) {
@@ -111,9 +112,9 @@ export function getNodeForIndexedValue<T>(
   return createIndexForValue(ctx, current);
 }
 
-export function getReferenceNode<T>(
+export function getReferenceNode(
   ctx: BaseParserContext,
-  current: T,
+  current: unknown,
 ): number | SerovalIndexedValueNode | SerovalReferenceNode {
   const indexed = getNodeForIndexedValue(ctx, current);
   if (typeof indexed !== 'number') {

@@ -25,16 +25,16 @@ import {
 import {
   type OutputRecord,
   ParserMode,
-  parseSOS,
   type StreamParserContext,
   type StreamParserContextOptions,
   type StreamParserState,
+  parseSOS,
 } from './sync-parser';
 
 export class StreamParsePluginContext {
   constructor(
-    private _p: StreamParserContext,
-    private depth: number,
+    private readonly _p: StreamParserContext,
+    private readonly depth: number,
   ) {}
 
   parse<T>(current: T): SerovalNode {
@@ -122,6 +122,7 @@ function parsePluginStream(
   depth: number,
   id: number,
   current: unknown,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   currentPlugins: Plugin<any, any>[],
 ): SerovalPluginNode | undefined {
   for (let i = 0, len = currentPlugins.length; i < len; i++) {
@@ -130,6 +131,7 @@ function parsePluginStream(
       return createPluginNode(
         id,
         plugin.tag,
+        // oxlint-disable-next-line no-unsafe-argument -- Plugin info is any because plugins are stored as Plugin<any, any>.
         plugin.parse.stream(current, new StreamParsePluginContext(ctx, depth), {
           id,
         }),
@@ -239,7 +241,9 @@ function consumeLiveStream(
 ): void {
   const cancel = current.pump(streamListener(ctx, depth, id));
   pushPendingState(ctx);
-  addCleanup(ctx, () => cancel(ctx.state.reason));
+  addCleanup(ctx, () => {
+    cancel(ctx.state.reason);
+  });
 }
 
 function wrapPromiseResult(
@@ -335,7 +339,7 @@ function iterateAsync(
           Promise.resolve(iterator.return?.(ctx.state.reason)).catch(() => {
             // no-op
           });
-        } catch (_error) {
+        } catch {
           // no-op
         }
       } else {
@@ -465,7 +469,7 @@ function drainOutput(ctx: StreamParserContext): void {
     return;
   }
   while (state.alive && state.queue.length > 0) {
-    const record = state.queue.shift() as OutputRecord;
+    const record = state.queue.shift()!;
     if (!record.node) {
       continue;
     }
@@ -497,6 +501,7 @@ function drainOutput(ctx: StreamParserContext): void {
       return;
     } finally {
       state.parsing--;
+      // oxlint-disable-next-line no-unnecessary-condition -- The output callback can stop the parser.
       if (!state.alive) {
         releaseParserValues(ctx);
       }
@@ -505,6 +510,7 @@ function drainOutput(ctx: StreamParserContext): void {
     if (pending) {
       // Cancellation inside the callback must still observe its returned
       // thenable's rejection, without retaining the event or accepting it.
+      // oxlint-disable-next-line no-unnecessary-condition -- The output callback can stop the parser.
       if (!state.alive) {
         releaseRecord(record);
       }
@@ -528,6 +534,7 @@ function drainOutput(ctx: StreamParserContext): void {
       );
       return;
     }
+    // oxlint-disable-next-line no-unnecessary-condition -- The output callback can stop the parser.
     if (!state.alive) {
       releaseRecord(record);
       return;
@@ -554,9 +561,9 @@ function checkStreamParse(ctx: StreamParserContext): void {
   }
 }
 
-export function startStreamParse<T>(
+export function startStreamParse(
   ctx: StreamParserContext,
-  current: T,
+  current: unknown,
 ): void {
   const state = ctx.state;
   let parsed: SerovalNode | undefined;

@@ -229,7 +229,7 @@ export function createCrossDeserializer(
       return deserializeTop(ctx, node) as T;
     },
     get pending(): number {
-      return ctx.base.pending?.size || 0;
+      return ctx.base.pending?.size ?? 0;
     },
     abort(reason: unknown): void {
       abortDeferred(ctx, reason);

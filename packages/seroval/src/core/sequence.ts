@@ -33,7 +33,7 @@ export function createSequenceFromIterable<T>(source: Iterable<T>): Sequence {
   let doneAt = -1;
   const iterator = source[SYM_ITERATOR]();
 
-  while (true) {
+  for (;;) {
     try {
       const value = iterator.next();
       values.push(value.value);
