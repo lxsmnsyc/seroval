@@ -1,4 +1,5 @@
 import { useNavigate } from '@solidjs/router';
+import type { JSX } from '@solidjs/web';
 import type MiniSearch from 'minisearch';
 import { For, Show, createMemo, createSignal, onSettled } from 'solid-js';
 import { Command, CommandInput, CommandOption, CommandOptions } from 'terracotta/command';
@@ -67,7 +68,7 @@ function isSection(result: Result): boolean {
  * The docs search dialog. Cmd/Ctrl+K (handled by `CommandBar`) and `/` open
  * it from anywhere.
  */
-export default function Search() {
+export default function Search(): JSX.Element {
   const navigate = useNavigate();
   const [index, setIndex] = createSignal<MiniSearch<Result>>();
   const [query, setQuery] = createSignal('');
@@ -78,10 +79,11 @@ export default function Search() {
     if (!(search && trimmed)) {
       return [];
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- MiniSearch types the stored fields as any. They match Result.
     return (search.search(trimmed) as unknown as Result[]).slice(0, MAX_RESULTS);
   });
 
-  function go(result: Result | undefined) {
+  function go(result: Result | undefined): void {
     if (result) {
       setSearchOpen(false);
       setQuery('');
@@ -89,16 +91,17 @@ export default function Search() {
     }
   }
 
-  function open() {
+  function open(): void {
     setSearchOpen(true);
-    loadIndex().then(setIndex);
+    void loadIndex().then(setIndex);
   }
 
   onSettled(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      const target = event.target as HTMLElement | null;
+    function onKeyDown(event: KeyboardEvent): void {
+      const target = event.target;
       const typing =
-        target?.isContentEditable || target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA';
+        target instanceof HTMLElement &&
+        (target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
       if (event.key === '/' && !typing) {
         event.preventDefault();
         open();
@@ -115,7 +118,9 @@ export default function Search() {
       class="search"
       isOpen={searchOpen()}
       onOpen={open}
-      onClose={() => setSearchOpen(false)}
+      onClose={() => {
+        setSearchOpen(false);
+      }}
     >
       <CommandBarOverlay class="search-overlay" />
       <CommandBarPanel class="search-panel">
@@ -136,7 +141,9 @@ export default function Search() {
             <CommandInput
               class="search-input"
               placeholder="Search the docs"
-              onInput={(event) => setQuery(event.currentTarget.value)}
+              onInput={(event) => {
+                setQuery(event.currentTarget.value);
+              }}
               onKeyDown={(event) => {
                 // Results arrive after the query changes, so the first one
                 // may not be active yet. Enter then opens it.

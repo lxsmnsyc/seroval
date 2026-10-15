@@ -2,7 +2,7 @@ import type { JSX } from '@solidjs/web';
 
 type IconProps = { class?: string };
 
-function Icon(props: IconProps & { children: JSX.Element }) {
+function Icon(props: IconProps & { children: JSX.Element }): JSX.Element {
   return (
     <svg
       class={['icon', props.class]}
@@ -19,7 +19,7 @@ function Icon(props: IconProps & { children: JSX.Element }) {
   );
 }
 
-export function LogoMark(props: IconProps) {
+export function LogoMark(props: IconProps): JSX.Element {
   return (
     <svg class={['logo-mark', props.class]} viewBox="0 0 32 32" aria-hidden="true">
       <defs>
@@ -41,7 +41,7 @@ export function LogoMark(props: IconProps) {
   );
 }
 
-export function SearchIcon(props: IconProps) {
+export function SearchIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <circle cx="11" cy="11" r="7" />
@@ -50,7 +50,7 @@ export function SearchIcon(props: IconProps) {
   );
 }
 
-export function GitHubIcon(props: IconProps) {
+export function GitHubIcon(props: IconProps): JSX.Element {
   return (
     <svg class={['icon', props.class]} viewBox="0 0 24 24" aria-hidden="true">
       <path
@@ -61,7 +61,7 @@ export function GitHubIcon(props: IconProps) {
   );
 }
 
-export function SunIcon(props: IconProps) {
+export function SunIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <circle cx="12" cy="12" r="4" />
@@ -70,7 +70,7 @@ export function SunIcon(props: IconProps) {
   );
 }
 
-export function MoonIcon(props: IconProps) {
+export function MoonIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
@@ -78,7 +78,7 @@ export function MoonIcon(props: IconProps) {
   );
 }
 
-export function MenuIcon(props: IconProps) {
+export function MenuIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M4 7h16M4 12h16M4 17h16" />
@@ -86,7 +86,7 @@ export function MenuIcon(props: IconProps) {
   );
 }
 
-export function CloseIcon(props: IconProps) {
+export function CloseIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M6 6l12 12M18 6 6 18" />
@@ -94,7 +94,7 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
-export function ArrowRightIcon(props: IconProps) {
+export function ArrowRightIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M5 12h14M13 6l6 6-6 6" />
@@ -102,7 +102,7 @@ export function ArrowRightIcon(props: IconProps) {
   );
 }
 
-export function ArrowLeftIcon(props: IconProps) {
+export function ArrowLeftIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M19 12H5M11 6l-6 6 6 6" />
@@ -110,7 +110,7 @@ export function ArrowLeftIcon(props: IconProps) {
   );
 }
 
-export function EditIcon(props: IconProps) {
+export function EditIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M4 20h4L19 9l-4-4L4 16z" />
@@ -119,7 +119,7 @@ export function EditIcon(props: IconProps) {
   );
 }
 
-export function FileIcon(props: IconProps) {
+export function FileIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
@@ -128,7 +128,7 @@ export function FileIcon(props: IconProps) {
   );
 }
 
-export function HashIcon(props: IconProps) {
+export function HashIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16" />
@@ -136,7 +136,7 @@ export function HashIcon(props: IconProps) {
   );
 }
 
-export function CycleIcon(props: IconProps) {
+export function CycleIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M20 12a8 8 0 0 1-14.3 4.9M4 12A8 8 0 0 1 18.3 7.1" />
@@ -145,7 +145,7 @@ export function CycleIcon(props: IconProps) {
   );
 }
 
-export function StreamIcon(props: IconProps) {
+export function StreamIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M3 7h10M3 12h14M3 17h7" />
@@ -154,7 +154,7 @@ export function StreamIcon(props: IconProps) {
   );
 }
 
-export function BracesIcon(props: IconProps) {
+export function BracesIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M8 4c-2 0-3 1-3 3v2c0 1.5-.7 2.5-2 3 1.3.5 2 1.5 2 3v2c0 2 1 3 3 3M16 4c2 0 3 1 3 3v2c0 1.5.7 2.5 2 3-1.3.5-2 1.5-2 3v2c0 2-1 3-3 3" />
@@ -162,7 +162,7 @@ export function BracesIcon(props: IconProps) {
   );
 }
 
-export function PlugIcon(props: IconProps) {
+export function PlugIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4" />
@@ -170,7 +170,7 @@ export function PlugIcon(props: IconProps) {
   );
 }
 
-export function ShieldIcon(props: IconProps) {
+export function ShieldIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" />
@@ -179,7 +179,7 @@ export function ShieldIcon(props: IconProps) {
   );
 }
 
-export function LayersIcon(props: IconProps) {
+export function LayersIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="m12 3 9 5-9 5-9-5z" />
@@ -188,7 +188,7 @@ export function LayersIcon(props: IconProps) {
   );
 }
 
-export function PlayIcon(props: IconProps) {
+export function PlayIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M7 5v14l11-7z" />
@@ -196,7 +196,7 @@ export function PlayIcon(props: IconProps) {
   );
 }
 
-export function ShareIcon(props: IconProps) {
+export function ShareIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
@@ -205,7 +205,7 @@ export function ShareIcon(props: IconProps) {
   );
 }
 
-export function ReturnIcon(props: IconProps) {
+export function ReturnIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
       <path d="M20 5v6a3 3 0 0 1-3 3H5M9 10l-4 4 4 4" />

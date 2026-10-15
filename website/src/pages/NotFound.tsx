@@ -1,9 +1,10 @@
 import { httpStatus } from '@solidjs/web';
+import type { JSX } from '@solidjs/web';
 import { ArrowRightIcon } from '../components/Icons';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
 
-export default function NotFound() {
+export default function NotFound(): JSX.Element {
   httpStatus(404);
   return (
     <div class="not-found">

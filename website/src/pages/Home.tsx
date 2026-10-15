@@ -1,3 +1,4 @@
+import type { JSX } from '@solidjs/web';
 import { For, createSignal } from 'solid-js';
 import { Tab, TabGroup, TabList, TabPanel } from 'terracotta/tabs';
 import showcase from 'virtual:showcase';
@@ -91,11 +92,11 @@ const FEATURES = [
   },
 ];
 
-function InstallCommand() {
+function InstallCommand(): JSX.Element {
   const [copied, setCopied] = createSignal<string>();
 
-  function copy(id: string, command: string) {
-    navigator.clipboard.writeText(command).then(() => {
+  function copy(id: string, command: string): void {
+    void navigator.clipboard.writeText(command).then(() => {
       setCopied(id);
       setTimeout(() => {
         setCopied(undefined);
@@ -136,7 +137,7 @@ function InstallCommand() {
   );
 }
 
-function Showcase() {
+function Showcase(): JSX.Element {
   return (
     <TabGroup<string> class="showcase" horizontal={true} defaultValue={showcase[0].id}>
       <TabList class="showcase-tabs" aria-label="Output format">
@@ -163,7 +164,7 @@ function Showcase() {
   );
 }
 
-export default function Home() {
+export default function Home(): JSX.Element {
   return (
     <div class="home">
       <PageMeta description="Serialize the JavaScript values JSON cannot: cyclic references, Dates, Maps, promises, streams and more." />

@@ -1,3 +1,4 @@
+import type { JSX } from '@solidjs/web';
 import { type Component, For, Show, createSignal, onSettled } from 'solid-js';
 import { getSectionTitle, getSiblings } from '../lib/docs';
 import { REPOSITORY_URL } from '../lib/ui';
@@ -15,9 +16,9 @@ export interface RenderedDoc {
 }
 
 /** The table of contents, with the section in view highlighted. */
-function TableOfContents(props: { doc: RenderedDoc }) {
+function TableOfContents(props: { doc: RenderedDoc }): JSX.Element {
   const [active, setActive] = createSignal<string>();
-  const headings = () => props.doc.headings.filter((h) => h.depth <= 3);
+  const headings = (): RenderedDoc['headings'] => props.doc.headings.filter((h) => h.depth <= 3);
 
   onSettled(() => {
     const elements = headings()
@@ -67,8 +68,8 @@ function TableOfContents(props: { doc: RenderedDoc }) {
 }
 
 /** The layout for a page built from a doc in `src/content/docs`. */
-export default function DocPage(props: { doc: RenderedDoc }) {
-  const siblings = () => getSiblings(props.doc.slug);
+export default function DocPage(props: { doc: RenderedDoc }): JSX.Element {
+  const siblings = (): ReturnType<typeof getSiblings> => getSiblings(props.doc.slug);
 
   return (
     <div class="docs-layout">

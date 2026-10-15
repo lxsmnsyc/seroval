@@ -5,7 +5,7 @@ import type { JSX } from '@solidjs/web';
 // flash the other theme first.
 const THEME_SCRIPT = `try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}`;
 
-export default function Document(props: { children?: JSX.Element }) {
+export default function Document(props: { children?: JSX.Element }): JSX.Element {
   return (
     <html lang="en">
       <head>

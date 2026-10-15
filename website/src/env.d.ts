@@ -14,7 +14,7 @@ declare module '*.md' {
 }
 
 declare module 'virtual:docs-manifest' {
-  const manifest: Record<string, { title: string; description: string }>;
+  const manifest: Partial<Record<string, { title: string; description: string }>>;
   export default manifest;
 }
 

@@ -3,6 +3,7 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { EditorState, type Extension, Prec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
+import type { JSX } from '@solidjs/web';
 import { basicSetup } from 'codemirror';
 import * as seroval from 'seroval';
 import * as webPlugins from 'seroval-plugins/web';
@@ -164,6 +165,7 @@ function readSharedCode(): string | undefined {
 // Runs the reader's code in their own browser, the same as code typed into
 // the developer console.
 function evaluate(code: string): unknown {
+  // oxlint-disable-next-line no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- Running the code is the point of the playground.
   return new Function('seroval', code)(seroval);
 }
 
@@ -201,6 +203,7 @@ async function run(mode: Mode, code: string): Promise<string[]> {
         }),
       ];
     case 'crossSerializeStream':
+    default:
       return collectStream(value);
   }
 }
@@ -279,7 +282,7 @@ interface Stats {
   chunks: number;
 }
 
-export default function PlaygroundEditor() {
+export default function PlaygroundEditor(): JSX.Element {
   const initialCode = readSharedCode() ?? EXAMPLES[0].code;
   const [mode, setMode] = createSignal<Mode>('serializeAsync');
   const [output, setOutput] = createSignal('');
@@ -292,7 +295,7 @@ export default function PlaygroundEditor() {
   let outputView: EditorView | undefined;
   let runId = 0;
 
-  async function execute(nextMode = mode()) {
+  async function execute(nextMode = mode()): Promise<void> {
     if (!input) {
       return;
     }
@@ -324,26 +327,29 @@ export default function PlaygroundEditor() {
     }
   }
 
-  function loadExample(id: string) {
+  function loadExample(id: string): void {
     const example = EXAMPLES.find((item) => item.id === id);
     if (example && input) {
       input.dispatch({
         changes: { from: 0, to: input.state.doc.length, insert: example.code },
       });
-      execute();
+      void execute();
     }
   }
 
-  function share() {
+  function share(): void {
     if (!input) {
       return;
     }
     const url = `${location.origin}${location.pathname}${HASH_PREFIX}${encodeCode(input.state.doc.toString())}`;
     history.replaceState(null, '', url);
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- The clipboard is missing outside secure contexts.
     navigator.clipboard?.writeText(url).then(
       () => {
         setShared(true);
-        setTimeout(() => setShared(false), 1500);
+        setTimeout(() => {
+          setShared(false);
+        }, 1500);
       },
       () => {
         // The link is still in the address bar when the clipboard is blocked.
@@ -361,7 +367,7 @@ export default function PlaygroundEditor() {
   );
 
   onSettled(() => {
-    execute();
+    void execute();
     return () => {
       input?.destroy();
       outputView?.destroy();
@@ -378,7 +384,7 @@ export default function PlaygroundEditor() {
           onChange={(value) => {
             if (value) {
               setMode(value);
-              execute(value);
+              void execute(value);
             }
           }}
         >
@@ -413,7 +419,9 @@ export default function PlaygroundEditor() {
           <button
             type="button"
             class="button button-primary button-small"
-            onClick={async () => execute()}
+            onClick={() => {
+              void execute();
+            }}
           >
             <PlayIcon /> Run
           </button>
@@ -436,7 +444,7 @@ export default function PlaygroundEditor() {
                     {
                       key: 'Mod-Enter',
                       run: () => {
-                        execute();
+                        void execute();
                         return true;
                       },
                     },

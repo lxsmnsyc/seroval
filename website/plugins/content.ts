@@ -31,7 +31,7 @@ export interface SearchEntry {
   text: string;
 }
 
-const LANGUAGE_LABELS: Record<string, string> = {
+const LANGUAGE_LABELS: Partial<Record<string, string>> = {
   js: 'JavaScript',
   ts: 'TypeScript',
   tsx: 'TSX',
@@ -112,6 +112,24 @@ function rewriteLink(href: string, file: string): string {
   return REPOSITORY + resolved + (hash ? `#${hash}` : '');
 }
 
+interface DocMeta {
+  title: string;
+  description: string;
+}
+
+function isDocMeta(value: unknown): value is DocMeta {
+  if (typeof value !== 'object' || value == null) {
+    return false;
+  }
+  const meta = value as Partial<Record<keyof DocMeta, unknown>>;
+  return (
+    typeof meta.title === 'string' &&
+    typeof meta.description === 'string' &&
+    meta.title !== '' &&
+    meta.description !== ''
+  );
+}
+
 /**
  * Renders a doc into HTML, with highlighted code blocks, heading anchors,
  * GitHub-style alerts and footnotes. `file` is the path relative to the
@@ -122,8 +140,8 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
   if (!match) {
     throw new Error(`${file} has no frontmatter`);
   }
-  const meta = parseYAML(match[1]) as { title?: string; description?: string };
-  if (!(meta.title && meta.description)) {
+  const meta: unknown = parseYAML(match[1]);
+  if (!isDocMeta(meta)) {
     throw new Error(`${file} needs a title and a description`);
   }
   const body = source.slice(match[0].length);
@@ -180,15 +198,15 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
         return `<div class="table-wrapper"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
       },
       blockquote(token: Tokens.Blockquote) {
-        const content = this.parser.parse(token.tokens);
+        const inner = this.parser.parse(token.tokens);
         const alert = ALERT_PATTERN.exec(token.text);
         if (alert) {
           const kind = alert[1].toLowerCase();
           const label = kind[0].toUpperCase() + kind.slice(1);
           const icon = `<svg viewBox="0 0 24 24" aria-hidden="true">${ALERT_ICONS[kind]}</svg>`;
-          return `<div class="alert alert-${kind}"><p class="alert-title">${icon}${label}</p>${content.replace(ALERT_MARKER, '<p>')}</div>`;
+          return `<div class="alert alert-${kind}"><p class="alert-title">${icon}${label}</p>${inner.replace(ALERT_MARKER, '<p>')}</div>`;
         }
-        return `<blockquote>${content}</blockquote>`;
+        return `<blockquote>${inner}</blockquote>`;
       },
     },
   });

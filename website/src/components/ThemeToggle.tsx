@@ -1,3 +1,4 @@
+import type { JSX } from '@solidjs/web';
 import { MoonIcon, SunIcon } from './Icons';
 
 type Theme = 'light' | 'dark';
@@ -7,13 +8,11 @@ function currentTheme(): Theme {
   if (saved === 'light' || saved === 'dark') {
     return saved;
   }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 // Switches between light and dark and remembers the choice.
-function toggleTheme() {
+function toggleTheme(): void {
   const next: Theme = currentTheme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   try {
@@ -25,7 +24,7 @@ function toggleTheme() {
 
 // Both icons are rendered and CSS shows the one for the current theme, so
 // the server-rendered markup does not depend on the reader's theme.
-export default function ThemeToggle() {
+export default function ThemeToggle(): JSX.Element {
   return (
     <button
       type="button"
