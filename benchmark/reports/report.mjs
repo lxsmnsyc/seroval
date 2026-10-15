@@ -13,11 +13,25 @@ import {
   validateReport,
 } from './results.mjs';
 
+/** @typedef {import('./results.mjs').History} History */
+/** @typedef {import('./results.mjs').Report} Report */
+/** @typedef {import('./results.mjs').Row} Row */
+/** @typedef {import('./results.mjs').Stats} Stats */
+
+/**
+ * A size row or the timing statistics of a speed row.
+ * @typedef {Partial<Row & Stats>} Measurement
+ */
+
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 export function escapeHTML(value) {
   return String(value).replace(
     /[&<>"']/g,
-    char =>
-      ({
+    (char) =>
+      /** @type {Record<string, string>} */ ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
@@ -27,10 +41,21 @@ export function escapeHTML(value) {
   );
 }
 
+/**
+ * @param {number} value
+ * @param {number} [digits]
+ * @returns {string}
+ */
 function signed(value, digits = 0) {
   return `${value > 0 ? '+' : ''}${value.toFixed(digits)}`;
 }
 
+/**
+ * @param {number} value
+ * @param {number | undefined} baseline
+ * @param {boolean} [percent]
+ * @returns {string}
+ */
 function sizeDelta(value, baseline, percent = false) {
   if (baseline === undefined) {
     return 'baseline unavailable';
@@ -42,6 +67,10 @@ function sizeDelta(value, baseline, percent = false) {
   return `${signed(change.absolute)} B${percent ? ` (${signed(change.percent, 2)}%)` : ''}`;
 }
 
+/**
+ * @param {number[]} values
+ * @returns {string}
+ */
 function sparkline(values) {
   if (values.length < 2) {
     return 'collecting history';
@@ -50,34 +79,30 @@ function sparkline(values) {
   const range = Math.max(...values) - min;
   const bars = '▁▂▃▄▅▆▇█';
   return values
-    .map(
-      value => bars[range === 0 ? 0 : Math.round(((value - min) / range) * 7)],
-    )
+    .map((value) => bars[range === 0 ? 0 : Math.round(((value - min) / range) * 7)])
     .join('');
 }
 
-export function comment(
-  report,
-  history = { schemaVersion: 1, reports: [] },
-  links = {},
-) {
+/**
+ * @param {Report} report
+ * @param {History} [history]
+ * @param {{ dashboard?: string, run?: string }} [links]
+ * @returns {string}
+ */
+export function comment(report, history = { schemaVersion: 1, reports: [] }, links = {}) {
   validateReport(report);
   validateHistory(history);
   const size = report.kind === 'size';
   const compared = report.candidate.rows
-    .map(row => {
-      const before = report.baseline?.rows.find(item => item.id === row.id);
+    .map((row) => {
+      const before = report.baseline?.rows.find((item) => item.id === row.id);
+      /** @type {Measurement} */
       const current = size ? row : timingStatistics(row, report.settings);
-      const base =
-        before && (size ? before : timingStatistics(before, report.settings));
-      const pairs =
-        !size && before && pairedChanges(row, before, report.settings);
+      /** @type {Measurement | undefined} */
+      const base = before && (size ? before : timingStatistics(before, report.settings));
+      const pairs = !size && before && pairedChanges(row, before, report.settings);
       const change =
-        base &&
-        difference(
-          size ? current.gzip : current.median,
-          size ? base.gzip : base.median,
-        );
+        base && difference(size ? current.gzip : current.median, size ? base.gzip : base.median);
       if (pairs) {
         change.percent = pairs.median;
       }
@@ -87,43 +112,39 @@ export function comment(
       ({ current, base, change }) =>
         !base ||
         (size
-          ? current.raw !== base.raw ||
-            current.gzip !== base.gzip ||
-            current.brotli !== base.brotli
+          ? current.raw !== base.raw || current.gzip !== base.gzip || current.brotli !== base.brotli
           : Math.abs(change.percent) >= 5),
     )
     .sort((a, b) => {
       if (!(a.change && b.change)) {
         return 0;
       }
-      return size
-        ? b.change.absolute - a.change.absolute
-        : a.change.percent - b.change.percent;
+      return size ? b.change.absolute - a.change.absolute : a.change.percent - b.change.percent;
     });
-  const inconclusive = compared.filter(
-    ({ pairs }) => pairs && pairs.min < 5 && pairs.max > -5,
-  );
+  const inconclusive = compared.filter(({ pairs }) => pairs && pairs.min < 5 && pairs.max > -5);
   const rows = compared
     .filter(({ pairs }) => !pairs || pairs.min >= 5 || pairs.max <= -5)
-    .map(entry => ({
+    .map((entry) => ({
       ...entry,
       historyValues: trend(history, report, entry.row.id),
     }));
-  const hasTrend = rows.some(entry => entry.historyValues.length > 0);
+  const hasTrend = rows.some((entry) => entry.historyValues.length > 0);
   const hidden = report.candidate.rows.length - rows.length;
+  let headline = `**${rows.length} shown · baseline unavailable; no rows filtered.**`;
+  if (report.baseline && size) {
+    headline = `**${rows.length} changed · ${hidden} unchanged hidden.**`;
+  } else if (report.baseline && report.settings.version >= 2) {
+    headline = `**${rows.length} repeatable changes shown · ${inconclusive.length} inconclusive · ${report.candidate.rows.length - compared.length} below the 5% display filter hidden.**`;
+  } else if (report.baseline) {
+    headline = `**${rows.length} shown · ${hidden} below the 5% display filter hidden.**`;
+  }
   const lines = [
     `<!-- seroval-benchmark-${report.kind} -->`,
     `## ${size ? 'Bundle Size Benchmarks' : 'Runtime Speed Benchmarks'}`,
     '',
     `${report.baseline ? `\`${report.baseline.revision.slice(0, 8)}\`` : 'baseline unavailable'} → \`${report.candidate.revision.slice(0, 8)}\``,
     '',
-    report.baseline
-      ? size
-        ? `**${rows.length} changed · ${hidden} unchanged hidden.**`
-        : report.settings.version >= 2
-          ? `**${rows.length} repeatable changes shown · ${inconclusive.length} inconclusive · ${report.candidate.rows.length - compared.length} below the 5% display filter hidden.**`
-          : `**${rows.length} shown · ${hidden} below the 5% display filter hidden.**`
-      : `**${rows.length} shown · baseline unavailable; no rows filtered.**`,
+    headline,
     '',
   ];
   if (links.dashboard) {
@@ -151,13 +172,18 @@ export function comment(
       );
     }
   }
+  let legend =
+    'Only median changes of at least 5% in either direction are shown when a baseline is available. This is a display filter, not a statistical test or performance gate. Lower time is better.';
+  if (size) {
+    legend =
+      '— = unchanged. Rows are hidden only when raw, gzip, and Brotli sizes are all unchanged. Lower is smaller.';
+  } else if (report.settings.version >= 2) {
+    legend =
+      'Time change is the median of paired process changes. A change is shown only when every pair changes by at least 5% in the same direction. Other changes of at least 5% are inconclusive and remain in details. This is a repeatability filter, not a statistical test or performance gate. Lower time is better.';
+  }
   lines.push(
     '',
-    size
-      ? '— = unchanged. Rows are hidden only when raw, gzip, and Brotli sizes are all unchanged. Lower is smaller.'
-      : report.settings.version >= 2
-        ? 'Time change is the median of paired process changes. A change is shown only when every pair changes by at least 5% in the same direction. Other changes of at least 5% are inconclusive and remain in details. This is a repeatability filter, not a statistical test or performance gate. Lower time is better.'
-        : 'Only median changes of at least 5% in either direction are shown when a baseline is available. This is a display filter, not a statistical test or performance gate. Lower time is better.',
+    legend,
     '',
     'Full results remain in the JSON report.',
     '',
@@ -186,10 +212,21 @@ export function comment(
       `| --- | ---: | ---: | --- |${report.settings.version >= 2 ? ' ---: | --- |' : ''}`,
     );
     for (const { row, current, base, pairs } of compared) {
-      const overlap =
-        base && current.min <= base.max && base.min <= current.max;
+      const overlap = base && current.min <= base.max && base.min <= current.max;
+      let observation = 'no baseline';
+      if (base) {
+        observation = overlap ? 'ranges overlap' : 'ranges separate';
+      }
+      let paired = '';
+      if (report.settings.version >= 2 && pairs) {
+        const repeatability =
+          pairs.min >= 5 || pairs.max <= -5 ? 'same direction in every pair' : 'inconclusive';
+        paired = ` ${signed(pairs.min, 2)}% to ${signed(pairs.max, 2)}% | ${repeatability} |`;
+      } else if (report.settings.version >= 2) {
+        paired = ' unavailable | no baseline |';
+      }
       lines.push(
-        `| \`${row.id}\` | ${base ? `${(base.min * 1000).toFixed(3)}–${(base.max * 1000).toFixed(3)}` : 'unavailable'} | ${(current.min * 1000).toFixed(3)}–${(current.max * 1000).toFixed(3)} | ${base ? (overlap ? 'ranges overlap' : 'ranges separate') : 'no baseline'} |${report.settings.version >= 2 ? (pairs ? ` ${signed(pairs.min, 2)}% to ${signed(pairs.max, 2)}% | ${pairs.min >= 5 || pairs.max <= -5 ? 'same direction in every pair' : 'inconclusive'} |` : ' unavailable | no baseline |') : ''}`,
+        `| \`${row.id}\` | ${base ? `${(base.min * 1000).toFixed(3)}–${(base.max * 1000).toFixed(3)}` : 'unavailable'} | ${(current.min * 1000).toFixed(3)}–${(current.max * 1000).toFixed(3)} | ${observation} |${paired}`,
       );
     }
   }
@@ -203,6 +240,11 @@ export function comment(
   return `${lines.join('\n')}\n`;
 }
 
+/**
+ * @param {string} title
+ * @param {string} body
+ * @returns {string}
+ */
 function page(title, body) {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
@@ -211,33 +253,32 @@ function page(title, body) {
 <body><main><h1>${escapeHTML(title)}</h1>${body}</main></body></html>\n`;
 }
 
+/**
+ * @param {History} history
+ * @param {string} kind
+ * @returns {string}
+ */
 export function dashboard(history, kind) {
   validateHistory(history);
-  const records = history.reports.filter(report => report.kind === kind);
+  const records = history.reports.filter((report) => report.kind === kind);
   const latest = records.at(-1);
   if (!latest) {
     return page(`${kind} benchmarks`, '<p>No measurements yet.</p>');
   }
-  const matching = records.filter(
-    report => seriesId(report) === seriesId(latest),
-  );
+  const matching = records.filter((report) => seriesId(report) === seriesId(latest));
   const sections = latest.candidate.rows
-    .map(row => {
+    .map((row) => {
       const rows = matching
-        .map(report => {
-          const value = report.candidate.rows.find(item => item.id === row.id);
+        .map((report) => {
+          const value = report.candidate.rows.find((item) => item.id === row.id);
           const metrics =
             kind === 'size'
               ? [value.raw, value.gzip, value.brotli]
               : (() => {
                   const stats = timingStatistics(value, report.settings);
-                  return [
-                    stats.median.toFixed(6),
-                    stats.min.toFixed(6),
-                    stats.max.toFixed(6),
-                  ];
+                  return [stats.median.toFixed(6), stats.min.toFixed(6), stats.max.toFixed(6)];
                 })();
-          return `<tr><th scope="row">${escapeHTML(report.candidate.revision.slice(0, 12))}</th><td>${escapeHTML(report.measuredAt)}</td>${metrics.map(metric => `<td>${escapeHTML(metric)}</td>`).join('')}</tr>`;
+          return `<tr><th scope="row">${escapeHTML(report.candidate.revision.slice(0, 12))}</th><td>${escapeHTML(report.measuredAt)}</td>${metrics.map((metric) => `<td>${escapeHTML(metric)}</td>`).join('')}</tr>`;
         })
         .join('');
       const values = trend(history, latest, row.id);
@@ -245,26 +286,26 @@ export function dashboard(history, kind) {
         kind === 'size'
           ? ['Raw B', 'Gzip B', 'Brotli B']
           : ['Median ms/op', 'Minimum ms/op', 'Maximum ms/op'];
-      return `<section><h2>${escapeHTML(row.id)}</h2><p>Trend (lower is better): <span aria-hidden="true">${sparkline(values)}</span> <a href="#${row.id}">Read measurements</a></p><div class="scroll" tabindex="0" role="region" aria-label="${escapeHTML(row.id)} measurements"><table id="${row.id}"><caption>${escapeHTML(row.id)} history</caption><thead><tr><th scope="col">Revision</th><th scope="col">Measured</th>${headers.map(header => `<th scope="col">${header}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
+      return `<section><h2>${escapeHTML(row.id)}</h2><p>Trend (lower is better): <span aria-hidden="true">${sparkline(values)}</span> <a href="#${row.id}">Read measurements</a></p><div class="scroll" tabindex="0" role="region" aria-label="${escapeHTML(row.id)} measurements"><table id="${row.id}"><caption>${escapeHTML(row.id)} history</caption><thead><tr><th scope="col">Revision</th><th scope="col">Measured</th>${headers.map((header) => `<th scope="col">${header}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
     })
     .join('');
   return page(
-    kind === 'size'
-      ? 'Seroval bundle size history'
-      : 'Seroval runtime speed history',
+    kind === 'size' ? 'Seroval bundle size history' : 'Seroval runtime speed history',
     `<nav aria-label="Benchmarks"><a href="../index.html">All reports</a> | <a href="../history.json">Raw history</a></nav>
 <p>Latest compatible series: <code>${seriesId(latest)}</code>. Node ${escapeHTML(latest.settings.node)}, ${escapeHTML(latest.settings.cpu)}. ${records.length - matching.length} measurements from other series remain in raw history.</p>
 <p>${kind === 'size' ? 'Production Seroval ESM import costs.' : 'Informational timings. Min–max ranges are not confidence intervals. Warm decode reuses code. Cold decode excludes process startup, import, and encoding. Stream completion measures emission, not decoding.'}</p>${sections}`,
   );
 }
 
+/**
+ * @param {History} history
+ * @param {string} output
+ * @returns {void}
+ */
 export function writeDashboard(history, output) {
   validateHistory(history);
   mkdirSync(output, { recursive: true });
-  writeFileSync(
-    resolve(output, 'history.json'),
-    `${JSON.stringify(history)}\n`,
-  );
+  writeFileSync(resolve(output, 'history.json'), `${JSON.stringify(history)}\n`);
   writeFileSync(
     resolve(output, 'index.html'),
     page(
@@ -274,17 +315,11 @@ export function writeDashboard(history, output) {
   );
   for (const kind of ['size', 'speed']) {
     mkdirSync(resolve(output, kind), { recursive: true });
-    writeFileSync(
-      resolve(output, kind, 'index.html'),
-      dashboard(history, kind),
-    );
+    writeFileSync(resolve(output, kind, 'index.html'), dashboard(history, kind));
   }
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { values } = parseArgs({
     options: {
       input: { type: 'string' },
@@ -295,19 +330,15 @@ if (
       },
     },
   });
+  // oxlint-disable-next-line typescript/prefer-nullish-coalescing -- An empty path counts as missing.
   assert.ok(values.input || values.history, 'Provide --input or --history');
   const history = values.history
     ? validateHistory(JSON.parse(readFileSync(values.history, 'utf8')))
     : { schemaVersion: 1, reports: [] };
   if (values.input) {
-    const report = validateReport(
-      JSON.parse(readFileSync(values.input, 'utf8')),
-    );
+    const report = validateReport(JSON.parse(readFileSync(values.input, 'utf8')));
     mkdirSync(values.output, { recursive: true });
-    writeFileSync(
-      resolve(values.output, `${report.kind}.md`),
-      comment(report, history),
-    );
+    writeFileSync(resolve(values.output, `${report.kind}.md`), comment(report, history));
   }
   if (values.history) {
     writeDashboard(history, values.output);

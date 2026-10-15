@@ -32,9 +32,8 @@ describe('mutual cyclic references', () => {
         });
       }
       const payload = await encode(source);
-      const back = new Function('$R', `return (${payload})`)(
-        [],
-      ) as typeof source;
+      // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion -- evaluates the serialized output.
+      const back = new Function('$R', `return (${payload})`)([]) as typeof source;
       expect(back.items.length).toBe(source.items.length);
       for (const item of back.items) {
         expect(item.owner).toBe(back);

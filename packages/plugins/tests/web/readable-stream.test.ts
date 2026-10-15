@@ -64,9 +64,7 @@ describe('ReadableStream', () => {
       const back = deserialize<typeof example>(result);
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () =>
-        reader.read(),
-      ).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('toJSONAsync', () => {
@@ -122,9 +120,7 @@ describe('ReadableStream', () => {
       });
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () =>
-        reader.read(),
-      ).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('crossSerializeAsync', () => {
@@ -268,8 +264,8 @@ describe('ReadableStream', () => {
 
       cleanup();
 
-      expect(cancelSpy).toBeCalledTimes(1);
-      expect(onSerializeSpy).toBeCalledTimes(1);
+      expect(cancelSpy).toHaveBeenCalledTimes(1);
+      expect(onSerializeSpy).toHaveBeenCalledTimes(1);
       // Explicit interruption is cancellation, not successful completion.
       expect(onDoneSpy).not.toHaveBeenCalled();
     });
@@ -378,9 +374,7 @@ describe('ReadableStream', () => {
       });
       expect(back).toBeInstanceOf(ReadableStream);
       const reader = back.getReader();
-      await expect(async () =>
-        reader.read(),
-      ).rejects.toThrowErrorMatchingSnapshot();
+      await expect(async () => reader.read()).rejects.toThrowErrorMatchingSnapshot();
     });
   });
   describe('toCrossJSONStream', () => {
@@ -443,11 +437,10 @@ describe('ReadableStream', () => {
       });
       // The root is the ReadableStream plugin node; aim its stream slot at a
       // non-Stream node.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       const info = (result.t as unknown as { s: Record<string, SerovalNode> }).s;
       info.stream = toJSON(42).t;
-      expect(() =>
-        fromJSON(result, { plugins: [ReadableStreamPlugin] }),
-      ).toThrow();
+      expect(() => fromJSON(result, { plugins: [ReadableStreamPlugin] })).toThrow();
     });
   });
 });

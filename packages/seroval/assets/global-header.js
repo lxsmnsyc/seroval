@@ -7,7 +7,7 @@
 self._$ = self._$ || {
   // Promise constructor, used to construct deferred Promises
   P(success, failure, promise) {
-    promise = new Promise(function (resolve, reject) {
+    promise = new Promise((resolve, reject) => {
       success = resolve;
       failure = reject;
     });
@@ -50,7 +50,7 @@ self._$ = self._$ || {
   // ReadableStream constructor
   S(stream, controller) {
     stream = new ReadableStream({
-      start: function (c) {
+      start: function start(c) {
         controller = c;
       },
     });

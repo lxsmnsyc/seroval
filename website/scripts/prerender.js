@@ -9,13 +9,26 @@ const ORIGIN = 'http://localhost';
 const LINK_PATTERN = /href="(\/[^"#?]*)/g;
 const TRAILING_SLASH = /\/$/;
 
-const { handleRequest } = await import(path.join(DIST, 'server/server.js'));
+/** @typedef {{ handleRequest: (request: Request) => Promise<Response> }} ServerEntry */
 
+const { handleRequest } = /** @type {ServerEntry} */ (
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The server bundle has no types.
+  await import(path.join(DIST, 'server/server.js'))
+);
+
+/**
+ * @param {string} pathname
+ * @returns {Promise<{ status: number, html: string }>}
+ */
 async function render(pathname) {
   const response = await handleRequest(new Request(ORIGIN + pathname));
   return { status: response.status, html: await response.text() };
 }
 
+/**
+ * @param {string} pathname
+ * @returns {string}
+ */
 function outputFile(pathname) {
   if (pathname === '/') {
     return 'index.html';
@@ -23,6 +36,10 @@ function outputFile(pathname) {
   return `${pathname.slice(1)}.html`;
 }
 
+/**
+ * @param {string} pathname
+ * @returns {boolean}
+ */
 function isPage(pathname) {
   return !path.extname(pathname) || pathname.endsWith('.html');
 }
@@ -39,6 +56,7 @@ for (let i = 0; i < queue.length; i++) {
   const file = path.join(DIST, 'client', outputFile(pathname));
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(file, html);
+  // oxlint-disable-next-line no-console -- The build log lists every page.
   console.log(`prerendered ${pathname}`);
 
   for (const [, href] of html.matchAll(LINK_PATTERN)) {
@@ -53,6 +71,7 @@ for (let i = 0; i < queue.length; i++) {
 // Static hosts serve `404.html` for paths that have no file.
 const notFound = await render('/404');
 await writeFile(path.join(DIST, 'client', '404.html'), notFound.html);
+// oxlint-disable-next-line no-console -- The build log lists every page.
 console.log('prerendered 404');
 
 // The static files replace the server bundle.

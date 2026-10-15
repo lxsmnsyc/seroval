@@ -1,11 +1,5 @@
 import assert from 'node:assert/strict';
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -25,6 +19,28 @@ import {
 } from './results.mjs';
 import { measureAsync, measureSync, values, verifyValue } from './runtime.mjs';
 
+/** @typedef {import('./results.mjs').History} History */
+/** @typedef {import('./results.mjs').Report} Report */
+/** @typedef {import('./publish.mjs').PullRequest} PullRequest */
+/** @typedef {import('./publish.mjs').RequestOptions} RequestOptions */
+/** @typedef {import('./publish.mjs').WorkflowRun} WorkflowRun */
+/** @typedef {{ path: string, content: string }} TreeFile */
+
+/**
+ * Reads JSON that the code under test wrote.
+ * @template T
+ * @param {string} text
+ * @returns {T}
+ */
+function parse(text) {
+  // oxlint-disable-next-line typescript/no-unsafe-return -- The caller names the shape it expects.
+  return JSON.parse(text);
+}
+
+/**
+ * @param {string} [kind]
+ * @returns {Report}
+ */
 function report(kind = 'size') {
   const rows =
     kind === 'size'
@@ -37,26 +53,23 @@ function report(kind = 'size') {
         }))
       : [
           ...values().flatMap(([id]) =>
-            ['serialize', 'toJSON', 'fromJSON', 'deserialize-warm'].map(
-              name => `${id}.${name}`,
-            ),
+            ['serialize', 'toJSON', 'fromJSON', 'deserialize-warm'].map((name) => `${id}.${name}`),
           ),
           'async.promise.toJSONAsync',
           'async.iterable.toJSONAsync',
           'stream.first-output',
           'stream.completion',
           'object.collection.deserialize-cold',
-        ].map(id => ({
+        ].map((id) => ({
           id,
           unit: 'ms',
-          ...(id.endsWith('-cold') || id.startsWith('stream.')
-            ? {}
-            : { iterations: 1000 }),
-          samples: new Array(
-            id.endsWith('-cold')
-              ? protocol.samples
-              : protocol.samples * protocol.rounds,
-          ).fill(0.25),
+          ...(id.endsWith('-cold') || id.startsWith('stream.') ? {} : { iterations: 1000 }),
+          samples: Array.from(
+            {
+              length: id.endsWith('-cold') ? protocol.samples : protocol.samples * protocol.rounds,
+            },
+            () => 0.25,
+          ),
         }));
   return {
     schemaVersion: 1,
@@ -64,7 +77,7 @@ function report(kind = 'size') {
     measuredAt: '2026-09-28T03:00:00.000Z',
     settings: {
       ...protocol,
-      scenarios: rows.map(row => row.id),
+      scenarios: rows.map((row) => row.id),
       harness: 'a'.repeat(64),
       esbuild: '0.28.2',
       node: 'v22.0.0',
@@ -97,26 +110,26 @@ const workflowStep = /^      - /m;
 test('schema accepts full size/speed reports and rejects missing, duplicate, malformed and incomplete results', () => {
   for (const kind of ['size', 'speed']) {
     assert.equal(validateReport(report(kind)).kind, kind);
-    for (const change of [
-      value => {
+    for (const change of /** @type {Array<(value: Report) => void>} */ ([
+      (value) => {
         value.candidate.rows.pop();
       },
-      value => {
+      (value) => {
         value.candidate.rows[1] = value.candidate.rows[0];
       },
-      value => {
+      (value) => {
         value.candidate.revision = '../untrusted';
       },
-      value => {
+      (value) => {
         value.settings.rounds = 0;
       },
-      value => {
+      (value) => {
         value.candidate.rows[0].unit = 'seconds';
       },
-      value => {
+      (value) => {
         value.measuredAt = '<script>';
       },
-    ]) {
+    ])) {
       const invalid = report(kind);
       change(invalid);
       assert.throws(() => validateReport(invalid));
@@ -144,8 +157,8 @@ test('timing summaries compare independent process medians and preserve legacy h
   const value = report('speed');
   const row = value.candidate.rows[0];
   row.samples = Array.from({ length: protocol.rounds }, (_, round) => [
-    ...new Array(4).fill(0.1),
-    ...new Array(5).fill(round + 1),
+    ...Array.from({ length: 4 }, () => 0.1),
+    ...Array.from({ length: 5 }, () => round + 1),
   ]).flat();
   assert.equal(timingStatistics(row, value.settings).median, 3.5);
   assert.equal(
@@ -163,11 +176,7 @@ test('timing summaries compare independent process medians and preserve legacy h
   delete value.settings.minSampleMs;
   assert.equal(validateReport(value), value);
   assert.ok(comment(value).includes('Time change'));
-  assert.ok(
-    dashboard(appendHistory(empty(), [value]), 'speed').includes(
-      'object.small.serialize',
-    ),
-  );
+  assert.ok(dashboard(appendHistory(empty(), [value]), 'speed').includes('object.small.serialize'));
 });
 
 test('version two rejects unequal batches and missing timing budgets', () => {
@@ -205,19 +214,11 @@ test('size comments hide only rows unchanged in every metric and sort by gzip in
   smaller.gzip -= 20;
   const original = structuredClone(size);
   const body = comment(size);
-  assert.ok(
-    body.includes(
-      `4 changed · ${size.candidate.rows.length - 4} unchanged hidden`,
-    ),
-  );
-  assert.ok(
-    body.includes(`| \`${gzip.id}\` | 138 B | +38 B (+38.00%) | — | — |`),
-  );
+  assert.ok(body.includes(`4 changed · ${size.candidate.rows.length - 4} unchanged hidden`));
+  assert.ok(body.includes(`| \`${gzip.id}\` | 138 B | +38 B (+38.00%) | — | — |`));
   assert.ok(body.includes(`| \`${raw.id}\` | 100 B | — | +1 B | — |`));
   assert.ok(body.includes(`| \`${brotli.id}\` | 100 B | — | — | +2 B |`));
-  assert.ok(
-    body.includes(`| \`${smaller.id}\` | 80 B | -20 B (-20.00%) | — | — |`),
-  );
+  assert.ok(body.includes(`| \`${smaller.id}\` | 80 B | -20 B (-20.00%) | — | — |`));
   assert.ok(!body.includes(`\`${unchanged.id}\``));
   assert.ok(body.indexOf(`\`${gzip.id}\``) < body.indexOf(`\`${smaller.id}\``));
   assert.deepEqual(size, original);
@@ -250,9 +251,7 @@ test('speed comments filter at exactly five percent in both directions before ro
   for (const row of [below, above, unchanged]) {
     assert.ok(!body.includes(`\`${row.id}\``));
   }
-  assert.ok(
-    summary.indexOf(`\`${faster.id}\``) < summary.indexOf(`\`${slower.id}\``),
-  );
+  assert.ok(summary.indexOf(`\`${faster.id}\``) < summary.indexOf(`\`${slower.id}\``));
   assert.ok(summary.includes('not a statistical test'));
   assert.ok(details.includes('Baseline range µs/op'));
   assert.ok(details.includes('100000.000–100000.000'));
@@ -265,11 +264,7 @@ test('comments show explicit empty comparisons and retain every row without a ba
   for (const kind of ['size', 'speed']) {
     const value = report(kind);
     const body = comment(value);
-    assert.ok(
-      body.includes(
-        kind === 'size' ? '0 changed' : '0 repeatable changes shown',
-      ),
-    );
+    assert.ok(body.includes(kind === 'size' ? '0 changed' : '0 repeatable changes shown'));
     assert.ok(!body.includes('| Scenario |'));
     value.baseline = null;
     const missing = comment(value);
@@ -284,8 +279,8 @@ test('inconsistent timing changes remain in details rather than the headline tab
   const value = report('speed');
   const row = value.candidate.rows[0];
   const base = value.baseline.rows[0];
-  row.samples = [1.2, 0.99, 1.3, 1.1, 0.98, 1.4].flatMap(ratio =>
-    new Array(protocol.samples).fill(0.25 * ratio),
+  row.samples = [1.2, 0.99, 1.3, 1.1, 0.98, 1.4].flatMap((ratio) =>
+    Array.from({ length: protocol.samples }, () => 0.25 * ratio),
   );
   const pairs = pairedChanges(row, base, value.settings);
   assert.ok(pairs.min < 0 && pairs.max > 5 && pairs.median > 5);
@@ -308,14 +303,8 @@ test('comments collapse metadata and omit trends until compatible history exists
     const body = comment(value, empty(), { run: 'https://example.com/run' });
     const [summary, details] = body.split('<details>');
     assert.ok(summary.includes('`bbbbbbbb` → `aaaaaaaa`'));
-    assert.ok(
-      summary.includes(
-        '[Run and raw result artifacts](https://example.com/run)',
-      ),
-    );
-    assert.ok(
-      details.startsWith('\n<summary>Measurement details</summary>\n\n'),
-    );
+    assert.ok(summary.includes('[Run and raw result artifacts](https://example.com/run)'));
+    assert.ok(details.startsWith('\n<summary>Measurement details</summary>\n\n'));
     assert.ok(details.includes(value.measuredAt));
     assert.ok(details.includes(value.candidate.revision));
     assert.ok(details.includes(seriesId(value).slice(0, 12)));
@@ -324,11 +313,7 @@ test('comments collapse metadata and omit trends until compatible history exists
     assert.ok(!body.includes('collecting history'));
     assert.ok(body.endsWith('</details>\n'));
     const history = appendHistory(empty(), [report(kind)]);
-    assert.ok(
-      comment(value, history).includes(
-        kind === 'size' ? 'Gzip trend' : 'Median trend',
-      ),
-    );
+    assert.ok(comment(value, history).includes(kind === 'size' ? 'Gzip trend' : 'Median trend'));
     history.reports[0].settings.node = 'v24.0.0';
     assert.ok(!comment(value, history).includes('trend'));
   }
@@ -367,30 +352,25 @@ test('dashboard escapes artifact text and provides readable tables without JavaS
   const directory = mkdtempSync(join(tmpdir(), 'seroval-dashboard-'));
   try {
     writeDashboard(history, directory);
-    for (const path of [
-      'index.html',
-      'size/index.html',
-      'speed/index.html',
-      'history.json',
-    ]) {
+    for (const path of ['index.html', 'size/index.html', 'speed/index.html', 'history.json']) {
       assert.ok(readFileSync(join(directory, path)).length > 0);
     }
     writeDashboard(history, directory);
-    assert.deepEqual(
-      JSON.parse(readFileSync(join(directory, 'history.json'), 'utf8')),
-      history,
-    );
+    assert.deepEqual(JSON.parse(readFileSync(join(directory, 'history.json'), 'utf8')), history);
   } finally {
     rmSync(directory, { recursive: true });
   }
 });
 
+/**
+ * @param {string} [event]
+ * @returns {WorkflowRun}
+ */
 function run(event = 'pull_request') {
   return {
     repository: { full_name: 'owner/seroval' },
     head_repository: {
-      full_name:
-        event === 'pull_request' ? 'contributor/seroval' : 'owner/seroval',
+      full_name: event === 'pull_request' ? 'contributor/seroval' : 'owner/seroval',
     },
     path: '.github/workflows/benchmarks.yml',
     conclusion: 'success',
@@ -401,6 +381,9 @@ function run(event = 'pull_request') {
   };
 }
 
+/**
+ * @returns {PullRequest}
+ */
 function pull() {
   return {
     state: 'open',
@@ -416,107 +399,79 @@ function pull() {
 
 test('publisher accepts current fork PRs but rejects wrong, stale and untrusted identities', () => {
   const reports = [report(), report('speed')];
-  assert.equal(
-    verifyRun(run(), 'owner/seroval', 'main', reports, pull()),
-    'comment',
-  );
-  assert.equal(
-    verifyRun(run('push'), 'owner/seroval', 'main', reports),
-    'history',
-  );
+  assert.equal(verifyRun(run(), 'owner/seroval', 'main', reports, pull()), 'comment');
+  assert.equal(verifyRun(run('push'), 'owner/seroval', 'main', reports), 'history');
   const sameRepositoryRun = run();
   sameRepositoryRun.head_repository.full_name = 'owner/seroval';
   const sameRepositoryPull = pull();
   sameRepositoryPull.head.repo.full_name = 'owner/seroval';
   assert.equal(
-    verifyRun(
-      sameRepositoryRun,
-      'owner/seroval',
-      'main',
-      reports,
-      sameRepositoryPull,
-    ),
+    verifyRun(sameRepositoryRun, 'owner/seroval', 'main', reports, sameRepositoryPull),
     'comment',
   );
-  for (const change of [
-    value => {
+  for (const change of /** @type {Array<(value: WorkflowRun) => void>} */ ([
+    (value) => {
       value.path = '.github/workflows/other.yml';
     },
-    value => {
+    (value) => {
       value.head_sha = 'c'.repeat(40);
     },
-    value => {
+    (value) => {
       value.conclusion = 'failure';
     },
-    value => {
+    (value) => {
       value.repository.full_name = 'other/repo';
     },
-    value => {
+    (value) => {
       value.head_repository.full_name = 'other/seroval';
     },
-    value => {
+    (value) => {
       value.head_branch = 'other-branch';
     },
-  ]) {
+  ])) {
     const invalid = run();
     change(invalid);
-    assert.throws(() =>
-      verifyRun(invalid, 'owner/seroval', 'main', reports, pull()),
-    );
+    assert.throws(() => verifyRun(invalid, 'owner/seroval', 'main', reports, pull()));
   }
   const stale = pull();
   stale.base.sha = 'c'.repeat(40);
-  assert.throws(
-    () => verifyRun(run(), 'owner/seroval', 'main', reports, stale),
-    staleBase,
-  );
-  for (const change of [
-    value => {
+  assert.throws(() => verifyRun(run(), 'owner/seroval', 'main', reports, stale), staleBase);
+  for (const change of /** @type {Array<(value: PullRequest) => void>} */ ([
+    (value) => {
       value.state = 'closed';
     },
-    value => {
+    (value) => {
       value.base.repo.full_name = 'other/seroval';
     },
-    value => {
+    (value) => {
       value.head.repo.full_name = 'contributor/other';
     },
-    value => {
+    (value) => {
       value.head.ref = 'other-branch';
     },
-    value => {
+    (value) => {
       value.head.sha = 'c'.repeat(40);
     },
-  ]) {
+  ])) {
     const invalid = pull();
     change(invalid);
-    assert.throws(() =>
-      verifyRun(run(), 'owner/seroval', 'main', reports, invalid),
-    );
+    assert.throws(() => verifyRun(run(), 'owner/seroval', 'main', reports, invalid));
   }
   const untrusted = run('push');
   untrusted.head_repository.full_name = 'fork/seroval';
-  assert.throws(
-    () => verifyRun(untrusted, 'owner/seroval', 'main', reports),
-    untrustedHistory,
-  );
+  assert.throws(() => verifyRun(untrusted, 'owner/seroval', 'main', reports), untrustedHistory);
   assert.throws(
     () => verifyRun(run('workflow_dispatch'), 'owner/seroval', 'main', reports),
     onlyPush,
   );
 });
 
-test('fork publication discovers by trusted head, rechecks identity and updates only its comments', async t => {
+test('fork publication discovers by trusted head, rechecks identity and updates only its comments', async (t) => {
   const directory = mkdtempSync(join(tmpdir(), 'seroval-fork-publisher-'));
   const eventPath = join(directory, 'event.json');
-  writeFileSync(
-    eventPath,
-    JSON.stringify({ workflow_run: { id: 11, pull_requests: [] } }),
-  );
+  writeFileSync(eventPath, JSON.stringify({ workflow_run: { id: 11, pull_requests: [] } }));
   for (const kind of ['size', 'speed']) {
-    writeFileSync(
-      join(directory, `${kind}.json`),
-      JSON.stringify(report(kind)),
-    );
+    writeFileSync(join(directory, `${kind}.json`), JSON.stringify(report(kind)));
   }
   const before = { ...process.env };
   Object.assign(process.env, {
@@ -527,100 +482,105 @@ test('fork publication discovers by trusted head, rechecks identity and updates 
   let current = pull();
   let listed = [pull()];
   let paginate = false;
+  /** @type {import('./publish.mjs').IssueComment[]} */
   const comments = [];
+  /** @type {Array<{ path: string, method: string }>} */
   const writes = [];
+  /** @type {string[]} */
   const reads = [];
-  t.mock.method(globalThis, 'fetch', (url, options) => {
-    const path = String(url).slice(
-      'https://api.github.com/repos/owner/seroval'.length,
-    );
-    const reply = (value, status = 200) =>
-      Promise.resolve(new Response(JSON.stringify(value), { status }));
-    if (options.method !== 'GET') {
-      writes.push({ path, method: options.method });
-      assert.ok(path.startsWith('/issues/'), 'PR runs must not write history');
-      const { body } = JSON.parse(options.body);
-      if (options.method === 'POST') {
-        comments.push({
-          id: comments.length + 1,
-          user: { login: 'github-actions[bot]' },
-          body,
-        });
+  t.mock.method(
+    globalThis,
+    'fetch',
+    async (
+      /** @type {string | URL} */ url,
+      /** @type {{ method: string, body?: string }} */ options,
+    ) => {
+      const path = String(url).slice('https://api.github.com/repos/owner/seroval'.length);
+      const reply = async (value, status = 200) =>
+        Promise.resolve(new Response(JSON.stringify(value), { status }));
+      if (options.method !== 'GET') {
+        writes.push({ path, method: options.method });
+        assert.ok(path.startsWith('/issues/'), 'PR runs must not write history');
+        /** @type {{ body: string }} */
+        const { body } = parse(options.body);
+        if (options.method === 'POST') {
+          comments.push({
+            id: comments.length + 1,
+            user: { login: 'github-actions[bot]' },
+            body,
+          });
+        }
+        return reply({});
       }
-      return reply({});
-    }
-    reads.push(path);
-    if (path === '/actions/runs/11') {
-      return reply({ ...run(), id: 11 });
-    }
-    if (path === '') {
-      return reply({ default_branch: 'main' });
-    }
-    if (path.startsWith('/commits/')) {
-      return reply([]);
-    }
-    const query =
-      '/pulls?head=contributor%3Afeat%2Fbenchmark-reports&state=open&per_page=100&page=';
-    if (path === `${query}1`) {
-      return reply(
-        paginate ? new Array(100).fill({ ...pull(), state: 'closed' }) : listed,
-      );
-    }
-    if (path === `${query}2` && paginate) {
-      return reply(listed);
-    }
-    if (path === '/pulls/1') {
-      return reply(current);
-    }
-    if (path === '/git/ref/heads/benchmark-results' || path === '/pages') {
-      return reply({}, 404);
-    }
-    if (path === '/issues/1/comments?per_page=100&page=1') {
-      return reply(comments);
-    }
-    throw new Error(`Unexpected API call: ${options.method} ${path}`);
-  });
+      reads.push(path);
+      if (path === '/actions/runs/11') {
+        return reply({ ...run(), id: 11 });
+      }
+      if (path === '') {
+        return reply({ default_branch: 'main' });
+      }
+      if (path.startsWith('/commits/')) {
+        return reply([]);
+      }
+      const query =
+        '/pulls?head=contributor%3Afeat%2Fbenchmark-reports&state=open&per_page=100&page=';
+      if (path === `${query}1`) {
+        const closed = { ...pull(), state: 'closed' };
+        return reply(paginate ? Array.from({ length: 100 }, () => closed) : listed);
+      }
+      if (path === `${query}2` && paginate) {
+        return reply(listed);
+      }
+      if (path === '/pulls/1') {
+        return reply(current);
+      }
+      if (path === '/git/ref/heads/benchmark-results' || path === '/pages') {
+        return reply({}, 404);
+      }
+      if (path === '/issues/1/comments?per_page=100&page=1') {
+        return reply(comments);
+      }
+      throw new Error(`Unexpected API call: ${options.method} ${path}`);
+    },
+  );
   try {
     await publish(directory, join(directory, 'site'));
     paginate = true;
     await publish(directory, join(directory, 'site'));
     assert.deepEqual(
-      writes.map(item => item.method),
+      writes.map((item) => item.method),
       ['POST', 'POST', 'PATCH', 'PATCH'],
     );
     assert.equal(comments.length, 2);
     assert.ok(comments[0].body.startsWith('<!-- seroval-benchmark-size -->'));
     assert.ok(comments[1].body.startsWith('<!-- seroval-benchmark-speed -->'));
-    assert.ok(!reads.some(path => path.startsWith('/commits/')));
-    assert.ok(reads.some(path => path.endsWith('page=2')));
+    assert.ok(!reads.some((path) => path.startsWith('/commits/')));
+    assert.ok(reads.some((path) => path.endsWith('page=2')));
     paginate = false;
-    for (const change of [
-      value => {
+    for (const change of /** @type {Array<(value: PullRequest) => void>} */ ([
+      (value) => {
         value.state = 'closed';
       },
-      value => {
+      (value) => {
         value.head.sha = 'c'.repeat(40);
       },
-      value => {
+      (value) => {
         value.base.sha = 'c'.repeat(40);
       },
-      value => {
+      (value) => {
         value.head.repo.full_name = 'contributor/other';
       },
-      value => {
+      (value) => {
         value.base.repo.full_name = 'other/seroval';
       },
-      value => {
+      (value) => {
         value.head.ref = 'other-branch';
       },
-    ]) {
+    ])) {
       const invalid = pull();
       change(invalid);
       listed = [invalid];
-      await assert.rejects(
-        publish(directory, join(directory, 'site')),
-        noCurrentPull,
-      );
+      await assert.rejects(publish(directory, join(directory, 'site')), noCurrentPull);
       // A matching list response cannot authorize a PR that changed afterward.
       listed = [pull()];
       current = invalid;
@@ -628,15 +588,12 @@ test('fork publication discovers by trusted head, rechecks identity and updates 
       assert.equal(writes.length, 4);
     }
     listed = [];
-    await assert.rejects(
-      publish(directory, join(directory, 'site')),
-      noCurrentPull,
-    );
+    await assert.rejects(publish(directory, join(directory, 'site')), noCurrentPull);
     assert.equal(writes.length, 4);
   } finally {
     for (const key of ['GH_TOKEN', 'GITHUB_REPOSITORY', 'GITHUB_EVENT_PATH']) {
       if (before[key] === undefined) {
-        delete process.env[key];
+        Reflect.deleteProperty(process.env, key);
       } else {
         process.env[key] = before[key];
       }
@@ -651,34 +608,27 @@ test('measurement workflow tolerates only push baseline checkout failures and om
     'utf8',
   );
   const steps = workflow.split(workflowStep).slice(1);
-  const checkout = steps.find(step => step.includes('id: baseline'));
-  assert.ok(
-    checkout.includes("continue-on-error: ${{ github.event_name == 'push' }}"),
-  );
-  assert.equal(
-    steps.filter(step => step.includes('continue-on-error:')).length,
-    1,
-  );
-  const baselineBuild = steps.find(step =>
-    step.includes('pnpm --dir baseline'),
-  );
+  const checkout = steps.find((step) => step.includes('id: baseline'));
+  // oxlint-disable-next-line no-template-curly-in-string -- This is a GitHub Actions expression.
+  assert.ok(checkout.includes("continue-on-error: ${{ github.event_name == 'push' }}"));
+  assert.equal(steps.filter((step) => step.includes('continue-on-error:')).length, 1);
+  const baselineBuild = steps.find((step) => step.includes('pnpm --dir baseline'));
   assert.ok(baselineBuild.includes("if: steps.baseline.outcome == 'success'"));
-  const candidateBuild = steps.find(step =>
-    step.includes('pnpm --dir candidate'),
-  );
+  const candidateBuild = steps.find((step) => step.includes('pnpm --dir candidate'));
   assert.ok(!candidateBuild.includes('if:'));
   assert.ok(
     steps.some(
-      step =>
+      (step) =>
         step.includes("if: steps.baseline.outcome == 'failure'") &&
         step.includes('::warning::') &&
         step.includes('baseline unavailable'),
     ),
   );
   for (const kind of ['size', 'speed']) {
-    const measurement = steps.find(step => step.includes(`--kind ${kind}`));
+    const measurement = steps.find((step) => step.includes(`--kind ${kind}`));
     assert.ok(
       measurement.includes(
+        // oxlint-disable-next-line no-template-curly-in-string -- This is a GitHub Actions expression.
         "${{ steps.baseline.outcome == 'success' && '--baseline baseline' || '' }}",
       ),
     );
@@ -693,8 +643,9 @@ test('comment publication creates then updates only the bot-owned marker, includ
       body: '<!-- seroval-benchmark-size -->',
     },
   ];
+  /** @type {Array<RequestOptions & { path: string }>} */
   const writes = [];
-  const api = (path, options) => {
+  const api = (/** @type {string} */ path, /** @type {RequestOptions | undefined} */ options) => {
     if (!options) {
       return stored;
     }
@@ -712,21 +663,20 @@ test('comment publication creates then updates only the bot-owned marker, includ
   await upsertComment(api, 'repos/owner/seroval', 1, 'size', body);
   await upsertComment(api, 'repos/owner/seroval', 1, 'size', body);
   assert.deepEqual(
-    writes.map(item => item.method),
+    writes.map((item) => item.method),
     ['POST', 'PATCH'],
   );
   assert.ok(writes[1].path.endsWith('/comments/2'));
+  /** @type {string[]} */
   const pages = [];
   await upsertComment(
-    (path, options) => {
+    (/** @type {string} */ path, /** @type {RequestOptions | undefined} */ options) => {
       if (options) {
         assert.equal(options.method, 'PATCH');
         return {};
       }
       pages.push(path);
-      return path.endsWith('page=1')
-        ? new Array(100).fill(stored[0])
-        : [stored[1]];
+      return path.endsWith('page=1') ? Array.from({ length: 100 }, () => stored[0]) : [stored[1]];
     },
     'repos/owner/seroval',
     1,
@@ -737,14 +687,19 @@ test('comment publication creates then updates only the bot-owned marker, includ
 });
 
 test('correctness rejects lost shared references and invalid timed output', () => {
+  /** @type {import('./runtime.mjs').Graph} */
   const graph = values().find(([id]) => id === 'object.references')[1];
   const bad = { left: { ...graph.left }, right: { ...graph.right } };
   bad.self = bad;
-  assert.throws(() => verifyValue(bad, graph));
+  assert.throws(() => {
+    verifyValue(bad, graph);
+  });
   assert.throws(() =>
     measureSync(
       () => 0,
-      value => assert.equal(value, 1),
+      (value) => {
+        assert.equal(value, 1);
+      },
       2,
       { samples: 1, warmups: 0 },
     ),
@@ -758,13 +713,15 @@ test('async timing awaits completion and validation runs after the operation', a
       order.push('prepare');
       return 1;
     },
-    async value => {
+    async (value) => {
       order.push('start');
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
       order.push('complete');
       return value;
     },
-    value => {
+    (value) => {
       assert.equal(value, 1);
       order.push('verify');
     },
@@ -774,7 +731,7 @@ test('async timing awaits completion and validation runs after the operation', a
   assert.ok(samples[0] >= 10);
 });
 
-test('publisher creates and incrementally maintains both dashboard artifacts and branch history', async t => {
+test('publisher creates and incrementally maintains both dashboard artifacts and branch history', async (t) => {
   const directory = mkdtempSync(join(tmpdir(), 'seroval-publisher-'));
   const input = join(directory, 'input');
   const output = join(directory, 'site');
@@ -790,98 +747,109 @@ test('publisher creates and incrementally maintains both dashboard artifacts and
     GITHUB_EVENT_PATH: eventPath,
     GITHUB_OUTPUT: join(directory, 'output'),
   };
+  /** @type {Record<string, string | undefined>} */
   const before = {};
   for (const [key, value] of Object.entries(environment)) {
     before[key] = process.env[key];
     process.env[key] = value;
   }
+  /** @type {string | null} */
   let head = null;
+  /** @type {TreeFile[]} */
   let tree = [];
   let commits = 0;
   let pagesEnabled = false;
+  /** @type {Array<{ path: string, body: unknown }>} */
   const writes = [];
+  /** @type {string[]} */
   const messages = [];
-  t.mock.method(console, 'log', message => messages.push(message));
-  t.mock.method(globalThis, 'fetch', (url, options) => {
-    const path = String(url).slice(
-      'https://api.github.com/repos/owner/seroval'.length,
-    );
-    const body = options.body && JSON.parse(options.body);
-    const reply = (value, status = 200) =>
-      Promise.resolve(new Response(JSON.stringify(value), { status }));
-    if (options.method !== 'GET') {
-      writes.push({ path, body });
-    }
-    if (path === '/actions/runs/11') {
-      return reply({
-        ...run('push'),
-        id: 11,
-        run_started_at: '2026-09-28T03:00:00Z',
-      });
-    }
-    if (path === '') {
-      return reply({ default_branch: 'main' });
-    }
-    if (path === '/pages') {
-      return pagesEnabled
-        ? reply({
-            build_type: 'workflow',
-            html_url: 'https://owner.github.io/seroval/',
-          })
-        : reply({}, 404);
-    }
-    if (path === '/git/ref/heads/benchmark-results') {
-      return head ? reply({ object: { sha: head } }) : reply({}, 404);
-    }
-    if (path.startsWith('/git/commits/') && options.method === 'GET') {
-      return reply({ tree: { sha: 'saved-tree' } });
-    }
-    if (path === '/git/trees/saved-tree?recursive=1') {
-      return reply({
-        truncated: false,
-        tree: tree.map(item => ({
-          path: item.path,
-          type: 'blob',
-          sha: 'history-blob',
-          size: item.content.length,
-        })),
-      });
-    }
-    if (path === '/git/blobs/history-blob') {
-      return reply({
-        encoding: 'base64',
-        content: Buffer.from(
-          tree.find(item => item.path === 'history.json').content,
-        ).toString('base64'),
-      });
-    }
-    if (path === '/git/trees' && options.method === 'POST') {
-      tree = body.tree;
-      return reply({ sha: 'new-tree' });
-    }
-    if (path === '/git/commits' && options.method === 'POST') {
-      assert.deepEqual(body.parents, head ? [head] : []);
-      commits++;
-      return reply({ sha: String(commits).repeat(40) });
-    }
-    if (path === '/git/refs' || path === '/git/refs/heads/benchmark-results') {
-      if (head) {
-        assert.equal(body.force, false);
+  t.mock.method(console, 'log', (/** @type {string} */ message) => messages.push(message));
+  t.mock.method(
+    globalThis,
+    'fetch',
+    async (
+      /** @type {string | URL} */ url,
+      /** @type {{ method: string, body?: string }} */ options,
+    ) => {
+      const path = String(url).slice('https://api.github.com/repos/owner/seroval'.length);
+      /** @type {{ tree: TreeFile[], parents: string[], force: boolean, sha: string } | undefined} */
+      const body = options.body && parse(options.body);
+      const reply = async (value, status = 200) =>
+        Promise.resolve(new Response(JSON.stringify(value), { status }));
+      if (options.method !== 'GET') {
+        writes.push({ path, body });
       }
-      head = body.sha;
-      return reply({});
-    }
-    throw new Error(`Unexpected API call: ${options.method} ${path}`);
-  });
+      if (path === '/actions/runs/11') {
+        return reply({
+          ...run('push'),
+          id: 11,
+          run_started_at: '2026-09-28T03:00:00Z',
+        });
+      }
+      if (path === '') {
+        return reply({ default_branch: 'main' });
+      }
+      if (path === '/pages') {
+        return pagesEnabled
+          ? reply({
+              build_type: 'workflow',
+              html_url: 'https://owner.github.io/seroval/',
+            })
+          : reply({}, 404);
+      }
+      if (path === '/git/ref/heads/benchmark-results') {
+        return head ? reply({ object: { sha: head } }) : reply({}, 404);
+      }
+      if (path.startsWith('/git/commits/') && options.method === 'GET') {
+        return reply({ tree: { sha: 'saved-tree' } });
+      }
+      if (path === '/git/trees/saved-tree?recursive=1') {
+        return reply({
+          truncated: false,
+          tree: tree.map((item) => ({
+            path: item.path,
+            type: 'blob',
+            sha: 'history-blob',
+            size: item.content.length,
+          })),
+        });
+      }
+      if (path === '/git/blobs/history-blob') {
+        return reply({
+          encoding: 'base64',
+          content: Buffer.from(tree.find((item) => item.path === 'history.json').content).toString(
+            'base64',
+          ),
+        });
+      }
+      if (path === '/git/trees' && options.method === 'POST') {
+        tree = body.tree;
+        return reply({ sha: 'new-tree' });
+      }
+      if (path === '/git/commits' && options.method === 'POST') {
+        assert.deepEqual(body.parents, head ? [head] : []);
+        commits++;
+        return reply({ sha: String(commits).repeat(40) });
+      }
+      if (path === '/git/refs' || path === '/git/refs/heads/benchmark-results') {
+        if (head) {
+          assert.equal(body.force, false);
+        }
+        head = body.sha;
+        return reply({});
+      }
+      throw new Error(`Unexpected API call: ${options.method} ${path}`);
+    },
+  );
   try {
     await publish(input, output);
-    assert.deepEqual(tree.map(item => item.path).sort(), [
+    assert.deepEqual(tree.map((item) => item.path).sort(), [
       'history.json',
       'index.html',
       'size/index.html',
       'speed/index.html',
     ]);
-    assert.ok(messages.some(message => message.includes('::warning::')));
+    assert.ok(messages.some((message) => message.includes('::warning::')));
     for (const kind of ['size', 'speed']) {
       const value = report(kind);
       value.baseline = null;
@@ -889,36 +857,22 @@ test('publisher creates and incrementally maintains both dashboard artifacts and
     }
     pagesEnabled = true;
     await publish(input, output);
-    const history = JSON.parse(
-      readFileSync(join(output, 'history.json'), 'utf8'),
-    );
+    /** @type {History} */
+    const history = parse(readFileSync(join(output, 'history.json'), 'utf8'));
     assert.equal(history.reports.length, 2);
-    assert.equal(writes.filter(item => item.path === '/git/refs').length, 1);
+    assert.equal(writes.filter((item) => item.path === '/git/refs').length, 1);
     assert.equal(
-      writes.filter(item => item.path === '/git/refs/heads/benchmark-results')
-        .length,
+      writes.filter((item) => item.path === '/git/refs/heads/benchmark-results').length,
       1,
     );
-    assert.ok(
-      readFileSync(join(output, 'size/index.html'), 'utf8').includes(
-        'core.serialize',
-      ),
-    );
-    assert.ok(
-      readFileSync(join(output, 'speed/index.html'), 'utf8').includes(
-        'stream.completion',
-      ),
-    );
-    assert.ok(
-      readFileSync(environment.GITHUB_OUTPUT, 'utf8').includes('deploy=false'),
-    );
-    assert.ok(
-      readFileSync(environment.GITHUB_OUTPUT, 'utf8').includes('deploy=true'),
-    );
+    assert.ok(readFileSync(join(output, 'size/index.html'), 'utf8').includes('core.serialize'));
+    assert.ok(readFileSync(join(output, 'speed/index.html'), 'utf8').includes('stream.completion'));
+    assert.ok(readFileSync(environment.GITHUB_OUTPUT, 'utf8').includes('deploy=false'));
+    assert.ok(readFileSync(environment.GITHUB_OUTPUT, 'utf8').includes('deploy=true'));
   } finally {
     for (const key of Object.keys(environment)) {
       if (before[key] === undefined) {
-        delete process.env[key];
+        Reflect.deleteProperty(process.env, key);
       } else {
         process.env[key] = before[key];
       }

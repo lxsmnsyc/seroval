@@ -26,7 +26,7 @@ export function isStream<T>(value: object): value is Stream<T> {
 }
 
 export function createStream<T>(): Stream<T> {
-  return STREAM_CONSTRUCTOR() as unknown as Stream<T>;
+  return STREAM_CONSTRUCTOR();
 }
 
 const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
@@ -34,10 +34,6 @@ const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
   PROMISE_CONSTRUCTOR,
 );
 
-export function streamToAsyncIterable<T>(
-  stream: Stream<T>,
-): () => AsyncIterableIterator<T> {
-  return createAsyncIterable(
-    stream,
-  ) as unknown as () => AsyncIterableIterator<T>;
+export function streamToAsyncIterable<T>(stream: Stream<T>): () => AsyncIterableIterator<T> {
+  return createAsyncIterable(stream) as unknown as () => AsyncIterableIterator<T>;
 }

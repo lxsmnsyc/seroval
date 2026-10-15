@@ -17,24 +17,20 @@ import { SpecialReference } from '../special-reference';
 import type { Stream, StreamListener } from '../stream';
 import { SYM_ASYNC_ITERATOR } from '../symbols';
 import type { SerovalNode, SerovalPluginNode } from '../types';
-import {
-  createBaseParserContext,
-  createIndexForValue,
-  parseSpecialReference,
-} from './parser';
+import { createBaseParserContext, createIndexForValue, parseSpecialReference } from './parser';
 import {
   type OutputRecord,
   ParserMode,
-  parseSOS,
   type StreamParserContext,
   type StreamParserContextOptions,
   type StreamParserState,
+  parseSOS,
 } from './sync-parser';
 
 export class StreamParsePluginContext {
   constructor(
-    private _p: StreamParserContext,
-    private depth: number,
+    private readonly _p: StreamParserContext,
+    private readonly depth: number,
   ) {}
 
   parse<T>(current: T): SerovalNode {
@@ -122,6 +118,7 @@ function parsePluginStream(
   depth: number,
   id: number,
   current: unknown,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   currentPlugins: Plugin<any, any>[],
 ): SerovalPluginNode | undefined {
   for (let i = 0, len = currentPlugins.length; i < len; i++) {
@@ -130,6 +127,7 @@ function parsePluginStream(
       return createPluginNode(
         id,
         plugin.tag,
+        // oxlint-disable-next-line no-unsafe-argument -- Plugin info is any because plugins are stored as Plugin<any, any>.
         plugin.parse.stream(current, new StreamParsePluginContext(ctx, depth), {
           id,
         }),
@@ -239,7 +237,9 @@ function consumeLiveStream(
 ): void {
   const cancel = current.pump(streamListener(ctx, depth, id));
   pushPendingState(ctx);
-  addCleanup(ctx, () => cancel(ctx.state.reason));
+  addCleanup(ctx, () => {
+    cancel(ctx.state.reason);
+  });
 }
 
 function wrapPromiseResult(
@@ -280,13 +280,7 @@ function handlePromise(
   data: unknown,
 ): void {
   if (this.state.alive) {
-    parseEvent(
-      this,
-      depth,
-      data,
-      wrapPromiseResult.bind(null, this, type, id),
-      NIL,
-    );
+    parseEvent(this, depth, data, wrapPromiseResult.bind(null, this, type, id), NIL);
   }
   popPendingState(this);
 }
@@ -335,7 +329,7 @@ function iterateAsync(
           Promise.resolve(iterator.return?.(ctx.state.reason)).catch(() => {
             // no-op
           });
-        } catch (_error) {
+        } catch {
           // no-op
         }
       } else {
@@ -346,7 +340,7 @@ function iterateAsync(
   function pull(): void {
     if (active) {
       iterator.next().then(
-        result => {
+        (result) => {
           if (active) {
             if (result.done) {
               active = false;
@@ -358,7 +352,7 @@ function iterateAsync(
             }
           }
         },
-        error => {
+        (error) => {
           if (active) {
             active = false;
             listener.throw(error, NIL as unknown as () => void);
@@ -372,9 +366,7 @@ function iterateAsync(
   pull();
 }
 
-function createStreamParserState(
-  options: StreamParserContextOptions,
-): StreamParserState {
+function createStreamParserState(options: StreamParserContextOptions): StreamParserState {
   return {
     alive: true,
     pending: 0,
@@ -465,7 +457,7 @@ function drainOutput(ctx: StreamParserContext): void {
     return;
   }
   while (state.alive && state.queue.length > 0) {
-    const record = state.queue.shift() as OutputRecord;
+    const record = state.queue.shift()!;
     if (!record.node) {
       continue;
     }
@@ -480,10 +472,7 @@ function drainOutput(ctx: StreamParserContext): void {
       const result: unknown = state.onParse(record.node, record.initial);
       // Only objects and functions can be thenables; primitive prototypes
       // must not affect incidental callback returns.
-      if (
-        result !== null &&
-        (typeof result === 'object' || typeof result === 'function')
-      ) {
+      if (result !== null && (typeof result === 'object' || typeof result === 'function')) {
         const then: unknown = Reflect.get(result, 'then');
         if (typeof then === 'function') {
           pending = new Promise<void>((resolve, reject) => {
@@ -497,6 +486,7 @@ function drainOutput(ctx: StreamParserContext): void {
       return;
     } finally {
       state.parsing--;
+      // oxlint-disable-next-line no-unnecessary-condition -- The output callback can stop the parser.
       if (!state.alive) {
         releaseParserValues(ctx);
       }
@@ -505,6 +495,7 @@ function drainOutput(ctx: StreamParserContext): void {
     if (pending) {
       // Cancellation inside the callback must still observe its returned
       // thenable's rejection, without retaining the event or accepting it.
+      // oxlint-disable-next-line no-unnecessary-condition -- The output callback can stop the parser.
       if (!state.alive) {
         releaseRecord(record);
       }
@@ -519,7 +510,7 @@ function drainOutput(ctx: StreamParserContext): void {
             drainOutput(ctx);
           }
         },
-        error => {
+        (error) => {
           state.writing = false;
           state.inFlight = NIL;
           releaseRecord(record);
@@ -528,6 +519,7 @@ function drainOutput(ctx: StreamParserContext): void {
       );
       return;
     }
+    // oxlint-disable-next-line no-unnecessary-condition -- The output callback can stop the parser.
     if (!state.alive) {
       releaseRecord(record);
       return;
@@ -554,10 +546,7 @@ function checkStreamParse(ctx: StreamParserContext): void {
   }
 }
 
-export function startStreamParse<T>(
-  ctx: StreamParserContext,
-  current: T,
-): void {
+export function startStreamParse(ctx: StreamParserContext, current: unknown): void {
   const state = ctx.state;
   let parsed: SerovalNode | undefined;
   let failure: { value: unknown } | undefined;
@@ -631,11 +620,7 @@ function releaseParserValues(ctx: StreamParserContext): void {
  * Ends the parse once: `onDone` on success, `onError` on failure, and every
  * cleanup either way.
  */
-function stopStreamParse(
-  ctx: StreamParserContext,
-  mode: 0 | 1 | 2,
-  reason?: unknown,
-): void {
+function stopStreamParse(ctx: StreamParserContext, mode: 0 | 1 | 2, reason?: unknown): void {
   const state = ctx.state;
   if (state.alive) {
     state.alive = false;
@@ -679,9 +664,6 @@ function stopStreamParse(
   }
 }
 
-export function destroyStreamParse(
-  ctx: StreamParserContext,
-  reason?: unknown,
-): void {
+export function destroyStreamParse(ctx: StreamParserContext, reason?: unknown): void {
   stopStreamParse(ctx, 2, reason);
 }

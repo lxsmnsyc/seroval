@@ -1,25 +1,28 @@
 import v8 from 'node:v8';
 import vm from 'node:vm';
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
+  type SerovalNode,
+  type Stream,
   createLiveStream,
   createStream,
   crossSerializeStream,
   fromCrossJSON,
-  type SerovalNode,
-  type Stream,
   toCrossJSONStream,
 } from '../src';
 import { STREAM_CONSTRUCTOR } from '../src/core/constructors';
 
 v8.setFlagsFromString('--expose-gc');
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runInNewContext returns any.
 const gc = vm.runInNewContext('gc') as () => void;
 
-function tick(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 0));
+async function tick(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
 }
 
-function listen<T>(stream: Stream<T>, into: T[]): () => void {
+function listen(stream: Stream<unknown>, into: unknown[]): () => void {
   return stream.on({
     next(value) {
       into.push(value);
@@ -28,13 +31,14 @@ function listen<T>(stream: Stream<T>, into: T[]): () => void {
       into.push(value);
     },
     throw(value) {
-      into.push(value as T);
+      into.push(value);
     },
   });
 }
 
 describe('live receiver', () => {
   it('replays history to its first listener, then forwards without retaining', async () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- STREAM_CONSTRUCTOR is untyped.
     const receiver = STREAM_CONSTRUCTOR(1) as unknown as Stream<object>;
     const refs: WeakRef<object>[] = [];
     function push(i: number): void {
@@ -54,21 +58,19 @@ describe('live receiver', () => {
     gc();
     await tick();
     gc();
-    expect(refs.map(ref => ref.deref())).toEqual([
-      undefined,
-      undefined,
-      undefined,
-    ]);
+    expect(refs.map((ref) => ref.deref())).toEqual([undefined, undefined, undefined]);
     receiver.return({ i: 3 });
   });
 
   it('refuses a second listener', () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- STREAM_CONSTRUCTOR is untyped.
     const receiver = STREAM_CONSTRUCTOR(1) as unknown as Stream<number>;
     listen(receiver, []);
     expect(() => listen(receiver, [])).toThrow('Stream consumed');
   });
 
   it('delivers the terminal event to a late first listener', () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- STREAM_CONSTRUCTOR is untyped.
     const receiver = STREAM_CONSTRUCTOR(1) as unknown as Stream<number>;
     receiver.next(1);
     receiver.return(2);
@@ -78,6 +80,7 @@ describe('live receiver', () => {
   });
 
   it('keeps the replay receiver unchanged', () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- STREAM_CONSTRUCTOR is untyped.
     const receiver = STREAM_CONSTRUCTOR() as unknown as Stream<number>;
     receiver.next(1);
     const first: number[] = [];
@@ -136,6 +139,7 @@ describe('live receiver on the wire', () => {
     listen(replay, []);
     expect(() => listen(replay, [])).not.toThrow();
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the marker is malformed on purpose.
     const malformed = { ...nodes[0], l: 2 as 1 };
     const fallback = fromCrossJSON<Stream<number>>(malformed, {
       refs: new Map(),
@@ -162,7 +166,8 @@ describe('live receiver on the wire', () => {
     });
     const seen: number[] = [];
     await tick();
-    listen(restored as Stream<number>, seen);
+    assert(restored);
+    listen(restored, seen);
     await producer.write(1);
     await producer.write(2);
     await producer.close(3);

@@ -1,8 +1,9 @@
+import type { JSX } from '@solidjs/web';
 import { FIRST_PAGE } from '../lib/docs';
 import { REPOSITORY_URL } from '../lib/ui';
 import { LogoMark } from './Icons';
 
-export default function Footer() {
+export default function Footer(): JSX.Element {
   return (
     <footer class="site-footer">
       <div class="footer-inner">
@@ -12,11 +13,7 @@ export default function Footer() {
             Released under the MIT License.
             <br />
             Created by{' '}
-            <a
-              href="https://github.com/lxsmnsyc"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href="https://github.com/lxsmnsyc" target="_blank" rel="noopener noreferrer">
               lxsmnsyc
             </a>
             .

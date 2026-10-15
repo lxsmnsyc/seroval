@@ -1,4 +1,5 @@
-import { type Component, createSignal, For, onSettled, Show } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import { type Component, For, Show, createSignal, onSettled } from 'solid-js';
 import { getSectionTitle, getSiblings } from '../lib/docs';
 import { REPOSITORY_URL } from '../lib/ui';
 import DocsNav from './DocsNav';
@@ -15,18 +16,18 @@ export interface RenderedDoc {
 }
 
 /** The table of contents, with the section in view highlighted. */
-function TableOfContents(props: { doc: RenderedDoc }) {
+function TableOfContents(props: { doc: RenderedDoc }): JSX.Element {
   const [active, setActive] = createSignal<string>();
-  const headings = () => props.doc.headings.filter(h => h.depth <= 3);
+  const headings = (): RenderedDoc['headings'] => props.doc.headings.filter((h) => h.depth <= 3);
 
   onSettled(() => {
     const elements = headings()
-      .map(heading => document.getElementById(heading.id))
-      .filter(element => element != null);
+      .map((heading) => document.getElementById(heading.id))
+      .filter((element) => element != null);
     const observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         const visible = entries
-          .filter(entry => entry.isIntersecting)
+          .filter((entry) => entry.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible.length > 0) {
           setActive(visible[0].target.id);
@@ -37,7 +38,9 @@ function TableOfContents(props: { doc: RenderedDoc }) {
     for (const element of elements) {
       observer.observe(element);
     }
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   });
 
   return (
@@ -46,7 +49,7 @@ function TableOfContents(props: { doc: RenderedDoc }) {
         <p class="docs-nav-title">On this page</p>
         <nav aria-label="On this page">
           <For each={headings()}>
-            {heading => (
+            {(heading) => (
               <a
                 href={`#${heading.id}`}
                 class={{
@@ -65,8 +68,8 @@ function TableOfContents(props: { doc: RenderedDoc }) {
 }
 
 /** The layout for a page built from a doc in `src/content/docs`. */
-export default function DocPage(props: { doc: RenderedDoc }) {
-  const siblings = () => getSiblings(props.doc.slug);
+export default function DocPage(props: { doc: RenderedDoc }): JSX.Element {
+  const siblings = (): ReturnType<typeof getSiblings> => getSiblings(props.doc.slug);
 
   return (
     <div class="docs-layout">
@@ -93,7 +96,7 @@ export default function DocPage(props: { doc: RenderedDoc }) {
           </a>
           <nav class="pager" aria-label="Pages">
             <Show when={siblings().previous}>
-              {previous => (
+              {(previous) => (
                 <a class="pager-link previous" href={previous().href}>
                   <span class="pager-label">
                     <ArrowLeftIcon /> Previous
@@ -103,7 +106,7 @@ export default function DocPage(props: { doc: RenderedDoc }) {
               )}
             </Show>
             <Show when={siblings().next}>
-              {next => (
+              {(next) => (
                 <a class="pager-link next" href={next().href}>
                   <span class="pager-label">
                     Next <ArrowRightIcon />

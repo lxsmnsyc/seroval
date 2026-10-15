@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { Marked, type Tokens } from 'marked';
 import markedFootnote from 'marked-footnote';
@@ -31,7 +31,7 @@ export interface SearchEntry {
   text: string;
 }
 
-const LANGUAGE_LABELS: Record<string, string> = {
+const LANGUAGE_LABELS: Partial<Record<string, string>> = {
   js: 'JavaScript',
   ts: 'TypeScript',
   tsx: 'TSX',
@@ -104,14 +104,30 @@ function rewriteLink(href: string, file: string): string {
   if (target === '') {
     return href;
   }
-  const resolved = path.posix.normalize(
-    path.posix.join(path.posix.dirname(file), target),
-  );
+  const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(file), target));
   if (resolved.startsWith('website/src/content/docs/') && resolved.endsWith('.md')) {
     const slug = path.posix.basename(resolved, '.md');
     return `/docs/${slug}${hash ? `#${hash}` : ''}`;
   }
   return REPOSITORY + resolved + (hash ? `#${hash}` : '');
+}
+
+interface DocMeta {
+  title: string;
+  description: string;
+}
+
+function isDocMeta(value: unknown): value is DocMeta {
+  if (typeof value !== 'object' || value == null) {
+    return false;
+  }
+  const meta = value as Partial<Record<keyof DocMeta, unknown>>;
+  return (
+    typeof meta.title === 'string' &&
+    typeof meta.description === 'string' &&
+    meta.title !== '' &&
+    meta.description !== ''
+  );
 }
 
 /**
@@ -124,8 +140,8 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
   if (!match) {
     throw new Error(`${file} has no frontmatter`);
   }
-  const meta = parseYAML(match[1]) as { title?: string; description?: string };
-  if (!(meta.title && meta.description)) {
+  const meta: unknown = parseYAML(match[1]);
+  if (!isDocMeta(meta)) {
     throw new Error(`${file} needs a title and a description`);
   }
   const body = source.slice(match[0].length);
@@ -156,7 +172,7 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
         const title = CODE_TITLE.exec(rest.join(' '))?.[1];
         const index = codeBlocks.length;
         codeBlocks.push(
-          highlight(token.text, lang).then(html =>
+          highlight(token.text, lang).then((html) =>
             codeFrame(html, title ?? LANGUAGE_LABELS[lang] ?? lang),
           ),
         );
@@ -166,43 +182,38 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
         const html = this.parser.parseInline(token.tokens);
         const href = rewriteLink(token.href, file);
         const external = EXTERNAL_LINK.test(href);
-        const attributes = external
-          ? ' target="_blank" rel="noopener noreferrer"'
-          : '';
+        const attributes = external ? ' target="_blank" rel="noopener noreferrer"' : '';
         return `<a href="${escapeHTML(href)}"${attributes}>${html}</a>`;
       },
       table(token: Tokens.Table) {
         const head = token.header
-          .map(cell => `<th>${this.parser.parseInline(cell.tokens)}</th>`)
+          .map((cell) => `<th>${this.parser.parseInline(cell.tokens)}</th>`)
           .join('');
         const rows = token.rows
           .map(
-            row =>
-              `<tr>${row.map(cell => `<td>${this.parser.parseInline(cell.tokens)}</td>`).join('')}</tr>`,
+            (row) =>
+              `<tr>${row.map((cell) => `<td>${this.parser.parseInline(cell.tokens)}</td>`).join('')}</tr>`,
           )
           .join('');
         return `<div class="table-wrapper"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
       },
       blockquote(token: Tokens.Blockquote) {
-        const content = this.parser.parse(token.tokens);
+        const inner = this.parser.parse(token.tokens);
         const alert = ALERT_PATTERN.exec(token.text);
         if (alert) {
           const kind = alert[1].toLowerCase();
           const label = kind[0].toUpperCase() + kind.slice(1);
           const icon = `<svg viewBox="0 0 24 24" aria-hidden="true">${ALERT_ICONS[kind]}</svg>`;
-          return `<div class="alert alert-${kind}"><p class="alert-title">${icon}${label}</p>${content.replace(ALERT_MARKER, '<p>')}</div>`;
+          return `<div class="alert alert-${kind}"><p class="alert-title">${icon}${label}</p>${inner.replace(ALERT_MARKER, '<p>')}</div>`;
         }
-        return `<blockquote>${content}</blockquote>`;
+        return `<blockquote>${inner}</blockquote>`;
       },
     },
   });
 
   let html = await marked.parse(body);
   const highlighted = await Promise.all(codeBlocks);
-  html = html.replace(
-    CODE_PLACEHOLDER,
-    (_, index: string) => highlighted[Number(index)],
-  );
+  html = html.replace(CODE_PLACEHOLDER, (_, index: string) => highlighted[Number(index)]);
 
   return {
     slug: path.posix.basename(file, '.md'),
@@ -254,9 +265,9 @@ export default function content(root: string): Plugin {
   const docsDir = path.join(import.meta.dirname, '../src/content/docs');
 
   async function loadDocs(): Promise<RenderedDoc[]> {
-    const files = (await readdir(docsDir)).filter(name => name.endsWith('.md'));
+    const files = (await readdir(docsDir)).filter((name) => name.endsWith('.md'));
     return Promise.all(
-      files.map(async name => {
+      files.map(async (name) => {
         const id = path.join(docsDir, name);
         const relative = path.relative(root, id).split(path.sep).join('/');
         return renderDoc(await readFile(id, 'utf8'), relative);
@@ -294,10 +305,7 @@ export default function content(root: string): Plugin {
       if (id === `\0${MANIFEST_ID}`) {
         const docs = await loadDocs();
         const manifest = Object.fromEntries(
-          docs.map(doc => [
-            doc.slug,
-            { title: doc.title, description: doc.description },
-          ]),
+          docs.map((doc) => [doc.slug, { title: doc.title, description: doc.description }]),
         );
         return `export default ${JSON.stringify(manifest)};`;
       }

@@ -1,7 +1,13 @@
-import { describe, expect, it, vi } from 'vitest';
-import { createStream, type StreamListener } from '../src';
+import { type Mock, describe, expect, it, vi } from 'vitest';
+import { type StreamListener, createStream } from '../src';
 
-function listener(): StreamListener<number> {
+interface MockListener {
+  next: Mock<(value: number) => void>;
+  throw: Mock<(value: unknown) => void>;
+  return: Mock<(value: number) => void>;
+}
+
+function listener(): MockListener {
   return { next: vi.fn(), throw: vi.fn(), return: vi.fn() };
 }
 
@@ -38,7 +44,7 @@ describe('stream listener cleanup', () => {
 
   it('does not skip the next listener when a callback unsubscribes itself', () => {
     const stream = createStream<number>();
-    const first = listener();
+    const first: StreamListener<number> = listener();
     const second = listener();
     const off = stream.on(first);
     first.next = off;
@@ -64,7 +70,7 @@ describe('stream listener cleanup', () => {
 
   it('can remove a later listener during dispatch', () => {
     const stream = createStream<number>();
-    const first = listener();
+    const first: StreamListener<number> = listener();
     const second = listener();
     const third = listener();
     stream.on(first);

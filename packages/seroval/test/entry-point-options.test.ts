@@ -1,18 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
+  Serializer,
+  SerovalConflictedNodeIdError,
+  SerovalDepthLimitError,
+  SerovalDeserializationError,
+  type SerovalJSON,
+  SerovalMissingPluginError,
+  type SerovalNode,
+  SerovalParserError,
+  SerovalSerializationError,
   compileJSON,
   createPlugin,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
   fromJSON,
-  Serializer,
-  SerovalConflictedNodeIdError,
-  SerovalDepthLimitError,
-  SerovalDeserializationError,
-  SerovalMissingPluginError,
-  SerovalParserError,
-  SerovalSerializationError,
   serialize,
   serializeAsync,
   toCrossJSON,
@@ -36,10 +38,8 @@ const DEEP = createNested(20);
 const OPTIONS = { depthLimit: 4 };
 
 function expectDepthLimit(error: unknown): void {
-  expect(error).toBeInstanceOf(SerovalParserError);
-  expect((error as SerovalParserError).cause).toBeInstanceOf(
-    SerovalDepthLimitError,
-  );
+  assert(error instanceof SerovalParserError);
+  expect(error.cause).toBeInstanceOf(SerovalDepthLimitError);
 }
 
 describe('depthLimit', () => {
@@ -57,19 +57,14 @@ describe('depthLimit', () => {
   });
 
   it('is honored by the async entry points', async () => {
-    for (const entry of [
-      serializeAsync,
-      toJSONAsync,
-      crossSerializeAsync,
-      toCrossJSONAsync,
-    ]) {
+    for (const entry of [serializeAsync, toJSONAsync, crossSerializeAsync, toCrossJSONAsync]) {
       await expect(entry(createNested(2), OPTIONS)).resolves.toBeDefined();
-      expectDepthLimit(await entry(DEEP, OPTIONS).catch(error => error));
+      expectDepthLimit(await entry(DEEP, OPTIONS).catch((error: unknown) => error));
     }
   });
 
   it('is honored by crossSerializeStream', async () => {
-    const error = await new Promise<unknown>(resolve => {
+    const error = await new Promise<unknown>((resolve) => {
       crossSerializeStream(DEEP, {
         ...OPTIONS,
         onSerialize() {
@@ -82,7 +77,7 @@ describe('depthLimit', () => {
   });
 
   it('is honored by Serializer', async () => {
-    const error = await new Promise<unknown>(resolve => {
+    const error = await new Promise<unknown>((resolve) => {
       const writer = new Serializer({
         ...OPTIONS,
         globalIdentifier: '_$',
@@ -105,15 +100,13 @@ describe('depthLimit', () => {
     } catch (error) {
       caught = error;
     }
-    expect(caught).toBeInstanceOf(SerovalDeserializationError);
-    expect((caught as SerovalDeserializationError).cause).toBeInstanceOf(
-      SerovalDepthLimitError,
-    );
+    assert(caught instanceof SerovalDeserializationError);
+    expect(caught.cause).toBeInstanceOf(SerovalDepthLimitError);
   });
 });
 
 describe('SerovalSerializationError', () => {
-  const ExamplePlugin = createPlugin<URL, { href: unknown }>({
+  const ExamplePlugin = createPlugin<URL, { href: SerovalNode }>({
     tag: 'example',
     test(value) {
       return value instanceof URL;
@@ -124,10 +117,10 @@ describe('SerovalSerializationError', () => {
       },
     },
     serialize(node, ctx) {
-      return 'new URL(' + ctx.serialize(node.href as never) + ')';
+      return 'new URL(' + ctx.serialize(node.href) + ')';
     },
     deserialize(node, ctx) {
-      return new URL(ctx.deserialize(node.href as never));
+      return new URL(ctx.deserialize(node.href));
     },
   });
 
@@ -141,27 +134,24 @@ describe('SerovalSerializationError', () => {
     } catch (error) {
       caught = error;
     }
-    expect(caught).toBeInstanceOf(SerovalSerializationError);
-    expect((caught as SerovalSerializationError).cause).toBeInstanceOf(
-      SerovalMissingPluginError,
-    );
+    assert(caught instanceof SerovalSerializationError);
+    expect(caught.cause).toBeInstanceOf(SerovalMissingPluginError);
   });
 });
 
 describe('SerovalConflictedNodeIdError', () => {
   it('reports a node id that is assigned twice', () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the JSON is forged on purpose.
     const json = JSON.parse(
       '{"t":{"t":9,"i":0,"a":[{"t":9,"i":0,"a":[]}]},"f":127,"m":[0]}',
-    );
+    ) as SerovalJSON;
     let caught: unknown;
     try {
       fromJSON(json);
     } catch (error) {
       caught = error;
     }
-    expect(caught).toBeInstanceOf(SerovalDeserializationError);
-    expect((caught as SerovalDeserializationError).cause).toBeInstanceOf(
-      SerovalConflictedNodeIdError,
-    );
+    assert(caught instanceof SerovalDeserializationError);
+    expect(caught.cause).toBeInstanceOf(SerovalConflictedNodeIdError);
   });
 });

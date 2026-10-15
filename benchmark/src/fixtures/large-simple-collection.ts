@@ -1,4 +1,13 @@
-export default () => [
+export interface Item {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender: string;
+  ip_address: string;
+}
+
+const largeSimpleCollection = (): Item[] => [
   {
     id: 1,
     first_name: 'Judy',
@@ -8000,3 +8009,5 @@ export default () => [
     ip_address: '247.1.138.66',
   },
 ];
+
+export default largeSimpleCollection;

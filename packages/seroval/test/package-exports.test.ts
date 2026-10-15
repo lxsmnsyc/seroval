@@ -6,6 +6,7 @@ import { build } from 'esbuild';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type * as Seroval from '../src';
 
+// oxlint-disable-next-line typescript/strict-void-return -- promisify wraps the callback form of execFile.
 const execFileAsync = promisify(execFile);
 const packageDir = fileURLToPath(new URL('..', import.meta.url));
 type API = typeof Seroval;
@@ -16,20 +17,16 @@ afterEach(() => {
 
 function checkIdentity(selected: API, fallback: API): void {
   expect(Object.keys(selected).sort()).toEqual(Object.keys(fallback).sort());
-  for (const key of Object.keys(selected) as (keyof API)[]) {
-    expect(selected[key]).toBe(fallback[key]);
+  for (const [key, value] of Object.entries(selected)) {
+    expect(value).toBe(Reflect.get(fallback, key));
   }
   const reference = selected.createReference('package-exports', () => 42);
   expect(fallback.fromJSON(selected.toJSON(reference))).toBe(reference);
   expect(selected.fromJSON(fallback.toJSON(reference))).toBe(reference);
-  expect(
-    fallback.fromJSON(selected.toJSON(new fallback.OpaqueReference(1, 42))),
-  ).toBe(42);
+  expect(fallback.fromJSON(selected.toJSON(new fallback.OpaqueReference(1, 42)))).toBe(42);
   const invalid = selected.toJSON(new ArrayBuffer(1));
   invalid.t.s = '!';
-  expect(() => selected.fromJSON(invalid)).toThrow(
-    fallback.SerovalDeserializationError,
-  );
+  expect(() => selected.fromJSON(invalid)).toThrow(fallback.SerovalDeserializationError);
 }
 
 async function checkBinary(api: API): Promise<void> {
@@ -40,9 +37,7 @@ async function checkBinary(api: API): Promise<void> {
     expect(new Uint8Array(api.fromJSON<ArrayBuffer>(json))).toEqual(bytes);
     expect(api.deserialize(api.serialize(bytes))).toEqual(bytes);
     expect(api.fromJSON(await api.toJSONAsync(bytes))).toEqual(bytes);
-    expect(
-      api.fromCrossJSON(api.toCrossJSON(bytes), { refs: new Map() }),
-    ).toEqual(bytes);
+    expect(api.fromCrossJSON(api.toCrossJSON(bytes), { refs: new Map() })).toEqual(bytes);
   }
   const buffer = new ArrayBuffer(1024);
   const value = { buffer, view: new Uint8Array(buffer, 8, 16) };
@@ -57,9 +52,7 @@ async function checkBinary(api: API): Promise<void> {
   for (const source of ['YQ', ' Y\tQ==\n', ' '.repeat(512) + 'YQ==']) {
     const json = api.toJSON(new ArrayBuffer(0));
     json.t.s = source;
-    expect(new Uint8Array(api.fromJSON<ArrayBuffer>(json))).toEqual(
-      new Uint8Array([97]),
-    );
+    expect(new Uint8Array(api.fromJSON<ArrayBuffer>(json))).toEqual(new Uint8Array([97]));
   }
   for (const source of ['!', 'A', 'YQ=', 'YQ===', 'A'.repeat(512) + '!']) {
     const json = api.toJSON(new ArrayBuffer(0));
@@ -78,12 +71,12 @@ async function checkBinary(api: API): Promise<void> {
 
 describe('built package exports (run build first)', () => {
   it('does not require package imports resolution', async () => {
-    const manifest = JSON.parse(
+    const manifest: unknown = JSON.parse(
       await readFile(new URL('../package.json', import.meta.url), 'utf8'),
     );
-    expect(manifest.imports).toBeUndefined();
-    expect(manifest.main).toBe('./dist/index.cjs');
-    expect(manifest.module).toBe('./dist/index.js');
+    expect(manifest).not.toHaveProperty('imports');
+    expect(manifest).toHaveProperty('main', './dist/index.cjs');
+    expect(manifest).toHaveProperty('module', './dist/index.js');
     for (const mode of ['', 'dev/']) {
       for (const extension of ['js', 'cjs']) {
         const code = await readFile(
@@ -117,7 +110,7 @@ describe('built package exports (run build first)', () => {
           await execFileAsync(
             process.execPath,
             [
-              ...conditions.map(condition => `--conditions=${condition}`),
+              ...conditions.map((condition) => `--conditions=${condition}`),
               '--input-type=module',
               '--eval',
               `import assert from 'node:assert/strict';
@@ -155,16 +148,15 @@ describe('built package exports (run build first)', () => {
             metafile: true,
             write: false,
           });
-          const inputs = Object.keys(result.metafile.inputs).map(path =>
+          const inputs = Object.keys(result.metafile.inputs).map((path) =>
             path.replaceAll('\\', '/'),
           );
           expect(
-            inputs.filter(
-              path => path === target || path.endsWith('/' + target),
-            ),
+            inputs.filter((path) => path === target || path.endsWith('/' + target)),
           ).toHaveLength(1);
-          expect(inputs.some(path => path.includes('/src/'))).toBe(false);
+          expect(inputs.some((path) => path.includes('/src/'))).toBe(false);
           expect(result.outputFiles[0].text).not.toContain('#seroval-binary');
+          // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion -- evaluates the bundled module.
           const { selected, fallback } = new Function(
             `const module = { exports: {} };
              const exports = module.exports;

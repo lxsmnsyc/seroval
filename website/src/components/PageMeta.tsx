@@ -1,12 +1,10 @@
 import { useHead } from '@solidjs/web';
+import type { JSX } from '@solidjs/web';
 
 const SITE = 'seroval';
 
 /** Sets the page title and description. */
-export default function PageMeta(props: {
-  title?: string;
-  description: string;
-}) {
+export default function PageMeta(props: { title?: string; description: string }): JSX.Element {
   useHead(() => [
     {
       tag: 'title',

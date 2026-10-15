@@ -1,10 +1,11 @@
+import type { JSX } from '@solidjs/web';
 import { version } from '../../../packages/seroval/package.json';
 import { FIRST_PAGE } from '../lib/docs';
-import { menuOpen, REPOSITORY_URL, setMenuOpen, setSearchOpen } from '../lib/ui';
+import { REPOSITORY_URL, menuOpen, setMenuOpen, setSearchOpen } from '../lib/ui';
 import { GitHubIcon, LogoMark, MenuIcon, SearchIcon } from './Icons';
 import ThemeToggle from './ThemeToggle';
 
-export default function Header() {
+export default function Header(): JSX.Element {
   return (
     <header class="site-header">
       <div class="header-inner">
@@ -13,7 +14,9 @@ export default function Header() {
           class="icon-button menu-button"
           aria-label="Open navigation"
           aria-expanded={menuOpen() ? 'true' : 'false'}
-          onClick={() => setMenuOpen(open => !open)}
+          onClick={() => {
+            setMenuOpen((open) => !open);
+          }}
         >
           <MenuIcon />
         </button>
@@ -32,7 +35,9 @@ export default function Header() {
           <button
             type="button"
             class="search-trigger"
-            onClick={() => setSearchOpen(true)}
+            onClick={() => {
+              setSearchOpen(true);
+            }}
           >
             <SearchIcon />
             <span class="search-placeholder">Search docs</span>

@@ -26,6 +26,7 @@ export interface Plugin<Value, Info extends PluginInfo> {
   /**
    * List of dependency plugins
    */
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   extends?: Plugin<any, any>[];
   /**
    * Method to test if a value is an expected value of the plugin
@@ -36,21 +37,9 @@ export interface Plugin<Value, Info extends PluginInfo> {
    * Parsing modes
    */
   parse: {
-    sync?: (
-      value: Value,
-      ctx: SyncParsePluginContext,
-      data: PluginData,
-    ) => Info;
-    async?: (
-      value: Value,
-      ctx: AsyncParsePluginContext,
-      data: PluginData,
-    ) => Promise<Info>;
-    stream?: (
-      value: Value,
-      ctx: StreamParsePluginContext,
-      data: PluginData,
-    ) => Info;
+    sync?: (value: Value, ctx: SyncParsePluginContext, data: PluginData) => Info;
+    async?: (value: Value, ctx: AsyncParsePluginContext, data: PluginData) => Promise<Info>;
+    stream?: (value: Value, ctx: StreamParsePluginContext, data: PluginData) => Info;
   };
   /**
    * Convert the parsed node into a JS string
@@ -59,11 +48,7 @@ export interface Plugin<Value, Info extends PluginInfo> {
   /**
    * Convert the parsed node into its runtime equivalent.
    */
-  deserialize(
-    node: Info,
-    ctx: DeserializePluginContext,
-    data: PluginData,
-  ): Value;
+  deserialize(node: Info, ctx: DeserializePluginContext, data: PluginData): Value;
 }
 
 export function createPlugin<Value, Info extends PluginInfo>(
@@ -73,11 +58,14 @@ export function createPlugin<Value, Info extends PluginInfo>(
 }
 
 export interface PluginAccessOptions {
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   plugins?: Plugin<any, any>[];
 }
 
 function dedupePlugins(
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   deduped: Set<Plugin<any, any>>,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   plugins: Plugin<any, any>[],
 ): void {
   for (let i = 0, len = plugins.length; i < len; i++) {
@@ -92,9 +80,12 @@ function dedupePlugins(
 }
 
 export function resolvePlugins(
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   plugins?: Plugin<any, any>[],
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
 ): Plugin<any, any>[] | undefined {
   if (plugins) {
+    // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
     const deduped = new Set<Plugin<any, any>>();
     dedupePlugins(deduped, plugins);
     return [...deduped];

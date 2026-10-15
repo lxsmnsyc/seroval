@@ -3,10 +3,11 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { EditorState, type Extension, Prec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
+import type { JSX } from '@solidjs/web';
 import { basicSetup } from 'codemirror';
 import * as seroval from 'seroval';
 import * as webPlugins from 'seroval-plugins/web';
-import { createEffect, createSignal, For, onSettled, Show } from 'solid-js';
+import { For, Show, createEffect, createSignal, onSettled } from 'solid-js';
 import { Tab, TabGroup, TabList } from 'terracotta/tabs';
 import { PlayIcon, ShareIcon } from './Icons';
 
@@ -22,13 +23,11 @@ type Mode =
 const MODES: { id: Mode; description: string }[] = [
   {
     id: 'serialize',
-    description:
-      'A JavaScript expression that rebuilds the value. Synchronous values only.',
+    description: 'A JavaScript expression that rebuilds the value. Synchronous values only.',
   },
   {
     id: 'serializeAsync',
-    description:
-      'A JavaScript expression, produced after every promise settles.',
+    description: 'A JavaScript expression, produced after every promise settles.',
   },
   {
     id: 'toJSONAsync',
@@ -41,8 +40,7 @@ const MODES: { id: Mode; description: string }[] = [
   },
   {
     id: 'crossSerializeStream',
-    description:
-      'One script per settled value, in the order a server would stream them.',
+    description: 'One script per settled value, in the order a server would stream them.',
   },
 ];
 
@@ -151,9 +149,7 @@ function encodeCode(code: string): string {
 function decodeCode(value: string): string | undefined {
   try {
     const binary = atob(value.replaceAll('-', '+').replaceAll('_', '/'));
-    return new TextDecoder().decode(
-      Uint8Array.from(binary, char => char.charCodeAt(0)),
-    );
+    return new TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
   } catch {
     return undefined;
   }
@@ -169,10 +165,11 @@ function readSharedCode(): string | undefined {
 // Runs the reader's code in their own browser, the same as code typed into
 // the developer console.
 function evaluate(code: string): unknown {
+  // oxlint-disable-next-line no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- Running the code is the point of the playground.
   return new Function('seroval', code)(seroval);
 }
 
-function collectStream(value: unknown): Promise<string[]> {
+async function collectStream(value: unknown): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const chunks: string[] = [];
     seroval.crossSerializeStream(value, {
@@ -197,13 +194,7 @@ async function run(mode: Mode, code: string): Promise<string[]> {
     case 'serializeAsync':
       return [await seroval.serializeAsync(value, { plugins: PLUGINS })];
     case 'toJSONAsync':
-      return [
-        JSON.stringify(
-          await seroval.toJSONAsync(value, { plugins: PLUGINS }),
-          null,
-          2,
-        ),
-      ];
+      return [JSON.stringify(await seroval.toJSONAsync(value, { plugins: PLUGINS }), null, 2)];
     case 'crossSerializeAsync':
       return [
         await seroval.crossSerializeAsync(value, {
@@ -212,6 +203,7 @@ async function run(mode: Mode, code: string): Promise<string[]> {
         }),
       ];
     case 'crossSerializeStream':
+    default:
       return collectStream(value);
   }
 }
@@ -222,9 +214,7 @@ function formatError(error: unknown): string {
     return String(error);
   }
   const message = `${error.name}: ${error.message}`;
-  return error.cause
-    ? `${message}\n\nCaused by ${formatError(error.cause)}`
-    : message;
+  return error.cause ? `${message}\n\nCaused by ${formatError(error.cause)}` : message;
 }
 
 function formatOutput(chunks: string[]): string {
@@ -270,29 +260,18 @@ const THEME = EditorView.theme({
     backgroundColor: 'var(--editor-active-line)',
   },
   '&.cm-focused': { outline: 'none' },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection':
-    {
-      backgroundColor: 'var(--editor-selection) !important',
-    },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': {
+    backgroundColor: 'var(--editor-selection) !important',
+  },
   '.cm-cursor': { borderLeftColor: 'var(--accent)' },
 });
 
-function createEditor(
-  parent: HTMLElement,
-  doc: string,
-  extensions: Extension[],
-): EditorView {
+function createEditor(parent: HTMLElement, doc: string, extensions: Extension[]): EditorView {
   return new EditorView({
     parent,
     state: EditorState.create({
       doc,
-      extensions: [
-        basicSetup,
-        javascript(),
-        THEME,
-        syntaxHighlighting(HIGHLIGHT),
-        ...extensions,
-      ],
+      extensions: [basicSetup, javascript(), THEME, syntaxHighlighting(HIGHLIGHT), ...extensions],
     }),
   });
 }
@@ -303,7 +282,7 @@ interface Stats {
   chunks: number;
 }
 
-export default function PlaygroundEditor() {
+export default function PlaygroundEditor(): JSX.Element {
   const initialCode = readSharedCode() ?? EXAMPLES[0].code;
   const [mode, setMode] = createSignal<Mode>('serializeAsync');
   const [output, setOutput] = createSignal('');
@@ -316,7 +295,7 @@ export default function PlaygroundEditor() {
   let outputView: EditorView | undefined;
   let runId = 0;
 
-  async function execute(nextMode = mode()) {
+  async function execute(nextMode = mode()): Promise<void> {
     if (!input) {
       return;
     }
@@ -348,26 +327,29 @@ export default function PlaygroundEditor() {
     }
   }
 
-  function loadExample(id: string) {
-    const example = EXAMPLES.find(item => item.id === id);
+  function loadExample(id: string): void {
+    const example = EXAMPLES.find((item) => item.id === id);
     if (example && input) {
       input.dispatch({
         changes: { from: 0, to: input.state.doc.length, insert: example.code },
       });
-      execute();
+      void execute();
     }
   }
 
-  function share() {
+  function share(): void {
     if (!input) {
       return;
     }
     const url = `${location.origin}${location.pathname}${HASH_PREFIX}${encodeCode(input.state.doc.toString())}`;
     history.replaceState(null, '', url);
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- The clipboard is missing outside secure contexts.
     navigator.clipboard?.writeText(url).then(
       () => {
         setShared(true);
-        setTimeout(() => setShared(false), 1500);
+        setTimeout(() => {
+          setShared(false);
+        }, 1500);
       },
       () => {
         // The link is still in the address bar when the clipboard is blocked.
@@ -377,7 +359,7 @@ export default function PlaygroundEditor() {
 
   createEffect(
     () => output(),
-    text => {
+    (text) => {
       outputView?.dispatch({
         changes: { from: 0, to: outputView.state.doc.length, insert: text },
       });
@@ -385,7 +367,7 @@ export default function PlaygroundEditor() {
   );
 
   onSettled(() => {
-    execute();
+    void execute();
     return () => {
       input?.destroy();
       outputView?.destroy();
@@ -399,16 +381,16 @@ export default function PlaygroundEditor() {
           class="mode-tabs"
           horizontal={true}
           value={mode()}
-          onChange={value => {
+          onChange={(value) => {
             if (value) {
               setMode(value);
-              execute(value);
+              void execute(value);
             }
           }}
         >
           <TabList class="segmented" aria-label="Output mode">
             <For each={MODES}>
-              {item => (
+              {(item) => (
                 <Tab class="segmented-item" value={item.id}>
                   {item.id}
                 </Tab>
@@ -420,38 +402,32 @@ export default function PlaygroundEditor() {
           <label class="example-select">
             <span class="visually-hidden">Load an example</span>
             <select
-              onChange={event => {
+              onChange={(event) => {
                 loadExample(event.currentTarget.value);
                 event.currentTarget.value = '';
               }}
             >
               <option value="">Examples…</option>
               <For each={EXAMPLES}>
-                {example => (
-                  <option value={example.id}>{example.label}</option>
-                )}
+                {(example) => <option value={example.id}>{example.label}</option>}
               </For>
             </select>
           </label>
-          <button
-            type="button"
-            class="button button-secondary button-small"
-            onClick={share}
-          >
+          <button type="button" class="button button-secondary button-small" onClick={share}>
             <ShareIcon /> {shared() ? 'Link copied' : 'Share'}
           </button>
           <button
             type="button"
             class="button button-primary button-small"
-            onClick={() => execute()}
+            onClick={() => {
+              void execute();
+            }}
           >
             <PlayIcon /> Run
           </button>
         </div>
       </div>
-      <p class="mode-description">
-        {MODES.find(item => item.id === mode())?.description}
-      </p>
+      <p class="mode-description">{MODES.find((item) => item.id === mode())?.description}</p>
       <div class="playground-panes">
         <section class="pane" aria-label="Input">
           <header class="pane-header">
@@ -460,18 +436,18 @@ export default function PlaygroundEditor() {
           </header>
           <div
             class="pane-editor"
-            ref={element => {
+            ref={(element) => {
               // The default keymap binds Mod-Enter too, so this one must win.
               input = createEditor(element, initialCode, [
                 Prec.highest(
                   keymap.of([
-                  {
-                    key: 'Mod-Enter',
-                    run: () => {
-                      execute();
-                      return true;
+                    {
+                      key: 'Mod-Enter',
+                      run: () => {
+                        void execute();
+                        return true;
+                      },
                     },
-                  },
                   ]),
                 ),
               ]);
@@ -485,12 +461,10 @@ export default function PlaygroundEditor() {
               <span class="pane-status">Running…</span>
             </Show>
           </header>
-          <Show when={error()}>
-            {message => <pre class="output-error">{message()}</pre>}
-          </Show>
+          <Show when={error()}>{(message) => <pre class="output-error">{message()}</pre>}</Show>
           <div
             class={['pane-editor', { hidden: !!error() }]}
-            ref={element => {
+            ref={(element) => {
               outputView = createEditor(element, '', [
                 EditorState.readOnly.of(true),
                 EditorView.editable.of(false),
@@ -500,7 +474,7 @@ export default function PlaygroundEditor() {
           />
           <footer class="pane-footer">
             <Show when={stats()} fallback={<span>Ready</span>}>
-              {current => (
+              {(current) => (
                 <>
                   <span>{current().bytes.toLocaleString()} bytes</span>
                   <Show when={current().chunks > 1}>

@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import type * as Seroval from 'seroval';
 import { codeFrame, highlight } from './highlight.ts';
 
 export interface ShowcaseExample {
@@ -10,10 +11,7 @@ export interface ShowcaseExample {
   output: string;
 }
 
-const SEROVAL = path.join(
-  import.meta.dirname,
-  '../../packages/seroval/dist/index.js',
-);
+const SEROVAL = path.join(import.meta.dirname, '../../packages/seroval/dist/index.js');
 
 const USER_SOURCE = `const user = {
   name: 'Ada',
@@ -24,7 +22,7 @@ const USER_SOURCE = `const user = {
 user.self = user;`;
 
 // Must build the same value as USER_SOURCE.
-function createUser() {
+function createUser(): Record<string, unknown> {
   const user: Record<string, unknown> = {
     name: 'Ada',
     joined: new Date('2026-01-01'),
@@ -40,7 +38,8 @@ function createUser() {
  * the output on the page is always what the library produces.
  */
 export async function renderShowcase(): Promise<ShowcaseExample[]> {
-  const seroval = await import(pathToFileURL(SEROVAL).href);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A dynamic import of a computed path is untyped.
+  const seroval = (await import(pathToFileURL(SEROVAL).href)) as typeof Seroval;
 
   const javascript = seroval.serialize(createUser());
   const json = JSON.stringify(seroval.toJSON(createUser()), null, 2);
@@ -50,7 +49,11 @@ export async function renderShowcase(): Promise<ShowcaseExample[]> {
     seroval.crossSerializeStream(
       {
         user: 'Ada',
-        posts: new Promise(done => setTimeout(() => done(['Hello', 'World']), 10)),
+        posts: new Promise((done) => {
+          setTimeout(() => {
+            done(['Hello', 'World']);
+          }, 10);
+        }),
       },
       {
         scopeId: 'page',
@@ -105,15 +108,12 @@ export async function renderShowcase(): Promise<ShowcaseExample[]> {
   ];
 
   return Promise.all(
-    examples.map(async example => ({
+    examples.map(async (example) => ({
       id: example.id,
       label: example.label,
       description: example.description,
       input: codeFrame(await highlight(example.input, 'js'), 'Input'),
-      output: codeFrame(
-        await highlight(example.output, example.outputLang),
-        example.outputLabel,
-      ),
+      output: codeFrame(await highlight(example.output, example.outputLang), example.outputLabel),
     })),
   );
 }

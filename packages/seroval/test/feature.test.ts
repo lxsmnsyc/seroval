@@ -5,6 +5,7 @@ import { ALL_ENABLED, FeatureFlag } from '../src/core/compat';
 describe('Feature', () => {
   it('exposes the same bits the library uses internally', () => {
     expect(Feature.AggregateError).toBe(FeatureFlag.AggregateError);
+    // oxlint-disable-next-line typescript/no-deprecated -- the deprecated flag keeps its bit.
     expect(Feature.ArrowFunction).toBe(FeatureFlag.ArrowFunction);
     expect(Feature.ErrorPrototypeStack).toBe(FeatureFlag.ErrorPrototypeStack);
     expect(Feature.ObjectAssign).toBe(FeatureFlag.ObjectAssign);

@@ -23,7 +23,7 @@ const NEEDS_ESCAPE = /["\\\n\r\b\t\f<\u2028\u2029]/;
 // they cannot be patched afterwards; `<`, U+2028 and U+2029 pass through
 // `JSON.stringify` untouched, so they are rewritten on its output instead.
 const JSON_ESCAPE_DIFFERENCES =
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: Match the control characters that require the existing encoder.
+  // oxlint-disable-next-line no-control-regex -- Match the control characters that require the existing encoder.
   /[\x00-\x07\x0b\x0e-\x1f\ud800-\udfff]/;
 
 const LESS_THAN = /</g;
@@ -39,10 +39,7 @@ export function serializeString(str: string): string {
   if (!NEEDS_ESCAPE.test(str)) {
     return str;
   }
-  if (
-    str.length >= MIN_JSON_STRINGIFY_LENGTH &&
-    !JSON_ESCAPE_DIFFERENCES.test(str)
-  ) {
+  if (str.length >= MIN_JSON_STRINGIFY_LENGTH && !JSON_ESCAPE_DIFFERENCES.test(str)) {
     let result = JSON.stringify(str).slice(1, -1);
     // JSON never emits these from an escape, so each one is an original
     // character that still needs Seroval's encoding.
@@ -76,15 +73,15 @@ export function serializeString(str: string): string {
 // the manual decoder, which leaves unknown escapes untouched where JSON
 // would decode or reject them.
 const JSON_COMPATIBLE =
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: JSON rejects raw control characters.
+  // oxlint-disable-next-line no-control-regex -- JSON rejects raw control characters.
   /^(?:[^"\\\x00-\x1f]|\\["\\nrbtf])*$/;
 
 const ESCAPE_SEQUENCE = /(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g;
 
 function createUnescapedTable(): Record<string, string> {
   const result: Record<string, string> = {};
-  for (const char in ESCAPED) {
-    result[ESCAPED[char] as string] = char;
+  for (const char of Object.keys(ESCAPED)) {
+    result[ESCAPED[char]!] = char;
   }
   return result;
 }

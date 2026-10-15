@@ -6,10 +6,7 @@ type DOMExceptionNode = {
   message: SerovalNode;
 };
 
-const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<
-  DOMException,
-  DOMExceptionNode
->({
+const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<DOMException, DOMExceptionNode>({
   tag: 'seroval-plugins/web/DOMException',
   test(value) {
     if (typeof DOMException === 'undefined') {
@@ -38,18 +35,12 @@ const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<
     },
   },
   serialize(node, ctx) {
-    return (
-      'new DOMException(' +
-      ctx.serialize(node.message) +
-      ',' +
-      ctx.serialize(node.name) +
-      ')'
-    );
+    return 'new DOMException(' + ctx.serialize(node.message) + ',' + ctx.serialize(node.name) + ')';
   },
   deserialize(node, ctx) {
     return new DOMException(
-      ctx.deserialize(node.message) as string,
-      ctx.deserialize(node.name) as string,
+      ctx.deserialize<string>(node.message),
+      ctx.deserialize<string>(node.name),
     );
   },
 });

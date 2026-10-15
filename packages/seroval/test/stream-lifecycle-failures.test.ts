@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  createLiveStream,
-  createPlugin,
-  createStream,
-  crossSerializeStream,
   Serializer,
   type SerovalNode,
   SerovalParserError,
   SerovalUnsupportedTypeError,
   type StreamParsePluginContext,
+  createLiveStream,
+  createPlugin,
+  createStream,
+  crossSerializeStream,
   toCrossJSONStream,
   toJSON,
 } from '../src';
@@ -18,10 +18,13 @@ import {
   startStreamParse,
 } from '../src/core/context/stream-parser';
 
-const tick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
-function gate() {
+const tick = async (): Promise<void> =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
+function gate(): { promise: Promise<void>; resolve: () => void } {
   let resolve!: () => void;
-  const promise = new Promise<void>(r => {
+  const promise = new Promise<void>((r) => {
     resolve = r;
   });
   return { promise, resolve };
@@ -48,10 +51,14 @@ describe('fatal streaming failures', () => {
 
   it('does not inspect then on primitive callback results', () => {
     for (const value of [0, 1, false, true, '', 'text']) {
-      const prototype = Object.getPrototypeOf(new Object(value));
+      const prototype = Reflect.getPrototypeOf(new Object(value));
+      if (prototype === null) {
+        throw new Error('Expected a primitive prototype');
+      }
       const previous = Object.getOwnPropertyDescriptor(prototype, 'then');
       const events: string[] = [];
       let reads = 0;
+      // oxlint-disable-next-line unicorn/no-thenable -- the test checks that then is never read.
       Object.defineProperty(prototype, 'then', {
         configurable: true,
         get() {
@@ -74,6 +81,7 @@ describe('fatal streaming failures', () => {
         ]);
       } finally {
         if (previous) {
+          // oxlint-disable-next-line unicorn/no-thenable -- restores the original descriptor.
           Object.defineProperty(prototype, 'then', previous);
         } else {
           Reflect.deleteProperty(prototype, 'then');
@@ -85,9 +93,11 @@ describe('fatal streaming failures', () => {
   });
 
   it('calls a thenable without reading its call property', async () => {
-    const onError = vi.fn();
-    const onDone = vi.fn();
-    const then = (resolve: () => void) => resolve();
+    const onError = vi.fn<(error: unknown) => void>();
+    const onDone = vi.fn<() => void>();
+    const then = (resolve: () => void): void => {
+      resolve();
+    };
     Object.defineProperty(then, 'call', {
       get() {
         throw new Error('The callable then must not expose its call property');
@@ -95,6 +105,7 @@ describe('fatal streaming failures', () => {
     });
     crossSerializeStream(1, {
       onSerialize() {
+        // oxlint-disable-next-line unicorn/no-thenable, typescript/no-unsafe-type-assertion -- the test needs a thenable built with defineProperty.
         return Object.defineProperty({}, 'then', {
           value: then,
         }) as PromiseLike<void>;
@@ -110,9 +121,10 @@ describe('fatal streaming failures', () => {
   it('observes a returned rejection after cancellation inside output', async () => {
     const reason = new Error('cancelled');
     const channel = createLiveStream<number>();
-    const onError = vi.fn();
-    const onDone = vi.fn();
+    const onError = vi.fn<(error: unknown) => void>();
+    const onDone = vi.fn<() => void>();
     const dispose = crossSerializeStream(channel.stream, {
+      // oxlint-disable-next-line typescript/promise-function-async -- the initial output must stay synchronous.
       onSerialize(_value, initial) {
         if (!initial) {
           dispose(reason);
@@ -138,7 +150,9 @@ describe('fatal streaming failures', () => {
       expect(ctx.state.reason).toBe(reason);
       throw cleanupError;
     });
-    expect(() => destroyStreamParse(ctx, reason)).toThrow(cleanupError);
+    expect(() => {
+      destroyStreamParse(ctx, reason);
+    }).toThrow(cleanupError);
     expect(ctx.state.reason).toBeUndefined();
   });
 
@@ -149,12 +163,15 @@ describe('fatal streaming failures', () => {
     const seen: unknown[] = [];
     const plugin = createPlugin<object, Record<string, never>>({
       tag: 'reason-unwind',
-      test: value => value === token,
+      test: (value) => value === token,
       parse: {
         stream(_value, pluginCtx) {
           pluginCtx.parse(channel.stream);
           pluginCtx.onError(reason);
-          pluginCtx.addCleanup(() => seen.push(ctx.state.reason));
+          pluginCtx.addCleanup(() => {
+            // oxlint-disable-next-line eslint/no-use-before-define -- the plugin reads the context it is registered in.
+            seen.push(ctx.state.reason);
+          });
           return {};
         },
       },
@@ -180,7 +197,7 @@ describe('fatal streaming failures', () => {
     let pluginCtx!: StreamParsePluginContext;
     const plugin = createPlugin<object, Record<string, never>>({
       tag: 'output-reason',
-      test: value => value === token,
+      test: (value) => value === token,
       parse: {
         stream(_value, current) {
           pluginCtx = current;
@@ -194,7 +211,9 @@ describe('fatal streaming failures', () => {
       plugins: [plugin],
       onParse() {
         destroyStreamParse(ctx, reason);
-        pluginCtx.addCleanup(() => seen.push(ctx.state.reason));
+        pluginCtx.addCleanup(() => {
+          seen.push(ctx.state.reason);
+        });
       },
     });
     startStreamParse(ctx, token);
@@ -203,27 +222,30 @@ describe('fatal streaming failures', () => {
   });
 
   it('preserves the no-handler Serializer parsing error', () => {
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- constructs without the required onError.
     const writer: Serializer = Reflect.construct(Serializer, [
       { globalIdentifier: 'X', onData: () => undefined },
     ]);
-    expect(() => writer.write('bad', () => undefined)).toThrow(
-      SerovalParserError,
-    );
-    expect(() => writer.write('after', 1)).not.toThrow();
+    expect(() => {
+      writer.write('bad', () => undefined);
+    }).toThrow(SerovalParserError);
+    expect(() => {
+      writer.write('after', 1);
+    }).not.toThrow();
     expect([...writer.keys]).toEqual(['bad', 'after']);
     writer.close();
   });
 
   it.each(['absent', 'throws'] as const)(
     'preserves the primary error without cancelling siblings when the handler %s',
-    mode => {
+    (mode) => {
       const cleanupError = new Error('cleanup failed');
       const handlerError = new Error('handler failed');
       const cleaned: number[] = [];
-      const sources = [0, 1].map(index => {
+      const sources = [0, 1].map((index) => {
         const source = createStream<number>();
-        const subscribe = source.on;
-        source.on = listener => {
+        const subscribe = source.on.bind(source);
+        source.on = (listener) => {
           const off = subscribe(listener);
           return () => {
             off();
@@ -235,7 +257,8 @@ describe('fatal streaming failures', () => {
         };
         return source;
       });
-      const onDone = vi.fn();
+      const onDone = vi.fn<() => void>();
+      // oxlint-disable-next-line typescript/no-unsafe-assignment -- constructs without the required onError.
       const writer: Serializer = Reflect.construct(Serializer, [
         {
           globalIdentifier: 'X',
@@ -267,18 +290,22 @@ describe('fatal streaming failures', () => {
       }
       expect(cleaned).toEqual([]);
       expect(onDone).not.toHaveBeenCalled();
-      expect(() => writer.close()).toThrow(cleanupError);
+      expect(() => {
+        writer.close();
+      }).toThrow(cleanupError);
       expect(cleaned).toEqual([0, 1]);
       expect(onDone).toHaveBeenCalledTimes(1);
-      expect(() => writer.close()).not.toThrow();
+      expect(() => {
+        writer.close();
+      }).not.toThrow();
     },
   );
 
   it('keeps a Serializer usable after one write output fails', () => {
     const failure = new Error('writer output');
-    const onDone = vi.fn();
-    const onError = vi.fn();
-    const onData = vi.fn().mockImplementationOnce(() => {
+    const onDone = vi.fn<() => void>();
+    const onError = vi.fn<(error: unknown) => void>();
+    const onData = vi.fn<(result: string) => void>().mockImplementationOnce(() => {
       throw failure;
     });
     const writer = new Serializer({
@@ -297,16 +324,16 @@ describe('fatal streaming failures', () => {
   });
   it.each(['throw', 'reject', 'getter', 'serialize', 'parse'] as const)(
     'rejects producer with the reported %s reason',
-    async kind => {
+    async (kind) => {
       const failure = new Error(kind);
-      const onCancel = vi.fn();
-      const onError = vi.fn();
-      const onDone = vi.fn();
+      const onCancel = vi.fn<(reason: unknown) => void>();
+      const onError = vi.fn<(error: unknown) => void>();
+      const onDone = vi.fn<() => void>();
       const { stream, producer } = createLiveStream<unknown>({ onCancel });
       const token = {};
       const plugin = createPlugin<object, Record<string, never>>({
         tag: 'fatal',
-        test: value => value === token,
+        test: (value) => value === token,
         parse: {
           stream() {
             if (kind === 'parse') {
@@ -328,7 +355,7 @@ describe('fatal streaming failures', () => {
         onError,
         onSerialize(_value, initial) {
           if (initial) {
-            return;
+            return undefined;
           }
           if (kind === 'throw') {
             throw failure;
@@ -337,6 +364,7 @@ describe('fatal streaming failures', () => {
             return Promise.reject(failure);
           }
           if (kind === 'getter') {
+            // oxlint-disable-next-line unicorn/no-thenable, typescript/no-unsafe-type-assertion -- the test needs a thenable whose getter throws.
             return Object.defineProperty({}, 'then', {
               get() {
                 throw failure;
@@ -347,14 +375,12 @@ describe('fatal streaming failures', () => {
         },
       });
       let reason: unknown = 'pending';
-      const pending = producer.write(
-        kind === 'serialize' || kind === 'parse' ? token : 1,
-      );
+      const pending = producer.write(kind === 'serialize' || kind === 'parse' ? token : 1);
       pending.then(
         () => {
           reason = 'accepted';
         },
-        error => {
+        (error) => {
           reason = error;
         },
       );
@@ -372,12 +398,12 @@ describe('fatal streaming failures', () => {
 
   it('forwards optional disposal reason while root is pending, without onDone', async () => {
     const root = gate();
-    const onCancel = vi.fn();
-    const onDone = vi.fn();
+    const onCancel = vi.fn<(reason: unknown) => void>();
+    const onDone = vi.fn<() => void>();
     const { stream, producer } = createLiveStream<number>({ onCancel });
     let synchronous = false;
     const dispose = crossSerializeStream(stream, {
-      onSerialize() {
+      async onSerialize() {
         synchronous = true;
         return root.promise;
       },
@@ -407,9 +433,9 @@ describe('fatal streaming failures', () => {
       'onError',
       'addCleanup',
     ];
-    const first = vi.fn();
-    const second = vi.fn();
-    const late = vi.fn();
+    const first = vi.fn<() => void>();
+    const second = vi.fn<() => void>();
+    const late = vi.fn<() => void>();
     const failure = new Error('plugin stop');
     const observed: boolean[] = [];
     const plugin = createPlugin<object, Record<string, never>>({
@@ -432,9 +458,9 @@ describe('fatal streaming failures', () => {
       serialize: () => '({})',
       deserialize: () => ({}),
     });
-    const onError = vi.fn();
-    const onParse = vi.fn();
-    const onDone = vi.fn();
+    const onError = vi.fn<(error: unknown) => void>();
+    const onParse = vi.fn<(node: SerovalNode, initial: boolean) => void>();
+    const onDone = vi.fn<() => void>();
     toCrossJSONStream({}, { plugins: [plugin], onError, onParse, onDone });
     expect(observed).toEqual([false]);
     expect(onError).toHaveBeenCalledExactlyOnceWith(failure);
@@ -471,7 +497,9 @@ describe('fatal streaming failures', () => {
         calls.push(2);
       },
     );
-    expect(() => startStreamParse(ctx, source)).toThrow();
+    expect(() => {
+      startStreamParse(ctx, source);
+    }).toThrow();
     expect(calls).toEqual([1, 2]);
     expect(refs.has(source)).toBe(true);
     expect(ctx.state.alive).toBe(false);
@@ -514,6 +542,7 @@ describe('fatal streaming failures', () => {
       {},
       {
         plugins: [plugin],
+        // oxlint-disable-next-line typescript/promise-function-async -- child records must stay synchronous.
         onParse(node, initial) {
           seen.push(node);
           if (initial) {
@@ -533,9 +562,9 @@ describe('fatal streaming failures', () => {
   it('releases a synchronously replayed subscription even when reporting throws', () => {
     const source = createStream<unknown>();
     source.next(() => undefined);
-    const original = source.on;
+    const original = source.on.bind(source);
     let subscribed = false;
-    source.on = listener => {
+    source.on = (listener) => {
       subscribed = true;
       const off = original(listener);
       return () => {
@@ -560,6 +589,7 @@ describe('fatal streaming failures', () => {
     const root = gate();
     const sequence: string[] = [];
     const dispose = toCrossJSONStream(source, {
+      // oxlint-disable-next-line typescript/promise-function-async -- child records must stay synchronous.
       onParse(_node, initial) {
         if (initial) {
           sequence.push('root:start');
@@ -579,11 +609,11 @@ describe('fatal streaming failures', () => {
   });
 
   it('uses the same thrown fallback error for cancellation when no error callback exists', async () => {
-    const onCancel = vi.fn();
+    const onCancel = vi.fn<(reason: unknown) => void>();
     const { stream, producer } = createLiveStream<number>({ onCancel });
     const pending = producer.write(1);
     let rejected: unknown;
-    pending.catch(error => {
+    pending.catch((error) => {
       rejected = error;
     });
     let thrown: unknown;
@@ -625,17 +655,19 @@ describe('fatal streaming failures', () => {
         throw cleanupError;
       },
     });
-    const secondCancel = vi.fn();
+    const secondCancel = vi.fn<(reason: unknown) => void>();
     const second = createLiveStream<number>({ onCancel: secondCancel });
     const root = gate();
     const dispose = toCrossJSONStream([first.stream, second.stream], {
-      onParse() {
+      async onParse() {
         return root.promise;
       },
     });
     const one = expect(first.producer.write(1)).rejects.toBe(reason);
     const two = expect(second.producer.write(2)).rejects.toBe(reason);
-    expect(() => dispose(reason)).toThrow(cleanupError);
+    expect(() => {
+      dispose(reason);
+    }).toThrow(cleanupError);
     await Promise.all([one, two]);
     expect(secondCancel).toHaveBeenCalledExactlyOnceWith(reason);
     root.resolve();

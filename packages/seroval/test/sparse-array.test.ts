@@ -15,6 +15,7 @@ import {
   toJSONAsync,
 } from '../src';
 
+// oxlint-disable-next-line unicorn/no-new-array -- the test needs an array with holes.
 const EXAMPLE = new Array(10);
 
 describe('sparse arrays', () => {

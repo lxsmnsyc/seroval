@@ -1,4 +1,13 @@
-export default () => {
+interface Child {
+  name: string;
+}
+
+interface Parent {
+  name: string;
+  child: Child;
+}
+
+const dedupeObject = (): { mother: Parent; father: Parent } => {
   const child = {
     name: 'Henry',
   };
@@ -18,3 +27,5 @@ export default () => {
     father,
   };
 };
+
+export default dedupeObject;

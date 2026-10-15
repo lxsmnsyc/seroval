@@ -11,7 +11,8 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node"],
+    "allowJs": true
   },
   "include": ["src", "plugins", "scripts", "vite.config.ts"]
 }

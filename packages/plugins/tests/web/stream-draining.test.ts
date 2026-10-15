@@ -33,7 +33,7 @@ it('preserves all chunks while draining a long ReadableStream', async () => {
     });
   });
   expect(source.locked).toBe(false);
-  const reader = (restored as ReadableStream<number>).getReader();
+  const reader = restored!.getReader();
   for (let i = 0; i < 10000; i++) {
     expect(await reader.read()).toEqual({ done: false, value: i });
   }
