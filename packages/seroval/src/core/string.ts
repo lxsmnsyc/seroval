@@ -1,6 +1,6 @@
 const MIN_JSON_STRINGIFY_LENGTH = 64;
 
-// Every code unit the escape loop rewrites, and its escape. Single-character
+// Every code unit `escapeCharCode` rewrites, and its escape. Single-character
 // keys can never collide with a property of `Object.prototype`.
 const ESCAPED: Record<string, string | undefined> = {
   '"': '\\"',
@@ -30,6 +30,34 @@ const LESS_THAN = /</g;
 const LINE_SEPARATOR = /\u2028/g;
 const PARAGRAPH_SEPARATOR = /\u2029/g;
 
+// `ESCAPED` keyed by code unit.
+function escapeCharCode(code: number): string | undefined {
+  switch (code) {
+    case 34: // "
+      return '\\"';
+    case 92: // \
+      return '\\\\';
+    case 10: // \n
+      return '\\n';
+    case 13: // \r
+      return '\\r';
+    case 8: // \b
+      return '\\b';
+    case 9: // \t
+      return '\\t';
+    case 12: // \f
+      return '\\f';
+    case 60: // <
+      return '\\x3C';
+    case 0x2028:
+      return '\\u2028';
+    case 0x2029:
+      return '\\u2029';
+    default:
+      return undefined;
+  }
+}
+
 // Written by https://github.com/DylanPiercey and is distributed under the MIT license.
 // Creates a JavaScript double quoted string and escapes all characters
 // not listed as DoubleStringCharacters on
@@ -58,7 +86,7 @@ export function serializeString(str: string): string {
   let lastPos = 0;
   let replacement: string | undefined;
   for (let i = 0, len = str.length; i < len; i++) {
-    replacement = ESCAPED[str[i]];
+    replacement = escapeCharCode(str.charCodeAt(i));
     if (replacement) {
       result += str.slice(lastPos, i) + replacement;
       lastPos = i + 1;

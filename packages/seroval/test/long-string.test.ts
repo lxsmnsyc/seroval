@@ -60,6 +60,13 @@ describe('long strings', () => {
     }
   });
 
+  it('preserves every UTF-16 code unit inside short strings', () => {
+    for (let code = 0; code <= 0xffff; code++) {
+      const char = String.fromCharCode(code);
+      expect(serializeString(char)).toBe(escapes[char] ?? char);
+    }
+  });
+
   it('escapes a long deferred SSR value', async () => {
     const value = '</script><!--"\\\n\u2028\u2029'.repeat(128);
     const chunks: string[] = [];
