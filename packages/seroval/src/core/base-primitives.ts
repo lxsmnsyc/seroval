@@ -52,6 +52,7 @@ import type {
   BigIntTypedArrayValue,
   TypedArrayValue,
 } from './utils/typed-array';
+import { getTypedArrayName } from './utils/typed-array';
 
 export function createNumberNode(
   value: number,
@@ -322,7 +323,7 @@ export function createTypedArrayNode(
     SerovalNodeType.TypedArray,
     id,
     NIL,
-    current.constructor.name,
+    getTypedArrayName(current),
     NIL,
     NIL,
     NIL,
@@ -346,7 +347,7 @@ export function createBigIntTypedArrayNode(
     SerovalNodeType.BigIntTypedArray,
     id,
     NIL,
-    current.constructor.name,
+    getTypedArrayName(current),
     NIL,
     NIL,
     NIL,
