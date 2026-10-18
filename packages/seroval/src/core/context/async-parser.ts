@@ -92,23 +92,9 @@ export function createAsyncParserContext(options: AsyncParserContextOptions): As
   };
 }
 
-export class AsyncParsePluginContext {
-  constructor(
-    private readonly _p: AsyncParserContext,
-    private readonly depth: number,
-  ) {}
-
-  parse<T>(current: T): Promise<SerovalNode> {
-    return parseAsync(this._p, this.depth, current);
-  }
-
-  parseStreamSource(current: AsyncIterable<unknown>): Promise<SerovalNode> {
-    const ctx = this._p;
-    if (this.depth >= ctx.base.depthLimit) {
-      throw new SerovalDepthLimitError(ctx.base.depthLimit);
-    }
-    return parseAsyncIterable(ctx, this.depth + 1, current);
-  }
+export interface AsyncParsePluginContext {
+  parse<T>(current: T): Promise<SerovalNode>;
+  parseStreamSource(current: AsyncIterable<unknown>): Promise<SerovalNode>;
 }
 
 // Only objects and functions can produce a Promise; awaiting a plain node
@@ -307,9 +293,21 @@ async function parsePlugin(
           id,
           plugin.tag,
           // oxlint-disable-next-line no-unsafe-argument -- Plugin info is any because plugins are stored as Plugin<any, any>.
-          await plugin.parse.async(current, new AsyncParsePluginContext(ctx, depth), {
-            id,
-          }),
+          await plugin.parse.async(
+            current,
+            {
+              parse: (value): Promise<SerovalNode> => parseAsync(ctx, depth, value),
+              parseStreamSource(source): Promise<SerovalNode> {
+                if (depth >= ctx.base.depthLimit) {
+                  throw new SerovalDepthLimitError(ctx.base.depthLimit);
+                }
+                return parseAsyncIterable(ctx, depth + 1, source);
+              },
+            },
+            {
+              id,
+            },
+          ),
         );
       }
     }

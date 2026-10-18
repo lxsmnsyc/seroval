@@ -96,15 +96,8 @@ export function createSyncParserContext(options: SyncParserContextOptions): Sync
   };
 }
 
-export class SyncParsePluginContext {
-  constructor(
-    private readonly _p: SOSParserContext,
-    private readonly depth: number,
-  ) {}
-
-  parse<T>(current: T): SerovalNode {
-    return parseSOS(this._p, this.depth, current);
-  }
+export interface SyncParsePluginContext {
+  parse<T>(current: T): SerovalNode;
 }
 
 export interface StreamParserContextOptions extends SyncParserContextOptions {
@@ -434,9 +427,13 @@ function parsePluginSync(
         id,
         plugin.tag,
         // oxlint-disable-next-line no-unsafe-argument -- Plugin info is any because plugins are stored as Plugin<any, any>.
-        plugin.parse.sync(current, new SyncParsePluginContext(ctx, depth), {
-          id,
-        }),
+        plugin.parse.sync(
+          current,
+          { parse: (value) => parseSOS(ctx, depth, value) },
+          {
+            id,
+          },
+        ),
       );
     }
   }

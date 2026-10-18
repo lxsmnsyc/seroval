@@ -293,7 +293,6 @@ export interface VanillaSerializerContext {
   mode: SerovalMode.Vanilla;
   base: BaseSerializerContext;
   state: VanillaSerializerState;
-  child: SerializePluginContext | undefined;
 }
 
 export type VanillaSerializerContextOptions = BaseSerializerContextOptions;
@@ -305,7 +304,6 @@ export function createVanillaSerializerContext(
     mode: SerovalMode.Vanilla,
     base: createBaseSerializerContext(SerovalMode.Vanilla, options),
     state: createVanillaSerializerState(),
-    child: NIL,
   };
 }
 
@@ -313,7 +311,6 @@ export interface CrossSerializerContext {
   mode: SerovalMode.Cross;
   base: BaseSerializerContext;
   state: CrossContextOptions;
-  child: SerializePluginContext | undefined;
 }
 
 export interface CrossSerializerContextOptions
@@ -328,18 +325,13 @@ export function createCrossSerializerContext(
     mode: SerovalMode.Cross,
     base: createBaseSerializerContext(SerovalMode.Cross, options),
     state: options,
-    child: NIL,
   };
 }
 
 type SerializerContext = VanillaSerializerContext | CrossSerializerContext;
 
-export class SerializePluginContext {
-  constructor(private readonly _p: SerializerContext) {}
-
-  serialize(node: SerovalNode): string {
-    return serialize(this._p, node);
-  }
+export interface SerializePluginContext {
+  serialize(node: SerovalNode): string;
 }
 
 /**
@@ -1048,10 +1040,13 @@ function serializePlugin(ctx: SerializerContext, node: SerovalPluginNode): strin
     for (let i = 0, len = currentPlugins.length; i < len; i++) {
       const plugin = currentPlugins[i];
       if (plugin.tag === node.c) {
-        ctx.child ??= new SerializePluginContext(ctx);
-        return plugin.serialize(node.s, ctx.child, {
-          id: node.i,
-        });
+        return plugin.serialize(
+          node.s,
+          { serialize: (current) => serialize(ctx, current) },
+          {
+            id: node.i,
+          },
+        );
       }
     }
   }

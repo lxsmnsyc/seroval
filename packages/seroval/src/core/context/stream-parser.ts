@@ -27,42 +27,27 @@ import {
   parseSOS,
 } from './sync-parser';
 
-export class StreamParsePluginContext {
-  constructor(
-    private readonly _p: StreamParserContext,
-    private readonly depth: number,
-  ) {}
+export interface StreamParsePluginContext {
+  parse<T>(current: T): SerovalNode;
+  parseStreamSource(current: AsyncIterable<unknown>): SerovalNode;
+  parseWithError<T>(current: T): SerovalNode | undefined;
+  isAlive(): boolean;
+  pushPendingState(): void;
+  popPendingState(): void;
+  onParse(node: SerovalNode): void;
+  onError(error: unknown): void;
+  addCleanup(callback: () => void): void;
+}
 
-  parse<T>(current: T): SerovalNode {
-    const state = this._p.state;
+function createStreamParsePluginContext(
+  ctx: StreamParserContext,
+  depth: number,
+): StreamParsePluginContext {
+  const state = ctx.state;
+  function parse<T>(current: T): SerovalNode {
     state.parsing++;
     try {
-      return parseSOS(this._p, this.depth, current);
-    } finally {
-      state.parsing--;
-      if (!state.alive) {
-        releaseParserValues(this._p);
-      }
-    }
-  }
-
-  parseStreamSource(current: AsyncIterable<unknown>): SerovalNode {
-    const ctx = this._p;
-    const state = ctx.state;
-    state.parsing++;
-    try {
-      if (this.depth >= ctx.base.depthLimit) {
-        throw new SerovalDepthLimitError(ctx.base.depthLimit);
-      }
-      const id = createIndexForValue(ctx.base, {});
-      const node = createStreamConstructorNode(
-        id,
-        parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
-        [],
-        1,
-      );
-      iterateAsync(ctx, this.depth + 1, id, current, true);
-      return node;
+      return parseSOS(ctx, depth, current);
     } finally {
       state.parsing--;
       if (!state.alive) {
@@ -70,39 +55,58 @@ export class StreamParsePluginContext {
       }
     }
   }
-
-  parseWithError<T>(current: T): SerovalNode | undefined {
-    try {
-      return this.parse(current);
-    } catch (error) {
-      stopStreamParse(this._p, 1, error);
-      return NIL;
-    }
-  }
-
-  isAlive(): boolean {
-    return this._p.state.alive;
-  }
-  pushPendingState(): void {
-    pushPendingState(this._p);
-  }
-  popPendingState(): void {
-    popPendingState(this._p);
-  }
-
-  onParse(node: SerovalNode): void {
-    if (this.isAlive()) {
-      this._p.state.queue.push({ node, initial: false, accept: NIL });
-      drainOutput(this._p);
-    }
-  }
-
-  onError(error: unknown): void {
-    stopStreamParse(this._p, 1, error);
-  }
-  addCleanup(callback: () => void): void {
-    addCleanup(this._p, callback);
-  }
+  return {
+    parse,
+    parseStreamSource(current) {
+      state.parsing++;
+      try {
+        if (depth >= ctx.base.depthLimit) {
+          throw new SerovalDepthLimitError(ctx.base.depthLimit);
+        }
+        const id = createIndexForValue(ctx.base, {});
+        const node = createStreamConstructorNode(
+          id,
+          parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
+          [],
+          1,
+        );
+        iterateAsync(ctx, depth + 1, id, current, true);
+        return node;
+      } finally {
+        state.parsing--;
+        if (!state.alive) {
+          releaseParserValues(ctx);
+        }
+      }
+    },
+    parseWithError(current) {
+      try {
+        return parse(current);
+      } catch (error) {
+        stopStreamParse(ctx, 1, error);
+        return NIL;
+      }
+    },
+    isAlive: () => state.alive,
+    pushPendingState: () => {
+      pushPendingState(ctx);
+    },
+    popPendingState: () => {
+      popPendingState(ctx);
+    },
+    onParse(node) {
+      if (state.alive) {
+        state.queue.push({ node, initial: false, accept: NIL });
+        drainOutput(ctx);
+      }
+    },
+    onError(error) {
+      stopStreamParse(ctx, 1, error);
+    },
+    addCleanup(callback) {
+      addCleanup(ctx, callback);
+    },
+  };
 }
 
 function addCleanup(ctx: StreamParserContext, callback: () => void): void {
@@ -128,7 +132,7 @@ function parsePluginStream(
         id,
         plugin.tag,
         // oxlint-disable-next-line no-unsafe-argument -- Plugin info is any because plugins are stored as Plugin<any, any>.
-        plugin.parse.stream(current, new StreamParsePluginContext(ctx, depth), {
+        plugin.parse.stream(current, createStreamParsePluginContext(ctx, depth), {
           id,
         }),
       );

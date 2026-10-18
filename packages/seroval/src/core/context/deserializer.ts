@@ -176,15 +176,8 @@ export function createCrossDeserializerContext(
 
 type DeserializerContext = VanillaDeserializerContext | CrossDeserializerContext;
 
-export class DeserializePluginContext {
-  constructor(
-    private readonly _p: DeserializerContext,
-    private readonly depth: number,
-  ) {}
-
-  deserialize<T>(node: SerovalNode): T {
-    return deserialize(this._p, this.depth, node) as T;
-  }
+export interface DeserializePluginContext {
+  deserialize<T>(node: SerovalNode): T;
 }
 
 function guardIndexedValue(ctx: BaseDeserializerContext, id: number): void {
@@ -501,9 +494,15 @@ function deserializePlugin(
         return assignIndexedValue(
           ctx,
           node.i,
-          plugin.deserialize(node.s, new DeserializePluginContext(ctx, depth), {
-            id: node.i,
-          }),
+          plugin.deserialize(
+            node.s,
+            {
+              deserialize: (current) => deserialize(ctx, depth, current) as never,
+            },
+            {
+              id: node.i,
+            },
+          ),
         );
       }
     }
