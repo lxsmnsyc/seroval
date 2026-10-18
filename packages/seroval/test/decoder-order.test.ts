@@ -22,19 +22,22 @@ function cause(callback: () => unknown): unknown {
 }
 
 describe('decoder validation ordering', () => {
-  it('resolves the typed constructor before deserializing the buffer', () => {
-    const json = toJSON(new Uint8Array(2));
-    if (json.t.t !== SerovalNodeType.TypedArray) {
-      throw new Error('Wrong fixture');
-    }
-    Object.defineProperty(json.t, 'c', { value: 'MissingConstructor' });
-    Object.defineProperty(json.t, 'f', {
-      get() {
-        throw new Error('buffer read first');
-      },
-    });
-    expect(cause(() => fromJSON(json))).toBeInstanceOf(SerovalUnknownTypedArrayError);
-  });
+  it.each(['MissingConstructor', 'constructor', 'toString', '__proto__'])(
+    'resolves the typed constructor (%s) before deserializing the buffer',
+    (name) => {
+      const json = toJSON(new Uint8Array(2));
+      if (json.t.t !== SerovalNodeType.TypedArray) {
+        throw new Error('Wrong fixture');
+      }
+      Object.defineProperty(json.t, 'c', { value: name });
+      Object.defineProperty(json.t, 'f', {
+        get() {
+          throw new Error('buffer read first');
+        },
+      });
+      expect(cause(() => fromJSON(json))).toBeInstanceOf(SerovalUnknownTypedArrayError);
+    },
+  );
 
   it.each(['typed', 'data'] as const)(
     'deserializes the %s buffer before offset validation',

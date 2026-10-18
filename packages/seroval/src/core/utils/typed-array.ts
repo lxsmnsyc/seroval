@@ -26,31 +26,23 @@ export type TypedArrayValue =
 
 export type BigIntTypedArrayValue = BigInt64Array | BigUint64Array;
 
+const TYPED_ARRAY_CONSTRUCTORS: Record<string, TypedArrayConstructor> = {
+  Int8Array,
+  Int16Array,
+  Int32Array,
+  Uint8Array,
+  Uint16Array,
+  Uint32Array,
+  Uint8ClampedArray,
+  Float32Array,
+  Float64Array,
+  BigInt64Array,
+  BigUint64Array,
+};
+
 export function getTypedArrayConstructor(name: string): TypedArrayConstructor {
-  switch (name) {
-    case 'Int8Array':
-      return Int8Array;
-    case 'Int16Array':
-      return Int16Array;
-    case 'Int32Array':
-      return Int32Array;
-    case 'Uint8Array':
-      return Uint8Array;
-    case 'Uint16Array':
-      return Uint16Array;
-    case 'Uint32Array':
-      return Uint32Array;
-    case 'Uint8ClampedArray':
-      return Uint8ClampedArray;
-    case 'Float32Array':
-      return Float32Array;
-    case 'Float64Array':
-      return Float64Array;
-    case 'BigInt64Array':
-      return BigInt64Array;
-    case 'BigUint64Array':
-      return BigUint64Array;
-    default:
-      throw new SerovalUnknownTypedArrayError(name);
+  if (Object.hasOwn(TYPED_ARRAY_CONSTRUCTORS, name)) {
+    return TYPED_ARRAY_CONSTRUCTORS[name];
   }
+  throw new SerovalUnknownTypedArrayError(name);
 }
