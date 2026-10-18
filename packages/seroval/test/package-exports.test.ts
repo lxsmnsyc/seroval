@@ -70,6 +70,20 @@ async function checkBinary(api: API): Promise<void> {
 }
 
 describe('built package exports (run build first)', () => {
+  it('does not emit internal top-level class declarations in ESM bundles', async () => {
+    const runtimeExports = await import('../dist/index.js');
+    for (const mode of ['', 'dev/']) {
+      const code = await readFile(new URL(`../dist/${mode}index.js`, import.meta.url), 'utf8');
+      const classDeclarations = [...code.matchAll(/^var (\w+) = class\b/gm)].map(
+        (match) => match[1],
+      );
+      expect(classDeclarations.length).toBeGreaterThan(0);
+      for (const name of classDeclarations) {
+        expect(runtimeExports).toHaveProperty(name);
+      }
+    }
+  });
+
   it('does not require package imports resolution', async () => {
     const manifest: unknown = JSON.parse(
       await readFile(new URL('../package.json', import.meta.url), 'utf8'),
