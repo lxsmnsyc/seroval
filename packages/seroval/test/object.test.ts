@@ -16,6 +16,7 @@ import {
   toJSON,
   toJSONAsync,
 } from '../src';
+import { isValidIdentifier } from '../src/core/utils/is-valid-identifier';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -662,6 +663,15 @@ describe('objects', () => {
       }
     },
   );
+  it('matches ASCII identifier rules across all UTF-16 code units', () => {
+    const pattern = /^[$A-Z_][0-9A-Z_$]*$/i;
+    expect(isValidIdentifier('')).toBe(false);
+    for (let code = 0; code <= 0xffff; code++) {
+      const char = String.fromCharCode(code);
+      assert.equal(isValidIdentifier(char), pattern.test(char));
+      assert.equal(isValidIdentifier('a' + char), pattern.test('a' + char));
+    }
+  });
   describe('with a shadowed constructor property', () => {
     const SHADOWED = { constructor: 'not a constructor', value: 42 };
 
