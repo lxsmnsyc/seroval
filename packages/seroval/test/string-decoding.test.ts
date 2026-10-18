@@ -49,8 +49,8 @@ describe('string decoding', () => {
   it('retains replacement behavior for non-primitive inputs', () => {
     // Some node fields reach the helper without String coercion.
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the helper must handle a non-string input.
-    const boxed = new Object('hello') as string;
-    expect(deserializeString(boxed)).toBe('hello');
+    const boxed = new Object('hello\\n\\x3C\\u2028') as string;
+    expect(deserializeString(boxed)).toBe('hello\n<\u2028');
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the helper must handle a non-string input.
     const custom = { replace: () => 'replacement' } as unknown as string;
     expect(deserializeString(custom)).toBe('replacement');

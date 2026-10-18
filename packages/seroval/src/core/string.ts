@@ -1,22 +1,7 @@
 const MIN_JSON_STRINGIFY_LENGTH = 64;
 
-// Every code unit `escapeCharCode` rewrites, and its escape. Single-character
-// keys can never collide with a property of `Object.prototype`.
-const ESCAPED: Record<string, string | undefined> = {
-  '"': '\\"',
-  '\\': '\\\\',
-  '\n': '\\n',
-  '\r': '\\r',
-  '\b': '\\b',
-  '\t': '\\t',
-  '\f': '\\f',
-  '<': '\\x3C',
-  '\u2028': '\\u2028',
-  '\u2029': '\\u2029',
-};
-
-// The keys of `ESCAPED`. A native scan is far cheaper than the character
-// loop, and most strings (object keys above all) need no escape.
+// Every code unit `escapeCharCode` rewrites. A native scan is far cheaper than
+// the character loop, and most strings (object keys above all) need no escape.
 const NEEDS_ESCAPE = /["\\\n\r\b\t\f<\u2028\u2029]/;
 
 // JSON escapes these code units differently from Seroval's wire format and
@@ -30,7 +15,6 @@ const LESS_THAN = /</g;
 const LINE_SEPARATOR = /\u2028/g;
 const PARAGRAPH_SEPARATOR = /\u2029/g;
 
-// `ESCAPED` keyed by code unit.
 function escapeCharCode(code: number): string | undefined {
   switch (code) {
     case 34: // "
@@ -106,27 +90,11 @@ const JSON_COMPATIBLE =
 
 const ESCAPE_SEQUENCE = /(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g;
 
-function createUnescapedTable(): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const char of Object.keys(ESCAPED)) {
-    result[ESCAPED[char]!] = char;
-  }
-  return result;
-}
-
-// `ESCAPED` inverted; only reached through `ESCAPE_SEQUENCE`, whose every
-// match is a key.
-const UNESCAPED = /* @__PURE__ */ createUnescapedTable();
-
-function deserializeReplacer(str: string): string {
-  return UNESCAPED[str];
-}
-
 export function deserializeString(str: string): string {
   if (typeof str !== 'string') {
     // Some node fields reach here without String coercion; they still go
     // through `replace` so boxed strings and replace-alikes keep working.
-    return (str as string).replace(ESCAPE_SEQUENCE, deserializeReplacer);
+    return (str as string).replace(ESCAPE_SEQUENCE, deserializeString);
   }
   let index = str.indexOf('\\');
   if (index === -1) {
@@ -135,7 +103,7 @@ export function deserializeString(str: string): string {
   if (JSON_COMPATIBLE.test(str)) {
     return JSON.parse('"' + str + '"') as string;
   }
-  // Rewrites each escape `ESCAPED` produces back to its character, and
+  // Rewrites each escape `serializeString` produces back to its character, and
   // leaves anything else literal, without a per-match `replace` callback.
   let result = '';
   let lastPos = 0;
