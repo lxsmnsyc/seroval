@@ -2,7 +2,6 @@ import {
   createArrayNode,
   createBigIntNode,
   createBoxedNode,
-  createDataViewNode,
   createDateNode,
   createErrorNode,
   createIteratorFactoryInstanceNode,
@@ -15,7 +14,7 @@ import {
   createStreamEventNode,
   createStringNode,
   createTemporalNode,
-  createTypedArrayNode,
+  createViewNode,
 } from '../base-primitives';
 import { NIL, SerovalNodeType } from '../constants';
 import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
@@ -219,25 +218,15 @@ async function parseBoxed(
   return createBoxedNode(id, await parseAsync(ctx, depth, current.valueOf()));
 }
 
-async function parseTypedArray(
+async function parseView(
   ctx: AsyncParserContext,
   depth: number,
-  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray | SerovalNodeType.DataView,
   id: number,
-  current: TypedArrayValue | BigIntTypedArrayValue,
-): Promise<SerovalTypedArrayNode | SerovalBigIntTypedArrayNode> {
+  current: TypedArrayValue | BigIntTypedArrayValue | DataView,
+): Promise<SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode> {
   current = getArrayBufferView(ctx.base, current);
-  return createTypedArrayNode(type, id, current, await parseAsync(ctx, depth, current.buffer));
-}
-
-async function parseDataView(
-  ctx: AsyncParserContext,
-  depth: number,
-  id: number,
-  current: DataView,
-): Promise<SerovalDataViewNode> {
-  current = getArrayBufferView(ctx.base, current);
-  return createDataViewNode(id, current, await parseAsync(ctx, depth, current.buffer));
+  return createViewNode(type, id, current, await parseAsync(ctx, depth, current.buffer));
 }
 
 async function parseError(
@@ -531,7 +520,7 @@ export async function parseObjectAsync(
     case ObjectKind.ArrayBuffer:
       return createArrayBufferNode(ctx.base, id, current as unknown as ArrayBuffer);
     case ObjectKind.TypedArray:
-      return parseTypedArray(
+      return parseView(
         ctx,
         depth,
         SerovalNodeType.TypedArray,
@@ -539,7 +528,7 @@ export async function parseObjectAsync(
         current as unknown as TypedArrayValue,
       );
     case ObjectKind.BigIntTypedArray:
-      return parseTypedArray(
+      return parseView(
         ctx,
         depth,
         SerovalNodeType.BigIntTypedArray,
@@ -547,7 +536,7 @@ export async function parseObjectAsync(
         current as unknown as BigIntTypedArrayValue,
       );
     case ObjectKind.DataView:
-      return parseDataView(ctx, depth, id, current as unknown as DataView);
+      return parseView(ctx, depth, SerovalNodeType.DataView, id, current as unknown as DataView);
     case ObjectKind.Map:
       return parseMap(ctx, depth, id, current as unknown as Map<unknown, unknown>);
     case ObjectKind.Set:

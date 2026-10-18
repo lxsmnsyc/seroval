@@ -42,7 +42,6 @@ import type {
 } from './types';
 import { getErrorConstructor } from './utils/error';
 import { getObjectFlag } from './utils/get-object-flag';
-import type { BigIntTypedArrayValue, TypedArrayValue } from './utils/typed-array';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
   switch (value) {
@@ -153,20 +152,22 @@ export function createBoxedNode(id: number, boxed: SerovalNode): SerovalBoxedNod
 // (DEFAULT_MAX_BASE64_LENGTH).
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
-export function createTypedArrayNode(
-  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
+export function createViewNode(
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray | SerovalNodeType.DataView,
   id: number,
-  current: TypedArrayValue | BigIntTypedArrayValue,
+  current: ArrayBufferView & { readonly length?: number },
   buffer: SerovalNode,
-): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode {
-  if (current.length > MAX_TYPED_ARRAY_LENGTH) {
+): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode {
+  const isDataView = type === SerovalNodeType.DataView;
+  const size = isDataView ? current.byteLength : current.length!;
+  if (size > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(current);
   }
   return createSerovalNode(
     type,
     id,
     NIL,
-    current.constructor.name,
+    isDataView ? NIL : current.constructor.name,
     NIL,
     NIL,
     NIL,
@@ -174,31 +175,7 @@ export function createTypedArrayNode(
     buffer,
     current.byteOffset,
     NIL,
-    current.length,
-  );
-}
-
-export function createDataViewNode(
-  id: number,
-  current: DataView,
-  buffer: SerovalNode,
-): SerovalDataViewNode {
-  if (current.byteLength > MAX_TYPED_ARRAY_LENGTH) {
-    throw new SerovalUnsupportedTypeError(current);
-  }
-  return createSerovalNode(
-    SerovalNodeType.DataView,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    buffer,
-    current.byteOffset,
-    NIL,
-    current.byteLength,
+    size,
   );
 }
 

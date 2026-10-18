@@ -2,7 +2,6 @@ import {
   createArrayNode,
   createBigIntNode,
   createBoxedNode,
-  createDataViewNode,
   createDateNode,
   createErrorNode,
   createIteratorFactoryInstanceNode,
@@ -14,7 +13,7 @@ import {
   createStreamConstructorNode,
   createStringNode,
   createTemporalNode,
-  createTypedArrayNode,
+  createViewNode,
 } from '../base-primitives';
 import { NIL, SerovalNodeType } from '../constants';
 import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
@@ -301,25 +300,15 @@ function parseBoxed(
   return createBoxedNode(id, parseSOS(ctx, depth, current.valueOf()));
 }
 
-function parseTypedArray(
+function parseView(
   ctx: SOSParserContext,
   depth: number,
-  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray | SerovalNodeType.DataView,
   id: number,
-  current: TypedArrayValue | BigIntTypedArrayValue,
-): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode {
+  current: TypedArrayValue | BigIntTypedArrayValue | DataView,
+): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode {
   current = getArrayBufferView(ctx.base, current);
-  return createTypedArrayNode(type, id, current, parseSOS(ctx, depth, current.buffer));
-}
-
-function parseDataView(
-  ctx: SOSParserContext,
-  depth: number,
-  id: number,
-  current: DataView,
-): SerovalDataViewNode {
-  current = getArrayBufferView(ctx.base, current);
-  return createDataViewNode(id, current, parseSOS(ctx, depth, current.buffer));
+  return createViewNode(type, id, current, parseSOS(ctx, depth, current.buffer));
 }
 
 function parseError(
@@ -503,7 +492,7 @@ function parseObjectPhase2(
     case ObjectKind.ArrayBuffer:
       return createArrayBufferNode(ctx.base, id, current as unknown as ArrayBuffer);
     case ObjectKind.TypedArray:
-      return parseTypedArray(
+      return parseView(
         ctx,
         depth,
         SerovalNodeType.TypedArray,
@@ -511,7 +500,7 @@ function parseObjectPhase2(
         current as unknown as TypedArrayValue,
       );
     case ObjectKind.BigIntTypedArray:
-      return parseTypedArray(
+      return parseView(
         ctx,
         depth,
         SerovalNodeType.BigIntTypedArray,
@@ -519,7 +508,7 @@ function parseObjectPhase2(
         current as unknown as BigIntTypedArrayValue,
       );
     case ObjectKind.DataView:
-      return parseDataView(ctx, depth, id, current as unknown as DataView);
+      return parseView(ctx, depth, SerovalNodeType.DataView, id, current as unknown as DataView);
     case ObjectKind.Map:
       return parseMap(ctx, depth, id, current as unknown as Map<unknown, unknown>);
     case ObjectKind.Set:

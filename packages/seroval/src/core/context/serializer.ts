@@ -947,15 +947,21 @@ function serializeArrayBuffer(ctx: SerializerContext, node: SerovalArrayBufferNo
   return getConstructor(ctx, node.f) + '("' + node.s + '")';
 }
 
-function serializeTypedArray(
+function serializeView(
   ctx: SerializerContext,
-  node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode,
+  node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode,
 ): string {
-  return 'new ' + node.c + '(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
-}
-
-function serializeDataView(ctx: SerializerContext, node: SerovalDataViewNode): string {
-  return 'new DataView(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
+  return (
+    'new ' +
+    (node.t === SerovalNodeType.DataView ? 'DataView' : node.c) +
+    '(' +
+    serialize(ctx, node.f) +
+    ',' +
+    node.b +
+    ',' +
+    node.l +
+    ')'
+  );
 }
 
 function serializeAggregateError(ctx: SerializerContext, node: SerovalAggregateErrorNode): string {
@@ -1214,9 +1220,8 @@ function serializeAssignable(ctx: SerializerContext, node: SerovalNode): string 
       return serializeArrayBuffer(ctx, node);
     case SerovalNodeType.BigIntTypedArray:
     case SerovalNodeType.TypedArray:
-      return serializeTypedArray(ctx, node);
     case SerovalNodeType.DataView:
-      return serializeDataView(ctx, node);
+      return serializeView(ctx, node);
     case SerovalNodeType.AggregateError:
       return serializeAggregateError(ctx, node);
     case SerovalNodeType.Error:
