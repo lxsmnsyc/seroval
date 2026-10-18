@@ -1,5 +1,11 @@
 # seroval
 
+## 1.6.11
+
+### Patch Changes
+
+- 1313ebb: Name a typed array's constructor from the array's internal type instead of `value.constructor.name`. An own `constructor` property on a typed array could put arbitrary code into the output of `serialize`, `crossSerialize` and the streaming functions.
+
 ## 1.6.10
 
 ### Patch Changes
