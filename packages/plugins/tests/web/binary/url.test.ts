@@ -59,10 +59,7 @@ describe('binary URLSearchParams', () => {
   });
 
   it('supports empty URLSearchParams', async () => {
-    const { value } = await roundtrip<URLSearchParams>(
-      new URLSearchParams(),
-      params,
-    );
+    const { value } = await roundtrip<URLSearchParams>(new URLSearchParams(), params);
     expect(value.toString()).toBe('');
   });
 

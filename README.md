@@ -214,10 +214,17 @@ serialize(value, { disabledFeatures: Feature.Temporal });
 
 ## Docs
 
-- [Serialization](https://github.com/lxsmnsyc/seroval/blob/main/docs/serialization.md)
-- [Compatibility](https://github.com/lxsmnsyc/seroval/blob/main/docs/compatibility.md)
-- [Isomorphic References](https://github.com/lxsmnsyc/seroval/blob/main/docs/isomorphic-refs.md)
-- [Binary mode specification](https://github.com/lxsmnsyc/seroval/blob/main/docs/binary-mode-spec.md)
+The documentation lives at [seroval.vercel.app](https://seroval.vercel.app).
+
+- [Quick start](https://seroval.vercel.app/docs/quick-start)
+- [Choosing a mode](https://seroval.vercel.app/docs/choosing-a-mode)
+- [Streaming](https://seroval.vercel.app/docs/streaming)
+- [Binary mode](https://seroval.vercel.app/docs/binary-mode)
+- [Plugins](https://seroval.vercel.app/docs/using-plugins)
+- [Security](https://seroval.vercel.app/docs/security)
+- [Compatibility](https://seroval.vercel.app/docs/compatibility)
+- [API reference](https://seroval.vercel.app/docs/api)
+- [Playground](https://seroval.vercel.app/playground)
 
 ## Sponsors
 

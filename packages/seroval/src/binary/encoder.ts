@@ -113,10 +113,7 @@ export function writeString(writer: ByteWriter, value: string): void {
   }
   let size = i;
   if (i < length) {
-    size += ENCODER.encodeInto(
-      value.substring(i),
-      bytes.subarray(start + i),
-    ).written;
+    size += ENCODER.encodeInto(value.substring(i), bytes.subarray(start + i)).written;
   }
   writeUint(writer, size);
   writer.offset += size;

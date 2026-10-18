@@ -43,7 +43,10 @@ afterEach(() => {
   delete (globalThis as Record<string, unknown>)[MARKER];
 });
 
-function jsonOf(node: SerovalNode, features = 127): {
+function jsonOf(
+  node: SerovalNode,
+  features = 127,
+): {
   t: SerovalNode;
   f: number;
   m: number[];
@@ -67,9 +70,7 @@ describe('structured deserialization does not evaluate', () => {
   });
 
   it('fromJSON keeps a string that looks like a node tree inert', () => {
-    const value = fromJSON<string>(
-      jsonOf({ t: 1, s: 'Object.assign(new Error(),{})' } as never),
-    );
+    const value = fromJSON<string>(jsonOf({ t: 1, s: 'Object.assign(new Error(),{})' } as never));
     expect(value).toBe('Object.assign(new Error(),{})');
   });
 });
@@ -87,7 +88,7 @@ const HOSTILE = '</script><img src=x onerror=alert(1)>\u2028\u2029"\\\n\u0000';
  */
 const VARIANTS: {
   name: string;
-  // The sync vanilla serializer has no way to emit a Promise.
+  // Sync functions reject a Promise, so only the async and streaming ones get it.
   promises?: false;
   run(value: unknown, scopeId?: string): Promise<string>;
 }[] = [
@@ -96,9 +97,10 @@ const VARIANTS: {
     promises: false,
     run: async (value, scopeId) => serialize(value, { scopeId } as never),
   },
-  { name: 'serializeAsync', run: value => serializeAsync(value) },
+  { name: 'serializeAsync', run: (value) => serializeAsync(value) },
   {
     name: 'crossSerialize',
+    promises: false,
     run: async (value, scopeId) => crossSerialize(value, { scopeId }),
   },
   {
@@ -144,23 +146,25 @@ const VARIANTS: {
   },
   {
     name: 'toJSON',
-    run: async value => JSON.stringify(toJSON(value)),
+    promises: false,
+    run: async (value) => JSON.stringify(toJSON(value)),
   },
   {
     name: 'toJSONAsync',
-    run: async value => JSON.stringify(await toJSONAsync(value)),
+    run: async (value) => JSON.stringify(await toJSONAsync(value)),
   },
   {
     name: 'toCrossJSON',
-    run: async value => JSON.stringify(toCrossJSON(value)),
+    promises: false,
+    run: async (value) => JSON.stringify(toCrossJSON(value)),
   },
   {
     name: 'toCrossJSONAsync',
-    run: async value => JSON.stringify(await toCrossJSONAsync(value)),
+    run: async (value) => JSON.stringify(await toCrossJSONAsync(value)),
   },
   {
     name: 'toCrossJSONStream',
-    run: value =>
+    run: (value) =>
       new Promise<string>((resolve, reject) => {
         let result = '';
         toCrossJSONStream(value, {
@@ -243,16 +247,12 @@ describe('script embedding escapes', () => {
   });
 
   it('round-trips a hostile object key through serialize', () => {
-    const back = deserialize<Record<string, number>>(
-      serialize({ [HOSTILE]: 1 }),
-    );
+    const back = deserialize<Record<string, number>>(serialize({ [HOSTILE]: 1 }));
     expect(back[HOSTILE]).toBe(1);
   });
 
   it('round-trips a hostile Error message through serialize', () => {
-    expect(deserialize<Error>(serialize(new Error(HOSTILE))).message).toBe(
-      HOSTILE,
-    );
+    expect(deserialize<Error>(serialize(new Error(HOSTILE))).message).toBe(HOSTILE);
   });
 });
 
@@ -364,9 +364,7 @@ describe('prototype pollution', () => {
       );
       expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
       expect(Object.hasOwn(value, key)).toBe(true);
-      expect(
-        ({} as unknown as Record<string, unknown>).polluted,
-      ).toBeUndefined();
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
     }
     expect(Object.prototype.constructor).toBe(Object);
   });
@@ -382,9 +380,7 @@ describe('prototype pollution', () => {
       { refs: new Map() },
     );
     expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
-    expect(
-      ({} as unknown as Record<string, unknown>).polluted,
-    ).toBeUndefined();
+    expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
   });
 
   it('does not pollute through a serialize/deserialize round trip', () => {
@@ -400,9 +396,7 @@ describe('prototype pollution', () => {
     const back = deserialize<Record<string, unknown>>(serialize(source));
     expect(Object.getPrototypeOf(back)).toBe(Object.prototype);
     expect(back.__proto__).toBe('polluted');
-    expect(
-      ({} as unknown as Record<string, unknown>).polluted,
-    ).toBeUndefined();
+    expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
   });
 
   it('does not pollute a null-prototype object', () => {
@@ -508,8 +502,6 @@ describe('cross reference maps', () => {
     const refs = new Map<string, unknown>();
     const shared = { secret: 'value' };
     fromCrossJSON<{ shared: object }>(toCrossJSON({ shared }), { refs });
-    expect(() =>
-      fromCrossJSON<{ shared: object }>(toCrossJSON({ shared }), { refs }),
-    ).toThrow();
+    expect(() => fromCrossJSON<{ shared: object }>(toCrossJSON({ shared }), { refs })).toThrow();
   });
 });

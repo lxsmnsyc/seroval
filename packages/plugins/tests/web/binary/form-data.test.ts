@@ -69,10 +69,7 @@ describe('binary FormData', () => {
   it('supports FormData nested in structures', async () => {
     const inner = new FormData();
     inner.set('a', '1');
-    const { value } = await roundtrip<{ form: FormData }>(
-      { form: inner },
-      PLUGINS,
-    );
+    const { value } = await roundtrip<{ form: FormData }>({ form: inner }, PLUGINS);
     expect(value.form).toBeInstanceOf(FormData);
     expect(value.form.get('a')).toBe('1');
   });

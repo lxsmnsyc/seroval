@@ -53,9 +53,7 @@ describe('binary Temporal', () => {
   });
 
   it('supports Temporal.ZonedDateTime', async () => {
-    const source = Temporal.ZonedDateTime.from(
-      '2023-06-15T12:34:56+09:00[Asia/Tokyo]',
-    );
+    const source = Temporal.ZonedDateTime.from('2023-06-15T12:34:56+09:00[Asia/Tokyo]');
     const { value } = await roundtrip<Temporal.ZonedDateTime>(source);
     expect(value).toBeInstanceOf(Temporal.ZonedDateTime);
     expect(String(value)).toBe(String(source));

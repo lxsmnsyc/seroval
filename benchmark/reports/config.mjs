@@ -53,12 +53,12 @@ const plugins = [
 ];
 
 export const sizeFixtures = [
-  ...core.map(name => ({
+  ...core.map((name) => ({
     id: `core.${name}`,
     source: `export { ${name} } from 'seroval';`,
     exports: [name],
   })),
-  ...plugins.map(name => ({
+  ...plugins.map((name) => ({
     id: `plugin.${name}`,
     source: `export { ${name} } from 'seroval-plugins/web';`,
     exports: [name],
@@ -89,15 +89,25 @@ export const decode = value => fromJSON(value, { plugins });`,
   },
 ];
 
+/**
+ * @param {string} root
+ * @param {string} [specifier]
+ * @returns {string}
+ */
 export function publicEntry(root, specifier = 'seroval') {
   const require = createRequire(resolve(root, 'benchmark/package.json'));
   const manifestPath = require.resolve(`${specifier}/package.json`);
+  /** @type {{ exports: Record<string, { import?: string }> }} */
+  // oxlint-disable-next-line typescript/no-unsafe-assignment -- Node resolved this package manifest.
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const entry = manifest.exports['.'].import;
   assert.equal(typeof entry, 'string', 'Expected a production ESM export');
   return resolve(manifestPath, '..', entry);
 }
 
+/**
+ * @returns {string}
+ */
 export function harnessHash() {
   const hash = createHash('sha256');
   for (const name of ['config.mjs', 'measure.mjs', 'runtime.mjs']) {

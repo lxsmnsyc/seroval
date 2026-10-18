@@ -7,11 +7,7 @@ describe('binary BigInt TypedArray', () => {
       new BigInt64Array([-9223372036854775808n, 0n, 9223372036854775807n]),
     );
     expect(value).toBeInstanceOf(BigInt64Array);
-    expect([...value]).toEqual([
-      -9223372036854775808n,
-      0n,
-      9223372036854775807n,
-    ]);
+    expect([...value]).toEqual([-9223372036854775808n, 0n, 9223372036854775807n]);
   });
 
   it('supports BigUint64Array', async () => {
@@ -30,9 +26,7 @@ describe('binary BigInt TypedArray', () => {
 
   it('supports views with a byte offset', async () => {
     const buffer = new BigInt64Array([1n, 2n, 3n, 4n]).buffer;
-    const { value } = await roundtrip<BigInt64Array>(
-      new BigInt64Array(buffer, 8, 2),
-    );
+    const { value } = await roundtrip<BigInt64Array>(new BigInt64Array(buffer, 8, 2));
     expect(value.byteOffset).toBe(8);
     expect([...value]).toEqual([2n, 3n]);
   });

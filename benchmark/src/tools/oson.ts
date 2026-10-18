@@ -1,11 +1,11 @@
-import { stringify, parse } from 'o-son';
+import { parse, stringify } from 'o-son';
 
 export const name = 'o-son';
 
-export function toString(data: unknown) {
+export function toString(data: unknown): string {
   return stringify(data);
 }
 
-export function fromString(str: string) {
+export function fromString(str: string): unknown {
   return parse(str);
 }

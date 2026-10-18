@@ -56,7 +56,7 @@ describe('binary Object', () => {
       '': 'empty',
       '0b1': 'binary',
       'key with spaces': true,
-      'ハロー': 'world',
+      ハロー: 'world',
       '👋': 'wave',
     };
     const { value } = await roundtrip<Record<string, unknown>>(source);

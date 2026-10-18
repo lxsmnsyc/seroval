@@ -40,10 +40,9 @@ describe('binary unsupported values', () => {
   });
 
   it('allows structures within the depth limit', async () => {
-    const { value } = await roundtrip<Record<string, unknown>>(
-      makeDeepObject(2),
-      { serialize: { depthLimit: 10 } },
-    );
+    const { value } = await roundtrip<Record<string, unknown>>(makeDeepObject(2), {
+      serialize: { depthLimit: 10 },
+    });
     expect(value.next).toBeDefined();
   });
 

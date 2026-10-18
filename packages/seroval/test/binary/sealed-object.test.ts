@@ -3,9 +3,7 @@ import { roundtrip } from './utils';
 
 describe('binary sealed object', () => {
   it('supports sealed objects', async () => {
-    const { value } = await roundtrip<Record<string, unknown>>(
-      Object.seal({ hello: 'world' }),
-    );
+    const { value } = await roundtrip<Record<string, unknown>>(Object.seal({ hello: 'world' }));
     expect(Object.isSealed(value)).toBe(true);
     expect(Object.isFrozen(value)).toBe(false);
     expect(value.hello).toBe('world');

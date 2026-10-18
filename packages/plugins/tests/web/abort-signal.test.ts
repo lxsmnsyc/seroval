@@ -1,4 +1,6 @@
+import type { SerovalNode } from 'seroval';
 import {
+  createReference,
   crossSerialize,
   crossSerializeAsync,
   crossSerializeStream,
@@ -13,11 +15,10 @@ import {
   toJSON,
   toJSONAsync,
 } from 'seroval';
-import { createReference, type SerovalNode } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import { AbortSignalPlugin } from '../../web';
 
-const delayedAbortSignal = () => {
+const delayedAbortSignal = (): AbortSignal => {
   const controller = new AbortController();
   setTimeout(() => {
     controller.abort('aborted!');
@@ -165,13 +166,10 @@ describe('AbortSignal', () => {
     });
     describe('scoped', () => {
       it('supports aborted AbortSignal', async () => {
-        const result = await crossSerializeAsync(
-          Promise.resolve(SYNC_EXAMPLE),
-          {
-            scopeId: 'example',
-            plugins: [AbortSignalPlugin],
-          },
-        );
+        const result = await crossSerializeAsync(Promise.resolve(SYNC_EXAMPLE), {
+          scopeId: 'example',
+          plugins: [AbortSignalPlugin],
+        });
         expect(result).toMatchSnapshot();
       });
       it('supports future AbortSignal', async () => {
@@ -344,12 +342,11 @@ describe('AbortSignal', () => {
       });
       // Aim the controller slot at a non-Promise node so the guard trips before
       // `then` would be called.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: toJSON(42).t,
       };
-      expect(() =>
-        fromJSON(result, { plugins: [AbortSignalPlugin] }),
-      ).toThrow();
+      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
     });
 
     it('never invokes `then` on a fake thenable controller', () => {
@@ -357,23 +354,24 @@ describe('AbortSignal', () => {
       // a function-returning plugin). Build one and aim the controller slot at
       // an object carrying it: the guard must reject before it is called.
       const thenSpy = vi.fn();
+      // oxlint-disable-next-line unicorn/no-thenable -- The test needs a fake thenable.
       const thenable = { then: createReference('test/abort-fake-then', thenSpy) };
       const template = toJSON(thenable);
       const result = toJSON(SYNC_EXAMPLE, {
         plugins: [AbortSignalPlugin],
       });
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: template.t,
       };
-      expect(() =>
-        fromJSON(result, { plugins: [AbortSignalPlugin] }),
-      ).toThrow();
+      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
       expect(thenSpy).not.toHaveBeenCalled();
     });
 
     it('rejects deserializing the AbortController factory directly', () => {
       // The factory is a serialize-only helper; deserializing it would hand
       // back the raw `PROMISE_TO_ABORT_SIGNAL` function as a callable gadget.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       const json = {
         t: {
           t: 25,
@@ -384,9 +382,7 @@ describe('AbortSignal', () => {
         f: 0x7f,
         m: [] as number[],
       } as unknown as Parameters<typeof fromJSON>[0];
-      expect(() =>
-        fromJSON(json, { plugins: [AbortSignalPlugin] }),
-      ).toThrow();
+      expect(() => fromJSON(json, { plugins: [AbortSignalPlugin] })).toThrow();
     });
   });
 });

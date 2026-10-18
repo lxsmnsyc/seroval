@@ -12,9 +12,7 @@ describe('binary DataView', () => {
   });
 
   it('supports empty DataView', async () => {
-    const { value } = await roundtrip<DataView>(
-      new DataView(new ArrayBuffer(0)),
-    );
+    const { value } = await roundtrip<DataView>(new DataView(new ArrayBuffer(0)));
     expect(value).toBeInstanceOf(DataView);
     expect(value.byteLength).toBe(0);
   });

@@ -36,7 +36,7 @@ describe('binary references', () => {
     const encoder = new TextEncoder();
     const original = encoder.encode('binary-reference-missing');
     const replaced = encoder.encode('binary-reference-unknown');
-    const chunks = handle.transport.chunks.map(chunk => {
+    const chunks = handle.transport.chunks.map((chunk) => {
       for (let i = 0; i + original.length <= chunk.length; i++) {
         if (original.every((byte, j) => chunk[i + j] === byte)) {
           const copy = chunk.slice();
@@ -48,14 +48,11 @@ describe('binary references', () => {
     });
     let index = 0;
     const errors: unknown[] = [];
-    const result = startDeserialize(
-      { read: () => Promise.resolve(chunks[index++]) } as never,
-      {
-        onError(error) {
-          errors.push(error);
-        },
+    const result = startDeserialize({ read: () => Promise.resolve(chunks[index++]) } as never, {
+      onError(error) {
+        errors.push(error);
       },
-    );
+    });
     await expect(result).rejects.toBeInstanceOf(Error);
     expect(errors).toHaveLength(1);
   });

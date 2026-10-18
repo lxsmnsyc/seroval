@@ -51,35 +51,24 @@ const stringNode = (id: number, value: string) => {
 };
 const objectAssign = (id: number, key: number, value: number) =>
   node(7, u32(id), u32(key), u32(value));
-const arrayNode = (id: number, length: number) =>
-  node(10, u32(id), u32(length));
+const arrayNode = (id: number, length: number) => node(10, u32(id), u32(length));
 const arrayAssign = (id: number, index: number, value: number) =>
   node(8, u32(id), u32(index), u32(value));
 const streamNode = (id: number) => node(11, u32(id), 0);
-const streamNext = (id: number, value: number) =>
-  node(12, u32(id), u32(value));
-const streamReturn = (id: number, value: number) =>
-  node(14, u32(id), u32(value));
+const streamNext = (id: number, value: number) => node(12, u32(id), u32(value));
+const streamReturn = (id: number, value: number) => node(14, u32(id), u32(value));
 const sequenceNode = (id: number, throwAt: number, doneAt: number) =>
   node(15, u32(id), i32(throwAt), i32(doneAt));
-const sequencePush = (id: number, value: number) =>
-  node(16, u32(id), u32(value));
+const sequencePush = (id: number, value: number) => node(16, u32(id), u32(value));
 const objectNode = (id: number) => node(18, u32(id));
 const arrayBufferNode = (id: number, bytes: Uint8Array) =>
   node(23, u32(id), u32(bytes.length), bytes);
-const typedArrayNode = (
-  id: number,
-  buffer: number,
-  offset: number,
-  length: number,
-) => node(24, u32(id), 4, u32(buffer), u32(offset), u32(length));
+const typedArrayNode = (id: number, buffer: number, offset: number, length: number) =>
+  node(24, u32(id), 4, u32(buffer), u32(offset), u32(length));
 const promiseNode = (id: number) => node(31, u32(id));
-const promiseSuccess = (id: number, value: number) =>
-  node(32, u32(id), u32(value));
-const iteratorNode = (id: number, sequence: number) =>
-  node(36, u32(id), u32(sequence));
-const pending = (id: number, amount: number) =>
-  node(38, u32(id), u32(amount));
+const promiseSuccess = (id: number, value: number) => node(32, u32(id), u32(value));
+const iteratorNode = (id: number, sequence: number) => node(36, u32(id), u32(sequence));
+const pending = (id: number, amount: number) => node(38, u32(id), u32(amount));
 
 function feed(chunks: Uint8Array[]) {
   const errors: unknown[] = [];
@@ -91,20 +80,15 @@ function feed(chunks: Uint8Array[]) {
     },
   });
   const settled = value.then(
-    result => ({ status: 'resolved' as const, value: result.value }),
-    error => ({ status: 'rejected' as const, error }),
+    (result) => ({ status: 'resolved' as const, value: result.value }),
+    (error) => ({ status: 'rejected' as const, error }),
   );
   return { settled, errors };
 }
 
 describe('binary decoder checks', () => {
   it('rejects a redeclared id', async () => {
-    const { settled } = feed([
-      preamble(),
-      promiseNode(1),
-      numberNode(1, 1),
-      root(1),
-    ]);
+    const { settled } = feed([preamble(), promiseNode(1), numberNode(1, 1), root(1)]);
     expect((await settled).status).toBe('rejected');
   });
 
@@ -178,28 +162,15 @@ describe('binary decoder checks', () => {
   });
 
   it('rejects a second Pending for the same container', async () => {
-    const { settled } = feed([
-      preamble(),
-      objectNode(1),
-      pending(1, 0),
-      pending(1, 0),
-      root(1),
-    ]);
+    const { settled } = feed([preamble(), objectNode(1), pending(1, 0), pending(1, 0), root(1)]);
     expect((await settled).status).toBe('rejected');
   });
 
   it('rejects a promise that settles with itself', async () => {
-    const { settled } = feed([
-      preamble(),
-      promiseNode(1),
-      root(1),
-      promiseSuccess(1, 1),
-    ]);
+    const { settled } = feed([preamble(), promiseNode(1), root(1), promiseSuccess(1, 1)]);
     const result = await settled;
     if (result.status === 'resolved') {
-      await expect(result.value as Promise<unknown>).rejects.toBeInstanceOf(
-        Error,
-      );
+      await expect(result.value as Promise<unknown>).rejects.toBeInstanceOf(Error);
     } else {
       expect(result.status).toBe('rejected');
     }
@@ -215,9 +186,7 @@ describe('binary decoder checks', () => {
     ]);
     const result = await settled;
     if (result.status === 'resolved') {
-      await expect(result.value as Promise<unknown>).rejects.toBeInstanceOf(
-        Error,
-      );
+      await expect(result.value as Promise<unknown>).rejects.toBeInstanceOf(Error);
     } else {
       expect(result.status).toBe('rejected');
     }
@@ -296,11 +265,11 @@ describe('binary decoder value handling', () => {
     source.return(Promise.resolve(2));
     const { value } = await roundtrip<Stream<Promise<number>>>(source);
     const seen: unknown[] = [];
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       value.on({
-        next: v => seen.push(v),
+        next: (v) => seen.push(v),
         throw: () => resolve(),
-        return: v => {
+        return: (v) => {
           seen.push(v);
           resolve();
         },
@@ -318,7 +287,7 @@ describe('binary decoder value handling', () => {
         { text: 'x'.repeat(2000), list: [1, 2, 3] },
         {
           refs: new Map(),
-          onSerialize: bytes => {
+          onSerialize: (bytes) => {
             chunks.push(bytes);
           },
           onDone: resolve,

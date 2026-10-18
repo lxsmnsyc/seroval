@@ -39,11 +39,7 @@ interface Delivery<T> {
   errors: unknown[];
 }
 
-async function deliver<T>(
-  tag: string,
-  data: unknown,
-  plugins: AnyPlugin[],
-): Promise<Delivery<T>> {
+async function deliver<T>(tag: string, data: unknown, plugins: AnyPlugin[]): Promise<Delivery<T>> {
   const forged = forge(tag, data);
   const handle = startSerialize(forged.sentinel, [forged.plugin]);
   handle.done.catch(() => undefined);
@@ -58,8 +54,8 @@ async function deliver<T>(
   });
 
   return await received.then(
-    result => ({ ok: true, value: result.value, errors }),
-    error => {
+    (result) => ({ ok: true, value: result.value, errors }),
+    (error) => {
       errors.push(error);
       return { ok: false, errors };
     },
@@ -95,9 +91,7 @@ describe('plugin binary hostile payloads', () => {
       );
       expect(result.ok).toBe(true);
       expect(result.value?.get('__proto__')).toBe('polluted');
-      expect(
-        ({} as unknown as Record<string, unknown>).polluted,
-      ).toBeUndefined();
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
     });
 
     it('rejects a payload that is not a HeadersInit', async () => {
@@ -134,11 +128,9 @@ describe('plugin binary hostile payloads', () => {
     });
 
     it('rejects a payload that is not a URL', async () => {
-      const result = await deliver<URL>(
-        'seroval-plugins/web/URL',
-        { value: 'not a url' },
-        [URLPlugin],
-      );
+      const result = await deliver<URL>('seroval-plugins/web/URL', { value: 'not a url' }, [
+        URLPlugin,
+      ]);
       expect(result.ok).toBe(false);
       expect(result.errors[0]).toBeInstanceOf(TypeError);
     });
@@ -162,9 +154,7 @@ describe('plugin binary hostile payloads', () => {
       );
       expect(result.ok).toBe(true);
       expect(result.value?.get('__proto__')).toBe('polluted');
-      expect(
-        ({} as unknown as Record<string, unknown>).polluted,
-      ).toBeUndefined();
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
     });
   });
 
@@ -177,17 +167,13 @@ describe('plugin binary hostile payloads', () => {
       );
       expect(result.ok).toBe(true);
       expect(result.value?.get('__proto__')).toBe('polluted');
-      expect(
-        ({} as unknown as Record<string, unknown>).polluted,
-      ).toBeUndefined();
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
     });
 
     it('rejects entries that are not pairs', async () => {
-      const result = await deliver<FormData>(
-        'seroval-plugins/web/FormData',
-        { entries: [null] },
-        [FormDataPlugin],
-      );
+      const result = await deliver<FormData>('seroval-plugins/web/FormData', { entries: [null] }, [
+        FormDataPlugin,
+      ]);
       expect(result.ok).toBe(false);
     });
 
@@ -277,11 +263,9 @@ describe('plugin binary hostile payloads', () => {
     });
 
     it('rejects a missing stream', async () => {
-      const result = await deliver<ReadableStream>(
-        'seroval/plugins/web/ReadableStream',
-        {},
-        [ReadableStreamPlugin],
-      );
+      const result = await deliver<ReadableStream>('seroval/plugins/web/ReadableStream', {}, [
+        ReadableStreamPlugin,
+      ]);
       expect(result.ok).toBe(false);
     });
   });
@@ -299,11 +283,9 @@ describe('plugin binary hostile payloads', () => {
     });
 
     it('rejects a payload with neither reason nor controller', async () => {
-      const result = await deliver<AbortSignal>(
-        'seroval-plugins/web/AbortSignal',
-        {},
-        [AbortSignalPlugin],
-      );
+      const result = await deliver<AbortSignal>('seroval-plugins/web/AbortSignal', {}, [
+        AbortSignalPlugin,
+      ]);
       expect(result.ok).toBe(false);
       expect(result.errors[0]).toBeInstanceOf(TypeError);
     });

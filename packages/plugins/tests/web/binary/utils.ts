@@ -33,14 +33,14 @@ export function createTransport(): Transport {
       if (queue.length > 0) {
         return Promise.resolve(queue.shift());
       }
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         readers.push(resolve);
       });
     },
   };
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: plugins are heterogeneous
+// oxlint-disable-next-line typescript/no-explicit-any -- Plugins are heterogeneous.
 export type AnyPlugin = any;
 
 export interface SerializeHandle {
@@ -49,10 +49,7 @@ export interface SerializeHandle {
   transport: Transport;
 }
 
-export function startSerialize(
-  value: unknown,
-  plugins: AnyPlugin[],
-): SerializeHandle {
+export function startSerialize(value: unknown, plugins: AnyPlugin[]): SerializeHandle {
   const transport = createTransport();
   let resolveDone!: () => void;
   let rejectDone!: (error: unknown) => void;
@@ -107,13 +104,10 @@ export async function roundtrip<T>(
 }
 
 /** Resolves with the error the serializer reported, or undefined on success. */
-export function captureSerializeError(
-  value: unknown,
-  plugins: AnyPlugin[],
-): Promise<unknown> {
+export function captureSerializeError(value: unknown, plugins: AnyPlugin[]): Promise<unknown> {
   return startSerialize(value, plugins).done.then(
     () => undefined,
-    error => error,
+    (error) => error,
   );
 }
 
@@ -160,8 +154,7 @@ export const TYPE = {
 export const CONSTANT = { Null: 0, Undefined: 1, True: 2, False: 3 } as const;
 
 export const preamble = () => node(TYPE.Preamble, 1);
-export const constant = (id: number, tag: number) =>
-  node(TYPE.Constant, u32(id), tag);
+export const constant = (id: number, tag: number) => node(TYPE.Constant, u32(id), tag);
 export const stringNode = (id: number, value: string) => {
   const encoded = new TextEncoder().encode(value);
   return node(TYPE.String, u32(id), u32(encoded.length), encoded);
@@ -169,8 +162,7 @@ export const stringNode = (id: number, value: string) => {
 export const objectNode = (id: number) => node(TYPE.Object, u32(id));
 export const objectAssign = (id: number, key: number, value: number) =>
   node(TYPE.ObjectAssign, u32(id), u32(key), u32(value));
-export const pending = (id: number, amount: number) =>
-  node(TYPE.Pending, u32(id), u32(amount));
+export const pending = (id: number, amount: number) => node(TYPE.Pending, u32(id), u32(amount));
 export const pluginNode = (id: number, tag: number, options: number) =>
   node(TYPE.Plugin, u32(id), u32(tag), u32(options));
 export const root = (id: number) => node(TYPE.Root, u32(id));
@@ -193,7 +185,7 @@ export function feed(chunks: Uint8Array[], plugins: AnyPlugin[]): Attempt {
   });
   // A node that fails while constructing a value rejects the ref it owns,
   // which surfaces on the root rather than through `onError`.
-  value.catch(error => {
+  value.catch((error) => {
     errors.push(error);
   });
   for (const chunk of chunks) {

@@ -40,9 +40,7 @@ describe('binary TypedArray', () => {
   });
 
   it('supports Uint8ClampedArray', async () => {
-    const { value } = await roundtrip<Uint8ClampedArray>(
-      new Uint8ClampedArray([0, 128, 255]),
-    );
+    const { value } = await roundtrip<Uint8ClampedArray>(new Uint8ClampedArray([0, 128, 255]));
     expect(value).toBeInstanceOf(Uint8ClampedArray);
     expect([...value]).toEqual([0, 128, 255]);
   });
@@ -82,9 +80,7 @@ describe('binary TypedArray', () => {
 
   it('supports views with a byte offset', async () => {
     const buffer = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]).buffer;
-    const { value } = await roundtrip<Uint8Array>(
-      new Uint8Array(buffer, 2, 4),
-    );
+    const { value } = await roundtrip<Uint8Array>(new Uint8Array(buffer, 2, 4));
     expect(value.byteOffset).toBe(2);
     expect([...value]).toEqual([3, 4, 5, 6]);
     expect(value.buffer.byteLength).toBe(8);

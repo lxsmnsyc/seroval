@@ -46,11 +46,7 @@ export class SerovalError extends Error {
     type: string,
     public cause: unknown,
   ) {
-    super(
-      import.meta.env.PROD
-        ? getErrorMessageProd(type)
-        : getErrorMessageDev(type, cause),
-    );
+    super(import.meta.env.PROD ? getErrorMessageProd(type) : getErrorMessageDev(type, cause));
   }
 }
 
@@ -84,11 +80,12 @@ const enum SpecificErrorCodes {
   ConflictedNodeId = 9,
   DepthLimit = 10,
   Aborted = 11,
-  MalformedBinarySource = 12,
-  MalformedBinaryType = 13,
-  UnknownBinaryType = 14,
-  UnexpectedBinaryType = 15,
-  MissingBinaryRef = 16,
+  LiveStream = 12,
+  MalformedBinarySource = 13,
+  MalformedBinaryType = 14,
+  UnknownBinaryType = 15,
+  UnexpectedBinaryType = 16,
+  MissingBinaryRef = 17,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -139,6 +136,10 @@ export class SerovalMissingInstanceError extends Error {
   }
 }
 
+/**
+ * @deprecated Not thrown by seroval. A missing `createReference` key throws
+ * {@link SerovalMissingReferenceForIdError} instead.
+ */
 export class SerovalMissingReferenceError extends Error {
   constructor(public value: unknown) {
     super(
@@ -254,11 +255,7 @@ export class SerovalMissingBinaryRefError extends Error {
 }
 
 export class SerovalUnexpectedBinaryTypeError extends Error {
-  constructor(
-    from: SerovalBinaryType,
-    expected: SerovalBinaryType,
-    received: SerovalBinaryType,
-  ) {
+  constructor(from: SerovalBinaryType, expected: SerovalBinaryType, received: SerovalBinaryType) {
     super(
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnexpectedBinaryType)
@@ -267,11 +264,7 @@ export class SerovalUnexpectedBinaryTypeError extends Error {
   }
 }
 
-export type LiveStreamErrorReason =
-  | 'consumed'
-  | 'pending'
-  | 'reading'
-  | 'closed';
+export type LiveStreamErrorReason = 'consumed' | 'pending' | 'reading' | 'closed';
 
 const LIVE_STREAM_ERROR_MESSAGES: Record<LiveStreamErrorReason, string> = {
   consumed: 'Live stream already has a consumer',
@@ -284,7 +277,7 @@ export class SerovalLiveStreamError extends Error {
   constructor(public reason: LiveStreamErrorReason) {
     super(
       import.meta.env.PROD
-        ? 'Live stream error: ' + reason
+        ? getSpecificErrorMessage(SpecificErrorCodes.LiveStream)
         : LIVE_STREAM_ERROR_MESSAGES[reason],
     );
   }

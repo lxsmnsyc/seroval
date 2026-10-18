@@ -51,9 +51,7 @@ export type DeserializeOptions = DeserializerContextOptions;
  *
  * @returns A promise for `{ value }`, the decoded value.
  */
-export async function deserialize<T>(
-  options: DeserializeOptions,
-): Promise<{ value: T }> {
+export async function deserialize<T>(options: DeserializeOptions): Promise<{ value: T }> {
   const plugins = resolvePlugins(options.plugins);
   const context = createDeserializerContext({
     ...options,

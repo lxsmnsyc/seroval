@@ -33,9 +33,7 @@ describe('binary OpaqueReference', () => {
   });
 
   it('hides values that could not otherwise be serialized', async () => {
-    const { value } = await roundtrip<unknown[]>([
-      new OpaqueReference(() => 'not serializable'),
-    ]);
+    const { value } = await roundtrip<unknown[]>([new OpaqueReference(() => 'not serializable')]);
     expect(value).toEqual([undefined]);
   });
 });

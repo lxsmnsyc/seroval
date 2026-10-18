@@ -2,7 +2,6 @@ import {
   createArrayNode,
   createBigIntNode,
   createBoxedNode,
-  createDataViewNode,
   createDateNode,
   createErrorNode,
   createIteratorFactoryInstanceNode,
@@ -14,24 +13,16 @@ import {
   createStreamConstructorNode,
   createStringNode,
   createTemporalNode,
-  createTypedArrayNode,
+  createViewNode,
 } from '../base-primitives';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
-import { NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
-import {
-  SerovalDepthLimitError,
-  SerovalParserError,
-  SerovalUnsupportedTypeError,
-} from '../errors';
+import { NIL, SerovalNodeType } from '../constants';
+import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
-import { isLiveStream, type LiveStream } from '../live-stream';
+import { type LiveStream, isLiveStream } from '../live-stream';
 import { OpaqueReference } from '../opaque-reference';
 import type { Plugin } from '../plugin';
-import {
-  createSequenceFromIterable,
-  isSequence,
-  type Sequence,
-} from '../sequence';
+import { type Sequence, createSequenceFromIterable, isSequence } from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
 import { isStream } from '../stream';
@@ -65,6 +56,7 @@ import type {
 import { getErrorOptions } from '../utils/error';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
+  ObjectKind,
   createArrayBufferNode,
   createBaseParserContext,
   createIndexForValue,
@@ -76,7 +68,6 @@ import {
   getObjectKind,
   getReferenceNode,
   getTemporalType,
-  ObjectKind,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseSpecialReference,
@@ -96,24 +87,15 @@ export interface SyncParserContext {
   base: BaseParserContext;
 }
 
-export function createSyncParserContext(
-  options: SyncParserContextOptions,
-): SyncParserContext {
+export function createSyncParserContext(options: SyncParserContextOptions): SyncParserContext {
   return {
     type: ParserMode.Sync,
     base: createBaseParserContext(options),
   };
 }
 
-export class SyncParsePluginContext {
-  constructor(
-    private _p: SOSParserContext,
-    private depth: number,
-  ) {}
-
-  parse<T>(current: T): SerovalNode {
-    return parseSOS(this._p, this.depth, current);
-  }
+export interface SyncParsePluginContext {
+  parse<T>(current: T): SerovalNode;
 }
 
 export interface StreamParserContextOptions extends SyncParserContextOptions {
@@ -157,9 +139,7 @@ export interface StreamParserState {
   // Why the parse stopped early, handed to live stream sources on cleanup.
   reason: unknown;
   // Callbacks
-  onParse:
-    | ((node: SerovalNode, initial: boolean) => void | PromiseLike<void>)
-    | undefined;
+  onParse: ((node: SerovalNode, initial: boolean) => void | PromiseLike<void>) | undefined;
   onError?: (error: unknown) => void;
   onDone?: () => void;
 
@@ -167,18 +147,8 @@ export interface StreamParserState {
 
   // Streaming-mode behavior, set by `createStreamParserContext` so that
   // synchronous consumers never bundle it.
-  stream: (
-    ctx: StreamParserContext,
-    depth: number,
-    id: number,
-    current: Stream<unknown>,
-  ) => void;
-  live: (
-    ctx: StreamParserContext,
-    depth: number,
-    id: number,
-    current: LiveStream<unknown>,
-  ) => void;
+  stream: (ctx: StreamParserContext, depth: number, id: number, current: Stream<unknown>) => void;
+  live: (ctx: StreamParserContext, depth: number, id: number, current: LiveStream<unknown>) => void;
   promise: (
     ctx: StreamParserContext,
     resolver: number,
@@ -196,19 +166,16 @@ export interface StreamParserState {
     depth: number,
     id: number,
     current: unknown,
+    // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
     plugins: Plugin<any, any>[],
   ) => SerovalPluginNode | undefined;
 }
 
 type SOSParserContext = SyncParserContext | StreamParserContext;
 
-function parseItems(
-  ctx: SOSParserContext,
-  depth: number,
-  current: unknown[],
-): (SerovalNode | 0)[] {
+function parseItems(ctx: SOSParserContext, depth: number, current: unknown[]): (SerovalNode | 0)[] {
   const len = current.length;
-  const nodes: (SerovalNode | 0)[] = new Array(len);
+  const nodes = new Array<SerovalNode | 0>(len);
   for (let i = 0; i < len; i++) {
     if (i in current) {
       nodes[i] = parseSOS(ctx, depth, current[i]);
@@ -237,8 +204,8 @@ function parseProperties(
   const len = keys.length;
   // Sized up front: `push` from empty over-allocates the backing store for
   // every object, and the length is already known.
-  const keyNodes: SerovalObjectRecordKey[] = new Array(len);
-  const valueNodes: SerovalNode[] = new Array(len);
+  const keyNodes = new Array<SerovalObjectRecordKey>(len);
+  const valueNodes = new Array<SerovalNode>(len);
   for (let i = 0, key: string; i < len; i++) {
     key = keys[i];
     keyNodes[i] = serializeString(key);
@@ -254,9 +221,7 @@ function parseProperties(
         parseSOS(
           ctx,
           depth,
-          createSequenceFromIterable(
-            properties as unknown as Iterable<unknown>,
-          ),
+          createSequenceFromIterable(properties as unknown as Iterable<unknown>),
         ) as SerovalNodeWithID,
       ),
     );
@@ -281,9 +246,7 @@ function parseProperties(
   }
   if (SYM_IS_CONCAT_SPREADABLE in properties) {
     keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_IS_CONCAT_SPREADABLE));
-    valueNodes.push(
-      properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE,
-    );
+    valueNodes.push(properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE);
   }
   return {
     k: keyNodes,
@@ -317,12 +280,7 @@ function parsePlainObject(
   current: Record<string, unknown>,
   empty: boolean,
 ): ObjectLikeNode {
-  return createObjectNode(
-    id,
-    current,
-    empty,
-    parseProperties(ctx, depth, current),
-  );
+  return createObjectNode(id, current, empty, parseProperties(ctx, depth, current));
 }
 
 function parseBoxed(
@@ -334,30 +292,15 @@ function parseBoxed(
   return createBoxedNode(id, parseSOS(ctx, depth, current.valueOf()));
 }
 
-function parseTypedArray(
+function parseView(
   ctx: SOSParserContext,
   depth: number,
-  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray,
+  type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray | SerovalNodeType.DataView,
   id: number,
-  current: TypedArrayValue | BigIntTypedArrayValue,
-): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode {
+  current: TypedArrayValue | BigIntTypedArrayValue | DataView,
+): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode {
   current = getArrayBufferView(ctx.base, current);
-  return createTypedArrayNode(
-    type,
-    id,
-    current,
-    parseSOS(ctx, depth, current.buffer),
-  );
-}
-
-function parseDataView(
-  ctx: SOSParserContext,
-  depth: number,
-  id: number,
-  current: DataView,
-): SerovalDataViewNode {
-  current = getArrayBufferView(ctx.base, current);
-  return createDataViewNode(id, current, parseSOS(ctx, depth, current.buffer));
+  return createViewNode(type, id, current, parseSOS(ctx, depth, current.buffer));
 }
 
 function parseError(
@@ -368,12 +311,7 @@ function parseError(
   current: Error,
 ): SerovalErrorNode | SerovalAggregateErrorNode {
   const options = getErrorOptions(current, ctx.base.features);
-  return createErrorNode(
-    type,
-    id,
-    current,
-    options ? parseProperties(ctx, depth, options) : NIL,
-  );
+  return createErrorNode(type, id, current, options ? parseProperties(ctx, depth, options) : NIL);
 }
 
 function parseMap(
@@ -382,8 +320,8 @@ function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
-  const keyNodes: SerovalNode[] = new Array(current.size);
-  const valueNodes: SerovalNode[] = new Array(current.size);
+  const keyNodes = new Array<SerovalNode>(current.size);
+  const valueNodes = new Array<SerovalNode>(current.size);
   let i = 0;
   for (const [key, value] of current.entries()) {
     keyNodes[i] = parseSOS(ctx, depth, key);
@@ -399,7 +337,7 @@ function parseSet(
   id: number,
   current: Set<unknown>,
 ): SerovalSetNode {
-  const items: SerovalNode[] = new Array(current.size);
+  const items = new Array<SerovalNode>(current.size);
   let i = 0;
   for (const item of current.keys()) {
     items[i++] = parseSOS(ctx, depth, item);
@@ -451,11 +389,14 @@ function parsePromise(
   id: number,
   current: Promise<unknown>,
 ): SerovalPromiseConstructorNode {
+  // Only the stream mode can send the settled value later. The other sync
+  // modes would send a promise that never settles.
+  if (ctx.type !== ParserMode.Stream) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
   // Creates a unique reference for the promise resolver
   const resolver = createIndexForValue(ctx.base, {});
-  if (ctx.type === ParserMode.Stream) {
-    ctx.state.promise(ctx, resolver, depth, current);
-  }
+  ctx.state.promise(ctx, resolver, depth, current);
   return createPromiseConstructorNode(ctx.base, id, resolver);
 }
 
@@ -464,6 +405,7 @@ function parsePluginSync(
   depth: number,
   id: number,
   current: unknown,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   currentPlugins: Plugin<any, any>[],
 ): SerovalPluginNode | undefined {
   for (let i = 0, len = currentPlugins.length; i < len; i++) {
@@ -472,9 +414,14 @@ function parsePluginSync(
       return createPluginNode(
         id,
         plugin.tag,
-        plugin.parse.sync(current, new SyncParsePluginContext(ctx, depth), {
-          id,
-        }),
+        // oxlint-disable-next-line no-unsafe-argument -- Plugin info is any because plugins are stored as Plugin<any, any>.
+        plugin.parse.sync(
+          current,
+          { parse: (value) => parseSOS(ctx, depth, value) },
+          {
+            id,
+          },
+        ),
       );
     }
   }
@@ -503,7 +450,7 @@ function parseSequence(
   current: Sequence,
 ): SerovalSequenceNode {
   const len = current.v.length;
-  const nodes: SerovalNode[] = new Array(len);
+  const nodes = new Array<SerovalNode>(len);
   for (let i = 0; i < len; i++) {
     nodes[i] = parseSOS(ctx, depth, current.v[i]);
   }
@@ -519,33 +466,15 @@ function parseObjectPhase2(
 ): SerovalNode {
   // Plain objects dominate real payloads; skip the classifier for them.
   if (currentClass === Object) {
-    return parsePlainObject(
-      ctx,
-      depth,
-      id,
-      current as Record<string, unknown>,
-      false,
-    );
+    return parsePlainObject(ctx, depth, id, current as Record<string, unknown>, false);
   }
   switch (getObjectKind(current, currentClass, ctx.base.features)) {
     case ObjectKind.NullObject:
-      return parsePlainObject(
-        ctx,
-        depth,
-        id,
-        current as Record<string, unknown>,
-        true,
-      );
+      return parsePlainObject(ctx, depth, id, current as Record<string, unknown>, true);
     case ObjectKind.Date:
       return createDateNode(id, current as unknown as Date);
     case ObjectKind.Error:
-      return parseError(
-        ctx,
-        depth,
-        SerovalNodeType.Error,
-        id,
-        current as unknown as Error,
-      );
+      return parseError(ctx, depth, SerovalNodeType.Error, id, current as unknown as Error);
     case ObjectKind.AggregateError:
       return parseError(
         ctx,
@@ -557,13 +486,9 @@ function parseObjectPhase2(
     case ObjectKind.Boxed:
       return parseBoxed(ctx, depth, id, current);
     case ObjectKind.ArrayBuffer:
-      return createArrayBufferNode(
-        ctx.base,
-        id,
-        current as unknown as ArrayBuffer,
-      );
+      return createArrayBufferNode(ctx.base, id, current as unknown as ArrayBuffer);
     case ObjectKind.TypedArray:
-      return parseTypedArray(
+      return parseView(
         ctx,
         depth,
         SerovalNodeType.TypedArray,
@@ -571,7 +496,7 @@ function parseObjectPhase2(
         current as unknown as TypedArrayValue,
       );
     case ObjectKind.BigIntTypedArray:
-      return parseTypedArray(
+      return parseView(
         ctx,
         depth,
         SerovalNodeType.BigIntTypedArray,
@@ -579,40 +504,24 @@ function parseObjectPhase2(
         current as unknown as BigIntTypedArrayValue,
       );
     case ObjectKind.DataView:
-      return parseDataView(ctx, depth, id, current as unknown as DataView);
+      return parseView(ctx, depth, SerovalNodeType.DataView, id, current as unknown as DataView);
     case ObjectKind.Map:
-      return parseMap(
-        ctx,
-        depth,
-        id,
-        current as unknown as Map<unknown, unknown>,
-      );
+      return parseMap(ctx, depth, id, current as unknown as Map<unknown, unknown>);
     case ObjectKind.Set:
       return parseSet(ctx, depth, id, current as unknown as Set<unknown>);
     case ObjectKind.Promise:
-      return parsePromise(
-        ctx,
-        depth,
-        id,
-        current as unknown as Promise<unknown>,
-      );
+      return parsePromise(ctx, depth, id, current as unknown as Promise<unknown>);
     case ObjectKind.RegExp:
       return createRegExpNode(id, current as unknown as RegExp);
     case ObjectKind.Temporal:
       return createTemporalNode(
         id,
-        getTemporalType(currentClass) as SerovalTemporalType,
+        getTemporalType(currentClass)!,
         current as unknown as Temporal.Instant,
       );
     case ObjectKind.Iterable:
       // Generator objects have no global constructor despite existing
-      return parsePlainObject(
-        ctx,
-        depth,
-        id,
-        current as Record<string, unknown>,
-        !!currentClass,
-      );
+      return parsePlainObject(ctx, depth, id, current as Record<string, unknown>, !!currentClass);
     default:
       throw new SerovalUnsupportedTypeError(current);
   }
@@ -637,11 +546,7 @@ function parseObject(
   }
   const currentClass = getObjectClass(current);
   if (currentClass === OpaqueReference) {
-    return parseSOS(
-      ctx,
-      depth,
-      (current as OpaqueReference<unknown, unknown>).replacement,
-    );
+    return parseSOS(ctx, depth, (current as OpaqueReference<unknown, unknown>).replacement);
   }
   const parsed = parsePlugin(ctx, depth, id, current);
   if (parsed) {
@@ -650,11 +555,7 @@ function parseObject(
   return parseObjectPhase2(ctx, depth, id, current, currentClass);
 }
 
-function parseFunction(
-  ctx: SOSParserContext,
-  depth: number,
-  current: unknown,
-): SerovalNode {
+function parseFunction(ctx: SOSParserContext, depth: number, current: unknown): SerovalNode {
   const ref = getReferenceNode(ctx.base, current);
   if (typeof ref !== 'number') {
     return ref;
@@ -666,11 +567,7 @@ function parseFunction(
   throw new SerovalUnsupportedTypeError(current);
 }
 
-export function parseSOS<T>(
-  ctx: SOSParserContext,
-  depth: number,
-  current: T,
-): SerovalNode {
+export function parseSOS(ctx: SOSParserContext, depth: number, current: unknown): SerovalNode {
   if (depth >= ctx.base.depthLimit) {
     throw new SerovalDepthLimitError(ctx.base.depthLimit);
   }
@@ -680,17 +577,15 @@ export function parseSOS<T>(
     case 'undefined':
       return UNDEFINED_NODE;
     case 'string':
-      return createStringNode(current as string);
+      return createStringNode(current);
     case 'number':
-      return createNumberNode(current as number);
+      return createNumberNode(current);
     case 'bigint':
-      return createBigIntNode(current as bigint);
+      return createBigIntNode(current);
     case 'object': {
       if (current) {
         const ref = getReferenceNode(ctx.base, current);
-        return typeof ref === 'number'
-          ? parseObject(ctx, depth + 1, ref, current as object)
-          : ref;
+        return typeof ref === 'number' ? parseObject(ctx, depth + 1, ref, current) : ref;
       }
       return NULL_NODE;
     }
@@ -704,12 +599,10 @@ export function parseSOS<T>(
   }
 }
 
-export function parseTop<T>(ctx: SyncParserContext, current: T): SerovalNode {
+export function parseTop(ctx: SyncParserContext, current: unknown): SerovalNode {
   try {
     return parseSOS(ctx, 0, current);
   } catch (error) {
-    throw error instanceof SerovalParserError
-      ? error
-      : new SerovalParserError(error);
+    throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
   }
 }

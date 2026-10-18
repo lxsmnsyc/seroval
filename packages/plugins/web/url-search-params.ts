@@ -34,7 +34,7 @@ const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<
     return 'new URLSearchParams(' + ctx.serialize(node.value) + ')';
   },
   deserialize(node, ctx) {
-    return new URLSearchParams(ctx.deserialize(node.value) as string);
+    return new URLSearchParams(ctx.deserialize<string>(node.value));
   },
   binary: {
     serialize(value) {

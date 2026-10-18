@@ -1,7 +1,12 @@
-export default () => {
-  const parent = {
+interface Parent {
+  name: string;
+  child?: { parent: Parent };
+}
+
+const circularSimple = (): Parent => {
+  const parent: Parent = {
     name: 'parent',
-  } as { name: string; child: typeof child };
+  };
 
   const child = { parent };
 
@@ -9,3 +14,5 @@ export default () => {
 
   return parent;
 };
+
+export default circularSimple;

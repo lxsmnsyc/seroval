@@ -1,10 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import {
-  fromJSON,
-  SerovalDeserializationError,
-  SerovalMalformedNodeError,
-  toJSON,
-} from '../src';
+import { assert, describe, expect, it } from 'vitest';
+import { SerovalDeserializationError, SerovalMalformedNodeError, fromJSON, toJSON } from '../src';
 import { SerovalNodeType } from '../src/core/constants';
 
 function cause(callback: () => unknown): unknown {
@@ -32,21 +27,14 @@ describe('decoder validation ordering', () => {
         throw new Error('buffer read first');
       },
     });
-    expect(cause(() => fromJSON(json))).toBeInstanceOf(
-      SerovalMalformedNodeError,
-    );
+    expect(cause(() => fromJSON(json))).toBeInstanceOf(SerovalMalformedNodeError);
   });
 
   it.each(['typed', 'data'] as const)(
     'deserializes the %s buffer before offset validation',
-    kind => {
-      const json = toJSON(
-        kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)),
-      );
-      if (
-        json.t.t !== SerovalNodeType.TypedArray &&
-        json.t.t !== SerovalNodeType.DataView
-      ) {
+    (kind) => {
+      const json = toJSON(kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)));
+      if (json.t.t !== SerovalNodeType.TypedArray && json.t.t !== SerovalNodeType.DataView) {
         throw new Error('Wrong fixture');
       }
       const failure = new Error('buffer first');
@@ -62,21 +50,16 @@ describe('decoder validation ordering', () => {
 
   it.each(['typed', 'data'] as const)(
     'validates the %s offset before registering its id',
-    kind => {
-      const json = toJSON(
-        kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)),
-      );
-      if (
-        json.t.t !== SerovalNodeType.TypedArray &&
-        json.t.t !== SerovalNodeType.DataView
-      ) {
+    (kind) => {
+      const json = toJSON(kind === 'typed' ? new Uint8Array(2) : new DataView(new ArrayBuffer(2)));
+      if (json.t.t !== SerovalNodeType.TypedArray && json.t.t !== SerovalNodeType.DataView) {
         throw new Error('Wrong fixture');
       }
       json.t.b = -1;
       json.t.i = -1;
       const error = cause(() => fromJSON(json));
-      expect(error).toBeInstanceOf(SerovalMalformedNodeError);
-      expect((error as Error).message).toContain(`"${json.t.t}"`);
+      assert(error instanceof SerovalMalformedNodeError);
+      expect(error.message).toContain(`"${json.t.t}"`);
     },
   );
 });

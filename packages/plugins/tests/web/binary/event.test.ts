@@ -31,10 +31,7 @@ describe('binary Event', () => {
   });
 
   it('supports Events nested in structures', async () => {
-    const { value } = await roundtrip<{ event: Event }>(
-      { event: new Event('nested') },
-      PLUGINS,
-    );
+    const { value } = await roundtrip<{ event: Event }>({ event: new Event('nested') }, PLUGINS);
     expect(value.event).toBeInstanceOf(Event);
     expect(value.event.type).toBe('nested');
   });
@@ -56,10 +53,7 @@ describe('binary CustomEvent', () => {
   });
 
   it('supports a null detail', async () => {
-    const { value } = await roundtrip<CustomEvent>(
-      new CustomEvent('empty'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<CustomEvent>(new CustomEvent('empty'), PLUGINS);
     expect(value.detail).toBe(null);
   });
 
@@ -103,10 +97,7 @@ describe('binary CustomEvent', () => {
     }
     const detail: Cyclic = {};
     detail.self = detail;
-    const { value } = await roundtrip<CustomEvent>(
-      new CustomEvent('cyclic', { detail }),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<CustomEvent>(new CustomEvent('cyclic', { detail }), PLUGINS);
     const back = value.detail as Cyclic;
     expect(back.self).toBe(back);
   });

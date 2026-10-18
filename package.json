@@ -3,16 +3,20 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "benchmark"
+    "benchmark",
+    "website"
   ],
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.14",
-    "@changesets/cli": "^3.0.3",
-    "typescript": "^7.0.2"
-  },
   "scripts": {
     "cs:ver": "changeset version",
     "cs:pub": "changeset publish",
     "cs:add": "changeset add"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "@lxsmnsyc/oxlint-config": "^0.1.2",
+    "oxfmt": "^0.73.0",
+    "oxlint": "^1.77.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "typescript": "^7.0.2"
   }
 }

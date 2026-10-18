@@ -47,7 +47,7 @@ export function isStream<T>(value: object): value is Stream<T> {
 
 /** Creates an empty {@link Stream} that can be driven manually. */
 export function createStream<T>(): Stream<T> {
-  return STREAM_CONSTRUCTOR() as unknown as Stream<T>;
+  return STREAM_CONSTRUCTOR();
 }
 
 /**
@@ -120,10 +120,6 @@ const createAsyncIterable = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR(
  * consumed with `for await`. Each call to the returned factory produces an
  * independent iterator over the stream's values.
  */
-export function streamToAsyncIterable<T>(
-  stream: Stream<T>,
-): () => AsyncIterableIterator<T> {
-  return createAsyncIterable(
-    stream,
-  ) as unknown as () => AsyncIterableIterator<T>;
+export function streamToAsyncIterable<T>(stream: Stream<T>): () => AsyncIterableIterator<T> {
+  return createAsyncIterable(stream) as unknown as () => AsyncIterableIterator<T>;
 }

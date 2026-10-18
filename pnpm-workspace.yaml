@@ -1,6 +1,7 @@
 packages:
   - packages/**/*
   - benchmark
+  - website
 onlyBuiltDependencies:
   - esbuild
 overrides:

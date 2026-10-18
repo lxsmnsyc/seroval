@@ -19,10 +19,7 @@ describe('binary File', () => {
   });
 
   it('supports empty File', async () => {
-    const { value } = await roundtrip<File>(
-      new File([], 'empty.bin'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<File>(new File([], 'empty.bin'), PLUGINS);
     expect(value).toBeInstanceOf(File);
     expect(value.size).toBe(0);
     expect(value.name).toBe('empty.bin');
@@ -40,10 +37,7 @@ describe('binary File', () => {
   it('keeps the name verbatim, including path-like names', async () => {
     // The plugin is not a file system writer: it must neither reject nor
     // rewrite the name, so consumers know they own that validation.
-    const { value } = await roundtrip<File>(
-      new File(['x'], '../../etc/passwd'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<File>(new File(['x'], '../../etc/passwd'), PLUGINS);
     expect(value.name).toBe('../../etc/passwd');
   });
 
@@ -96,10 +90,7 @@ describe('binary File', () => {
   });
 
   it('delivers a File at the root fully populated', async () => {
-    const { value } = await roundtrip<File>(
-      new File(['root'], 'root.txt'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<File>(new File(['root'], 'root.txt'), PLUGINS);
     expect(value).toBeInstanceOf(File);
     expect(await value.text()).toBe('root');
   });

@@ -53,18 +53,12 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<
     },
   },
   serialize(node, ctx) {
-    return (
-      'new CustomEvent(' +
-      ctx.serialize(node.type) +
-      ',' +
-      ctx.serialize(node.options) +
-      ')'
-    );
+    return 'new CustomEvent(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
   deserialize(node, ctx) {
     return new CustomEvent(
-      ctx.deserialize(node.type) as string,
-      ctx.deserialize(node.options) as CustomEventInit,
+      ctx.deserialize<string>(node.type),
+      ctx.deserialize<CustomEventInit>(node.options),
     );
   },
   binary: {

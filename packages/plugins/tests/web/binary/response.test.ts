@@ -22,10 +22,7 @@ describe('binary Response', () => {
   });
 
   it('supports a bodyless Response', async () => {
-    const { value } = await roundtrip<Response>(
-      new Response(null, { status: 204 }),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<Response>(new Response(null, { status: 204 }), PLUGINS);
     expect(value.status).toBe(204);
     expect(value.body).toBe(null);
   });
@@ -45,7 +42,7 @@ describe('binary Response', () => {
     const body = new ReadableStream<Uint8Array>({
       start(controller) {
         const encoder = new TextEncoder();
-        push = chunk => controller.enqueue(encoder.encode(chunk));
+        push = (chunk) => controller.enqueue(encoder.encode(chunk));
         stop = () => controller.close();
       },
     });

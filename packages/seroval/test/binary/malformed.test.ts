@@ -67,27 +67,22 @@ const CONSTANT = { Null: 0, Undefined: 1, True: 2 } as const;
 const FLAG = { Frozen: 3 } as const;
 
 const preamble = () => node(TYPE.Preamble, 1);
-const constant = (id: number, tag: number) =>
-  node(TYPE.Constant, u32(id), tag);
-const numberNode = (id: number, value: number) =>
-  node(TYPE.Number, u32(id), f64(value));
+const constant = (id: number, tag: number) => node(TYPE.Constant, u32(id), tag);
+const numberNode = (id: number, value: number) => node(TYPE.Number, u32(id), f64(value));
 const stringNode = (id: number, value: string) => {
   const encoded = new TextEncoder().encode(value);
   return node(TYPE.String, u32(id), u32(encoded.length), encoded);
 };
 const objectNode = (id: number) => node(TYPE.Object, u32(id));
-const arrayNode = (id: number, length: number) =>
-  node(TYPE.Array, u32(id), u32(length));
+const arrayNode = (id: number, length: number) => node(TYPE.Array, u32(id), u32(length));
 const mapNode = (id: number) => node(TYPE.Map, u32(id));
 const promiseNode = (id: number) => node(TYPE.Promise, u32(id));
 const objectAssign = (id: number, key: number, value: number) =>
   node(TYPE.ObjectAssign, u32(id), u32(key), u32(value));
 const arrayAssign = (id: number, index: number, value: number) =>
   node(TYPE.ArrayAssign, u32(id), u32(index), u32(value));
-const objectFlag = (id: number, flag: number) =>
-  node(TYPE.ObjectFlag, u32(id), flag);
-const pending = (id: number, amount: number) =>
-  node(TYPE.Pending, u32(id), u32(amount));
+const objectFlag = (id: number, flag: number) => node(TYPE.ObjectFlag, u32(id), flag);
+const pending = (id: number, amount: number) => node(TYPE.Pending, u32(id), u32(amount));
 const promiseSuccess = (id: number, value: number) =>
   node(TYPE.PromiseSuccess, u32(id), u32(value));
 const regexpNode = (id: number, pattern: number, flags: number) =>
@@ -95,13 +90,7 @@ const regexpNode = (id: number, pattern: number, flags: number) =>
 const root = (id: number) => node(TYPE.Root, u32(id));
 const arrayBufferNode = (id: number, bytes: Uint8Array) =>
   node(TYPE.ArrayBuffer, u32(id), u32(bytes.length), bytes);
-const typedArrayNode = (
-  id: number,
-  tag: number,
-  buffer: number,
-  offset: number,
-  length: number,
-) =>
+const typedArrayNode = (id: number, tag: number, buffer: number, offset: number, length: number) =>
   node(TYPE.TypedArray, u32(id), tag, u32(buffer), u32(offset), u32(length));
 const bigIntTypedArrayNode = (
   id: number,
@@ -109,21 +98,9 @@ const bigIntTypedArrayNode = (
   buffer: number,
   offset: number,
   length: number,
-) =>
-  node(
-    TYPE.BigIntTypedArray,
-    u32(id),
-    tag,
-    u32(buffer),
-    u32(offset),
-    u32(length),
-  );
-const dataViewNode = (
-  id: number,
-  buffer: number,
-  offset: number,
-  length: number,
-) => node(TYPE.DataView, u32(id), u32(buffer), u32(offset), u32(length));
+) => node(TYPE.BigIntTypedArray, u32(id), tag, u32(buffer), u32(offset), u32(length));
+const dataViewNode = (id: number, buffer: number, offset: number, length: number) =>
+  node(TYPE.DataView, u32(id), u32(buffer), u32(offset), u32(length));
 
 interface Attempt {
   value: Promise<{ value: unknown }>;
@@ -141,7 +118,7 @@ function feed(chunks: Uint8Array[], close = true): Attempt {
   });
   // A node that fails while *constructing* a value rejects the ref it owns,
   // which surfaces on the root instead of `onError`. Both count as rejected.
-  value.catch(error => {
+  value.catch((error) => {
     errors.push(error);
   });
   for (const chunk of chunks) {
@@ -182,12 +159,8 @@ describe('binary malformed input', () => {
       expect(attempt.errors).toEqual([]);
       expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
       expect(Object.hasOwn(value as object, '__proto__')).toBe(true);
-      expect(
-        ({} as unknown as Record<string, unknown>).polluted,
-      ).toBeUndefined();
-      expect(
-        (Object.prototype as unknown as Record<string, unknown>).polluted,
-      ).toBeUndefined();
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
+      expect((Object.prototype as unknown as Record<string, unknown>).polluted).toBeUndefined();
     });
 
     it('does not replace the prototype of a null-prototype target', async () => {
@@ -203,9 +176,7 @@ describe('binary malformed input', () => {
 
       const { value } = await attempt.value;
       expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
-      expect((value as Record<string, unknown>)['__proto__']).toBe(
-        'not a prototype',
-      );
+      expect((value as Record<string, unknown>)['__proto__']).toBe('not a prototype');
     });
 
     it('does not overwrite constructor on the prototype chain', async () => {
@@ -222,7 +193,7 @@ describe('binary malformed input', () => {
       const { value } = await attempt.value;
       expect(Object.hasOwn(value as object, 'constructor')).toBe(true);
       expect(Object.prototype.constructor).toBe(Object);
-      expect(({}).constructor).toBe(Object);
+      expect({}.constructor).toBe(Object);
     });
 
     it('rejects a non-string, non-symbol key', async () => {
@@ -308,23 +279,13 @@ describe('binary malformed input', () => {
     });
 
     it('rejects an ObjectFlag aimed at a Promise', async () => {
-      const attempt = feed([
-        preamble(),
-        promiseNode(1),
-        objectFlag(1, FLAG.Frozen),
-        root(1),
-      ]);
+      const attempt = feed([preamble(), promiseNode(1), objectFlag(1, FLAG.Frozen), root(1)]);
 
       await expectRejected(attempt);
     });
 
     it('rejects an ObjectFlag aimed at a Map', async () => {
-      const attempt = feed([
-        preamble(),
-        mapNode(1),
-        objectFlag(1, FLAG.Frozen),
-        root(1),
-      ]);
+      const attempt = feed([preamble(), mapNode(1), objectFlag(1, FLAG.Frozen), root(1)]);
 
       await expectRejected(attempt);
     });
@@ -342,7 +303,7 @@ describe('binary malformed input', () => {
           () => 'delivered',
           () => 'rejected',
         ),
-        new Promise(resolve => setTimeout(() => resolve('pending'), 10)),
+        new Promise((resolve) => setTimeout(() => resolve('pending'), 10)),
       ]);
       expect(delivered).toBe('rejected');
     });
@@ -366,7 +327,7 @@ describe('binary malformed input', () => {
           () => 'delivered',
           () => 'rejected',
         ),
-        new Promise(resolve => setTimeout(() => resolve('pending'), 20)),
+        new Promise((resolve) => setTimeout(() => resolve('pending'), 20)),
       ]);
       expect(delivered).toBe('rejected');
     });
@@ -441,11 +402,7 @@ describe('binary malformed input', () => {
 
     it('rejects a String node that claims more bytes than it has', async () => {
       const encoded = new TextEncoder().encode('short');
-      const attempt = feed([
-        preamble(),
-        node(TYPE.String, u32(1), u32(1000), encoded),
-        root(1),
-      ]);
+      const attempt = feed([preamble(), node(TYPE.String, u32(1), u32(1000), encoded), root(1)]);
       await expectRejected(attempt);
     });
 
@@ -509,13 +466,7 @@ describe('binary malformed input', () => {
       const attempt = feed([
         preamble(),
         arrayBufferNode(1, new Uint8Array(0)),
-        bigIntTypedArrayNode(
-          2,
-          BIG_INT_TYPED_ARRAY_TAG.BigInt64Array,
-          1,
-          0,
-          1_000_001,
-        ),
+        bigIntTypedArrayNode(2, BIG_INT_TYPED_ARRAY_TAG.BigInt64Array, 1, 0, 1_000_001),
         root(2),
       ]);
       await expectRejected(attempt);

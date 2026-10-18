@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { roundtrip } from './utils';
 
-function createNullObject(
-  source: Record<string, unknown>,
-): Record<string, unknown> {
+function createNullObject(source: Record<string, unknown>): Record<string, unknown> {
   return Object.assign(Object.create(null) as Record<string, unknown>, source);
 }
 

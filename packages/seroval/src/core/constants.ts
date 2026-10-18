@@ -135,7 +135,7 @@ export type WellKnownSymbols = (typeof SYMBOL_REF)[Symbols];
 function createSymbolStringTable(): Record<Symbols, string> {
   const result = {} as Record<Symbols, string>;
   for (let i: Symbols = 0; i <= Symbols.Unscopables; i++) {
-    result[i] = SYMBOL_REF[i].description as string;
+    result[i] = SYMBOL_REF[i].description!;
   }
   return result;
 }
@@ -166,7 +166,7 @@ export const CONSTANT_STRING: Record<SerovalConstant, string> = {
   [SerovalConstant.Nan]: '0/0',
 };
 
-export const NIL = void 0;
+export const NIL = undefined;
 
 // Global literals keep this table free of member accesses so bundlers can
 // drop it when unused (`Number.POSITIVE_INFINITY` is not known to be pure).
@@ -176,11 +176,8 @@ export const CONSTANT_VAL: Record<SerovalConstant, unknown> = {
   [SerovalConstant.Undefined]: NIL,
   [SerovalConstant.Null]: null,
   [SerovalConstant.NegZero]: -0,
-  // biome-ignore lint/style/useNumberNamespace: see above
   [SerovalConstant.Inf]: Infinity,
-  // biome-ignore lint/style/useNumberNamespace: see above
   [SerovalConstant.NegInf]: -Infinity,
-  // biome-ignore lint/style/useNumberNamespace: see above
   [SerovalConstant.Nan]: NaN,
 };
 
@@ -203,22 +200,18 @@ type ErrorConstructors =
   | TypeErrorConstructor
   | URIErrorConstructor;
 
-export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> =
-  {
-    [ErrorConstructorTag.Error]: Error,
-    [ErrorConstructorTag.EvalError]: EvalError,
-    [ErrorConstructorTag.RangeError]: RangeError,
-    [ErrorConstructorTag.ReferenceError]: ReferenceError,
-    [ErrorConstructorTag.SyntaxError]: SyntaxError,
-    [ErrorConstructorTag.TypeError]: TypeError,
-    [ErrorConstructorTag.URIError]: URIError,
-  };
+export const ERROR_CONSTRUCTOR: Record<ErrorConstructorTag, ErrorConstructors> = {
+  [ErrorConstructorTag.Error]: Error,
+  [ErrorConstructorTag.EvalError]: EvalError,
+  [ErrorConstructorTag.RangeError]: RangeError,
+  [ErrorConstructorTag.ReferenceError]: ReferenceError,
+  [ErrorConstructorTag.SyntaxError]: SyntaxError,
+  [ErrorConstructorTag.TypeError]: TypeError,
+  [ErrorConstructorTag.URIError]: URIError,
+};
 
 // Each constructor's own name is the identifier the serializer emits.
-function createErrorConstructorStringTable(): Record<
-  ErrorConstructorTag,
-  string
-> {
+function createErrorConstructorStringTable(): Record<ErrorConstructorTag, string> {
   const result = {} as Record<ErrorConstructorTag, string>;
   for (let i: ErrorConstructorTag = 0; i <= ErrorConstructorTag.URIError; i++) {
     result[i] = ERROR_CONSTRUCTOR[i].name;
@@ -226,8 +219,7 @@ function createErrorConstructorStringTable(): Record<
   return result;
 }
 
-export const ERROR_CONSTRUCTOR_STRING =
-  /* @__PURE__ */ createErrorConstructorStringTable();
+export const ERROR_CONSTRUCTOR_STRING = /* @__PURE__ */ createErrorConstructorStringTable();
 export function isWellKnownSymbol(value: symbol): value is WellKnownSymbols {
   return value in INV_SYMBOL_REF;
 }
@@ -262,14 +254,9 @@ type TypedArrayConstructor =
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
 
-type BigIntTypedArrayConstructor =
-  | BigInt64ArrayConstructor
-  | BigUint64ArrayConstructor;
+type BigIntTypedArrayConstructor = BigInt64ArrayConstructor | BigUint64ArrayConstructor;
 
-export const TYPED_ARRAY_CONSTRUCTOR: Record<
-  TypedArrayTag,
-  TypedArrayConstructor
-> = {
+export const TYPED_ARRAY_CONSTRUCTOR: Record<TypedArrayTag, TypedArrayConstructor> = {
   [TypedArrayTag.Float32Array]: Float32Array,
   [TypedArrayTag.Float64Array]: Float64Array,
   [TypedArrayTag.Int16Array]: Int16Array,
@@ -300,10 +287,7 @@ export const BIG_INT_TYPED_ARRAY_CONSTRUCTOR: Record<
   [BigIntTypedArrayTag.BigUint64Array]: BigUint64Array,
 };
 
-export const BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING: Record<
-  BigIntTypedArrayTag,
-  string
-> = {
+export const BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING: Record<BigIntTypedArrayTag, string> = {
   [BigIntTypedArrayTag.BigInt64Array]: 'BigInt64Array',
   [BigIntTypedArrayTag.BigUint64Array]: 'BigUint64Array',
 };
@@ -352,9 +336,7 @@ export function getTypedArrayTag(value: TypedArrayValue): TypedArrayTag {
   throw new SerovalUnknownTypedArrayError();
 }
 
-export function getBigIntTypedArrayTag(
-  value: BigIntTypedArrayValue,
-): BigIntTypedArrayTag {
+export function getBigIntTypedArrayTag(value: BigIntTypedArrayValue): BigIntTypedArrayTag {
   if (value instanceof BigInt64Array) {
     return BigIntTypedArrayTag.BigInt64Array;
   }

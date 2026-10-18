@@ -12,7 +12,7 @@ describe('string decoding', () => {
     '\x00\x01\x0b\x1f',
     '"\\\n\r\b\t\f<\u2028\u2029',
     '\\n\\u2028\\x3C',
-  ])('round-trips %j through JSON modes', value => {
+  ])('round-trips %j through JSON modes', (value) => {
     expect(fromJSON(toJSON(value))).toBe(value);
     expect(fromCrossJSON(toCrossJSON(value), {})).toBe(value);
   });
@@ -48,8 +48,10 @@ describe('string decoding', () => {
 
   it('retains replacement behavior for non-primitive inputs', () => {
     // Some node fields reach the helper without String coercion.
-    const boxed = new Object('hello') as string;
-    expect(deserializeString(boxed)).toBe('hello');
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the helper must handle a non-string input.
+    const boxed = new Object('hello\\n\\x3C\\u2028') as string;
+    expect(deserializeString(boxed)).toBe('hello\n<\u2028');
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the helper must handle a non-string input.
     const custom = { replace: () => 'replacement' } as unknown as string;
     expect(deserializeString(custom)).toBe('replacement');
   });

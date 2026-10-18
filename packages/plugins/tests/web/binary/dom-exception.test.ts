@@ -14,19 +14,13 @@ describe('binary DOMException', () => {
   });
 
   it('defaults to Error when no name is given', async () => {
-    const { value } = await roundtrip<DOMException>(
-      new DOMException('plain'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<DOMException>(new DOMException('plain'), PLUGINS);
     expect(value.name).toBe('Error');
     expect(value.message).toBe('plain');
   });
 
   it('supports an empty message', async () => {
-    const { value } = await roundtrip<DOMException>(
-      new DOMException('', 'DataError'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<DOMException>(new DOMException('', 'DataError'), PLUGINS);
     expect(value.message).toBe('');
     expect(value.name).toBe('DataError');
   });

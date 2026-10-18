@@ -52,9 +52,7 @@ describe('binary Array', () => {
   });
 
   it('supports non-extensible arrays', async () => {
-    const { value } = await roundtrip<number[]>(
-      Object.preventExtensions([1, 2, 3]),
-    );
+    const { value } = await roundtrip<number[]>(Object.preventExtensions([1, 2, 3]));
     expect(value).toEqual([1, 2, 3]);
     expect(Object.isExtensible(value)).toBe(false);
   });

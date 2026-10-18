@@ -17,7 +17,15 @@ import {
   toJSONAsync,
 } from '../src';
 
-const EXAMPLE = Object.assign(Object.create(null), {
+function createNullObject<T extends object>(properties: T): T {
+  const target: unknown = Object.create(null);
+  if (typeof target !== 'object' || target === null) {
+    throw new Error('Expected an object');
+  }
+  return Object.assign(target, properties);
+}
+
+const EXAMPLE = createNullObject({
   example: 'valid identifier',
   '%example': 'invalid identifier',
   '0x1': 'hexadecimal',
@@ -27,30 +35,30 @@ const EXAMPLE = Object.assign(Object.create(null), {
   '1.7976931348623157e+308': 'exponentiation',
 });
 
-const RECURSIVE = Object.create(null) as Record<string, unknown>;
+const RECURSIVE = createNullObject<Record<string, unknown>>({});
 RECURSIVE.a = RECURSIVE;
 RECURSIVE.b = RECURSIVE;
 
-const ITERABLE = Object.assign(Object.create(null), {
-  *[Symbol.iterator]() {
+const ITERABLE: Iterable<number> = createNullObject({
+  *[Symbol.iterator](): Generator<number> {
     yield 1;
     yield 2;
     yield 3;
   },
-}) as Iterable<number>;
+});
 
-const ASYNC_RECURSIVE = Object.create(null) as Record<string, Promise<unknown>>;
+const ASYNC_RECURSIVE = createNullObject<Record<string, Promise<unknown>>>({});
 ASYNC_RECURSIVE.a = Promise.resolve(ASYNC_RECURSIVE);
 ASYNC_RECURSIVE.b = Promise.resolve(ASYNC_RECURSIVE);
 
-const ASYNC_ITERABLE = Object.assign(Object.create(null), {
-  async *[Symbol.asyncIterator]() {
+const ASYNC_ITERABLE: AsyncIterable<number> = createNullObject({
+  async *[Symbol.asyncIterator](): AsyncGenerator<number> {
     await Promise.resolve();
     yield 1;
     yield 2;
     yield 3;
   },
-}) as AsyncIterable<number>;
+});
 
 describe('null-constructor', () => {
   describe('serialize', () => {

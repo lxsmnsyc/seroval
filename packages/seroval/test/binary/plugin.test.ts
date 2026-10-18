@@ -1,11 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { binary, createPlugin, type SerovalNode } from '../../src';
-import {
-  captureSerializeError,
-  createTransport,
-  roundtrip,
-  startSerialize,
-} from './utils';
+import { captureSerializeError, createTransport, roundtrip, startSerialize } from './utils';
 
 class Vector {
   constructor(
@@ -113,7 +108,7 @@ describe('binary Plugin', () => {
           return { x: value.x, y: value.y };
         },
         async deserialize(value) {
-          await new Promise(resolve => setTimeout(resolve, 5));
+          await new Promise((resolve) => setTimeout(resolve, 5));
           return new Vector(value.x, value.y);
         },
       },
@@ -124,10 +119,7 @@ describe('binary Plugin', () => {
     };
 
     it('hands over a directly nested plugin value', async () => {
-      const { value } = await roundtrip<{ v: Vector }>(
-        { v: new Vector(1, 2) },
-        SLOW,
-      );
+      const { value } = await roundtrip<{ v: Vector }>({ v: new Vector(1, 2) }, SLOW);
       expect(value.v).toBeInstanceOf(Vector);
     });
 
@@ -150,10 +142,7 @@ describe('binary Plugin', () => {
     });
 
     it('hands over plugin values inside a Set', async () => {
-      const { value } = await roundtrip<Set<Vector>>(
-        new Set([new Vector(7, 8)]),
-        SLOW,
-      );
+      const { value } = await roundtrip<Set<Vector>>(new Set([new Vector(7, 8)]), SLOW);
       expect(value.size).toBe(1);
       expect([...value][0]).toBeInstanceOf(Vector);
     });
@@ -173,26 +162,24 @@ describe('binary Plugin', () => {
       class Envelope {
         constructor(public inner: Vector) {}
       }
-      const OuterPlugin = createPlugin<Envelope, SerovalNode, { inner: Vector }>(
-        {
-          tag: 'Outer',
-          test: value => value instanceof Envelope,
-          parse: { sync: (value, ctx) => ctx.parse(value.inner) },
-          serialize: (node, ctx) => ctx.serialize(node),
-          deserialize: () => new Envelope(new Vector(0, 0)),
-          binary: {
-            serialize: value => ({ inner: value.inner }),
-            // Copies its payload the way the web plugins do.
-            deserialize: value => new Envelope(value.inner),
-          },
+      const OuterPlugin = createPlugin<Envelope, SerovalNode, { inner: Vector }>({
+        tag: 'Outer',
+        test: (value) => value instanceof Envelope,
+        parse: { sync: (value, ctx) => ctx.parse(value.inner) },
+        serialize: (node, ctx) => ctx.serialize(node),
+        deserialize: () => new Envelope(new Vector(0, 0)),
+        binary: {
+          serialize: (value) => ({ inner: value.inner }),
+          // Copies its payload the way the web plugins do.
+          deserialize: (value) => new Envelope(value.inner),
         },
-      );
+      });
       const plugins = [OuterPlugin, SlowVectorPlugin];
 
-      const { value } = await roundtrip<Envelope>(
-        new Envelope(new Vector(9, 9)),
-        { serialize: { plugins }, deserialize: { plugins } },
-      );
+      const { value } = await roundtrip<Envelope>(new Envelope(new Vector(9, 9)), {
+        serialize: { plugins },
+        deserialize: { plugins },
+      });
       expect(value).toBeInstanceOf(Envelope);
       expect(value.inner).toBeInstanceOf(Vector);
       expect(value.inner.x).toBe(9);
@@ -206,12 +193,12 @@ describe('binary Plugin', () => {
       }
       const SelfPlugin = createPlugin<Node, SerovalNode, { self: Node }>({
         tag: 'Self',
-        test: value => value instanceof Node,
+        test: (value) => value instanceof Node,
         parse: { sync: (value, ctx) => ctx.parse(value.marker) },
         serialize: (node, ctx) => ctx.serialize(node),
         deserialize: () => new Node(),
         binary: {
-          serialize: value => ({ self: value }),
+          serialize: (value) => ({ self: value }),
           deserialize: () => new Node(),
         },
       });
@@ -227,8 +214,8 @@ describe('binary Plugin', () => {
               errors.push(error);
             },
           },
-        }).then(result => result.value),
-        new Promise(resolve => setTimeout(() => resolve('deadlock'), 200)),
+        }).then((result) => result.value),
+        new Promise((resolve) => setTimeout(() => resolve('deadlock'), 200)),
       ]);
       expect(settled).toBeInstanceOf(Node);
       // The back-reference itself cannot be satisfied - the id is only

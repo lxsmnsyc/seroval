@@ -22,35 +22,41 @@ export const PROMISE_CONSTRUCTOR = (): PromiseConstructorResolver => {
   return resolver;
 };
 
-export const PROMISE_SUCCESS = (
-  resolver: PromiseConstructorResolver,
-  data: unknown,
-): void => {
+export const PROMISE_SUCCESS = (resolver: PromiseConstructorResolver, data: unknown): void => {
   resolver.s(data);
   resolver.p.s = 1;
   resolver.p.v = data;
 };
 
-export const PROMISE_FAILURE = (
-  resolver: PromiseConstructorResolver,
-  data: unknown,
-): void => {
+export const PROMISE_FAILURE = (resolver: PromiseConstructorResolver, data: unknown): void => {
   resolver.f(data);
   resolver.p.s = 2;
   resolver.p.v = data;
 };
 
-export const SERIALIZED_PROMISE_CONSTRUCTOR =
-  /* @__PURE__ */ PROMISE_CONSTRUCTOR.toString();
-export const SERIALIZED_PROMISE_SUCCESS =
-  /* @__PURE__ */ PROMISE_SUCCESS.toString();
-export const SERIALIZED_PROMISE_FAILURE =
-  /* @__PURE__ */ PROMISE_FAILURE.toString();
+export const SERIALIZED_PROMISE_CONSTRUCTOR = /* @__PURE__ */ PROMISE_CONSTRUCTOR.toString();
+export const SERIALIZED_PROMISE_SUCCESS = /* @__PURE__ */ PROMISE_SUCCESS.toString();
+export const SERIALIZED_PROMISE_FAILURE = /* @__PURE__ */ PROMISE_FAILURE.toString();
 
 interface StreamListener<T> {
   next(value: T): void;
   throw(value: unknown): void;
   return(value: T): void;
+}
+
+interface IteratorResultValue {
+  done: boolean;
+  value: unknown;
+}
+
+interface IteratorInstance {
+  [key: symbol]: () => IteratorInstance;
+  next(): IteratorResultValue;
+}
+
+interface AsyncIteratorInstance {
+  [key: symbol]: () => AsyncIteratorInstance;
+  next(): Promise<unknown> | IteratorResultValue;
 }
 
 // Serialized via toString() — every nested function must be an object method
@@ -62,7 +68,7 @@ interface StreamListener<T> {
 // `live` = 1 keeps history only until the first listener subscribes, then
 // forwards each value and refuses a second listener, so delivered values are
 // not retained. Absent, every listener gets the full history.
-export const STREAM_CONSTRUCTOR = (live?: number) => {
+export const STREAM_CONSTRUCTOR = (live?: number): Stream<unknown> => {
   const buffer: unknown[] = [];
   const listeners: (StreamListener<unknown> | undefined)[] = [];
   let alive = true;
@@ -70,7 +76,7 @@ export const STREAM_CONSTRUCTOR = (live?: number) => {
   let count = 0;
   const internal = {
     flush(value: unknown, mode: keyof StreamListener<unknown>, x?: number) {
-      (live as number) > 1 || buffer.push(value);
+      live! > 1 || buffer.push(value);
       for (x = 0; x < count; x++) {
         const listener = listeners[x];
         if (listener) {
@@ -78,12 +84,7 @@ export const STREAM_CONSTRUCTOR = (live?: number) => {
         }
       }
     },
-    up(
-      listener: StreamListener<unknown>,
-      x?: number,
-      z?: number,
-      current?: unknown,
-    ) {
+    up(listener: StreamListener<unknown>, x?: number, z?: number, current?: unknown) {
       for (x = 0, z = buffer.length; x < z; x++) {
         current = buffer[x];
         if (!alive && x === z - 1) {
@@ -93,8 +94,8 @@ export const STREAM_CONSTRUCTOR = (live?: number) => {
         }
       }
     },
-    on(listener: StreamListener<unknown>, temp = 0) {
-      if ((live as number) > 1) {
+    on(listener: StreamListener<unknown>, temp = 0): () => void {
+      if (live! > 1) {
         throw new Error('Stream consumed');
       }
       let subscribed = alive;
@@ -155,13 +156,12 @@ export const STREAM_CONSTRUCTOR = (live?: number) => {
   };
 };
 
-export const SERIALIZED_STREAM_CONSTRUCTOR =
-  /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
+export const SERIALIZED_STREAM_CONSTRUCTOR = /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
 
 // Serialized via toString() — nested functions must be shorthand methods
 // (see STREAM_CONSTRUCTOR).
 export const ITERATOR_CONSTRUCTOR =
-  (symbol: symbol) => (sequence: Sequence) => () => {
+  (symbol: symbol) => (sequence: Sequence) => (): IteratorInstance => {
     let index = 0;
     const instance = {
       [symbol]() {
@@ -188,8 +188,7 @@ export const ITERATOR_CONSTRUCTOR =
     return instance;
   };
 
-export const SERIALIZED_ITERATOR_CONSTRUCTOR =
-  /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
+export const SERIALIZED_ITERATOR_CONSTRUCTOR = /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
 
 // Serialized via toString() — nested functions must be shorthand methods
 // (see STREAM_CONSTRUCTOR). `next` reports a stream error through a rejected
@@ -197,7 +196,7 @@ export const SERIALIZED_ITERATOR_CONSTRUCTOR =
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
   (stream: Stream<unknown>) =>
-  () => {
+  (): AsyncIteratorInstance => {
     let count = 0;
     let doneAt = -1;
     let isThrow = false;
@@ -289,7 +288,7 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
 export const SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR =
   /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR.toString();
 
-export const ARRAY_BUFFER_CONSTRUCTOR = (b64: string) => {
+export const ARRAY_BUFFER_CONSTRUCTOR = (b64: string): ArrayBuffer => {
   const decoded = atob(b64);
   const length = decoded.length;
   const arr = new Uint8Array(length);

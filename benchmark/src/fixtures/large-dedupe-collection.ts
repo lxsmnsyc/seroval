@@ -1,6 +1,6 @@
-import getData from './large-simple-collection';
+import getData, { type Item } from './large-simple-collection';
 
-export default () => {
+const largeDedupeCollection = (): Item[] => {
   const result = getData().slice(0, 250);
 
   for (let i = 0; i < 250; i++) {
@@ -10,3 +10,5 @@ export default () => {
 
   return result;
 };
+
+export default largeDedupeCollection;

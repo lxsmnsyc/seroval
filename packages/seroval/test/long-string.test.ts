@@ -31,10 +31,7 @@ const cases = [
   ['below threshold with escape', 'x'.repeat(62) + '"'],
   ['at threshold with escape', 'x'.repeat(63) + '"'],
   ['above threshold with escape', 'x'.repeat(64) + '"'],
-  [
-    'JSON text',
-    JSON.stringify({ items: new Array(100).fill({ text: 'a"b\\c\n' }) }),
-  ],
+  ['JSON text', JSON.stringify({ items: Array.from({ length: 100 }).fill({ text: 'a"b\\c\n' }) })],
   ['HTML and separators', '</script><!--\u2028\u2029'.repeat(128)],
   ['Latin-1 and BMP', 'caf\u00e9 \u4e2d\u6587'.repeat(256)],
   ['surrogate pairs', '\ud83d\ude00'.repeat(1024)],
@@ -45,30 +42,28 @@ const cases = [
 ] as const;
 
 describe('long strings', () => {
-  it.each(cases)(
-    'preserves encoding and round-trips %s',
-    async (_name, value) => {
-      const expected = Array.from(value, char => escapes[char] ?? char).join(
-        '',
-      );
-      expect(serializeString(value)).toBe(expected);
-      expect(serialize(value)).toBe(`"${expected}"`);
-      expect(deserialize(serialize(value))).toBe(value);
-      expect(await serializeAsync(value)).toBe(`"${expected}"`);
-      expect(fromJSON(toJSON(value))).toBe(value);
-      expect(fromCrossJSON(toCrossJSON(value), { refs: new Map() })).toBe(
-        value,
-      );
-    },
-  );
+  it.each(cases)('preserves encoding and round-trips %s', async (_name, value) => {
+    const expected = Array.from(value, (char) => escapes[char] ?? char).join('');
+    expect(serializeString(value)).toBe(expected);
+    expect(serialize(value)).toBe(`"${expected}"`);
+    expect(deserialize(serialize(value))).toBe(value);
+    expect(await serializeAsync(value)).toBe(`"${expected}"`);
+    expect(fromJSON(toJSON(value))).toBe(value);
+    expect(fromCrossJSON(toCrossJSON(value), { refs: new Map() })).toBe(value);
+  });
 
   it('preserves every UTF-16 code unit inside long strings', () => {
     const padding = 'x'.repeat(63);
     for (let code = 0; code <= 0xffff; code++) {
       const char = String.fromCharCode(code);
-      expect(serializeString(padding + char)).toBe(
-        padding + (escapes[char] ?? char),
-      );
+      expect(serializeString(padding + char)).toBe(padding + (escapes[char] ?? char));
+    }
+  });
+
+  it('preserves every UTF-16 code unit inside short strings', () => {
+    for (let code = 0; code <= 0xffff; code++) {
+      const char = String.fromCharCode(code);
+      expect(serializeString(char)).toBe(escapes[char] ?? char);
     }
   });
 
@@ -90,7 +85,7 @@ describe('long strings', () => {
 
   it('round-trips long deferred server-function data', async () => {
     const value = JSON.stringify({
-      items: new Array(100).fill('"\\\n'),
+      items: Array.from({ length: 100 }).fill('"\\\n'),
     });
     const refs = new Map();
     let restored: Promise<string> | undefined;

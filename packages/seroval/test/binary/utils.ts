@@ -35,7 +35,7 @@ export function createTransport(): Transport {
       if (queue.length > 0) {
         return Promise.resolve(queue.shift());
       }
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         readers.push(resolve);
       });
     },
@@ -109,7 +109,7 @@ export function captureSerializeError(
 ): Promise<unknown> {
   return startSerialize(value, options).done.then(
     () => undefined,
-    error => error,
+    (error) => error,
   );
 }
 

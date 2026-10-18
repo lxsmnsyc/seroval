@@ -54,13 +54,13 @@ describe('binary Stream', () => {
     const events = collect(result.value);
 
     source.next(1);
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(events.next).toEqual([1]);
 
     source.next(2);
     source.return(3);
     await handle.done;
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(events.next).toEqual([1, 2]);
     expect(events.returned).toEqual([3]);
   });

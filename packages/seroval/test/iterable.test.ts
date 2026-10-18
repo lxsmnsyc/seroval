@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
@@ -28,8 +28,9 @@ function makeDeepObject(depth: number): Record<string, unknown> {
   let current: Record<string, unknown> = {};
   const root = current;
   for (let i = 0; i < depth; i++) {
-    current.next = {};
-    current = current.next as Record<string, unknown>;
+    const next: Record<string, unknown> = {};
+    current.next = next;
+    current = next;
   }
   return root;
 }
@@ -192,7 +193,7 @@ describe('Iterable', () => {
         });
       }));
     it('respects depthLimit', async () =>
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         const deep = makeDeepObject(5);
         let parsed = false;
         toCrossJSONStream(deep, {
@@ -201,8 +202,8 @@ describe('Iterable', () => {
             parsed = true;
           },
           onError(error) {
-            expect(error).toBeInstanceOf(Error);
-            expect((error as Error).message).toContain('Depth limit');
+            assert(error instanceof Error);
+            expect(error.message).toContain('Depth limit');
             expect(parsed).toBe(false);
             resolve();
           },
@@ -218,7 +219,7 @@ describe('Iterable', () => {
           depthLimit: 2,
           refs: new Map(),
         }),
-      ).toThrowError(/Depth limit/);
+      ).toThrow(/Depth limit/);
     });
   });
 });

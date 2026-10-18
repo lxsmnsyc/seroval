@@ -20,7 +20,7 @@ const FORM_DATA_FACTORY_CONSTRUCTOR = (
   i = 0,
   s = e.length,
   t?: [key: string, value: FormDataEntryValue],
-) => {
+): FormData => {
   for (; i < s; i++) {
     t = e[i];
     f.append(t[0], t[1]);
@@ -28,7 +28,11 @@ const FORM_DATA_FACTORY_CONSTRUCTOR = (
   return f;
 };
 
-const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, {}, {}>({
+const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  Record<string, never>,
+  Record<string, never>
+>({
   tag: 'seroval-plugins/web/FormDataFactory',
   test(value) {
     return value === FORM_DATA_FACTORY;
@@ -69,11 +73,7 @@ type FormDataBinaryData = {
   entries: FormDataInit;
 };
 
-const FormDataPlugin = /* @__PURE__ */ createPlugin<
-  FormData,
-  FormDataNode,
-  FormDataBinaryData
->({
+const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode, FormDataBinaryData>({
   tag: 'seroval-plugins/web/FormData',
   extends: [FilePlugin, FormDataFactoryPlugin],
   test(value) {
@@ -103,18 +103,10 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<
     },
   },
   serialize(node, ctx) {
-    return (
-      '(' +
-      ctx.serialize(node.factory) +
-      ')(' +
-      ctx.serialize(node.entries) +
-      ')'
-    );
+    return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.entries) + ')';
   },
   deserialize(node, ctx) {
-    return FORM_DATA_FACTORY_CONSTRUCTOR(
-      ctx.deserialize(node.entries) as FormDataInit,
-    );
+    return FORM_DATA_FACTORY_CONSTRUCTOR(ctx.deserialize<FormDataInit>(node.entries));
   },
   binary: {
     serialize(value) {

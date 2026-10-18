@@ -1,12 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { binary } from '../../src';
 import { SerovalMalformedBinarySourceError } from '../../src/core/errors';
-import {
-  createTransport,
-  roundtrip,
-  startDeserialize,
-  startSerialize,
-} from './utils';
+import { createTransport, roundtrip, startDeserialize, startSerialize } from './utils';
 
 function defer<T>() {
   let resolve!: (value: T) => void;
@@ -27,9 +22,7 @@ describe('binary Promise', () => {
     });
 
     it('supports Promises of undefined', async () => {
-      const { value } = await roundtrip<Promise<undefined>>(
-        Promise.resolve(undefined),
-      );
+      const { value } = await roundtrip<Promise<undefined>>(Promise.resolve(undefined));
       await expect(value).resolves.toBe(undefined);
     });
 
@@ -81,18 +74,14 @@ describe('binary Promise', () => {
 
   describe('rejection', () => {
     it('supports Promises rejected with an Error', async () => {
-      const { value } = await roundtrip<Promise<never>>(
-        Promise.reject(new Error('rejected')),
-      );
+      const { value } = await roundtrip<Promise<never>>(Promise.reject(new Error('rejected')));
       const error = await value.catch((err: unknown) => err);
       expect(error).toBeInstanceOf(Error);
       expect((error as Error).message).toBe('rejected');
     });
 
     it('supports Promises rejected with a non-Error value', async () => {
-      const { value } = await roundtrip<Promise<never>>(
-        Promise.reject('just a string'),
-      );
+      const { value } = await roundtrip<Promise<never>>(Promise.reject('just a string'));
       await expect(value).rejects.toBe('just a string');
     });
 
@@ -200,9 +189,7 @@ describe('binary Promise', () => {
       const deferred = defer<number>();
       const handle = startSerialize({ pending: deferred.promise });
 
-      const result = await startDeserialize<{ pending: Promise<number> }>(
-        handle.transport,
-      );
+      const result = await startDeserialize<{ pending: Promise<number> }>(handle.transport);
       expect(result.value.pending).toBeInstanceOf(Promise);
 
       deferred.resolve(7);
@@ -218,7 +205,7 @@ describe('binary Promise', () => {
         finished = true;
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       expect(finished).toBe(false);
 
       deferred.resolve(1);
@@ -240,12 +227,12 @@ describe('binary Promise', () => {
 
       const order: string[] = [];
       const tracked = Promise.all([
-        result.value.first.then(v => order.push(v)),
-        result.value.second.then(v => order.push(v)),
+        result.value.first.then((v) => order.push(v)),
+        result.value.second.then((v) => order.push(v)),
       ]);
 
       second.resolve('second');
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       first.resolve('first');
 
       await tracked;
@@ -264,9 +251,7 @@ describe('binary Promise', () => {
       }
       transport.push(undefined);
 
-      const result = await startDeserialize<{ data: Promise<number[]> }>(
-        transport,
-      );
+      const result = await startDeserialize<{ data: Promise<number[]> }>(transport);
       await expect(result.value.data).resolves.toEqual([1, 2, 3]);
     });
   });

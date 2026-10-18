@@ -66,7 +66,7 @@ describe('binary AsyncIterable', () => {
     const source = {
       async *[Symbol.asyncIterator](): AsyncIterator<number> {
         while (true) {
-          const next = await new Promise<number | undefined>(resolve => {
+          const next = await new Promise<number | undefined>((resolve) => {
             push = resolve;
             stop = () => resolve(undefined);
           });
@@ -79,22 +79,21 @@ describe('binary AsyncIterable', () => {
     };
 
     const handle = startSerialize(source);
-    const result =
-      await startDeserialize<AsyncIterable<number>>(handle.transport);
+    const result = await startDeserialize<AsyncIterable<number>>(handle.transport);
     const iterator = result.value[Symbol.asyncIterator]();
 
     const first = iterator.next();
     // The generator only starts once it is awaited, so wait for the pull.
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     push(10);
     expect((await first).value).toBe(10);
 
     const second = iterator.next();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     push(20);
     expect((await second).value).toBe(20);
 
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     stop();
     await handle.done;
   });

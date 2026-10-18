@@ -11,9 +11,7 @@ describe('binary frozen object', () => {
   });
 
   it('supports empty frozen objects', async () => {
-    const { value } = await roundtrip<Record<string, unknown>>(
-      Object.freeze({}),
-    );
+    const { value } = await roundtrip<Record<string, unknown>>(Object.freeze({}));
     expect(Object.isFrozen(value)).toBe(true);
   });
 
@@ -31,9 +29,7 @@ describe('binary frozen object', () => {
 
   it('freezes after every property is assigned', async () => {
     const nested = { deep: true };
-    const { value } = await roundtrip<Record<string, unknown>>(
-      Object.freeze({ nested, count: 2 }),
-    );
+    const { value } = await roundtrip<Record<string, unknown>>(Object.freeze({ nested, count: 2 }));
     expect(Object.isFrozen(value)).toBe(true);
     expect(value.count).toBe(2);
     expect(value.nested).toEqual({ deep: true });

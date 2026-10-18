@@ -1,29 +1,24 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 
-const PROMISE_TO_ABORT_SIGNAL = (promise: Promise<unknown>) => {
+const PROMISE_TO_ABORT_SIGNAL = (promise: Promise<unknown>): AbortController => {
   const controller = new AbortController();
   const abort = controller.abort.bind(controller);
   promise.then(abort, abort);
   return controller;
 };
 
-function resolveAbortSignalResult(
-  this: AbortSignal,
-  resolve: (value: unknown) => void,
-): void {
+function resolveAbortSignalResult(this: AbortSignal, resolve: (value: unknown) => void): void {
   resolve(this.reason);
 }
 
-function resolveAbortSignal(
-  this: AbortSignal,
-  resolve: (value: unknown) => void,
-): void {
+function resolveAbortSignal(this: AbortSignal, resolve: (value: unknown) => void): void {
   this.addEventListener('abort', resolveAbortSignalResult.bind(this, resolve), {
     once: true,
   });
 }
 
+// oxlint-disable-next-line typescript/promise-function-async -- async would change the timing.
 function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
   return new Promise(resolveAbortSignal.bind(signal));
 }
@@ -32,8 +27,8 @@ const ABORT_CONTROLLER = {};
 
 const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<
   object,
-  {},
-  {}
+  Record<string, never>,
+  Record<string, never>
 >({
   tag: 'seroval-plugins/web/AbortControllerFactoryPlugin',
   test(value) {
@@ -125,13 +120,7 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
       return 'AbortSignal.abort(' + ctx.serialize(node.reason) + ')';
     }
     if (node.controller && node.factory) {
-      return (
-        '(' +
-        ctx.serialize(node.factory) +
-        ')(' +
-        ctx.serialize(node.controller) +
-        ').signal'
-      );
+      return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.controller) + ').signal';
     }
     return '(new AbortController).signal';
   },

@@ -4,7 +4,7 @@ import { createPlugin } from '../../src/core/plugin';
 import { startDeserialize } from './utils';
 
 function tick(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 0));
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 interface Run {
@@ -14,10 +14,7 @@ interface Run {
   abort: () => void;
 }
 
-function run(
-  value: unknown,
-  options?: Partial<binary.SerializeOptions>,
-): Run {
+function run(value: unknown, options?: Partial<binary.SerializeOptions>): Run {
   const chunks: Uint8Array[] = [];
   const onDone = vi.fn();
   const onError = vi.fn();
@@ -72,7 +69,7 @@ describe('binary serializer lifecycle', () => {
     const source = createStream<number>();
     const off = vi.fn();
     const on = source.on.bind(source);
-    source.on = listener => {
+    source.on = (listener) => {
       const unsubscribe = on(listener);
       return () => {
         off();
@@ -93,7 +90,7 @@ describe('binary serializer lifecycle', () => {
     class Holder {}
     const plugin = createPlugin<Holder, any, Record<string, never>>({
       tag: 'test/cleanup',
-      test: value => value instanceof Holder,
+      test: (value) => value instanceof Holder,
       parse: {},
       serialize: () => '',
       deserialize: () => new Holder(),
@@ -145,7 +142,7 @@ describe('binary live streams', () => {
       refs: new Map(),
       onSerialize(bytes) {
         chunks.push(bytes);
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve) => {
           releases.push(resolve);
         });
       },
@@ -192,23 +189,21 @@ describe('binary live streams', () => {
         if (this.queue.length) {
           return Promise.resolve(this.queue.shift());
         }
-        return new Promise(resolve => this.waiting.push(resolve));
+        return new Promise((resolve) => this.waiting.push(resolve));
       },
     };
     binary.serialize(stream, {
       refs: new Map(),
-      onSerialize: bytes => transport.push(bytes),
+      onSerialize: (bytes) => transport.push(bytes),
       onDone: () => transport.push(undefined),
       onError() {},
     });
-    const { value } = await startDeserialize<Stream<number>>(
-      transport as never,
-    );
+    const { value } = await startDeserialize<Stream<number>>(transport as never);
     const seen: unknown[] = [];
     value.on({
-      next: v => seen.push(v),
-      throw: e => seen.push(['throw', e]),
-      return: v => seen.push(['return', v]),
+      next: (v) => seen.push(v),
+      throw: (e) => seen.push(['throw', e]),
+      return: (v) => seen.push(['return', v]),
     });
     await producer.write(1);
     await producer.close(2);

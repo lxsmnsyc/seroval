@@ -8,9 +8,7 @@ interface Harness {
   serializer: Serializer;
 }
 
-function createHarness(
-  options?: Partial<ConstructorParameters<typeof Serializer>[0]>,
-): Harness {
+function createHarness(options?: Partial<ConstructorParameters<typeof Serializer>[0]>): Harness {
   const data: string[] = [];
   const errors: unknown[] = [];
   const state = { done: 0 };
@@ -58,7 +56,7 @@ describe('Serializer', () => {
   it('withholds onDone until a pending async value settles', async () => {
     const h = createHarness();
     let resolve!: (value: string) => void;
-    h.serializer.write('later', new Promise<string>(r => (resolve = r)));
+    h.serializer.write('later', new Promise<string>((r) => (resolve = r)));
     h.serializer.flush();
 
     // Flushed, but the promise has not resolved yet.
@@ -77,8 +75,8 @@ describe('Serializer', () => {
     const h = createHarness();
     let resolveA!: (v: number) => void;
     let resolveB!: (v: number) => void;
-    h.serializer.write('a', new Promise<number>(r => (resolveA = r)));
-    h.serializer.write('b', new Promise<number>(r => (resolveB = r)));
+    h.serializer.write('a', new Promise<number>((r) => (resolveA = r)));
+    h.serializer.write('b', new Promise<number>((r) => (resolveB = r)));
     h.serializer.flush();
     expect(h.done).toBe(0);
 
@@ -132,7 +130,7 @@ describe('Serializer', () => {
       expect(h.done).toBe(1);
 
       // No further onDone even if something would have resolved.
-      await new Promise(r => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
       expect(h.done).toBe(1);
     });
 

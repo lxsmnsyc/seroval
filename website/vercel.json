@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm --filter seroval build && pnpm --filter seroval-plugins build && pnpm build",
+  "outputDirectory": "dist/client",
+  "cleanUrls": true,
+  "trailingSlash": false
+}

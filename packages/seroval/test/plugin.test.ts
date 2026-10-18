@@ -37,7 +37,7 @@ const BufferPlugin = createPlugin<Buffer, SerovalNode>({
     return `Buffer.from(${ctx.serialize(node)}, "base64")`;
   },
   deserialize(node, ctx) {
-    return Buffer.from(ctx.deserialize(node) as string, 'base64');
+    return Buffer.from(ctx.deserialize(node), 'base64');
   },
 });
 

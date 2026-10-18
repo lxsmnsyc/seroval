@@ -27,7 +27,7 @@ describe('binary Error', () => {
     expect(value[3]).toBeInstanceOf(SyntaxError);
     expect(value[4]).toBeInstanceOf(TypeError);
     expect(value[5]).toBeInstanceOf(URIError);
-    expect(value.map(error => error.message)).toEqual([
+    expect(value.map((error) => error.message)).toEqual([
       'eval',
       'range',
       'reference',
@@ -58,9 +58,7 @@ describe('binary Error', () => {
   });
 
   it('supports the cause option', async () => {
-    const { value } = await roundtrip<Error>(
-      new Error('outer', { cause: new TypeError('inner') }),
-    );
+    const { value } = await roundtrip<Error>(new Error('outer', { cause: new TypeError('inner') }));
     expect(value.cause).toBeInstanceOf(TypeError);
     expect((value.cause as Error).message).toBe('inner');
   });
@@ -97,9 +95,7 @@ describe('binary Error', () => {
   });
 
   it('supports an empty AggregateError', async () => {
-    const { value } = await roundtrip<AggregateError>(
-      new AggregateError([], 'empty'),
-    );
+    const { value } = await roundtrip<AggregateError>(new AggregateError([], 'empty'));
     expect(value).toBeInstanceOf(AggregateError);
     expect(value.errors).toEqual([]);
   });

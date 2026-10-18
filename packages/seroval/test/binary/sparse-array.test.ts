@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { roundtrip } from './utils';
 
-// biome-ignore lint/suspicious/noSparseArray: the point of the test
+// oxlint-disable-next-line no-sparse-arrays -- Sparse arrays are what this test covers.
 const EXAMPLE = [, , , 1, , , , 2, , , ,];
 
 describe('binary sparse Array', () => {

@@ -63,11 +63,9 @@ top-level type you are serializing.
 - [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
 - [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)
 
-## Writing your own
+## Docs
 
-Build a plugin for any type with `createPlugin` from `seroval`. See the
-[plugins source](https://github.com/lxsmnsyc/seroval/tree/main/packages/plugins/web)
-for complete examples.
+See [Using plugins](https://seroval.vercel.app/docs/using-plugins) for which modes each plugin supports, and [Writing plugins](https://seroval.vercel.app/docs/writing-plugins) to build your own.
 
 ## Sponsors
 

@@ -28,16 +28,8 @@ import {
 } from '../core/errors';
 import type { PluginWithBinaryMode } from '../core/plugin';
 import { getReference } from '../core/reference';
-import {
-  createSequence,
-  type Sequence,
-  sequenceToIterator,
-} from '../core/sequence';
-import {
-  createStream,
-  type Stream,
-  streamToAsyncIterable,
-} from '../core/stream';
+import { createSequence, type Sequence, sequenceToIterator } from '../core/sequence';
+import { createStream, type Stream, streamToAsyncIterable } from '../core/stream';
 import {
   SYM_ASYNC_ITERATOR,
   SYM_IS_CONCAT_SPREADABLE,
@@ -251,10 +243,11 @@ function isThenable(value: unknown): boolean {
   );
 }
 
-function deserializeKnownValue<
-  T extends Record<string, unknown>,
-  K extends keyof T,
->(type: SerovalBinaryType, record: T, key: K): T[K] {
+function deserializeKnownValue<T extends Record<string, unknown>, K extends keyof T>(
+  type: SerovalBinaryType,
+  record: T,
+  key: K,
+): T[K] {
   if (Object.hasOwn(record, key)) {
     return record[key];
   }
@@ -284,18 +277,14 @@ function deserializeNumberValue(ctx: DeserializerContext): number {
 }
 
 function deserializePreamble(ctx: DeserializerContext) {
-  ctx.littleEndian =
-    (deserializeByte(ctx) as SerovalEndianness) === SerovalEndianness.LE;
+  ctx.littleEndian = (deserializeByte(ctx) as SerovalEndianness) === SerovalEndianness.LE;
 }
 
 function upsert(ctx: DeserializerContext, id: number, value: unknown) {
   ctx.refs.values.set(id, value);
 }
 
-function deserializeId(
-  ctx: DeserializerContext,
-  type: SerovalBinaryType,
-): number {
+function deserializeId(ctx: DeserializerContext, type: SerovalBinaryType): number {
   // parse ID
   const id = deserializeUint(ctx);
   // An id is declared once. Redeclaring it would swap the value behind refs
@@ -376,11 +365,7 @@ const PENDING_TARGETS = [
   SerovalBinaryType.AggregateError,
 ];
 
-function trackChild(
-  ctx: DeserializerContext,
-  parent: number,
-  child: number,
-): void {
+function trackChild(ctx: DeserializerContext, parent: number, child: number): void {
   const current = ctx.refs.children.get(parent);
   if (current) {
     current.push(child);
@@ -404,11 +389,7 @@ function trackChild(
  * payload of plugin A holding plugin B whose payload holds A is beyond that
  * guard and is not supported.
  */
-async function awaitSubtree(
-  ctx: DeserializerContext,
-  id: number,
-  owner?: number,
-): Promise<void> {
+async function awaitSubtree(ctx: DeserializerContext, id: number, owner?: number): Promise<void> {
   if (ctx.refs.unsettled === 0) {
     return;
   }
@@ -459,10 +440,7 @@ function getRefSync(ctx: DeserializerContext, ref: number): unknown {
 // Used only where a slot may hold a Plugin, whose identity resolves later.
 // The value is boxed so a promise or thenable value is passed on as is and
 // never adopted by `await`.
-async function getRefAsync(
-  ctx: DeserializerContext,
-  ref: number,
-): Promise<{ value: unknown }> {
+async function getRefAsync(ctx: DeserializerContext, ref: number): Promise<{ value: unknown }> {
   const pending = ctx.refs.deferred.get(ref);
   if (pending) {
     return { value: await pending };
@@ -515,11 +493,7 @@ function createPending(ctx: DeserializerContext, id: number) {
 }
 
 // Rejects an assignment to a container whose `Pending` node was already read.
-function assertOpenContainer(
-  ctx: DeserializerContext,
-  type: SerovalBinaryType,
-  id: number,
-): void {
+function assertOpenContainer(ctx: DeserializerContext, type: SerovalBinaryType, id: number): void {
   const entry = ctx.refs.pendingResolvers.get(id);
   if (!entry || entry.declared) {
     throw new SerovalMalformedBinaryTypeError(type);
@@ -531,11 +505,7 @@ function isSequenceIndex(value: number, size: number): boolean {
 }
 
 function deserializePending(ctx: DeserializerContext) {
-  const id = deserializeRefOf(
-    ctx,
-    SerovalBinaryType.Pending,
-    PENDING_TARGETS,
-  );
+  const id = deserializeRefOf(ctx, SerovalBinaryType.Pending, PENDING_TARGETS);
   const amount = deserializeUint(ctx);
 
   const entry = ctx.refs.pendingResolvers.get(id);
@@ -565,11 +535,7 @@ function deserializePending(ctx: DeserializerContext) {
 function deserializeConstant(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Constant);
   const byte = deserializeByte(ctx) as SerovalConstant;
-  upsert(
-    ctx,
-    id,
-    deserializeKnownValue(SerovalBinaryType.Constant, CONSTANT_VAL, byte),
-  );
+  upsert(ctx, id, deserializeKnownValue(SerovalBinaryType.Constant, CONSTANT_VAL, byte));
 }
 
 function deserializeNumber(ctx: DeserializerContext) {
@@ -590,11 +556,7 @@ function deserializeString(ctx: DeserializerContext) {
 function deserializeBigint(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.BigInt);
   const sign = deserializeByte(ctx);
-  const stringRef = deserializeRef(
-    ctx,
-    SerovalBinaryType.BigInt,
-    SerovalBinaryType.String,
-  );
+  const stringRef = deserializeRef(ctx, SerovalBinaryType.BigInt, SerovalBinaryType.String);
   const value = decodeBigint(getRefSync(ctx, stringRef) as string);
   upsert(ctx, id, sign ? -value : value);
 }
@@ -602,11 +564,7 @@ function deserializeBigint(ctx: DeserializerContext) {
 function deserializeWKSymbol(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.WKSymbol);
   const byte = deserializeByte(ctx) as Symbols;
-  upsert(
-    ctx,
-    id,
-    deserializeKnownValue(SerovalBinaryType.WKSymbol, SYMBOL_REF, byte),
-  );
+  upsert(ctx, id, deserializeKnownValue(SerovalBinaryType.WKSymbol, SYMBOL_REF, byte));
 }
 
 function isValidKey(key: string): boolean {
@@ -672,7 +630,7 @@ function runAssignment(
   if (pending) {
     trackInflight(ctx, container, 1);
     pending.then(
-      value => {
+      (value) => {
         try {
           apply(value);
         } catch (err) {
@@ -682,7 +640,7 @@ function runAssignment(
           popPendingState(ctx, container);
         }
       },
-      err => {
+      (err) => {
         ctx.onError(err);
         trackInflight(ctx, container, -1);
         popPendingState(ctx, container);
@@ -700,11 +658,7 @@ function runAssignment(
 }
 
 function deserializeObjectAssign(ctx: DeserializerContext) {
-  const object = deserializeRefOf(
-    ctx,
-    SerovalBinaryType.ObjectAssign,
-    PROPERTY_TARGETS,
-  );
+  const object = deserializeRefOf(ctx, SerovalBinaryType.ObjectAssign, PROPERTY_TARGETS);
   // The serializer only ever emits a String or a well-known symbol as a key.
   // Validating it here keeps untrusted input from aiming a key slot at some
   // other node type, so the `as string` cast below can never be a lie.
@@ -716,7 +670,7 @@ function deserializeObjectAssign(ctx: DeserializerContext) {
 
   assertOpenContainer(ctx, SerovalBinaryType.ObjectAssign, object);
   trackChild(ctx, object, value);
-  runAssignment(ctx, object, value, resolved => {
+  runAssignment(ctx, object, value, (resolved) => {
     assignProperty(
       getRefSync(ctx, object) as Record<string, unknown>,
       getRefSync(ctx, key) as string,
@@ -726,26 +680,18 @@ function deserializeObjectAssign(ctx: DeserializerContext) {
 }
 
 function deserializeArrayAssign(ctx: DeserializerContext) {
-  const object = deserializeRef(
-    ctx,
-    SerovalBinaryType.ArrayAssign,
-    SerovalBinaryType.Array,
-  );
+  const object = deserializeRef(ctx, SerovalBinaryType.ArrayAssign, SerovalBinaryType.Array);
   const index = deserializeUint(ctx);
   const value = deserializeUint(ctx);
 
   assertOpenContainer(ctx, SerovalBinaryType.ArrayAssign, object);
   trackChild(ctx, object, value);
-  runAssignment(ctx, object, value, resolved => {
+  runAssignment(ctx, object, value, (resolved) => {
     (getRefSync(ctx, object) as unknown[])[index] = resolved;
   });
 }
 
-function applyObjectFlag(
-  ctx: DeserializerContext,
-  id: number,
-  flag: SerovalObjectFlags,
-): void {
+function applyObjectFlag(ctx: DeserializerContext, id: number, flag: SerovalObjectFlags): void {
   const object = getRefSync(ctx, id);
   switch (flag) {
     case SerovalObjectFlags.Frozen:
@@ -772,11 +718,7 @@ async function deserializeObjectFlagInner(
 }
 
 function deserializeObjectFlag(ctx: DeserializerContext) {
-  const object = deserializeRefOf(
-    ctx,
-    SerovalBinaryType.ObjectFlag,
-    FLAG_TARGETS,
-  );
+  const object = deserializeRefOf(ctx, SerovalBinaryType.ObjectFlag, FLAG_TARGETS);
   const flag = deserializeByte(ctx) as SerovalObjectFlags;
 
   const entry = ctx.refs.pendingResolvers.get(object);
@@ -805,39 +747,25 @@ function deserializeStream(ctx: DeserializerContext) {
   upsert(
     ctx,
     id,
-    live === 1
-      ? (STREAM_CONSTRUCTOR(1) as unknown as Stream<unknown>)
-      : createStream(),
+    live === 1 ? (STREAM_CONSTRUCTOR(1) as unknown as Stream<unknown>) : createStream(),
   );
   ctx.openStreams.add(id);
 }
 
 // A stream accepts no events after it ends.
-function assertOpenStream(
-  ctx: DeserializerContext,
-  type: SerovalBinaryType,
-  stream: number,
-): void {
+function assertOpenStream(ctx: DeserializerContext, type: SerovalBinaryType, stream: number): void {
   if (!ctx.openStreams.has(stream)) {
     throw new SerovalMalformedBinaryTypeError(type);
   }
 }
 
-async function deserializeStreamNextInner(
-  ctx: DeserializerContext,
-  stream: number,
-  value: number,
-) {
+async function deserializeStreamNextInner(ctx: DeserializerContext, stream: number, value: number) {
   const s = getRefSync(ctx, stream) as Stream<unknown>;
   s.next((await getRefAsync(ctx, value)).value);
 }
 
 function deserializeStreamNext(ctx: DeserializerContext) {
-  const stream = deserializeRef(
-    ctx,
-    SerovalBinaryType.StreamNext,
-    SerovalBinaryType.Stream,
-  );
+  const stream = deserializeRef(ctx, SerovalBinaryType.StreamNext, SerovalBinaryType.Stream);
   const value = deserializeUint(ctx);
   assertOpenStream(ctx, SerovalBinaryType.StreamNext, stream);
   deserializeStreamNextInner(ctx, stream, value).catch(ctx.onError);
@@ -853,11 +781,7 @@ async function deserializeStreamThrowInner(
 }
 
 function deserializeStreamThrow(ctx: DeserializerContext) {
-  const stream = deserializeRef(
-    ctx,
-    SerovalBinaryType.StreamThrow,
-    SerovalBinaryType.Stream,
-  );
+  const stream = deserializeRef(ctx, SerovalBinaryType.StreamThrow, SerovalBinaryType.Stream);
   const value = deserializeUint(ctx);
   assertOpenStream(ctx, SerovalBinaryType.StreamThrow, stream);
   ctx.openStreams.delete(stream);
@@ -874,11 +798,7 @@ async function deserializeStreamReturnInner(
 }
 
 function deserializeStreamReturn(ctx: DeserializerContext) {
-  const stream = deserializeRef(
-    ctx,
-    SerovalBinaryType.StreamReturn,
-    SerovalBinaryType.Stream,
-  );
+  const stream = deserializeRef(ctx, SerovalBinaryType.StreamReturn, SerovalBinaryType.Stream);
   const value = deserializeUint(ctx);
   assertOpenStream(ctx, SerovalBinaryType.StreamReturn, stream);
   ctx.openStreams.delete(stream);
@@ -893,15 +813,11 @@ function deserializeSequence(ctx: DeserializerContext) {
   upsert(ctx, id, createSequence([], throwAt, doneAt));
 }
 function deserializeSequencePush(ctx: DeserializerContext) {
-  const sequence = deserializeRef(
-    ctx,
-    SerovalBinaryType.SequencePush,
-    SerovalBinaryType.Sequence,
-  );
+  const sequence = deserializeRef(ctx, SerovalBinaryType.SequencePush, SerovalBinaryType.Sequence);
   const value = deserializeUint(ctx);
   assertOpenContainer(ctx, SerovalBinaryType.SequencePush, sequence);
   trackChild(ctx, sequence, value);
-  runAssignment(ctx, sequence, value, resolved => {
+  runAssignment(ctx, sequence, value, (resolved) => {
     (getRefSync(ctx, sequence) as Sequence).v.push(resolved);
   });
 }
@@ -927,16 +843,8 @@ function deserializeDate(ctx: DeserializerContext) {
 function deserializeError(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Error);
   const tag = deserializeByte(ctx) as ErrorConstructorTag;
-  const message = deserializeRef(
-    ctx,
-    SerovalBinaryType.Error,
-    SerovalBinaryType.String,
-  );
-  const construct = deserializeKnownValue(
-    SerovalBinaryType.Error,
-    ERROR_CONSTRUCTOR,
-    tag,
-  );
+  const message = deserializeRef(ctx, SerovalBinaryType.Error, SerovalBinaryType.String);
+  const construct = deserializeKnownValue(SerovalBinaryType.Error, ERROR_CONSTRUCTOR, tag);
   createPending(ctx, id);
   upsert(ctx, id, new construct(getRefSync(ctx, message) as string));
 }
@@ -945,7 +853,6 @@ function deserializeBoxed(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Boxed);
   const value = deserializeUint(ctx);
   trackChild(ctx, id, value);
-  // biome-ignore lint/style/useConsistentBuiltinInstantiation: intentional
   upsert(ctx, id, Object(getRefSync(ctx, value)));
 }
 
@@ -974,11 +881,7 @@ function createView<T>(type: SerovalBinaryType, create: () => T): T {
 function deserializeTypedArray(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.TypedArray);
   const tag = deserializeByte(ctx) as TypedArrayTag;
-  const buffer = deserializeRef(
-    ctx,
-    SerovalBinaryType.TypedArray,
-    SerovalBinaryType.ArrayBuffer,
-  );
+  const buffer = deserializeRef(ctx, SerovalBinaryType.TypedArray, SerovalBinaryType.ArrayBuffer);
   const offset = deserializeUint(ctx);
   const length = deserializeUint(ctx);
   if (length > MAX_TYPED_ARRAY_LENGTH) {
@@ -993,11 +896,7 @@ function deserializeTypedArray(ctx: DeserializerContext) {
     ctx,
     id,
     createView(SerovalBinaryType.TypedArray, () => {
-      return new construct(
-        getRefSync(ctx, buffer) as ArrayBuffer,
-        offset,
-        length,
-      );
+      return new construct(getRefSync(ctx, buffer) as ArrayBuffer, offset, length);
     }),
   );
 }
@@ -1013,9 +912,7 @@ function deserializeBigIntTypedArray(ctx: DeserializerContext) {
   const offset = deserializeUint(ctx);
   const length = deserializeUint(ctx);
   if (length > MAX_TYPED_ARRAY_LENGTH) {
-    throw new SerovalMalformedBinaryTypeError(
-      SerovalBinaryType.BigIntTypedArray,
-    );
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.BigIntTypedArray);
   }
   const construct = deserializeKnownValue(
     SerovalBinaryType.BigIntTypedArray,
@@ -1026,22 +923,14 @@ function deserializeBigIntTypedArray(ctx: DeserializerContext) {
     ctx,
     id,
     createView(SerovalBinaryType.BigIntTypedArray, () => {
-      return new construct(
-        getRefSync(ctx, buffer) as ArrayBuffer,
-        offset,
-        length,
-      );
+      return new construct(getRefSync(ctx, buffer) as ArrayBuffer, offset, length);
     }),
   );
 }
 
 function deserializeDataView(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.DataView);
-  const buffer = deserializeRef(
-    ctx,
-    SerovalBinaryType.DataView,
-    SerovalBinaryType.ArrayBuffer,
-  );
+  const buffer = deserializeRef(ctx, SerovalBinaryType.DataView, SerovalBinaryType.ArrayBuffer);
   const offset = deserializeUint(ctx);
   const length = deserializeUint(ctx);
   if (length > MAX_TYPED_ARRAY_LENGTH) {
@@ -1051,11 +940,7 @@ function deserializeDataView(ctx: DeserializerContext) {
     ctx,
     id,
     createView(SerovalBinaryType.DataView, () => {
-      return new DataView(
-        getRefSync(ctx, buffer) as ArrayBuffer,
-        offset,
-        length,
-      );
+      return new DataView(getRefSync(ctx, buffer) as ArrayBuffer, offset, length);
     }),
   );
 }
@@ -1090,7 +975,7 @@ function deserializeMapSetEntry(
           popPendingState(ctx, id);
         }
       },
-      err => {
+      (err) => {
         ctx.onError(err);
         trackInflight(ctx, id, -1);
         popPendingState(ctx, id);
@@ -1108,11 +993,7 @@ function deserializeMapSetEntry(
 }
 
 function deserializeMapSet(ctx: DeserializerContext) {
-  const object = deserializeRef(
-    ctx,
-    SerovalBinaryType.MapSet,
-    SerovalBinaryType.Map,
-  );
+  const object = deserializeRef(ctx, SerovalBinaryType.MapSet, SerovalBinaryType.Map);
   const key = deserializeUint(ctx);
   const value = deserializeUint(ctx);
 
@@ -1129,16 +1010,12 @@ function deserializeSet(ctx: DeserializerContext) {
 }
 
 function deserializeSetAdd(ctx: DeserializerContext) {
-  const object = deserializeRef(
-    ctx,
-    SerovalBinaryType.SetAdd,
-    SerovalBinaryType.Set,
-  );
+  const object = deserializeRef(ctx, SerovalBinaryType.SetAdd, SerovalBinaryType.Set);
   const value = deserializeUint(ctx);
 
   assertOpenContainer(ctx, SerovalBinaryType.SetAdd, object);
   trackChild(ctx, object, value);
-  runAssignment(ctx, object, value, resolved => {
+  runAssignment(ctx, object, value, (resolved) => {
     (getRefSync(ctx, object) as Set<unknown>).add(resolved);
   });
 }
@@ -1200,40 +1077,28 @@ async function deserializePromiseFulfillInner(
 function deserializePromiseSuccess(ctx: DeserializerContext) {
   // Only Promise ids ever reach `promiseResolvers`, but validating the target
   // type up front turns a wrong reference into a clear error.
-  const resolver = deserializeRef(
-    ctx,
-    SerovalBinaryType.PromiseSuccess,
-    SerovalBinaryType.Promise,
-  );
+  const resolver = deserializeRef(ctx, SerovalBinaryType.PromiseSuccess, SerovalBinaryType.Promise);
   const value = deserializeUint(ctx);
   settlePromiseNode(ctx, SerovalBinaryType.PromiseSuccess, resolver);
 
-  deserializePromiseFulfillInner(ctx, true, resolver, value).catch(error => {
+  deserializePromiseFulfillInner(ctx, true, resolver, value).catch((error) => {
     rejectPromiseNode(ctx, resolver, error);
   });
 }
 
 function deserializePromiseFailure(ctx: DeserializerContext) {
-  const resolver = deserializeRef(
-    ctx,
-    SerovalBinaryType.PromiseFailure,
-    SerovalBinaryType.Promise,
-  );
+  const resolver = deserializeRef(ctx, SerovalBinaryType.PromiseFailure, SerovalBinaryType.Promise);
   const value = deserializeUint(ctx);
   settlePromiseNode(ctx, SerovalBinaryType.PromiseFailure, resolver);
 
-  deserializePromiseFulfillInner(ctx, false, resolver, value).catch(error => {
+  deserializePromiseFulfillInner(ctx, false, resolver, value).catch((error) => {
     rejectPromiseNode(ctx, resolver, error);
   });
 }
 
 // A settle node that cannot be applied still ends its promise, with the
 // error, so the promise does not wait for a node that will never come.
-function rejectPromiseNode(
-  ctx: DeserializerContext,
-  promise: number,
-  error: unknown,
-): void {
+function rejectPromiseNode(ctx: DeserializerContext, promise: number, error: unknown): void {
   ctx.onError(error);
   ctx.refs.promiseResolvers.get(promise)?.f(error);
 }
@@ -1243,16 +1108,8 @@ function deserializeRegExp(ctx: DeserializerContext) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.RegExp);
   }
   const id = deserializeId(ctx, SerovalBinaryType.RegExp);
-  const pattern = deserializeRef(
-    ctx,
-    SerovalBinaryType.RegExp,
-    SerovalBinaryType.String,
-  );
-  const flags = deserializeRef(
-    ctx,
-    SerovalBinaryType.RegExp,
-    SerovalBinaryType.String,
-  );
+  const pattern = deserializeRef(ctx, SerovalBinaryType.RegExp, SerovalBinaryType.String);
+  const flags = deserializeRef(ctx, SerovalBinaryType.RegExp, SerovalBinaryType.String);
   const actualPattern = getRefSync(ctx, pattern) as string;
   if (actualPattern.length > MAX_REGEXP_SOURCE_LENGTH) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.RegExp);
@@ -1262,17 +1119,9 @@ function deserializeRegExp(ctx: DeserializerContext) {
 
 function deserializeAggregateError(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.AggregateError);
-  const message = deserializeRef(
-    ctx,
-    SerovalBinaryType.AggregateError,
-    SerovalBinaryType.String,
-  );
+  const message = deserializeRef(ctx, SerovalBinaryType.AggregateError, SerovalBinaryType.String);
   createPending(ctx, id);
-  upsert(
-    ctx,
-    id,
-    new AggregateError([], getRefSync(ctx, message) as string),
-  );
+  upsert(ctx, id, new AggregateError([], getRefSync(ctx, message) as string));
 }
 
 async function deserializePluginInner(
@@ -1310,11 +1159,7 @@ async function deserializePluginInner(
 
 function deserializePlugin(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Plugin);
-  const tag = deserializeRef(
-    ctx,
-    SerovalBinaryType.Plugin,
-    SerovalBinaryType.String,
-  );
+  const tag = deserializeRef(ctx, SerovalBinaryType.Plugin, SerovalBinaryType.String);
   const options = deserializeUint(ctx);
 
   trackChild(ctx, id, options);
@@ -1372,11 +1217,7 @@ function deserializeRoot(ctx: DeserializerContext) {
 
 function deserializeIterator(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Iterator);
-  const sequence = deserializeRef(
-    ctx,
-    SerovalBinaryType.Iterator,
-    SerovalBinaryType.Sequence,
-  );
+  const sequence = deserializeRef(ctx, SerovalBinaryType.Iterator, SerovalBinaryType.Sequence);
   // The sequence's indices are checked when its `Pending` node is read, so
   // the iterator may only use a sequence that already has one.
   if (!ctx.refs.pendingResolvers.get(sequence)?.declared) {
@@ -1388,16 +1229,8 @@ function deserializeIterator(ctx: DeserializerContext) {
 
 function deserializeAsyncIterator(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.AsyncIterator);
-  const stream = deserializeRef(
-    ctx,
-    SerovalBinaryType.AsyncIterator,
-    SerovalBinaryType.Stream,
-  );
-  upsert(
-    ctx,
-    id,
-    streamToAsyncIterable(getRefSync(ctx, stream) as Stream<unknown>),
-  );
+  const stream = deserializeRef(ctx, SerovalBinaryType.AsyncIterator, SerovalBinaryType.Stream);
+  upsert(ctx, id, streamToAsyncIterable(getRefSync(ctx, stream) as Stream<unknown>));
 }
 
 function deserializeTemporalInner(
@@ -1447,22 +1280,14 @@ function deserializeTemporalInner(
 function deserializeTemporal(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Temporal);
   const type = deserializeByte(ctx) as SerovalTemporalType;
-  const isoRef = deserializeRef(
-    ctx,
-    SerovalBinaryType.Temporal,
-    SerovalBinaryType.String,
-  );
+  const isoRef = deserializeRef(ctx, SerovalBinaryType.Temporal, SerovalBinaryType.String);
 
   upsert(ctx, id, deserializeTemporalInner(ctx, type, isoRef));
 }
 
 function deserializeReference(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Reference);
-  const key = deserializeRef(
-    ctx,
-    SerovalBinaryType.Reference,
-    SerovalBinaryType.String,
-  );
+  const key = deserializeRef(ctx, SerovalBinaryType.Reference, SerovalBinaryType.String);
   // Throws if no value was registered under the key on this side.
   upsert(ctx, id, getReference(getRefSync(ctx, key) as string));
 }
@@ -1674,8 +1499,7 @@ function getNodeSize(ctx: DeserializerContext): number {
   }
   const size = NODE_SIZE[type];
   if (
-    (type === SerovalBinaryType.String ||
-      type === SerovalBinaryType.ArrayBuffer) &&
+    (type === SerovalBinaryType.String || type === SerovalBinaryType.ArrayBuffer) &&
     ensureBuffered(ctx, size)
   ) {
     return size + ctx.view.getUint32(ctx.offset + 5, ctx.littleEndian);
@@ -1743,7 +1567,7 @@ function abortDeserialize(ctx: DeserializerContext, reason: unknown): void {
 }
 
 export function deserializeStart(ctx: DeserializerContext) {
-  drain(ctx).catch(error => {
+  drain(ctx).catch((error) => {
     ctx.onError(error);
     abortDeserialize(ctx, error);
   });

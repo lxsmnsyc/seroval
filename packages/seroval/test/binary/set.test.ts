@@ -49,9 +49,7 @@ describe('binary Set', () => {
   });
 
   it('supports nested Sets', async () => {
-    const { value } = await roundtrip<Set<Set<string>>>(
-      new Set([new Set(['deep'])]),
-    );
+    const { value } = await roundtrip<Set<Set<string>>>(new Set([new Set(['deep'])]));
     const [inner] = [...value];
     expect(inner).toBeInstanceOf(Set);
     expect([...inner]).toEqual(['deep']);

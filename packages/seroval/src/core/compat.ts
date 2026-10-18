@@ -34,7 +34,9 @@ export const enum FeatureFlag {
 export enum Feature {
   /** `AggregateError`. */
   AggregateError = 0x01,
-  /** Arrow-function syntax in the output. @deprecated always enabled */
+  /**
+   * @deprecated Has no effect. Output always uses arrow functions.
+   */
   ArrowFunction = 0x02,
   /** Preserving `Error.prototype.stack`. */
   ErrorPrototypeStack = 0x04,

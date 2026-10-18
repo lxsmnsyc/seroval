@@ -1,10 +1,4 @@
-import {
-  deserialize,
-  fromJSON,
-  serialize,
-  serializeAsync,
-  toJSON,
-} from 'seroval';
+import { deserialize, fromJSON, serialize, serializeAsync, toJSON } from 'seroval';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import ImageDataPlugin from '../../../web/image-data';
 import { captureSerializeError, roundtrip } from './utils';
@@ -77,10 +71,7 @@ describe('binary ImageData', () => {
 
   it('does not match non-ImageData values', async () => {
     // A plain value falls through the plugin's `test` and is serialized normally.
-    const { value } = await roundtrip<{ hello: string }>(
-      { hello: 'world' },
-      PLUGINS,
-    );
+    const { value } = await roundtrip<{ hello: string }>({ hello: 'world' }, PLUGINS);
     expect(value).toEqual({ hello: 'world' });
   });
 
@@ -96,9 +87,7 @@ describe('binary ImageData', () => {
 
   describe('string mode', () => {
     it('supports the sync serializer', () => {
-      const back = deserialize<StubImageData>(
-        serialize(makeImageData(2, 2), { plugins: PLUGINS }),
-      );
+      const back = deserialize<StubImageData>(serialize(makeImageData(2, 2), { plugins: PLUGINS }));
       expect(back).toBeInstanceOf(StubImageData);
       expect(back.width).toBe(2);
       expect(back.colorSpace).toBe('srgb');
@@ -114,10 +103,9 @@ describe('binary ImageData', () => {
 
     it('supports the JSON tree form', () => {
       const source = makeImageData(1, 1);
-      const back = fromJSON<StubImageData>(
-        toJSON(source, { plugins: PLUGINS }),
-        { plugins: PLUGINS },
-      );
+      const back = fromJSON<StubImageData>(toJSON(source, { plugins: PLUGINS }), {
+        plugins: PLUGINS,
+      });
       expect(back).toBeInstanceOf(StubImageData);
       expect([...back.data]).toEqual([...source.data]);
     });

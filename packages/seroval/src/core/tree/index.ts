@@ -1,25 +1,27 @@
 import { ALL_ENABLED } from '../compat';
-import {
-  createAsyncParserContext,
-  parseTopAsync,
-} from '../context/async-parser';
+import { createAsyncParserContext, parseTopAsync } from '../context/async-parser';
 import {
   type BaseDeserializerContextOptions,
   createVanillaDeserializerContext,
   deserializeTop,
 } from '../context/deserializer';
 import type { BaseParserContextOptions } from '../context/parser';
-import {
-  createVanillaSerializerContext,
-  serializeTopVanilla,
-} from '../context/serializer';
+import { createVanillaSerializerContext, serializeTopVanilla } from '../context/serializer';
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
 import { type PluginAccessOptions, resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
-/** Options accepted by the synchronous parsers ({@link serialize}, {@link toJSON}). */
-export type SyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
-/** Options accepted by the asynchronous parsers ({@link serializeAsync}, {@link toJSONAsync}). */
-export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
+
+/**
+ * Options for `serialize`. The same as the parser options, without `refs`:
+ * the output is self-contained, so there is nothing to share between calls.
+ */
+export type SerializeOptions = Omit<BaseParserContextOptions, 'refs'>;
+/** Options for `serializeAsync`. */
+export type SerializeAsyncOptions = Omit<BaseParserContextOptions, 'refs'>;
+/** Options for `toJSON`. */
+export type ToJSONOptions = SerializeOptions;
+/** Options for `toJSONAsync`. */
+export type ToJSONAsyncOptions = SerializeAsyncOptions;
 
 /**
  * Serializes a JavaScript value into a self-contained JavaScript expression
@@ -35,10 +37,7 @@ export type AsyncParserContextOptions = Omit<BaseParserContextOptions, 'refs'>;
  * @param options Plugins and disabled feature flags.
  * @returns A JavaScript expression string.
  */
-export function serialize<T>(
-  source: T,
-  options: SyncParserContextOptions = {},
-): string {
+export function serialize<T>(source: T, options: SerializeOptions = {}): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
@@ -66,7 +65,7 @@ export function serialize<T>(
  */
 export async function serializeAsync<T>(
   source: T,
-  options: AsyncParserContextOptions = {},
+  options: SerializeAsyncOptions = {},
 ): Promise<string> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext({
@@ -96,6 +95,7 @@ export async function serializeAsync<T>(
  * @param source A JavaScript expression string.
  */
 export function deserialize<T>(source: string): T {
+  // oxlint-disable-next-line no-eval -- Deserializing runs the serialized source by design.
   return (0, eval)(source) as T;
 }
 
@@ -111,7 +111,8 @@ export interface SerovalJSON {
 
 /** Options for {@link fromJSON}. */
 export interface FromJSONOptions
-  extends PluginAccessOptions,
+  extends
+    PluginAccessOptions,
     Pick<BaseDeserializerContextOptions, 'depthLimit' | 'maxBase64Length'> {
   /** Feature flags to disable when rebuilding the value. */
   disabledFeatures?: number;
@@ -125,10 +126,7 @@ export interface FromJSONOptions
  *
  * Synchronous: use {@link toJSONAsync} for values containing Promises.
  */
-export function toJSON<T>(
-  source: T,
-  options: SyncParserContextOptions = {},
-): SerovalJSON {
+export function toJSON<T>(source: T, options: ToJSONOptions = {}): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext({
     compactArrayBufferViews: options.compactArrayBufferViews,
@@ -149,7 +147,7 @@ export function toJSON<T>(
  */
 export async function toJSONAsync<T>(
   source: T,
-  options: AsyncParserContextOptions = {},
+  options: ToJSONAsyncOptions = {},
 ): Promise<SerovalJSON> {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createAsyncParserContext({
@@ -175,10 +173,7 @@ export async function toJSONAsync<T>(
  * re-escape them. Only pass trees you produced yourself, never an untrusted
  * tree - for that, rebuild the value with {@link fromJSON} instead.
  */
-export function compileJSON(
-  source: SerovalJSON,
-  options: PluginAccessOptions = {},
-): string {
+export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = {}): string {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createVanillaSerializerContext({
     plugins,
@@ -194,12 +189,10 @@ export function compileJSON(
  * directly without ever evaluating code, so it is the safe choice for input
  * that crossed an untrusted boundary.
  */
-export function fromJSON<T>(
-  source: SerovalJSON,
-  options: FromJSONOptions = {},
-): T {
+export function fromJSON<T>(source: SerovalJSON, options: FromJSONOptions = {}): T {
   const plugins = resolvePlugins(options.plugins);
-  const disabledFeatures = options.disabledFeatures || 0;
+  const disabledFeatures = options.disabledFeatures ?? 0;
+  // oxlint-disable-next-line no-unnecessary-condition -- Untrusted JSON can omit the features.
   const sourceFeatures = source.f ?? ALL_ENABLED;
   const ctx = createVanillaDeserializerContext({
     depthLimit: options.depthLimit,

@@ -7,10 +7,7 @@ const PLUGINS = [AbortSignalPlugin];
 
 describe('binary AbortSignal', () => {
   it('supports an already aborted signal', async () => {
-    const { value } = await roundtrip<AbortSignal>(
-      AbortSignal.abort('reason'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<AbortSignal>(AbortSignal.abort('reason'), PLUGINS);
     expect(value).toBeInstanceOf(AbortSignal);
     expect(value.aborted).toBe(true);
     expect(value.reason).toBe('reason');
@@ -30,10 +27,10 @@ describe('binary AbortSignal', () => {
     // The plugin branches on `'reason' in data`, so the payload has to be
     // materialized before it runs - otherwise it takes the live-controller
     // branch and throws on an undefined controller.
-    const { value } = await roundtrip<AbortSignal>(
-      AbortSignal.abort(new Blob(['why'])),
-      [AbortSignalPlugin, BlobPlugin],
-    );
+    const { value } = await roundtrip<AbortSignal>(AbortSignal.abort(new Blob(['why'])), [
+      AbortSignalPlugin,
+      BlobPlugin,
+    ]);
     expect(value.aborted).toBe(true);
     expect(value.reason).toBeInstanceOf(Blob);
     expect(await (value.reason as Blob).text()).toBe('why');
@@ -42,17 +39,14 @@ describe('binary AbortSignal', () => {
   it('aborts a live signal when the source aborts', async () => {
     const controller = new AbortController();
     const handle = startSerialize(controller.signal, PLUGINS);
-    const result = await startDeserialize<AbortSignal>(
-      handle.transport,
-      PLUGINS,
-    );
+    const result = await startDeserialize<AbortSignal>(handle.transport, PLUGINS);
 
     expect(result.value).toBeInstanceOf(AbortSignal);
     expect(result.value.aborted).toBe(false);
 
     controller.abort('later');
     await handle.done;
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(result.value.aborted).toBe(true);
     expect(result.value.reason).toBe('later');
@@ -61,12 +55,9 @@ describe('binary AbortSignal', () => {
   it('fires the abort event on the deserialized signal', async () => {
     const controller = new AbortController();
     const handle = startSerialize(controller.signal, PLUGINS);
-    const result = await startDeserialize<AbortSignal>(
-      handle.transport,
-      PLUGINS,
-    );
+    const result = await startDeserialize<AbortSignal>(handle.transport, PLUGINS);
 
-    const fired = new Promise<void>(resolve => {
+    const fired = new Promise<void>((resolve) => {
       result.value.addEventListener('abort', () => resolve(), { once: true });
     });
 
@@ -83,7 +74,7 @@ describe('binary AbortSignal', () => {
     void handle.done.then(() => {
       finished = true;
     });
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(finished).toBe(false);
 
     controller.abort();

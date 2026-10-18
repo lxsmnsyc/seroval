@@ -18,10 +18,7 @@ describe('binary number', () => {
   });
 
   it('supports MAX_SAFE_INTEGER and MIN_SAFE_INTEGER', async () => {
-    const { value } = await roundtrip<number[]>([
-      Number.MAX_SAFE_INTEGER,
-      Number.MIN_SAFE_INTEGER,
-    ]);
+    const { value } = await roundtrip<number[]>([Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
     expect(value).toEqual([Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
   });
 
@@ -103,16 +100,7 @@ describe('binary number', () => {
   });
 
   it('does not confuse constant tags with small numbers', async () => {
-    const { value } = await roundtrip<unknown[]>([
-      0,
-      1,
-      2,
-      3,
-      null,
-      undefined,
-      true,
-      false,
-    ]);
+    const { value } = await roundtrip<unknown[]>([0, 1, 2, 3, null, undefined, true, false]);
     expect(value).toEqual([0, 1, 2, 3, null, undefined, true, false]);
   });
 });

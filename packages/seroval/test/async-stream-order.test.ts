@@ -1,24 +1,28 @@
-import { describe, expect, it } from 'vitest';
-import {
-  createLiveStream,
-  createStream,
-  fromJSON,
-  type Stream,
-  toJSONAsync,
-} from '../src';
+import { assert, describe, expect, it } from 'vitest';
+import { type Stream, createLiveStream, createStream, fromJSON, toJSONAsync } from '../src';
 
-const events = (stream: Stream<unknown>) =>
-  new Promise<unknown[]>(resolve => {
+const events = async (stream: Stream<unknown>): Promise<unknown[]> =>
+  new Promise<unknown[]>((resolve) => {
     const seen: unknown[] = [];
     stream.on({
-      next: value => seen.push(value),
-      throw: value => resolve([...seen, ['throw', value]]),
-      return: value => resolve([...seen, ['return', value]]),
+      next: (value) => {
+        seen.push(value);
+      },
+      throw: (value) => {
+        resolve([...seen, ['throw', value]]);
+      },
+      return: (value) => {
+        resolve([...seen, ['return', value]]);
+      },
     });
   });
 
-const later = <T>(value: T) =>
-  new Promise<T>(resolve => setTimeout(() => resolve(value), 5));
+const later = async <T>(value: T): Promise<T> =>
+  new Promise<T>((resolve) => {
+    setTimeout(() => {
+      resolve(value);
+    }, 5);
+  });
 
 describe('async stream event order', () => {
   it('keeps replay stream chunks before the terminal event', async () => {
@@ -27,13 +31,14 @@ describe('async stream event order', () => {
     source.next({ deferred: later(2) });
     source.next('c');
     source.return(undefined);
-    const decoded = fromJSON(await toJSONAsync(source)) as Stream<unknown>;
+    const decoded = fromJSON<Stream<unknown>>(await toJSONAsync(source));
     const seen = await events(decoded);
     expect(seen.length).toBe(4);
-    expect([...(seen[0] as Uint8Array)]).toEqual([1]);
-    await expect(
-      (seen[1] as { deferred: Promise<number> }).deferred,
-    ).resolves.toBe(2);
+    const [bytes, record] = seen;
+    assert(bytes instanceof Uint8Array);
+    expect([...bytes]).toEqual([1]);
+    assert(typeof record === 'object' && record !== null && 'deferred' in record);
+    await expect(record.deferred).resolves.toBe(2);
     expect(seen.slice(2)).toEqual(['c', ['return', undefined]]);
   });
 
@@ -41,7 +46,7 @@ describe('async stream event order', () => {
     const { stream, producer } = createLiveStream<unknown>();
     const order: string[] = [];
     const result = toJSONAsync(stream);
-    const settle = later(1).then(value => {
+    const settle = later(1).then((value) => {
       order.push('settled');
       return value;
     });
@@ -49,11 +54,13 @@ describe('async stream event order', () => {
     order.push('accepted');
     await producer.write(new Uint8Array([2]));
     await producer.close(undefined);
-    const decoded = fromJSON(await result) as Stream<unknown>;
+    const decoded = fromJSON<Stream<unknown>>(await result);
     const seen = await events(decoded);
     expect(order).toEqual(['settled', 'accepted']);
     expect(seen.length).toBe(3);
-    expect([...(seen[1] as Uint8Array)]).toEqual([2]);
+    const bytes = seen[1];
+    assert(bytes instanceof Uint8Array);
+    expect([...bytes]).toEqual([2]);
     expect(seen[2]).toEqual(['return', undefined]);
   });
 
@@ -66,7 +73,9 @@ describe('async stream event order', () => {
   });
   it('shares the original parse failure and keeps cleanup failure secondary', async () => {
     const unhandled: unknown[] = [];
-    const record = (reason: unknown) => unhandled.push(reason);
+    const record = (reason: unknown): void => {
+      unhandled.push(reason);
+    };
     process.on('unhandledRejection', record);
     try {
       const cancelled: unknown[] = [];
@@ -78,21 +87,21 @@ describe('async stream event order', () => {
       });
       const parsed = toJSONAsync(stream);
       const sent = producer.write(Symbol('unsupported'));
-      const [parseResult, sendResult] = await Promise.allSettled([
-        parsed,
-        sent,
-      ]);
-      await new Promise(resolve => setImmediate(resolve));
-      await new Promise(resolve => setImmediate(resolve));
-      expect(parseResult.status).toBe('rejected');
-      expect(sendResult.status).toBe('rejected');
-      const primary = (parseResult as PromiseRejectedResult).reason as {
-        cause?: unknown;
-      };
+      const [parseResult, sendResult] = await Promise.allSettled([parsed, sent]);
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+      assert(parseResult.status === 'rejected');
+      assert(sendResult.status === 'rejected');
+      const primary: unknown = parseResult.reason;
+      assert(typeof primary === 'object' && primary !== null && 'cause' in primary);
       const cause = primary.cause;
-      expect(cause).toBeInstanceOf(Error);
-      expect((cause as Error).message).not.toBe('secondary cleanup failure');
-      expect((sendResult as PromiseRejectedResult).reason).toBe(cause);
+      assert(cause instanceof Error);
+      expect(cause.message).not.toBe('secondary cleanup failure');
+      expect(sendResult.reason).toBe(cause);
       expect(cancelled).toEqual([cause]);
       expect(unhandled).toEqual([]);
     } finally {
@@ -102,13 +111,15 @@ describe('async stream event order', () => {
 
   it('surfaces a cleanup failure after a successful sequence', async () => {
     const unhandled: unknown[] = [];
-    const record = (reason: unknown) => unhandled.push(reason);
+    const record = (reason: unknown): void => {
+      unhandled.push(reason);
+    };
     process.on('unhandledRejection', record);
     try {
       const source = createStream<unknown>();
-      const on = source.on;
+      const on = source.on.bind(source);
       const failure = new Error('cleanup failed');
-      source.on = listener => {
+      source.on = (listener) => {
         on(listener);
         return () => {
           throw failure;
@@ -116,14 +127,17 @@ describe('async stream event order', () => {
       };
       source.next(new Uint8Array([1]));
       source.return(undefined);
-      const result = await Promise.allSettled([toJSONAsync(source)]);
-      await new Promise(resolve => setImmediate(resolve));
-      await new Promise(resolve => setImmediate(resolve));
-      expect(result[0].status).toBe('rejected');
-      expect(
-        ((result[0] as PromiseRejectedResult).reason as { cause?: unknown })
-          .cause,
-      ).toBe(failure);
+      const [result] = await Promise.allSettled([toJSONAsync(source)]);
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+      assert(result.status === 'rejected');
+      const reason: unknown = result.reason;
+      assert(typeof reason === 'object' && reason !== null && 'cause' in reason);
+      expect(reason.cause).toBe(failure);
       expect(unhandled).toEqual([]);
     } finally {
       process.off('unhandledRejection', record);

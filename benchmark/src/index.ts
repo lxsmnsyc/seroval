@@ -1,5 +1,5 @@
 import util from 'util';
-import { suite, add, cycle, complete, save } from 'benny';
+import { add, complete, cycle, save, suite } from 'benny';
 
 // fixtures
 import circularDedupe from './fixtures/circular-dedupe';
@@ -53,18 +53,18 @@ const fixtures = {
   'small-collection': smallCollection,
 };
 
-async function run() {
+async function run(): Promise<void> {
   for (const [key, value] of Object.entries(fixtures)) {
     const suiteName = key;
     const getData = value as () => unknown;
 
     // Skip benchmarks that couldn't properly serialize and hydrate the structure.
     const toolsForFixture = await Promise.all(
-      tools.map(async tool => {
-        let skip = false;
+      tools.map(async (tool) => {
+        let skip: boolean;
         try {
           skip = !util.isDeepStrictEqual(
-            await tool.fromString(await tool.toString(getData())),
+            await tool.fromString(tool.toString(getData())),
             getData(),
           );
         } catch {
@@ -75,6 +75,7 @@ async function run() {
       }),
     );
 
+    // oxlint-disable-next-line no-void -- benny reports the suite, so the loop does not wait for it.
     void suite(
       `${suiteName} to string`,
       ...toolsForFixture.map(({ name, utils, skip }) =>
@@ -100,6 +101,7 @@ async function run() {
       }),
     );
 
+    // oxlint-disable-next-line no-void -- benny reports the suite, so the loop does not wait for it.
     void suite(
       `${suiteName} from string`,
       ...toolsForFixture.map(({ name, utils }) =>
@@ -132,4 +134,5 @@ async function run() {
   }
 }
 
+// oxlint-disable-next-line no-void -- The CommonJS build has no top-level await.
 void run();

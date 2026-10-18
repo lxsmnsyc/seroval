@@ -1,11 +1,11 @@
-import { serialize, deserialize } from 'seroval';
+import { deserialize, serialize } from 'seroval';
 
 export const name = 'seroval';
 
-export function toString(data: unknown) {
+export function toString(data: unknown): string {
   return serialize(data);
 }
 
-export function fromString(str: string) {
+export function fromString(str: string): unknown {
   return deserialize(str);
 }

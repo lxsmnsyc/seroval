@@ -40,20 +40,14 @@ describe('binary ReadableStream', () => {
   });
 
   it('closes the deserialized stream when the source closes', async () => {
-    const { value } = await roundtrip<ReadableStream<number>>(
-      fromValues([1]),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<ReadableStream<number>>(fromValues([1]), PLUGINS);
     const reader = value.getReader();
     expect(await reader.read()).toEqual({ done: false, value: 1 });
     expect(await reader.read()).toEqual({ done: true, value: undefined });
   });
 
   it('supports empty streams', async () => {
-    const { value } = await roundtrip<ReadableStream<never>>(
-      fromValues([]),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<ReadableStream<never>>(fromValues([]), PLUGINS);
     expect(await drain(value)).toEqual([]);
   });
 
@@ -73,16 +67,13 @@ describe('binary ReadableStream', () => {
     let stop!: () => void;
     const source = new ReadableStream<string>({
       start(controller) {
-        push = value => controller.enqueue(value);
+        push = (value) => controller.enqueue(value);
         stop = () => controller.close();
       },
     });
 
     const handle = startSerialize(source, PLUGINS);
-    const result = await startDeserialize<ReadableStream<string>>(
-      handle.transport,
-      PLUGINS,
-    );
+    const result = await startDeserialize<ReadableStream<string>>(handle.transport, PLUGINS);
     const reader = result.value.getReader();
 
     push('first');
@@ -101,15 +92,12 @@ describe('binary ReadableStream', () => {
     const source = new ReadableStream<string>({
       start(controller) {
         controller.enqueue('before');
-        fail = error => controller.error(error);
+        fail = (error) => controller.error(error);
       },
     });
 
     const handle = startSerialize(source, PLUGINS);
-    const result = await startDeserialize<ReadableStream<string>>(
-      handle.transport,
-      PLUGINS,
-    );
+    const result = await startDeserialize<ReadableStream<string>>(handle.transport, PLUGINS);
     const reader = result.value.getReader();
     expect(await reader.read()).toEqual({ done: false, value: 'before' });
 

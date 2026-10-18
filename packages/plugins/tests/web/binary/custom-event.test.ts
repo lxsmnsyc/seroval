@@ -33,10 +33,7 @@ describe('binary CustomEvent', () => {
   });
 
   it('supports a CustomEvent without detail', async () => {
-    const { value } = await roundtrip<CustomEvent>(
-      new CustomEvent('empty'),
-      PLUGINS,
-    );
+    const { value } = await roundtrip<CustomEvent>(new CustomEvent('empty'), PLUGINS);
     expect(value.type).toBe('empty');
     expect(value.detail).toBe(null);
   });

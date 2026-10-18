@@ -77,7 +77,7 @@ describe('binary Request', () => {
     const body = new ReadableStream<Uint8Array>({
       start(controller) {
         const encoder = new TextEncoder();
-        push = chunk => controller.enqueue(encoder.encode(chunk));
+        push = (chunk) => controller.enqueue(encoder.encode(chunk));
         stop = () => controller.close();
       },
     });

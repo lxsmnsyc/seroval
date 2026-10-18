@@ -30,6 +30,7 @@ describe('Headers', () => {
       expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Headers);
+      // oxlint-disable-next-line typescript/no-base-to-string -- The existing check compares the default string tags.
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
@@ -41,6 +42,7 @@ describe('Headers', () => {
       expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Headers);
+      // oxlint-disable-next-line typescript/no-base-to-string -- The existing check compares the default string tags.
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
@@ -54,6 +56,7 @@ describe('Headers', () => {
         plugins: [HeadersPlugin],
       });
       expect(back).toBeInstanceOf(Headers);
+      // oxlint-disable-next-line typescript/no-base-to-string -- The existing check compares the default string tags.
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
@@ -67,6 +70,7 @@ describe('Headers', () => {
         plugins: [HeadersPlugin],
       });
       expect(back).toBeInstanceOf(Headers);
+      // oxlint-disable-next-line typescript/no-base-to-string -- The existing check compares the default string tags.
       expect(String(back)).toBe(String(EXAMPLE));
     });
   });
