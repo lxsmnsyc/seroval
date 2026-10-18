@@ -69,6 +69,7 @@ The JavaScript output calls `new Point`, so `Point` must be in scope wherever th
 | `parse.stream` | Takes the value apart for the streaming functions and `Serializer`. |
 | `serialize(node, ctx)` | Returns a JavaScript expression that rebuilds the value. Used by the JavaScript output and `compileJSON`. |
 | `deserialize(node, ctx)` | Rebuilds the value from its node. Used by `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`. |
+| `binary` | Takes the value apart and puts it back together for [binary mode](#binary-mode). |
 | `extends` | Other plugins this plugin needs. They are added automatically. |
 
 Each `parse` function returns an object of nodes. That object is the `node` that `serialize` and `deserialize` receive.
@@ -88,6 +89,113 @@ Each function gets a context to process nested values:
 | `deserialize` | `ctx.deserialize(node)` | Rebuilds a nested node. |
 
 `parse.stream` also gets `ctx.addCleanup(fn)`, which runs `fn` when the stream ends or is stopped. Use it to release resources the plugin holds.
+
+## Binary mode
+
+[Binary mode](./binary-mode.md) does not use `parse`, `serialize` or `deserialize`. It uses the plugin's `binary` section instead:
+
+- `binary.serialize(value, ctx)` returns data that seroval can send: any value seroval supports, including promises, streams and values from other plugins. seroval serializes that data like any other value, so references and cycles inside it are kept. The data cannot refer back to the value the plugin is serializing.
+- `binary.deserialize(data)` receives that data, rebuilt, and returns the value. It may return a promise.
+
+Add a `binary` section to the `Point` plugin:
+
+```js
+export const PointPlugin = createPlugin({
+  tag: 'my-app/Point',
+  // test, parse, serialize and deserialize as above
+  binary: {
+    serialize(point) {
+      return { x: point.x, y: point.y };
+    },
+    deserialize(data) {
+      if (typeof data.x !== 'number' || typeof data.y !== 'number') {
+        throw new TypeError('Point: expected two numbers.');
+      }
+      return new Point(data.x, data.y);
+    },
+  },
+});
+```
+
+`binary.deserialize` runs once every object, array, `Map` and `Set` in `data` is filled in. Promises and streams in `data` may still be pending. Validate `data` as you would in `deserialize`, because it comes from the sender.
+
+Every plugin you pass to binary mode needs a `binary` section. A value that matches a plugin without one makes `binary.serialize` fail with a `TypeError`.
+
+### The binary context
+
+`binary.serialize` gets a context with two methods:
+
+| Method | Description |
+| --- | --- |
+| `ctx.addCleanup(fn)` | Runs `fn` once serialization ends or is stopped. Use it to release resources the plugin holds. |
+| `ctx.streamSource(iterable)` | Turns an async iterable into a seroval stream that can be part of the data. Serialization stops reading it and calls its `return` method when it ends or is stopped. |
+
+This plugin sends a `Countdown` as a stream of numbers. The cleanup stops the timer when serialization is stopped early:
+
+```js
+import { createPlugin } from 'seroval';
+
+class Countdown {
+  constructor(from) {
+    this.from = from;
+  }
+
+  async *count(signal) {
+    for (let i = this.from; i > 0 && !signal.aborted; i--) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      yield i;
+    }
+  }
+}
+
+export const CountdownPlugin = createPlugin({
+  tag: 'my-app/Countdown',
+  test(value) {
+    return value instanceof Countdown;
+  },
+  // With no parse functions, the other modes skip this plugin.
+  parse: {},
+  serialize() {
+    throw new TypeError('Countdown only supports binary mode.');
+  },
+  deserialize() {
+    throw new TypeError('Countdown only supports binary mode.');
+  },
+  binary: {
+    serialize(countdown, ctx) {
+      const controller = new AbortController();
+      ctx.addCleanup(() => controller.abort());
+      return {
+        values: ctx.streamSource(countdown.count(controller.signal)),
+      };
+    },
+    deserialize(data) {
+      // `data.values` is a seroval stream.
+      return data.values;
+    },
+  },
+});
+```
+
+The receiver gets the stream, and reads it with `on`:
+
+```js
+value.countdown.on({
+  next(value) {
+    console.log(value);
+  },
+  throw(error) {
+    console.error(error);
+  },
+  return() {
+    console.log('done');
+  },
+});
+// 3
+// 2
+// 1
+// done
+```
 
 ## Rules
 

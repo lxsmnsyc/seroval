@@ -11,14 +11,20 @@ import { For, Show, createEffect, createSignal, onSettled } from 'solid-js';
 import { Tab, TabGroup, TabList } from 'terracotta/tabs';
 import { PlayIcon, ShareIcon } from './Icons';
 
-const PLUGINS = Object.values(webPlugins);
+// FilePlugin goes first: a File is also a Blob, and the first plugin that
+// matches a value wins.
+const PLUGINS = [
+  webPlugins.FilePlugin,
+  ...Object.values(webPlugins).filter((plugin) => plugin !== webPlugins.FilePlugin),
+];
 
 type Mode =
   | 'serialize'
   | 'serializeAsync'
   | 'toJSONAsync'
   | 'crossSerializeAsync'
-  | 'crossSerializeStream';
+  | 'crossSerializeStream'
+  | 'binary';
 
 const MODES: { id: Mode; description: string }[] = [
   {
@@ -41,6 +47,11 @@ const MODES: { id: Mode; description: string }[] = [
   {
     id: 'crossSerializeStream',
     description: 'One script per settled value, in the order a server would stream them.',
+  },
+  {
+    id: 'binary',
+    description:
+      'Uint8Array chunks in the binary format, shown as hex. binary.deserialize decodes them without evaluating code.',
   },
 ];
 
@@ -75,7 +86,7 @@ return parent;`,
   {
     id: 'async',
     label: 'Promises',
-    code: `// Try serializeAsync or crossSerializeStream.
+    code: `// Try serializeAsync, crossSerializeStream or binary.
 const wait = (ms, value) =>
   new Promise(resolve => setTimeout(() => resolve(value), ms));
 
@@ -88,7 +99,7 @@ return {
   {
     id: 'stream',
     label: 'Streams',
-    code: `// Try crossSerializeStream to see one chunk per event.
+    code: `// Try crossSerializeStream or binary to see one chunk per event.
 const stream = seroval.createStream();
 
 let count = 0;
@@ -169,12 +180,63 @@ function evaluate(code: string): unknown {
   return new Function('seroval', code)(seroval);
 }
 
+interface Output {
+  text: string;
+  bytes: number;
+  chunks: number;
+}
+
+const ENCODER = new TextEncoder();
+
+function formatChunks(chunks: string[]): string {
+  if (chunks.length === 1) {
+    return chunks[0];
+  }
+  return chunks.map((chunk, i) => `// Chunk ${i + 1}\n${chunk}`).join('\n\n');
+}
+
+function fromStrings(chunks: string[]): Output {
+  return {
+    text: formatChunks(chunks),
+    bytes: ENCODER.encode(chunks.join('')).length,
+    chunks: chunks.length,
+  };
+}
+
+const HEX_ROW = 8;
+
+// One row per 8 bytes, so a row fits the output pane: the offset, the bytes
+// in hex, then printable ASCII.
+function hexDump(bytes: Uint8Array): string {
+  const rows: string[] = [];
+  for (let offset = 0; offset < bytes.length; offset += HEX_ROW) {
+    const row = bytes.subarray(offset, offset + HEX_ROW);
+    let hex = '';
+    let ascii = '';
+    for (const byte of row) {
+      hex += byte.toString(16).padStart(2, '0') + ' ';
+      ascii += byte >= 0x20 && byte < 0x7f ? String.fromCharCode(byte) : '.';
+    }
+    rows.push(`${offset.toString(16).padStart(6, '0')}  ${hex.padEnd(HEX_ROW * 3)} ${ascii}`);
+  }
+  return rows.join('\n');
+}
+
+function formatBinary(chunks: Uint8Array[], decoded?: string): Output {
+  let bytes = 0;
+  const parts = chunks.map((chunk, i) => {
+    bytes += chunk.length;
+    return `// Chunk ${i + 1} · ${chunk.length} bytes\n${hexDump(chunk)}`;
+  });
+  if (decoded !== undefined) {
+    parts.push(`// Decoded with binary.deserialize, shown with serializeAsync\n${decoded}`);
+  }
+  return { text: parts.join('\n\n'), bytes, chunks: chunks.length };
+}
+
 // Calls onChunk with every chunk so far, so the output shows each chunk as
 // it arrives instead of waiting for the stream to end.
-async function collectStream(
-  value: unknown,
-  onChunk: (chunks: string[]) => void,
-): Promise<string[]> {
+async function collectStream(value: unknown, onChunk: (output: Output) => void): Promise<Output> {
   return new Promise((resolve, reject) => {
     const chunks: string[] = [];
     seroval.crossSerializeStream(value, {
@@ -182,36 +244,65 @@ async function collectStream(
       scopeId: 'playground',
       onSerialize(chunk) {
         chunks.push(chunk);
-        onChunk(chunks);
+        onChunk(fromStrings(chunks));
       },
       onDone() {
-        resolve(chunks);
+        resolve(fromStrings(chunks));
       },
       onError: reject,
     });
   });
 }
 
-async function run(
-  mode: Mode,
-  code: string,
-  onChunk: (chunks: string[]) => void,
-): Promise<string[]> {
+async function collectBinary(value: unknown, onChunk: (output: Output) => void): Promise<Output> {
+  const chunks = await new Promise<Uint8Array[]>((resolve, reject) => {
+    const result: Uint8Array[] = [];
+    seroval.binary.serialize(value, {
+      refs: new Map(),
+      plugins: PLUGINS,
+      onSerialize(bytes) {
+        result.push(bytes);
+        onChunk(formatBinary(result));
+      },
+      onDone() {
+        resolve(result);
+      },
+      onError: reject,
+    });
+  });
+  let index = 0;
+  const { value: decoded } = await seroval.binary.deserialize({
+    plugins: PLUGINS,
+    // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+    read: () => Promise.resolve(chunks[index++]),
+    onError() {
+      // A failure also rejects the promise or stream it belongs to, and
+      // serializeAsync reports that below.
+    },
+  });
+  return formatBinary(chunks, await seroval.serializeAsync(decoded, { plugins: PLUGINS }));
+}
+
+async function run(mode: Mode, code: string, onChunk: (output: Output) => void): Promise<Output> {
   const value = evaluate(code);
   switch (mode) {
     case 'serialize':
-      return [seroval.serialize(value, { plugins: PLUGINS })];
+      return fromStrings([seroval.serialize(value, { plugins: PLUGINS })]);
     case 'serializeAsync':
-      return [await seroval.serializeAsync(value, { plugins: PLUGINS })];
+      return fromStrings([await seroval.serializeAsync(value, { plugins: PLUGINS })]);
     case 'toJSONAsync':
-      return [JSON.stringify(await seroval.toJSONAsync(value, { plugins: PLUGINS }), null, 2)];
+      return fromStrings([
+        JSON.stringify(await seroval.toJSONAsync(value, { plugins: PLUGINS }), null, 2),
+      ]);
     case 'crossSerializeAsync':
-      return [
+      return fromStrings([
         await seroval.crossSerializeAsync(value, {
           plugins: PLUGINS,
           scopeId: 'playground',
         }),
-      ];
+      ]);
+    case 'binary':
+      return collectBinary(value, onChunk);
     case 'crossSerializeStream':
     default:
       return collectStream(value, onChunk);
@@ -225,13 +316,6 @@ function formatError(error: unknown): string {
   }
   const message = `${error.name}: ${error.message}`;
   return error.cause ? `${message}\n\nCaused by ${formatError(error.cause)}` : message;
-}
-
-function formatOutput(chunks: string[]): string {
-  if (chunks.length === 1) {
-    return chunks[0];
-  }
-  return chunks.map((chunk, i) => `// Chunk ${i + 1}\n${chunk}`).join('\n\n');
 }
 
 // Colors come from CSS variables, so the editor follows the site theme.
@@ -313,14 +397,14 @@ export default function PlaygroundEditor(): JSX.Element {
     const code = input.state.doc.toString();
     const started = performance.now();
     setRunning(true);
-    function show(chunks: string[]): void {
+    function show(result: Output): void {
       if (id === runId) {
-        setOutput(formatOutput(chunks));
+        setOutput(result.text);
         setError(undefined);
         setStats({
-          bytes: new TextEncoder().encode(chunks.join('')).length,
+          bytes: result.bytes,
           ms: performance.now() - started,
-          chunks: chunks.length,
+          chunks: result.chunks,
         });
       }
     }

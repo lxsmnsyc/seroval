@@ -12,7 +12,11 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
     "types": ["vite/client", "node"],
-    "allowJs": true
+    "allowJs": true,
+    "paths": {
+      "seroval": ["../packages/seroval/dist/index.d.ts"],
+      "seroval-plugins/web": ["../packages/plugins/dist/web.d.ts"]
+    }
   },
   "include": ["src", "plugins", "scripts", "vite.config.ts"]
 }

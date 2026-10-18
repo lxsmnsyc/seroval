@@ -23,7 +23,7 @@ and a large set of built-in types round-trips faithfully.
   and flush the output chunk-by-chunk as values settle.
 - **Multiple formats** — a JavaScript expression string (hydrated with `eval`),
   a plain JSON tree (rebuilt *without* `eval`, safe for untrusted transport), or
-  a compact [binary format](https://github.com/lxsmnsyc/seroval/blob/main/docs/binary-mode-spec.md).
+  a compact [binary format](https://seroval.vercel.app/docs/binary-format).
 - **Extensible** — map non-serializable values (functions, class instances) by
   reference, or teach `seroval` new types with [plugins](https://github.com/lxsmnsyc/seroval/tree/main/packages/plugins).
 

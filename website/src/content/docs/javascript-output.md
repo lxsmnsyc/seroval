@@ -98,7 +98,7 @@ Both functions take the same options:
 | --- | --- | --- |
 | `plugins` | none | [Plugins](./using-plugins.md) for types seroval does not support itself. |
 | `disabledFeatures` | `0` | [Features](./compatibility.md#feature-flags) to turn off, for older runtimes. |
-| `depthLimit` | `1000` | How deeply nested a value can be. Deeper values throw `SerovalDepthLimitError`. |
+| `depthLimit` | `64` | How deeply nested a value can be. Deeper values throw `SerovalDepthLimitError`. |
 | `compactArrayBufferViews` | `false` | Send only the visible bytes of typed arrays. See [Binary data](./binary-data.md). |
 
 ## When a value cannot be serialized
