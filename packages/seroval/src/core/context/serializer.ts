@@ -879,6 +879,13 @@ function serializeRegExp(
   node: SerovalRegExpNode,
 ): string {
   if (ctx.base.features & Feature.RegExp) {
+    // A literal would put the source's `<` back into the output, so `</script>`
+    // could close the page's script element. Escaping it inside a literal
+    // breaks named groups and lookbehinds, so the escaped source goes through
+    // the constructor instead.
+    if (node.c.includes('\\x3C')) {
+      return 'new RegExp("' + node.c + '","' + node.m + '")';
+    }
     return '/' + deserializeString(node.c) + '/' + node.m;
   }
   throw new SerovalUnsupportedNodeError(node);
