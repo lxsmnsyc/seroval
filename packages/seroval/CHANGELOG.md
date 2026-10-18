@@ -1,5 +1,11 @@
 # seroval
 
+## 1.6.10
+
+### Patch Changes
+
+- f94ee0b: Serialize a RegExp whose source contains `<` with the `RegExp` constructor, so a source such as `[</script>]` can no longer close the script element the output is embedded in.
+
 ## 1.6.9
 
 ### Patch Changes
