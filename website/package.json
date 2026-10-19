@@ -30,10 +30,16 @@
   },
   "devDependencies": {
     "@solidjs/vite-plugin": "3.0.0-next.50",
+    "@twinkleplop/bash": "0.1.7",
+    "@twinkleplop/css": "0.1.7",
+    "@twinkleplop/html": "0.1.7",
+    "@twinkleplop/javascript": "0.1.7",
+    "@twinkleplop/json": "0.1.7",
+    "@twinkleplop/tsx": "0.1.7",
+    "@twinkleplop/typescript": "0.1.7",
     "@types/node": "^26.6.5",
     "marked": "^18.1.1",
     "marked-footnote": "^1.4.0",
-    "shiki": "^4.5.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "yaml": "^2.9.1"
