@@ -108,7 +108,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.0.4
-        version: 5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2))
+        version: 5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1))
 
   packages/seroval:
     devDependencies:
@@ -138,7 +138,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.0.4
-        version: 5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2))
+        version: 5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1))
 
   website:
     dependencies:
@@ -164,8 +164,8 @@ importers:
         specifier: ^1.2.5
         version: 1.2.5
       '@solidjs/router':
-        specifier: 2.0.0-next.39
-        version: 2.0.0-next.39(@solidjs/web@2.0.0-rc.15(solid-js@2.0.0-rc.15))(solid-js@2.0.0-rc.15)
+        specifier: 2.0.0-next.40
+        version: 2.0.0-next.40(@solidjs/web@2.0.0-rc.15(solid-js@2.0.0-rc.15))(solid-js@2.0.0-rc.15)
       '@solidjs/web':
         specifier: 2.0.0-rc.15
         version: 2.0.0-rc.15(solid-js@2.0.0-rc.15)
@@ -1102,8 +1102,8 @@ packages:
   '@solidjs/compiler@2.0.0-rc.14':
     resolution: {integrity: sha512-eCTVcxXl1UHOisRMYg+hABwiiTkfTmSkaOFtAb8bjzeqpLlju3lo6pT2qWPfUbrvnslbNGnLZd+HZSIVgZu9VQ==}
 
-  '@solidjs/router@2.0.0-next.39':
-    resolution: {integrity: sha512-yIGOKEVyD55okI38X3f5jiz7wShuoMxdLHZO69JPYVQdvkX7p5FKE/HC1nxF6XZVVCGfnHaCY0bScCFU0lP+8g==}
+  '@solidjs/router@2.0.0-next.40':
+    resolution: {integrity: sha512-aBxaV3GHxBn2F3i3rIe3JaEztiLWtZhRC6UI8qJGenaT2GSh6jSF3LTuLvXY5KoMjBgoxzl7Uu4XQ034yII6vg==}
     peerDependencies:
       '@solidjs/web': ^2.0.0-rc.15
       filesystem-routing: '>=0.4.0'
@@ -3093,7 +3093,7 @@ snapshots:
       '@solidjs/compiler-wasm32-wasi': 2.0.0-rc.14
       '@solidjs/compiler-win32-x64-msvc': 2.0.0-rc.14
 
-  '@solidjs/router@2.0.0-next.39(@solidjs/web@2.0.0-rc.15(solid-js@2.0.0-rc.15))(solid-js@2.0.0-rc.15)':
+  '@solidjs/router@2.0.0-next.40(@solidjs/web@2.0.0-rc.15(solid-js@2.0.0-rc.15))(solid-js@2.0.0-rc.15)':
     dependencies:
       '@solidjs/web': 2.0.0-rc.15(solid-js@2.0.0-rc.15)
       solid-js: 2.0.0-rc.15
@@ -3267,7 +3267,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@vitest/mocker@5.0.4(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2))':
+  '@vitest/mocker@5.0.4(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.4
@@ -3290,7 +3290,7 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2))
+      vitest: 5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1))
 
   '@vitest/utils@5.0.4':
     dependencies:
@@ -4097,10 +4097,10 @@ snapshots:
     optionalDependencies:
       vite: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1)
 
-  vitest@5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)):
+  vitest@5.0.4(@types/node@26.6.5)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.4(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2))
+      '@vitest/mocker': 5.0.4(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1))
       chai: 6.3.0
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
