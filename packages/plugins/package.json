@@ -1,7 +1,7 @@
 {
   "name": "seroval-plugins",
   "type": "module",
-  "version": "1.6.12",
+  "version": "1.7.0",
   "files": [
     "dist"
   ],
