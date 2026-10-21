@@ -434,8 +434,9 @@ function parsePlugin(
   depth: number,
   id: number,
   current: unknown,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
+  currentPlugins: Plugin<any, any>[] | undefined,
 ): SerovalPluginNode | undefined {
-  const currentPlugins = ctx.base.plugins;
   if (currentPlugins) {
     return ctx.type === ParserMode.Sync
       ? parsePluginSync(ctx, depth, id, current, currentPlugins)
@@ -549,7 +550,13 @@ function parseObject(
   if (currentClass === OpaqueReference) {
     return parseSOS(ctx, depth, (current as OpaqueReference<unknown, unknown>).replacement);
   }
-  const parsed = parsePlugin(ctx, depth, id, current);
+  const parsed = parsePlugin(
+    ctx,
+    depth,
+    id,
+    current,
+    currentClass === Object ? ctx.base.plainObjectPlugins : ctx.base.plugins,
+  );
   if (parsed) {
     return parsed;
   }
@@ -561,7 +568,7 @@ function parseFunction(ctx: SOSParserContext, depth: number, current: unknown): 
   if (typeof ref !== 'number') {
     return ref;
   }
-  const plugin = parsePlugin(ctx, depth, ref, current);
+  const plugin = parsePlugin(ctx, depth, ref, current, ctx.base.plugins);
   if (plugin) {
     return plugin;
   }

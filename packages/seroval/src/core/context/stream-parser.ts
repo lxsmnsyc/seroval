@@ -613,6 +613,7 @@ function releaseParserValues(ctx: StreamParserContext): void {
   ctx.base.refs = new Map();
   ctx.base.marked.clear();
   ctx.base.plugins = NIL;
+  ctx.base.plainObjectPlugins = NIL;
   // Late cleanup can still register while a parser/output/terminal callback
   // unwinds. Live producers already own any reason needed for future writes.
   if (ctx.state.parsing === 0) {
