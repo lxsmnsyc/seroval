@@ -10,6 +10,7 @@ type FileNode = {
 
 const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
   tag: 'seroval-plugins/web/File',
+  skipPlainObjects: true,
   test(value) {
     if (typeof File === 'undefined') {
       return false;

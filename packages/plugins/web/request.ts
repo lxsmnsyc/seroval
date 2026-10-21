@@ -31,6 +31,7 @@ type RequestNode = {
 const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   tag: 'seroval-plugins/web/Request',
   extends: [ReadableStreamPlugin, HeadersPlugin],
+  skipPlainObjects: true,
   test(value) {
     if (typeof Request === 'undefined') {
       return false;

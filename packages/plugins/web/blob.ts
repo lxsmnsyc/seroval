@@ -9,6 +9,7 @@ type BlobNode = {
 
 const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
   tag: 'seroval-plugins/web/Blob',
+  skipPlainObjects: true,
   test(value) {
     if (typeof Blob === 'undefined') {
       return false;

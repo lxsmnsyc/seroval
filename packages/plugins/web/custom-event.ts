@@ -18,6 +18,7 @@ type CustomEventNode = {
 
 const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventNode>({
   tag: 'seroval-plugins/web/CustomEvent',
+  skipPlainObjects: true,
   test(value) {
     if (typeof CustomEvent === 'undefined') {
       return false;

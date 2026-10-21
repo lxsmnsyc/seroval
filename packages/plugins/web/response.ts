@@ -19,6 +19,7 @@ type ResponseNode = {
 const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
   tag: 'seroval-plugins/web/Response',
   extends: [ReadableStreamPlugin, HeadersPlugin],
+  skipPlainObjects: true,
   test(value) {
     if (typeof Response === 'undefined') {
       return false;

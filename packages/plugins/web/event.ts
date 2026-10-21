@@ -17,6 +17,7 @@ type EventNode = {
 
 const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
   tag: 'seroval-plugins/web/Event',
+  skipPlainObjects: true,
   test(value) {
     if (typeof Event === 'undefined') {
       return false;

@@ -11,6 +11,7 @@ type ImageDataNode = {
 
 const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
   tag: 'seroval-plugins/web/ImageData',
+  skipPlainObjects: true,
   test(value) {
     if (typeof ImageData === 'undefined') {
       return false;

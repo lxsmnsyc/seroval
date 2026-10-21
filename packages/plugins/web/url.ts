@@ -4,6 +4,7 @@ import { expectString } from './validate';
 
 const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }>({
   tag: 'seroval-plugins/web/URL',
+  skipPlainObjects: true,
   test(value) {
     if (typeof URL === 'undefined') {
       return false;
