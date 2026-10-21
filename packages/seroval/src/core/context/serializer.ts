@@ -526,6 +526,39 @@ function isIndexedValueInStack(ctx: BaseSerializerContext, node: SerovalNode): b
 }
 
 /**
+ * Checks if the node, or any node inside it, is read from more than one
+ * place. Such a node must not be created inside a deferred assignment,
+ * because the places that read it may run before the assignment does.
+ */
+function hasMarkedNode(ctx: BaseSerializerContext, node: unknown): boolean {
+  if (Array.isArray(node)) {
+    for (let i = 0, len = node.length; i < len; i++) {
+      if (hasMarkedNode(ctx, node[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+  if (node == null || typeof node !== 'object') {
+    return false;
+  }
+  const current = node as Record<string, unknown>;
+  if (
+    current.t !== SerovalNodeType.IndexedValue &&
+    typeof current.i === 'number' &&
+    isSerializerRefMarked(ctx, current.i)
+  ) {
+    return true;
+  }
+  for (const key in current) {
+    if (hasMarkedNode(ctx, current[key])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Produces an assignment expression. `id` generates a reference
  * parameter (through `getRefParam`) and has the option to
  * return the reference parameter directly or assign a value to
@@ -858,11 +891,8 @@ function serializeMapEntry(
     // value is no longer part of the expression
     // tree and has been moved to the deferred
     // assignment
-    if (
-      val.t !== SerovalNodeType.IndexedValue &&
-      val.i != null &&
-      isSerializerRefMarked(base, val.i)
-    ) {
+    if (val.t !== SerovalNodeType.IndexedValue && val.i != null && hasMarkedNode(base, val)) {
+      markSerializerRef(base, val.i);
       // We use a trick here using sequence (or comma) expressions
       // basically we serialize the intended object in place WITHOUT
       // actually returning it, this is by returning a placeholder
@@ -883,11 +913,8 @@ function serializeMapEntry(
     // Create ref for the Map instance
     const valueRef = getRefParam(ctx, (val as SerovalIndexedValueNode).i);
     markSerializerRef(base, id);
-    if (
-      key.t !== SerovalNodeType.IndexedValue &&
-      key.i != null &&
-      isSerializerRefMarked(base, key.i)
-    ) {
+    if (key.t !== SerovalNodeType.IndexedValue && key.i != null && hasMarkedNode(base, key)) {
+      markSerializerRef(base, key.i);
       const sentinel = getSentinel();
       const serialized = '(' + serialize(ctx, key) + ',[' + sentinel + ',' + sentinel + '])';
       createSetAssignment(ctx, id, getRefParam(ctx, key.i), valueRef);
