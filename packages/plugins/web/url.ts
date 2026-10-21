@@ -1,6 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectString } from './validate';
+import * as v from 'seroval/validator';
 
 const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }, { value: string }>({
   tag: 'seroval-plugins/web/URL',
@@ -31,8 +31,9 @@ const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }, { va
   serialize(node, ctx) {
     return 'new URL(' + ctx.serialize(node.value) + ')';
   },
+  validate: { value: v.string },
   deserialize(node, ctx) {
-    return new URL(expectString(ctx.deserialize(node.value)));
+    return new URL(ctx.deserialize<string>(node.value));
   },
   binary: {
     serialize(value) {

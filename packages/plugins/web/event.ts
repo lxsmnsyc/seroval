@@ -1,6 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectString } from './validate';
+import * as v from 'seroval/validator';
 
 function createEventOptions(current: Event): EventInit {
   return {
@@ -51,9 +51,10 @@ const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode, EventBinaryDa
   serialize(node, ctx) {
     return 'new Event(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { type: v.string },
   deserialize(node, ctx) {
     return new Event(
-      expectString(ctx.deserialize(node.type)),
+      ctx.deserialize<string>(node.type),
       ctx.deserialize<EventInit>(node.options),
     );
   },

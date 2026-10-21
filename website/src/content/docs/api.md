@@ -98,6 +98,7 @@ The promise resolves with `{ value }` once the root value is decoded. Promises a
 | `createReference(id, value)` | Sends `value` by its key. | [Isomorphic references](./isomorphic-references.md) |
 | `new OpaqueReference(value, replacement?)` | Sends `replacement` instead of `value`. | [OpaqueReference](./isomorphic-references.md#opaquereference) |
 | `createPlugin(plugin)` | Defines a plugin, with type inference. Add a `binary` section for binary mode. | [Writing plugins](./writing-plugins.md) |
+| `v` | Validators for a plugin's `validate` field. Also available as `seroval/validator`. | [Plugin security](./plugin-security.md#validate-every-value) |
 | `Feature` | Feature flags for `disabledFeatures`. | [Compatibility](./compatibility.md#feature-flags) |
 
 ## Options

@@ -83,6 +83,9 @@ async function bundleAndRun(): Promise<Payloads> {
     // guards the workspace code — bundle against the local build (CI builds
     // all packages before running tests).
     alias: {
+      'seroval/validator': fileURLToPath(
+        new URL('../../../seroval/dist/validator.js', import.meta.url),
+      ),
       seroval: fileURLToPath(new URL('../../../seroval/dist/index.js', import.meta.url)),
     },
     bundle: true,

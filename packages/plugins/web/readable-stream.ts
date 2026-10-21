@@ -1,5 +1,5 @@
 import type { SerovalNode, Stream } from 'seroval';
-import { createPlugin, createStream } from 'seroval';
+import { createPlugin, createStream, isStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -180,6 +180,7 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   serialize(node, ctx) {
     return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.stream) + ')';
   },
+  validate: { stream: isStream },
   deserialize(node, ctx) {
     const stream = ctx.deserialize<Stream<unknown>>(node.stream);
     return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);

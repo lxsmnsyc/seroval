@@ -11,21 +11,40 @@ Treat the `node` given to `deserialize` the same way you treat any request body.
 
 Every node in the plugin's `node` comes from the sender. When you call `ctx.deserialize(node.field)`, the result can be of any type: a field your serializer always fills with a string can hold a number, an object or another plugin's value in a crafted payload.
 
-A TypeScript cast such as `ctx.deserialize(node.buffer) as ArrayBuffer` checks nothing at runtime. Check the actual value, and throw when it is wrong:
+A TypeScript cast such as `ctx.deserialize(node.buffer) as ArrayBuffer` checks nothing at runtime. List a validator for each field in `validate`:
 
 ```js
-deserialize(node, ctx) {
-  const buffer = ctx.deserialize(node.buffer);
-  if (!(buffer instanceof ArrayBuffer)) {
-    throw new TypeError('MyPlugin: expected an ArrayBuffer.');
-  }
-  const type = ctx.deserialize(node.type);
-  if (typeof type !== 'string') {
-    throw new TypeError('MyPlugin: expected a string.');
-  }
-  return new Blob([buffer], { type });
-}
+import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
+
+const BlobPlugin = createPlugin({
+  // ...
+  validate: { buffer: v.arrayBuffer, type: v.string },
+  deserialize(node, ctx) {
+    return new Blob([ctx.deserialize(node.buffer)], {
+      type: ctx.deserialize(node.type),
+    });
+  },
+});
 ```
+
+When `deserialize` reads a listed field with `ctx.deserialize`, seroval checks the decoded value before returning it. A value that fails throws `SerovalPluginValidationError`, so `deserialize` never gets it. Fields that are not listed, or that `deserialize` never reads, are not checked.
+
+`v` has these validators:
+
+| Validator | Matches |
+| --- | --- |
+| `v.string`, `v.number`, `v.boolean`, `v.bigint` | A value of that `typeof`. |
+| `v.arrayBuffer` | An `ArrayBuffer`. |
+| `v.instanceOf(Class)` | An instance of `Class`. |
+| `v.optional(validator)` | `undefined`, or a value that matches `validator`. |
+| `v.union(...validators)` | A value that matches any of `validators`. |
+| `v.array(validator)` | An array whose items all match `validator`. |
+| `v.object({ key: validator })` | An object whose listed keys match their validators. Other keys are not checked. |
+
+The validators are also exported as `v` from `seroval`. In a plugin that other people bundle, import them from `seroval/validator` as shown above, so that bundlers can still remove the plugin when it is unused.
+
+A validator is a function that takes a value and returns `true` or `false`, so you can also write your own. For checks that depend on more than one field, check the values by hand in `deserialize`, and throw when they are wrong.
 
 ## Check identity, not shape
 
@@ -57,7 +76,7 @@ A plugin's `serialize` method also receives the node unchecked. When `compileJSO
 ## Summary
 
 - Treat the `node` given to `deserialize` as untrusted input.
-- Check every value from `ctx.deserialize` before using it. Casts are not checks.
+- Check every value from `ctx.deserialize` before using it, with `validate` or by hand. Casts are not checks.
 - Check identity with `instanceof`, `typeof` and ranges, not marker properties.
 - Throw when the payload is not exactly what your plugin produces.
 - Never return a function from `deserialize`.

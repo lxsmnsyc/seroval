@@ -49,6 +49,7 @@ These usually arrive as the `cause` of a wrapper error.
 | `SerovalDepthLimitError` | 10 | The value or input is nested deeper than `depthLimit`. |
 | `SerovalAbortedError` | 11 | `deserialize` was called on a [cross deserializer](./streaming.md#receiving-a-json-stream) after `abort`. |
 | `SerovalLiveStreamError` | 12 | A [live stream](./streams-and-iterables.md#live-streams) was misused. `reason` is `'consumed'`, `'pending'`, `'reading'` or `'closed'`. |
+| `SerovalPluginValidationError` | 13 | A plugin's [`validate`](./plugin-security.md#validate-every-value) rejected a field. The plugin's tag is in `tag` and the field name is in `field`. |
 
 ## Binary mode errors
 
@@ -56,11 +57,11 @@ These usually arrive as the `cause` of a wrapper error.
 
 | Error | Code | Cause |
 | --- | --- | --- |
-| `SerovalMalformedBinarySourceError` | 13 | The input ended too early: in the middle of a node, before the `Root` node, or before every container, promise and stream was complete. |
-| `SerovalMalformedBinaryTypeError` | 14 | A node is invalid. For example, it declares an id twice, refers to an id that was not declared, has an unknown constant or constructor byte, settles a promise twice, sends a stream event after the stream ended, assigns to a container after its `Pending` node, describes a view outside its buffer, goes over a size limit, or uses a disabled feature. |
-| `SerovalUnknownBinaryTypeError` | 15 | A node has an unknown type byte. |
-| `SerovalUnexpectedBinaryTypeError` | 16 | A node refers to a value of the wrong node type, for example a `BigInt` whose digits are not a `String`. |
-| `SerovalMissingBinaryRefError` | 17 | A node refers to an id that has no value, for example a value from an earlier payload decoded with a different [reference map](./binary-mode.md#sharing-references-between-payloads). |
+| `SerovalMalformedBinarySourceError` | 14 | The input ended too early: in the middle of a node, before the `Root` node, or before every container, promise and stream was complete. |
+| `SerovalMalformedBinaryTypeError` | 15 | A node is invalid. For example, it declares an id twice, refers to an id that was not declared, has an unknown constant or constructor byte, settles a promise twice, sends a stream event after the stream ended, assigns to a container after its `Pending` node, describes a view outside its buffer, goes over a size limit, or uses a disabled feature. |
+| `SerovalUnknownBinaryTypeError` | 16 | A node has an unknown type byte. |
+| `SerovalUnexpectedBinaryTypeError` | 17 | A node refers to a value of the wrong node type, for example a `BigInt` whose digits are not a `String`. |
+| `SerovalMissingBinaryRefError` | 18 | A node refers to an id that has no value, for example a value from an earlier payload decoded with a different [reference map](./binary-mode.md#sharing-references-between-payloads). |
 
 Binary mode also uses errors from the table above:
 

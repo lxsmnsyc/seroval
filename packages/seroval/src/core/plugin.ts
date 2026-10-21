@@ -5,6 +5,7 @@ import type { SerializePluginContext } from './context/serializer';
 import type { StreamParsePluginContext } from './context/stream-parser';
 import type { SyncParsePluginContext } from './context/sync-parser';
 import type { SerovalNode } from './types';
+import type { Validator } from './validator';
 
 export const enum SerovalMode {
   Vanilla = 1,
@@ -64,6 +65,18 @@ export interface Plugin<Value, Info extends PluginInfo> {
    * Convert the parsed node into a JS string
    */
   serialize(node: Info, ctx: SerializePluginContext, data: PluginData): string;
+  /**
+   * Validators for the fields of a node, by field name. The fields come from
+   * input that may be untrusted. When `deserialize` reads a listed field with
+   * `ctx.deserialize`, the decoded value is checked before it is returned, and
+   * `SerovalPluginValidationError` is thrown if the check fails. Fields that
+   * are not listed, or that `deserialize` never reads, are not checked.
+   *
+   * It applies to `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`.
+   * Build the validators from the `v` helpers, for example
+   * `{ type: v.string }`.
+   */
+  validate?: { [K in keyof Info]?: Validator<unknown> };
   /**
    * Convert the parsed node into its runtime equivalent.
    */

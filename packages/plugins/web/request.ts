@@ -1,8 +1,8 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import { expectString } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -67,9 +67,10 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, Request
   serialize(node, ctx) {
     return 'new Request(' + ctx.serialize(node.url) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { url: v.string },
   deserialize(node, ctx) {
     return new Request(
-      expectString(ctx.deserialize(node.url)),
+      ctx.deserialize<string>(node.url),
       ctx.deserialize<RequestInit>(node.options),
     );
   },

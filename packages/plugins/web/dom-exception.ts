@@ -1,6 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectString } from './validate';
+import * as v from 'seroval/validator';
 
 type DOMExceptionNode = {
   name: SerovalNode;
@@ -48,10 +48,11 @@ const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<
   serialize(node, ctx) {
     return 'new DOMException(' + ctx.serialize(node.message) + ',' + ctx.serialize(node.name) + ')';
   },
+  validate: { name: v.string, message: v.string },
   deserialize(node, ctx) {
     return new DOMException(
-      expectString(ctx.deserialize(node.message)),
-      expectString(ctx.deserialize(node.name)),
+      ctx.deserialize<string>(node.message),
+      ctx.deserialize<string>(node.name),
     );
   },
   binary: {

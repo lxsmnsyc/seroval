@@ -81,11 +81,12 @@ const enum SpecificErrorCodes {
   DepthLimit = 10,
   Aborted = 11,
   LiveStream = 12,
-  MalformedBinarySource = 13,
-  MalformedBinaryType = 14,
-  UnknownBinaryType = 15,
-  UnexpectedBinaryType = 16,
-  MissingBinaryRef = 17,
+  PluginValidation = 13,
+  MalformedBinarySource = 14,
+  MalformedBinaryType = 15,
+  UnknownBinaryType = 16,
+  UnexpectedBinaryType = 17,
+  MissingBinaryRef = 18,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -122,6 +123,19 @@ export class SerovalMissingPluginError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.MissingPlugin)
         : 'Missing plugin for tag "' + tag + '".',
+    );
+  }
+}
+
+export class SerovalPluginValidationError extends Error {
+  constructor(
+    public tag: string,
+    public field: string,
+  ) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.PluginValidation)
+        : 'Plugin "' + tag + '" received a value for "' + field + '" that failed its validator.',
     );
   }
 }
