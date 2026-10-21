@@ -152,10 +152,25 @@ If a cleanup throws, the first error goes to `onError`. Calling the function aga
 | `plugins` | `Plugin[]` | none | Plugins for extra types. They need the same tags as the sender's. |
 | `disabledFeatures` | `number` | `0` | Feature flags to reject. |
 | `features` | `number` | all features | The features to accept, as a bit mask. Overrides `disabledFeatures`. |
+| `maxArrayBufferLength` | `number` | `1000000` | The largest `ArrayBuffer`, in bytes, that the input may hold. |
+| `signal` | `AbortSignal` | none | Stops decoding when it aborts. See [Stopping decoding](#stopping-decoding). |
 
-It returns a promise for `{ value }`. The value is wrapped, so a root value that is a promise is handed over as is. The promise resolves as soon as the root value is decoded, with every object, array, `Map` and `Set` in it filled in. Promises and streams inside the value may still be pending.
+It returns a promise for `{ value, pending }`. The value is wrapped, so a root value that is a promise is handed over as is. `pending` is the number of promises and streams in the value that have not settled or ended yet. The promise resolves as soon as the root value is decoded, with every object, array, `Map` and `Set` in it filled in. Promises and streams inside the value may still be pending.
 
 `read` can return chunks of any size. A node may be split across chunks, and one chunk may hold many nodes.
+
+### Stopping decoding
+
+Pass an `AbortSignal` as `signal` to stop decoding, for example when the connection closes:
+
+```js
+const controller = new AbortController();
+socket.addEventListener('close', () => controller.abort(new Error('closed')));
+
+const { value } = await binary.deserialize({ read, onError() {}, signal: controller.signal });
+```
+
+When the signal aborts, decoding stops calling `read`. The returned promise, if it has not resolved yet, every promise that has not settled and every stream that has not ended are rejected with the abort reason.
 
 ### Untrusted input
 
@@ -180,7 +195,7 @@ If `read()` rejects, for example because the connection dropped, the same happen
 Some errors only go to `onError`, and decoding continues. This happens when one property, entry or element cannot be set, for example because a plugin fails to rebuild it. The rest of the value is still decoded without it. Treat any call to `onError` as a failed payload.
 
 > [!NOTE]
-> `binary.deserialize` limits no total size. An `ArrayBuffer` can be as large as the sender makes it, and the decoder keeps every chunk it reads until the node is complete. Limit the size of the input in your transport.
+> `binary.deserialize` limits no total size. The decoder keeps every chunk it reads until the node is complete. Limit the size of the input in your transport.
 
 ## Sharing references between payloads
 

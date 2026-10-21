@@ -109,17 +109,18 @@ export const PointPlugin = createPlugin({
     serialize(point) {
       return { x: point.x, y: point.y };
     },
+    // `v` is `import * as v from 'seroval/validator'`.
+    validate: { x: v.number, y: v.number },
     deserialize(data) {
-      if (typeof data.x !== 'number' || typeof data.y !== 'number') {
-        throw new TypeError('Point: expected two numbers.');
-      }
       return new Point(data.x, data.y);
     },
   },
 });
 ```
 
-`binary.deserialize` runs once every object, array, `Map` and `Set` in `data` is filled in. Promises and streams in `data` may still be pending. Validate `data` as you would in `deserialize`, because it comes from the sender.
+`binary.deserialize` runs once every object, array, `Map` and `Set` in `data` is filled in. Promises and streams in `data` may still be pending. `data` comes from the sender, so list a validator for each field you use in `binary.validate`. seroval checks those fields before it calls `binary.deserialize`, and throws `SerovalPluginValidationError` if one fails. What a promise in `data` resolves to is only known after you await it, so check that value yourself.
+
+Binary mode also follows `skipPlainObjects`.
 
 Every plugin you pass to binary mode needs a `binary` section. A value that matches a plugin without one makes `binary.serialize` fail with a `TypeError`.
 

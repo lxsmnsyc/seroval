@@ -1638,6 +1638,7 @@ export function deserializeStart<T>(ctx: DeserializerContext): Promise<Deseriali
         signal?.removeEventListener('abort', onAbort);
       });
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The root resolver settles with `{ value }` for the decoded root.
   return (ctx.root.resolver.p as Promise<{ value: T }>).then(({ value }) => ({
     value,
     get pending(): number {

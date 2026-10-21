@@ -18,7 +18,7 @@ seroval has two ways to rebuild a value, with very different trust requirements:
 
 These reject unknown node types, constructor names and constants. They define reserved property names such as `__proto__` as own properties instead of assigning them. The JSON functions limit nesting with `depthLimit`, and the size of each buffer with [`maxBase64Length`](./binary-data.md#json-decoding-limits).
 
-`binary.deserialize` limits the length of typed arrays and `RegExp` patterns, but not the size of an `ArrayBuffer` or of the whole input. Limit the input size in your transport. Treat any call to its `onError` as a failed payload. See [Untrusted input](./binary-mode.md#untrusted-input).
+`binary.deserialize` limits the length of typed arrays, `ArrayBuffer`s and `RegExp` patterns, but not the size of the whole input. Limit the input size in your transport. Treat any call to its `onError` as a failed payload. See [Untrusted input](./binary-mode.md#untrusted-input).
 
 ## Not safe for untrusted input
 

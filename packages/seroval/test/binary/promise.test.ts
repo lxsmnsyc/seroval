@@ -328,7 +328,8 @@ describe('binary Promise', () => {
 
 describe('binary deserialize signal and pending', () => {
   it('rejects without reading when the signal is already aborted', async () => {
-    const read = vi.fn(() => Promise.resolve(undefined));
+    // oxlint-disable-next-line typescript/promise-function-async -- It is never called, which the test checks.
+    const read = vi.fn((): Promise<Uint8Array | undefined> => Promise.resolve(undefined));
     const controller = new AbortController();
     const reason = new Error('stopped');
     controller.abort(reason);
@@ -342,7 +343,7 @@ describe('binary deserialize signal and pending', () => {
     const later = defer<number>();
     const handle = startSerialize({ later: later.promise });
     const transport = handle.transport;
-    const read = vi.fn(() => transport.read());
+    const read = vi.fn(async () => await transport.read());
     const controller = new AbortController();
     const result = await binary.deserialize<{ later: Promise<number> }>({
       read,
@@ -357,7 +358,9 @@ describe('binary deserialize signal and pending', () => {
     const reads = read.mock.calls.length;
     later.resolve(1);
     await handle.done;
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     // At most the read already in flight finishes. No new reads start.
     expect(read.mock.calls.length).toBeLessThanOrEqual(reads + 1);
   });
@@ -366,7 +369,7 @@ describe('binary deserialize signal and pending', () => {
     const later = defer<number>();
     const handle = startSerialize({ later: later.promise });
     const result = await binary.deserialize<{ later: Promise<number> }>({
-      read: () => handle.transport.read(),
+      read: async () => await handle.transport.read(),
       onError() {},
     });
     expect(result.pending).toBe(1);

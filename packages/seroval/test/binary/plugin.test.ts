@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as binary from '../../src/binary';
-import { type SerovalNode, SerovalPluginValidationError, createPlugin, v } from '../../src';
+import {
+  type PluginWithBinaryMode,
+  type SerovalNode,
+  SerovalPluginValidationError,
+  createPlugin,
+  v,
+} from '../../src';
 import { captureSerializeError, createTransport, roundtrip, startSerialize } from './utils';
 
 class Vector {
@@ -270,38 +276,62 @@ describe('binary Plugin', () => {
   });
 });
 
+type BinaryOnlyPlugin<Value, BinaryData> = PluginWithBinaryMode<
+  Value,
+  Record<string, never>,
+  BinaryData
+>;
+
+// A plugin for binary mode only. The other modes are not used by these tests.
+function createBinaryPlugin<Value, BinaryData>(
+  tag: string,
+  test: (value: unknown) => boolean,
+  section: BinaryOnlyPlugin<Value, BinaryData>['binary'],
+  skipPlainObjects?: boolean,
+): BinaryOnlyPlugin<Value, BinaryData> {
+  return createPlugin<Value, Record<string, never>, BinaryData>({
+    tag,
+    skipPlainObjects,
+    test,
+    parse: {},
+    serialize: () => '',
+    deserialize: () => {
+      throw new Error('Not used in binary mode.');
+    },
+    binary: section,
+  });
+}
+
 describe('binary Plugin validate', () => {
-  // The sender lies about the payload: `x` is a string instead of a number.
-  const ForgedPlugin = createPlugin<Vector, SerovalNode, unknown>({
-    ...VectorPlugin,
-    test: (value) => value instanceof Vector,
-    binary: {
-      serialize: (value) => ({ x: String(value.x), y: value.y }),
-      deserialize: () => new Vector(0, 0),
+  const isVector = (value: unknown): boolean => value instanceof Vector;
+  const deserialized = vi.fn();
+  const CheckedPlugin = createBinaryPlugin<Vector, VectorData>('Vector', isVector, {
+    serialize: (value) => ({ x: value.x, y: value.y }),
+    validate: { x: v.number, y: v.number },
+    deserialize(value) {
+      deserialized(value);
+      return new Vector(value.x, value.y);
     },
   });
-
-  const deserialized = vi.fn();
-  const CheckedPlugin = createPlugin<Vector, SerovalNode, VectorData>({
-    ...VectorPlugin,
-    binary: {
-      serialize: (value) => ({ x: value.x, y: value.y }),
-      validate: { x: v.number, y: v.number },
-      deserialize(value) {
-        deserialized(value);
-        return new Vector(value.x, value.y);
-      },
-    },
+  // The sender lies about the payload: `x` is a string instead of a number.
+  const ForgedPlugin = createBinaryPlugin<Vector, unknown>('Vector', isVector, {
+    serialize: (value) => ({ x: String(value.x), y: value.y }),
+    deserialize: () => new Vector(0, 0),
+  });
+  const NumberPlugin = createBinaryPlugin<Vector, unknown>('Vector', isVector, {
+    serialize: () => 42,
+    deserialize: () => new Vector(0, 0),
   });
 
   async function decode(
-    plugin: typeof ForgedPlugin | typeof CheckedPlugin,
+    // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
+    plugin: PluginWithBinaryMode<any, any, any>,
   ): Promise<{ ok: boolean; error?: unknown }> {
     const handle = startSerialize(new Vector(1, 2), { plugins: [plugin] });
     handle.done.catch(() => undefined);
     try {
       await binary.deserialize<Vector>({
-        read: () => handle.transport.read(),
+        read: async () => await handle.transport.read(),
         plugins: [CheckedPlugin],
         onError() {},
       });
@@ -327,38 +357,31 @@ describe('binary Plugin validate', () => {
   });
 
   it('rejects a payload that is not an object', async () => {
-    const NumberPayload = createPlugin<Vector, SerovalNode, unknown>({
-      ...VectorPlugin,
-      binary: {
-        serialize: () => 42,
-        deserialize: () => new Vector(0, 0),
-      },
-    });
-    const result = await decode(NumberPayload);
+    const result = await decode(NumberPlugin);
     expect(result.ok).toBe(false);
     expect(result.error).toMatchObject({ field: 'x' });
   });
 });
 
 describe('binary Plugin skipPlainObjects', () => {
-  // Matches every object with `x`, plain or not, and counts its calls.
-  function createPointPlugin(skipPlainObjects: boolean) {
+  // Matches every object with `x`, plain or not. The payload is an array, so
+  // the plugin does not match its own payload.
+  function createPointPlugin(skipPlainObjects: boolean): {
+    plugin: BinaryOnlyPlugin<{ x: number }, [number]>;
+    test: ReturnType<typeof vi.fn>;
+  } {
     const test = vi.fn(
-      (value: unknown) => typeof value === 'object' && value !== null && 'x' in value,
+      (value: unknown): boolean => typeof value === 'object' && value !== null && 'x' in value,
     );
-    // The payload is an array, so the plugin does not match its own payload.
-    const plugin = createPlugin<{ x: number }, SerovalNode, [number]>({
-      tag: 'Point',
-      skipPlainObjects,
+    const plugin = createBinaryPlugin<{ x: number }, [number]>(
+      'Point',
       test,
-      parse: {},
-      serialize: () => '',
-      deserialize: () => ({ x: 0 }),
-      binary: {
+      {
         serialize: (value) => [value.x],
         deserialize: (data) => new Vector(data[0], 0),
       },
-    });
+      skipPlainObjects,
+    );
     return { plugin, test };
   }
 
@@ -371,7 +394,8 @@ describe('binary Plugin skipPlainObjects', () => {
     const { plugin, test } = createPointPlugin(true);
     // oxlint-disable-next-line no-unsafe-type-assertion -- Calls the legacy constructor with `new`.
     const legacy = new (LegacyPoint as unknown as new (x: number) => { x: number })(3);
-    const source = [{ x: 1 }, new Vector(2, 0), legacy, JSON.parse('{"constructor":2,"x":4}')];
+    const ownConstructor: unknown = JSON.parse('{"constructor":2,"x":4}');
+    const source = [{ x: 1 }, new Vector(2, 0), legacy, ownConstructor];
     const { value } = await roundtrip<unknown[]>(source, {
       serialize: { plugins: [plugin] },
       deserialize: { plugins: [plugin] },

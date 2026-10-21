@@ -18,7 +18,7 @@ import { SerovalDepthLimitError, SerovalUnsupportedTypeError } from '../core/err
 import { isLiveStream, type LiveStream } from '../core/live-stream';
 import { OpaqueReference } from '../core/opaque-reference';
 import { getReferenceID } from '../core/reference';
-import { getPlainObjectPlugins, type PluginWithBinaryMode } from '../core/plugin';
+import { type PluginWithBinaryMode, getPlainObjectPlugins } from '../core/plugin';
 import { createSequenceFromIterable, isSequence, type Sequence } from '../core/sequence';
 import { createStreamFromAsyncIterable, isStream, type Stream } from '../core/stream';
 import {
@@ -77,6 +77,7 @@ export interface SerializerContext {
   features: number;
   plugins?: PluginWithBinaryMode<any, any, any>[];
   // The plugins tested for plain objects.
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   plainObjectPlugins?: PluginWithBinaryMode<any, any, any>[];
   onSerialize: BinarySerializeCallback;
   onDone(): void;
@@ -884,6 +885,7 @@ function serializeObjectPhase2(
 function serializePlugin(
   ctx: SerializerContext,
   value: object,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
   plugins: PluginWithBinaryMode<any, any, any>[] | undefined,
 ) {
   if (plugins) {

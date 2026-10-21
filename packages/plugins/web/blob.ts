@@ -1,5 +1,5 @@
 import type { SerovalNode } from 'seroval';
-import { createPlugin, SerovalPluginValidationError } from 'seroval';
+import { SerovalPluginValidationError, createPlugin } from 'seroval';
 import * as v from 'seroval/validator';
 
 type BlobNode = {
