@@ -69,6 +69,7 @@ import {
   getArrayBufferView,
   getObjectClass,
   getObjectKind,
+  getObjectPlugins,
   getReferenceNode,
   getTemporalType,
   markParserRef,
@@ -499,7 +500,7 @@ export async function parseObjectAsync(
     depth,
     id,
     current,
-    currentClass === Object ? ctx.base.plainObjectPlugins : ctx.base.plugins,
+    getObjectPlugins(ctx.base, current, currentClass),
   );
   if (parsed) {
     return parsed;

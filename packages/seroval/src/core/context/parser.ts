@@ -44,7 +44,7 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
 }
 
 export interface BaseParserContext extends PluginAccessOptions {
-  // The plugins tested for objects whose `constructor` is `Object`.
+  // The plugins tested for plain objects. See `getObjectPlugins`.
   plainObjectPlugins: PluginAccessOptions['plugins'];
 
   marked: Set<number>;
@@ -68,6 +68,22 @@ export function createBaseParserContext(options: BaseParserContextOptions): Base
     depthLimit: options.depthLimit || 1000,
     compactArrayBufferViews: options.compactArrayBufferViews ?? false,
   };
+}
+
+/**
+ * Returns the plugins to test for an object. Plain objects, whose prototype is
+ * `Object.prototype`, skip the plugins that set `skipPlainObjects`. Checking
+ * the prototype as well as `constructor` keeps instances whose prototype has
+ * no own `constructor` property from skipping those plugins.
+ */
+export function getObjectPlugins(
+  ctx: BaseParserContext,
+  current: object,
+  currentClass: unknown,
+): PluginAccessOptions['plugins'] {
+  return currentClass === Object && Object.getPrototypeOf(current) === Object.prototype
+    ? ctx.plainObjectPlugins
+    : ctx.plugins;
 }
 
 /**

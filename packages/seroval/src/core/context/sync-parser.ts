@@ -67,6 +67,7 @@ import {
   getArrayBufferView,
   getObjectClass,
   getObjectKind,
+  getObjectPlugins,
   getReferenceNode,
   getTemporalType,
   parseAsyncIteratorFactory,
@@ -561,7 +562,7 @@ function parseObject(
     depth,
     id,
     current,
-    currentClass === Object ? ctx.base.plainObjectPlugins : ctx.base.plugins,
+    getObjectPlugins(ctx.base, current, currentClass),
   );
   if (parsed) {
     return parsed;

@@ -34,10 +34,10 @@ export interface Plugin<Value, Info extends PluginInfo> {
    */
   test(value: unknown): boolean;
   /**
-   * Set to `true` if `test` never returns `true` for an object whose
-   * `constructor` is `Object`, such as an object literal. The parsers then
-   * skip this plugin for those objects. Leave it unset if unsure. A plugin
-   * that sets it is never applied to such objects.
+   * Set to `true` if `test` never returns `true` for a plain object, whose
+   * prototype is `Object.prototype`, such as an object literal. The parsers
+   * then skip this plugin for those objects. Leave it unset if unsure. A
+   * plugin that sets it is never applied to such objects.
    */
   skipPlainObjects?: boolean;
   /**
@@ -143,8 +143,8 @@ export function resolvePlugins(
 }
 
 /**
- * Returns the plugins that are tested for objects whose `constructor` is
- * `Object`. It is the same array when no plugin sets `skipPlainObjects`.
+ * Returns the plugins that are tested for plain objects. It is the same array
+ * when no plugin sets `skipPlainObjects`.
  */
 export function getPlainObjectPlugins(
   // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.

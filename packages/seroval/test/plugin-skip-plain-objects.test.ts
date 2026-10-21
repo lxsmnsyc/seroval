@@ -74,6 +74,22 @@ describe('skipPlainObjects', () => {
     );
   });
 
+  it('tests instances whose constructor reads as Object', () => {
+    // An older class pattern: the prototype is replaced with an object
+    // literal, so instances inherit `constructor` from `Object.prototype`.
+    function LegacyPoint(this: { x: number }, x: number): void {
+      this.x = x;
+    }
+    LegacyPoint.prototype = { kind: 'legacy' };
+    // oxlint-disable-next-line no-unsafe-type-assertion -- Calls the legacy constructor with `new`.
+    const legacy = new (LegacyPoint as unknown as new (x: number) => { x: number })(1);
+    const ownConstructor = Object.assign(new Point(2), { constructor: Object });
+    expect(legacy.constructor).toBe(Object);
+    expect(serialize([legacy, ownConstructor, { x: 3 }], { plugins: [SKIP] })).toBe(
+      '[$point(1),$point(2),{x:3}]',
+    );
+  });
+
   it('keeps testing the other plugins for plain objects', () => {
     const other = createPlugin<{ y: number }, { y: SerovalNode }>({
       tag: 'other',
