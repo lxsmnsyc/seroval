@@ -73,6 +73,7 @@ import {
   markParserRef,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
+  parseMapSentinel,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
@@ -237,6 +238,7 @@ async function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
+  const sentinel = parseMapSentinel(ctx.base);
   const keyNodes = new Array<SerovalNode>(current.size);
   const valueNodes = new Array<SerovalNode>(current.size);
   let node: MaybeAsyncNode;
@@ -248,7 +250,7 @@ async function parseMap(
     valueNodes[i] = node instanceof Promise ? await node : node;
     i++;
   }
-  return createMapNode(ctx.base, id, keyNodes, valueNodes);
+  return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
 
 async function parseSet(

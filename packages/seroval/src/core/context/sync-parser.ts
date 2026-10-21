@@ -70,6 +70,7 @@ import {
   getTemporalType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
+  parseMapSentinel,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
@@ -321,6 +322,7 @@ function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
+  const sentinel = parseMapSentinel(ctx.base);
   const keyNodes = new Array<SerovalNode>(current.size);
   const valueNodes = new Array<SerovalNode>(current.size);
   let i = 0;
@@ -329,7 +331,7 @@ function parseMap(
     valueNodes[i] = parseSOS(ctx, depth, value);
     i++;
   }
-  return createMapNode(ctx.base, id, keyNodes, valueNodes);
+  return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
 
 function parseSet(

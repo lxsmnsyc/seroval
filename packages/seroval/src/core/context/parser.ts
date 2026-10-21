@@ -338,9 +338,19 @@ export function createObjectNode(
   );
 }
 
-export function createMapNode(
+/**
+ * Gets the sentinel node for a Map. Call it before parsing the entries, so
+ * that an outer Map declares the sentinel before any Map inside it uses it.
+ */
+export function parseMapSentinel(
   ctx: BaseParserContext,
+): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
+  return parseSpecialReference(ctx, SpecialReference.MapSentinel);
+}
+
+export function createMapNode(
   id: number,
+  sentinel: SerovalIndexedValueNode | SerovalSpecialReferenceNode,
   k: SerovalNode[],
   v: SerovalNode[],
 ): SerovalMapNode {
@@ -353,7 +363,7 @@ export function createMapNode(
     NIL,
     { k, v },
     NIL,
-    parseSpecialReference(ctx, SpecialReference.MapSentinel),
+    sentinel,
   );
 }
 
