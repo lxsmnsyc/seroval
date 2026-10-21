@@ -227,6 +227,8 @@ type SerovalNodeWithProperties =
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
   markedRefs: number[] | Set<number>;
+  // Cross mode only: assign only the references that the output reads.
+  assignSharedRefsOnly?: boolean;
 }
 
 export interface BaseSerializerContext extends PluginAccessOptions {
@@ -249,6 +251,11 @@ export interface BaseSerializerContext extends PluginAccessOptions {
    * Refs that are...referenced
    */
   marked: Set<number>;
+  /**
+   * Assign every reference, even ones the output never reads. Cross mode
+   * does this by default, since a later script may read them.
+   */
+  assignAll: boolean;
 }
 
 export interface CrossContextOptions {
@@ -270,6 +277,7 @@ export function createBaseSerializerContext(
     stack: [],
     flags: [],
     assignments: [],
+    assignAll: mode === SerovalMode.Cross && !options.assignSharedRefsOnly,
   };
 }
 
@@ -524,7 +532,7 @@ function isIndexedValueInStack(ctx: BaseSerializerContext, node: SerovalNode): b
  * it.
  */
 function assignIndexedValue(ctx: SerializerContext, index: number, value: string): string {
-  if (ctx.mode === SerovalMode.Vanilla && !isSerializerRefMarked(ctx.base, index)) {
+  if (!ctx.base.assignAll && !isSerializerRefMarked(ctx.base, index)) {
     return value;
   }
   /**
@@ -534,7 +542,8 @@ function assignIndexedValue(ctx: SerializerContext, index: number, value: string
    * all of it into the reference array.
    *
    * otherwise in vanilla, we only do this if it
-   * is actually referenced
+   * is actually referenced. `assignSharedRefsOnly` gives cross-reference
+   * output the vanilla behavior.
    */
   return getRefParam(ctx, index) + '=' + value;
 }
@@ -1330,7 +1339,15 @@ function serializeCross(ctx: CrossSerializerContext, tree: SerovalNode): string 
   // Parameters needed for scoping
   const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   // If there are patches, append it after the result
-  const body = patches ? '(' + result + ',' + patches + ref + ')' : result;
+  let body = result;
+  if (patches) {
+    // The patches read the root, so it needs a reference even when the
+    // result left it out (see `assignSharedRefsOnly`).
+    if (!ctx.base.assignAll && !result.startsWith(ref + '=')) {
+      body = ref + '=' + result;
+    }
+    body = '(' + body + ',' + patches + ref + ')';
+  }
   // If there are no params, there's no need to generate a function
   if (params === '') {
     if (tree.t === SerovalNodeType.Object && !patches) {

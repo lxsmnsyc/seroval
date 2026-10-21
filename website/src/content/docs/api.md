@@ -69,6 +69,7 @@ All options in one place. Each function lists the ones it accepts above.
 | `compactArrayBufferViews` | `boolean` | `false` | Send only the bytes each typed array covers. |
 | `refs` | `Map` | a new `Map` | Values already sent, shared between cross-reference calls. |
 | `scopeId` | `string` | none | Writes to `$R[scopeId]` instead of `$R`. |
+| `assignSharedRefsOnly` | `boolean` | `false` | `crossSerialize` and `crossSerializeAsync` only. Stores only the values the output reads more than once in `$R`. |
 | `maxBase64Length` | `number` | `1000000` | Largest encoded `ArrayBuffer` that JSON decoding accepts. |
 | `onSerialize(chunk, initial)` | function | required | Receives each script chunk of a stream. |
 | `onParse(node, initial)` | function | required | Receives each JSON node of a stream. |

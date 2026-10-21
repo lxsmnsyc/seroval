@@ -22,7 +22,18 @@ import { SerovalAbortedError } from '../errors';
 import { resolvePlugins } from '../plugin';
 import type { SerovalNode } from '../types';
 
-export interface CrossSerializeOptions extends SyncParserContextOptions, CrossContextOptions {}
+export interface CrossAssignmentOptions {
+  /**
+   * Only assign `$R[n]` for values that the output reads more than once,
+   * such as shared references and cycles. The output is shorter, but later
+   * scripts cannot read the other values from `$R`. Only use it when no
+   * later output that shares the same references refers back to this one.
+   */
+  assignSharedRefsOnly?: boolean;
+}
+
+export interface CrossSerializeOptions
+  extends SyncParserContextOptions, CrossContextOptions, CrossAssignmentOptions {}
 
 export function crossSerialize<T>(source: T, options: CrossSerializeOptions = {}): string {
   const plugins = resolvePlugins(options.plugins);
@@ -39,12 +50,13 @@ export function crossSerialize<T>(source: T, options: CrossSerializeOptions = {}
     features: ctx.base.features,
     scopeId: options.scopeId,
     markedRefs: ctx.base.marked,
+    assignSharedRefsOnly: options.assignSharedRefsOnly,
   });
   return serializeTopCross(serial, tree);
 }
 
 export interface CrossSerializeAsyncOptions
-  extends AsyncParserContextOptions, CrossContextOptions {}
+  extends AsyncParserContextOptions, CrossContextOptions, CrossAssignmentOptions {}
 
 export async function crossSerializeAsync<T>(
   source: T,
@@ -64,6 +76,7 @@ export async function crossSerializeAsync<T>(
     features: ctx.base.features,
     scopeId: options.scopeId,
     markedRefs: ctx.base.marked,
+    assignSharedRefsOnly: options.assignSharedRefsOnly,
   });
   return serializeTopCross(serial, tree);
 }
