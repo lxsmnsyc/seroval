@@ -55,6 +55,7 @@ import type {
 import { getErrorOptions } from '../utils/error';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
+import type { StreamParsePluginContext } from './stream-parser';
 import {
   ObjectKind,
   createArrayBufferNode,
@@ -145,6 +146,9 @@ export interface StreamParserState {
   onDone?: () => void;
 
   cleanups: (() => void)[];
+
+  // Plugin contexts by parse depth.
+  pluginContexts: StreamParsePluginContext[];
 
   // Streaming-mode behavior, set by `createStreamParserContext` so that
   // synchronous consumers never bundle it.

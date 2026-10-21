@@ -109,6 +109,16 @@ function createStreamParsePluginContext(
   };
 }
 
+// The context only depends on the parser and the depth, so plugin values at
+// the same depth share one instead of creating its functions each time.
+function getStreamParsePluginContext(
+  ctx: StreamParserContext,
+  depth: number,
+): StreamParsePluginContext {
+  const contexts = ctx.state.pluginContexts;
+  return (contexts[depth] ??= createStreamParsePluginContext(ctx, depth));
+}
+
 function addCleanup(ctx: StreamParserContext, callback: () => void): void {
   if (ctx.state.alive) {
     ctx.state.cleanups.push(callback);
@@ -132,7 +142,7 @@ function parsePluginStream(
         id,
         plugin.tag,
         // oxlint-disable-next-line no-unsafe-argument -- Plugin info is any because plugins are stored as Plugin<any, any>.
-        plugin.parse.stream(current, createStreamParsePluginContext(ctx, depth), {
+        plugin.parse.stream(current, getStreamParsePluginContext(ctx, depth), {
           id,
         }),
       );
@@ -383,6 +393,7 @@ function createStreamParserState(options: StreamParserContextOptions): StreamPar
     onError: options.onError,
     onDone: options.onDone,
     cleanups: [],
+    pluginContexts: [],
     stream: subscribeStream,
     live: consumeLiveStream,
     promise: watchPromise,
@@ -614,6 +625,7 @@ function releaseParserValues(ctx: StreamParserContext): void {
   ctx.base.marked.clear();
   ctx.base.plugins = NIL;
   ctx.base.plainObjectPlugins = NIL;
+  ctx.state.pluginContexts = [];
   // Late cleanup can still register while a parser/output/terminal callback
   // unwinds. Live producers already own any reason needed for future writes.
   if (ctx.state.parsing === 0) {
