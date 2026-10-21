@@ -477,6 +477,26 @@ function createSetAssignment(
   });
 }
 
+/**
+ * Like `createSetAssignment`, but for a key or value that is serialized
+ * inside the assignment. Serializing it may have queued assignments since
+ * `start` that read references the assignment creates, so they move after it.
+ */
+function createDeferredSetAssignment(
+  ctx: SerializerContext,
+  start: number,
+  ref: number,
+  key: string,
+  value: string,
+): void {
+  const assignments = ctx.base.assignments;
+  const nested = assignments.splice(start);
+  createSetAssignment(ctx, ref, key, value);
+  for (let i = 0, len = nested.length; i < len; i++) {
+    assignments.push(nested[i]);
+  }
+}
+
 function createDeleteAssignment(
   ctx: SerializerContext,
   ref: number,
@@ -972,7 +992,8 @@ function serializeMapEntry(
     }
     const parent = base.stack;
     base.stack = [];
-    createSetAssignment(ctx, id, keyRef, serialize(ctx, val));
+    const start = base.assignments.length;
+    createDeferredSetAssignment(ctx, start, id, keyRef, serialize(ctx, val));
     base.stack = parent;
     return '';
   }
@@ -994,7 +1015,8 @@ function serializeMapEntry(
     // Reset stack for the key serialization
     const parent = base.stack;
     base.stack = [];
-    createSetAssignment(ctx, id, serialize(ctx, key), valueRef);
+    const start = base.assignments.length;
+    createDeferredSetAssignment(ctx, start, id, serialize(ctx, key), valueRef);
     base.stack = parent;
     return '';
   }
