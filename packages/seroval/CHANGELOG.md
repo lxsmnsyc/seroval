@@ -1,5 +1,13 @@
 # seroval
 
+## 1.6.12
+
+### Patch Changes
+
+- d0a7135: Preserve cyclic Map entries when deferred assignments remove placeholders, and bound generated assignment chains so large graphs can be evaluated.
+- 7d052a4: Fix a Map that holds itself as a key or value. When the other half of that entry contained an object that was referenced more than once, the output could throw when run, or a later entry could get `undefined` in place of that object.
+- 30398a0: Fix a Map that holds itself and also contains another Map. The output could add an extra `undefined` entry to the outer Map, because the placeholder entry was written before its value was declared.
+
 ## 1.6.11
 
 ### Patch Changes
