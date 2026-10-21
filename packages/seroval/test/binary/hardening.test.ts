@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { binary, createStream, type Stream } from '../../src';
+import * as binary from '../../src/binary';
+import { type Stream, createStream } from '../../src';
 import { roundtrip } from './utils';
 
 /**
@@ -310,5 +311,74 @@ describe('binary decoder value handling', () => {
     });
     expect(result.value.text).toHaveLength(2000);
     expect(result.value.list).toEqual([1, 2, 3]);
+  });
+});
+
+describe('binary maxArrayBufferLength', () => {
+  type Settled = { status: 'resolved'; value: unknown } | { status: 'rejected'; error: unknown };
+
+  function decodeWith(
+    chunks: Uint8Array[],
+    options?: Partial<binary.DeserializeOptions>,
+  ): { settled: Promise<Settled>; errors: unknown[] } {
+    const errors: unknown[] = [];
+    let index = 0;
+    const settled = binary
+      .deserialize<unknown>({
+        ...options,
+        // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+        read: () => Promise.resolve(chunks[index++]),
+        onError(error) {
+          errors.push(error);
+        },
+      })
+      .then(
+        (result): Settled => ({ status: 'resolved', value: result.value }),
+        (error: unknown): Settled => ({ status: 'rejected', error }),
+      );
+    return { settled, errors };
+  }
+
+  it('rejects an ArrayBuffer longer than the limit from its header alone', async () => {
+    // Only the header is sent. The length must be rejected before the decoder
+    // waits for 2,000,000 bytes that never come.
+    const header = node(23, u32(0), u32(2_000_000));
+    const { settled, errors } = decodeWith([preamble(), header]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('accepts an ArrayBuffer at the limit', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const { settled } = decodeWith([preamble(), arrayBufferNode(0, bytes), root(0)], {
+      maxArrayBufferLength: 4,
+    });
+    const result = await settled;
+    expect(result.status).toBe('resolved');
+    const value = result.status === 'resolved' ? result.value : undefined;
+    expect(value).toBeInstanceOf(ArrayBuffer);
+    expect(new Uint8Array(value instanceof ArrayBuffer ? value : new ArrayBuffer(0))).toEqual(
+      bytes,
+    );
+  });
+
+  it('applies a lower limit', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const { settled, errors } = decodeWith([preamble(), arrayBufferNode(0, bytes), root(0)], {
+      maxArrayBufferLength: 3,
+    });
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('throws for an invalid limit', async () => {
+    await expect(
+      binary.deserialize({
+        // oxlint-disable-next-line typescript/promise-function-async -- There is no input to wait for.
+        read: () => Promise.resolve(undefined),
+        onError() {},
+        maxArrayBufferLength: -1,
+      }),
+    ).rejects.toThrow(RangeError);
   });
 });

@@ -73,6 +73,26 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
+    "./binary": {
+      "development": {
+        "browser": {
+          "import": "./dist/dev/binary.js",
+          "require": "./dist/dev/binary.cjs",
+          "default": "./dist/dev/binary.js"
+        },
+        "import": "./dist/dev/binary.js",
+        "require": "./dist/dev/binary.cjs",
+        "default": "./dist/dev/binary.js"
+      },
+      "browser": {
+        "import": "./dist/binary.js",
+        "require": "./dist/binary.cjs",
+        "default": "./dist/binary.js"
+      },
+      "import": "./dist/binary.js",
+      "require": "./dist/binary.cjs",
+      "default": "./dist/binary.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",

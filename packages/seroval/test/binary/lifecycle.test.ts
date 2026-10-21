@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { binary, createLiveStream, createStream, isStream, type Stream } from '../../src';
+import * as binary from '../../src/binary';
+import { type Stream, createLiveStream, createStream, isStream } from '../../src';
 import { createPlugin } from '../../src/core/plugin';
 import { startDeserialize } from './utils';
 

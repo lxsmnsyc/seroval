@@ -13,6 +13,7 @@ import {
   SerovalTemporalType,
   type TypedArrayValue,
 } from '../core/constants';
+import { getObjectClass } from '../core/context/parser';
 import { SerovalDepthLimitError, SerovalUnsupportedTypeError } from '../core/errors';
 import { isLiveStream, type LiveStream } from '../core/live-stream';
 import { OpaqueReference } from '../core/opaque-reference';
@@ -44,7 +45,7 @@ import {
 } from './encoder';
 import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
-// Same cap as the ArrayBuffer deserialization limit (MAX_BASE64_LENGTH).
+// Same as the default `maxArrayBufferLength` of the deserializer.
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
 export type Cleanup = () => void;
@@ -891,7 +892,7 @@ function serializeObject(ctx: SerializerContext, value: object): number {
     if (isSequence(value)) {
       return serializeSequence(ctx, value);
     }
-    const currentClass = value.constructor;
+    const currentClass = getObjectClass(value);
     if (currentClass === OpaqueReference) {
       return serialize(ctx, (value as OpaqueReference<unknown, unknown>).replacement);
     }

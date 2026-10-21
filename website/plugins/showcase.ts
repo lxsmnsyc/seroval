@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type * as Seroval from 'seroval';
+import type * as SerovalBinary from 'seroval/binary';
 import { codeFrame, highlight } from './highlight.ts';
 
 export interface ShowcaseExample {
@@ -12,6 +13,7 @@ export interface ShowcaseExample {
 }
 
 const SEROVAL = path.join(import.meta.dirname, '../../packages/seroval/dist/index.js');
+const SEROVAL_BINARY = path.join(import.meta.dirname, '../../packages/seroval/dist/binary.js');
 
 const USER_SOURCE = `const user = {
   name: 'Ada',
@@ -58,6 +60,8 @@ function hexDump(bytes: Uint8Array): string {
 export async function renderShowcase(): Promise<ShowcaseExample[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A dynamic import of a computed path is untyped.
   const seroval = (await import(pathToFileURL(SEROVAL).href)) as typeof Seroval;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A dynamic import of a computed path is untyped.
+  const binary = (await import(pathToFileURL(SEROVAL_BINARY).href)) as typeof SerovalBinary;
 
   const javascript = seroval.serialize(createUser());
   const json = JSON.stringify(seroval.toJSON(createUser()), null, 2);
@@ -86,7 +90,7 @@ export async function renderShowcase(): Promise<ShowcaseExample[]> {
 
   const bytes: Uint8Array[] = [];
   await new Promise<void>((resolve, reject) => {
-    seroval.binary.serialize(createUser(), {
+    binary.serialize(createUser(), {
       refs: new Map(),
       onSerialize(chunk: Uint8Array) {
         bytes.push(chunk);

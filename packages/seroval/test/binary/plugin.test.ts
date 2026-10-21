@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { binary, createPlugin, type SerovalNode } from '../../src';
+import * as binary from '../../src/binary';
+import { type SerovalNode, createPlugin } from '../../src';
 import { captureSerializeError, createTransport, roundtrip, startSerialize } from './utils';
 
 class Vector {

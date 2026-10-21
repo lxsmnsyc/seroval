@@ -3,10 +3,16 @@ title: Binary mode
 description: Send values as Uint8Array chunks with binary.serialize, and decode them without running code with binary.deserialize.
 ---
 
-Binary mode encodes a value as `Uint8Array` chunks instead of a string or a JSON tree. It streams like [`crossSerializeStream`](./streaming.md), and its decoder runs no code, like [`fromJSON`](./json.md). It is exported as the `binary` namespace:
+Binary mode encodes a value as `Uint8Array` chunks instead of a string or a JSON tree. It streams like [`crossSerializeStream`](./streaming.md), and its decoder runs no code, like [`fromJSON`](./json.md). It is exported from `seroval/binary`:
 
 ```js
-import { binary } from 'seroval';
+import * as binary from 'seroval/binary';
+```
+
+Importing only `serialize` or only `deserialize` keeps the other half out of your bundle:
+
+```js
+import { deserialize } from 'seroval/binary';
 ```
 
 ## When to use it
@@ -29,7 +35,7 @@ Use it when the transport carries bytes, such as a `fetch` body, a `ReadableStre
 The sender turns a value into a `ReadableStream` of bytes. The receiver reads the bytes back into a value.
 
 ```js
-import { binary } from 'seroval';
+import * as binary from 'seroval/binary';
 
 function toByteStream(value) {
   return new ReadableStream({
@@ -159,6 +165,7 @@ It returns a promise for `{ value }`. The value is wrapped, so a root value that
 - It checks every node against the rules in the [binary format](./binary-format.md#validation). For example, a reference must point to a value that was already declared, with a type the node accepts.
 - It defines reserved property names such as `__proto__` and `constructor` as own properties instead of assigning them.
 - It rejects typed arrays longer than 1,000,000 elements, `DataView`s longer than 1,000,000 bytes and `RegExp` patterns longer than 20,000 characters.
+- It rejects an `ArrayBuffer` longer than `maxArrayBufferLength` bytes, 1,000,000 by default, as soon as it reads the length. Raise the limit to receive larger files.
 - It rejects `RegExp` and `Temporal` values when their [feature](./compatibility.md#feature-flags) is disabled.
 
 When the input is invalid, or when it ends before every value has settled:
@@ -180,7 +187,7 @@ Some errors only go to `onError`, and decoding continues. This happens when one 
 Pass the same reference maps to several payloads, and a later payload can refer to values an earlier one sent, instead of sending them again. The serializer uses a `Map`, and the deserializer uses `binary.createReferenceMap()`.
 
 ```js
-import { binary } from 'seroval';
+import * as binary from 'seroval/binary';
 
 // One map on each side, shared by every payload.
 const serializerRefs = new Map();
@@ -231,7 +238,8 @@ Decode the payloads in the order they were sent, with the same pair of maps. If 
 A [live stream](./streams-and-iterables.md#live-streams) is sent one event at a time. If `onSerialize` returns a promise, the event behind that chunk is accepted only after the promise resolves, so the producer waits for the transport. Other chunks are not held back.
 
 ```js
-import { binary, createLiveStream } from 'seroval';
+import { createLiveStream } from 'seroval';
+import * as binary from 'seroval/binary';
 
 const { stream, producer } = createLiveStream();
 

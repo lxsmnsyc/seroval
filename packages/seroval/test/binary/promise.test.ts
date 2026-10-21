@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { binary } from '../../src';
+import * as binary from '../../src/binary';
 import { SerovalMalformedBinarySourceError } from '../../src/core/errors';
 import { createTransport, roundtrip, startDeserialize, startSerialize } from './utils';
 

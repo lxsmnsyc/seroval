@@ -1,7 +1,7 @@
 /**
  * Binary mode: a compact, streamable wire format that (de)serializes values as
- * `Uint8Array` chunks instead of JavaScript strings or JSON trees. Exposed on
- * the package as the `binary` namespace ({@link serialize}, {@link deserialize}).
+ * `Uint8Array` chunks instead of JavaScript strings or JSON trees. Exported
+ * from `seroval/binary` ({@link serialize}, {@link deserialize}).
  *
  * @module
  */

@@ -46,6 +46,7 @@ The decoder treats its input as untrusted. It rejects a payload that breaks any 
 - A `ref` points to an `id` that was already declared, with a node type that the referencing node accepts.
 - Every enumerated byte, such as a constant, a symbol, an error constructor, a typed array constructor or a `Temporal` type, has a known value.
 - A typed array or `DataView` fits inside its `ArrayBuffer`. A typed array has at most 1,000,000 elements, and a `DataView` at most 1,000,000 bytes.
+- An `ArrayBuffer` has at most `maxArrayBufferLength` bytes, 1,000,000 by default.
 - A `RegExp` pattern has at most 20,000 characters.
 - A `RegExp` or `Temporal` node is only accepted when its feature is enabled. A `Temporal` node also needs the `Temporal` global.
 - A container gets no assignments after its `Pending` node, and only one `Pending` node.

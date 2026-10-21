@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { binary } from '../../src';
+import * as binary from '../../src/binary';
 
 function send(value: unknown, refs: Map<unknown, number>) {
   return new Promise<Uint8Array[]>((resolve, reject) => {

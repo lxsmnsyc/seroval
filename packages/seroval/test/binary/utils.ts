@@ -1,4 +1,4 @@
-import { binary } from '../../src';
+import * as binary from '../../src/binary';
 
 /**
  * A minimal in-memory transport that models the stream the binary format

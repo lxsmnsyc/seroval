@@ -1,4 +1,4 @@
-import { binary } from 'seroval';
+import * as binary from 'seroval/binary';
 
 /**
  * In-memory transport modelling the stream the binary format travels through:

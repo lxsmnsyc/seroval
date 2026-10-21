@@ -20,6 +20,16 @@ describe('binary Object', () => {
     });
   });
 
+  it('supports an own constructor property', async () => {
+    // The data shadows the inherited `constructor`, so the class must come
+    // from the prototype instead.
+    const { value } = await roundtrip<Record<string, unknown>>(
+      JSON.parse('{"constructor":2,"a":1}'),
+    );
+    expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
+    expect(value).toEqual({ constructor: 2, a: 1 });
+  });
+
   it('supports empty objects', async () => {
     const { value } = await roundtrip<Record<string, unknown>>({});
     expect(Object.keys(value)).toEqual([]);

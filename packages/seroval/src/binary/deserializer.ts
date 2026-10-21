@@ -37,8 +37,10 @@ import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 
-// Same cap as the ArrayBuffer deserialization limit (MAX_BASE64_LENGTH).
+// Same as the default `maxArrayBufferLength` of the deserializer.
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
+// Same default as `maxBase64Length` in JSON mode, counted in bytes.
+const DEFAULT_MAX_ARRAY_BUFFER_LENGTH = 1_000_000;
 
 // The join state of a container: how many child assignments are still
 // outstanding, and a resolver that fires once the count reaches zero.
@@ -100,6 +102,8 @@ export interface DeserializerContextOptions {
   plugins?: PluginWithBinaryMode<any, any, any>[];
   disabledFeatures?: number;
   features?: number;
+  /** Largest `ArrayBuffer`, in bytes, that the payload may hold. */
+  maxArrayBufferLength?: number;
 }
 
 export interface DeserializerContext {
@@ -107,6 +111,7 @@ export interface DeserializerContext {
   onError(error: unknown): void;
   refs: ReferenceMap;
   plugins?: PluginWithBinaryMode<any, any, any>[];
+  maxArrayBufferLength: number;
   root: {
     resolver: PromiseConstructorResolver;
     found: boolean;
@@ -136,11 +141,16 @@ const EMPTY_BYTES = new Uint8Array(0);
 export function createDeserializerContext(
   options: DeserializerContextOptions,
 ): DeserializerContext {
+  const maxArrayBufferLength = options.maxArrayBufferLength ?? DEFAULT_MAX_ARRAY_BUFFER_LENGTH;
+  if (!Number.isSafeInteger(maxArrayBufferLength) || maxArrayBufferLength < 0) {
+    throw new RangeError('maxArrayBufferLength must be a non-negative safe integer');
+  }
   return {
     read: options.read,
     onError: options.onError,
     refs: options.refs || createReferenceMap(),
     plugins: options.plugins,
+    maxArrayBufferLength,
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
     done: false,
     buffer: EMPTY_BYTES,
@@ -1494,7 +1504,15 @@ function getNodeSize(ctx: DeserializerContext): number {
     (type === SerovalBinaryType.String || type === SerovalBinaryType.ArrayBuffer) &&
     ensureBuffered(ctx, size)
   ) {
-    return size + ctx.view.getUint32(ctx.offset + 5, ctx.littleEndian);
+    const length = ctx.view.getUint32(ctx.offset + 5, ctx.littleEndian);
+    // Checked before the bytes are read, so an oversized length is rejected
+    // without waiting for or buffering its contents.
+    if (type === SerovalBinaryType.ArrayBuffer && length > ctx.maxArrayBufferLength) {
+      throw new RangeError(
+        'ArrayBuffer exceeds maxArrayBufferLength (' + ctx.maxArrayBufferLength + ')',
+      );
+    }
+    return size + length;
   }
   return size;
 }

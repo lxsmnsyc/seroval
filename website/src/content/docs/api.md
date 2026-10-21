@@ -41,10 +41,10 @@ Options: `plugins`, `disabledFeatures`, `depthLimit`, `compactArrayBufferViews`.
 
 ## Binary mode
 
-The `binary` namespace. See [Binary mode](./binary-mode.md).
+Exported from `seroval/binary`. See [Binary mode](./binary-mode.md).
 
 ```js
-import { binary } from 'seroval';
+import * as binary from 'seroval/binary';
 ```
 
 | Function | Returns | Guide |
@@ -78,6 +78,7 @@ The stop function cancels every source that is still running and runs plugin cle
 | `plugins` | `Plugin[]` | none | Plugins with a `binary` section. |
 | `disabledFeatures` | `number` | `0` | `Feature` flags to reject. |
 | `features` | `number` | all features | Features to accept. Overrides `disabledFeatures`. |
+| `maxArrayBufferLength` | `number` | `1000000` | Largest `ArrayBuffer`, in bytes, that the input may hold. |
 
 The promise resolves with `{ value }` once the root value is decoded. Promises and streams inside it may still be pending. It rejects if the input is invalid, ends early or `read()` rejects before the root value is ready.
 
@@ -120,4 +121,4 @@ All options in one place. Each function lists the ones it accepts above. Binary 
 
 ## Types
 
-seroval also exports TypeScript types for the values above, including `SerovalJSON`, `SerovalNode`, `Plugin`, `SerializeOptions`, `SerializeAsyncOptions`, `ToJSONOptions`, `ToJSONAsyncOptions`, `CrossSerializeOptions`, `Stream`, `StreamListener`, `LiveStream`, `LiveStreamProducer`, `LiveStreamConsumer`, `CrossDeserializer`, `PluginWithBinaryMode`, `BinaryPlugin` and the options type of each function. The `binary` namespace exports `SerializeOptions`, `DeserializeOptions` and `ReferenceMap`.
+seroval also exports TypeScript types for the values above, including `SerovalJSON`, `SerovalNode`, `Plugin`, `SerializeOptions`, `SerializeAsyncOptions`, `ToJSONOptions`, `ToJSONAsyncOptions`, `CrossSerializeOptions`, `Stream`, `StreamListener`, `LiveStream`, `LiveStreamProducer`, `LiveStreamConsumer`, `CrossDeserializer`, `PluginWithBinaryMode`, `BinaryPlugin` and the options type of each function. `seroval/binary` exports the types `SerializeOptions`, `DeserializeOptions` and `ReferenceMap`.

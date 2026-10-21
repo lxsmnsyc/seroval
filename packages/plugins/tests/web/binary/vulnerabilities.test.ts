@@ -1,4 +1,4 @@
-import { binary } from 'seroval';
+import * as binary from 'seroval/binary';
 import { describe, expect, it } from 'vitest';
 import AbortSignalPlugin from '../../../web/abort-signal';
 import DOMExceptionPlugin from '../../../web/dom-exception';

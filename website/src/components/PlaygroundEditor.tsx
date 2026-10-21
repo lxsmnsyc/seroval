@@ -6,6 +6,7 @@ import { tags } from '@lezer/highlight';
 import type { JSX } from '@solidjs/web';
 import { basicSetup } from 'codemirror';
 import * as seroval from 'seroval';
+import * as binary from 'seroval/binary';
 import * as webPlugins from 'seroval-plugins/web';
 import { For, Show, createEffect, createSignal, onSettled } from 'solid-js';
 import { Tab, TabGroup, TabList } from 'terracotta/tabs';
@@ -150,17 +151,17 @@ const HASH_PREFIX = '#code=';
 
 function encodeCode(code: string): string {
   const bytes = new TextEncoder().encode(code);
-  let binary = '';
+  let latin1 = '';
   for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
+    latin1 += String.fromCharCode(byte);
   }
-  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_');
+  return btoa(latin1).replaceAll('+', '-').replaceAll('/', '_');
 }
 
 function decodeCode(value: string): string | undefined {
   try {
-    const binary = atob(value.replaceAll('-', '+').replaceAll('_', '/'));
-    return new TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
+    const latin1 = atob(value.replaceAll('-', '+').replaceAll('_', '/'));
+    return new TextDecoder().decode(Uint8Array.from(latin1, (char) => char.charCodeAt(0)));
   } catch {
     return undefined;
   }
@@ -257,7 +258,7 @@ async function collectStream(value: unknown, onChunk: (output: Output) => void):
 async function collectBinary(value: unknown, onChunk: (output: Output) => void): Promise<Output> {
   const chunks = await new Promise<Uint8Array[]>((resolve, reject) => {
     const result: Uint8Array[] = [];
-    seroval.binary.serialize(value, {
+    binary.serialize(value, {
       refs: new Map(),
       plugins: PLUGINS,
       onSerialize(bytes) {
@@ -271,7 +272,7 @@ async function collectBinary(value: unknown, onChunk: (output: Output) => void):
     });
   });
   let index = 0;
-  const { value: decoded } = await seroval.binary.deserialize({
+  const { value: decoded } = await binary.deserialize({
     plugins: PLUGINS,
     // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
     read: () => Promise.resolve(chunks[index++]),
