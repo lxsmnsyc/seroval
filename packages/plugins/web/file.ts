@@ -1,5 +1,5 @@
 import type { SerovalNode } from 'seroval';
-import { createPlugin } from 'seroval';
+import { createPlugin, SerovalPluginValidationError } from 'seroval';
 import * as v from 'seroval/validator';
 
 type FileNode = {
@@ -68,8 +68,15 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>(
         buffer: value.arrayBuffer(),
       };
     },
+    validate: { name: v.string, buffer: /* @__PURE__ */ v.instanceOf(Promise) },
     async deserialize(data) {
-      return new File([await data.buffer], data.name, data.options);
+      // `buffer` is checked to be a Promise, but what it resolves to is only
+      // known here.
+      const buffer: unknown = await data.buffer;
+      if (!(buffer instanceof ArrayBuffer)) {
+        throw new SerovalPluginValidationError('seroval-plugins/web/File', 'buffer');
+      }
+      return new File([buffer], data.name, data.options);
     },
   },
 });

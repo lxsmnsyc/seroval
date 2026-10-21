@@ -39,6 +39,7 @@ const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }, { va
     serialize(value) {
       return { value: value.href };
     },
+    validate: { value: v.string },
     deserialize(data) {
       return new URL(data.value);
     },

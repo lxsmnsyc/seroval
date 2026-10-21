@@ -191,6 +191,7 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
         stream: ctx.streamSource(toAsyncIterable(value)) as Stream<unknown>,
       };
     },
+    validate: { stream: isStream },
     deserialize(data) {
       return READABLE_STREAM_FACTORY_CONSTRUCTOR(data.stream);
     },

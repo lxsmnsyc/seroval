@@ -1,5 +1,5 @@
 import type { SerovalNode } from 'seroval';
-import { createPlugin } from 'seroval';
+import { createPlugin, SerovalPluginValidationError } from 'seroval';
 import * as v from 'seroval/validator';
 
 type BlobNode = {
@@ -46,8 +46,15 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode, BlobBinaryData>(
         bytes: value.arrayBuffer(),
       };
     },
+    validate: { type: v.string, bytes: /* @__PURE__ */ v.instanceOf(Promise) },
     async deserialize(data) {
-      return new Blob([await data.bytes], {
+      // `bytes` is checked to be a Promise, but what it resolves to is only
+      // known here.
+      const bytes: unknown = await data.bytes;
+      if (!(bytes instanceof ArrayBuffer)) {
+        throw new SerovalPluginValidationError('seroval-plugins/web/Blob', 'bytes');
+      }
+      return new Blob([bytes], {
         type: data.type,
       });
     },

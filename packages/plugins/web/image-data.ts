@@ -93,6 +93,7 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode, I
           },
         };
       },
+      validate: { width: v.number, height: v.number },
       deserialize(data) {
         return new ImageData(data.data, data.width, data.height, data.options);
       },

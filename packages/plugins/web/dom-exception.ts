@@ -62,6 +62,7 @@ const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<
         message: value.message,
       };
     },
+    validate: { name: v.string, message: v.string },
     deserialize(data) {
       return new DOMException(data.message, data.name);
     },

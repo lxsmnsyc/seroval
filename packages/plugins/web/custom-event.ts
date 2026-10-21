@@ -71,6 +71,7 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<
         options: createCustomEventOptions(value),
       };
     },
+    validate: { type: v.string },
     deserialize(data) {
       return new CustomEvent(data.type, data.options);
     },

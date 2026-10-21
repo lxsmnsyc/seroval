@@ -1,6 +1,8 @@
+import { SerovalPluginValidationError } from 'seroval';
 import * as binary from 'seroval/binary';
 import { describe, expect, it } from 'vitest';
 import AbortSignalPlugin from '../../../web/abort-signal';
+import BlobPlugin from '../../../web/blob';
 import DOMExceptionPlugin from '../../../web/dom-exception';
 import FormDataPlugin from '../../../web/form-data';
 import HeadersPlugin from '../../../web/headers';
@@ -259,7 +261,7 @@ describe('plugin binary hostile payloads', () => {
         [ReadableStreamPlugin],
       );
       expect(result.ok).toBe(false);
-      expect(result.errors[0]).toBeInstanceOf(TypeError);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
     });
 
     it('rejects a missing stream', async () => {
@@ -267,6 +269,29 @@ describe('plugin binary hostile payloads', () => {
         ReadableStreamPlugin,
       ]);
       expect(result.ok).toBe(false);
+    });
+  });
+
+  describe('Blob', () => {
+    it('rejects bytes that do not resolve to an ArrayBuffer', async () => {
+      const result = await deliver<Blob>(
+        'seroval-plugins/web/Blob',
+        { type: 'text/plain', bytes: Promise.resolve('not a buffer') },
+        [BlobPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+      expect(result.errors[0]).toMatchObject({ field: 'bytes' });
+    });
+
+    it('rejects bytes that are not a Promise', async () => {
+      const result = await deliver<Blob>(
+        'seroval-plugins/web/Blob',
+        { type: 'text/plain', bytes: new ArrayBuffer(1) },
+        [BlobPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
     });
   });
 
@@ -297,6 +322,19 @@ describe('plugin binary hostile payloads', () => {
         [AbortSignalPlugin],
       );
       expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('never hands out the AbortController factory', async () => {
+      // The factory's helper is a function. Decoding it directly must throw
+      // instead of returning that function to the payload.
+      const result = await deliver<unknown>(
+        'seroval-plugins/web/AbortControllerFactoryPlugin',
+        {},
+        [AbortSignalPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(typeof result.value).not.toBe('function');
     });
   });
 
@@ -312,14 +350,15 @@ describe('plugin binary hostile payloads', () => {
       expect(result.value?.message).toBe('forged');
     });
 
-    it('coerces a non-string name instead of throwing', async () => {
+    it('rejects a non-string name', async () => {
       const result = await deliver<DOMException>(
         'seroval-plugins/web/DOMException',
         { name: 42, message: 'forged' },
         [DOMExceptionPlugin],
       );
-      expect(result.ok).toBe(true);
-      expect(result.value?.name).toBe('42');
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+      expect(result.errors[0]).toMatchObject({ field: 'name' });
     });
   });
 

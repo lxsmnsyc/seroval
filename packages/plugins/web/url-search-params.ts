@@ -43,6 +43,7 @@ const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<
     serialize(value) {
       return { value: value.toString() };
     },
+    validate: { value: v.string },
     deserialize(data) {
       return new URLSearchParams(data.value);
     },

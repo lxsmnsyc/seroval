@@ -65,6 +65,7 @@ const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode, EventBinaryDa
         options: createEventOptions(value),
       };
     },
+    validate: { type: v.string },
     deserialize(data) {
       return new Event(data.type, data.options);
     },

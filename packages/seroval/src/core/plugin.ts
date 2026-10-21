@@ -91,6 +91,13 @@ export interface Plugin<Value, Info extends PluginInfo> {
 export interface BinaryPlugin<Value, BinaryData> {
   /** Reduces a value to a serializable `BinaryData` payload. */
   serialize(value: Value, ctx: BinarySerializerPluginContext): BinaryData;
+  /**
+   * Validators for the fields of the decoded payload, by field name. The
+   * payload comes from input that may be untrusted. Each listed field is
+   * checked before `deserialize` runs, and `SerovalPluginValidationError` is
+   * thrown if a check fails. Fields that are not listed are not checked.
+   */
+  validate?: { [K in keyof BinaryData]?: Validator<unknown> };
   /** Rebuilds the value from its `BinaryData` payload, possibly asynchronously. */
   deserialize(value: BinaryData): Value | Promise<Value>;
 }

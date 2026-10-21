@@ -19,6 +19,7 @@ import {
   SerovalMalformedBinaryTypeError,
   SerovalMissingBinaryRefError,
   SerovalMissingPluginError,
+  SerovalPluginValidationError,
   SerovalUnexpectedBinaryTypeError,
   SerovalUnknownBinaryTypeError,
 } from '../core/errors';
@@ -32,6 +33,7 @@ import {
   SYM_ITERATOR,
   SYM_TO_STRING_TAG,
 } from '../core/symbols';
+import type { Validator } from '../core/validator';
 import { decodeBigint, decodeString } from './encoder';
 import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
@@ -1126,6 +1128,22 @@ function deserializeAggregateError(ctx: DeserializerContext) {
   upsert(ctx, id, new AggregateError([], getRefSync(ctx, message) as string));
 }
 
+// Checks the listed fields of a plugin payload before the plugin uses it. A
+// payload that is not an object fails every listed field.
+function checkPluginPayload(
+  tag: string,
+  validate: Partial<Record<string, Validator<unknown>>>,
+  payload: unknown,
+): void {
+  const isObject = payload != null && typeof payload === 'object';
+  for (const field of Object.keys(validate)) {
+    const check = validate[field];
+    if (check && !check(isObject ? Reflect.get(payload, field) : undefined)) {
+      throw new SerovalPluginValidationError(tag, field);
+    }
+  }
+}
+
 async function deserializePluginInner(
   ctx: DeserializerContext,
   id: number,
@@ -1146,6 +1164,10 @@ async function deserializePluginInner(
     for (let i = 0, len = ctx.plugins.length; i < len; i++) {
       const current = ctx.plugins[i];
       if (current.tag === actualTag) {
+        const validate = current.binary.validate;
+        if (validate) {
+          checkPluginPayload(actualTag, validate, actualOptions);
+        }
         const value = await current.binary.deserialize(actualOptions);
         // Publish the resolved identity so later synchronous reads (root,
         // `awaitSubtree`) see it, not just consumers awaiting `deferred`. The

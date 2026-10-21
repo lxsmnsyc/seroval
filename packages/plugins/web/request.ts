@@ -88,6 +88,7 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, Request
         options,
       };
     },
+    validate: { url: v.string },
     deserialize(data) {
       return new Request(data.url, data.options);
     },

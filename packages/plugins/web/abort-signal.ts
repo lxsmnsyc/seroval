@@ -63,7 +63,11 @@ const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<
       return ABORT_CONTROLLER;
     },
     deserialize() {
-      return PROMISE_TO_ABORT_SIGNAL;
+      // Binary mode never sends this factory. Returning the raw function would
+      // hand an untrusted payload a callable gadget, as in `deserialize` above.
+      throw new Error(
+        'seroval-plugins/web/AbortControllerFactoryPlugin cannot be deserialized directly.',
+      );
     },
   },
 });
@@ -154,6 +158,7 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
         controller: promise,
       };
     },
+    validate: { controller: /* @__PURE__ */ v.optional(/* @__PURE__ */ v.instanceOf(Promise)) },
     deserialize(data) {
       if ('reason' in data) {
         return AbortSignal.abort(data.reason);

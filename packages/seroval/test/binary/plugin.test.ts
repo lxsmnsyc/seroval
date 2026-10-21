@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as binary from '../../src/binary';
-import { type SerovalNode, createPlugin } from '../../src';
+import { type SerovalNode, SerovalPluginValidationError, createPlugin, v } from '../../src';
 import { captureSerializeError, createTransport, roundtrip, startSerialize } from './utils';
 
 class Vector {
@@ -267,5 +267,75 @@ describe('binary Plugin', () => {
   it('rejects unsupported values without a plugin', async () => {
     const error = await captureSerializeError(new Vector(1, 2));
     expect(error).toBeInstanceOf(Error);
+  });
+});
+
+describe('binary Plugin validate', () => {
+  // The sender lies about the payload: `x` is a string instead of a number.
+  const ForgedPlugin = createPlugin<Vector, SerovalNode, unknown>({
+    ...VectorPlugin,
+    test: (value) => value instanceof Vector,
+    binary: {
+      serialize: (value) => ({ x: String(value.x), y: value.y }),
+      deserialize: () => new Vector(0, 0),
+    },
+  });
+
+  const deserialized = vi.fn();
+  const CheckedPlugin = createPlugin<Vector, SerovalNode, VectorData>({
+    ...VectorPlugin,
+    binary: {
+      serialize: (value) => ({ x: value.x, y: value.y }),
+      validate: { x: v.number, y: v.number },
+      deserialize(value) {
+        deserialized(value);
+        return new Vector(value.x, value.y);
+      },
+    },
+  });
+
+  async function decode(
+    plugin: typeof ForgedPlugin | typeof CheckedPlugin,
+  ): Promise<{ ok: boolean; error?: unknown }> {
+    const handle = startSerialize(new Vector(1, 2), { plugins: [plugin] });
+    handle.done.catch(() => undefined);
+    try {
+      await binary.deserialize<Vector>({
+        read: () => handle.transport.read(),
+        plugins: [CheckedPlugin],
+        onError() {},
+      });
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error };
+    }
+  }
+
+  it('accepts a payload whose fields pass', async () => {
+    deserialized.mockClear();
+    expect(await decode(CheckedPlugin)).toEqual({ ok: true });
+    expect(deserialized).toHaveBeenCalledWith({ x: 1, y: 2 });
+  });
+
+  it('rejects a field before deserialize runs', async () => {
+    deserialized.mockClear();
+    const result = await decode(ForgedPlugin);
+    expect(result.ok).toBe(false);
+    expect(result.error).toBeInstanceOf(SerovalPluginValidationError);
+    expect(result.error).toMatchObject({ tag: 'Vector', field: 'x' });
+    expect(deserialized).not.toHaveBeenCalled();
+  });
+
+  it('rejects a payload that is not an object', async () => {
+    const NumberPayload = createPlugin<Vector, SerovalNode, unknown>({
+      ...VectorPlugin,
+      binary: {
+        serialize: () => 42,
+        deserialize: () => new Vector(0, 0),
+      },
+    });
+    const result = await decode(NumberPayload);
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatchObject({ field: 'x' });
   });
 });
