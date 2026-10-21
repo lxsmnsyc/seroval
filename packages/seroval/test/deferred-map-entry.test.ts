@@ -34,6 +34,36 @@ function checkValueCycle(back: Map<unknown, unknown>) {
   expect(set.has(set)).toBe(true);
 }
 
+// The other half of such an entry holds an object that a later entry also
+// reads. The object must exist before that later entry runs.
+function createSharedKeyCycle() {
+  const shared = {};
+  const map = new Map<unknown, unknown>();
+  map.set(map, { shared });
+  map.set({ shared }, 1);
+  return map;
+}
+
+function createSharedValueCycle() {
+  const shared = {};
+  const map = new Map<unknown, unknown>();
+  map.set({ shared }, map);
+  map.set(1, { shared });
+  return map;
+}
+
+function checkShared(back: Map<unknown, unknown>) {
+  const holders = [...back]
+    .flat()
+    .filter(
+      (item): item is { shared: object } =>
+        item != null && typeof item === 'object' && 'shared' in item,
+    );
+  expect(holders).toHaveLength(2);
+  expect(holders[0].shared).toBeTypeOf('object');
+  expect(holders[0].shared).toBe(holders[1].shared);
+}
+
 function crossDeserialize<T>(source: string): T {
   return new Function('$R', 'return ' + source)([]) as T;
 }
@@ -46,6 +76,12 @@ describe('deferred Map entry', () => {
     it('creates a nested Set before adding to it when the value is the Map', () => {
       checkValueCycle(deserialize(serialize(createValueCycle())));
     });
+    it('creates a shared object before a later entry reads it when the key is the Map', () => {
+      checkShared(deserialize(serialize(createSharedKeyCycle())));
+    });
+    it('creates a shared object before a later entry reads it when the value is the Map', () => {
+      checkShared(deserialize(serialize(createSharedValueCycle())));
+    });
   });
   describe('crossSerialize', () => {
     it('creates a nested Set before adding to it when the key is the Map', () => {
@@ -53,6 +89,12 @@ describe('deferred Map entry', () => {
     });
     it('creates a nested Set before adding to it when the value is the Map', () => {
       checkValueCycle(crossDeserialize(crossSerialize(createValueCycle())));
+    });
+    it('creates a shared object before a later entry reads it when the key is the Map', () => {
+      checkShared(crossDeserialize(crossSerialize(createSharedKeyCycle())));
+    });
+    it('creates a shared object before a later entry reads it when the value is the Map', () => {
+      checkShared(crossDeserialize(crossSerialize(createSharedValueCycle())));
     });
   });
 });

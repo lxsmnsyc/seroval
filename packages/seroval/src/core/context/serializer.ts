@@ -501,26 +501,6 @@ function createSetAssignment(
   });
 }
 
-/**
- * Like `createSetAssignment`, but for a key or value that is serialized
- * inside the assignment. Serializing it may have queued assignments since
- * `start` that read references the assignment creates, so they move after it.
- */
-function createDeferredSetAssignment(
-  ctx: SerializerContext,
-  start: number,
-  ref: number,
-  key: string,
-  value: string,
-): void {
-  const assignments = ctx.base.assignments;
-  const nested = assignments.splice(start);
-  createSetAssignment(ctx, ref, key, value);
-  for (let i = 0, len = nested.length; i < len; i++) {
-    assignments.push(nested[i]);
-  }
-}
-
 function createDeleteAssignment(
   ctx: SerializerContext,
   ref: number,
@@ -587,6 +567,39 @@ function isIndexedValueInStack(
   node: SerovalNode,
 ): boolean {
   return node.t === SerovalNodeType.IndexedValue && ctx.stack.includes(node.i);
+}
+
+/**
+ * Checks if the node, or any node inside it, is read from more than one
+ * place. Such a node must not be created inside a deferred assignment,
+ * because the places that read it may run before the assignment does.
+ */
+function hasMarkedNode(ctx: BaseSerializerContext, node: unknown): boolean {
+  if (Array.isArray(node)) {
+    for (let i = 0, len = node.length; i < len; i++) {
+      if (hasMarkedNode(ctx, node[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+  if (node == null || typeof node !== 'object') {
+    return false;
+  }
+  const current = node as Record<string, unknown>;
+  if (
+    current.t !== SerovalNodeType.IndexedValue &&
+    typeof current.i === 'number' &&
+    isSerializerRefMarked(ctx, current.i)
+  ) {
+    return true;
+  }
+  for (const key in current) {
+    if (hasMarkedNode(ctx, current[key])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -1002,8 +1015,9 @@ function serializeMapEntry(
     if (
       val.t !== SerovalNodeType.IndexedValue &&
       val.i != null &&
-      isSerializerRefMarked(base, val.i)
+      hasMarkedNode(base, val)
     ) {
+      markSerializerRef(base, val.i);
       // We use a trick here using sequence (or comma) expressions
       // basically we serialize the intended object in place WITHOUT
       // actually returning it, this is by returning a placeholder
@@ -1016,8 +1030,7 @@ function serializeMapEntry(
     }
     const parent = base.stack;
     base.stack = [];
-    const start = base.assignments.length;
-    createDeferredSetAssignment(ctx, start, id, keyRef, serialize(ctx, val));
+    createSetAssignment(ctx, id, keyRef, serialize(ctx, val));
     base.stack = parent;
     return '';
   }
@@ -1028,8 +1041,9 @@ function serializeMapEntry(
     if (
       key.t !== SerovalNodeType.IndexedValue &&
       key.i != null &&
-      isSerializerRefMarked(base, key.i)
+      hasMarkedNode(base, key)
     ) {
+      markSerializerRef(base, key.i);
       const serialized =
         '(' + serialize(ctx, key) + ',[' + sentinel + ',' + sentinel + '])';
       createSetAssignment(ctx, id, getRefParam(ctx, key.i), valueRef);
@@ -1039,8 +1053,7 @@ function serializeMapEntry(
     // Reset stack for the key serialization
     const parent = base.stack;
     base.stack = [];
-    const start = base.assignments.length;
-    createDeferredSetAssignment(ctx, start, id, serialize(ctx, key), valueRef);
+    createSetAssignment(ctx, id, serialize(ctx, key), valueRef);
     base.stack = parent;
     return '';
   }
