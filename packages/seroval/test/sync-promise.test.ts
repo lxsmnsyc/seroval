@@ -65,4 +65,15 @@ describe('promises in sync functions', () => {
     });
     expect(chunks).toHaveLength(2);
   });
+
+  it('serializeAsync preserves cyclic rejected promises', async () => {
+    const error = new Error('cyclic');
+    const rejected = Promise.reject(error);
+    rejected.catch(() => undefined);
+    Object.assign(error, { self: rejected });
+    const result = await serializeAsync(error);
+    expect(result).toContain('Promise.reject().catch(()=>{throw h})');
+    const restored = deserialize<Error & { self: Promise<unknown> }>(result);
+    await expect(restored.self).rejects.toBe(restored);
+  });
 });

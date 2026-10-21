@@ -17,7 +17,7 @@ import {
   SerovalSerializationError,
   SerovalUnsupportedNodeError,
 } from '../errors';
-import { createEffectfulFunction, createFunction } from '../function-string';
+import createFunction from '../function-string';
 import { GLOBAL_CONTEXT_REFERENCES, REFERENCES_KEY } from '../keys';
 import type { PluginAccessOptions } from '../plugin';
 import { SerovalMode } from '../plugin';
@@ -997,9 +997,7 @@ function serializePromise(ctx: SerializerContext, node: SerovalPromiseNode): str
     const ref = getRefParam(ctx, (fulfilled as SerovalIndexedValueNode).i);
     serialized =
       promiseConstructor +
-      (node.s
-        ? '().then(' + createFunction([], ref) + ')'
-        : '().catch(' + createEffectfulFunction([], 'throw ' + ref) + ')');
+      (node.s ? '().then(()=>' + ref + ')' : '().catch(()=>{throw ' + ref + '})');
   } else {
     base.stack.push(id);
     const result = serialize(ctx, fulfilled);
@@ -1326,25 +1324,26 @@ function serializeCross(ctx: CrossSerializerContext, tree: SerovalNode): string 
   const patches = resolvePatches(ctx.base);
   // Get the variable that represents the root
   const ref = getRefParam(ctx, id);
-  const scopeId = ctx.state.scopeId;
-  // Parameters needed for scoping
-  const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   // If there are patches, append it after the result
   const body = patches ? '(' + result + ',' + patches + ref + ')' : result;
-  // If there are no params, there's no need to generate a function
-  if (params === '') {
+  const scopeId = ctx.state.scopeId;
+  // If there is no scopeId, there's no need to generate a function
+  if (scopeId == null) {
     if (tree.t === SerovalNodeType.Object && !patches) {
       return '(' + body + ')';
     }
     return body;
   }
-  // Get the arguments for the IIFE
-  const args =
-    scopeId == null
-      ? '()'
-      : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(scopeId) + '"])';
   // Create the IIFE
-  return '(' + createFunction([params], body) + ')' + args;
+  return (
+    '(' +
+    createFunction([GLOBAL_CONTEXT_REFERENCES], body) +
+    ')(' +
+    GLOBAL_CONTEXT_REFERENCES +
+    '["' +
+    serializeString(scopeId) +
+    '"])'
+  );
 }
 
 function wrapSerializationError(error: unknown): SerovalSerializationError {
