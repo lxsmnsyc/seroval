@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { binary, createLiveStream, createStream, type Stream } from '../../src';
+import { binary, createLiveStream, createStream, isStream, type Stream } from '../../src';
 import { createPlugin } from '../../src/core/plugin';
 import { startDeserialize } from './utils';
 
@@ -134,6 +134,33 @@ describe('binary serializer lifecycle', () => {
 });
 
 describe('binary live streams', () => {
+  it('rebuilds a live stream as a genuine Stream', async () => {
+    const { stream, producer } = createLiveStream<number>();
+    const result = run(stream);
+    await producer.write(1);
+    await producer.close(2);
+    await tick();
+    expect(result.onDone).toHaveBeenCalled();
+    let index = 0;
+    const { value } = await binary.deserialize<Stream<number>>({
+      read: () => Promise.resolve(result.chunks[index++]),
+      onError() {},
+    });
+    // `isStream` only accepts the internal class, which input cannot forge.
+    expect(isStream(value)).toBe(true);
+    const events: unknown[] = [];
+    value.on({
+      next: (item) => events.push(item),
+      throw: (error) => events.push(error),
+      return: (item) => events.push(item),
+    });
+    // The deserializer reads the stream events after it returns the root.
+    for (let i = 0; i < 5; i++) {
+      await tick();
+    }
+    expect(events).toEqual([1, 2]);
+  });
+
   it('accepts an event only after onSerialize accepts its chunk', async () => {
     const { stream, producer } = createLiveStream<number>();
     const releases: (() => void)[] = [];

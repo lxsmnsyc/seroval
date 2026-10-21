@@ -13,11 +13,7 @@ import {
   TYPED_ARRAY_CONSTRUCTOR,
   type TypedArrayTag,
 } from '../core/constants';
-import {
-  PROMISE_CONSTRUCTOR,
-  type PromiseConstructorResolver,
-  STREAM_CONSTRUCTOR,
-} from '../core/constructors';
+import { PROMISE_CONSTRUCTOR, type PromiseConstructorResolver } from '../core/constructors';
 import {
   SerovalMalformedBinarySourceError,
   SerovalMalformedBinaryTypeError,
@@ -29,7 +25,7 @@ import {
 import type { PluginWithBinaryMode } from '../core/plugin';
 import { getReference } from '../core/reference';
 import { createSequence, type Sequence, sequenceToIterator } from '../core/sequence';
-import { createStream, type Stream, streamToAsyncIterable } from '../core/stream';
+import { Stream, streamToAsyncIterable } from '../core/stream';
 import {
   SYM_ASYNC_ITERATOR,
   SYM_IS_CONCAT_SPREADABLE,
@@ -744,11 +740,7 @@ function deserializeStream(ctx: DeserializerContext) {
   const live = deserializeByte(ctx);
   // A live stream keeps its history only until the first listener, then
   // forwards values without storing them, like the JSON live receiver.
-  upsert(
-    ctx,
-    id,
-    live === 1 ? (STREAM_CONSTRUCTOR(1) as unknown as Stream<unknown>) : createStream(),
-  );
+  upsert(ctx, id, new Stream<unknown>(live === 1 ? 1 : undefined));
   ctx.openStreams.add(id);
 }
 
