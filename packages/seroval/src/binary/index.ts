@@ -7,6 +7,7 @@
  */
 import { resolvePlugins } from '../core/plugin';
 import {
+  type DeserializeResult,
   createDeserializerContext,
   createReferenceMap,
   type DeserializerContextOptions,
@@ -51,16 +52,16 @@ export type DeserializeOptions = DeserializerContextOptions;
  *
  * @returns A promise for `{ value }`, the decoded value.
  */
-export async function deserialize<T>(options: DeserializeOptions): Promise<{ value: T }> {
+export async function deserialize<T>(options: DeserializeOptions): Promise<DeserializeResult<T>> {
   const plugins = resolvePlugins(options.plugins);
   const context = createDeserializerContext({
     ...options,
     plugins,
   });
-  return (await deserializeStart(context)) as Promise<{ value: T }>;
+  return await deserializeStart<T>(context);
 }
 
 export { createReferenceMap };
 
-export type { DeserializerContext, ReferenceMap } from './deserializer';
+export type { DeserializeResult, DeserializerContext, ReferenceMap } from './deserializer';
 export type { SerializerContextOptions } from './serializer';

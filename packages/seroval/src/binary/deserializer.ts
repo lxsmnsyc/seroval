@@ -106,6 +106,18 @@ export interface DeserializerContextOptions {
   features?: number;
   /** Largest `ArrayBuffer`, in bytes, that the payload may hold. */
   maxArrayBufferLength?: number;
+  /**
+   * Stops decoding when aborted. The root value, if it is not decoded yet, and
+   * every unsettled promise and open stream are rejected with the reason.
+   */
+  signal?: AbortSignal;
+}
+
+/** The result of {@link deserializeStart}. */
+export interface DeserializeResult<T> {
+  value: T;
+  /** Promises and streams in the value that have not settled or ended yet. */
+  readonly pending: number;
 }
 
 export interface DeserializerContext {
@@ -114,6 +126,7 @@ export interface DeserializerContext {
   refs: ReferenceMap;
   plugins?: PluginWithBinaryMode<any, any, any>[];
   maxArrayBufferLength: number;
+  signal: AbortSignal | undefined;
   root: {
     resolver: PromiseConstructorResolver;
     found: boolean;
@@ -153,6 +166,7 @@ export function createDeserializerContext(
     refs: options.refs || createReferenceMap(),
     plugins: options.plugins,
     maxArrayBufferLength,
+    signal: options.signal,
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
     done: false,
     buffer: EMPTY_BYTES,
@@ -1544,6 +1558,10 @@ function getNodeSize(ctx: DeserializerContext): number {
 // decoded without waiting between nodes.
 async function drain(ctx: DeserializerContext) {
   while (true) {
+    // An aborted payload is already settled, so the rest is not read.
+    if (ctx.aborted) {
+      return;
+    }
     if (ensureBuffered(ctx, 1)) {
       const size = getNodeSize(ctx);
       if (ensureBuffered(ctx, size)) {
@@ -1598,10 +1616,32 @@ function abortDeserialize(ctx: DeserializerContext, reason: unknown): void {
   ctx.openStreams.clear();
 }
 
-export function deserializeStart(ctx: DeserializerContext) {
-  drain(ctx).catch((error) => {
-    ctx.onError(error);
-    abortDeserialize(ctx, error);
-  });
-  return ctx.root.resolver.p;
+export function deserializeStart<T>(ctx: DeserializerContext): Promise<DeserializeResult<T>> {
+  const signal = ctx.signal;
+  const onAbort = (): void => {
+    abortDeserialize(ctx, signal!.reason);
+  };
+  if (signal) {
+    if (signal.aborted) {
+      onAbort();
+    } else {
+      signal.addEventListener('abort', onAbort, { once: true });
+    }
+  }
+  if (!ctx.aborted) {
+    drain(ctx)
+      .catch((error) => {
+        ctx.onError(error);
+        abortDeserialize(ctx, error);
+      })
+      .finally(() => {
+        signal?.removeEventListener('abort', onAbort);
+      });
+  }
+  return (ctx.root.resolver.p as Promise<{ value: T }>).then(({ value }) => ({
+    value,
+    get pending(): number {
+      return ctx.openPromises.size + ctx.openStreams.size;
+    },
+  }));
 }

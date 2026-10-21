@@ -325,3 +325,53 @@ describe('binary Promise', () => {
     });
   });
 });
+
+describe('binary deserialize signal and pending', () => {
+  it('rejects without reading when the signal is already aborted', async () => {
+    const read = vi.fn(() => Promise.resolve(undefined));
+    const controller = new AbortController();
+    const reason = new Error('stopped');
+    controller.abort(reason);
+    await expect(
+      binary.deserialize({ read, onError() {}, signal: controller.signal }),
+    ).rejects.toBe(reason);
+    expect(read).not.toHaveBeenCalled();
+  });
+
+  it('rejects open promises and stops reading when aborted', async () => {
+    const later = defer<number>();
+    const handle = startSerialize({ later: later.promise });
+    const transport = handle.transport;
+    const read = vi.fn(() => transport.read());
+    const controller = new AbortController();
+    const result = await binary.deserialize<{ later: Promise<number> }>({
+      read,
+      onError() {},
+      signal: controller.signal,
+    });
+    expect(result.pending).toBe(1);
+    const reason = new Error('transport closed');
+    controller.abort(reason);
+    await expect(result.value.later).rejects.toBe(reason);
+    expect(result.pending).toBe(0);
+    const reads = read.mock.calls.length;
+    later.resolve(1);
+    await handle.done;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    // At most the read already in flight finishes. No new reads start.
+    expect(read.mock.calls.length).toBeLessThanOrEqual(reads + 1);
+  });
+
+  it('counts pending values down as they settle', async () => {
+    const later = defer<number>();
+    const handle = startSerialize({ later: later.promise });
+    const result = await binary.deserialize<{ later: Promise<number> }>({
+      read: () => handle.transport.read(),
+      onError() {},
+    });
+    expect(result.pending).toBe(1);
+    later.resolve(1);
+    await expect(result.value.later).resolves.toBe(1);
+    expect(result.pending).toBe(0);
+  });
+});
