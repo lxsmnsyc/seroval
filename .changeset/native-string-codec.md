@@ -2,4 +2,4 @@
 'seroval': patch
 ---
 
-Skip the escape loop for strings that need no escaping, decode escapes without a per-match `replace` callback, and drive both directions from one escape table.
+Skip the escape loop for strings that need no escaping, escape the rest by switching on `charCodeAt`, and decode escapes without a per-match `replace` callback.
