@@ -15,6 +15,7 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<
   { value: HeadersInit }
 >({
   tag: 'seroval-plugins/web/Headers',
+  skipPlainObjects: true,
   test(value) {
     if (typeof Headers === 'undefined') {
       return false;

@@ -54,7 +54,6 @@ const EXTERNAL_LINK = /^https?:/;
 const CODE_TITLE = /title="([^"]*)"/;
 const HEADING_SPLIT = /<h([23]) id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
 const ENTITY = /&(amp|lt|gt|quot|#39);/g;
-const CODE_PLACEHOLDER = /<!--code:(\d+)-->/g;
 const ANCHOR_PREFIX = /^#\s*/;
 const CODE_HEADER = /<div class="code-header">[\s\S]*?<\/div>/g;
 
@@ -148,7 +147,6 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
 
   const headings: Heading[] = [];
   const used = new Map<string, number>();
-  const codeBlocks: Promise<string>[] = [];
 
   const marked = new Marked({ gfm: true });
   marked.use(markedFootnote());
@@ -170,13 +168,7 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
       code(token: Tokens.Code) {
         const [lang = 'text', ...rest] = (token.lang ?? '').split(WHITESPACE);
         const title = CODE_TITLE.exec(rest.join(' '))?.[1];
-        const index = codeBlocks.length;
-        codeBlocks.push(
-          highlight(token.text, lang).then((html) =>
-            codeFrame(html, title ?? LANGUAGE_LABELS[lang] ?? lang),
-          ),
-        );
-        return `<!--code:${index}-->`;
+        return codeFrame(highlight(token.text, lang), title ?? LANGUAGE_LABELS[lang] ?? lang);
       },
       link(token: Tokens.Link) {
         const html = this.parser.parseInline(token.tokens);
@@ -211,9 +203,7 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
     },
   });
 
-  let html = await marked.parse(body);
-  const highlighted = await Promise.all(codeBlocks);
-  html = html.replace(CODE_PLACEHOLDER, (_, index: string) => highlighted[Number(index)]);
+  const html = await marked.parse(body);
 
   return {
     slug: path.posix.basename(file, '.md'),

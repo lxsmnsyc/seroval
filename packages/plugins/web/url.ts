@@ -1,8 +1,10 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectString } from './validate';
 
 const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }, { value: string }>({
   tag: 'seroval-plugins/web/URL',
+  skipPlainObjects: true,
   test(value) {
     if (typeof URL === 'undefined') {
       return false;
@@ -30,7 +32,7 @@ const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }, { va
     return 'new URL(' + ctx.serialize(node.value) + ')';
   },
   deserialize(node, ctx) {
-    return new URL(ctx.deserialize<string>(node.value));
+    return new URL(expectString(ctx.deserialize(node.value)));
   },
   binary: {
     serialize(value) {

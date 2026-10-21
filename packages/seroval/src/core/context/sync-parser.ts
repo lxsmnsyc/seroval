@@ -55,6 +55,7 @@ import type {
 } from '../types';
 import { getErrorOptions } from '../utils/error';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
+import type { StreamParsePluginContext } from './stream-parser';
 import {
   ObjectKind,
   createArrayBufferNode,
@@ -66,10 +67,12 @@ import {
   getArrayBufferView,
   getObjectClass,
   getObjectKind,
+  getObjectPlugins,
   getReferenceNode,
   getTemporalType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
+  parseMapSentinel,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
@@ -144,6 +147,9 @@ export interface StreamParserState {
   onDone?: () => void;
 
   cleanups: (() => void)[];
+
+  // Plugin contexts by parse depth.
+  pluginContexts: StreamParsePluginContext[];
 
   // Streaming-mode behavior, set by `createStreamParserContext` so that
   // synchronous consumers never bundle it.
@@ -320,6 +326,7 @@ function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): SerovalMapNode {
+  const sentinel = parseMapSentinel(ctx.base);
   const keyNodes = new Array<SerovalNode>(current.size);
   const valueNodes = new Array<SerovalNode>(current.size);
   let i = 0;
@@ -328,7 +335,7 @@ function parseMap(
     valueNodes[i] = parseSOS(ctx, depth, value);
     i++;
   }
-  return createMapNode(ctx.base, id, keyNodes, valueNodes);
+  return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
 
 function parseSet(
@@ -433,8 +440,9 @@ function parsePlugin(
   depth: number,
   id: number,
   current: unknown,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
+  currentPlugins: Plugin<any, any>[] | undefined,
 ): SerovalPluginNode | undefined {
-  const currentPlugins = ctx.base.plugins;
   if (currentPlugins) {
     return ctx.type === ParserMode.Sync
       ? parsePluginSync(ctx, depth, id, current, currentPlugins)
@@ -548,7 +556,13 @@ function parseObject(
   if (currentClass === OpaqueReference) {
     return parseSOS(ctx, depth, (current as OpaqueReference<unknown, unknown>).replacement);
   }
-  const parsed = parsePlugin(ctx, depth, id, current);
+  const parsed = parsePlugin(
+    ctx,
+    depth,
+    id,
+    current,
+    getObjectPlugins(ctx.base, current, currentClass),
+  );
   if (parsed) {
     return parsed;
   }
@@ -560,7 +574,7 @@ function parseFunction(ctx: SOSParserContext, depth: number, current: unknown): 
   if (typeof ref !== 'number') {
     return ref;
   }
-  const plugin = parsePlugin(ctx, depth, ref, current);
+  const plugin = parsePlugin(ctx, depth, ref, current, ctx.base.plugins);
   if (plugin) {
     return plugin;
   }

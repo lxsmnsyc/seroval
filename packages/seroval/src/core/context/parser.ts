@@ -6,15 +6,20 @@ import {
 } from '../base-primitives';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import {
+  BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
   DEFAULT_DEPTH_LIMIT,
+  getBigIntTypedArrayTag,
+  getTypedArrayTag,
   isWellKnownSymbol,
   NIL,
   SerovalNodeType,
   SerovalTemporalType,
+  TYPED_ARRAY_CONSTRUCTOR,
+  type TypedArrayValue,
 } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
-import type { PluginAccessOptions } from '../plugin';
+import { type PluginAccessOptions, getPlainObjectPlugins } from '../plugin';
 import { getReferenceID } from '../reference';
 import { ASYNC_ITERATOR, ITERATOR, SPECIAL_REFS, SpecialReference } from '../special-reference';
 import { SYM_ASYNC_ITERATOR, SYM_ITERATOR } from '../symbols';
@@ -44,6 +49,9 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
 }
 
 export interface BaseParserContext extends PluginAccessOptions {
+  // The plugins tested for plain objects. See `getObjectPlugins`.
+  plainObjectPlugins: PluginAccessOptions['plugins'];
+
   marked: Set<number>;
 
   refs: Map<unknown, number>;
@@ -57,6 +65,7 @@ export interface BaseParserContext extends PluginAccessOptions {
 export function createBaseParserContext(options: BaseParserContextOptions): BaseParserContext {
   return {
     plugins: options.plugins,
+    plainObjectPlugins: getPlainObjectPlugins(options.plugins),
     marked: new Set(),
     features: ALL_ENABLED ^ (options.disabledFeatures ?? 0),
     refs: options.refs ?? new Map<unknown, number>(),
@@ -64,6 +73,22 @@ export function createBaseParserContext(options: BaseParserContextOptions): Base
     depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
     compactArrayBufferViews: options.compactArrayBufferViews ?? false,
   };
+}
+
+/**
+ * Returns the plugins to test for an object. Plain objects, whose prototype is
+ * `Object.prototype`, skip the plugins that set `skipPlainObjects`. Checking
+ * the prototype as well as `constructor` keeps instances whose prototype has
+ * no own `constructor` property from skipping those plugins.
+ */
+export function getObjectPlugins(
+  ctx: BaseParserContext,
+  current: object,
+  currentClass: unknown,
+): PluginAccessOptions['plugins'] {
+  return currentClass === Object && Object.getPrototypeOf(current) === Object.prototype
+    ? ctx.plainObjectPlugins
+    : ctx.plugins;
 }
 
 /**
@@ -338,9 +363,19 @@ export function createObjectNode(
   );
 }
 
-export function createMapNode(
+/**
+ * Gets the sentinel node for a Map. Call it before parsing the entries, so
+ * that an outer Map declares the sentinel before any Map inside it uses it.
+ */
+export function parseMapSentinel(
   ctx: BaseParserContext,
+): SerovalIndexedValueNode | SerovalSpecialReferenceNode {
+  return parseSpecialReference(ctx, SpecialReference.MapSentinel);
+}
+
+export function createMapNode(
   id: number,
+  sentinel: SerovalIndexedValueNode | SerovalSpecialReferenceNode,
   k: SerovalNode[],
   v: SerovalNode[],
 ): SerovalMapNode {
@@ -353,7 +388,7 @@ export function createMapNode(
     NIL,
     { k, v },
     NIL,
-    parseSpecialReference(ctx, SpecialReference.MapSentinel),
+    sentinel,
   );
 }
 
@@ -384,7 +419,14 @@ export function getArrayBufferView<T extends ArrayBufferView>(
   }
   const buffer = new Uint8Array(current.buffer, current.byteOffset, current.byteLength).slice()
     .buffer;
-  const Constructor = current.constructor as new (buffer: ArrayBuffer) => T;
+  // Not `current.constructor`, which the value's own properties can replace.
+  const Constructor = (
+    current instanceof DataView
+      ? DataView
+      : current instanceof BigInt64Array || current instanceof BigUint64Array
+        ? BIG_INT_TYPED_ARRAY_CONSTRUCTOR[getBigIntTypedArrayTag(current)]
+        : TYPED_ARRAY_CONSTRUCTOR[getTypedArrayTag(current as unknown as TypedArrayValue)]
+  ) as unknown as new (buffer: ArrayBuffer) => T;
   return new Constructor(buffer);
 }
 

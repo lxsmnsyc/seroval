@@ -1,5 +1,53 @@
 # seroval-benchmarks
 
+## 1.3.26
+
+### Patch Changes
+
+- Updated dependencies [d0a7135]
+- Updated dependencies [7d052a4]
+- Updated dependencies [30398a0]
+  - seroval@1.6.12
+  - seroval-plugins@1.6.12
+
+## 1.3.25
+
+### Patch Changes
+
+- Updated dependencies [1313ebb]
+  - seroval@1.6.11
+  - seroval-plugins@1.6.11
+
+## 1.3.24
+
+### Patch Changes
+
+- Updated dependencies [f94ee0b]
+  - seroval@1.6.10
+  - seroval-plugins@1.6.10
+
+## 1.3.23
+
+### Patch Changes
+
+- Updated dependencies [5754cfd]
+  - seroval@1.6.9
+  - seroval-plugins@1.6.9
+
+## 1.3.22
+
+### Patch Changes
+
+- Updated dependencies [5d3eb6b]
+- Updated dependencies [15636e7]
+- Updated dependencies [50926b3]
+- Updated dependencies [40d7fd4]
+- Updated dependencies [3edc78b]
+- Updated dependencies [cdcee3e]
+- Updated dependencies [e176f92]
+  - seroval@1.6.8
+  - seroval-plugins@1.6.8
+
 ## 1.3.21
 
 ### Patch Changes

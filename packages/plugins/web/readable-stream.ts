@@ -150,6 +150,7 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
 >({
   tag: 'seroval/plugins/web/ReadableStream',
   extends: [ReadableStreamFactoryPlugin],
+  skipPlainObjects: true,
   test(value) {
     if (typeof ReadableStream === 'undefined') {
       return false;

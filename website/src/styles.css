@@ -38,6 +38,8 @@
   --syntax-function: #8250df;
   --syntax-type: #953800;
   --syntax-property: #0550ae;
+  --syntax-tag: #116329;
+  --syntax-deleted: #82071e;
   --editor-active-line: rgb(16 16 29 / 0.035);
   --editor-selection: rgb(219 39 119 / 0.16);
   --radius-sm: 6px;
@@ -87,6 +89,8 @@
     --syntax-function: #d2a8ff;
     --syntax-type: #ffa657;
     --syntax-property: #79c0ff;
+    --syntax-tag: #7ee787;
+    --syntax-deleted: #ffa198;
     --editor-active-line: rgb(255 255 255 / 0.035);
     --editor-selection: rgb(244 114 182 / 0.22);
     color-scheme: dark;
@@ -130,6 +134,8 @@
   --syntax-function: #d2a8ff;
   --syntax-type: #ffa657;
   --syntax-property: #79c0ff;
+  --syntax-tag: #7ee787;
+  --syntax-deleted: #ffa198;
   --editor-active-line: rgb(255 255 255 / 0.035);
   --editor-selection: rgb(244 114 182 / 0.22);
   color-scheme: dark;
@@ -1354,18 +1360,53 @@ kbd {
   scrollbar-width: thin;
 }
 
-.shiki span {
-  color: var(--shiki-light);
+/* twinkleplop token types, grouped the way its GitHub theme colors them. */
+.twinkleplop :is(.keyword, .operator, .unit, .lifetime, .tag) {
+  color: var(--syntax-keyword);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .shiki span {
-    color: var(--shiki-dark);
-  }
+.twinkleplop :is(.string, .template, .regex, .url, .autolink, .link_text) {
+  color: var(--syntax-string);
 }
 
-:root[data-theme='dark'] .shiki span {
-  color: var(--shiki-dark);
+.twinkleplop
+  :is(
+    .number,
+    .boolean,
+    .null,
+    .constant,
+    .builtin,
+    .property,
+    .attribute,
+    .attr_name,
+    .type,
+    .variant,
+    .entity,
+    .selector_class,
+    .selector_id,
+    .selector_pseudo
+  ) {
+  color: var(--syntax-number);
+}
+
+.twinkleplop :is(.comment, .doctype) {
+  color: var(--syntax-comment);
+}
+
+.twinkleplop :is(.function, .decorator) {
+  color: var(--syntax-function);
+}
+
+.twinkleplop :is(.class_name, .namespace, .parameter, .css_variable) {
+  color: var(--syntax-type);
+}
+
+.twinkleplop :is(.tag_name, .selector, .escape, .string_escape, .inserted) {
+  color: var(--syntax-tag);
+}
+
+.twinkleplop .deleted {
+  color: var(--syntax-deleted);
 }
 
 /* Callouts */

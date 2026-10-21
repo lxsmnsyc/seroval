@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectArrayBuffer, expectString } from './validate';
 
 type FileNode = {
   name: SerovalNode;
@@ -18,6 +19,7 @@ type FileBinaryData = {
 
 const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>({
   tag: 'seroval-plugins/web/File',
+  skipPlainObjects: true,
   test(value) {
     if (typeof File === 'undefined') {
       return false;
@@ -49,9 +51,9 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>(
   },
   deserialize(node, ctx) {
     return new File(
-      [ctx.deserialize(node.buffer) as ArrayBuffer],
-      ctx.deserialize(node.name) as string,
-      ctx.deserialize(node.options) as FilePropertyBag,
+      [expectArrayBuffer(ctx.deserialize(node.buffer))],
+      expectString(ctx.deserialize(node.name)),
+      ctx.deserialize<FilePropertyBag>(node.options),
     );
   },
   binary: {

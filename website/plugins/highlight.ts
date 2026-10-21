@@ -1,16 +1,23 @@
-import { type Highlighter, createHighlighter } from 'shiki';
+import { language as bash } from '@twinkleplop/bash';
+import { language as css } from '@twinkleplop/css';
+import { language as markup } from '@twinkleplop/html';
+import { language as javascript } from '@twinkleplop/javascript';
+import { language as json } from '@twinkleplop/json';
+import { language as tsx } from '@twinkleplop/tsx';
+import { language as typescript } from '@twinkleplop/typescript';
 
-const LANGUAGES = ['js', 'ts', 'tsx', 'json', 'bash', 'sh', 'html', 'css'];
+type Highlighter = (code: string) => string;
 
-let highlighter: Promise<Highlighter> | undefined;
-
-async function getHighlighter(): Promise<Highlighter> {
-  highlighter ??= createHighlighter({
-    themes: ['github-light', 'github-dark'],
-    langs: LANGUAGES,
-  });
-  return highlighter;
-}
+const LANGUAGES: Record<string, Highlighter | undefined> = {
+  js: javascript(),
+  ts: typescript(),
+  tsx: tsx(),
+  json: json(),
+  bash: bash(),
+  sh: bash(),
+  html: markup(),
+  css: css(),
+};
 
 export function escapeHTML(value: string): string {
   return value
@@ -20,17 +27,16 @@ export function escapeHTML(value: string): string {
     .replaceAll('"', '&quot;');
 }
 
-/** Highlights code for both color themes. */
-export async function highlight(code: string, lang: string): Promise<string> {
-  if (!LANGUAGES.includes(lang)) {
-    return `<pre class="shiki"><code>${escapeHTML(code)}</code></pre>`;
+/**
+ * Highlights code with twinkleplop. The colors come from the site's syntax
+ * variables in styles.css, so they follow the light and dark themes.
+ */
+export function highlight(code: string, lang: string): string {
+  const highlighter = LANGUAGES[lang];
+  if (!highlighter) {
+    return `<pre class="twinkleplop"><code>${escapeHTML(code)}</code></pre>`;
   }
-  const shiki = await getHighlighter();
-  return shiki.codeToHtml(code, {
-    lang,
-    themes: { light: 'github-light', dark: 'github-dark' },
-    defaultColor: false,
-  });
+  return highlighter(code);
 }
 
 /** Wraps highlighted code in a frame with a label and a copy button. */

@@ -76,6 +76,7 @@ type FormDataBinaryData = {
 const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode, FormDataBinaryData>({
   tag: 'seroval-plugins/web/FormData',
   extends: [FilePlugin, FormDataFactoryPlugin],
+  skipPlainObjects: true,
   test(value) {
     if (typeof FormData === 'undefined') {
       return false;

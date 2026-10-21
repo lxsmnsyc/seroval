@@ -157,13 +157,11 @@ binary.serialize(user, {
     },
   ];
 
-  return Promise.all(
-    examples.map(async (example) => ({
-      id: example.id,
-      label: example.label,
-      description: example.description,
-      input: codeFrame(await highlight(example.input, 'js'), 'Input'),
-      output: codeFrame(await highlight(example.output, example.outputLang), example.outputLabel),
-    })),
-  );
+  return examples.map((example) => ({
+    id: example.id,
+    label: example.label,
+    description: example.description,
+    input: codeFrame(highlight(example.input, 'js'), 'Input'),
+    output: codeFrame(highlight(example.output, example.outputLang), example.outputLabel),
+  }));
 }

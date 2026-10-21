@@ -2,6 +2,7 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
+import { expectString } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -35,6 +36,7 @@ type RequestBinaryData = {
 const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, RequestBinaryData>({
   tag: 'seroval-plugins/web/Request',
   extends: [ReadableStreamPlugin, HeadersPlugin],
+  skipPlainObjects: true,
   test(value) {
     if (typeof Request === 'undefined') {
       return false;
@@ -67,7 +69,7 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, Request
   },
   deserialize(node, ctx) {
     return new Request(
-      ctx.deserialize<string>(node.url),
+      expectString(ctx.deserialize(node.url)),
       ctx.deserialize<RequestInit>(node.options),
     );
   },

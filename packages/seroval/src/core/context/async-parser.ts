@@ -23,6 +23,7 @@ import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
 import { type LiveStream, isLiveStream } from '../live-stream';
 import { createSerovalNode } from '../node';
 import { OpaqueReference } from '../opaque-reference';
+import type { Plugin } from '../plugin';
 import { type Sequence, createSequenceFromIterable, isSequence } from '../sequence';
 import { SpecialReference } from '../special-reference';
 import type { Stream } from '../stream';
@@ -68,11 +69,13 @@ import {
   getArrayBufferView,
   getObjectClass,
   getObjectKind,
+  getObjectPlugins,
   getReferenceNode,
   getTemporalType,
   markParserRef,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
+  parseMapSentinel,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
@@ -237,6 +240,7 @@ async function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
+  const sentinel = parseMapSentinel(ctx.base);
   const keyNodes = new Array<SerovalNode>(current.size);
   const valueNodes = new Array<SerovalNode>(current.size);
   let node: MaybeAsyncNode;
@@ -248,7 +252,7 @@ async function parseMap(
     valueNodes[i] = node instanceof Promise ? await node : node;
     i++;
   }
-  return createMapNode(ctx.base, id, keyNodes, valueNodes);
+  return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
 
 async function parseSet(
@@ -272,8 +276,9 @@ async function parsePlugin(
   depth: number,
   id: number,
   current: unknown,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
+  currentPlugins: Plugin<any, any>[] | undefined,
 ): Promise<SerovalPluginNode | undefined> {
-  const currentPlugins = ctx.base.plugins;
   if (currentPlugins) {
     for (let i = 0, len = currentPlugins.length; i < len; i++) {
       const plugin = currentPlugins[i];
@@ -490,7 +495,13 @@ export async function parseObjectAsync(
   if (currentClass === OpaqueReference) {
     return parseAsync(ctx, depth, (current as OpaqueReference<unknown, unknown>).replacement);
   }
-  const parsed = await parsePlugin(ctx, depth, id, current);
+  const parsed = await parsePlugin(
+    ctx,
+    depth,
+    id,
+    current,
+    getObjectPlugins(ctx.base, current, currentClass),
+  );
   if (parsed) {
     return parsed;
   }
@@ -566,7 +577,7 @@ export async function parseFunctionAsync(
   if (typeof ref !== 'number') {
     return ref;
   }
-  const plugin = await parsePlugin(ctx, depth, ref, current);
+  const plugin = await parsePlugin(ctx, depth, ref, current, ctx.base.plugins);
   if (plugin) {
     return plugin;
   }

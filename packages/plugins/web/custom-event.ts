@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectString } from './validate';
 
 function createCustomEventOptions(current: CustomEvent): CustomEventInit {
   return {
@@ -26,6 +27,7 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<
   CustomEventBinaryData
 >({
   tag: 'seroval-plugins/web/CustomEvent',
+  skipPlainObjects: true,
   test(value) {
     if (typeof CustomEvent === 'undefined') {
       return false;
@@ -57,7 +59,7 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<
   },
   deserialize(node, ctx) {
     return new CustomEvent(
-      ctx.deserialize<string>(node.type),
+      expectString(ctx.deserialize(node.type)),
       ctx.deserialize<CustomEventInit>(node.options),
     );
   },

@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectNumber } from './validate';
 
 type ImageDataNode = {
   data: SerovalNode;
@@ -20,6 +21,7 @@ type ImageDataBinaryData = {
 const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode, ImageDataBinaryData>(
   {
     tag: 'seroval-plugins/web/ImageData',
+    skipPlainObjects: true,
     test(value) {
       if (typeof ImageData === 'undefined') {
         return false;
@@ -74,8 +76,8 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode, I
     deserialize(node, ctx) {
       return new ImageData(
         ctx.deserialize<Uint8ClampedArray<ArrayBuffer>>(node.data),
-        ctx.deserialize<number>(node.width),
-        ctx.deserialize<number>(node.height),
+        expectNumber(ctx.deserialize(node.width)),
+        expectNumber(ctx.deserialize(node.height)),
         ctx.deserialize<ImageDataSettings>(node.options),
       );
     },

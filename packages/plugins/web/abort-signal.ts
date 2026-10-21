@@ -74,6 +74,7 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
 >({
   tag: 'seroval-plugins/web/AbortSignal',
   extends: [AbortControllerFactoryPlugin],
+  skipPlainObjects: true,
   test(value) {
     if (typeof AbortSignal === 'undefined') {
       return false;

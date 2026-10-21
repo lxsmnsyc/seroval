@@ -229,6 +229,8 @@ type SerovalNodeWithProperties =
 export interface BaseSerializerContextOptions extends PluginAccessOptions {
   features: number;
   markedRefs: number[] | Set<number>;
+  // Cross mode only: assign only the references that the output reads.
+  assignSharedRefsOnly?: boolean;
 }
 
 export interface BaseSerializerContext extends PluginAccessOptions {
@@ -251,6 +253,11 @@ export interface BaseSerializerContext extends PluginAccessOptions {
    * Refs that are...referenced
    */
   marked: Set<number>;
+  /**
+   * Assign every reference, even ones the output never reads. Cross mode
+   * does this by default, since a later script may read them.
+   */
+  assignAll: boolean;
 }
 
 export interface CrossContextOptions {
@@ -272,6 +279,7 @@ export function createBaseSerializerContext(
     stack: [],
     flags: [],
     assignments: [],
+    assignAll: mode === SerovalMode.Cross && !options.assignSharedRefsOnly,
   };
 }
 
@@ -520,13 +528,46 @@ function isIndexedValueInStack(ctx: BaseSerializerContext, node: SerovalNode): b
 }
 
 /**
+ * Checks if the node, or any node inside it, is read from more than one
+ * place. Such a node must not be created inside a deferred assignment,
+ * because the places that read it may run before the assignment does.
+ */
+function hasMarkedNode(ctx: BaseSerializerContext, node: unknown): boolean {
+  if (Array.isArray(node)) {
+    for (let i = 0, len = node.length; i < len; i++) {
+      if (hasMarkedNode(ctx, node[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+  if (node == null || typeof node !== 'object') {
+    return false;
+  }
+  const current = node as Record<string, unknown>;
+  if (
+    current.t !== SerovalNodeType.IndexedValue &&
+    typeof current.i === 'number' &&
+    isSerializerRefMarked(ctx, current.i)
+  ) {
+    return true;
+  }
+  for (const key in current) {
+    if (hasMarkedNode(ctx, current[key])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Produces an assignment expression. `id` generates a reference
  * parameter (through `getRefParam`) and has the option to
  * return the reference parameter directly or assign a value to
  * it.
  */
 function assignIndexedValue(ctx: SerializerContext, index: number, value: string): string {
-  if (ctx.mode === SerovalMode.Vanilla && !isSerializerRefMarked(ctx.base, index)) {
+  if (!ctx.base.assignAll && !isSerializerRefMarked(ctx.base, index)) {
     return value;
   }
   /**
@@ -536,7 +577,8 @@ function assignIndexedValue(ctx: SerializerContext, index: number, value: string
    * all of it into the reference array.
    *
    * otherwise in vanilla, we only do this if it
-   * is actually referenced
+   * is actually referenced. `assignSharedRefsOnly` gives cross-reference
+   * output the vanilla behavior.
    */
   return getRefParam(ctx, index) + '=' + value;
 }
@@ -783,6 +825,13 @@ function serializeTemporal(ctx: SerializerContext, node: SerovalTemporalNode): s
 
 function serializeRegExp(ctx: SerializerContext, node: SerovalRegExpNode): string {
   if (ctx.base.features & FeatureFlag.RegExp) {
+    // A literal would put the source's `<` back into the output, so `</script>`
+    // could close the page's script element. Escaping it inside a literal
+    // breaks named groups and lookbehinds, so the escaped source goes through
+    // the constructor instead.
+    if (node.c.includes('\\x3C')) {
+      return 'new RegExp("' + node.c + '","' + node.m + '")';
+    }
     return '/' + deserializeString(node.c) + '/' + node.m;
   }
   throw new SerovalUnsupportedNodeError(node);
@@ -844,11 +893,8 @@ function serializeMapEntry(
     // value is no longer part of the expression
     // tree and has been moved to the deferred
     // assignment
-    if (
-      val.t !== SerovalNodeType.IndexedValue &&
-      val.i != null &&
-      isSerializerRefMarked(base, val.i)
-    ) {
+    if (val.t !== SerovalNodeType.IndexedValue && val.i != null && hasMarkedNode(base, val)) {
+      markSerializerRef(base, val.i);
       // We use a trick here using sequence (or comma) expressions
       // basically we serialize the intended object in place WITHOUT
       // actually returning it, this is by returning a placeholder
@@ -869,11 +915,8 @@ function serializeMapEntry(
     // Create ref for the Map instance
     const valueRef = getRefParam(ctx, (val as SerovalIndexedValueNode).i);
     markSerializerRef(base, id);
-    if (
-      key.t !== SerovalNodeType.IndexedValue &&
-      key.i != null &&
-      isSerializerRefMarked(base, key.i)
-    ) {
+    if (key.t !== SerovalNodeType.IndexedValue && key.i != null && hasMarkedNode(base, key)) {
+      markSerializerRef(base, key.i);
       const sentinel = getSentinel();
       const serialized = '(' + serialize(ctx, key) + ',[' + sentinel + ',' + sentinel + '])';
       createSetAssignment(ctx, id, getRefParam(ctx, key.i), valueRef);
@@ -1323,7 +1366,15 @@ function serializeCross(ctx: CrossSerializerContext, tree: SerovalNode): string 
   // Parameters needed for scoping
   const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   // If there are patches, append it after the result
-  const body = patches ? '(' + result + ',' + patches + ref + ')' : result;
+  let body = result;
+  if (patches) {
+    // The patches read the root, so it needs a reference even when the
+    // result left it out (see `assignSharedRefsOnly`).
+    if (!ctx.base.assignAll && !result.startsWith(ref + '=')) {
+      body = ref + '=' + result;
+    }
+    body = '(' + body + ',' + patches + ref + ')';
+  }
   // If there are no params, there's no need to generate a function
   if (params === '') {
     if (tree.t === SerovalNodeType.Object && !patches) {

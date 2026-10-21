@@ -71,6 +71,7 @@ The JavaScript output calls `new Point`, so `Point` must be in scope wherever th
 | `deserialize(node, ctx)` | Rebuilds the value from its node. Used by `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`. |
 | `binary` | Takes the value apart and puts it back together for [binary mode](#binary-mode). |
 | `extends` | Other plugins this plugin needs. They are added automatically. |
+| `skipPlainObjects` | Optional. Set it to `true` if `test` never returns `true` for a plain object, whose prototype is `Object.prototype`, such as an object literal. The parsers then do not call `test` for those objects, which makes parsing faster. A plugin that sets it is never applied to such objects. |
 
 Each `parse` function returns an object of nodes. That object is the `node` that `serialize` and `deserialize` receive.
 

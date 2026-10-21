@@ -13,11 +13,7 @@ import {
   TEMPORAL_TYPE_NAME,
   TYPED_ARRAY_CONSTRUCTOR,
 } from '../constants';
-import {
-  PROMISE_CONSTRUCTOR,
-  type PromiseConstructorResolver,
-  STREAM_CONSTRUCTOR,
-} from '../constructors';
+import { PROMISE_CONSTRUCTOR, type PromiseConstructorResolver } from '../constructors';
 import {
   SerovalConflictedNodeIdError,
   SerovalDepthLimitError,
@@ -29,9 +25,9 @@ import {
 } from '../errors';
 import type { PluginAccessOptions } from '../plugin';
 import { getReference } from '../reference';
-import { type Sequence, createSequence, sequenceToIterator } from '../sequence';
-import type { Stream, StreamListener } from '../stream';
-import { streamToAsyncIterable } from '../stream';
+import { type Sequence, createSequence, isSequence, sequenceToIterator } from '../sequence';
+import type { StreamListener } from '../stream';
+import { Stream, isStream, streamToAsyncIterable } from '../stream';
 import { deserializeString } from '../string';
 import type {
   SerovalAggregateErrorNode,
@@ -192,7 +188,10 @@ function guardIndexedValue(ctx: BaseDeserializerContext, id: number): void {
 
 function isThennable(value: unknown): boolean {
   return (
-    !!value && typeof value === 'object' && 'then' in value && typeof value.then === 'function'
+    !!value &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    'then' in value &&
+    typeof value.then === 'function'
   );
 }
 
@@ -220,12 +219,27 @@ function deserializeReference(ctx: DeserializerContext, node: SerovalReferenceNo
   return assignIndexedValue(ctx, node.i, getReference(deserializeString(node.s)));
 }
 
+// A node's element list arrives from untrusted input. Without this check a
+// non-array such as `{"length":1e9}` (or `{"length":"Infinity"}`) is accepted:
+// its `length` drives allocation and iteration with no matching data on the
+// wire, so a tiny payload forces unbounded work. A genuine list can only be as
+// large as the elements actually present in the input.
+function validateNodeList(
+  node: SerovalNode | SerovalObjectRecordNode,
+  list: unknown,
+): void {
+  if (!Array.isArray(list)) {
+    throw new SerovalMalformedNodeError(node as SerovalNode);
+  }
+}
+
 function deserializeArray(
   ctx: DeserializerContext,
   depth: number,
   node: SerovalArrayNode,
 ): unknown[] {
   const items = node.a;
+  validateNodeList(node, items);
   const len = items.length;
   const result: unknown[] = assignIndexedValue(ctx, node.i, new Array<unknown>(len));
   for (let i = 0, item: SerovalNode | 0; i < len; i++) {
@@ -303,6 +317,8 @@ function deserializeProperties(
   result: Record<string | symbol, unknown>,
 ): Record<string | symbol, unknown> {
   const keys = node.k;
+  validateNodeList(node, keys);
+  validateNodeList(node, node.v);
   const len = keys.length;
   if (len > 0) {
     for (let i = 0, vals = node.v; i < len; i++) {
@@ -360,6 +376,7 @@ function deserializeSet(
   node: SerovalSetNode,
 ): Set<unknown> {
   const result = assignIndexedValue(ctx, node.i, new Set<unknown>());
+  validateNodeList(node, node.a);
   for (let i = 0, items = node.a, len = items.length; i < len; i++) {
     result.add(deserialize(ctx, depth, items[i]));
   }
@@ -372,6 +389,8 @@ function deserializeMap(
   node: SerovalMapNode,
 ): Map<unknown, unknown> {
   const result = assignIndexedValue(ctx, node.i, new Map<unknown, unknown>());
+  validateNodeList(node, node.e.k);
+  validateNodeList(node, node.e.v);
   for (let i = 0, keys = node.e.k, vals = node.e.v, len = keys.length; i < len; i++) {
     result.set(deserialize(ctx, depth, keys[i]), deserialize(ctx, depth, vals[i]));
   }
@@ -554,15 +573,13 @@ function deserializeIteratorFactoryInstance(
 ): unknown {
   deserialize(ctx, depth, node.a[0]);
   const source = deserialize(ctx, depth, node.a[1]);
-  // `node.a[1]` is any node the input picked. Validate the source *node type*,
-  // not the runtime value's shape: a `__SEROVAL_SEQUENCE__` brand is forgeable
-  // by a plugin, but only a genuine Sequence node carries the Sequence mark,
-  // and `guardIndexedValue` forbids reusing its id for another value.
-  validateNodeType(ctx, node, node.a[1].i, SerovalNodeType.Sequence);
-  if (!source) {
+  // `node.a[1]` is any node the input picked. Check the value itself rather
+  // than the type recorded for its id: in vanilla mode an unmarked id can be
+  // reused, so a plain object could sit behind an id marked as a Sequence.
+  if (!isSequence(source)) {
     throw new SerovalMalformedNodeError(node.a[1]);
   }
-  return sequenceToIterator(source as Sequence);
+  return sequenceToIterator(source);
 }
 
 function deserializeAsyncIteratorFactoryInstance(
@@ -572,16 +589,14 @@ function deserializeAsyncIteratorFactoryInstance(
 ): unknown {
   deserialize(ctx, depth, node.a[0]);
   const source = deserialize(ctx, depth, node.a[1]);
-  // `node.a[1]` is any node the input picked. Validate the source *node type*,
-  // not the runtime value's shape: a `__SEROVAL_STREAM__` brand is forgeable by
-  // a plugin, but only a genuine StreamConstructor node carries the mark, and
-  // `guardIndexedValue` forbids reusing its id for another value. This stops a
-  // plugin-returned fake stream from having its `on` invoked below.
-  validateNodeType(ctx, node, node.a[1].i, SerovalNodeType.StreamConstructor);
-  if (!source) {
+  // `node.a[1]` is any node the input picked. Check the value itself rather
+  // than the type recorded for its id: in vanilla mode an unmarked id can be
+  // reused, so another value could sit behind an id marked as a stream. This
+  // stops a fake stream from having its `on` invoked below.
+  if (!isStream(source)) {
     throw new SerovalMalformedNodeError(node.a[1]);
   }
-  return streamToAsyncIterable(source as Stream<unknown>);
+  return streamToAsyncIterable(source);
 }
 
 function deserializeStreamConstructor(
@@ -590,10 +605,11 @@ function deserializeStreamConstructor(
   node: SerovalStreamConstructorNode,
 ): unknown {
   // Anything but the exact live marker builds a replay receiver.
-  const result = assignIndexedValue(ctx, node.i, STREAM_CONSTRUCTOR(node.l === 1 ? 1 : NIL));
+  const result = assignIndexedValue(ctx, node.i, new Stream<unknown>(node.l === 1 ? 1 : NIL));
   assignNodeType(ctx, node.i, SerovalNodeType.StreamConstructor);
   ctx.base.pending?.add(node.i);
   const items = node.a;
+  validateNodeList(node, items);
   const len = items.length;
   if (len) {
     for (let i = 0; i < len; i++) {
@@ -639,15 +655,28 @@ function deserializeAsyncIteratorFactory(
   return NIL;
 }
 
+function isSequenceIndex(value: unknown, size: number): boolean {
+  return (
+    Number.isInteger(value) && (value as number) >= -1 && (value as number) < size
+  );
+}
+
 function deserializeSequence(
   ctx: DeserializerContext,
   depth: number,
   node: SerovalSequenceNode,
 ): Sequence {
+  validateNodeList(node, node.a);
+  // The iterator stops only when its index passes the done index, so both
+  // indices must be integers within the list.
+  const size = node.a.length;
+  if (!(isSequenceIndex(node.s, size) && isSequenceIndex(node.l, size))) {
+    throw new SerovalMalformedNodeError(node);
+  }
   const result = assignIndexedValue(ctx, node.i, createSequence([], node.s, node.l));
   // Mark the id so an IteratorFactoryInstance can validate its source node type.
   assignNodeType(ctx, node.i, SerovalNodeType.Sequence);
-  for (let i = 0, len = node.a.length; i < len; i++) {
+  for (let i = 0; i < size; i++) {
     result.v[i] = deserialize(ctx, depth, node.a[i]);
   }
   return result;
