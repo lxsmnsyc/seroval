@@ -219,11 +219,10 @@ export function resolvePlugins(
  * Returns the plugins that are tested for plain objects. It is the same array
  * when no plugin sets `skipPlainObjects`.
  */
-export function getPlainObjectPlugins(
-  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
-  plugins: Plugin<any, any>[] | undefined,
-  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
-): Plugin<any, any>[] | undefined {
+// oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
+export function getPlainObjectPlugins<P extends Plugin<any, any>>(
+  plugins: P[] | undefined,
+): P[] | undefined {
   if (plugins) {
     for (let i = 0, len = plugins.length; i < len; i++) {
       if (plugins[i].skipPlainObjects) {

@@ -18,7 +18,7 @@ import { SerovalDepthLimitError, SerovalUnsupportedTypeError } from '../core/err
 import { isLiveStream, type LiveStream } from '../core/live-stream';
 import { OpaqueReference } from '../core/opaque-reference';
 import { getReferenceID } from '../core/reference';
-import type { PluginWithBinaryMode } from '../core/plugin';
+import { getPlainObjectPlugins, type PluginWithBinaryMode } from '../core/plugin';
 import { createSequenceFromIterable, isSequence, type Sequence } from '../core/sequence';
 import { createStreamFromAsyncIterable, isStream, type Stream } from '../core/stream';
 import {
@@ -75,6 +75,8 @@ export interface SerializerContext {
   refs: Map<unknown, number>;
   features: number;
   plugins?: PluginWithBinaryMode<any, any, any>[];
+  // The plugins tested for plain objects.
+  plainObjectPlugins?: PluginWithBinaryMode<any, any, any>[];
   onSerialize: BinarySerializeCallback;
   onDone(): void;
   onError(error: unknown): void;
@@ -132,6 +134,7 @@ export function createSerializerContext(options: SerializerContextOptions): Seri
     onDone: options.onDone,
     onError: options.onError,
     plugins: options.plugins,
+    plainObjectPlugins: getPlainObjectPlugins(options.plugins),
     cleanups,
     writer: createByteWriter(),
 
@@ -859,8 +862,11 @@ function serializeObjectPhase2(
   throw new SerovalUnsupportedTypeError(current);
 }
 
-function serializePlugin(ctx: SerializerContext, value: object) {
-  const plugins = ctx.plugins;
+function serializePlugin(
+  ctx: SerializerContext,
+  value: object,
+  plugins: PluginWithBinaryMode<any, any, any>[] | undefined,
+) {
   if (plugins) {
     for (let i = 0, len = plugins.length; i < len; i++) {
       const current = plugins[i];
@@ -896,7 +902,16 @@ function serializeObject(ctx: SerializerContext, value: object): number {
     if (currentClass === OpaqueReference) {
       return serialize(ctx, (value as OpaqueReference<unknown, unknown>).replacement);
     }
-    const serialized = serializePlugin(ctx, value);
+    // Plain objects skip the plugins that set `skipPlainObjects`, like the
+    // parsers. The prototype check keeps class instances whose prototype has
+    // no own `constructor` from skipping them.
+    const serialized = serializePlugin(
+      ctx,
+      value,
+      currentClass === Object && Object.getPrototypeOf(value) === Object.prototype
+        ? ctx.plainObjectPlugins
+        : ctx.plugins,
+    );
     if (serialized != null) {
       return serialized;
     }
@@ -914,7 +929,7 @@ function serializeReference(ctx: SerializerContext, value: unknown, key: string)
 }
 
 function serializeFunction(ctx: SerializerContext, current: Function) {
-  const plugin = serializePlugin(ctx, current);
+  const plugin = serializePlugin(ctx, current, ctx.plugins);
   if (plugin) {
     return plugin;
   }

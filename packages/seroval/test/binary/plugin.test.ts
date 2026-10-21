@@ -339,3 +339,57 @@ describe('binary Plugin validate', () => {
     expect(result.error).toMatchObject({ field: 'x' });
   });
 });
+
+describe('binary Plugin skipPlainObjects', () => {
+  // Matches every object with `x`, plain or not, and counts its calls.
+  function createPointPlugin(skipPlainObjects: boolean) {
+    const test = vi.fn(
+      (value: unknown) => typeof value === 'object' && value !== null && 'x' in value,
+    );
+    // The payload is an array, so the plugin does not match its own payload.
+    const plugin = createPlugin<{ x: number }, SerovalNode, [number]>({
+      tag: 'Point',
+      skipPlainObjects,
+      test,
+      parse: {},
+      serialize: () => '',
+      deserialize: () => ({ x: 0 }),
+      binary: {
+        serialize: (value) => [value.x],
+        deserialize: (data) => new Vector(data[0], 0),
+      },
+    });
+    return { plugin, test };
+  }
+
+  function LegacyPoint(this: { x: number }, x: number): void {
+    this.x = x;
+  }
+  LegacyPoint.prototype = { kind: 'legacy' };
+
+  it('skips plain objects only', async () => {
+    const { plugin, test } = createPointPlugin(true);
+    // oxlint-disable-next-line no-unsafe-type-assertion -- Calls the legacy constructor with `new`.
+    const legacy = new (LegacyPoint as unknown as new (x: number) => { x: number })(3);
+    const source = [{ x: 1 }, new Vector(2, 0), legacy, JSON.parse('{"constructor":2,"x":4}')];
+    const { value } = await roundtrip<unknown[]>(source, {
+      serialize: { plugins: [plugin] },
+      deserialize: { plugins: [plugin] },
+    });
+    expect(value[0]).toEqual({ x: 1 });
+    expect(value[0]).not.toBeInstanceOf(Vector);
+    expect(value[1]).toBeInstanceOf(Vector);
+    expect(value[2]).toBeInstanceOf(Vector);
+    expect(value[3]).toEqual({ constructor: 2, x: 4 });
+    expect(test).not.toHaveBeenCalledWith(source[0]);
+  });
+
+  it('tests plain objects by default', async () => {
+    const { plugin } = createPointPlugin(false);
+    const { value } = await roundtrip<unknown[]>([{ x: 1 }], {
+      serialize: { plugins: [plugin] },
+      deserialize: { plugins: [plugin] },
+    });
+    expect(value[0]).toBeInstanceOf(Vector);
+  });
+});
