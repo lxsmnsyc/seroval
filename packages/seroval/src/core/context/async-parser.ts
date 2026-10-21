@@ -87,6 +87,7 @@ import {
   ParserNodeType,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
+  parseMapSentinel,
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
@@ -310,13 +311,14 @@ async function parseMap(
   id: number,
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
+  const sentinel = parseMapSentinel(ctx.base);
   const keyNodes: SerovalNode[] = [];
   const valueNodes: SerovalNode[] = [];
   for (const [key, value] of current.entries()) {
     keyNodes.push(await parseAsync(ctx, depth, key));
     valueNodes.push(await parseAsync(ctx, depth, value));
   }
-  return createMapNode(ctx.base, id, keyNodes, valueNodes);
+  return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
 
 async function parseSet(
