@@ -42,6 +42,8 @@ import type {
 } from './types';
 import { getErrorConstructor } from './utils/error';
 import { getObjectFlag } from './utils/get-object-flag';
+import type { BigIntTypedArrayValue, TypedArrayValue } from './utils/typed-array';
+import { getTypedArrayName } from './utils/typed-array';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
   switch (value) {
@@ -167,7 +169,7 @@ export function createViewNode(
     type,
     id,
     NIL,
-    isDataView ? NIL : current.constructor.name,
+    isDataView ? NIL : getTypedArrayName(current as TypedArrayValue | BigIntTypedArrayValue),
     NIL,
     NIL,
     NIL,

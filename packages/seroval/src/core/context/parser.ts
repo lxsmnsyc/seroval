@@ -29,6 +29,11 @@ import type {
   SerovalWKSymbolNode,
 } from '../types';
 import { getObjectFlag } from '../utils/get-object-flag';
+import type { TypedArrayValue } from '../utils/typed-array';
+import {
+  getTypedArrayConstructor,
+  getTypedArrayName,
+} from '../utils/typed-array';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
@@ -379,7 +384,12 @@ export function getArrayBufferView<T extends ArrayBufferView>(
   }
   const buffer = new Uint8Array(current.buffer, current.byteOffset, current.byteLength).slice()
     .buffer;
-  const Constructor = current.constructor as new (buffer: ArrayBuffer) => T;
+  // Not `current.constructor`, which the value's own properties can replace.
+  const Constructor = (
+    current instanceof DataView
+      ? DataView
+      : getTypedArrayConstructor(getTypedArrayName(current as unknown as TypedArrayValue))
+  ) as unknown as new (buffer: ArrayBuffer) => T;
   return new Constructor(buffer);
 }
 

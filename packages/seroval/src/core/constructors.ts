@@ -68,7 +68,7 @@ interface AsyncIteratorInstance {
 // `live` = 1 keeps history only until the first listener subscribes, then
 // forwards each value and refuses a second listener, so delivered values are
 // not retained. Absent, every listener gets the full history.
-export const STREAM_CONSTRUCTOR = (live?: number): Stream<unknown> => {
+export const STREAM_CONSTRUCTOR = (live?: number) => {
   const buffer: unknown[] = [];
   const listeners: (StreamListener<unknown> | undefined)[] = [];
   let alive = true;
@@ -194,7 +194,7 @@ export const SERIALIZED_ITERATOR_CONSTRUCTOR = /* @__PURE__ */ ITERATOR_CONSTRUC
 // (see STREAM_CONSTRUCTOR).
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
-  (stream: Stream<unknown>) =>
+  (stream: Pick<Stream<unknown>, 'on'>) =>
   (): AsyncIteratorInstance => {
     let count = 0;
     let doneAt = -1;

@@ -1,5 +1,17 @@
 # seroval-plugins
 
+## 1.6.11
+
+## 1.6.10
+
+## 1.6.9
+
+## 1.6.8
+
+### Patch Changes
+
+- 40d7fd4: Check string, number and `ArrayBuffer` fields at runtime when deserializing the URL, URLSearchParams, Request, DOMException, Event, CustomEvent, Blob, File and ImageData plugins. A field of the wrong type now throws instead of being coerced by the Web constructor.
+
 ## 1.6.7
 
 ## 1.6.6

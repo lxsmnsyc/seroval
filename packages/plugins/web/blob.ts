@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectArrayBuffer, expectString } from './validate';
 
 type BlobNode = {
   type: SerovalNode;
@@ -26,8 +27,8 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
     return 'new Blob([' + ctx.serialize(node.buffer) + '],{type:' + ctx.serialize(node.type) + '})';
   },
   deserialize(node, ctx) {
-    return new Blob([ctx.deserialize<ArrayBuffer>(node.buffer)], {
-      type: ctx.deserialize<string>(node.type),
+    return new Blob([expectArrayBuffer(ctx.deserialize(node.buffer))], {
+      type: expectString(ctx.deserialize(node.type)),
     });
   },
 });

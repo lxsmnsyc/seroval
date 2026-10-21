@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectString } from './validate';
 
 function createEventOptions(current: Event): EventInit {
   return {
@@ -46,7 +47,10 @@ const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
     return 'new Event(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
   deserialize(node, ctx) {
-    return new Event(ctx.deserialize<string>(node.type), ctx.deserialize<EventInit>(node.options));
+    return new Event(
+      expectString(ctx.deserialize(node.type)),
+      ctx.deserialize<EventInit>(node.options),
+    );
   },
 });
 

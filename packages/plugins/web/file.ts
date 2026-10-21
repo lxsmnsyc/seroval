@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectArrayBuffer, expectString } from './validate';
 
 type FileNode = {
   name: SerovalNode;
@@ -40,8 +41,8 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
   },
   deserialize(node, ctx) {
     return new File(
-      [ctx.deserialize<ArrayBuffer>(node.buffer)],
-      ctx.deserialize<string>(node.name),
+      [expectArrayBuffer(ctx.deserialize(node.buffer))],
+      expectString(ctx.deserialize(node.name)),
       ctx.deserialize<FilePropertyBag>(node.options),
     );
   },

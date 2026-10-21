@@ -2,6 +2,7 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
+import { expectString } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -62,7 +63,7 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   },
   deserialize(node, ctx) {
     return new Request(
-      ctx.deserialize<string>(node.url),
+      expectString(ctx.deserialize(node.url)),
       ctx.deserialize<RequestInit>(node.options),
     );
   },

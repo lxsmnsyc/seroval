@@ -54,3 +54,22 @@ export function getTypedArrayConstructor(name: string): TypedArrayConstructor {
       throw new SerovalUnknownTypedArrayError(name);
   }
 }
+
+type TypedArrayNameGetter = (this: TypedArrayValue | BigIntTypedArrayValue) => string;
+
+let typedArrayNameGetter: TypedArrayNameGetter | undefined;
+
+// The getter behind `TypedArray.prototype[Symbol.toStringTag]` reads the
+// array's internal type. Unlike `value.constructor.name`, an own property on
+// the value cannot change what it returns.
+export function getTypedArrayName(
+  value: TypedArrayValue | BigIntTypedArrayValue,
+): string {
+  if (!typedArrayNameGetter) {
+    typedArrayNameGetter = Object.getOwnPropertyDescriptor(
+      Object.getPrototypeOf(Int8Array.prototype) as object,
+      Symbol.toStringTag,
+    )!.get as TypedArrayNameGetter;
+  }
+  return typedArrayNameGetter.call(value);
+}

@@ -44,8 +44,7 @@ export interface LiveStreamSink<T> {
 }
 
 export interface LiveStream<T> {
-  // Shares the replay stream's marker key so the parser needs one `in` check
-  // per object; the value tells the two apart.
+  // Kept as a marker on the value only. Identity comes from `isLiveStream`.
   __SEROVAL_STREAM__: 2;
   consume(): LiveStreamConsumer<T>;
   /**
@@ -78,8 +77,12 @@ interface PendingRead<T> {
   reject: (reason: unknown) => void;
 }
 
-export function isLiveStream<T>(value: { __SEROVAL_STREAM__: unknown }): value is LiveStream<T> {
-  return value.__SEROVAL_STREAM__ === 2;
+// Identity is checked against this set rather than the marker key, which
+// untrusted input can forge.
+const LIVE_STREAMS = new WeakSet<object>();
+
+export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
+  return LIVE_STREAMS.has(value as object);
 }
 
 /**
@@ -255,25 +258,28 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
     return consumer.cancel;
   }
 
-  return {
-    stream: {
-      __SEROVAL_STREAM__: 2,
-      consume,
-      on(listener) {
-        const wrap =
-          (key: keyof StreamListener<T>) =>
-          (value: unknown, accept: () => void): void => {
-            (listener[key] as (value: unknown) => void)(value);
-            accept();
-          };
-        return pump({
-          next: wrap('next'),
-          throw: wrap('throw'),
-          return: wrap('return'),
-        });
-      },
-      pump,
+  const stream: LiveStream<T> = {
+    __SEROVAL_STREAM__: 2,
+    consume,
+    on(listener) {
+      const wrap =
+        (key: keyof StreamListener<T>) =>
+        (value: unknown, accept: () => void): void => {
+          (listener[key] as (value: unknown) => void)(value);
+          accept();
+        };
+      return pump({
+        next: wrap('next'),
+        throw: wrap('throw'),
+        return: wrap('return'),
+      });
     },
+    pump,
+  };
+  LIVE_STREAMS.add(stream);
+
+  return {
+    stream,
     producer: {
       write(value) {
         return push({ type: 'next', value });

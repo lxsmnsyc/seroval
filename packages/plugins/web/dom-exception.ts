@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectString } from './validate';
 
 type DOMExceptionNode = {
   name: SerovalNode;
@@ -39,8 +40,8 @@ const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<DOMException, DOMExcepti
   },
   deserialize(node, ctx) {
     return new DOMException(
-      ctx.deserialize<string>(node.message),
-      ctx.deserialize<string>(node.name),
+      expectString(ctx.deserialize(node.message)),
+      expectString(ctx.deserialize(node.name)),
     );
   },
 });

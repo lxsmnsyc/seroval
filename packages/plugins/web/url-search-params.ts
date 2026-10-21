@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectString } from './validate';
 
 const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<URLSearchParams, { value: SerovalNode }>(
   {
@@ -31,7 +32,7 @@ const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<URLSearchParams, { va
       return 'new URLSearchParams(' + ctx.serialize(node.value) + ')';
     },
     deserialize(node, ctx) {
-      return new URLSearchParams(ctx.deserialize<string>(node.value));
+      return new URLSearchParams(expectString(ctx.deserialize(node.value)));
     },
   },
 );

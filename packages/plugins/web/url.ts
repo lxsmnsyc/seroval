@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectString } from './validate';
 
 const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }>({
   tag: 'seroval-plugins/web/URL',
@@ -30,7 +31,7 @@ const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }>({
     return 'new URL(' + ctx.serialize(node.value) + ')';
   },
   deserialize(node, ctx) {
-    return new URL(ctx.deserialize<string>(node.value));
+    return new URL(expectString(ctx.deserialize(node.value)));
   },
 });
 
