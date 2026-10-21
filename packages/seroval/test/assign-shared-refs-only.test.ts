@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { crossSerialize, crossSerializeAsync, serialize, serializeAsync } from '../src';
 
-function evaluate<T>(code: string, refs: unknown[] = []): T {
+// oxlint-disable-next-line no-unnecessary-type-parameters -- The caller names the type of the evaluated value.
+function evaluate<T>(code: string, refs: unknown = []): T {
   // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion -- evaluates the serialized output.
   return new Function('$R', `return (${code})`)(refs) as T;
 }
@@ -15,6 +16,7 @@ function cycle(): Record<string, unknown> {
 const SYNC_VALUES: [string, () => unknown][] = [
   ['primitives', () => [1, -0, Number.NaN, 'a"<', true, null, undefined, 10n]],
   ['nested objects', () => ({ a: { b: { c: [1, 2, { d: 'e' }] } }, 'x-y': 1, 0: 2 })],
+  // oxlint-disable-next-line no-sparse-arrays -- Tests array holes.
   ['holes', () => [1, , 3]],
   [
     'shared references',
@@ -73,6 +75,7 @@ const SYNC_VALUES: [string, () => unknown][] = [
   [
     '__proto__ keys',
     () => {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- The parsed value is a known object.
       const value = JSON.parse('{"__proto__":{"a":1},"b":2}') as Record<string, unknown>;
       value.self = value;
       return value;
@@ -81,6 +84,7 @@ const SYNC_VALUES: [string, () => unknown][] = [
   [
     'null prototype',
     () => {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- A null prototype object.
       const value = Object.create(null) as Record<string, unknown>;
       value.self = value;
       value.x = { y: value };
@@ -119,7 +123,7 @@ const SYNC_VALUES: [string, () => unknown][] = [
     'iterables',
     () => {
       const make = (): Iterable<unknown> => ({
-        *[Symbol.iterator](): Generator<unknown> {
+        *[Symbol.iterator](): Generator<number> {
           yield 1;
           yield 2;
         },
@@ -142,7 +146,7 @@ const ASYNC_VALUES: [string, () => unknown][] = [
   [
     'async iterables',
     () => ({
-      async *[Symbol.asyncIterator](): AsyncGenerator<unknown> {
+      async *[Symbol.asyncIterator](): AsyncGenerator<number> {
         await Promise.resolve();
         yield 1;
         yield { a: 2 };
@@ -159,7 +163,7 @@ describe('assignSharedRefsOnly', () => {
       const code = crossSerialize(value, { assignSharedRefsOnly: true });
       expect(serialize(evaluate(code))).toBe(expected);
       const scoped = crossSerialize(value, { assignSharedRefsOnly: true, scopeId: 'x' });
-      expect(serialize(evaluate(scoped, { x: [] } as unknown as unknown[]))).toBe(expected);
+      expect(serialize(evaluate(scoped, { x: [] }))).toBe(expected);
     });
 
     it('leaves out the references that are read once', () => {

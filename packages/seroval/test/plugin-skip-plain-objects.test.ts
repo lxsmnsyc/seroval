@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { SerovalNode } from '../src';
+import type { Plugin, SerovalNode } from '../src';
 import {
   createPlugin,
   crossSerialize,
@@ -18,7 +18,7 @@ class Point {
 }
 
 // Matches every object with an `x` field, plain or not.
-function createPointPlugin(skipPlainObjects?: boolean) {
+function createPointPlugin(skipPlainObjects?: boolean): Plugin<{ x: number }, { x: SerovalNode }> {
   return createPlugin<{ x: number }, { x: SerovalNode }>({
     tag: 'point',
     skipPlainObjects,
@@ -37,10 +37,11 @@ function createPointPlugin(skipPlainObjects?: boolean) {
 
 const SKIP = createPointPlugin(true);
 const TEST = createPointPlugin();
+// oxlint-disable-next-line no-unsafe-type-assertion -- A null prototype object.
 const VALUE = [{ x: 1 }, new Point(2), Object.assign(Object.create(null) as object, { x: 3 })];
 
-function streamOutput(plugin: ReturnType<typeof createPointPlugin>): Promise<string> {
-  return new Promise((resolve, reject) => {
+async function streamOutput(plugin: Plugin<{ x: number }, { x: SerovalNode }>): Promise<string> {
+  return await new Promise((resolve, reject) => {
     let output = '';
     crossSerializeStream(VALUE, {
       plugins: [plugin],
@@ -48,7 +49,9 @@ function streamOutput(plugin: ReturnType<typeof createPointPlugin>): Promise<str
         output += data;
       },
       onError: reject,
-      onDone: () => resolve(output),
+      onDone() {
+        resolve(output);
+      },
     });
   });
 }
