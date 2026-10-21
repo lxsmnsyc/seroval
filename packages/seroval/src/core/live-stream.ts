@@ -43,24 +43,6 @@ export interface LiveStreamSink<T> {
   error?(reason: unknown): void;
 }
 
-export interface LiveStream<T> {
-  // Kept as a marker on the value only. Identity comes from `isLiveStream`.
-  __SEROVAL_STREAM__: 2;
-  consume(): LiveStreamConsumer<T>;
-  /**
-   * Consumes the stream through a replay-style listener, accepting each
-   * event as soon as it has been delivered. Use `consume` or `pump` when
-   * acceptance must wait for processing.
-   */
-  on(listener: StreamListener<T>): () => void;
-  /**
-   * Consumes the stream into a sink that controls acceptance. Returns the
-   * cancel function.
-   * @internal
-   */
-  pump(sink: LiveStreamSink<T>): (reason?: unknown) => void;
-}
-
 export interface LiveStreamOptions {
   onCancel?: (reason: unknown) => void;
 }
@@ -77,47 +59,49 @@ interface PendingRead<T> {
   reject: (reason: unknown) => void;
 }
 
-// Identity is checked against this set rather than the marker key, which
-// untrusted input can forge.
-const LIVE_STREAMS = new WeakSet<object>();
-
 export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
-  return LIVE_STREAMS.has(value as object);
+  return value instanceof LiveStream;
 }
 
 /**
  * A single-consumer stream for incremental serialization. Unlike
  * `createStream`, it keeps no history: at most one event is held, and the
  * producer operation that sent it settles only when the consumer accepts it.
+ *
+ * An internal class rather than a tagged POJO: identity is checked with
+ * `instanceof`, which untrusted input cannot forge. The class is exported
+ * because bundlers cannot drop an unexported top-level class.
  */
-export function createLiveStream<T>(options?: LiveStreamOptions): {
-  stream: LiveStream<T>;
-  producer: LiveStreamProducer<T>;
-} {
-  let pending: PendingEvent<T> | undefined;
-  let waiting: PendingRead<T> | undefined;
-  let consumed = false;
-  let closed = false;
-  let cancelled = false;
-  let cancelReason: unknown;
+export class LiveStream<T> {
+  private pending: PendingEvent<T> | undefined;
+  private waiting: PendingRead<T> | undefined;
+  private consumed = false;
+  private closed = false;
+  private cancelled = false;
+  private cancelReason: unknown;
+  private options: LiveStreamOptions | undefined;
 
-  function deliver(reader: PendingRead<T>, record: PendingEvent<T>): void {
+  constructor(options?: LiveStreamOptions) {
+    this.options = options;
+  }
+
+  private deliver(reader: PendingRead<T>, record: PendingEvent<T>): void {
     record.delivered = true;
     reader.resolve({
       event: record.event!,
-      accept() {
-        if (pending === record && record.delivered) {
+      accept: () => {
+        if (this.pending === record && record.delivered) {
           const terminal = record.event!.type !== 'next';
           record.event = undefined;
-          pending = undefined;
+          this.pending = undefined;
           const resolve = record.resolve;
           record.resolve = undefined;
           record.reject = undefined;
           if (terminal) {
-            closed = true;
-            options = undefined;
-            const waiter = waiting;
-            waiting = undefined;
+            this.closed = true;
+            this.options = undefined;
+            const waiter = this.waiting;
+            this.waiting = undefined;
             waiter?.reject(new SerovalLiveStreamError('closed'));
           }
           resolve?.();
@@ -126,15 +110,16 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
     });
   }
 
-  function push(event: LiveStreamEvent<T>): Promise<void> {
-    if (cancelled) {
+  /** @internal */
+  push(event: LiveStreamEvent<T>): Promise<void> {
+    if (this.cancelled) {
       // oxlint-disable-next-line prefer-promise-reject-errors -- Rejects with the cancel reason as given.
-      return Promise.reject(cancelReason);
+      return Promise.reject(this.cancelReason);
     }
-    if (closed) {
+    if (this.closed) {
       return Promise.reject(new SerovalLiveStreamError('closed'));
     }
-    if (pending) {
+    if (this.pending) {
       return Promise.reject(new SerovalLiveStreamError('pending'));
     }
     return new Promise<void>((resolve, reject) => {
@@ -144,27 +129,27 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
         resolve,
         reject,
       };
-      pending = record;
-      if (waiting) {
-        const waiter = waiting;
-        waiting = undefined;
-        deliver(waiter, record);
+      this.pending = record;
+      if (this.waiting) {
+        const waiter = this.waiting;
+        this.waiting = undefined;
+        this.deliver(waiter, record);
       }
     });
   }
 
-  function cancel(reason?: unknown): void {
-    if (cancelled || closed) {
+  private cancel(reason?: unknown): void {
+    if (this.cancelled || this.closed) {
       return;
     }
-    cancelled = true;
-    cancelReason = reason;
-    const record = pending;
-    const waiter = waiting;
-    pending = undefined;
-    waiting = undefined;
-    const callbackOwner = options;
-    options = undefined;
+    this.cancelled = true;
+    this.cancelReason = reason;
+    const record = this.pending;
+    const waiter = this.waiting;
+    this.pending = undefined;
+    this.waiting = undefined;
+    const callbackOwner = this.options;
+    this.options = undefined;
     if (record) {
       record.event = undefined;
       const reject = record.reject;
@@ -178,37 +163,64 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
     callbackOwner?.onCancel?.(reason);
   }
 
-  function read(): Promise<LiveStreamDelivery<T>> {
-    if (cancelled) {
+  private read(): Promise<LiveStreamDelivery<T>> {
+    if (this.cancelled) {
       // oxlint-disable-next-line prefer-promise-reject-errors -- Rejects with the cancel reason as given.
-      return Promise.reject(cancelReason);
+      return Promise.reject(this.cancelReason);
     }
-    if (closed) {
+    if (this.closed) {
       return Promise.reject(new SerovalLiveStreamError('closed'));
     }
-    if (waiting) {
+    if (this.waiting) {
       return Promise.reject(new SerovalLiveStreamError('reading'));
     }
     return new Promise<LiveStreamDelivery<T>>((resolve, reject) => {
       const next: PendingRead<T> = { resolve, reject };
-      if (pending && !pending.delivered) {
-        deliver(next, pending);
+      if (this.pending && !this.pending.delivered) {
+        this.deliver(next, this.pending);
       } else {
-        waiting = next;
+        this.waiting = next;
       }
     });
   }
 
-  function consume(): LiveStreamConsumer<T> {
-    if (consumed) {
+  consume(): LiveStreamConsumer<T> {
+    if (this.consumed) {
       throw new SerovalLiveStreamError('consumed');
     }
-    consumed = true;
-    return { read, cancel };
+    this.consumed = true;
+    return {
+      read: () => this.read(),
+      cancel: (reason) => this.cancel(reason),
+    };
   }
 
-  function pump(sink: LiveStreamSink<T>): (reason?: unknown) => void {
-    const consumer = consume();
+  /**
+   * Consumes the stream through a replay-style listener, accepting each
+   * event as soon as it has been delivered. Use `consume` or `pump` when
+   * acceptance must wait for processing.
+   */
+  on(listener: StreamListener<T>): () => void {
+    const wrap =
+      (key: keyof StreamListener<T>) =>
+      (value: unknown, accept: () => void): void => {
+        (listener[key] as (value: unknown) => void)(value);
+        accept();
+      };
+    return this.pump({
+      next: wrap('next'),
+      throw: wrap('throw'),
+      return: wrap('return'),
+    });
+  }
+
+  /**
+   * Consumes the stream into a sink that controls acceptance. Returns the
+   * cancel function.
+   * @internal
+   */
+  pump(sink: LiveStreamSink<T>): (reason?: unknown) => void {
+    const consumer = this.consume();
     let current: LiveStreamSink<T> | undefined = sink;
     function next(): void {
       consumer.read().then(
@@ -257,38 +269,27 @@ export function createLiveStream<T>(options?: LiveStreamOptions): {
     // oxlint-disable-next-line unbound-method -- cancel is a closure and does not use this.
     return consumer.cancel;
   }
+}
 
-  const stream: LiveStream<T> = {
-    __SEROVAL_STREAM__: 2,
-    consume,
-    on(listener) {
-      const wrap =
-        (key: keyof StreamListener<T>) =>
-        (value: unknown, accept: () => void): void => {
-          (listener[key] as (value: unknown) => void)(value);
-          accept();
-        };
-      return pump({
-        next: wrap('next'),
-        throw: wrap('throw'),
-        return: wrap('return'),
-      });
-    },
-    pump,
-  };
-  LIVE_STREAMS.add(stream);
-
+/**
+ * Creates a live stream and the producer that writes to it.
+ */
+export function createLiveStream<T>(options?: LiveStreamOptions): {
+  stream: LiveStream<T>;
+  producer: LiveStreamProducer<T>;
+} {
+  const stream = new LiveStream<T>(options);
   return {
     stream,
     producer: {
       write(value) {
-        return push({ type: 'next', value });
+        return stream.push({ type: 'next', value });
       },
       close(value) {
-        return push({ type: 'return', value });
+        return stream.push({ type: 'return', value });
       },
       fail(error) {
-        return push({ type: 'throw', error });
+        return stream.push({ type: 'throw', error });
       },
     },
   };

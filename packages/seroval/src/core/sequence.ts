@@ -3,7 +3,8 @@ import { SYM_ITERATOR } from './symbols';
 
 /**
  * An internal class rather than a tagged POJO: identity is checked with
- * `instanceof`, which untrusted input cannot forge (the class is not exported).
+ * `instanceof`, which untrusted input cannot forge. The class is exported
+ * because bundlers cannot drop an unexported top-level class.
  * The eval-based `deserialize` path still rebuilds a `{__SEROVAL_SEQUENCE__…}`
  * POJO from embedded source - it has no access to this class - so a value read
  * back through `deserialize` is not an instance and, by design, is not treated

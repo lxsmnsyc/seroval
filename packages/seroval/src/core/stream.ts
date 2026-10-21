@@ -10,7 +10,8 @@ export interface StreamListener<T> {
 
 /**
  * An internal class rather than a tagged POJO: identity is checked with
- * `instanceof`, which untrusted input cannot forge (the class is not exported).
+ * `instanceof`, which untrusted input cannot forge. The class is exported
+ * because bundlers cannot drop an unexported top-level class.
  *
  * The behavior is intentionally duplicated from `STREAM_CONSTRUCTOR`. That
  * constructor's source is embedded verbatim into the eval-based `deserialize`

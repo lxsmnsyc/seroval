@@ -27,19 +27,19 @@ export * from './core/cross';
 export * from './core/errors';
 export { getCrossReferenceHeader } from './core/keys';
 export type {
-  LiveStream,
   LiveStreamConsumer,
   LiveStreamDelivery,
   LiveStreamEvent,
   LiveStreamOptions,
   LiveStreamProducer,
 } from './core/live-stream';
-export { createLiveStream, isLiveStream } from './core/live-stream';
+export { LiveStream, createLiveStream, isLiveStream } from './core/live-stream';
 export { OpaqueReference } from './core/opaque-reference';
 export * from './core/plugin';
 export { createReference } from './core/reference';
 export { default as Serializer } from './core/Serializer';
-export type { Stream, StreamListener } from './core/stream';
-export { createStream, isStream } from './core/stream';
+export { Sequence } from './core/sequence';
+export type { StreamListener } from './core/stream';
+export { Stream, createStream, isStream } from './core/stream';
 export * from './core/tree';
 export type { SerovalNode } from './core/types';
