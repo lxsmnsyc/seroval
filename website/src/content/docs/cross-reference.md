@@ -71,6 +71,21 @@ They take the same options as [`serialize`](./javascript-output.md#options), plu
 | --- | --- |
 | `refs` | A `Map` of the values already sent. Share it between calls. |
 | `scopeId` | Writes to `$R[scopeId]` instead of the global `$R`. JavaScript output only. |
+| `assignSharedRefsOnly` | `crossSerialize` and `crossSerializeAsync` only. Writes `$R[n]=` only for values the output reads more than once. See [Shared references only](#shared-references-only). |
+
+## Shared references only
+
+By default, cross-reference output stores every object in `$R`, because a later script may refer to it. If no later script will refer back to this output, set `assignSharedRefsOnly`. The output then stores only the values it reads more than once, such as shared objects and cycles. It is shorter and faster to make.
+
+```js
+crossSerialize({ a: { b: [1] } });
+// ($R[0]={a:$R[1]={b:$R[2]=[1]}})
+
+crossSerialize({ a: { b: [1] } }, { assignSharedRefsOnly: true });
+// ({a:{b:[1]}})
+```
+
+The output can still read values that earlier scripts stored, through `refs`. Do not set the option if a later call with the same `refs` may refer to values in this output. Those values are not in `$R`, so the later script would read `undefined`.
 
 ## Decoding cross-reference JSON
 

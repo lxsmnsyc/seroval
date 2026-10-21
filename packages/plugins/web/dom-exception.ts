@@ -9,6 +9,7 @@ type DOMExceptionNode = {
 
 const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<DOMException, DOMExceptionNode>({
   tag: 'seroval-plugins/web/DOMException',
+  skipPlainObjects: true,
   test(value) {
     if (typeof DOMException === 'undefined') {
       return false;

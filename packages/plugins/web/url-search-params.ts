@@ -5,6 +5,7 @@ import { expectString } from './validate';
 const URLSearchParamsPlugin = /* @__PURE__ */ createPlugin<URLSearchParams, { value: SerovalNode }>(
   {
     tag: 'seroval-plugins/web/URLSearchParams',
+    skipPlainObjects: true,
     test(value) {
       if (typeof URLSearchParams === 'undefined') {
         return false;

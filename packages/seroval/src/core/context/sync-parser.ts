@@ -55,6 +55,7 @@ import type {
 import { getErrorOptions } from '../utils/error';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
+import type { StreamParsePluginContext } from './stream-parser';
 import {
   ObjectKind,
   createArrayBufferNode,
@@ -66,6 +67,7 @@ import {
   getArrayBufferView,
   getObjectClass,
   getObjectKind,
+  getObjectPlugins,
   getReferenceNode,
   getTemporalType,
   parseAsyncIteratorFactory,
@@ -146,6 +148,9 @@ export interface StreamParserState {
   onDone?: () => void;
 
   cleanups: (() => void)[];
+
+  // Plugin contexts by parse depth.
+  pluginContexts: StreamParsePluginContext[];
 
   // Streaming-mode behavior, set by `createStreamParserContext` so that
   // synchronous consumers never bundle it.
@@ -436,8 +441,9 @@ function parsePlugin(
   depth: number,
   id: number,
   current: unknown,
+  // oxlint-disable-next-line no-explicit-any -- Plugin is invariant, so any is needed to hold every plugin.
+  currentPlugins: Plugin<any, any>[] | undefined,
 ): SerovalPluginNode | undefined {
-  const currentPlugins = ctx.base.plugins;
   if (currentPlugins) {
     return ctx.type === ParserMode.Sync
       ? parsePluginSync(ctx, depth, id, current, currentPlugins)
@@ -551,7 +557,13 @@ function parseObject(
   if (currentClass === OpaqueReference) {
     return parseSOS(ctx, depth, (current as OpaqueReference<unknown, unknown>).replacement);
   }
-  const parsed = parsePlugin(ctx, depth, id, current);
+  const parsed = parsePlugin(
+    ctx,
+    depth,
+    id,
+    current,
+    getObjectPlugins(ctx.base, current, currentClass),
+  );
   if (parsed) {
     return parsed;
   }
@@ -563,7 +575,7 @@ function parseFunction(ctx: SOSParserContext, depth: number, current: unknown): 
   if (typeof ref !== 'number') {
     return ref;
   }
-  const plugin = parsePlugin(ctx, depth, ref, current);
+  const plugin = parsePlugin(ctx, depth, ref, current, ctx.base.plugins);
   if (plugin) {
     return plugin;
   }

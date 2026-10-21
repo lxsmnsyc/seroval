@@ -9,7 +9,7 @@ import type { WellKnownSymbols } from '../constants';
 import { INV_SYMBOL_REF, NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
-import type { PluginAccessOptions } from '../plugin';
+import { type PluginAccessOptions, getPlainObjectPlugins } from '../plugin';
 import { getReferenceID } from '../reference';
 import { ASYNC_ITERATOR, ITERATOR, SPECIAL_REFS, SpecialReference } from '../special-reference';
 import { SYM_ASYNC_ITERATOR, SYM_ITERATOR } from '../symbols';
@@ -44,6 +44,9 @@ export interface BaseParserContextOptions extends PluginAccessOptions {
 }
 
 export interface BaseParserContext extends PluginAccessOptions {
+  // The plugins tested for plain objects. See `getObjectPlugins`.
+  plainObjectPlugins: PluginAccessOptions['plugins'];
+
   marked: Set<number>;
 
   refs: Map<unknown, number>;
@@ -57,6 +60,7 @@ export interface BaseParserContext extends PluginAccessOptions {
 export function createBaseParserContext(options: BaseParserContextOptions): BaseParserContext {
   return {
     plugins: options.plugins,
+    plainObjectPlugins: getPlainObjectPlugins(options.plugins),
     marked: new Set(),
     features: ALL_ENABLED ^ (options.disabledFeatures ?? 0),
     refs: options.refs ?? new Map<unknown, number>(),
@@ -64,6 +68,22 @@ export function createBaseParserContext(options: BaseParserContextOptions): Base
     depthLimit: options.depthLimit || 1000,
     compactArrayBufferViews: options.compactArrayBufferViews ?? false,
   };
+}
+
+/**
+ * Returns the plugins to test for an object. Plain objects, whose prototype is
+ * `Object.prototype`, skip the plugins that set `skipPlainObjects`. Checking
+ * the prototype as well as `constructor` keeps instances whose prototype has
+ * no own `constructor` property from skipping those plugins.
+ */
+export function getObjectPlugins(
+  ctx: BaseParserContext,
+  current: object,
+  currentClass: unknown,
+): PluginAccessOptions['plugins'] {
+  return currentClass === Object && Object.getPrototypeOf(current) === Object.prototype
+    ? ctx.plainObjectPlugins
+    : ctx.plugins;
 }
 
 /**
