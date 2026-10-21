@@ -72,6 +72,7 @@ export interface SerializerContext {
   alive: boolean;
   pending: number;
   depthLimit: number;
+  compactArrayBufferViews: boolean;
   refs: Map<unknown, number>;
   features: number;
   plugins?: PluginWithBinaryMode<any, any, any>[];
@@ -91,6 +92,12 @@ export interface SerializerContextOptions {
   features?: number;
   disabledFeatures?: number;
   depthLimit?: number;
+  /**
+   * Sends only the bytes each typed array or `DataView` covers, instead of
+   * its whole backing `ArrayBuffer`. Views of one buffer then get separate
+   * buffers on the receiving side.
+   */
+  compactArrayBufferViews?: boolean;
   refs: Map<unknown, number>;
   plugins?: PluginWithBinaryMode<any, any, any>[];
   onSerialize: BinarySerializeCallback;
@@ -135,6 +142,7 @@ export function createSerializerContext(options: SerializerContextOptions): Seri
     onError: options.onError,
     plugins: options.plugins,
     plainObjectPlugins: getPlainObjectPlugins(options.plugins),
+    compactArrayBufferViews: !!options.compactArrayBufferViews,
     cleanups,
     writer: createByteWriter(),
 
@@ -589,16 +597,27 @@ function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
   return id;
 }
 
+// With `compactArrayBufferViews`, a view sends a copy of only the bytes it
+// covers, which starts at offset 0. Otherwise it sends its whole buffer.
+function serializeViewBuffer(ctx: SerializerContext, value: ArrayBufferView): number {
+  return serialize(
+    ctx,
+    ctx.compactArrayBufferViews
+      ? value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength)
+      : value.buffer,
+  );
+}
+
 function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
   if (value.length > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serialize(ctx, value.buffer);
+  const buffer = serializeViewBuffer(ctx, value);
   const writer = writeNode(ctx, SerovalBinaryType.TypedArray, id, BYTE + UINT + UINT + UINT);
   writeByte(writer, getTypedArrayTag(value));
   writeUint(writer, buffer);
-  writeUint(writer, value.byteOffset);
+  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
   writeUint(writer, value.length);
   return id;
 }
@@ -608,11 +627,11 @@ function serializeBigIntTypedArray(ctx: SerializerContext, value: BigIntTypedArr
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serialize(ctx, value.buffer);
+  const buffer = serializeViewBuffer(ctx, value);
   const writer = writeNode(ctx, SerovalBinaryType.BigIntTypedArray, id, BYTE + UINT + UINT + UINT);
   writeByte(writer, getBigIntTypedArrayTag(value));
   writeUint(writer, buffer);
-  writeUint(writer, value.byteOffset);
+  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
   writeUint(writer, value.length);
   return id;
 }
@@ -622,10 +641,10 @@ function serializeDataView(ctx: SerializerContext, value: DataView) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serialize(ctx, value.buffer);
+  const buffer = serializeViewBuffer(ctx, value);
   const writer = writeNode(ctx, SerovalBinaryType.DataView, id, UINT + UINT + UINT);
   writeUint(writer, buffer);
-  writeUint(writer, value.byteOffset);
+  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
   writeUint(writer, value.byteLength);
   return id;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { captureSerializeError, roundtrip } from './utils';
+import { captureSerializeError, roundtrip, startSerialize } from './utils';
 
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
@@ -125,5 +125,47 @@ describe('binary TypedArray', () => {
     const source = new DataView(new ArrayBuffer(MAX_TYPED_ARRAY_LENGTH + 1));
     const error = await captureSerializeError(source);
     expect(error).toBeInstanceOf(Error);
+  });
+});
+
+describe('binary compactArrayBufferViews', () => {
+  function source(): { view: Uint8Array; data: DataView; big: BigInt64Array } {
+    const buffer = new ArrayBuffer(4096);
+    const view = new Uint8Array(buffer, 1024, 4);
+    view.set([1, 2, 3, 4]);
+    const data = new DataView(new ArrayBuffer(4096), 8, 2);
+    data.setUint8(1, 7);
+    const big = new BigInt64Array(new ArrayBuffer(4096), 16, 1);
+    big[0] = 9n;
+    return { view, data, big };
+  }
+
+  function byteLength(chunks: Uint8Array[]): number {
+    return chunks.reduce((total, chunk) => total + chunk.length, 0);
+  }
+
+  it('sends only the bytes each view covers', async () => {
+    const compact = startSerialize(source(), { compactArrayBufferViews: true });
+    const full = startSerialize(source());
+    await Promise.all([compact.done, full.done]);
+    expect(byteLength(compact.transport.chunks)).toBeLessThan(200);
+    expect(byteLength(full.transport.chunks)).toBeGreaterThan(3 * 4096);
+
+    const { value } = await roundtrip<ReturnType<typeof source>>(source(), {
+      serialize: { compactArrayBufferViews: true },
+    });
+    expect([...value.view]).toEqual([1, 2, 3, 4]);
+    expect(value.view.byteOffset).toBe(0);
+    expect(value.view.buffer.byteLength).toBe(4);
+    expect(value.data.getUint8(1)).toBe(7);
+    expect(value.data.buffer.byteLength).toBe(2);
+    expect(value.big[0]).toBe(9n);
+    expect(value.big.buffer.byteLength).toBe(8);
+  });
+
+  it('keeps the whole buffer by default', async () => {
+    const { value } = await roundtrip<ReturnType<typeof source>>(source());
+    expect(value.view.byteOffset).toBe(1024);
+    expect(value.view.buffer.byteLength).toBe(4096);
   });
 });
