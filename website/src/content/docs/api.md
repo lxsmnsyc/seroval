@@ -3,6 +3,29 @@ title: API reference
 description: Every export of seroval, with its signature and options.
 ---
 
+## Entry points
+
+`seroval` exports everything on this page. Code that only reads or only writes can import a smaller entry point instead.
+
+| Entry point | Exports |
+| --- | --- |
+| `seroval` | Everything. |
+| `seroval/read` | `fromJSON`, `fromCrossJSON`, `createCrossDeserializer`, `deserialize`, and everything in `seroval/shared`. |
+| `seroval/write` | `serialize`, `serializeAsync`, `toJSON`, `toJSONAsync`, `compileJSON`, the cross-reference serializers, `getCrossReferenceHeader`, `Serializer`, and everything in `seroval/shared`. |
+| `seroval/shared` | What both sides use: streams, references, `createPlugin`, `Feature` and the errors. |
+
+All entry points load the same files, so a value imported from one is the same value in the others. For example, a framework can read page state in one chunk and serialize server function calls in another:
+
+```js
+// Loaded on every page.
+import { fromCrossJSON } from 'seroval/read';
+
+// Loaded only when a server function runs.
+import { toJSONAsync, fromJSON } from 'seroval';
+```
+
+The bundler keeps the serializers out of the first chunk. This also works when both chunks import `seroval`, because its build is split into the same files. `seroval/read` makes sure a chunk never pulls in a serializer by mistake.
+
 ## Serialize to JavaScript
 
 | Function | Returns | Guide |

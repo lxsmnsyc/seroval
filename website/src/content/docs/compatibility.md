@@ -97,4 +97,6 @@ The `seroval` package has ESM and CommonJS builds, and a `development` build wit
 - The default selects the production build, which reports errors by code. See [Errors](./errors.md).
 - The `browser` condition selects the same build as the default, so there is never a second copy of seroval's classes or reference registry.
 
+The `seroval/read`, `seroval/write` and `seroval/shared` [entry points](./api.md#entry-points) use the same conditions. They load the same files as `seroval`, so mixing entry points does not create a second copy either. TypeScript resolves their types with the `node10`, `node16`, `nodenext` and `bundler` settings of `moduleResolution`.
+
 Resolvers that ignore export conditions, such as older bundlers and some React Native setups, can use the `main` and `module` fields. Binary encoding uses `Buffer` when it exists, and portable browser APIs otherwise. Both produce the same output.

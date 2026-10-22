@@ -50,6 +50,19 @@
   },
   "author": "Alexis Munsayac",
   "types": "./dist/index.d.cts",
+  "typesVersions": {
+    "*": {
+      "read": [
+        "./dist/read.d.cts"
+      ],
+      "write": [
+        "./dist/write.d.cts"
+      ],
+      "shared": [
+        "./dist/shared.d.cts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "development": {
@@ -70,6 +83,66 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
+    },
+    "./read": {
+      "development": {
+        "browser": {
+          "import": "./dist/dev/read.js",
+          "require": "./dist/dev/read.cjs",
+          "default": "./dist/dev/read.js"
+        },
+        "import": "./dist/dev/read.js",
+        "require": "./dist/dev/read.cjs",
+        "default": "./dist/dev/read.js"
+      },
+      "browser": {
+        "import": "./dist/read.js",
+        "require": "./dist/read.cjs",
+        "default": "./dist/read.js"
+      },
+      "import": "./dist/read.js",
+      "require": "./dist/read.cjs",
+      "default": "./dist/read.js"
+    },
+    "./write": {
+      "development": {
+        "browser": {
+          "import": "./dist/dev/write.js",
+          "require": "./dist/dev/write.cjs",
+          "default": "./dist/dev/write.js"
+        },
+        "import": "./dist/dev/write.js",
+        "require": "./dist/dev/write.cjs",
+        "default": "./dist/dev/write.js"
+      },
+      "browser": {
+        "import": "./dist/write.js",
+        "require": "./dist/write.cjs",
+        "default": "./dist/write.js"
+      },
+      "import": "./dist/write.js",
+      "require": "./dist/write.cjs",
+      "default": "./dist/write.js"
+    },
+    "./shared": {
+      "development": {
+        "browser": {
+          "import": "./dist/dev/shared.js",
+          "require": "./dist/dev/shared.cjs",
+          "default": "./dist/dev/shared.js"
+        },
+        "import": "./dist/dev/shared.js",
+        "require": "./dist/dev/shared.cjs",
+        "default": "./dist/dev/shared.js"
+      },
+      "browser": {
+        "import": "./dist/shared.js",
+        "require": "./dist/shared.cjs",
+        "default": "./dist/shared.js"
+      },
+      "import": "./dist/shared.js",
+      "require": "./dist/shared.cjs",
+      "default": "./dist/shared.js"
     },
     "./package.json": "./package.json"
   },
