@@ -1,4 +1,4 @@
-import { crossSerializeStream } from './cross';
+import { crossSerializeStream } from './cross/write';
 import { SerovalParserError } from './errors';
 import { type Plugin, type PluginAccessOptions, resolvePlugins } from './plugin';
 import { serializeString } from './string';
