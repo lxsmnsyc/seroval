@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { build } from 'esbuild';
@@ -73,7 +73,12 @@ describe('built package exports (run build first)', () => {
   it('does not emit internal top-level class declarations in ESM bundles', async () => {
     const runtimeExports = await import('../dist/index.js');
     for (const mode of ['', 'dev/']) {
-      const code = await readFile(new URL(`../dist/${mode}index.js`, import.meta.url), 'utf8');
+      // The entry points share chunks, so the classes can be in any file.
+      const dir = new URL(`../dist/${mode}`, import.meta.url);
+      const files = (await readdir(dir)).filter((file) => file.endsWith('.js'));
+      const code = (
+        await Promise.all(files.map((file) => readFile(new URL(file, dir), 'utf8')))
+      ).join('\n');
       const classDeclarations = [...code.matchAll(/^var (\w+) = class\b/gm)].map(
         (match) => match[1],
       );
@@ -92,12 +97,12 @@ describe('built package exports (run build first)', () => {
     expect(manifest).toHaveProperty('main', './dist/index.cjs');
     expect(manifest).toHaveProperty('module', './dist/index.js');
     for (const mode of ['', 'dev/']) {
-      for (const extension of ['js', 'cjs']) {
-        const code = await readFile(
-          new URL(`../dist/${mode}index.${extension}`, import.meta.url),
-          'utf8',
-        );
-        expect(code).not.toContain('#seroval-binary');
+      const dir = new URL(`../dist/${mode}`, import.meta.url);
+      for (const file of await readdir(dir)) {
+        if (file.endsWith('.js') || file.endsWith('.cjs')) {
+          const code = await readFile(new URL(file, dir), 'utf8');
+          expect(code).not.toContain('#seroval-binary');
+        }
       }
     }
   });
@@ -182,6 +187,96 @@ describe('built package exports (run build first)', () => {
             vi.stubGlobal('Buffer', undefined);
           }
           await checkBinary(selected);
+        });
+
+        it(`resolves subpath entry points to the same values in Node (${label})`, async () => {
+          const extension = format === 'import' ? 'js' : 'cjs';
+          const dir = development ? 'dev/' : '';
+          const load = (specifier: string): string =>
+            format === 'import' ? `await import('${specifier}')` : `require('${specifier}')`;
+          const resolve = (specifier: string): string =>
+            format === 'import'
+              ? `import.meta.resolve('${specifier}')`
+              : `pathToFileURL(require.resolve('${specifier}')).href`;
+          await execFileAsync(
+            process.execPath,
+            [
+              ...conditions.map((condition) => `--conditions=${condition}`),
+              '--input-type=module',
+              '--eval',
+              `import assert from 'node:assert/strict';
+               import { createRequire } from 'node:module';
+               import { pathToFileURL } from 'node:url';
+               const require = createRequire(import.meta.url);
+               const root = ${load('seroval')};
+               for (const name of ['read', 'write', 'shared']) {
+                 const specifier = 'seroval/' + name;
+                 const selected = name === 'read' ? ${load('seroval/read')}
+                   : name === 'write' ? ${load('seroval/write')}
+                   : ${load('seroval/shared')};
+                 const resolved = name === 'read' ? ${resolve('seroval/read')}
+                   : name === 'write' ? ${resolve('seroval/write')}
+                   : ${resolve('seroval/shared')};
+                 assert.equal(resolved, new URL('./dist/${dir}' + name + '.${extension}', import.meta.url).href, specifier);
+                 assert.ok(Object.keys(selected).length > 0, specifier);
+                 for (const key of Object.keys(selected)) {
+                   assert.equal(selected[key], root[key], specifier + ' ' + key);
+                 }
+               }`,
+            ],
+            { cwd: packageDir },
+          );
+        });
+
+        it(`bundles subpath entry points with one copy of each chunk (${label})`, async () => {
+          const contents =
+            format === 'import'
+              ? `import * as root from 'seroval';
+                 import * as read from 'seroval/read';
+                 import * as write from 'seroval/write';
+                 import * as shared from 'seroval/shared';
+                 export { root, read, write, shared };`
+              : `exports.root = require('seroval');
+                 exports.read = require('seroval/read');
+                 exports.write = require('seroval/write');
+                 exports.shared = require('seroval/shared');`;
+          const result = await build({
+            stdin: { contents, resolveDir: packageDir },
+            bundle: true,
+            platform: browser ? 'browser' : 'node',
+            conditions,
+            format: 'cjs',
+            metafile: true,
+            write: false,
+          });
+          const inputs = Object.keys(result.metafile.inputs).map((path) =>
+            path.replaceAll('\\', '/'),
+          );
+          const dir = development ? 'dist/dev/' : 'dist/';
+          expect(inputs.some((path) => path.includes('/src/'))).toBe(false);
+          expect(inputs.filter((path) => path.startsWith(dir) || path.includes('/' + dir))).toEqual(
+            expect.arrayContaining(
+              ['index', 'read', 'write', 'shared'].map((name) =>
+                expect.stringContaining(`${dir}${name}.${format === 'import' ? 'js' : 'cjs'}`),
+              ),
+            ),
+          );
+          // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion -- evaluates the bundled module.
+          const { root, read, write, shared } = new Function(
+            `const module = { exports: {} };
+             const exports = module.exports;
+             ${result.outputFiles[0].text}
+             return module.exports;`,
+          )() as Record<'root' | 'read' | 'write' | 'shared', Record<string, unknown>>;
+          for (const entry of [read, write, shared]) {
+            for (const [key, value] of Object.entries(entry)) {
+              expect(value).toBe(root[key]);
+            }
+          }
+          expect(root.fromJSON).toBe(read.fromJSON);
+          expect(root.toJSON).toBe(write.toJSON);
+          expect(read).not.toHaveProperty('toJSON');
+          expect(write).not.toHaveProperty('fromJSON');
         });
       }
     }
