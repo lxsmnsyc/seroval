@@ -1,5 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import {
+  SerovalDeserializationError,
+  SerovalPluginValidationError,
   createReference,
   crossSerialize,
   crossSerializeAsync,
@@ -17,6 +19,21 @@ import {
 } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import { AbortSignalPlugin } from '../../web';
+
+// Decoding wraps any error in `SerovalDeserializationError`, with the original
+// error as `cause`.
+function expectValidationError(run: () => unknown): void {
+  let error: unknown;
+  try {
+    run();
+  } catch (caught) {
+    error = caught;
+  }
+  expect(error).toBeInstanceOf(SerovalDeserializationError);
+  expect(error instanceof SerovalDeserializationError && error.cause).toBeInstanceOf(
+    SerovalPluginValidationError,
+  );
+}
 
 const delayedAbortSignal = (): AbortSignal => {
   const controller = new AbortController();
@@ -303,6 +320,35 @@ describe('AbortSignal', () => {
     });
   });
   describe('toCrossJSONStream', () => {
+    it('decodes a future AbortSignal with fromCrossJSON', async () => {
+      // The node of a signal that is not aborted yet also holds the factory
+      // node, which must not be decoded.
+      const instance = delayedAbortSignal();
+      const refs = new Map<number, unknown>();
+      let back: AbortSignal | undefined;
+      await new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(instance, {
+          plugins: [AbortSignalPlugin],
+          onParse(data, initial) {
+            const value = fromCrossJSON<AbortSignal>(data, { plugins: [AbortSignalPlugin], refs });
+            if (initial) {
+              back = value;
+            }
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error instanceof Error ? error : new Error(String(error)));
+          },
+        });
+      });
+      expect(back).toBeInstanceOf(AbortSignal);
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      expect(back?.aborted).toBe(true);
+    });
     it('supports aborted AbortSignal', async () =>
       new Promise<void>((resolve, reject) => {
         toCrossJSONStream(Promise.resolve(SYNC_EXAMPLE), {
@@ -346,7 +392,7 @@ describe('AbortSignal', () => {
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: toJSON(42).t,
       };
-      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
+      expectValidationError(() => fromJSON(result, { plugins: [AbortSignalPlugin] }));
     });
 
     it('never invokes `then` on a fake thenable controller', () => {
@@ -364,7 +410,7 @@ describe('AbortSignal', () => {
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: template.t,
       };
-      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
+      expectValidationError(() => fromJSON(result, { plugins: [AbortSignalPlugin] }));
       expect(thenSpy).not.toHaveBeenCalled();
     });
 

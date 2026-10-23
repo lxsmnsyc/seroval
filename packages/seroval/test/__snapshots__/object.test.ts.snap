@@ -166,7 +166,7 @@ exports[`objects > crossSerializeAsync > scoped > supports Symbol.asyncIterator 
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -389,7 +389,7 @@ exports[`objects > crossSerializeAsync > supports Symbol.asyncIterator 1`] = `
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -633,7 +633,7 @@ exports[`objects > crossSerializeStream > scoped > supports Symbol.asyncIterator
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -927,7 +927,7 @@ exports[`objects > crossSerializeStream > supports Symbol.asyncIterator 1`] = `
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,
@@ -1233,7 +1233,7 @@ exports[`objects > serializeAsync > supports Symbol.asyncIterator 1`] = `
 				};
 			};
 			if (isThrow) {
-				throw value;
+				return Promise.reject(value);
 			};
 			return {
 				done: true,

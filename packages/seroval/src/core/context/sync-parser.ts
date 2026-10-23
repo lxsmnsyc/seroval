@@ -15,6 +15,7 @@ import {
   createTemporalNode,
   createViewNode,
 } from '../base-primitives';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import { NIL, SerovalNodeType } from '../constants';
 import { SerovalDepthLimitError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
 import { FALSE_NODE, NULL_NODE, TRUE_NODE, UNDEFINED_NODE } from '../literals';
@@ -53,7 +54,6 @@ import type {
   SerovalTypedArrayNode,
 } from '../types';
 import { getErrorOptions } from '../utils/error';
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import type { StreamParsePluginContext } from './stream-parser';
 import {
@@ -76,7 +76,6 @@ import {
   parseSpecialReference,
   parseWellKnownSymbol,
 } from './parser';
-
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
 
 export type SyncParserContextOptions = BaseParserContextOptions;

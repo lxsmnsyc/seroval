@@ -1,6 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectString } from './validate';
+import * as v from 'seroval/validator';
 
 function createCustomEventOptions(current: CustomEvent): CustomEventInit {
   return {
@@ -16,7 +16,16 @@ type CustomEventNode = {
   options: SerovalNode;
 };
 
-const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventNode>({
+type CustomEventBinaryData = {
+  type: string;
+  options: CustomEventInit;
+};
+
+const CustomEventPlugin = /* @__PURE__ */ createPlugin<
+  CustomEvent,
+  CustomEventNode,
+  CustomEventBinaryData
+>({
   tag: 'seroval-plugins/web/CustomEvent',
   skipPlainObjects: true,
   test(value) {
@@ -48,11 +57,24 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventN
   serialize(node, ctx) {
     return 'new CustomEvent(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { type: v.string },
   deserialize(node, ctx) {
     return new CustomEvent(
-      expectString(ctx.deserialize(node.type)),
+      ctx.deserialize<string>(node.type),
       ctx.deserialize<CustomEventInit>(node.options),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        type: value.type,
+        options: createCustomEventOptions(value),
+      };
+    },
+    validate: { type: v.string },
+    deserialize(data) {
+      return new CustomEvent(data.type, data.options);
+    },
   },
 });
 

@@ -34,7 +34,7 @@ The tree has three fields: `t` holds the value, `f` holds the features the sende
 | --- | --- | --- |
 | `plugins` | none | Plugins for the types the sender used. Each one is matched by its tag. |
 | `disabledFeatures` | `0` | Features to reject. A tree that uses one is rejected. |
-| `depthLimit` | `1000` | How deeply nested the tree can be. |
+| `depthLimit` | `64` | How deeply nested the tree can be. |
 | `maxBase64Length` | `1000000` | The largest encoded `ArrayBuffer`, in base64 characters. See [Binary data](./binary-data.md#json-decoding-limits). |
 
 The sender's `f` field decides which features the tree may use. `disabledFeatures` is how the receiver turns features off, whatever the sender says. If you do not need `RegExp`, disable it:

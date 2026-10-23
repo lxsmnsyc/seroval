@@ -1,11 +1,5 @@
 import { assert, describe, expect, it } from 'vitest';
-import {
-  SerovalDeserializationError,
-  SerovalMalformedNodeError,
-  SerovalUnknownTypedArrayError,
-  fromJSON,
-  toJSON,
-} from '../src';
+import { SerovalDeserializationError, SerovalMalformedNodeError, fromJSON, toJSON } from '../src';
 import { SerovalNodeType } from '../src/core/constants';
 
 function cause(callback: () => unknown): unknown {
@@ -27,13 +21,13 @@ describe('decoder validation ordering', () => {
     if (json.t.t !== SerovalNodeType.TypedArray) {
       throw new Error('Wrong fixture');
     }
-    Object.defineProperty(json.t, 'c', { value: 'MissingConstructor' });
+    Object.defineProperty(json.t, 's', { value: 999 });
     Object.defineProperty(json.t, 'f', {
       get() {
         throw new Error('buffer read first');
       },
     });
-    expect(cause(() => fromJSON(json))).toBeInstanceOf(SerovalUnknownTypedArrayError);
+    expect(cause(() => fromJSON(json))).toBeInstanceOf(SerovalMalformedNodeError);
   });
 
   it.each(['typed', 'data'] as const)(

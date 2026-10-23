@@ -14,7 +14,7 @@ const blob = new Blob(['Hello'], { type: 'text/plain' });
 await serializeAsync(blob, { plugins: [BlobPlugin] });
 ```
 
-Every function takes `plugins`, including `fromJSON`, `fromCrossJSON`, `createCrossDeserializer` and `Serializer`. The receiver needs a plugin with the same tag as the one the sender used, or decoding throws `SerovalMissingPluginError`.
+Every function takes `plugins`, including `fromJSON`, `fromCrossJSON`, `createCrossDeserializer`, `Serializer`, `binary.serialize` and `binary.deserialize`. The receiver needs a plugin with the same tag as the one the sender used, or decoding throws `SerovalMissingPluginError`.
 
 When several plugins accept the same value, the first one in the list wins. A plugin can depend on other plugins, which are then added for you.
 
@@ -35,34 +35,39 @@ import {
 } from 'seroval-plugins/web';
 ```
 
-Some types can only be read asynchronously. A `Blob`'s bytes, for example, are only available through a promise. Those plugins work only with the async and streaming functions.
+Some types can only be read asynchronously. A `Blob`'s bytes, for example, are only available through a promise. Those plugins do not work with the sync functions.
 
-| Plugin | Type | Sync | Async | Streaming |
-| --- | --- | --- | --- | --- |
-| `URLPlugin` | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ✅ | ✅ | ✅ |
-| `URLSearchParamsPlugin` | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ✅ | ✅ | ✅ |
-| `HeadersPlugin` | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ✅ | ✅ | ✅ |
-| `FormDataPlugin` | [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ✅ [^formdata] | ✅ | ✅ [^formdata] |
-| `BlobPlugin` | [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌ [^blob] |
-| `FilePlugin` | [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅ | ❌ [^blob] |
-| `ReadableStreamPlugin` | [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ✅ | ✅ |
-| `RequestPlugin` | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ✅ | ✅ |
-| `ResponsePlugin` | [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ✅ | ✅ |
-| `EventPlugin` | [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ✅ | ✅ | ✅ |
-| `CustomEventPlugin` | [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ✅ | ✅ | ✅ |
-| `DOMExceptionPlugin` | [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) | ✅ | ✅ | ✅ |
-| `ImageDataPlugin` | [`ImageData`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData) | ✅ | ✅ | ✅ |
-| `AbortSignalPlugin` | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | ✅ | ✅ | ✅ |
+Every plugin has a `binary` section, so all of them work in [binary mode](./binary-mode.md). That includes `BlobPlugin`, `FilePlugin` and a `FormData` with files.
+
+| Plugin | Type | Sync | Async | Streaming | Binary |
+| --- | --- | --- | --- | --- | --- |
+| `URLPlugin` | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | ✅ | ✅ | ✅ | ✅ |
+| `URLSearchParamsPlugin` | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | ✅ | ✅ | ✅ | ✅ |
+| `HeadersPlugin` | [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) | ✅ | ✅ | ✅ | ✅ |
+| `FormDataPlugin` | [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) | ✅ [^formdata] | ✅ | ✅ [^formdata] | ✅ |
+| `BlobPlugin` | [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) | ❌ | ✅ | ❌ [^blob] | ✅ |
+| `FilePlugin` | [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File) | ❌ | ✅ | ❌ [^blob] | ✅ |
+| `ReadableStreamPlugin` | [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) | ❌ | ✅ | ✅ | ✅ |
+| `RequestPlugin` | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) | ❌ | ✅ | ✅ | ✅ |
+| `ResponsePlugin` | [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) | ❌ | ✅ | ✅ | ✅ |
+| `EventPlugin` | [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) | ✅ | ✅ | ✅ | ✅ |
+| `CustomEventPlugin` | [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) | ✅ | ✅ | ✅ | ✅ |
+| `DOMExceptionPlugin` | [`DOMException`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) | ✅ | ✅ | ✅ | ✅ |
+| `ImageDataPlugin` | [`ImageData`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData) | ✅ | ✅ | ✅ | ✅ |
+| `AbortSignalPlugin` | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | ✅ | ✅ | ✅ | ✅ |
 
 [^formdata]: Only when the `FormData` contains no `Blob` or `File` entries.
 [^blob]: A `Blob` is built synchronously but its bytes can only be read asynchronously, so a stream cannot represent it as the same type.
 
-To use every web plugin at once:
+To use every web plugin at once, put `FilePlugin` first. A `File` is also a `Blob`, and the first plugin that matches a value is the one used, so with `BlobPlugin` first a `File` comes back as a `Blob` without its name.
 
 ```js
 import * as web from 'seroval-plugins/web';
 
-const plugins = Object.values(web);
+const plugins = [
+  web.FilePlugin,
+  ...Object.values(web).filter((plugin) => plugin !== web.FilePlugin),
+];
 ```
 
 ## Writing your own

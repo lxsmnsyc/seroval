@@ -1,5 +1,5 @@
 import type { SerovalNode, Stream } from 'seroval';
-import { createPlugin, createStream } from 'seroval';
+import { createPlugin, createStream, isStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -35,7 +35,11 @@ const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>): ReadableS
     },
   });
 
-const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<string, never>>({
+const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  Record<string, never>,
+  Record<string, never>
+>({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
   test(value) {
     return value === READABLE_STREAM_FACTORY;
@@ -56,6 +60,14 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<
   },
   deserialize() {
     return READABLE_STREAM_FACTORY;
+  },
+  binary: {
+    serialize() {
+      return READABLE_STREAM_FACTORY;
+    },
+    deserialize() {
+      return READABLE_STREAM_FACTORY;
+    },
   },
 });
 
@@ -127,7 +139,15 @@ type ReadableStreamNode = {
   stream: SerovalNode;
 };
 
-const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, ReadableStreamNode>({
+type ReadableStreamBinaryData = {
+  stream: Stream<unknown>;
+};
+
+const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
+  ReadableStream,
+  ReadableStreamNode,
+  ReadableStreamBinaryData
+>({
   tag: 'seroval/plugins/web/ReadableStream',
   extends: [ReadableStreamFactoryPlugin],
   skipPlainObjects: true,
@@ -160,9 +180,21 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, Readab
   serialize(node, ctx) {
     return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.stream) + ')';
   },
+  validate: { stream: isStream },
   deserialize(node, ctx) {
     const stream = ctx.deserialize<Stream<unknown>>(node.stream);
     return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);
+  },
+  binary: {
+    serialize(value, ctx) {
+      return {
+        stream: ctx.streamSource(toAsyncIterable(value)) as Stream<unknown>,
+      };
+    },
+    validate: { stream: isStream },
+    deserialize(data) {
+      return READABLE_STREAM_FACTORY_CONSTRUCTOR(data.stream);
+    },
   },
 });
 

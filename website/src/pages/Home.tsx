@@ -74,8 +74,8 @@ const FEATURES = [
   },
   {
     icon: LayersIcon,
-    title: 'Three output formats',
-    body: 'A JavaScript expression, a JSON tree that needs no eval, or cross-reference scripts that share values across payloads.',
+    title: 'Four output formats',
+    body: 'A JavaScript expression, a JSON tree that needs no eval, cross-reference scripts that share values across payloads, or compact binary chunks.',
     href: '/docs/choosing-a-mode',
   },
   {

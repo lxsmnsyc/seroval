@@ -1,5 +1,6 @@
 import { FeatureFlag } from '../compat';
 import {
+  BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING,
   CONSTANT_STRING,
   ERROR_CONSTRUCTOR_STRING,
   NIL,
@@ -7,6 +8,7 @@ import {
   SerovalNodeType,
   SerovalObjectFlags,
   TEMPORAL_TYPE_NAME,
+  TYPED_ARRAY_CONSTRUCTOR_STRING,
 } from '../constants';
 import {
   SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR,
@@ -986,17 +988,15 @@ function serializeView(
   ctx: SerializerContext,
   node: SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode,
 ): string {
-  return (
-    'new ' +
-    (node.t === SerovalNodeType.DataView ? 'DataView' : node.c) +
-    '(' +
-    serialize(ctx, node.f) +
-    ',' +
-    node.b +
-    ',' +
-    node.l +
-    ')'
-  );
+  let construct: string;
+  if (node.t === SerovalNodeType.DataView) {
+    construct = 'DataView';
+  } else if (node.t === SerovalNodeType.BigIntTypedArray) {
+    construct = BIG_INT_TYPED_ARRAY_CONSTRUCTOR_STRING[node.s];
+  } else {
+    construct = TYPED_ARRAY_CONSTRUCTOR_STRING[node.s];
+  }
+  return 'new ' + construct + '(' + serialize(ctx, node.f) + ',' + node.b + ',' + node.l + ')';
 }
 
 function serializeAggregateError(ctx: SerializerContext, node: SerovalAggregateErrorNode): string {

@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 
 const PROMISE_TO_ABORT_SIGNAL = (promise: Promise<unknown>): AbortController => {
   const controller = new AbortController();
@@ -25,7 +26,11 @@ function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
 
 const ABORT_CONTROLLER = {};
 
-const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<string, never>>({
+const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  Record<string, never>,
+  Record<string, never>
+>({
   tag: 'seroval-plugins/web/AbortControllerFactoryPlugin',
   test(value) {
     return value === ABORT_CONTROLLER;
@@ -53,11 +58,24 @@ const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record
       'seroval-plugins/web/AbortControllerFactoryPlugin cannot be deserialized directly.',
     );
   },
+  binary: {
+    serialize() {
+      return ABORT_CONTROLLER;
+    },
+    deserialize() {
+      // Binary mode never sends this factory. Returning the raw function would
+      // hand an untrusted payload a callable gadget, as in `deserialize` above.
+      throw new Error(
+        'seroval-plugins/web/AbortControllerFactoryPlugin cannot be deserialized directly.',
+      );
+    },
+  },
 });
 
 const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
   AbortSignal,
-  { reason?: SerovalNode; controller?: SerovalNode; factory?: SerovalNode }
+  { reason?: SerovalNode; controller?: SerovalNode; factory?: SerovalNode },
+  { reason: unknown } | { controller: Promise<unknown> }
 >({
   tag: 'seroval-plugins/web/AbortSignal',
   extends: [AbortControllerFactoryPlugin],
@@ -112,23 +130,41 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
     }
     return '(new AbortController).signal';
   },
+  // `node.controller` is any node the input picked. It must decode to a native
+  // Promise before its `then` is called, so a fake thenable (for example one
+  // made by another plugin) never has its `then` called here.
+  validate: { controller: /* @__PURE__ */ v.instanceOf(Promise) },
   deserialize(node, ctx) {
     if (node.reason) {
       return AbortSignal.abort(ctx.deserialize(node.reason));
     }
     if (node.controller) {
-      const controller = ctx.deserialize(node.controller);
-      // `node.controller` is any node the input picked; it must resolve to a
-      // native Promise before its `then` is called, so a fake thenable (for
-      // example one minted by a function-returning plugin) can never have its
-      // `then` invoked here.
-      if (!(controller instanceof Promise)) {
-        throw new Error('Expected a Promise source.');
-      }
-      return PROMISE_TO_ABORT_SIGNAL(controller).signal;
+      return PROMISE_TO_ABORT_SIGNAL(ctx.deserialize<Promise<unknown>>(node.controller)).signal;
     }
     const controller = new AbortController();
     return controller.signal;
+  },
+  binary: {
+    serialize(value) {
+      if (value.aborted) {
+        return {
+          reason: value.reason,
+        };
+      }
+
+      const promise = abortSignalToPromise(value);
+
+      return {
+        controller: promise,
+      };
+    },
+    validate: { controller: /* @__PURE__ */ v.optional(/* @__PURE__ */ v.instanceOf(Promise)) },
+    deserialize(data) {
+      if ('reason' in data) {
+        return AbortSignal.abort(data.reason);
+      }
+      return PROMISE_TO_ABORT_SIGNAL(data.controller).signal;
+    },
   },
 });
 
