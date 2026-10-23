@@ -17,7 +17,7 @@ serialize({ foo: 'bar' }); // ({foo:"bar"})
 
 - A promise throws a `SerovalParserError`, whose `cause` is a `SerovalUnsupportedTypeError`.
 - An async iterable also throws a `SerovalParserError`, whose `cause` is a `SerovalUnsupportedTypeError`.
-- A [stream](./streams-and-iterables.md) becomes an empty stream that never ends. Reading it waits forever.
+- A [stream](./streams-and-iterables.md) that has ended is sent with all its events. A stream that is still open, or a live stream, throws the same error.
 
 Use `serializeAsync` or a [streaming function](./streaming.md) for those values.
 
