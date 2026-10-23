@@ -85,6 +85,8 @@ $R[0].next("b")
 $R[0].return("done")
 ```
 
+`serialize`, `toJSON`, `crossSerialize` and `toCrossJSON` cannot wait for new events. They send a stream that has ended with all its events, and throw for a stream that is still open.
+
 `isStream(value)` tells whether a value is a seroval stream.
 
 ## Live streams
@@ -140,7 +142,7 @@ To read a live stream in your own code instead of serializing it, call `stream.c
 | --- | --- | --- | --- |
 | Iterable | All values | All values | All values |
 | Async iterable | Throws | All values, once it ends | Each value as it arrives |
-| `createStream` | Empty, never ends | All values, once it ends | Each event as it happens |
-| Live stream | Empty, never ends | All values, once it ends | Each event, with backpressure |
+| `createStream` | All events if it has ended, otherwise throws | All values, once it ends | Each event as it happens |
+| Live stream | Throws | All values, once it ends | Each event, with backpressure |
 
 The async functions wait for the stream to end. A stream that never ends makes them wait forever.
