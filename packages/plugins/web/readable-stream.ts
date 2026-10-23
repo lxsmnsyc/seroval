@@ -1,5 +1,5 @@
 import type { SerovalNode, Stream } from 'seroval';
-import { createPlugin, createStream } from 'seroval';
+import { createPlugin } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -137,13 +137,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, Readab
     }
     return value instanceof ReadableStream;
   },
+  // No sync parser: the sync modes cannot send the stream's chunks, so a
+  // ReadableStream throws there, as an async iterable does.
   parse: {
-    sync(_value, ctx) {
-      return {
-        factory: ctx.parse(READABLE_STREAM_FACTORY),
-        stream: ctx.parse(createStream()),
-      };
-    },
     async async(value, ctx) {
       return {
         factory: await ctx.parse(READABLE_STREAM_FACTORY),
