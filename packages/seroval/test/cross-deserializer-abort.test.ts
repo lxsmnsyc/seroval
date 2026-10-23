@@ -338,4 +338,27 @@ describe('createCrossDeserializer', () => {
     ]);
     expect(state).toBe('pending');
   });
+
+  it('does not cause unhandled rejections for promises nobody reads', async () => {
+    const onUnhandled = vi.fn();
+    process.on('unhandledRejection', onUnhandled);
+    try {
+      const records = await collect({
+        failed: Promise.reject(new Error('ignored')),
+        pending: later(1),
+      });
+      // Settle the rejected promise, but leave the other one pending.
+      const failedRecords = records.filter((_, index) => index !== records.length - 1);
+      const session = createCrossDeserializer({});
+      for (const record of failedRecords) {
+        session.deserialize(record);
+      }
+      session.abort(new Error('transport failed'));
+      await later(undefined);
+      await later(undefined);
+      expect(onUnhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+  });
 });
