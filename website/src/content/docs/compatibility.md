@@ -31,7 +31,8 @@ The modes are:
 | `Promise` | ❌ [^promise] | ✅ | ✅ |
 | Iterables (`Symbol.iterator`) | ✅ | ✅ | ✅ |
 | Async iterables (`Symbol.asyncIterator`) | ❌ [^asynciterable] | ✅ | ✅ |
-| `createStream` and `createLiveStream` | ❌ [^empty] | ✅ | ✅ |
+| `createStream` | ✅ [^ended] | ✅ | ✅ |
+| `createLiveStream` | ❌ [^live] | ✅ | ✅ |
 | Well-known symbols | ✅ | ✅ | ✅ |
 | Shared and cyclic references | ✅ | ✅ | ✅ |
 | [Isomorphic references](./isomorphic-references.md) | ✅ | ✅ | ✅ |
@@ -43,7 +44,8 @@ The modes are:
 [^temporal]: Requires `Feature.Temporal`, and a runtime that has the `Temporal` global on both sides.
 [^promise]: Sync functions cannot wait for promises, so a promise throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
 [^asynciterable]: Sync functions cannot wait for values, so an async iterable throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
-[^empty]: Sync functions cannot wait for values, so these are sent as an empty stream that never ends. Reading it waits forever.
+[^ended]: Sync functions send a stream that has ended with all its events. A stream that is still open throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
+[^live]: Sync functions cannot read a live stream, so it throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
 
 Web types such as `URL`, `Request` and `FormData` are supported through [plugins](./using-plugins.md#seroval-plugins).
 
