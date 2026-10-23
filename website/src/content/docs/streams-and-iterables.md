@@ -31,7 +31,7 @@ An object with `Symbol.asyncIterator` is sent as a stream of its values:
 
 - The async functions read the iterable until it ends, then send all its values.
 - The streaming functions send each value as soon as the iterable yields it.
-- `serialize` and `toJSON` cannot wait, so they send an empty stream that never ends.
+- `serialize`, `toJSON`, `crossSerialize` and `toCrossJSON` cannot wait, so they throw a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
 
 The copy is an async iterable you can read with `for await`.
 
@@ -139,7 +139,7 @@ To read a live stream in your own code instead of serializing it, call `stream.c
 | | `serialize`, `toJSON` | async functions | streaming functions |
 | --- | --- | --- | --- |
 | Iterable | All values | All values | All values |
-| Async iterable | Empty, never ends | All values, once it ends | Each value as it arrives |
+| Async iterable | Throws | All values, once it ends | Each value as it arrives |
 | `createStream` | Empty, never ends | All values, once it ends | Each event as it happens |
 | Live stream | Empty, never ends | All values, once it ends | Each event, with backpressure |
 

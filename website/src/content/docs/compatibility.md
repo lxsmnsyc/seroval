@@ -30,7 +30,7 @@ The modes are:
 | `Temporal` types | ✅ [^temporal] | ✅ [^temporal] | ✅ [^temporal] |
 | `Promise` | ❌ [^promise] | ✅ | ✅ |
 | Iterables (`Symbol.iterator`) | ✅ | ✅ | ✅ |
-| Async iterables (`Symbol.asyncIterator`) | ❌ [^empty] | ✅ | ✅ |
+| Async iterables (`Symbol.asyncIterator`) | ❌ [^asynciterable] | ✅ | ✅ |
 | `createStream` and `createLiveStream` | ❌ [^empty] | ✅ | ✅ |
 | Well-known symbols | ✅ | ✅ | ✅ |
 | Shared and cyclic references | ✅ | ✅ | ✅ |
@@ -42,6 +42,7 @@ The modes are:
 [^aggregate]: Sent as an `Error` when `Feature.AggregateError` is off.
 [^temporal]: Requires `Feature.Temporal`, and a runtime that has the `Temporal` global on both sides.
 [^promise]: Sync functions cannot wait for promises, so a promise throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
+[^asynciterable]: Sync functions cannot wait for values, so an async iterable throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
 [^empty]: Sync functions cannot wait for values, so these are sent as an empty stream that never ends. Reading it waits forever.
 
 Web types such as `URL`, `Request` and `FormData` are supported through [plugins](./using-plugins.md#seroval-plugins).

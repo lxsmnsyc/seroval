@@ -266,17 +266,19 @@ function parseAsyncIterable(
   depth: number,
   current: AsyncIterable<unknown>,
 ): SerovalNode {
-  // The node only needs an id; in streaming mode the parser drives the
-  // iterator, in sync mode it stays empty.
+  // Only the stream mode can send the values later. The other sync modes
+  // would send a stream that never gets them, so they throw, as for a promise.
+  if (ctx.type !== ParserMode.Stream) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
+  // The node only needs an id; the parser drives the iterator.
   const id = createIndexForValue(ctx.base, {});
   const result = createStreamConstructorNode(
     id,
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
   );
-  if (ctx.type === ParserMode.Stream) {
-    ctx.state.iterable(ctx, depth, id, current);
-  }
+  ctx.state.iterable(ctx, depth, id, current);
   return result;
 }
 
