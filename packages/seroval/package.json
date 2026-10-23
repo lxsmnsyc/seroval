@@ -71,6 +71,26 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
+    "./validator": {
+      "development": {
+        "browser": {
+          "import": "./dist/dev/validator.js",
+          "require": "./dist/dev/validator.cjs",
+          "default": "./dist/dev/validator.js"
+        },
+        "import": "./dist/dev/validator.js",
+        "require": "./dist/dev/validator.cjs",
+        "default": "./dist/dev/validator.js"
+      },
+      "browser": {
+        "import": "./dist/validator.js",
+        "require": "./dist/validator.cjs",
+        "default": "./dist/validator.js"
+      },
+      "import": "./dist/validator.js",
+      "require": "./dist/validator.cjs",
+      "default": "./dist/validator.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
