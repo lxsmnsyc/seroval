@@ -17,6 +17,7 @@ export const SIDEBAR: SidebarSection[] = [
       'json',
       'cross-reference',
       'streaming',
+      'transport',
       'streams-and-iterables',
       'isomorphic-references',
       'binary-data',
