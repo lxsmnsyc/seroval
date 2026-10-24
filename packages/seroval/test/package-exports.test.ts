@@ -102,6 +102,23 @@ describe('built package exports (run build first)', () => {
     }
   });
 
+  it('drops LiveStream from bundles that never create one', async () => {
+    async function keepsLiveStream(names: string): Promise<boolean> {
+      const result = await build({
+        stdin: { contents: `export { ${names} } from './dist/index.js';`, resolveDir: packageDir },
+        bundle: true,
+        format: 'esm',
+        minify: true,
+        write: false,
+      });
+      // `cancelReason` is a LiveStream field, and minifiers keep property names.
+      return result.outputFiles[0].text.includes('cancelReason');
+    }
+    expect(await keepsLiveStream('createLiveStream')).toBe(true);
+    expect(await keepsLiveStream('toJSONAsync, fromJSON, fromCrossJSON')).toBe(false);
+    expect(await keepsLiveStream('toJSON, toCrossJSONStream, crossSerializeStream')).toBe(false);
+  });
+
   for (const development of [false, true]) {
     for (const browser of [false, true]) {
       for (const format of ['import', 'require'] as const) {

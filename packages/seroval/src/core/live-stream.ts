@@ -59,8 +59,15 @@ interface PendingRead<T> {
   reject: (reason: unknown) => void;
 }
 
+// Only the constructor adds to this set, so untrusted input cannot forge
+// membership. Unlike `instanceof`, checking it does not reference the class,
+// so bundles that never create a live stream can drop it.
+const LIVE_STREAMS = /* @__PURE__ */ new WeakSet<object>();
+// Parsers check every object, so skip the lookup until a live stream exists.
+let hasLiveStreams = false;
+
 export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
-  return value instanceof LiveStream;
+  return hasLiveStreams && typeof value === 'object' && value !== null && LIVE_STREAMS.has(value);
 }
 
 /**
@@ -69,7 +76,7 @@ export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
  * producer operation that sent it settles only when the consumer accepts it.
  *
  * An internal class rather than a tagged POJO: identity is checked with
- * `instanceof`, which untrusted input cannot forge. The class is exported
+ * `isLiveStream`, which untrusted input cannot forge. The class is exported
  * because bundlers cannot drop an unexported top-level class.
  */
 export class LiveStream<T> {
@@ -83,6 +90,8 @@ export class LiveStream<T> {
 
   constructor(options?: LiveStreamOptions) {
     this.options = options;
+    hasLiveStreams = true;
+    LIVE_STREAMS.add(this);
   }
 
   private deliver(reader: PendingRead<T>, record: PendingEvent<T>): void {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createLiveStream, isLiveStream } from '../src/core/live-stream';
+import { LiveStream, createLiveStream, isLiveStream } from '../src/core/live-stream';
 import { createSequence, isSequence } from '../src/core/sequence';
 import { createStream, isStream } from '../src/core/stream';
 
@@ -23,6 +23,7 @@ describe('Stream/Sequence identity', () => {
     const { stream } = createLiveStream();
     expect(isLiveStream(stream)).toBe(true);
     expect(isStream(stream)).toBe(true);
+    expect(isLiveStream(new LiveStream())).toBe(true);
   });
 
   it('rejects a POJO forging the LiveStream marker', () => {
@@ -32,6 +33,12 @@ describe('Stream/Sequence identity', () => {
       on: () => () => undefined,
       pump: () => () => undefined,
     };
+    expect(isLiveStream(forged)).toBe(false);
+    expect(isStream(forged)).toBe(false);
+  });
+
+  it('rejects an object made from the LiveStream prototype', () => {
+    const forged: unknown = Object.create(LiveStream.prototype);
     expect(isLiveStream(forged)).toBe(false);
     expect(isStream(forged)).toBe(false);
   });
