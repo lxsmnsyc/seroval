@@ -199,11 +199,12 @@ const ignoreRejection = (): void => {};
 
 function assignIndexedValue<T>(ctx: DeserializerContext, id: number, value: T): T {
   guardIndexedValue(ctx.base, id);
-  // A session can reject a promise that the caller never reads, such as a
-  // field it ignores, or a pending promise that `abort` fails. Mark each
-  // promise as handled so it does not cause an unhandled rejection. Code that
-  // awaits the promise still gets the rejection.
-  if (ctx.base.pending && value instanceof Promise) {
+  // The payload can hold a rejected promise that the caller never reads, such
+  // as a field it ignores, and a session can reject a pending promise on
+  // `abort`. Mark each promise as handled so it does not cause an unhandled
+  // rejection, which stops the process by default. Code that awaits the
+  // promise still gets the rejection.
+  if (value instanceof Promise) {
     value.catch(ignoreRejection);
   }
   const marked = ctx.marked;
