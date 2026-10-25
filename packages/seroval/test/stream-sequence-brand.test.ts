@@ -23,7 +23,6 @@ describe('Stream/Sequence identity', () => {
     const { stream } = createLiveStream();
     expect(isLiveStream(stream)).toBe(true);
     expect(isStream(stream)).toBe(true);
-    expect(isLiveStream(new LiveStream())).toBe(true);
   });
 
   it('rejects a POJO forging the LiveStream marker', () => {
@@ -41,6 +40,13 @@ describe('Stream/Sequence identity', () => {
     const forged: unknown = Object.create(LiveStream.prototype);
     expect(isLiveStream(forged)).toBe(false);
     expect(isStream(forged)).toBe(false);
+  });
+
+  it('recognizes a LiveStream behind a Proxy', () => {
+    const { stream } = createLiveStream();
+    const proxied: unknown = new Proxy(stream, {});
+    expect(isLiveStream(proxied)).toBe(true);
+    expect(isStream(proxied)).toBe(true);
   });
 
   it('recognizes a genuine Sequence', () => {

@@ -59,15 +59,12 @@ interface PendingRead<T> {
   reject: (reason: unknown) => void;
 }
 
-// Only the constructor adds to this set, so untrusted input cannot forge
-// membership. Unlike `instanceof`, checking it does not reference the class,
-// so bundles that never create a live stream can drop it.
-const LIVE_STREAMS = /* @__PURE__ */ new WeakSet<object>();
-// Parsers check every object, so skip the lookup until a live stream exists.
-let hasLiveStreams = false;
+// Brand instead of `instanceof`: JSON cannot forge a symbol key, and not naming the
+// class lets bundles that never create a live stream drop it. Per module copy, like `instanceof`.
+const BRAND = /* @__PURE__ */ Symbol('LiveStream');
 
 export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
-  return hasLiveStreams && typeof value === 'object' && value !== null && LIVE_STREAMS.has(value);
+  return value != null && (value as { [BRAND]?: unknown })[BRAND] === true;
 }
 
 /**
@@ -80,6 +77,7 @@ export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
  * because bundlers cannot drop an unexported top-level class.
  */
 export class LiveStream<T> {
+  private readonly [BRAND] = true;
   private pending: PendingEvent<T> | undefined;
   private waiting: PendingRead<T> | undefined;
   private consumed = false;
@@ -90,8 +88,6 @@ export class LiveStream<T> {
 
   constructor(options?: LiveStreamOptions) {
     this.options = options;
-    hasLiveStreams = true;
-    LIVE_STREAMS.add(this);
   }
 
   private deliver(reader: PendingRead<T>, record: PendingEvent<T>): void {

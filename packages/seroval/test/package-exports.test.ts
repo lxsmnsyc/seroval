@@ -102,22 +102,42 @@ describe('built package exports (run build first)', () => {
     }
   });
 
-  it('drops LiveStream from bundles that never create one', async () => {
-    async function keepsLiveStream(names: string): Promise<boolean> {
-      const result = await build({
-        stdin: { contents: `export { ${names} } from './dist/index.js';`, resolveDir: packageDir },
-        bundle: true,
-        format: 'esm',
-        minify: true,
-        write: false,
+  // Bundlers do not tree-shake CommonJS, so only the ESM builds can drop it.
+  for (const development of [false, true]) {
+    for (const browser of [false, true]) {
+      const conditions = [...(development ? ['development'] : []), ...(browser ? ['browser'] : [])];
+      const target = `dist/${development ? 'dev/' : ''}index.js`;
+      const label = `${development ? 'development' : 'production'}, ${browser ? 'browser' : 'default'}`;
+
+      it(`drops LiveStream from bundles that never create one (${label})`, async () => {
+        async function keepsLiveStream(names: string): Promise<boolean> {
+          const result = await build({
+            stdin: { contents: `export { ${names} } from 'seroval';`, resolveDir: packageDir },
+            bundle: true,
+            platform: browser ? 'browser' : 'node',
+            conditions,
+            format: 'esm',
+            minify: true,
+            metafile: true,
+            write: false,
+          });
+          const inputs = Object.keys(result.metafile.inputs).map((path) =>
+            path.replaceAll('\\', '/'),
+          );
+          expect(
+            inputs.filter((path) => path === target || path.endsWith('/' + target)),
+          ).toHaveLength(1);
+          // `consume` is a public LiveStream method no other code calls; minifiers keep method names.
+          return /\bconsume\(/.test(result.outputFiles[0].text);
+        }
+        expect(await keepsLiveStream('createLiveStream')).toBe(true);
+        expect(await keepsLiveStream('toJSONAsync, fromJSON, fromCrossJSON')).toBe(false);
+        expect(await keepsLiveStream('toJSON, toCrossJSONStream, crossSerializeStream')).toBe(
+          false,
+        );
       });
-      // `cancelReason` is a LiveStream field, and minifiers keep property names.
-      return result.outputFiles[0].text.includes('cancelReason');
     }
-    expect(await keepsLiveStream('createLiveStream')).toBe(true);
-    expect(await keepsLiveStream('toJSONAsync, fromJSON, fromCrossJSON')).toBe(false);
-    expect(await keepsLiveStream('toJSON, toCrossJSONStream, crossSerializeStream')).toBe(false);
-  });
+  }
 
   for (const development of [false, true]) {
     for (const browser of [false, true]) {
