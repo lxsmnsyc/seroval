@@ -1,5 +1,11 @@
 # seroval
 
+## 1.7.3
+
+### Patch Changes
+
+- 3a60f79: Republish the 1.7.2 changes through CI with npm provenance. 1.7.2 was published manually without an attestation, so pnpm's `trustPolicy: no-downgrade` refused to install it (#278). No code changes.
+
 ## 1.7.2
 
 ### Patch Changes
