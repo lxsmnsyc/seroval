@@ -20,6 +20,7 @@
     "@types/node": "^26.6.5",
     "@vitest/ui": "^5.0.5",
     "esbuild": "^0.28.2",
+    "fast-check": "^4.10.2",
     "temporal-polyfill": "^1.0.6",
     "ts-prune": "^0.10.3",
     "tsdown": "^0.23.1",
@@ -33,7 +34,8 @@
     "watch": "tsdown --watch",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "prune": "ts-prune"
+    "prune": "ts-prune",
+    "fuzz": "vitest run --config vitest.fuzz.config.ts"
   },
   "private": false,
   "description": "Stringify JS values",
