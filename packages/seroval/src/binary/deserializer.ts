@@ -34,7 +34,12 @@ import {
   SYM_TO_STRING_TAG,
 } from '../core/symbols';
 import type { Validator } from '../core/validator';
-import { decodeBigint, decodeString } from './encoder';
+import {
+  STRING_LENGTH_MASK,
+  decodeBigint,
+  decodeString,
+  decodeStringUTF16,
+} from './encoder';
 import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
@@ -569,10 +574,19 @@ function deserializeNumber(ctx: DeserializerContext) {
 function deserializeString(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.String);
   // First, ensure that there's an encoded length
-  const length = deserializeUint(ctx);
-  // Ensure the next chunk is based on encoded length
-  const encodedData = readBytes(ctx, length);
-  upsert(ctx, id, decodeString(encodedData));
+  const header = deserializeUint(ctx);
+  const length = header & STRING_LENGTH_MASK;
+  if (header === length) {
+    upsert(ctx, id, decodeString(readBytes(ctx, length)));
+    return;
+  }
+  // The flag says the bytes are UTF-16 code units, 2 bytes each.
+  if (length % 2 !== 0) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.String);
+  }
+  const offset = ctx.offset;
+  ctx.offset += length;
+  upsert(ctx, id, decodeStringUTF16(ctx.view, offset, length / 2, ctx.littleEndian));
 }
 
 function deserializeBigint(ctx: DeserializerContext) {
@@ -1548,7 +1562,11 @@ function getNodeSize(ctx: DeserializerContext): number {
     (type === SerovalBinaryType.String || type === SerovalBinaryType.ArrayBuffer) &&
     ensureBuffered(ctx, size)
   ) {
-    const length = ctx.view.getUint32(ctx.offset + 5, ctx.littleEndian);
+    let length = ctx.view.getUint32(ctx.offset + 5, ctx.littleEndian);
+    // A String's top length bit is its encoding flag.
+    if (type === SerovalBinaryType.String) {
+      length &= STRING_LENGTH_MASK;
+    }
     // Checked before the bytes are read, so an oversized length is rejected
     // without waiting for or buffering its contents.
     if (type === SerovalBinaryType.ArrayBuffer && length > ctx.maxArrayBufferLength) {

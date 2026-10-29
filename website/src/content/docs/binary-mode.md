@@ -21,7 +21,7 @@ Binary mode combines parts of the other modes:
 
 - **Like the streaming functions**, it sends the synchronous part of the value right away, then one chunk for each promise result and stream event.
 - **Like the JSON functions**, decoding validates the input and never evaluates it. It is built for input you do not trust.
-- **Unlike both**, the output is bytes. Strings are sent as UTF-8 and `ArrayBuffer` contents as raw bytes, with no base64 step.
+- **Unlike both**, the output is bytes. Strings are sent as UTF-8, or as UTF-16 when they hold a lone surrogate, and `ArrayBuffer` contents as raw bytes, with no base64 step.
 
 It also has limits:
 

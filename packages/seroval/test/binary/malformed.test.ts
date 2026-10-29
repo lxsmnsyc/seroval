@@ -67,6 +67,7 @@ const CONSTANT = { Null: 0, Undefined: 1, True: 2 } as const;
 const FLAG = { Frozen: 3 } as const;
 
 const preamble = () => node(TYPE.Preamble, 1);
+const UTF16_FLAG = 0x80000000;
 const constant = (id: number, tag: number) => node(TYPE.Constant, u32(id), tag);
 const numberNode = (id: number, value: number) => node(TYPE.Number, u32(id), f64(value));
 const stringNode = (id: number, value: string) => {
@@ -403,6 +404,51 @@ describe('binary malformed input', () => {
     it('rejects a String node that claims more bytes than it has', async () => {
       const encoded = new TextEncoder().encode('short');
       const attempt = feed([preamble(), node(TYPE.String, u32(1), u32(1000), encoded), root(1)]);
+      await expectRejected(attempt);
+    });
+
+    it('decodes a UTF-16 String node', async () => {
+      const units = new Uint8Array([0x00, 0xd8, 0x61, 0x00]);
+      const attempt = feed([
+        preamble(),
+        node(TYPE.String, u32(1), u32(UTF16_FLAG + units.length), units),
+        root(1),
+      ]);
+      expect((await attempt.value).value).toBe('\ud800a');
+    });
+
+    it('decodes a big endian UTF-16 String node', async () => {
+      const be32 = (value: number) => {
+        const bytes = new Uint8Array(4);
+        new DataView(bytes.buffer).setUint32(0, value, false);
+        return bytes;
+      };
+      const units = new Uint8Array([0xd8, 0x00, 0x00, 0x61]);
+      const attempt = feed([
+        node(TYPE.Preamble, 2),
+        node(TYPE.String, be32(1), be32(UTF16_FLAG + units.length), units),
+        node(TYPE.Root, be32(1)),
+      ]);
+      expect((await attempt.value).value).toBe('\ud800a');
+    });
+
+    it('rejects a UTF-16 String node with an odd byte length', async () => {
+      const units = new Uint8Array([0x00, 0xd8, 0x61]);
+      const attempt = feed([
+        preamble(),
+        node(TYPE.String, u32(1), u32(UTF16_FLAG + units.length), units),
+        root(1),
+      ]);
+      await expectRejected(attempt);
+    });
+
+    it('rejects a UTF-16 String node that claims more bytes than it has', async () => {
+      const units = new Uint8Array([0x00, 0xd8]);
+      const attempt = feed([
+        preamble(),
+        node(TYPE.String, u32(1), u32(UTF16_FLAG + 1000), units),
+        root(1),
+      ]);
       await expectRejected(attempt);
     });
 

@@ -47,6 +47,7 @@ The decoder treats its input as untrusted. It rejects a payload that breaks any 
 - Every enumerated byte, such as a constant, a symbol, an error constructor, a typed array constructor or a `Temporal` type, has a known value.
 - A typed array or `DataView` fits inside its `ArrayBuffer`. A typed array has at most 1,000,000 elements, and a `DataView` at most 1,000,000 bytes.
 - An `ArrayBuffer` has at most `maxArrayBufferLength` bytes, 1,000,000 by default.
+- A UTF-16 `String` has an even number of bytes.
 - A `RegExp` pattern has at most 20,000 characters.
 - A `RegExp` or `Temporal` node is only accepted when its feature is enabled. A `Temporal` node also needs the `Temporal` global.
 - A container gets no assignments after its `Pending` node, and only one `Pending` node.
@@ -143,7 +144,10 @@ A finite number. `-0`, `NaN`, `Infinity` and `-Infinity` are sent as [`Constant`
 <byte:string=4> <id> <uint:length> <buffer>
 ```
 
-A string as UTF-8. `length` is the number of bytes in `buffer`.
+A string. The top bit of `length` picks the encoding, and the other 31 bits are the number of bytes in `buffer`:
+
+- `0`: UTF-8.
+- `1`: UTF-16 code units, 2 bytes each, in the byte order of the `Preamble`. UTF-8 cannot hold a lone surrogate, so the serializer only uses this for a string that has one. The byte count must be even.
 
 ### BigInt
 

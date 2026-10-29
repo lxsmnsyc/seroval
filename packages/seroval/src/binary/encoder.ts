@@ -6,6 +6,37 @@ export const NATIVE_LITTLE_ENDIAN =
 const ENCODER = /* @__PURE__ */ new TextEncoder();
 const DECODER = /* @__PURE__ */ new TextDecoder();
 
+// The top bit of a String node's byte length says its bytes are UTF-16 code
+// units instead of UTF-8. UTF-8 cannot hold a lone surrogate, so only strings
+// that are not well formed use it.
+export const STRING_UTF16_FLAG = 0x80000000;
+export const STRING_LENGTH_MASK = 0x7fffffff;
+
+// `String.prototype.isWellFormed` is ES2024, so older runtimes scan by hand.
+const HAS_IS_WELL_FORMED = typeof String.prototype.isWellFormed === 'function';
+
+function isWellFormed(value: string, start: number): boolean {
+  if (HAS_IS_WELL_FORMED) {
+    return value.isWellFormed();
+  }
+  for (let i = start, len = value.length; i < len; i++) {
+    const code = value.charCodeAt(i);
+    if (code >= 0xd800 && code <= 0xdfff) {
+      // A high surrogate must be followed by a low one, and a low surrogate
+      // is only valid after a high one, which the step below skips.
+      if (code > 0xdbff) {
+        return false;
+      }
+      const next = value.charCodeAt(i + 1);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) {
+        return false;
+      }
+      i++;
+    }
+  }
+  return true;
+}
+
 const INITIAL_CAPACITY = 1024;
 // A writer whose buffer grew past this size gets a new, small one after a
 // flush, so a long running stream does not hold on to its largest payload.
@@ -92,8 +123,9 @@ export function writeBytes(writer: ByteWriter, value: Uint8Array): void {
 }
 
 /**
- * Writes the string as a `uint32` byte length followed by its UTF-8 bytes.
- * Reserves its own space.
+ * Writes the string as a `uint32` byte length followed by its UTF-8 bytes, or
+ * by its UTF-16 code units when it holds a lone surrogate. Reserves its own
+ * space.
  */
 export function writeString(writer: ByteWriter, value: string): void {
   const length = value.length;
@@ -111,6 +143,17 @@ export function writeString(writer: ByteWriter, value: string): void {
     }
     bytes[start + i] = code;
   }
+  if (i < length && !isWellFormed(value, i)) {
+    // UTF-16 needs 2 bytes per code unit, which fits in the space reserved
+    // above.
+    const view = writer.view;
+    for (let j = 0; j < length; j++) {
+      view.setUint16(start + j * 2, value.charCodeAt(j), NATIVE_LITTLE_ENDIAN);
+    }
+    writeUint(writer, length * 2 + STRING_UTF16_FLAG);
+    writer.offset += length * 2;
+    return;
+  }
   let size = i;
   if (i < length) {
     size += ENCODER.encodeInto(value.substring(i), bytes.subarray(start + i)).written;
@@ -121,6 +164,30 @@ export function writeString(writer: ByteWriter, value: string): void {
 
 export function decodeString(value: Uint8Array): string {
   return DECODER.decode(value);
+}
+
+// Code units passed to one `String.fromCharCode` call, so a long string does
+// not exceed the argument limit.
+const CODE_UNIT_CHUNK = 8192;
+
+/** Reads `length` UTF-16 code units from `view`, starting at `offset`. */
+export function decodeStringUTF16(
+  view: DataView,
+  offset: number,
+  length: number,
+  littleEndian: boolean,
+): string {
+  const units: number[] = [];
+  let result = '';
+  for (let i = 0; i < length; i += CODE_UNIT_CHUNK) {
+    const end = Math.min(length, i + CODE_UNIT_CHUNK);
+    units.length = end - i;
+    for (let j = i; j < end; j++) {
+      units[j - i] = view.getUint16(offset + j * 2, littleEndian);
+    }
+    result += String.fromCharCode.apply(null, units);
+  }
+  return result;
 }
 
 export function encodeBigint(value: bigint): string {
