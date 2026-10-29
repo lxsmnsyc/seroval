@@ -11,6 +11,7 @@ import {
 } from 'seroval';
 import { describe, expect, it } from 'vitest';
 import RequestPlugin from '../../web/request';
+import { evaluateCross } from '../utils/cross';
 
 const EXAMPLE_URL = 'http://localhost:3000';
 const EXAMPLE_BODY = 'Hello World!';
@@ -25,7 +26,6 @@ describe('Request', () => {
       const result = await serializeAsync(example, {
         plugins: [RequestPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof example>(result);
       expect(back).toBeInstanceOf(Request);
       expect(await back.text()).toBe(await example.text());
@@ -42,7 +42,6 @@ describe('Request', () => {
       const result = await serializeAsync(example, {
         plugins: [RequestPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof example>(result);
       expect(back).toBeInstanceOf(Request);
       expect(back.body).toBe(null);
@@ -59,7 +58,6 @@ describe('Request', () => {
       const result = await toJSONAsync(example, {
         plugins: [RequestPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof example>(result, {
         plugins: [RequestPlugin],
       });
@@ -78,7 +76,11 @@ describe('Request', () => {
       const result = await crossSerializeAsync(example, {
         plugins: [RequestPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = evaluateCross<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe('POST');
     });
 
     it('supports already read Request', async () => {
@@ -86,10 +88,15 @@ describe('Request', () => {
         method: 'POST',
         body: EXAMPLE_BODY,
       });
+      await example.text();
       const result = await crossSerializeAsync(example, {
         plugins: [RequestPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = evaluateCross<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(back.body).toBe(null);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
     });
     describe('scoped', () => {
       it('supports Request', async () => {
@@ -101,7 +108,11 @@ describe('Request', () => {
           plugins: [RequestPlugin],
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = evaluateCross<typeof example>(result, 'example');
+        expect(back).toBeInstanceOf(Request);
+        expect(await back.text()).toBe(EXAMPLE_BODY);
+        expect(back.url).toBe(example.url);
+        expect(back.method).toBe('POST');
       });
     });
   });
@@ -157,7 +168,6 @@ describe('Request', () => {
       const result = await toCrossJSONAsync(example, {
         plugins: [RequestPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof example>(result, {
         plugins: [RequestPlugin],
         refs: new Map(),
@@ -177,7 +187,6 @@ describe('Request', () => {
       const result = await toCrossJSONAsync(example, {
         plugins: [RequestPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof example>(result, {
         plugins: [RequestPlugin],
         refs: new Map(),

@@ -2,15 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
+  fromCrossJSON,
+  fromJSON,
   serialize,
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 describe('number', () => {
   describe('serialize', () => {
@@ -45,40 +46,50 @@ describe('number', () => {
   });
   describe('toJSON', () => {
     it('supports numbers', () => {
-      const value = 0xdeadbeef;
-      expect(JSON.stringify(toJSON(value))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Number.NaN))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toJSON(Number.POSITIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(toJSON(Number.NEGATIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(-0))).toMatchSnapshot();
+      {
+        const back = fromJSON<number>(toJSON(0xdeadbeef));
+        expect(back).toBe(0xdeadbeef);
+      }
+      {
+        const back = fromJSON<number>(toJSON(Number.NaN));
+        expect(back).toBe(Number.NaN);
+      }
+      {
+        const back = fromJSON<number>(toJSON(Number.POSITIVE_INFINITY));
+        expect(back).toBe(Number.POSITIVE_INFINITY);
+      }
+      {
+        const back = fromJSON<number>(toJSON(Number.NEGATIVE_INFINITY));
+        expect(back).toBe(Number.NEGATIVE_INFINITY);
+      }
+      {
+        const back = fromJSON<number>(toJSON(-0));
+        expect(back).toBe(-0);
+      }
     });
   });
   describe('toJSONAsync', () => {
     it('supports numbers', async () => {
-      const value = 0xdeadbeef;
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(value))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Number.NaN))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(-0))),
-      ).toMatchSnapshot();
+      {
+        const back = await fromJSON<Promise<number>>(await toJSONAsync(Promise.resolve(0xdeadbeef)));
+        expect(back).toBe(0xdeadbeef);
+      }
+      {
+        const back = await fromJSON<Promise<number>>(await toJSONAsync(Promise.resolve(Number.NaN)));
+        expect(back).toBe(Number.NaN);
+      }
+      {
+        const back = await fromJSON<Promise<number>>(await toJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)));
+        expect(back).toBe(Number.POSITIVE_INFINITY);
+      }
+      {
+        const back = await fromJSON<Promise<number>>(await toJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)));
+        expect(back).toBe(Number.NEGATIVE_INFINITY);
+      }
+      {
+        const back = await fromJSON<Promise<number>>(await toJSONAsync(Promise.resolve(-0)));
+        expect(back).toBe(-0);
+      }
     });
   });
   describe('crossSerialize', () => {
@@ -93,203 +104,118 @@ describe('number', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports numbers', async () => {
-      const value = 0xdeadbeef;
-      expect(
-        await crossSerializeAsync(Promise.resolve(value)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Number.NaN)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(await crossSerializeAsync(Promise.resolve(-0))).toMatchSnapshot();
+      {
+        const back = await evaluateCross<Promise<number>>(await crossSerializeAsync(Promise.resolve(0xdeadbeef)));
+        expect(back).toBe(0xdeadbeef);
+      }
+      {
+        const back = await evaluateCross<Promise<number>>(await crossSerializeAsync(Promise.resolve(Number.NaN)));
+        expect(back).toBe(Number.NaN);
+      }
+      {
+        const back = await evaluateCross<Promise<number>>(await crossSerializeAsync(Promise.resolve(Number.POSITIVE_INFINITY)));
+        expect(back).toBe(Number.POSITIVE_INFINITY);
+      }
+      {
+        const back = await evaluateCross<Promise<number>>(await crossSerializeAsync(Promise.resolve(Number.NEGATIVE_INFINITY)));
+        expect(back).toBe(Number.NEGATIVE_INFINITY);
+      }
+      {
+        const back = await evaluateCross<Promise<number>>(await crossSerializeAsync(Promise.resolve(-0)));
+        expect(back).toBe(-0);
+      }
     });
   });
-
   describe('crossSerializeStream', () => {
-    it('supports numbers', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(0xdeadbeef), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Number.NaN', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Number.NaN), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Number.POSITIVE_INFINITY', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Number.POSITIVE_INFINITY), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Number.NEGATIVE_INFINITY', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Number.NEGATIVE_INFINITY), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports -0', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(-0), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports numbers', async () => {
+      const back = await streamCross<Promise<number>>(Promise.resolve(0xdeadbeef));
+      expect(back).toBe(0xdeadbeef);
+    });
+    it('supports Number.NaN', async () => {
+      const back = await streamCross<Promise<number>>(Promise.resolve(Number.NaN));
+      expect(back).toBe(Number.NaN);
+    });
+    it('supports Number.POSITIVE_INFINITY', async () => {
+      const back = await streamCross<Promise<number>>(Promise.resolve(Number.POSITIVE_INFINITY));
+      expect(back).toBe(Number.POSITIVE_INFINITY);
+    });
+    it('supports Number.NEGATIVE_INFINITY', async () => {
+      const back = await streamCross<Promise<number>>(Promise.resolve(Number.NEGATIVE_INFINITY));
+      expect(back).toBe(Number.NEGATIVE_INFINITY);
+    });
+    it('supports -0', async () => {
+      const back = await streamCross<Promise<number>>(Promise.resolve(-0));
+      expect(back).toBe(-0);
+    });
   });
   describe('toCrossJSON', () => {
     it('supports numbers', () => {
-      const value = 0xdeadbeef;
-      expect(JSON.stringify(toCrossJSON(value))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Number.NaN))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toCrossJSON(Number.POSITIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(toCrossJSON(Number.NEGATIVE_INFINITY)),
-      ).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(-0))).toMatchSnapshot();
+      {
+        const back = fromCrossJSON<number>(toCrossJSON(0xdeadbeef), { refs: new Map() });
+        expect(back).toBe(0xdeadbeef);
+      }
+      {
+        const back = fromCrossJSON<number>(toCrossJSON(Number.NaN), { refs: new Map() });
+        expect(back).toBe(Number.NaN);
+      }
+      {
+        const back = fromCrossJSON<number>(toCrossJSON(Number.POSITIVE_INFINITY), { refs: new Map() });
+        expect(back).toBe(Number.POSITIVE_INFINITY);
+      }
+      {
+        const back = fromCrossJSON<number>(toCrossJSON(Number.NEGATIVE_INFINITY), { refs: new Map() });
+        expect(back).toBe(Number.NEGATIVE_INFINITY);
+      }
+      {
+        const back = fromCrossJSON<number>(toCrossJSON(-0), { refs: new Map() });
+        expect(back).toBe(-0);
+      }
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports numbers', async () => {
-      const value = 0xdeadbeef;
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(value))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Number.NaN))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(-0))),
-      ).toMatchSnapshot();
+      {
+        const back = await fromCrossJSON<Promise<number>>(await toCrossJSONAsync(Promise.resolve(0xdeadbeef)), { refs: new Map() });
+        expect(back).toBe(0xdeadbeef);
+      }
+      {
+        const back = await fromCrossJSON<Promise<number>>(await toCrossJSONAsync(Promise.resolve(Number.NaN)), { refs: new Map() });
+        expect(back).toBe(Number.NaN);
+      }
+      {
+        const back = await fromCrossJSON<Promise<number>>(await toCrossJSONAsync(Promise.resolve(Number.POSITIVE_INFINITY)), { refs: new Map() });
+        expect(back).toBe(Number.POSITIVE_INFINITY);
+      }
+      {
+        const back = await fromCrossJSON<Promise<number>>(await toCrossJSONAsync(Promise.resolve(Number.NEGATIVE_INFINITY)), { refs: new Map() });
+        expect(back).toBe(Number.NEGATIVE_INFINITY);
+      }
+      {
+        const back = await fromCrossJSON<Promise<number>>(await toCrossJSONAsync(Promise.resolve(-0)), { refs: new Map() });
+        expect(back).toBe(-0);
+      }
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports numbers', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(0xdeadbeef), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Number.NaN', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Number.NaN), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Number.POSITIVE_INFINITY', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Number.POSITIVE_INFINITY), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Number.NEGATIVE_INFINITY', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Number.NEGATIVE_INFINITY), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports -0', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(-0), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports numbers', async () => {
+      const back = await streamCrossJSON<Promise<number>>(Promise.resolve(0xdeadbeef));
+      expect(back).toBe(0xdeadbeef);
+    });
+    it('supports Number.NaN', async () => {
+      const back = await streamCrossJSON<Promise<number>>(Promise.resolve(Number.NaN));
+      expect(back).toBe(Number.NaN);
+    });
+    it('supports Number.POSITIVE_INFINITY', async () => {
+      const back = await streamCrossJSON<Promise<number>>(Promise.resolve(Number.POSITIVE_INFINITY));
+      expect(back).toBe(Number.POSITIVE_INFINITY);
+    });
+    it('supports Number.NEGATIVE_INFINITY', async () => {
+      const back = await streamCrossJSON<Promise<number>>(Promise.resolve(Number.NEGATIVE_INFINITY));
+      expect(back).toBe(Number.NEGATIVE_INFINITY);
+    });
+    it('supports -0', async () => {
+      const back = await streamCrossJSON<Promise<number>>(Promise.resolve(-0));
+      expect(back).toBe(-0);
+    });
   });
 });

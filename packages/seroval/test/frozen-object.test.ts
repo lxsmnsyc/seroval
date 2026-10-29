@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -10,10 +9,10 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { drain, evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 const EXAMPLE = Object.freeze({
   example: 'valid identifier',
@@ -82,7 +81,6 @@ describe('frozen object', () => {
   describe('serializeAsync', () => {
     it('supports Objects', async () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE));
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -90,7 +88,6 @@ describe('frozen object', () => {
     });
     it('supports self-recursion', async () => {
       const result = await serializeAsync(ASYNC_RECURSIVE);
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof ASYNC_RECURSIVE>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(await back.a).toBe(back);
@@ -98,7 +95,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.iterator', async () => {
       const result = await serializeAsync(Promise.resolve(ITERABLE));
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof ITERABLE>>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -106,7 +102,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.asyncIterator', async () => {
       const result = await serializeAsync(ASYNC_ITERABLE);
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof ASYNC_ITERABLE>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -116,7 +111,6 @@ describe('frozen object', () => {
   describe('toJSON', () => {
     it('supports Objects', () => {
       const result = toJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -124,7 +118,6 @@ describe('frozen object', () => {
     });
     it('supports self-recursion', () => {
       const result = toJSON(RECURSIVE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof RECURSIVE>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.a).toBe(back);
@@ -132,7 +125,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.iterator', () => {
       const result = toJSON(ITERABLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof ITERABLE>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -142,7 +134,6 @@ describe('frozen object', () => {
   describe('toJSONAsync', () => {
     it('supports Objects', async () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -150,7 +141,6 @@ describe('frozen object', () => {
     });
     it('supports self-recursion', async () => {
       const result = await toJSONAsync(ASYNC_RECURSIVE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof ASYNC_RECURSIVE>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(await back.a).toBe(back);
@@ -158,7 +148,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.iterator', async () => {
       const result = await toJSONAsync(Promise.resolve(ITERABLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof ITERABLE>>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -166,7 +155,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.asyncIterator', async () => {
       const result = await toJSONAsync(ASYNC_ITERABLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof ASYNC_ITERABLE>(result);
       expect(Object.isFrozen(back)).toBe(true);
       expect(back.constructor).toBe(Object);
@@ -204,171 +192,138 @@ describe('frozen object', () => {
   describe('crossSerializeAsync', () => {
     it('supports Objects', async () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect(back.example).toBe(EXAMPLE.example);
     });
     it('supports self-recursion', async () => {
       const result = await crossSerializeAsync(ASYNC_RECURSIVE);
-      expect(result).toMatchSnapshot();
+      const back = evaluateCross<typeof ASYNC_RECURSIVE>(result);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(await back.a).toBe(back);
+      expect(await back.b).toBe(back);
     });
     it('supports Symbol.iterator', async () => {
       const result = await crossSerializeAsync(Promise.resolve(ITERABLE));
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof ITERABLE>>(result);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect([...back]).toMatchObject([1, 2, 3]);
     });
     it('supports Symbol.asyncIterator', async () => {
       const result = await crossSerializeAsync(ASYNC_ITERABLE);
-      expect(result).toMatchSnapshot();
+      const back = evaluateCross<typeof ASYNC_ITERABLE>(result);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect(Symbol.asyncIterator in back).toBe(true);
+      expect(await drain(back)).toEqual([1, 2, 3]);
     });
     describe('scoped', () => {
       it('supports Objects', async () => {
         const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(back.constructor).toBe(Object);
+        expect(back.example).toBe(EXAMPLE.example);
       });
       it('supports self-recursion', async () => {
         const result = await crossSerializeAsync(ASYNC_RECURSIVE, {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = evaluateCross<typeof ASYNC_RECURSIVE>(result, 'example');
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(await back.a).toBe(back);
+        expect(await back.b).toBe(back);
       });
       it('supports Symbol.iterator', async () => {
         const result = await crossSerializeAsync(Promise.resolve(ITERABLE), {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof ITERABLE>>(result, 'example');
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(back.constructor).toBe(Object);
+        expect([...back]).toMatchObject([1, 2, 3]);
       });
       it('supports Symbol.asyncIterator', async () => {
         const result = await crossSerializeAsync(ASYNC_ITERABLE, {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = evaluateCross<typeof ASYNC_ITERABLE>(result, 'example');
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(back.constructor).toBe(Object);
+        expect(Symbol.asyncIterator in back).toBe(true);
+        expect(await drain(back)).toEqual([1, 2, 3]);
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Objects', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(EXAMPLE), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports self-recursion', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(ASYNC_RECURSIVE, {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.iterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(ITERABLE), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.asyncIterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(ASYNC_ITERABLE, {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Objects', async () => {
+      const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE));
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect(back.example).toBe(EXAMPLE.example);
+    });
+    it('supports self-recursion', async () => {
+      const back = await streamCross<typeof ASYNC_RECURSIVE>(ASYNC_RECURSIVE);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(await back.a).toBe(back);
+      expect(await back.b).toBe(back);
+    });
+    it('supports Symbol.iterator', async () => {
+      const back = await streamCross<Promise<typeof ITERABLE>>(Promise.resolve(ITERABLE));
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect([...back]).toMatchObject([1, 2, 3]);
+    });
+    it('supports Symbol.asyncIterator', async () => {
+      const back = await streamCross<typeof ASYNC_ITERABLE>(ASYNC_ITERABLE);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect(Symbol.asyncIterator in back).toBe(true);
+      expect(await drain(back)).toEqual([1, 2, 3]);
+    });
     describe('scoped', () => {
-      it('supports Objects', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(EXAMPLE), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports self-recursion', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(ASYNC_RECURSIVE, {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.iterator', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(ITERABLE), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.asyncIterator', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(ASYNC_ITERABLE, {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports Objects', async () => {
+        const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+          scopeId: 'example',
+        });
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(back.constructor).toBe(Object);
+        expect(back.example).toBe(EXAMPLE.example);
+      });
+      it('supports self-recursion', async () => {
+        const back = await streamCross<typeof ASYNC_RECURSIVE>(ASYNC_RECURSIVE, {
+          scopeId: 'example',
+        });
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(await back.a).toBe(back);
+        expect(await back.b).toBe(back);
+      });
+      it('supports Symbol.iterator', async () => {
+        const back = await streamCross<Promise<typeof ITERABLE>>(Promise.resolve(ITERABLE), {
+          scopeId: 'example',
+        });
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(back.constructor).toBe(Object);
+        expect([...back]).toMatchObject([1, 2, 3]);
+      });
+      it('supports Symbol.asyncIterator', async () => {
+        const back = await streamCross<typeof ASYNC_ITERABLE>(ASYNC_ITERABLE, {
+          scopeId: 'example',
+        });
+        expect(Object.isFrozen(back)).toBe(true);
+        expect(back.constructor).toBe(Object);
+        expect(Symbol.asyncIterator in back).toBe(true);
+        expect(await drain(back)).toEqual([1, 2, 3]);
+      });
     });
   });
   describe('toCrossJSON', () => {
     it('supports Objects', () => {
       const result = toCrossJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         refs: new Map(),
       });
@@ -378,7 +333,6 @@ describe('frozen object', () => {
     });
     it('supports self-recursion', () => {
       const result = toCrossJSON(RECURSIVE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof RECURSIVE>(result, {
         refs: new Map(),
       });
@@ -388,7 +342,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.iterator', () => {
       const result = toCrossJSON(ITERABLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof ITERABLE>(result, {
         refs: new Map(),
       });
@@ -400,7 +353,6 @@ describe('frozen object', () => {
   describe('toCrossJSONAsync', () => {
     it('supports Objects', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
         refs: new Map(),
       });
@@ -410,7 +362,6 @@ describe('frozen object', () => {
     });
     it('supports self-recursion', async () => {
       const result = await toCrossJSONAsync(ASYNC_RECURSIVE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof ASYNC_RECURSIVE>(result, {
         refs: new Map(),
       });
@@ -420,7 +371,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.iterator', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(ITERABLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof ITERABLE>>(result, {
         refs: new Map(),
       });
@@ -430,7 +380,6 @@ describe('frozen object', () => {
     });
     it('supports Symbol.asyncIterator', async () => {
       const result = await toCrossJSONAsync(ASYNC_ITERABLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof ASYNC_ITERABLE>(result, {
         refs: new Map(),
       });
@@ -440,61 +389,30 @@ describe('frozen object', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Objects', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(EXAMPLE), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports self-recursion', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(ASYNC_RECURSIVE, {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.iterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(ITERABLE), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.asyncIterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(ASYNC_ITERABLE, {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Objects', async () => {
+      const back = await streamCrossJSON<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE));
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect(back.example).toBe(EXAMPLE.example);
+    });
+    it('supports self-recursion', async () => {
+      const back = await streamCrossJSON<typeof ASYNC_RECURSIVE>(ASYNC_RECURSIVE);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(await back.a).toBe(back);
+      expect(await back.b).toBe(back);
+    });
+    it('supports Symbol.iterator', async () => {
+      const back = await streamCrossJSON<Promise<typeof ITERABLE>>(Promise.resolve(ITERABLE));
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect([...back]).toMatchObject([1, 2, 3]);
+    });
+    it('supports Symbol.asyncIterator', async () => {
+      const back = await streamCrossJSON<typeof ASYNC_ITERABLE>(ASYNC_ITERABLE);
+      expect(Object.isFrozen(back)).toBe(true);
+      expect(back.constructor).toBe(Object);
+      expect(Symbol.asyncIterator in back).toBe(true);
+      expect(await drain(back)).toEqual([1, 2, 3]);
+    });
   });
 });

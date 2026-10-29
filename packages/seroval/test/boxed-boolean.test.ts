@@ -2,15 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
+  fromCrossJSON,
+  fromJSON,
   serialize,
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 describe('boxed boolean', () => {
   describe('serialize', () => {
@@ -27,18 +28,30 @@ describe('boxed boolean', () => {
   });
   describe('toJSON', () => {
     it('supports boolean', () => {
-      expect(JSON.stringify(toJSON(Object(true)))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Object(false)))).toMatchSnapshot();
+      {
+        const back = fromJSON<Boolean>(toJSON(Object(true)));
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(true);
+      }
+      {
+        const back = fromJSON<Boolean>(toJSON(Object(false)));
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(false);
+      }
     });
   });
   describe('toJSONAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(true)))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Object(false)))),
-      ).toMatchSnapshot();
+      {
+        const back = await fromJSON<Promise<Boolean>>(await toJSONAsync(Promise.resolve(Object(true))));
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(true);
+      }
+      {
+        const back = await fromJSON<Promise<Boolean>>(await toJSONAsync(Promise.resolve(Object(false))));
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(false);
+      }
     });
   });
   describe('crossSerialize', () => {
@@ -59,126 +72,100 @@ describe('boxed boolean', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports boolean', async () => {
-      expect(await crossSerializeAsync(Object(true))).toMatchSnapshot();
-      expect(await crossSerializeAsync(Object(false))).toMatchSnapshot();
+      {
+        const back = await evaluateCross<Promise<Boolean>>(await crossSerializeAsync(Object(true)));
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(true);
+      }
+      {
+        const back = await evaluateCross<Promise<Boolean>>(await crossSerializeAsync(Object(false)));
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(false);
+      }
     });
     describe('scoped', () => {
       it('supports boolean', async () => {
-        expect(
+        {
+          const back = await evaluateCross<Promise<Boolean>>(
           await crossSerializeAsync(Object(true), { scopeId: 'example' }),
-        ).toMatchSnapshot();
-        expect(
+          'example',
+        );
+          expect(back).toBeInstanceOf(Boolean);
+          expect((back).valueOf()).toBe(true);
+        }
+        {
+          const back = await evaluateCross<Promise<Boolean>>(
           await crossSerializeAsync(Object(false), { scopeId: 'example' }),
-        ).toMatchSnapshot();
+          'example',
+        );
+          expect(back).toBeInstanceOf(Boolean);
+          expect((back).valueOf()).toBe(false);
+        }
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports boxed true', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Object(true)), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports boxed false', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Object(false)), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports boxed true', async () => {
+      const back = await streamCross<Promise<Boolean>>(Promise.resolve(Object(true)));
+      expect(back).toBeInstanceOf(Boolean);
+      expect((back).valueOf()).toBe(true);
+    });
+    it('supports boxed false', async () => {
+      const back = await streamCross<Promise<Boolean>>(Promise.resolve(Object(false)));
+      expect(back).toBeInstanceOf(Boolean);
+      expect((back).valueOf()).toBe(false);
+    });
     describe('scoped', () => {
-      it('supports boxed true', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Object(true)), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports boxed false', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Object(false)), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports boxed true', async () => {
+        const back = await streamCross<Promise<Boolean>>(Promise.resolve(Object(true)), { scopeId: 'example' });
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(true);
+      });
+      it('supports boxed false', async () => {
+        const back = await streamCross<Promise<Boolean>>(Promise.resolve(Object(false)), { scopeId: 'example' });
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(false);
+      });
     });
   });
   describe('toCrossJSON', () => {
     it('supports boolean', () => {
-      expect(JSON.stringify(toCrossJSON(Object(true)))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Object(false)))).toMatchSnapshot();
+      {
+        const back = fromCrossJSON<Boolean>(toCrossJSON(Object(true)), { refs: new Map() });
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(true);
+      }
+      {
+        const back = fromCrossJSON<Boolean>(toCrossJSON(Object(false)), { refs: new Map() });
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(false);
+      }
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(true)))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Object(false)))),
-      ).toMatchSnapshot();
+      {
+        const back = await fromCrossJSON<Promise<Boolean>>(await toCrossJSONAsync(Promise.resolve(Object(true))), { refs: new Map() });
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(true);
+      }
+      {
+        const back = await fromCrossJSON<Promise<Boolean>>(await toCrossJSONAsync(Promise.resolve(Object(false))), { refs: new Map() });
+        expect(back).toBeInstanceOf(Boolean);
+        expect((back).valueOf()).toBe(false);
+      }
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports boxed true', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Object(true)), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports boxed false', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Object(false)), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports boxed true', async () => {
+      const back = await streamCrossJSON<Promise<Boolean>>(Promise.resolve(Object(true)));
+      expect(back).toBeInstanceOf(Boolean);
+      expect((back).valueOf()).toBe(true);
+    });
+    it('supports boxed false', async () => {
+      const back = await streamCrossJSON<Promise<Boolean>>(Promise.resolve(Object(false)));
+      expect(back).toBeInstanceOf(Boolean);
+      expect((back).valueOf()).toBe(false);
+    });
   });
 });

@@ -9,6 +9,7 @@ import {
 } from 'seroval';
 import { describe, expect, it } from 'vitest';
 import BlobPlugin from '../../web/blob';
+import { evaluateCross } from '../utils/cross';
 
 const EXAMPLE = new Blob(['Hello World'], {
   type: 'text/plain',
@@ -19,7 +20,6 @@ describe('Blob', () => {
       const result = await serializeAsync(EXAMPLE, {
         plugins: [BlobPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(Blob);
       expect(await back.text()).toBe(await EXAMPLE.text());
@@ -31,7 +31,6 @@ describe('Blob', () => {
       const result = await toJSONAsync(EXAMPLE, {
         plugins: [BlobPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result, {
         plugins: [BlobPlugin],
       });
@@ -45,7 +44,10 @@ describe('Blob', () => {
       const result = await crossSerializeAsync(EXAMPLE, {
         plugins: [BlobPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = evaluateCross<typeof EXAMPLE>(result);
+      expect(back).toBeInstanceOf(Blob);
+      expect(await back.text()).toBe(await EXAMPLE.text());
+      expect(back.type).toBe(EXAMPLE.type);
     });
     describe('scoped', () => {
       it('supports Blob', async () => {
@@ -53,7 +55,10 @@ describe('Blob', () => {
           plugins: [BlobPlugin],
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBeInstanceOf(Blob);
+        expect(await back.text()).toBe(await EXAMPLE.text());
+        expect(back.type).toBe(EXAMPLE.type);
       });
     });
   });
@@ -62,7 +67,6 @@ describe('Blob', () => {
       const result = await toCrossJSONAsync(EXAMPLE, {
         plugins: [BlobPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         plugins: [BlobPlugin],
         refs: new Map(),

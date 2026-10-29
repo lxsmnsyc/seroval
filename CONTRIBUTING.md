@@ -44,6 +44,26 @@ npx vitest run
 
 Rebuild `seroval` after changing it, or the plugins tests will run against the old build.
 
+## Fuzzing
+
+`packages/seroval/fuzz` holds property-based fuzz tests written with [fast-check](https://fast-check.dev). They are not part of `pnpm test` or CI. Run them from the package folder:
+
+```bash
+cd packages/seroval
+pnpm fuzz
+```
+
+- `round-trip.fuzz.ts` generates values with shared references and cycles, sends them through every sync and async mode, and checks that the decoded value has the same shape. It also checks that `serialize` and `crossSerialize` output never contains `</script`, `<!--`, U+2028 or U+2029.
+- `untrusted-json.fuzz.ts` changes fields of `toJSON` and `toCrossJSON` output at random and checks that `fromJSON` and `fromCrossJSON` reject bad input with an Error, without overflowing the stack or changing a built-in prototype.
+
+These environment variables control a run:
+
+- `FUZZ_RUNS`: runs per property (default 200).
+- `FUZZ_SEED` and `FUZZ_PATH`: replay the failure that fast-check printed.
+- `FUZZ_STRICT_ERRORS=1`: also require `fromJSON` and `fromCrossJSON` to throw seroval's own errors, which finds input they do not validate yet.
+
+Turn a failure into a regular test in `test/` before fixing it.
+
 ## Linting and formatting
 
 Run both from the repository root:
