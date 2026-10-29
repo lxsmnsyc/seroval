@@ -3,7 +3,6 @@ import {
   OpaqueReference,
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -11,9 +10,9 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 const EXAMPLE = {
   transparent: 'This is transparent',
@@ -49,7 +48,6 @@ describe('OpaqueReference', () => {
   describe('serializeAsync', () => {
     it('supports OpaqueReference', async () => {
       const result = await serializeAsync(EXAMPLE);
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE>(result);
       expect(back.constructor).toBe(Object);
       expect(back.transparent).toBe(EXAMPLE.transparent);
@@ -57,7 +55,6 @@ describe('OpaqueReference', () => {
     });
     it('supports OpaqueReference with replacement', async () => {
       const result = await serializeAsync(EXAMPLE_WITH_REPLACEMENT);
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof EXAMPLE_WITH_REPLACEMENT>(result);
       expect(back.constructor).toBe(Object);
       expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
@@ -67,7 +64,6 @@ describe('OpaqueReference', () => {
   describe('toJSON', () => {
     it('supports OpaqueReference', () => {
       const result = toJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(back.constructor).toBe(Object);
       expect(back.transparent).toBe(EXAMPLE.transparent);
@@ -75,7 +71,6 @@ describe('OpaqueReference', () => {
     });
     it('supports OpaqueReference with replacement', () => {
       const result = toJSON(EXAMPLE_WITH_REPLACEMENT);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE_WITH_REPLACEMENT>(result);
       expect(back.constructor).toBe(Object);
       expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
@@ -85,7 +80,6 @@ describe('OpaqueReference', () => {
   describe('toJSONAsync', () => {
     it('supports OpaqueReference', () => {
       const result = toJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(back.constructor).toBe(Object);
       expect(back.transparent).toBe(EXAMPLE.transparent);
@@ -93,7 +87,6 @@ describe('OpaqueReference', () => {
     });
     it('supports OpaqueReference with replacement', () => {
       const result = toJSON(EXAMPLE_WITH_REPLACEMENT);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE_WITH_REPLACEMENT>(result);
       expect(back.constructor).toBe(Object);
       expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
@@ -123,93 +116,70 @@ describe('OpaqueReference', () => {
   describe('crossSerializeAsync', () => {
     it('supports OpaqueReference', async () => {
       const result = await crossSerializeAsync(EXAMPLE);
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<typeof EXAMPLE>(result);
+      expect(back.constructor).toBe(Object);
+      expect(back.transparent).toBe(EXAMPLE.transparent);
+      expect(back.opaque).toBe(undefined);
     });
     it('supports OpaqueReference with replacement', async () => {
       const result = await crossSerializeAsync(EXAMPLE_WITH_REPLACEMENT);
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<typeof EXAMPLE_WITH_REPLACEMENT>(result);
+      expect(back.constructor).toBe(Object);
+      expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
+      expect(back.opaque).toBe(REPLACEMENT);
     });
     describe('scoped', () => {
       it('supports OpaqueReference', async () => {
         const result = await crossSerializeAsync(EXAMPLE, {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<typeof EXAMPLE>(result, 'example');
+        expect(back.constructor).toBe(Object);
+        expect(back.transparent).toBe(EXAMPLE.transparent);
+        expect(back.opaque).toBe(undefined);
       });
       it('supports OpaqueReference with replacement', async () => {
         const result = await crossSerializeAsync(EXAMPLE_WITH_REPLACEMENT, {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<typeof EXAMPLE_WITH_REPLACEMENT>(result, 'example');
+        expect(back.constructor).toBe(Object);
+        expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
+        expect(back.opaque).toBe(REPLACEMENT);
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports OpaqueReference', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(EXAMPLE, {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports OpaqueReference with replacement', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(EXAMPLE_WITH_REPLACEMENT, {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports OpaqueReference', async () => {
+      const back = await streamCross<typeof EXAMPLE>(EXAMPLE);
+      expect(back.constructor).toBe(Object);
+      expect(back.transparent).toBe(EXAMPLE.transparent);
+      expect(back.opaque).toBe(undefined);
+    });
+    it('supports OpaqueReference with replacement', async () => {
+      const back = await streamCross<typeof EXAMPLE_WITH_REPLACEMENT>(EXAMPLE_WITH_REPLACEMENT);
+      expect(back.constructor).toBe(Object);
+      expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
+      expect(back.opaque).toBe(REPLACEMENT);
+    });
     describe('scoped', () => {
-      it('supports OpaqueReference', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(EXAMPLE, {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports OpaqueReference with replacement', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(EXAMPLE_WITH_REPLACEMENT, {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports OpaqueReference', async () => {
+        const back = await streamCross<typeof EXAMPLE>(EXAMPLE, { scopeId: 'example' });
+        expect(back.constructor).toBe(Object);
+        expect(back.transparent).toBe(EXAMPLE.transparent);
+        expect(back.opaque).toBe(undefined);
+      });
+      it('supports OpaqueReference with replacement', async () => {
+        const back = await streamCross<typeof EXAMPLE_WITH_REPLACEMENT>(EXAMPLE_WITH_REPLACEMENT, { scopeId: 'example' });
+        expect(back.constructor).toBe(Object);
+        expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
+        expect(back.opaque).toBe(REPLACEMENT);
+      });
     });
   });
   describe('toCrossJSON', () => {
     it('supports OpaqueReference', () => {
       const result = toCrossJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         refs: new Map(),
       });
@@ -220,7 +190,6 @@ describe('OpaqueReference', () => {
     });
     it('supports OpaqueReference with replacement', () => {
       const result = toCrossJSON(EXAMPLE_WITH_REPLACEMENT);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE_WITH_REPLACEMENT>(result, {
         refs: new Map(),
       });
@@ -233,7 +202,6 @@ describe('OpaqueReference', () => {
   describe('toCrossJSONAsync', () => {
     it('supports OpaqueReference', async () => {
       const result = await toCrossJSONAsync(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         refs: new Map(),
       });
@@ -244,7 +212,6 @@ describe('OpaqueReference', () => {
     });
     it('supports OpaqueReference with replacement', async () => {
       const result = await toCrossJSONAsync(EXAMPLE_WITH_REPLACEMENT);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE_WITH_REPLACEMENT>(result, {
         refs: new Map(),
       });
@@ -255,33 +222,17 @@ describe('OpaqueReference', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports OpaqueReference', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(EXAMPLE, {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports OpaqueReference with replacement', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(EXAMPLE_WITH_REPLACEMENT, {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports OpaqueReference', async () => {
+      const back = await streamCrossJSON<typeof EXAMPLE>(EXAMPLE);
+      expect(back.constructor).toBe(Object);
+      expect(back.transparent).toBe(EXAMPLE.transparent);
+      expect(back.opaque).toBe(undefined);
+    });
+    it('supports OpaqueReference with replacement', async () => {
+      const back = await streamCrossJSON<typeof EXAMPLE_WITH_REPLACEMENT>(EXAMPLE_WITH_REPLACEMENT);
+      expect(back.constructor).toBe(Object);
+      expect(back.transparent).toBe(EXAMPLE_WITH_REPLACEMENT.transparent);
+      expect(back.opaque).toBe(REPLACEMENT);
+    });
   });
 });

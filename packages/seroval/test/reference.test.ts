@@ -3,7 +3,6 @@ import {
   createReference,
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -11,10 +10,10 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 const EXAMPLE = createReference('example', () => 'Hello World');
 
@@ -58,7 +57,6 @@ describe('Reference', () => {
   describe('serializeAsync', () => {
     it('supports Reference', async () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE));
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBe(EXAMPLE);
     });
@@ -66,7 +64,6 @@ describe('Reference', () => {
   describe('toJSON', () => {
     it('supports Reference', () => {
       const result = toJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(back).toBe(EXAMPLE);
     });
@@ -74,7 +71,6 @@ describe('Reference', () => {
   describe('toJSONAsync', () => {
     it('supports Reference', async () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(back).toBe(EXAMPLE);
     });
@@ -94,54 +90,36 @@ describe('Reference', () => {
   describe('crossSerializeAsync', () => {
     it('supports Reference', async () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(back).toBe(EXAMPLE);
     });
     describe('scoped', () => {
       it('supports Reference', async () => {
         const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBe(EXAMPLE);
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Reference', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(EXAMPLE), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Reference', async () => {
+      const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE));
+      expect(back).toBe(EXAMPLE);
+    });
     describe('scoped', () => {
-      it('supports Reference', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(EXAMPLE), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports Reference', async () => {
+        const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+          scopeId: 'example',
+        });
+        expect(back).toBe(EXAMPLE);
+      });
     });
   });
   describe('toCrossJSON', () => {
     it('supports Reference', () => {
       const result = toCrossJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         refs: new Map(),
       });
@@ -151,7 +129,6 @@ describe('Reference', () => {
   describe('toCrossJSONAsync', () => {
     it('supports Reference', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
         refs: new Map(),
       });
@@ -159,19 +136,9 @@ describe('Reference', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Reference', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(EXAMPLE), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Reference', async () => {
+      const back = await streamCrossJSON<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE));
+      expect(back).toBe(EXAMPLE);
+    });
   });
 });

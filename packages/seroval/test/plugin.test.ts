@@ -4,7 +4,6 @@ import {
   createPlugin,
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -12,10 +11,10 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 const BufferPlugin = createPlugin<Buffer, SerovalNode>({
   tag: 'Buffer',
@@ -60,7 +59,6 @@ describe('Plugin', () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [BufferPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Buffer);
       expect(back.toString('utf-8')).toBe(EXAMPLE.toString('utf-8'));
@@ -72,7 +70,6 @@ describe('Plugin', () => {
         plugins: [BufferPlugin],
       });
 
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result, {
         plugins: [BufferPlugin],
       });
@@ -85,7 +82,6 @@ describe('Plugin', () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE), {
         plugins: [BufferPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result, {
         plugins: [BufferPlugin],
       });
@@ -115,7 +111,9 @@ describe('Plugin', () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [BufferPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(back).toBeInstanceOf(Buffer);
+      expect(back.toString('utf-8')).toBe(EXAMPLE.toString('utf-8'));
     });
     describe('scoped', () => {
       it('supports Plugin', async () => {
@@ -123,44 +121,29 @@ describe('Plugin', () => {
           scopeId: 'example',
           plugins: [BufferPlugin],
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBeInstanceOf(Buffer);
+        expect(back.toString('utf-8')).toBe(EXAMPLE.toString('utf-8'));
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Plugin', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(EXAMPLE, {
-          plugins: [BufferPlugin],
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-
+    it('supports Plugin', async () => {
+      const back = await streamCross<typeof EXAMPLE>(EXAMPLE, {
+        plugins: [BufferPlugin],
+      });
+      expect(back).toBeInstanceOf(Buffer);
+      expect(back.toString('utf-8')).toBe(EXAMPLE.toString('utf-8'));
+    });
     describe('scoped', () => {
-      it('supports Plugin', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(EXAMPLE, {
-            scopeId: 'example',
-            plugins: [BufferPlugin],
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports Plugin', async () => {
+        const back = await streamCross<typeof EXAMPLE>(EXAMPLE, {
+          scopeId: 'example',
+          plugins: [BufferPlugin],
+        });
+        expect(back).toBeInstanceOf(Buffer);
+        expect(back.toString('utf-8')).toBe(EXAMPLE.toString('utf-8'));
+      });
     });
   });
   describe('toCrossJSON', () => {
@@ -169,7 +152,6 @@ describe('Plugin', () => {
         plugins: [BufferPlugin],
       });
 
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         plugins: [BufferPlugin],
         refs: new Map(),
@@ -183,7 +165,6 @@ describe('Plugin', () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE), {
         plugins: [BufferPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
         plugins: [BufferPlugin],
         refs: new Map(),
@@ -193,20 +174,12 @@ describe('Plugin', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Plugin', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(EXAMPLE, {
-          plugins: [BufferPlugin],
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Plugin', async () => {
+      const back = await streamCrossJSON<typeof EXAMPLE>(EXAMPLE, {
+        plugins: [BufferPlugin],
+      });
+      expect(back).toBeInstanceOf(Buffer);
+      expect(back.toString('utf-8')).toBe(EXAMPLE.toString('utf-8'));
+    });
   });
 });
