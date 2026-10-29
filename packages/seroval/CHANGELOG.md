@@ -1,5 +1,25 @@
 # seroval
 
+## 1.7.3
+
+### Patch Changes
+
+- 3a60f79: Republish the 1.7.2 changes through CI with npm provenance. 1.7.2 was published manually without an attestation, so pnpm's `trustPolicy: no-downgrade` refused to install it (#278). No code changes.
+
+## 1.7.2
+
+### Patch Changes
+
+- 737afa1: `fromJSON` and `fromCrossJSON` no longer cause unhandled rejections. A payload with a rejected promise in a field the caller never reads could stop a Node.js process. Code that awaits the promise still gets the rejection.
+
+## 1.7.1
+
+### Patch Changes
+
+- b703710: `createCrossDeserializer` no longer causes unhandled rejections. This covers a rejected promise that the caller never reads, and a pending promise that `abort` rejects. Code that awaits the promise still gets the rejection.
+- 2d03651: `serialize`, `toJSON`, `crossSerialize` and `toCrossJSON` now throw when the value contains an async iterable or a `ReadableStream`, as they do for a promise. Before, they sent a stream that never got its values. Use an async or streaming function to send them.
+- 2c25bf3: `serialize`, `toJSON`, `crossSerialize` and `toCrossJSON` now send a `createStream` stream that has ended with all its events. A stream that is still open, or a live stream, now throws. Before, they sent an empty stream that never ended.
+
 ## 1.7.0
 
 ### Minor Changes

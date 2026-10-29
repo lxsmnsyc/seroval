@@ -1,3 +1,4 @@
+import { NIL } from './constants';
 import { ASYNC_ITERATOR_CONSTRUCTOR, PROMISE_CONSTRUCTOR } from './constructors';
 import { type LiveStream, isLiveStream } from './live-stream';
 import { SYM_ASYNC_ITERATOR } from './symbols';
@@ -88,6 +89,20 @@ export class Stream<T> {
         this.listeners.length = this.count;
       }
     };
+  }
+
+  /**
+   * Returns the events of a stream that has ended, without subscribing, so a
+   * live receiver is not consumed. The last value is the `return` or `throw`
+   * value. Returns `undefined` while the stream is open, or when a live
+   * receiver was already consumed and has no events left.
+   * @internal
+   */
+  endedEvents(): { values: unknown[]; success: boolean } | undefined {
+    if (this.alive || this.live! > 1) {
+      return NIL;
+    }
+    return { values: this.buffer.slice(), success: this.success };
   }
 
   next(value: T): void {
