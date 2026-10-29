@@ -2,7 +2,14 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import { expectString } from './validate';
+import {
+  expectBody,
+  expectHeaders,
+  expectObject,
+  expectOptionalBoolean,
+  expectOptionalString,
+  expectString,
+} from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -20,6 +27,26 @@ function createRequestOptions(
     redirect: current.redirect,
     referrer: current.referrer,
     referrerPolicy: current.referrerPolicy,
+  };
+}
+
+// Copies only the known fields, each checked, so the constructor never
+// converts an input object to a string.
+function expectRequestOptions(value: unknown): RequestInit & { duplex?: 'half' } {
+  const options = expectObject(value);
+  return {
+    body: expectBody(options.body),
+    cache: expectOptionalString(options.cache) as RequestCache | undefined,
+    credentials: expectOptionalString(options.credentials) as RequestCredentials | undefined,
+    headers: expectHeaders(options.headers),
+    integrity: expectOptionalString(options.integrity),
+    keepalive: expectOptionalBoolean(options.keepalive),
+    method: expectOptionalString(options.method),
+    mode: expectOptionalString(options.mode) as RequestMode | undefined,
+    redirect: expectOptionalString(options.redirect) as RequestRedirect | undefined,
+    referrer: expectOptionalString(options.referrer),
+    referrerPolicy: expectOptionalString(options.referrerPolicy) as ReferrerPolicy | undefined,
+    duplex: expectOptionalString(options.duplex) as 'half' | undefined,
   };
 }
 
@@ -65,7 +92,7 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   deserialize(node, ctx) {
     return new Request(
       expectString(ctx.deserialize(node.url)),
-      ctx.deserialize<RequestInit>(node.options),
+      expectRequestOptions(ctx.deserialize(node.options)),
     );
   },
 });

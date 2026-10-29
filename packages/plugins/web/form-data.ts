@@ -1,8 +1,16 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import FilePlugin from './file';
+import { expectEntries } from './validate';
 
 type FormDataInit = [key: string, value: FormDataEntryValue][];
+
+function expectFormDataEntryValue(value: unknown): FormDataEntryValue {
+  if (typeof value === 'string' || value instanceof Blob) {
+    return value as FormDataEntryValue;
+  }
+  throw new Error('Expected a string or a Blob.');
+}
 
 function convertFormData(instance: FormData): FormDataInit {
   const items: FormDataInit = [];
@@ -91,7 +99,9 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
     return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.entries) + ')';
   },
   deserialize(node, ctx) {
-    return FORM_DATA_FACTORY_CONSTRUCTOR(ctx.deserialize<FormDataInit>(node.entries));
+    return FORM_DATA_FACTORY_CONSTRUCTOR(
+      expectEntries(ctx.deserialize(node.entries), expectFormDataEntryValue),
+    );
   },
 });
 
