@@ -1,8 +1,15 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import FilePlugin from './file';
+import { copyEntries, entries } from './validate';
 
 type FormDataInit = [key: string, value: FormDataEntryValue][];
+
+function isFormDataEntryValue(value: unknown): value is FormDataEntryValue {
+  return typeof value === 'string' || value instanceof Blob;
+}
+
+const isFormDataInit = /* @__PURE__ */ entries(isFormDataEntryValue);
 
 function convertFormData(instance: FormData): FormDataInit {
   const items: FormDataInit = [];
@@ -106,8 +113,9 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode, Form
   serialize(node, ctx) {
     return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.entries) + ')';
   },
+  validate: { entries: isFormDataInit },
   deserialize(node, ctx) {
-    return FORM_DATA_FACTORY_CONSTRUCTOR(ctx.deserialize<FormDataInit>(node.entries));
+    return FORM_DATA_FACTORY_CONSTRUCTOR(copyEntries(ctx.deserialize<FormDataInit>(node.entries)));
   },
   binary: {
     serialize(value) {

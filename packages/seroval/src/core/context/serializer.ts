@@ -157,7 +157,13 @@ function getAssignmentExpression(assignment: Assignment): string {
 
 const MAX_ASSIGNMENT_CHAIN_LENGTH = 100;
 
-function resolveAssignments(assignments: Assignment[]): string | undefined {
+// `chainValues` joins index assignments with the same value text into
+// `a=b=value`. That is only right when the value is a reference: an
+// expression such as `new Set` would then build one object for both keys.
+function resolveAssignments(
+  assignments: Assignment[],
+  chainValues = true,
+): string | undefined {
   if (!assignments.length) {
     return NIL;
   }
@@ -172,6 +178,7 @@ function resolveAssignments(assignments: Assignment[]): string | undefined {
       expression = getAssignmentExpression(assignment);
       chainLength = 0;
     } else if (
+      chainValues &&
       assignment.t === AssignmentType.Index &&
       previous.t === AssignmentType.Index &&
       assignment.v === previous.v
@@ -772,7 +779,8 @@ function serializeAssignments(
       serializeAssignment(ctx, source, mainAssignments, keys[i], values[i]);
     }
     ctx.base.stack.pop();
-    return resolveAssignments(mainAssignments);
+    // These assignments hold the serialized values themselves, not references.
+    return resolveAssignments(mainAssignments, false);
   }
   return NIL;
 }

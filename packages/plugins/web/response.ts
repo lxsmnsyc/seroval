@@ -1,13 +1,33 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
+import { isBody, isOptionalHeaders } from './validate';
 
 function createResponseOptions(current: Response): ResponseInit {
   return {
     headers: current.headers,
     status: current.status,
     statusText: current.statusText,
+  };
+}
+
+// Each known field is checked, so the constructor never converts an input
+// object to a string or a number.
+const isResponseOptions = /* @__PURE__ */ v.object({
+  headers: isOptionalHeaders,
+  status: /* @__PURE__ */ v.optional(v.number),
+  statusText: /* @__PURE__ */ v.optional(v.string),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyResponseOptions(options: ResponseInit): ResponseInit {
+  return {
+    headers: options.headers,
+    status: options.status,
+    statusText: options.statusText,
   };
 }
 
@@ -50,10 +70,11 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode, Resp
   serialize(node, ctx) {
     return 'new Response(' + ctx.serialize(node.body) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { body: isBody, options: isResponseOptions },
   deserialize(node, ctx) {
     return new Response(
-      ctx.deserialize<BodyInit>(node.body),
-      ctx.deserialize<ResponseInit>(node.options),
+      ctx.deserialize<BodyInit | null>(node.body),
+      copyResponseOptions(ctx.deserialize<ResponseInit>(node.options)),
     );
   },
   binary: {

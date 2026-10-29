@@ -1,5 +1,17 @@
 # seroval-plugins
 
+## 1.7.5
+
+### Patch Changes
+
+- Check the FormData, Headers, Response and Request fields during deserialization.
+
+## 1.7.4
+
+### Patch Changes
+
+- Check that a ReadableStream's stream source is a seroval Stream before deserializing it.
+
 ## 1.7.3
 
 No changes in this release.

@@ -247,9 +247,11 @@ export function getObjectClass(current: object): unknown {
   const currentClass: unknown = current.constructor;
   // `constructor` is an ordinary own property, so data can shadow it
   // (`JSON.parse('{"constructor":1}')`) and hide the real class. A class is
-  // always callable, so anything else means the lookup was shadowed; only
-  // then fall back to the prototype, keeping the common path free of it.
-  if (currentClass !== NIL && typeof currentClass !== 'function') {
+  // always callable, so anything else means the lookup was shadowed or the
+  // object has a null prototype; only then read the prototype, keeping the
+  // common path free of it. `{ constructor: undefined }` must still count as
+  // a plain object.
+  if (typeof currentClass !== 'function') {
     const proto = Object.getPrototypeOf(current) as object | null;
     return proto === null ? NIL : proto.constructor;
   }
