@@ -84,8 +84,9 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode, Resp
         options: createResponseOptions(value),
       };
     },
+    validate: { body: isBody, options: isResponseOptions },
     deserialize(data) {
-      return new Response(data.body, data.options);
+      return new Response(data.body, copyResponseOptions(data.options));
     },
   },
 });

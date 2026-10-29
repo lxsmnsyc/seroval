@@ -104,6 +104,26 @@ describe('plugin binary hostile payloads', () => {
       );
       expect(result.ok).toBe(false);
     });
+
+    it('rejects a header value that is not a string', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: [['x-test', { toString: 'value' }]] },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('rejects a header record', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: { 'x-test': 'value' } },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
   });
 
   describe('URL', () => {
@@ -188,6 +208,16 @@ describe('plugin binary hostile payloads', () => {
       );
       expect(result.ok).toBe(false);
     });
+
+    it('rejects an entry value that is not a string or a Blob', async () => {
+      const result = await deliver<FormData>(
+        'seroval-plugins/web/FormData',
+        { entries: [['key', { toString: 'value' }]] },
+        [FormDataPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
   });
 
   describe('Response', () => {
@@ -218,6 +248,30 @@ describe('plugin binary hostile payloads', () => {
       );
       expect(result.ok).toBe(false);
     });
+
+    it('rejects a body that is not an ArrayBuffer or a ReadableStream', async () => {
+      const result = await deliver<Response>(
+        'seroval-plugins/web/Response',
+        { body: { toString: 'body' }, options: {} },
+        [ResponsePlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it.each([
+      ['status', '200'],
+      ['statusText', { toString: 'OK' }],
+      ['headers', [['x-test', 'value']]],
+    ])('rejects a Response %s of the wrong type', async (field, value) => {
+      const result = await deliver<Response>(
+        'seroval-plugins/web/Response',
+        { body: null, options: { [field]: value } },
+        [ResponsePlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
   });
 
   describe('Request', () => {
@@ -238,6 +292,40 @@ describe('plugin binary hostile payloads', () => {
         [RequestPlugin],
       );
       expect(result.ok).toBe(false);
+    });
+
+    it.each([
+      ['body', 'body'],
+      ['method', { toString: 'GET' }],
+      ['keepalive', 'true'],
+      ['headers', [['x-test', 'value']]],
+    ])('rejects a Request %s of the wrong type', async (field, value) => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://localhost/', options: { [field]: value } },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('rejects options that are not an object', async () => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://localhost/', options: 'GET' },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('drops unknown option fields', async () => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://localhost/', options: { window: 'unsafe' } },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(true);
     });
 
     it('reconstructs internal hosts verbatim', async () => {

@@ -69,7 +69,7 @@ type RequestNode = {
 
 type RequestBinaryData = {
   url: string;
-  options: RequestInit;
+  options: RequestOptions;
 };
 
 const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, RequestBinaryData>({
@@ -127,9 +127,9 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, Request
         options,
       };
     },
-    validate: { url: v.string },
+    validate: { url: v.string, options: isRequestOptions },
     deserialize(data) {
-      return new Request(data.url, data.options);
+      return new Request(data.url, copyRequestOptions(data.options));
     },
   },
 });

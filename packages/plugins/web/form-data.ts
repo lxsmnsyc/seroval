@@ -123,8 +123,9 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode, Form
         entries: convertFormData(value),
       };
     },
+    validate: { entries: isFormDataInit },
     deserialize(data) {
-      return FORM_DATA_FACTORY_CONSTRUCTOR(data.entries);
+      return FORM_DATA_FACTORY_CONSTRUCTOR(copyEntries(data.entries));
     },
   },
 });
