@@ -3,6 +3,7 @@ import { createPlugin } from 'seroval';
 import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
+import { isBody, isOptionalHeaders } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -20,6 +21,44 @@ function createRequestOptions(
     redirect: current.redirect,
     referrer: current.referrer,
     referrerPolicy: current.referrerPolicy,
+  };
+}
+
+type RequestOptions = RequestInit & { duplex?: 'half' };
+
+// Each known field is checked, so the constructor never converts an input
+// object to a string.
+const isRequestOptions = /* @__PURE__ */ v.object({
+  body: isBody,
+  cache: /* @__PURE__ */ v.optional(v.string),
+  credentials: /* @__PURE__ */ v.optional(v.string),
+  headers: isOptionalHeaders,
+  integrity: /* @__PURE__ */ v.optional(v.string),
+  keepalive: /* @__PURE__ */ v.optional(v.boolean),
+  method: /* @__PURE__ */ v.optional(v.string),
+  mode: /* @__PURE__ */ v.optional(v.string),
+  redirect: /* @__PURE__ */ v.optional(v.string),
+  referrer: /* @__PURE__ */ v.optional(v.string),
+  referrerPolicy: /* @__PURE__ */ v.optional(v.string),
+  duplex: /* @__PURE__ */ v.optional(v.string),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyRequestOptions(options: RequestOptions): RequestOptions {
+  return {
+    body: options.body,
+    cache: options.cache,
+    credentials: options.credentials,
+    headers: options.headers,
+    integrity: options.integrity,
+    keepalive: options.keepalive,
+    method: options.method,
+    mode: options.mode,
+    redirect: options.redirect,
+    referrer: options.referrer,
+    referrerPolicy: options.referrerPolicy,
+    duplex: options.duplex,
   };
 }
 
@@ -62,11 +101,11 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   serialize(node, ctx) {
     return 'new Request(' + ctx.serialize(node.url) + ',' + ctx.serialize(node.options) + ')';
   },
-  validate: { url: v.string },
+  validate: { url: v.string, options: isRequestOptions },
   deserialize(node, ctx) {
     return new Request(
       ctx.deserialize<string>(node.url),
-      ctx.deserialize<RequestInit>(node.options),
+      copyRequestOptions(ctx.deserialize<RequestOptions>(node.options)),
     );
   },
 });

@@ -11,6 +11,7 @@ import {
   createSequenceNode,
   createSetNode,
   createStreamConstructorNode,
+  createStreamEventNode,
   createStringNode,
   createTemporalNode,
   createViewNode,
@@ -70,6 +71,7 @@ import {
   getObjectPlugins,
   getReferenceNode,
   getTemporalType,
+  markParserRef,
   parseAsyncIteratorFactory,
   parseIteratorFactory,
   parseMapSentinel,
@@ -266,17 +268,19 @@ function parseAsyncIterable(
   depth: number,
   current: AsyncIterable<unknown>,
 ): SerovalNode {
-  // The node only needs an id; in streaming mode the parser drives the
-  // iterator, in sync mode it stays empty.
+  // Only the stream mode can send the values later. The other sync modes
+  // would send a stream that never gets them, so they throw, as for a promise.
+  if (ctx.type !== ParserMode.Stream) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
+  // The node only needs an id; the parser drives the iterator.
   const id = createIndexForValue(ctx.base, {});
   const result = createStreamConstructorNode(
     id,
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
   );
-  if (ctx.type === ParserMode.Stream) {
-    ctx.state.iterable(ctx, depth, id, current);
-  }
+  ctx.state.iterable(ctx, depth, id, current);
   return result;
 }
 
@@ -353,21 +357,54 @@ function parseSet(
   return createSetNode(id, items);
 }
 
+/**
+ * Sends the events of a stream that has ended, so the copy gets all of them.
+ * A stream that is still open throws, because the other sync modes cannot
+ * send its later events.
+ */
+function parseEndedStream(
+  ctx: SOSParserContext,
+  depth: number,
+  id: number,
+  current: Stream<unknown>,
+): SerovalNode[] {
+  const events = current.endedEvents();
+  if (!events) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
+  const values = events.values;
+  const last = values.length - 1;
+  const sequence = new Array<SerovalNode>(values.length);
+  if (last >= 0) {
+    markParserRef(ctx.base, id);
+  }
+  for (let i = 0; i <= last; i++) {
+    sequence[i] = createStreamEventNode(
+      i < last
+        ? SerovalNodeType.StreamNext
+        : events.success
+          ? SerovalNodeType.StreamReturn
+          : SerovalNodeType.StreamThrow,
+      id,
+      parseSOS(ctx, depth, values[i]),
+    );
+  }
+  return sequence;
+}
+
 function parseStream(
   ctx: SOSParserContext,
   depth: number,
   id: number,
   current: Stream<unknown>,
 ): SerovalNode {
-  const result = createStreamConstructorNode(
-    id,
-    parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
-    [],
-  );
+  const reference = parseSpecialReference(ctx.base, SpecialReference.StreamConstructor);
   if (ctx.type === ParserMode.Stream) {
+    const result = createStreamConstructorNode(id, reference, []);
     ctx.state.stream(ctx, depth, id, current);
+    return result;
   }
-  return result;
+  return createStreamConstructorNode(id, reference, parseEndedStream(ctx, depth, id, current));
 }
 
 function parseLiveStream(
@@ -376,18 +413,19 @@ function parseLiveStream(
   id: number,
   current: LiveStream<unknown>,
 ): SerovalNode {
-  // Only incremental output gets a live receiver: its factory subscribes while
-  // the root record is evaluated. A sync parse never delivers events.
-  const stream = ctx.type === ParserMode.Stream;
+  // Reading a live stream takes its events from the producer, and only the
+  // stream mode can send them later, so the other sync modes throw.
+  if (ctx.type !== ParserMode.Stream) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
+  // Its factory subscribes while the root record is evaluated.
   const result = createStreamConstructorNode(
     id,
     parseSpecialReference(ctx.base, SpecialReference.StreamConstructor),
     [],
-    stream ? 1 : NIL,
+    1,
   );
-  if (stream) {
-    ctx.state.live(ctx, depth, id, current);
-  }
+  ctx.state.live(ctx, depth, id, current);
   return result;
 }
 

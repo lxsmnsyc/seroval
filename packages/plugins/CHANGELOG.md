@@ -1,5 +1,31 @@
 # seroval-plugins
 
+## 1.7.5
+
+### Patch Changes
+
+- Check the FormData, Headers, Response and Request fields during deserialization.
+
+## 1.7.4
+
+### Patch Changes
+
+- Check that a ReadableStream's stream source is a seroval Stream before deserializing it.
+
+## 1.7.3
+
+No changes in this release.
+
+## 1.7.2
+
+No changes in this release.
+
+## 1.7.1
+
+### Patch Changes
+
+- 2d03651: `serialize`, `toJSON`, `crossSerialize` and `toCrossJSON` now throw when the value contains an async iterable or a `ReadableStream`, as they do for a promise. Before, they sent a stream that never got its values. Use an async or streaming function to send them.
+
 ## 1.7.0
 
 ### Minor Changes

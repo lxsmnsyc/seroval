@@ -1,6 +1,7 @@
 import {
   SerovalDeserializationError,
   SerovalPluginValidationError,
+  createReference,
   crossSerializeAsync,
   crossSerializeStream,
   deserialize,
@@ -458,6 +459,33 @@ describe('ReadableStream', () => {
       const info = (result.t as unknown as { s: Record<string, SerovalNode> }).s;
       info.stream = toJSON(42).t;
       expectValidationError(() => fromJSON(result, { plugins: [ReadableStreamPlugin] }));
+    });
+
+    it('never invokes `on` on a fake stream source', async () => {
+      // A callable `on` is only reachable through a registered reference. Build
+      // one and aim the stream slot at an object carrying it: the guard must
+      // reject before it is called.
+      const onSpy = vi.fn();
+      const template = toJSON({ on: createReference('test/readable-stream-fake-on', onSpy) });
+      const example = new ReadableStream({
+        start(controller): void {
+          controller.close();
+        },
+      });
+      const result = await toJSONAsync(example, {
+        plugins: [ReadableStreamPlugin],
+      });
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
+      const info = (result.t as unknown as { s: Record<string, SerovalNode> }).s;
+      info.stream = template.t;
+      expect(() => fromJSON(result, { plugins: [ReadableStreamPlugin] })).toThrow();
+      expect(() =>
+        fromCrossJSON(result.t, {
+          plugins: [ReadableStreamPlugin],
+          refs: new Map(),
+        }),
+      ).toThrow();
+      expect(onSpy).not.toHaveBeenCalled();
     });
   });
 });

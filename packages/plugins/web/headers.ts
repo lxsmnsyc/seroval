@@ -1,8 +1,14 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
+import { copyEntries, entries } from './validate';
 
-function convertHeaders(instance: Headers): HeadersInit {
-  const items: HeadersInit = [];
+const isHeadersInit = /* @__PURE__ */ entries(v.string);
+
+type HeadersEntries = [key: string, value: string][];
+
+function convertHeaders(instance: Headers): HeadersEntries {
+  const items: HeadersEntries = [];
   instance.forEach((value, key) => {
     items.push([key, value]);
   });
@@ -38,8 +44,9 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode
   serialize(node, ctx) {
     return 'new Headers(' + ctx.serialize(node.value) + ')';
   },
+  validate: { value: isHeadersInit },
   deserialize(node, ctx) {
-    return new Headers(ctx.deserialize<HeadersInit>(node.value));
+    return new Headers(copyEntries(ctx.deserialize<HeadersEntries>(node.value)));
   },
 });
 

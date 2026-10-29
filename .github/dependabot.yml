@@ -4,23 +4,28 @@ updates:
     directory: /
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
 
   - package-ecosystem: npm
     directory: /benchmark
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
 
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
 
   - package-ecosystem: npm
     directory: /packages/plugins
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
 
   - package-ecosystem: npm
     directory: /packages/seroval
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
