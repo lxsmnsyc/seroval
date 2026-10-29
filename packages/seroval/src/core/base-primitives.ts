@@ -1,9 +1,15 @@
+import type {
+  BigIntTypedArrayValue,
+  SerovalTemporalType,
+  TypedArrayValue,
+  WellKnownSymbols,
+} from './constants';
 import {
+  getBigIntTypedArrayTag,
+  getTypedArrayTag,
   INV_SYMBOL_REF,
   NIL,
   SerovalNodeType,
-  type SerovalTemporalType,
-  type WellKnownSymbols,
 } from './constants';
 import { INFINITY_NODE, NAN_NODE, NEG_INFINITY_NODE, NEG_ZERO_NODE } from './literals';
 import { SerovalUnsupportedTypeError } from './errors';
@@ -42,8 +48,6 @@ import type {
 } from './types';
 import { getErrorConstructor } from './utils/error';
 import { getObjectFlag } from './utils/get-object-flag';
-import type { BigIntTypedArrayValue, TypedArrayValue } from './utils/typed-array';
-import { getTypedArrayName } from './utils/typed-array';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
   switch (value) {
@@ -82,7 +86,7 @@ export function createDateNode(id: number, current: Date): SerovalDateNode {
   );
 }
 
-type SerovalTemporalValue =
+export type SerovalTemporalValue =
   | Temporal.Instant
   | Temporal.Duration
   | Temporal.PlainDate
@@ -168,8 +172,12 @@ export function createViewNode(
   return createSerovalNode(
     type,
     id,
+    isDataView
+      ? NIL
+      : type === SerovalNodeType.BigIntTypedArray
+        ? getBigIntTypedArrayTag(current as BigIntTypedArrayValue)
+        : getTypedArrayTag(current as TypedArrayValue),
     NIL,
-    isDataView ? NIL : getTypedArrayName(current as TypedArrayValue | BigIntTypedArrayValue),
     NIL,
     NIL,
     NIL,

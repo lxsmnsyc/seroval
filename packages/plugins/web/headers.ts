@@ -9,7 +9,11 @@ function convertHeaders(instance: Headers): HeadersInit {
   return items;
 }
 
-const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode }>({
+const HeadersPlugin = /* @__PURE__ */ createPlugin<
+  Headers,
+  { value: SerovalNode },
+  { value: HeadersInit }
+>({
   tag: 'seroval-plugins/web/Headers',
   skipPlainObjects: true,
   test(value) {
@@ -40,6 +44,14 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode
   },
   deserialize(node, ctx) {
     return new Headers(ctx.deserialize<HeadersInit>(node.value));
+  },
+  binary: {
+    serialize(value) {
+      return { value: convertHeaders(value) };
+    },
+    deserialize(data) {
+      return new Headers(data.value);
+    },
   },
 });
 

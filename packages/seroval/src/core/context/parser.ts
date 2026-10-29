@@ -5,8 +5,18 @@ import {
   createWKSymbolNode,
 } from '../base-primitives';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
-import type { WellKnownSymbols } from '../constants';
-import { INV_SYMBOL_REF, NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
+import {
+  BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
+  DEFAULT_DEPTH_LIMIT,
+  getBigIntTypedArrayTag,
+  getTypedArrayTag,
+  isWellKnownSymbol,
+  NIL,
+  SerovalNodeType,
+  SerovalTemporalType,
+  TYPED_ARRAY_CONSTRUCTOR,
+  type TypedArrayValue,
+} from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
 import { type PluginAccessOptions, getPlainObjectPlugins } from '../plugin';
@@ -29,11 +39,6 @@ import type {
   SerovalWKSymbolNode,
 } from '../types';
 import { getObjectFlag } from '../utils/get-object-flag';
-import type { TypedArrayValue } from '../utils/typed-array';
-import {
-  getTypedArrayConstructor,
-  getTypedArrayName,
-} from '../utils/typed-array';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
@@ -65,7 +70,7 @@ export function createBaseParserContext(options: BaseParserContextOptions): Base
     features: ALL_ENABLED ^ (options.disabledFeatures ?? 0),
     refs: options.refs ?? new Map<unknown, number>(),
     // oxlint-disable-next-line prefer-nullish-coalescing -- A zero limit falls back to the default.
-    depthLimit: options.depthLimit || 1000,
+    depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
     compactArrayBufferViews: options.compactArrayBufferViews ?? false,
   };
 }
@@ -145,8 +150,8 @@ export function parseWellKnownSymbol(
   if (typeof ref !== 'number') {
     return ref;
   }
-  if (current in INV_SYMBOL_REF) {
-    return createWKSymbolNode(ref, current as WellKnownSymbols);
+  if (isWellKnownSymbol(current)) {
+    return createWKSymbolNode(ref, current);
   }
   throw new SerovalUnsupportedTypeError(current);
 }
@@ -418,7 +423,9 @@ export function getArrayBufferView<T extends ArrayBufferView>(
   const Constructor = (
     current instanceof DataView
       ? DataView
-      : getTypedArrayConstructor(getTypedArrayName(current as unknown as TypedArrayValue))
+      : current instanceof BigInt64Array || current instanceof BigUint64Array
+        ? BIG_INT_TYPED_ARRAY_CONSTRUCTOR[getBigIntTypedArrayTag(current)]
+        : TYPED_ARRAY_CONSTRUCTOR[getTypedArrayTag(current as unknown as TypedArrayValue)]
   ) as unknown as new (buffer: ArrayBuffer) => T;
   return new Constructor(buffer);
 }

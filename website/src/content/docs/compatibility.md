@@ -10,32 +10,34 @@ The modes are:
 - **Sync**: `serialize`, `toJSON`, `crossSerialize` and `toCrossJSON`.
 - **Async**: `serializeAsync`, `toJSONAsync`, `crossSerializeAsync` and `toCrossJSONAsync`.
 - **Streaming**: `crossSerializeStream`, `toCrossJSONStream` and `Serializer`.
+- **Binary**: `binary.serialize`. See [Binary mode](./binary-mode.md).
 
-| Type | Sync | Async | Streaming |
-| --- | --- | --- | --- |
-| `string`, `boolean`, `null`, `undefined` | ✅ | ✅ | ✅ |
-| `number`, including `NaN`, `Infinity`, `-Infinity` and `-0` | ✅ | ✅ | ✅ |
-| `bigint` | ✅ | ✅ | ✅ |
-| `Array`, including sparse arrays | ✅ | ✅ | ✅ |
-| `Object` and `Object.create(null)` | ✅ | ✅ | ✅ |
-| Frozen, sealed and non-extensible objects | ✅ | ✅ | ✅ |
-| `Date` | ✅ | ✅ | ✅ |
-| `RegExp` | ✅ [^regexp] | ✅ [^regexp] | ✅ [^regexp] |
-| `Map` and `Set` | ✅ | ✅ | ✅ |
-| `ArrayBuffer` and `DataView` | ✅ | ✅ | ✅ |
-| `Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16Array`, `Uint16Array`, `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array` | ✅ | ✅ | ✅ |
-| `BigInt64Array` and `BigUint64Array` | ✅ [^bigint] | ✅ [^bigint] | ✅ [^bigint] |
-| `Error`, `EvalError`, `RangeError`, `ReferenceError`, `SyntaxError`, `TypeError` and `URIError` | ✅ [^stack] | ✅ [^stack] | ✅ [^stack] |
-| `AggregateError` | ✅ [^aggregate] | ✅ [^aggregate] | ✅ [^aggregate] |
-| `Temporal` types | ✅ [^temporal] | ✅ [^temporal] | ✅ [^temporal] |
-| `Promise` | ❌ [^promise] | ✅ | ✅ |
-| Iterables (`Symbol.iterator`) | ✅ | ✅ | ✅ |
-| Async iterables (`Symbol.asyncIterator`) | ❌ [^asynciterable] | ✅ | ✅ |
-| `createStream` | ✅ [^ended] | ✅ | ✅ |
-| `createLiveStream` | ❌ [^live] | ✅ | ✅ |
-| Well-known symbols | ✅ | ✅ | ✅ |
-| Shared and cyclic references | ✅ | ✅ | ✅ |
-| [Isomorphic references](./isomorphic-references.md) | ✅ | ✅ | ✅ |
+| Type | Sync | Async | Streaming | Binary |
+| --- | --- | --- | --- | --- |
+| `string`, `boolean`, `null`, `undefined` | ✅ | ✅ | ✅ | ✅ |
+| `number`, including `NaN`, `Infinity`, `-Infinity` and `-0` | ✅ | ✅ | ✅ | ✅ |
+| `bigint` | ✅ | ✅ | ✅ | ✅ |
+| `Array`, including sparse arrays | ✅ | ✅ | ✅ | ✅ |
+| `Object` and `Object.create(null)` | ✅ | ✅ | ✅ | ✅ |
+| Frozen, sealed and non-extensible objects | ✅ | ✅ | ✅ | ✅ |
+| `Date` | ✅ | ✅ | ✅ | ✅ |
+| Boxed primitives, such as `Object(1)` and `Object('text')` | ✅ | ✅ | ✅ | ✅ |
+| `RegExp` | ✅ [^regexp] | ✅ [^regexp] | ✅ [^regexp] | ✅ [^regexp] |
+| `Map` and `Set` | ✅ | ✅ | ✅ | ✅ |
+| `ArrayBuffer` and `DataView` | ✅ | ✅ | ✅ | ✅ [^limit] |
+| `Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16Array`, `Uint16Array`, `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array` | ✅ | ✅ | ✅ | ✅ [^limit] |
+| `BigInt64Array` and `BigUint64Array` | ✅ [^bigint] | ✅ [^bigint] | ✅ [^bigint] | ✅ [^bigint] [^limit] |
+| `Error`, `EvalError`, `RangeError`, `ReferenceError`, `SyntaxError`, `TypeError` and `URIError` | ✅ [^stack] | ✅ [^stack] | ✅ [^stack] | ✅ [^stack] |
+| `AggregateError` | ✅ [^aggregate] | ✅ [^aggregate] | ✅ [^aggregate] | ✅ [^aggregate] |
+| `Temporal` types | ✅ [^temporal] | ✅ [^temporal] | ✅ [^temporal] | ✅ [^temporal] |
+| `Promise` | ❌ [^promise] | ✅ | ✅ | ✅ |
+| Iterables (`Symbol.iterator`) | ✅ | ✅ | ✅ | ✅ |
+| Async iterables (`Symbol.asyncIterator`) | ❌ [^asynciterable] | ✅ | ✅ | ✅ |
+| `createStream` | ✅ [^ended] | ✅ | ✅ | ✅ |
+| `createLiveStream` | ❌ [^live] | ✅ | ✅ | ✅ |
+| Well-known symbols | ✅ | ✅ | ✅ | ✅ |
+| Shared and cyclic references | ✅ | ✅ | ✅ | ✅ |
+| [Isomorphic references](./isomorphic-references.md) | ✅ | ✅ | ✅ | ✅ |
 
 [^regexp]: Requires `Feature.RegExp`, which is on by default. When it is off, a `RegExp` throws `SerovalUnsupportedTypeError`.
 [^bigint]: Requires `Feature.BigIntTypedArray`, which is on by default. When it is off, these arrays throw `SerovalUnsupportedTypeError`.
@@ -43,6 +45,7 @@ The modes are:
 [^aggregate]: Sent as an `Error` when `Feature.AggregateError` is off.
 [^temporal]: Requires `Feature.Temporal`, and a runtime that has the `Temporal` global on both sides.
 [^promise]: Sync functions cannot wait for promises, so a promise throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
+[^limit]: Binary mode rejects typed arrays longer than 1,000,000 elements and a `DataView` longer than 1,000,000 bytes. An `ArrayBuffer` has no limit.
 [^asynciterable]: Sync functions cannot wait for values, so an async iterable throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
 [^ended]: Sync functions send a stream that has ended with all its events. A stream that is still open throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
 [^live]: Sync functions cannot read a live stream, so it throws a `SerovalParserError` whose cause is a `SerovalUnsupportedTypeError`.
@@ -97,4 +100,4 @@ The `seroval` package has ESM and CommonJS builds, and a `development` build wit
 - The default selects the production build, which reports errors by code. See [Errors](./errors.md).
 - The `browser` condition selects the same build as the default, so there is never a second copy of seroval's classes or reference registry.
 
-Resolvers that ignore export conditions, such as older bundlers and some React Native setups, can use the `main` and `module` fields. Binary encoding uses `Buffer` when it exists, and portable browser APIs otherwise. Both produce the same output.
+Resolvers that ignore export conditions, such as older bundlers and some React Native setups, can use the `main` and `module` fields. The base64 encoding of buffers uses `Buffer` when it exists, and portable browser APIs otherwise. Both produce the same output. [Binary mode](./binary-mode.md) does not use base64.

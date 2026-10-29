@@ -110,6 +110,8 @@ describe('built package exports (run build first)', () => {
           ...(browser ? ['browser'] : []),
         ];
         const target = `dist/${development ? 'dev/' : ''}index.${format === 'import' ? 'js' : 'cjs'}`;
+        const binaryTarget = target.replace('index.', 'binary.');
+        const validatorTarget = target.replace('index.', 'validator.');
         const label = `${development ? 'development' : 'production'}, ${browser ? 'browser' : 'default'}, ${format}`;
 
         it(`resolves real package conditions in Node (${label})`, async () => {
@@ -117,10 +119,18 @@ describe('built package exports (run build first)', () => {
             format === 'import'
               ? `const selected = await import('seroval');
                  const fallback = await import('./${target}');
-                 assert.equal(import.meta.resolve('seroval'), new URL('./${target}', import.meta.url).href);`
+                 assert.equal(import.meta.resolve('seroval'), new URL('./${target}', import.meta.url).href);
+                 const binary = await import('seroval/binary');
+                 assert.equal(import.meta.resolve('seroval/binary'), new URL('./${binaryTarget}', import.meta.url).href);
+                 const validator = await import('seroval/validator');
+                 assert.equal(import.meta.resolve('seroval/validator'), new URL('./${validatorTarget}', import.meta.url).href);`
               : `const selected = require('seroval');
                  const fallback = require('./${target}');
-                 assert.equal(require.resolve('seroval'), fileURLToPath(new URL('./${target}', import.meta.url)));`;
+                 assert.equal(require.resolve('seroval'), fileURLToPath(new URL('./${target}', import.meta.url)));
+                 const binary = require('seroval/binary');
+                 assert.equal(require.resolve('seroval/binary'), fileURLToPath(new URL('./${binaryTarget}', import.meta.url)));
+                 const validator = require('seroval/validator');
+                 assert.equal(require.resolve('seroval/validator'), fileURLToPath(new URL('./${validatorTarget}', import.meta.url)));`;
           await execFileAsync(
             process.execPath,
             [
@@ -132,8 +142,22 @@ describe('built package exports (run build first)', () => {
                import { fileURLToPath } from 'node:url';
                const require = createRequire(import.meta.url);
                ${load}
+               // Both entries share one Stream class, so a stream decoded by
+               // seroval/binary passes isStream from seroval.
+               const source = selected.createStream();
+               source.return(1);
+               const chunks = [];
+               await new Promise((resolve, reject) => {
+                 binary.serialize(source, { refs: new Map(), onSerialize: (bytes) => { chunks.push(bytes); }, onDone: resolve, onError: reject });
+               });
+               let index = 0;
+               const decoded = await binary.deserialize({ read: () => Promise.resolve(chunks[index++]), onError() {} });
+               assert.equal(selected.isStream(decoded.value), true);
                for (const key of Object.keys(selected)) {
                  assert.equal(selected[key], fallback[key], key);
+               }
+               for (const key of ['string', 'number', 'arrayBuffer', 'instanceOf', 'object']) {
+                 assert.equal(selected.v[key], validator[key], key);
                }
                const ref = selected.createReference('built-package', () => 42);
                assert.equal(fallback.fromJSON(selected.toJSON(ref)), ref);

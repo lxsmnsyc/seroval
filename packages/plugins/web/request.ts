@@ -1,8 +1,8 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import { expectString } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -28,7 +28,12 @@ type RequestNode = {
   options: SerovalNode;
 };
 
-const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
+type RequestBinaryData = {
+  url: string;
+  options: RequestInit;
+};
+
+const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, RequestBinaryData>({
   tag: 'seroval-plugins/web/Request',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   skipPlainObjects: true,
@@ -62,11 +67,31 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   serialize(node, ctx) {
     return 'new Request(' + ctx.serialize(node.url) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { url: v.string },
   deserialize(node, ctx) {
     return new Request(
-      expectString(ctx.deserialize(node.url)),
+      ctx.deserialize<string>(node.url),
       ctx.deserialize<RequestInit>(node.options),
     );
+  },
+  binary: {
+    serialize(value) {
+      const body = value.body && !value.bodyUsed ? value.clone().body : null;
+      const options = createRequestOptions(value, body);
+      if (body) {
+        // A streamed request body is only accepted in half duplex mode.
+        // Without this the receiving `new Request()` throws.
+        (options as { duplex?: string }).duplex = 'half';
+      }
+      return {
+        url: value.url,
+        options,
+      };
+    },
+    validate: { url: v.string },
+    deserialize(data) {
+      return new Request(data.url, data.options);
+    },
   },
 });
 

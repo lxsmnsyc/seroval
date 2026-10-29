@@ -1,6 +1,6 @@
 import type { SerovalNode } from 'seroval';
-import { createPlugin } from 'seroval';
-import { expectArrayBuffer, expectString } from './validate';
+import { SerovalPluginValidationError, createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 
 type FileNode = {
   name: SerovalNode;
@@ -8,7 +8,16 @@ type FileNode = {
   buffer: SerovalNode;
 };
 
-const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
+type FileBinaryData = {
+  name: string;
+  options: {
+    type: string;
+    lastModified: number;
+  };
+  buffer: Promise<ArrayBuffer>;
+};
+
+const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>({
   tag: 'seroval-plugins/web/File',
   skipPlainObjects: true,
   test(value) {
@@ -40,12 +49,35 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
       ')'
     );
   },
+  validate: { name: v.string, buffer: v.arrayBuffer },
   deserialize(node, ctx) {
     return new File(
-      [expectArrayBuffer(ctx.deserialize(node.buffer))],
-      expectString(ctx.deserialize(node.name)),
+      [ctx.deserialize<ArrayBuffer>(node.buffer)],
+      ctx.deserialize<string>(node.name),
       ctx.deserialize<FilePropertyBag>(node.options),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        name: value.name,
+        options: {
+          type: value.type,
+          lastModified: value.lastModified,
+        },
+        buffer: value.arrayBuffer(),
+      };
+    },
+    validate: { name: v.string, buffer: /* @__PURE__ */ v.instanceOf(Promise) },
+    async deserialize(data) {
+      // `buffer` is checked to be a Promise, but what it resolves to is only
+      // known here.
+      const buffer: unknown = await data.buffer;
+      if (!(buffer instanceof ArrayBuffer)) {
+        throw new SerovalPluginValidationError('seroval-plugins/web/File', 'buffer');
+      }
+      return new File([buffer], data.name, data.options);
+    },
   },
 });
 

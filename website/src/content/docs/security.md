@@ -7,14 +7,18 @@ seroval has two ways to rebuild a value, with very different trust requirements:
 
 - **JavaScript output** is rebuilt by running it. Anyone who controls the output can run any code. Only run output from a sender you trust.
 - **JSON output** is rebuilt by `fromJSON` and `fromCrossJSON`, which validate the input and run no code from it. They are built for untrusted input.
+- **Binary output** is rebuilt by `binary.deserialize`, which also validates the input and runs no code from it.
 
 ## Safe for untrusted input
 
 - `fromJSON`
 - `fromCrossJSON`
 - `createCrossDeserializer`
+- `binary.deserialize`
 
-These reject unknown node types, constructor names and constants. They define reserved property names such as `__proto__` as own properties instead of assigning them. They limit nesting with `depthLimit`, and the size of each buffer with [`maxBase64Length`](./binary-data.md#json-decoding-limits).
+These reject unknown node types, constructor names and constants. They define reserved property names such as `__proto__` as own properties instead of assigning them. The JSON functions limit nesting with `depthLimit`, and the size of each buffer with [`maxBase64Length`](./binary-data.md#json-decoding-limits).
+
+`binary.deserialize` limits the length of typed arrays, `ArrayBuffer`s and `RegExp` patterns, but not the size of the whole input. Limit the input size in your transport. Treat any call to its `onError` as a failed payload. See [Untrusted input](./binary-mode.md#untrusted-input).
 
 ## Not safe for untrusted input
 
@@ -29,7 +33,7 @@ Keep `compileJSON` on the same side of the trust boundary as the code that produ
 
 ## Decoded values come from the sender
 
-`fromJSON` checks that a tree is well formed. It does not check whether the values in it are safe for your app. Treat every decoded value as input from the sender, and validate it as you would any request body.
+`fromJSON` checks that a tree is well formed, and `binary.deserialize` checks the same for its bytes. It does not check whether the values in it are safe for your app. Treat every decoded value as input from the sender, and validate it as you would any request body.
 
 Some values need extra care:
 
