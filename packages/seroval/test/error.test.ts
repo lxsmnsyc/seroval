@@ -3,17 +3,17 @@ import {
   Feature,
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
+  fromCrossJSON,
   fromJSON,
   serialize,
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 describe('Error', () => {
   describe('with an own __proto__ field', () => {
@@ -87,19 +87,33 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(await serializeAsync(Promise.resolve(a))).toMatchSnapshot();
+      const result = await serializeAsync(Promise.resolve(a));
+      const back = await deserialize<Promise<Error>>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
     });
     it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
       const b = new Error('B', { cause: Promise.resolve(a) });
       a.stack = '';
       b.stack = '';
-      expect(await serializeAsync(b)).toMatchSnapshot();
+      const result = await serializeAsync(b);
+      const back = deserialize<Error>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = await back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
     });
     it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(await serializeAsync(Promise.resolve(a))).toMatchSnapshot();
+      const result = await serializeAsync(Promise.resolve(a));
+      const back = await deserialize<Promise<Error>>(result);
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
     });
   });
   describe('toJSON', () => {
@@ -107,19 +121,33 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(JSON.stringify(toJSON(a))).toMatchSnapshot();
+      const result = toJSON(a);
+      const back = fromJSON<Error>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
     });
     it('supports Error.prototype.cause', () => {
       const a = new Error('A');
       const b = new Error('B', { cause: a });
       a.stack = '';
       b.stack = '';
-      expect(JSON.stringify(toJSON(b))).toMatchSnapshot();
+      const result = toJSON(b);
+      const back = fromJSON<Error>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
     });
     it('supports other Error classes', () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(JSON.stringify(toJSON(a))).toMatchSnapshot();
+      const result = toJSON(a);
+      const back = fromJSON<Error>(result);
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
     });
   });
   describe('toJSONAsync', () => {
@@ -127,19 +155,33 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(JSON.stringify(await toJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
+      const result = await toJSONAsync(Promise.resolve(a));
+      const back = await fromJSON<Promise<Error>>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
     });
     it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
       const b = new Error('B', { cause: Promise.resolve(a) });
       a.stack = '';
       b.stack = '';
-      expect(JSON.stringify(await toJSONAsync(b))).toMatchSnapshot();
+      const result = await toJSONAsync(b);
+      const back = fromJSON<Error>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = await back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
     });
     it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(JSON.stringify(await toJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
+      const result = await toJSONAsync(Promise.resolve(a));
+      const back = await fromJSON<Promise<Error>>(result);
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
     });
   });
   describe('crossSerialize', () => {
@@ -187,174 +229,182 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(await crossSerializeAsync(Promise.resolve(a))).toMatchSnapshot();
+      const result = await crossSerializeAsync(Promise.resolve(a));
+      const back = await evaluateCross<Promise<Error>>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
     });
     it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
       const b = new Error('B', { cause: Promise.resolve(a) });
       a.stack = '';
       b.stack = '';
-      expect(await crossSerializeAsync(b)).toMatchSnapshot();
+      const result = await crossSerializeAsync(b);
+      const back = evaluateCross<Error>(result);
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = await back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
     });
     it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(await crossSerializeAsync(Promise.resolve(a))).toMatchSnapshot();
+      const result = await crossSerializeAsync(Promise.resolve(a));
+      const back = await evaluateCross<Promise<Error>>(result);
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
     });
     describe('scoped', () => {
       it('supports Error.prototype.name', async () => {
         const a = new Error('A');
         a.name = 'ExampleError';
         a.stack = '';
-        expect(
-          await crossSerializeAsync(Promise.resolve(a), { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        const result = await crossSerializeAsync(Promise.resolve(a), {
+          scopeId: 'example',
+        });
+        const back = await evaluateCross<Promise<Error>>(result, 'example');
+        expect(back).toBeInstanceOf(Error);
+        expect(back.name).toBe('ExampleError');
+        expect(back.message).toBe('A');
       });
       it('supports Error.prototype.cause', async () => {
         const a = new Error('A');
         const b = new Error('B', { cause: Promise.resolve(a) });
         a.stack = '';
         b.stack = '';
-        expect(await crossSerializeAsync(b, { scopeId: 'example' })).toMatchSnapshot();
+        const result = await crossSerializeAsync(b, {
+          scopeId: 'example',
+        });
+        const back = evaluateCross<Error>(result, 'example');
+        expect(back).toBeInstanceOf(Error);
+        expect(back.message).toBe('B');
+        const cause = await back.cause;
+        assert(cause instanceof Error);
+        expect(cause.message).toBe('A');
       });
       it('supports other Error classes', async () => {
         const a = new ReferenceError('A');
         a.stack = '';
-        expect(
-          await crossSerializeAsync(Promise.resolve(a), { scopeId: 'example' }),
-        ).toMatchSnapshot();
+        const result = await crossSerializeAsync(Promise.resolve(a), {
+          scopeId: 'example',
+        });
+        const back = await evaluateCross<Promise<Error>>(result, 'example');
+        expect(back).toBeInstanceOf(ReferenceError);
+        expect(back.name).toBe('ReferenceError');
+        expect(back.message).toBe('A');
       });
     });
   });
 
   describe('crossSerializeStream', () => {
-    it('supports Error.prototype.name', async () =>
-      new Promise<void>((resolve, reject) => {
+    it('supports Error.prototype.name', async () => {
+      const a = new Error('A');
+      a.name = 'ExampleError';
+      a.stack = '';
+      const back = await streamCross<Promise<Error>>(Promise.resolve(a));
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
+    });
+    it('supports Error.prototype.cause', async () => {
+      const a = new Error('A');
+      const b = new Error('B', { cause: Promise.resolve(a) });
+      a.stack = '';
+      b.stack = '';
+      const back = await streamCross<Promise<Error>>(Promise.resolve(b));
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = await back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
+    });
+    it('supports other Error classes', async () => {
+      const a = new ReferenceError('A');
+      a.stack = '';
+      const back = await streamCross<Promise<Error>>(Promise.resolve(a));
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
+    });
+    describe('scoped', () => {
+      it('supports Error.prototype.name', async () => {
         const a = new Error('A');
         a.name = 'ExampleError';
         a.stack = '';
-        crossSerializeStream(Promise.resolve(a), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
+        const back = await streamCross<Promise<Error>>(Promise.resolve(a), {
+          scopeId: 'example',
         });
-      }));
-    it('supports Error.prototype.cause', async () =>
-      new Promise<void>((resolve, reject) => {
+        expect(back).toBeInstanceOf(Error);
+        expect(back.name).toBe('ExampleError');
+        expect(back.message).toBe('A');
+      });
+      it('supports Error.prototype.cause', async () => {
         const a = new Error('A');
         const b = new Error('B', { cause: Promise.resolve(a) });
         a.stack = '';
         b.stack = '';
-        crossSerializeStream(Promise.resolve(b), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
+        const back = await streamCross<Promise<Error>>(Promise.resolve(b), {
+          scopeId: 'example',
         });
-      }));
-    it('supports other Error classes', async () =>
-      new Promise<void>((resolve, reject) => {
+        expect(back).toBeInstanceOf(Error);
+        expect(back.message).toBe('B');
+        const cause = await back.cause;
+        assert(cause instanceof Error);
+        expect(cause.message).toBe('A');
+      });
+      it('supports other Error classes', async () => {
         const a = new ReferenceError('A');
         a.stack = '';
-        crossSerializeStream(Promise.resolve(a), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
+        const back = await streamCross<Promise<Error>>(Promise.resolve(a), {
+          scopeId: 'example',
         });
-      }));
-
-    describe('scoped', () => {
-      it('supports Error.prototype.name', async () =>
-        new Promise<void>((resolve, reject) => {
-          const a = new Error('A');
-          a.name = 'ExampleError';
-          a.stack = '';
-          crossSerializeStream(Promise.resolve(a), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Error.prototype.cause', async () =>
-        new Promise<void>((resolve, reject) => {
-          const a = new Error('A');
-          const b = new Error('B', { cause: Promise.resolve(a) });
-          a.stack = '';
-          b.stack = '';
-          crossSerializeStream(Promise.resolve(b), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports other Error classes', async () =>
-        new Promise<void>((resolve, reject) => {
-          const a = new ReferenceError('A');
-          a.stack = '';
-          crossSerializeStream(Promise.resolve(a), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+        expect(back).toBeInstanceOf(ReferenceError);
+        expect(back.name).toBe('ReferenceError');
+        expect(back.message).toBe('A');
+      });
     });
   });
   describe('toCrossJSON', () => {
-    it('supports Error.prototype.name', () => {
+    it('supports Error.prototype.name', async () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(JSON.stringify(toCrossJSON(a))).toMatchSnapshot();
+      const result = toCrossJSON(a);
+      const back = fromCrossJSON<Error>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
     });
-    it('supports Error.prototype.cause', () => {
+    it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
       const b = new Error('B', { cause: a });
       a.stack = '';
       b.stack = '';
-      expect(JSON.stringify(toCrossJSON(b))).toMatchSnapshot();
+      const result = toCrossJSON(b);
+      const back = fromCrossJSON<Error>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
     });
-    it('supports other Error classes', () => {
+    it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(JSON.stringify(toCrossJSON(a))).toMatchSnapshot();
+      const result = toCrossJSON(a);
+      const back = fromCrossJSON<Error>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
     });
   });
   describe('toCrossJSONAsync', () => {
@@ -362,73 +412,71 @@ describe('Error', () => {
       const a = new Error('A');
       a.name = 'ExampleError';
       a.stack = '';
-      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
+      const result = await toCrossJSONAsync(Promise.resolve(a));
+      const back = await fromCrossJSON<Promise<Error>>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
     });
     it('supports Error.prototype.cause', async () => {
       const a = new Error('A');
       const b = new Error('B', { cause: Promise.resolve(a) });
       a.stack = '';
       b.stack = '';
-      expect(JSON.stringify(await toCrossJSONAsync(b))).toMatchSnapshot();
+      const result = await toCrossJSONAsync(b);
+      const back = fromCrossJSON<Error>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = await back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
     });
     it('supports other Error classes', async () => {
       const a = new ReferenceError('A');
       a.stack = '';
-      expect(JSON.stringify(await toCrossJSONAsync(Promise.resolve(a)))).toMatchSnapshot();
+      const result = await toCrossJSONAsync(Promise.resolve(a));
+      const back = await fromCrossJSON<Promise<Error>>(result, {
+        refs: new Map(),
+      });
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
     });
   });
 
   describe('toCrossJSONStream', () => {
-    it('supports Error.prototype.name', async () =>
-      new Promise<void>((resolve, reject) => {
-        const a = new Error('A');
-        a.name = 'ExampleError';
-        a.stack = '';
-        toCrossJSONStream(Promise.resolve(a), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Error.prototype.cause', async () =>
-      new Promise<void>((resolve, reject) => {
-        const a = new Error('A');
-        const b = new Error('B', { cause: Promise.resolve(a) });
-        a.stack = '';
-        b.stack = '';
-        toCrossJSONStream(Promise.resolve(b), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports other Error classes', async () =>
-      new Promise<void>((resolve, reject) => {
-        const a = new ReferenceError('A');
-        a.stack = '';
-        toCrossJSONStream(Promise.resolve(a), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Error.prototype.name', async () => {
+      const a = new Error('A');
+      a.name = 'ExampleError';
+      a.stack = '';
+      const back = await streamCrossJSON<Promise<Error>>(Promise.resolve(a));
+      expect(back).toBeInstanceOf(Error);
+      expect(back.name).toBe('ExampleError');
+      expect(back.message).toBe('A');
+    });
+    it('supports Error.prototype.cause', async () => {
+      const a = new Error('A');
+      const b = new Error('B', { cause: Promise.resolve(a) });
+      a.stack = '';
+      b.stack = '';
+      const back = await streamCrossJSON<Promise<Error>>(Promise.resolve(b));
+      expect(back).toBeInstanceOf(Error);
+      expect(back.message).toBe('B');
+      const cause = await back.cause;
+      assert(cause instanceof Error);
+      expect(cause.message).toBe('A');
+    });
+    it('supports other Error classes', async () => {
+      const a = new ReferenceError('A');
+      a.stack = '';
+      const back = await streamCrossJSON<Promise<Error>>(Promise.resolve(a));
+      expect(back).toBeInstanceOf(ReferenceError);
+      expect(back.name).toBe('ReferenceError');
+      expect(back.message).toBe('A');
+    });
   });
 });

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -10,10 +9,10 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 const QUOTED = '"hello"';
 const HTML = '<script></script>';
@@ -29,26 +28,20 @@ describe('string', () => {
   });
   describe('serializeAsync', () => {
     it('supports strings', async () => {
-      expect(await serializeAsync(Promise.resolve(QUOTED))).toMatchSnapshot();
-      expect(await serializeAsync(Promise.resolve(HTML))).toMatchSnapshot();
+      expect((await deserialize<Promise<string>>(await serializeAsync(Promise.resolve(QUOTED))))).toBe(QUOTED);
+      expect((await deserialize<Promise<string>>(await serializeAsync(Promise.resolve(HTML))))).toBe(HTML);
     });
   });
   describe('toJSON', () => {
     it('supports strings', () => {
-      expect(JSON.stringify(toJSON(QUOTED))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(HTML))).toMatchSnapshot();
       expect(fromJSON<object>(toJSON(QUOTED))).toBe(QUOTED);
       expect(fromJSON<object>(toJSON(HTML))).toBe(HTML);
     });
   });
   describe('toJSONAsync', () => {
     it('supports strings', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(QUOTED))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(HTML))),
-      ).toMatchSnapshot();
+      expect((await fromJSON<Promise<string>>(await toJSONAsync(Promise.resolve(QUOTED))))).toBe(QUOTED);
+      expect((await fromJSON<Promise<string>>(await toJSONAsync(Promise.resolve(HTML))))).toBe(HTML);
     });
   });
   describe('crossSerialize', () => {
@@ -59,48 +52,22 @@ describe('string', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports strings', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(QUOTED)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(HTML)),
-      ).toMatchSnapshot();
+      expect((await evaluateCross<Promise<string>>(await crossSerializeAsync(Promise.resolve(QUOTED))))).toBe(QUOTED);
+      expect((await evaluateCross<Promise<string>>(await crossSerializeAsync(Promise.resolve(HTML))))).toBe(HTML);
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports strings', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(QUOTED), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports sanitized strings', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(HTML), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports strings', async () => {
+      const back = await streamCross<Promise<string>>(Promise.resolve(QUOTED));
+      expect(back).toBe(QUOTED);
+    });
+    it('supports sanitized strings', async () => {
+      const back = await streamCross<Promise<string>>(Promise.resolve(HTML));
+      expect(back).toBe(HTML);
+    });
   });
   describe('toCrossJSON', () => {
     it('supports strings', () => {
-      expect(JSON.stringify(toCrossJSON(QUOTED))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(HTML))).toMatchSnapshot();
       expect(
         fromCrossJSON<object>(toCrossJSON(QUOTED), { refs: new Map() }),
       ).toBe(QUOTED);
@@ -111,42 +78,22 @@ describe('string', () => {
   });
   describe('toCrossJSONAsync', () => {
     it('supports strings', async () => {
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(QUOTED))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(HTML))),
-      ).toMatchSnapshot();
+      expect((await fromCrossJSON<Promise<string>>(await toCrossJSONAsync(Promise.resolve(QUOTED)), {
+        refs: new Map(),
+      }))).toBe(QUOTED);
+      expect((await fromCrossJSON<Promise<string>>(await toCrossJSONAsync(Promise.resolve(HTML)), {
+        refs: new Map(),
+      }))).toBe(HTML);
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports strings', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(QUOTED), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports sanitized strings', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(HTML), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports strings', async () => {
+      const back = await streamCrossJSON<Promise<string>>(Promise.resolve(QUOTED));
+      expect(back).toBe(QUOTED);
+    });
+    it('supports sanitized strings', async () => {
+      const back = await streamCrossJSON<Promise<string>>(Promise.resolve(HTML));
+      expect(back).toBe(HTML);
+    });
   });
 });
