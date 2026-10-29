@@ -1,24 +1,24 @@
 ---
 title: Transport
-description: Send a streamed value over fetch or any byte stream with seroval-transport.
+description: Send a streamed value over fetch or any byte stream with @seroval/transport.
 ---
 
-`seroval-transport` turns a value into a `ReadableStream<Uint8Array>` and back. Use it as a `fetch` body, a `Response` body, or any other byte stream.
+`@seroval/transport` turns a value into a `ReadableStream<Uint8Array>` and back. Use it as a `fetch` body, a `Response` body, or any other byte stream.
 
 ```bash
-npm install seroval seroval-transport
+npm install seroval @seroval/transport
 ```
 
 ```js
 // server
-import { toJSONStream } from 'seroval-transport/write';
+import { toJSONStream } from '@seroval/transport/write';
 
 return new Response(toJSONStream({ user, posts: fetchPosts() }));
 ```
 
 ```js
 // client
-import { fromJSONStream } from 'seroval-transport/read';
+import { fromJSONStream } from '@seroval/transport/read';
 
 const response = await fetch('/api');
 const data = await fromJSONStream(response.body);

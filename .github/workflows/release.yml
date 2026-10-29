@@ -122,13 +122,13 @@ jobs:
         run: |
           pnpm --filter seroval build
           pnpm --filter seroval-plugins build
-          pnpm --filter seroval-transport build
+          pnpm --filter @seroval/transport build
 
       - name: Test
         run: |
           pnpm --filter seroval test -- --run
           pnpm --filter seroval-plugins test -- --run
-          pnpm --filter seroval-transport test -- --run
+          pnpm --filter @seroval/transport test -- --run
         env:
           CI: true
 

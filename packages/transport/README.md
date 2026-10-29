@@ -1,27 +1,27 @@
-# `seroval-transport`
+# `@seroval/transport`
 
 > Send seroval streams over `fetch` and other byte streams
 
-[![NPM](https://img.shields.io/npm/v/seroval-transport.svg)](https://www.npmjs.com/package/seroval-transport)
+[![NPM](https://img.shields.io/npm/v/@seroval/transport.svg)](https://www.npmjs.com/package/@seroval/transport)
 
 ## Install
 
 ```bash
-npm install --save seroval seroval-transport
+npm install --save seroval @seroval/transport
 ```
 
 ## Usage
 
 ```js
 // server
-import { toJSONStream } from 'seroval-transport/write';
+import { toJSONStream } from '@seroval/transport/write';
 
 return new Response(toJSONStream({ user, posts: fetchPosts() }));
 ```
 
 ```js
 // client
-import { fromJSONStream } from 'seroval-transport/read';
+import { fromJSONStream } from '@seroval/transport/read';
 
 const response = await fetch('/api');
 const data = await fromJSONStream(response.body);

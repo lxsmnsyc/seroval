@@ -1,5 +1,5 @@
 {
-  "name": "seroval-transport",
+  "name": "@seroval/transport",
   "type": "module",
   "sideEffects": false,
   "version": "0.0.0",
