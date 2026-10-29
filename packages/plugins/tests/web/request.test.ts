@@ -9,7 +9,7 @@ import {
   toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import RequestPlugin from '../../web/request';
 
 const EXAMPLE_URL = 'http://localhost:3000';
@@ -125,6 +125,33 @@ describe('Request', () => {
           },
         });
       }));
+    it('round-trips the Request body', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const $R: unknown[] = [];
+      await new Promise<void>((resolve, reject) => {
+        crossSerializeStream(example, {
+          plugins: [RequestPlugin],
+          onSerialize(data) {
+            // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
+            new Function('$R', data)($R);
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      });
+      const back = $R[0];
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
     describe('scoped', () => {
       it('supports Request', async () =>
         new Promise<void>((resolve, reject) => {
@@ -208,5 +235,34 @@ describe('Request', () => {
           },
         });
       }));
+    it('round-trips the Request body', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const refs = new Map<number, unknown>();
+      let back: unknown;
+      await new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(example, {
+          plugins: [RequestPlugin],
+          onParse(node, initial) {
+            const value = fromCrossJSON(node, { plugins: [RequestPlugin], refs });
+            if (initial) {
+              back = value;
+            }
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      });
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
   });
 });

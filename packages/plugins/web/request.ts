@@ -23,6 +23,19 @@ function createRequestOptions(
   };
 }
 
+function createStreamRequestOptions(
+  current: Request,
+  body: ReadableStream | null,
+): RequestInit & { duplex?: 'half' } {
+  const options: RequestInit & { duplex?: 'half' } = createRequestOptions(current, body);
+  if (body) {
+    // A stream body needs `duplex: 'half'` where stream bodies are supported
+    // (Chrome 105+, Node 19.1+). Runtimes without the option ignore the key.
+    options.duplex = 'half';
+  }
+  return options;
+}
+
 type RequestNode = {
   url: SerovalNode;
   options: SerovalNode;
@@ -54,7 +67,10 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
       return {
         url: ctx.parse(value.url),
         options: ctx.parse(
-          createRequestOptions(value, value.body && !value.bodyUsed ? value.clone().body : null),
+          createStreamRequestOptions(
+            value,
+            value.body && !value.bodyUsed ? value.clone().body : null,
+          ),
         ),
       };
     },
