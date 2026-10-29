@@ -1,5 +1,11 @@
 # seroval-plugins
 
+## 1.7.5
+
+### Patch Changes
+
+- Check the FormData, Headers, Response and Request fields during deserialization.
+
 ## 1.7.4
 
 ### Patch Changes
