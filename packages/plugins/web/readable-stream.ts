@@ -1,5 +1,5 @@
 import type { SerovalNode, Stream } from 'seroval';
-import { createPlugin } from 'seroval';
+import { createPlugin, isStream } from 'seroval';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -157,8 +157,13 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, Readab
     return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.stream) + ')';
   },
   deserialize(node, ctx) {
-    const stream = ctx.deserialize<Stream<unknown>>(node.stream);
-    return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);
+    const stream = ctx.deserialize(node.stream);
+    // `node.stream` is any node the input picked; it must resolve to a seroval
+    // Stream before it is handed to the factory, which calls `stream.on(...)`.
+    if (!isStream(stream)) {
+      throw new Error('Expected a stream source.');
+    }
+    return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream as Stream<unknown>);
   },
 });
 
