@@ -2,12 +2,30 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
+import {
+  expectBody,
+  expectHeaders,
+  expectObject,
+  expectOptionalNumber,
+  expectOptionalString,
+} from './validate';
 
 function createResponseOptions(current: Response): ResponseInit {
   return {
     headers: current.headers,
     status: current.status,
     statusText: current.statusText,
+  };
+}
+
+// Copies only the known fields, each checked, so the constructor never
+// converts an input object to a string or a number.
+function expectResponseOptions(value: unknown): ResponseInit {
+  const options = expectObject(value);
+  return {
+    headers: expectHeaders(options.headers),
+    status: expectOptionalNumber(options.status),
+    statusText: expectOptionalString(options.statusText),
   };
 }
 
@@ -47,8 +65,8 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
   },
   deserialize(node, ctx) {
     return new Response(
-      ctx.deserialize<BodyInit>(node.body),
-      ctx.deserialize<ResponseInit>(node.options),
+      expectBody(ctx.deserialize(node.body)),
+      expectResponseOptions(ctx.deserialize(node.options)),
     );
   },
 });
