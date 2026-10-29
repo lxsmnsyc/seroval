@@ -1,6 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectString } from './validate';
+import { expectObject, expectOptionalBoolean, expectString } from './validate';
 
 function createCustomEventOptions(current: CustomEvent): CustomEventInit {
   return {
@@ -8,6 +8,18 @@ function createCustomEventOptions(current: CustomEvent): CustomEventInit {
     bubbles: current.bubbles,
     cancelable: current.cancelable,
     composed: current.composed,
+  };
+}
+
+// Copies only the known fields, each checked, so the constructor never reads
+// an input object. `detail` can be any value.
+function expectCustomEventOptions(value: unknown): CustomEventInit {
+  const options = expectObject(value);
+  return {
+    detail: options.detail,
+    bubbles: expectOptionalBoolean(options.bubbles),
+    cancelable: expectOptionalBoolean(options.cancelable),
+    composed: expectOptionalBoolean(options.composed),
   };
 }
 
@@ -51,7 +63,7 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventN
   deserialize(node, ctx) {
     return new CustomEvent(
       expectString(ctx.deserialize(node.type)),
-      ctx.deserialize<CustomEventInit>(node.options),
+      expectCustomEventOptions(ctx.deserialize(node.options)),
     );
   },
 });
