@@ -29,7 +29,7 @@
     "terracotta": "2.0.0-next.10"
   },
   "devDependencies": {
-    "@solidjs/vite-plugin": "3.0.0-next.50",
+    "@solidjs/vite-plugin": "3.0.0-next.51",
     "@twinkleplop/bash": "0.1.7",
     "@twinkleplop/css": "0.1.7",
     "@twinkleplop/html": "0.1.7",
