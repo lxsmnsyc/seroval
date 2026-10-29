@@ -5,7 +5,8 @@ import { SerovalTransportError } from './message';
  * the data size as 8 hex digits: `;0x0000002a;`. The reader knows the size
  * before it buffers the data, so it can refuse a frame that is too large.
  *
- * This is the format SolidStart uses for server functions.
+ * The header is the one SolidStart uses for server functions. The data is a
+ * transport message, not a bare node.
  */
 export const FRAME_HEADER_SIZE = 12;
 

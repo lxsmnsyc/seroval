@@ -157,4 +157,4 @@ Values fail with `SerovalTransportError` when:
 ;0x00000017;[0,"0",{"t":1,"s":"a"}]
 ```
 
-This is the frame format that SolidStart uses for server functions.
+The header is the one that SolidStart uses for server functions, but the data is a transport message, so a SolidStart reader cannot read these frames.
