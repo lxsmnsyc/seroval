@@ -1038,10 +1038,18 @@ function deserializeSetAdd(ctx: DeserializerContext) {
   });
 }
 
+const ignoreRejection = (): void => {};
+
 function deserializePromise(ctx: DeserializerContext) {
   const promise = deserializeId(ctx, SerovalBinaryType.Promise);
 
   const instance = PROMISE_CONSTRUCTOR();
+  // The payload can hold a rejected promise that the caller never reads, such
+  // as a field it ignores, and `abort` rejects every pending promise. Mark each
+  // promise as handled so it does not cause an unhandled rejection, which
+  // stops the process by default. Code that awaits the promise still gets the
+  // rejection.
+  instance.p.catch(ignoreRejection);
   ctx.refs.promiseResolvers.set(promise, instance);
   ctx.openPromises.add(promise);
   // A Promise node's identity - the user-facing promise object - is known
@@ -1592,16 +1600,12 @@ function abortDeserialize(ctx: DeserializerContext, reason: unknown): void {
   }
   ctx.aborted = true;
   ctx.root.resolver.f(reason);
-  // The failure is already reported through `onError`, and some of these
-  // promises may not be reachable from the root at all. Mark the rejections
-  // as handled so they are not reported again as unhandled. Code awaiting the
-  // promises still sees the rejection.
+  // The failure is already reported through `onError`. The promises are
+  // marked as handled when they are created, so rejecting them here does not
+  // report the failure again as unhandled.
   for (const id of ctx.openPromises) {
     const resolver = ctx.refs.promiseResolvers.get(id);
     if (resolver) {
-      resolver.p.catch(() => {
-        // no-op
-      });
       resolver.f(reason);
     }
   }
