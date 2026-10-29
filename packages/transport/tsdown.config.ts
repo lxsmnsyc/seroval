@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsdown';
 
-// Each entry point is built in one pass, so `SerovalFrameError` keeps one
+// Each entry point is built in one pass, so `SerovalTransportError` keeps one
 // identity across `@seroval/transport`, `@seroval/transport/read` and
 // `@seroval/transport/write`.
 export default defineConfig({

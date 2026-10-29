@@ -1,6 +1,6 @@
 # `@seroval/transport`
 
-> Send seroval streams over `fetch` and other byte streams
+> Send seroval streams over `fetch`, WebSockets, workers and other connections
 
 [![NPM](https://img.shields.io/npm/v/@seroval/transport.svg)](https://www.npmjs.com/package/@seroval/transport)
 
@@ -14,26 +14,37 @@ npm install --save seroval @seroval/transport
 
 ```js
 // server
-import { toJSONStream } from '@seroval/transport/write';
+import { createJSONWriter, toWebStream } from '@seroval/transport/write';
 
-return new Response(toJSONStream({ user, posts: fetchPosts() }));
+return new Response(
+  toWebStream((sink) => {
+    const writer = createJSONWriter(sink);
+    writer.write('user', user);
+    writer.write('posts', fetchPosts());
+    writer.flush();
+    return writer;
+  }),
+);
 ```
 
 ```js
 // client
-import { fromJSONStream } from '@seroval/transport/read';
+import { createJSONReader, fromWebStream } from '@seroval/transport/read';
 
 const response = await fetch('/api');
-const data = await fromJSONStream(response.body);
-console.log(await data.posts);
+const reader = createJSONReader();
+void fromWebStream(response.body, reader);
+const user = await reader.get('user');
+console.log(await reader.get('posts'));
 ```
 
-- The writer holds back frames while the reader is slow.
-- Cancelling the stream stops every source that is still running.
-- When the stream ends early, every pending promise and stream fails.
+- The writer sends messages: plain arrays that `postMessage` can send as is. `toWebStream` and `fromWebStream` turn them into bytes and back.
+- `send` can return a promise to hold back the next message, so a slow connection slows down the source.
+- Either side can cancel one value. The writer stops its sources, and the reader fails what still waits in it.
+- When the reader ends, every value and promise that still waits fails.
 - Promises that nobody awaits do not cause unhandled rejections.
 
-See the [docs](https://seroval.vercel.app/docs/transport) for the options and the frame format.
+See the [docs](https://seroval.vercel.app/docs/transport) for the options and the message format.
 
 ## License
 

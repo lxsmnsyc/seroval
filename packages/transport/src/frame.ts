@@ -1,3 +1,5 @@
+import { SerovalTransportError } from './message';
+
 /**
  * Each frame is a 12-byte header followed by the UTF-8 data. The header holds
  * the data size as 8 hex digits: `;0x0000002a;`. The reader knows the size
@@ -13,13 +15,6 @@ const LOWER_X = 0x78;
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
-
-export class SerovalFrameError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SerovalFrameError';
-  }
-}
 
 function createFrameHeader(size: number): Uint8Array {
   const hex = size.toString(16).padStart(8, '0');
@@ -41,7 +36,9 @@ function createFrameHeader(size: number): Uint8Array {
 export function encodeFrame(data: string): [Uint8Array, Uint8Array] {
   const encoded = encoder.encode(data);
   if (encoded.length > 0xffffffff) {
-    throw new SerovalFrameError(`A frame of ${encoded.length} bytes does not fit in the header.`);
+    throw new SerovalTransportError(
+      `A frame of ${encoded.length} bytes does not fit in the header.`,
+    );
   }
   return [createFrameHeader(encoded.length), encoded];
 }
@@ -80,8 +77,8 @@ function parseFrameHeader(header: Uint8Array): number {
   return size;
 }
 
-function malformed(): SerovalFrameError {
-  return new SerovalFrameError('The stream has a malformed frame.');
+function malformed(): SerovalTransportError {
+  return new SerovalTransportError('The stream has a malformed frame.');
 }
 
 export class FrameReader {
@@ -160,7 +157,7 @@ export class FrameReader {
       throw malformed();
     }
     if (size > this.maxFrameSize) {
-      throw new SerovalFrameError(
+      throw new SerovalTransportError(
         `A frame of ${size} bytes is larger than the limit of ${this.maxFrameSize} bytes.`,
       );
     }
