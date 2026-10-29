@@ -47,6 +47,7 @@ The decoder treats its input as untrusted. It rejects a payload that breaks any 
 - Every enumerated byte, such as a constant, a symbol, an error constructor, a typed array constructor or a `Temporal` type, has a known value.
 - A typed array or `DataView` fits inside its `ArrayBuffer`. A typed array has at most 1,000,000 elements, and a `DataView` at most 1,000,000 bytes.
 - An `ArrayBuffer` has at most `maxArrayBufferLength` bytes, 1,000,000 by default.
+- An array has a length of at most `maxArrayLength`, 1,000,000 by default.
 - A UTF-16 `String` has an even number of bytes.
 - A `RegExp` pattern has at most 20,000 characters.
 - A `RegExp` or `Temporal` node is only accepted when its feature is enabled. A `Temporal` node also needs the `Temporal` global.
@@ -222,7 +223,7 @@ The serializer sends this node only for a target that is not extensible, right a
 <byte:array=10> <id> <uint:length>
 ```
 
-Declares an array of `length` elements. `ArrayAssign` nodes set its elements. A hole in a sparse array is never assigned, so `length` can be larger than the number of `ArrayAssign` nodes.
+Declares an array of `length` elements. `ArrayAssign` nodes set its elements. A hole in a sparse array is never assigned, so `length` can be larger than the number of `ArrayAssign` nodes. The decoder rejects a `length` above `maxArrayLength`.
 
 ### Stream
 

@@ -382,3 +382,56 @@ describe('binary maxArrayBufferLength', () => {
     ).rejects.toThrow(RangeError);
   });
 });
+
+describe('binary maxArrayLength', () => {
+  function decodeChunks(
+    chunks: Uint8Array[],
+    options?: Partial<binary.DeserializeOptions>,
+  ): { result: Promise<unknown>; errors: unknown[] } {
+    const errors: unknown[] = [];
+    let index = 0;
+    const result = binary
+      .deserialize<unknown>({
+        ...options,
+        // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+        read: () => Promise.resolve(chunks[index++]),
+        onError(error) {
+          errors.push(error);
+        },
+      })
+      .then((value) => value.value);
+    return { result, errors };
+  }
+
+  it('rejects an Array longer than the limit', async () => {
+    // Holes cost no bytes, so 14 bytes could claim 4,294,967,295 items.
+    const { result, errors } = decodeChunks([preamble(), arrayNode(0, 0xffffffff), root(0)]);
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('accepts an Array at the limit', async () => {
+    const source = [1, , 3];
+    const { value } = await roundtrip<unknown[]>(source, { deserialize: { maxArrayLength: 3 } });
+    expect(value).toEqual(source);
+  });
+
+  it('applies a lower limit', async () => {
+    const { result, errors } = decodeChunks([preamble(), arrayNode(0, 4), root(0)], {
+      maxArrayLength: 3,
+    });
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('throws for an invalid limit', async () => {
+    await expect(
+      binary.deserialize({
+        // oxlint-disable-next-line typescript/promise-function-async -- There is no input to wait for.
+        read: () => Promise.resolve(undefined),
+        onError() {},
+        maxArrayLength: Number.NaN,
+      }),
+    ).rejects.toThrow(RangeError);
+  });
+});

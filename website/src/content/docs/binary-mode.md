@@ -153,6 +153,7 @@ If a cleanup throws, the first error goes to `onError`. Calling the function aga
 | `disabledFeatures` | `number` | `0` | Feature flags to reject. |
 | `features` | `number` | all features | The features to accept, as a bit mask. Overrides `disabledFeatures`. |
 | `maxArrayBufferLength` | `number` | `1000000` | The largest `ArrayBuffer`, in bytes, that the input may hold. |
+| `maxArrayLength` | `number` | `1000000` | The largest array length that the input may hold. |
 | `signal` | `AbortSignal` | none | Stops decoding when it aborts. See [Stopping decoding](#stopping-decoding). |
 
 It returns a promise for `{ value, pending }`. The value is wrapped, so a root value that is a promise is handed over as is. `pending` is the number of promises and streams in the value that have not settled or ended yet. The promise resolves as soon as the root value is decoded, with every object, array, `Map` and `Set` in it filled in. Promises and streams inside the value may still be pending.
@@ -181,6 +182,7 @@ When the signal aborts, decoding stops calling `read`. The returned promise, if 
 - It defines reserved property names such as `__proto__` and `constructor` as own properties instead of assigning them.
 - It rejects typed arrays longer than 1,000,000 elements, `DataView`s longer than 1,000,000 bytes and `RegExp` patterns longer than 20,000 characters.
 - It rejects an `ArrayBuffer` longer than `maxArrayBufferLength` bytes, 1,000,000 by default, as soon as it reads the length. Raise the limit to receive larger files.
+- It rejects an array longer than `maxArrayLength`, 1,000,000 by default. An array states its length up front and its holes take no bytes, so without the limit a few bytes could claim an array of billions of holes. Raise the limit to receive larger arrays.
 - It rejects `RegExp` and `Temporal` values when their [feature](./compatibility.md#feature-flags) is disabled.
 
 When the input is invalid, or when it ends before every value has settled:

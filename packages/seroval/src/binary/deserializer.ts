@@ -48,6 +48,9 @@ const MAX_REGEXP_SOURCE_LENGTH = 20_000;
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 // Same default as `maxBase64Length` in JSON mode, counted in bytes.
 const DEFAULT_MAX_ARRAY_BUFFER_LENGTH = 1_000_000;
+// An Array node states its length, and holes cost no bytes, so a few bytes
+// could claim an array that takes a consumer minutes to loop over.
+const DEFAULT_MAX_ARRAY_LENGTH = 1_000_000;
 
 // The join state of a container: how many child assignments are still
 // outstanding, and a resolver that fires once the count reaches zero.
@@ -111,6 +114,8 @@ export interface DeserializerContextOptions {
   features?: number;
   /** Largest `ArrayBuffer`, in bytes, that the payload may hold. */
   maxArrayBufferLength?: number;
+  /** Largest array length that the payload may hold. */
+  maxArrayLength?: number;
   /**
    * Stops decoding when aborted. The root value, if it is not decoded yet, and
    * every unsettled promise and open stream are rejected with the reason.
@@ -131,6 +136,7 @@ export interface DeserializerContext {
   refs: ReferenceMap;
   plugins?: PluginWithBinaryMode<any, any, any>[];
   maxArrayBufferLength: number;
+  maxArrayLength: number;
   signal: AbortSignal | undefined;
   root: {
     resolver: PromiseConstructorResolver;
@@ -165,12 +171,17 @@ export function createDeserializerContext(
   if (!Number.isSafeInteger(maxArrayBufferLength) || maxArrayBufferLength < 0) {
     throw new RangeError('maxArrayBufferLength must be a non-negative safe integer');
   }
+  const maxArrayLength = options.maxArrayLength ?? DEFAULT_MAX_ARRAY_LENGTH;
+  if (!Number.isSafeInteger(maxArrayLength) || maxArrayLength < 0) {
+    throw new RangeError('maxArrayLength must be a non-negative safe integer');
+  }
   return {
     read: options.read,
     onError: options.onError,
     refs: options.refs || createReferenceMap(),
     plugins: options.plugins,
     maxArrayBufferLength,
+    maxArrayLength,
     signal: options.signal,
     features: options.features ?? ALL_ENABLED ^ (options.disabledFeatures || 0),
     done: false,
@@ -771,6 +782,9 @@ function deserializeObjectFlag(ctx: DeserializerContext) {
 function deserializeArray(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Array);
   const length = deserializeUint(ctx);
+  if (length > ctx.maxArrayLength) {
+    throw new RangeError('Array exceeds maxArrayLength (' + ctx.maxArrayLength + ')');
+  }
   createPending(ctx, id);
   upsert(ctx, id, new Array(length));
 }

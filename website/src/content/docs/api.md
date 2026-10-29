@@ -80,6 +80,7 @@ The stop function cancels every source that is still running and runs plugin cle
 | `disabledFeatures` | `number` | `0` | `Feature` flags to reject. |
 | `features` | `number` | all features | Features to accept. Overrides `disabledFeatures`. |
 | `maxArrayBufferLength` | `number` | `1000000` | Largest `ArrayBuffer`, in bytes, that the input may hold. |
+| `maxArrayLength` | `number` | `1000000` | Largest array length that the input may hold. |
 | `signal` | `AbortSignal` | none | Stops decoding when it aborts, and rejects the values still pending with its reason. |
 
 The promise resolves with `{ value, pending }` once the root value is decoded. `pending` counts the promises and streams in the value that have not settled or ended. Promises and streams inside it may still be pending. It rejects if the input is invalid, ends early or `read()` rejects before the root value is ready.
