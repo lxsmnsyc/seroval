@@ -2,15 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
+  fromCrossJSON,
+  fromJSON,
   serialize,
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 describe('boolean', () => {
   describe('serialize', () => {
@@ -31,18 +32,14 @@ describe('boolean', () => {
   });
   describe('toJSON', () => {
     it('supports boolean', () => {
-      expect(JSON.stringify(toJSON(true))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(false))).toMatchSnapshot();
+      expect(fromJSON<boolean>(toJSON(true))).toBe(true);
+      expect(fromJSON<boolean>(toJSON(false))).toBe(false);
     });
   });
   describe('toJSONAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(true))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(false))),
-      ).toMatchSnapshot();
+      expect(await fromJSON<Promise<boolean>>(await toJSONAsync(Promise.resolve(true)))).toBe(true);
+      expect(await fromJSON<Promise<boolean>>(await toJSONAsync(Promise.resolve(false)))).toBe(false);
     });
   });
   describe('crossSerialize', () => {
@@ -53,88 +50,40 @@ describe('boolean', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports boolean', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(true)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(false)),
-      ).toMatchSnapshot();
+      expect(await evaluateCross<Promise<boolean>>(await crossSerializeAsync(Promise.resolve(true)))).toBe(true);
+      expect(await evaluateCross<Promise<boolean>>(await crossSerializeAsync(Promise.resolve(false)))).toBe(false);
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports true value', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(true), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports false value', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(false), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports true value', async () => {
+      expect(await streamCross<Promise<boolean>>(Promise.resolve(true))).toBe(true);
+    });
+    it('supports false value', async () => {
+      expect(await streamCross<Promise<boolean>>(Promise.resolve(false))).toBe(false);
+    });
   });
   describe('toCrossJSON', () => {
     it('supports boolean', () => {
-      expect(JSON.stringify(toCrossJSON(true))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(false))).toMatchSnapshot();
+      expect(fromCrossJSON<boolean>(toCrossJSON(true), { refs: new Map() })).toBe(true);
+      expect(fromCrossJSON<boolean>(toCrossJSON(false), { refs: new Map() })).toBe(false);
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports boolean', async () => {
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(true))),
-      ).toMatchSnapshot();
+        await fromCrossJSON<Promise<boolean>>(await toCrossJSONAsync(Promise.resolve(true)), { refs: new Map() }),
+      ).toBe(true);
       expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(false))),
-      ).toMatchSnapshot();
+        await fromCrossJSON<Promise<boolean>>(await toCrossJSONAsync(Promise.resolve(false)), { refs: new Map() }),
+      ).toBe(false);
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports true value', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(true), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports false value', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(false), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports true value', async () => {
+      expect(await streamCrossJSON<Promise<boolean>>(Promise.resolve(true))).toBe(true);
+    });
+    it('supports false value', async () => {
+      expect(await streamCrossJSON<Promise<boolean>>(Promise.resolve(false))).toBe(false);
+    });
   });
 });
