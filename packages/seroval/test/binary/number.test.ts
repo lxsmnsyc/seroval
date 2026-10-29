@@ -51,6 +51,17 @@ describe('binary number', () => {
     expect(Object.is(value, -0)).toBe(true);
   });
 
+  it('supports a repeated -0 followed by other values', async () => {
+    // A repeated -0 once took a fresh id without registering it, so the next
+    // value was declared with the same id and the payload was rejected.
+    const { value } = await roundtrip<unknown[]>([-0, -0, 'next', 0]);
+    expect(value).toHaveLength(4);
+    expect(Object.is(value[0], -0)).toBe(true);
+    expect(Object.is(value[1], -0)).toBe(true);
+    expect(value[2]).toBe('next');
+    expect(Object.is(value[3], 0)).toBe(true);
+  });
+
   it('supports 0', async () => {
     const { value } = await roundtrip<number>(0);
     expect(Object.is(value, 0)).toBe(true);

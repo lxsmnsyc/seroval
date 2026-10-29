@@ -961,8 +961,10 @@ function serialize<T>(ctx: SerializerContext, current: T): number {
   if (CURRENT_DEPTH >= ctx.depthLimit) {
     throw new SerovalDepthLimitError(ctx.depthLimit);
   }
-  // `-0` must not reuse the id of `0`: both are the same Map key.
-  const currentID = Object.is(current, -0) ? NIL : ctx.refs.get(current);
+  // `-0` must not reuse the id of `0`: both are the same Map key. It is
+  // stored under its own key, so a repeated `-0` reuses its first id instead
+  // of being registered again, which would hand out an id twice.
+  const currentID = ctx.refs.get(Object.is(current, -0) ? NEG_ZERO_KEY : current);
   if (currentID != null) {
     return currentID;
   }
