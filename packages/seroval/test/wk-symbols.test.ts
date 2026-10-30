@@ -2,17 +2,33 @@ import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
-  // deserialize,
-  // fromJSON,
+  deserialize,
+  fromCrossJSON,
+  fromJSON,
   serialize,
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
+
+const WELL_KNOWN_SYMBOLS = [
+  Symbol.asyncIterator,
+  Symbol.hasInstance,
+  Symbol.isConcatSpreadable,
+  Symbol.iterator,
+  Symbol.match,
+  Symbol.matchAll,
+  Symbol.replace,
+  Symbol.search,
+  Symbol.species,
+  Symbol.split,
+  Symbol.toPrimitive,
+  Symbol.toStringTag,
+  Symbol.unscopables,
+];
 
 describe('well-known symbols', () => {
   describe('serialize', () => {
@@ -34,111 +50,26 @@ describe('well-known symbols', () => {
   });
   describe('serializeAsync', () => {
     it('supports well-known symbols', async () => {
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.asyncIterator)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.hasInstance)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.isConcatSpreadable)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.iterator)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.match)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.matchAll)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.replace)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.search)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.species)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.split)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.toPrimitive)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.toStringTag)),
-      ).toMatchSnapshot();
-      expect(
-        await serializeAsync(Promise.resolve(Symbol.unscopables)),
-      ).toMatchSnapshot();
+      for (const symbol of WELL_KNOWN_SYMBOLS) {
+        const result = await serializeAsync(Promise.resolve(symbol));
+        expect(await deserialize<Promise<symbol>>(result)).toBe(symbol);
+      }
     });
   });
   describe('toJSON', () => {
     it('supports well-known symbols', () => {
-      expect(JSON.stringify(toJSON(Symbol.asyncIterator))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.hasInstance))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toJSON(Symbol.isConcatSpreadable)),
-      ).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.iterator))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.match))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.matchAll))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.replace))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.search))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.species))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.split))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.toPrimitive))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.toStringTag))).toMatchSnapshot();
-      expect(JSON.stringify(toJSON(Symbol.unscopables))).toMatchSnapshot();
+      for (const symbol of WELL_KNOWN_SYMBOLS) {
+        const result = toJSON(symbol);
+        expect(fromJSON<symbol>(result)).toBe(symbol);
+      }
     });
   });
   describe('toJSONAsync', () => {
     it('supports well-known symbols', async () => {
-      expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Symbol.asyncIterator)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.hasInstance))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toJSONAsync(Promise.resolve(Symbol.isConcatSpreadable)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.iterator))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.match))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.matchAll))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.replace))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.search))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.species))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.split))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.toPrimitive))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.toStringTag))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toJSONAsync(Promise.resolve(Symbol.unscopables))),
-      ).toMatchSnapshot();
+      for (const symbol of WELL_KNOWN_SYMBOLS) {
+        const result = await toJSONAsync(Promise.resolve(symbol));
+        expect(await fromJSON<Promise<symbol>>(result)).toBe(symbol);
+      }
     });
   });
   describe('crossSerialize', () => {
@@ -203,760 +134,70 @@ describe('well-known symbols', () => {
   });
   describe('crossSerializeAsync', () => {
     it('supports well-known symbols', async () => {
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.asyncIterator)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.hasInstance)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.isConcatSpreadable)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.iterator)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.match)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.matchAll)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.replace)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.search)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.species)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.split)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.toPrimitive)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.toStringTag)),
-      ).toMatchSnapshot();
-      expect(
-        await crossSerializeAsync(Promise.resolve(Symbol.unscopables)),
-      ).toMatchSnapshot();
+      for (const symbol of WELL_KNOWN_SYMBOLS) {
+        const result = await crossSerializeAsync(Promise.resolve(symbol));
+        expect(await evaluateCross<Promise<symbol>>(result)).toBe(symbol);
+      }
     });
     describe('scoped', () => {
       it('supports well-known symbols', async () => {
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.asyncIterator), {
+        for (const symbol of WELL_KNOWN_SYMBOLS) {
+          const result = await crossSerializeAsync(Promise.resolve(symbol), {
             scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.hasInstance), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(
-            Promise.resolve(Symbol.isConcatSpreadable),
-            { scopeId: 'example' },
-          ),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.iterator), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.match), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.matchAll), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.replace), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.search), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.species), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.split), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.toPrimitive), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.toStringTag), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
-        expect(
-          await crossSerializeAsync(Promise.resolve(Symbol.unscopables), {
-            scopeId: 'example',
-          }),
-        ).toMatchSnapshot();
+          });
+          expect(await evaluateCross<Promise<symbol>>(result, 'example')).toBe(
+            symbol,
+          );
+        }
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Symbol.asyncIterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.asyncIterator), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.hasInstance', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.hasInstance), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.isConcatSpreadable', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.isConcatSpreadable), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.iterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.iterator), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.match', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.match), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.matchAll', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.matchAll), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.replace', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.replace), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.search', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.search), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.species', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.species), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.split', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.split), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.toPrimitive', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.toPrimitive), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.toStringTag', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.toStringTag), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.unscopables', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(Symbol.unscopables), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    for (const symbol of WELL_KNOWN_SYMBOLS) {
+      it(`supports ${String(symbol)}`, async () => {
+        expect(await streamCross<Promise<symbol>>(Promise.resolve(symbol))).toBe(
+          symbol,
+        );
+      });
+    }
     describe('scoped', () => {
-      it('supports Symbol.asyncIterator', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.asyncIterator), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.hasInstance', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.hasInstance), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.isConcatSpreadable', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.isConcatSpreadable), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.iterator', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.iterator), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.match', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.match), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.matchAll', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.matchAll), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.replace', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.replace), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.search', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.search), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.species', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.species), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.split', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.split), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.toPrimitive', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.toPrimitive), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.toStringTag', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.toStringTag), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
-      it('supports Symbol.unscopables', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(Symbol.unscopables), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      for (const symbol of WELL_KNOWN_SYMBOLS) {
+        it(`supports ${String(symbol)}`, async () => {
+          const back = await streamCross<Promise<symbol>>(
+            Promise.resolve(symbol),
+            { scopeId: 'example' },
+          );
+          expect(back).toBe(symbol);
+        });
+      }
     });
   });
   describe('toCrossJSON', () => {
     it('supports well-known symbols', () => {
-      expect(
-        JSON.stringify(toCrossJSON(Symbol.asyncIterator)),
-      ).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.hasInstance))).toMatchSnapshot();
-      expect(
-        JSON.stringify(toCrossJSON(Symbol.isConcatSpreadable)),
-      ).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.iterator))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.match))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.matchAll))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.replace))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.search))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.species))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.split))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.toPrimitive))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.toStringTag))).toMatchSnapshot();
-      expect(JSON.stringify(toCrossJSON(Symbol.unscopables))).toMatchSnapshot();
+      for (const symbol of WELL_KNOWN_SYMBOLS) {
+        const result = toCrossJSON(symbol);
+        expect(fromCrossJSON<symbol>(result, { refs: new Map() })).toBe(symbol);
+      }
     });
   });
   describe('toCrossJSONAsync', () => {
     it('supports well-known symbols', async () => {
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.asyncIterator)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.hasInstance)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.isConcatSpreadable)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.iterator)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.match))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.matchAll)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.replace))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.search))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.species))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(await toCrossJSONAsync(Promise.resolve(Symbol.split))),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.toPrimitive)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.toStringTag)),
-        ),
-      ).toMatchSnapshot();
-      expect(
-        JSON.stringify(
-          await toCrossJSONAsync(Promise.resolve(Symbol.unscopables)),
-        ),
-      ).toMatchSnapshot();
+      for (const symbol of WELL_KNOWN_SYMBOLS) {
+        const result = await toCrossJSONAsync(Promise.resolve(symbol));
+        const back = await fromCrossJSON<Promise<symbol>>(result, {
+          refs: new Map(),
+        });
+        expect(back).toBe(symbol);
+      }
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Symbol.asyncIterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.asyncIterator), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.hasInstance', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.hasInstance), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.isConcatSpreadable', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.isConcatSpreadable), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.iterator', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.iterator), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.match', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.match), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.matchAll', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.matchAll), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.replace', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.replace), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.search', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.search), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.species', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.species), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.split', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.split), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.toPrimitive', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.toPrimitive), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.toStringTag', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.toStringTag), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
-    it('supports Symbol.unscopables', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(Symbol.unscopables), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    for (const symbol of WELL_KNOWN_SYMBOLS) {
+      it(`supports ${String(symbol)}`, async () => {
+        expect(
+          await streamCrossJSON<Promise<symbol>>(Promise.resolve(symbol)),
+        ).toBe(symbol);
+      });
+    }
   });
 });

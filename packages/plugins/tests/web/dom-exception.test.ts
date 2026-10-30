@@ -1,7 +1,6 @@
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -9,12 +8,12 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from 'seroval';
 import { describe, expect, it } from 'vitest';
 import { DOMExceptionPlugin } from '../../web';
+import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
 
 const EXAMPLE_MESSAGE = 'This is an example message.';
 const EXAMPLE_NAME = 'Example';
@@ -38,7 +37,6 @@ describe('DOMException', () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [DOMExceptionPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(DOMException);
       expect(back.message).toBe(EXAMPLE.message);
@@ -50,7 +48,6 @@ describe('DOMException', () => {
       const result = toJSON(EXAMPLE, {
         plugins: [DOMExceptionPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result, {
         plugins: [DOMExceptionPlugin],
       });
@@ -64,7 +61,6 @@ describe('DOMException', () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE), {
         plugins: [DOMExceptionPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result, {
         plugins: [DOMExceptionPlugin],
       });
@@ -95,7 +91,10 @@ describe('DOMException', () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [DOMExceptionPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(back).toBeInstanceOf(DOMException);
+      expect(back.message).toBe(EXAMPLE.message);
+      expect(back.name).toBe(EXAMPLE.name);
     });
     describe('scoped', () => {
       it('supports DOMException', async () => {
@@ -103,43 +102,32 @@ describe('DOMException', () => {
           plugins: [DOMExceptionPlugin],
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBeInstanceOf(DOMException);
+        expect(back.message).toBe(EXAMPLE.message);
+        expect(back.name).toBe(EXAMPLE.name);
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports DOMException', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(EXAMPLE), {
-          plugins: [DOMExceptionPlugin],
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports DOMException', async () => {
+      const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [DOMExceptionPlugin],
+      });
+      expect(back).toBeInstanceOf(DOMException);
+      expect(back.message).toBe(EXAMPLE.message);
+      expect(back.name).toBe(EXAMPLE.name);
+    });
     describe('scoped', () => {
-      it('supports DOMException', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(EXAMPLE), {
-            plugins: [DOMExceptionPlugin],
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports DOMException', async () => {
+        const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+          plugins: [DOMExceptionPlugin],
+          scopeId: 'example',
+        });
+        expect(back).toBeInstanceOf(DOMException);
+        expect(back.message).toBe(EXAMPLE.message);
+        expect(back.name).toBe(EXAMPLE.name);
+      });
     });
   });
   describe('toCrossJSON', () => {
@@ -147,7 +135,6 @@ describe('DOMException', () => {
       const result = toCrossJSON(EXAMPLE, {
         plugins: [DOMExceptionPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         plugins: [DOMExceptionPlugin],
         refs: new Map(),
@@ -161,7 +148,6 @@ describe('DOMException', () => {
       const result = await toCrossJSONAsync(example, {
         plugins: [DOMExceptionPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<typeof example>(result, {
         plugins: [DOMExceptionPlugin],
         refs: new Map(),
@@ -170,20 +156,13 @@ describe('DOMException', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports DOMException', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(EXAMPLE), {
-          plugins: [DOMExceptionPlugin],
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports DOMException', async () => {
+      const back = await streamCrossJSON<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [DOMExceptionPlugin],
+      });
+      expect(back).toBeInstanceOf(DOMException);
+      expect(back.message).toBe(EXAMPLE.message);
+      expect(back.name).toBe(EXAMPLE.name);
+    });
   });
 });

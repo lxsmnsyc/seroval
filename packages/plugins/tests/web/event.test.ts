@@ -1,7 +1,6 @@
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -9,12 +8,12 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from 'seroval';
 import { describe, expect, it } from 'vitest';
 import EventPlugin from '../../web/event';
+import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
 
 const EXAMPLE_EVENT_TYPE = 'example';
 const EXAMPLE = new Event(EXAMPLE_EVENT_TYPE);
@@ -35,7 +34,6 @@ describe('Event', () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [EventPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Event);
     });
@@ -45,7 +43,6 @@ describe('Event', () => {
       const result = toJSON(EXAMPLE, {
         plugins: [EventPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result, {
         plugins: [EventPlugin],
       });
@@ -57,7 +54,6 @@ describe('Event', () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE), {
         plugins: [EventPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result, {
         plugins: [EventPlugin],
       });
@@ -86,7 +82,9 @@ describe('Event', () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [EventPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(back).toBeInstanceOf(Event);
+      expect(back.type).toBe(EXAMPLE_EVENT_TYPE);
     });
     describe('scoped', () => {
       it('supports Event', async () => {
@@ -94,43 +92,29 @@ describe('Event', () => {
           plugins: [EventPlugin],
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBeInstanceOf(Event);
+        expect(back.type).toBe(EXAMPLE_EVENT_TYPE);
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Event', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(EXAMPLE), {
-          plugins: [EventPlugin],
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Event', async () => {
+      const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [EventPlugin],
+      });
+      expect(back).toBeInstanceOf(Event);
+      expect(back.type).toBe(EXAMPLE_EVENT_TYPE);
+    });
     describe('scoped', () => {
-      it('supports Event', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(EXAMPLE), {
-            plugins: [EventPlugin],
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports Event', async () => {
+        const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+          plugins: [EventPlugin],
+          scopeId: 'example',
+        });
+        expect(back).toBeInstanceOf(Event);
+        expect(back.type).toBe(EXAMPLE_EVENT_TYPE);
+      });
     });
   });
   describe('toCrossJSON', () => {
@@ -138,7 +122,6 @@ describe('Event', () => {
       const result = toCrossJSON(EXAMPLE, {
         plugins: [EventPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         plugins: [EventPlugin],
         refs: new Map(),
@@ -152,7 +135,6 @@ describe('Event', () => {
       const result = await toCrossJSONAsync(example, {
         plugins: [EventPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<typeof example>(result, {
         plugins: [EventPlugin],
         refs: new Map(),
@@ -161,20 +143,12 @@ describe('Event', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Event', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(EXAMPLE), {
-          plugins: [EventPlugin],
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Event', async () => {
+      const back = await streamCrossJSON<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [EventPlugin],
+      });
+      expect(back).toBeInstanceOf(Event);
+      expect(back.type).toBe(EXAMPLE_EVENT_TYPE);
+    });
   });
 });

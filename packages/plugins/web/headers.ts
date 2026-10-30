@@ -1,5 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import { expectEntries, expectString } from './validate';
 
 function convertHeaders(instance: Headers): HeadersInit {
   const items: HeadersInit = [];
@@ -39,7 +40,7 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode
     return 'new Headers(' + ctx.serialize(node.value) + ')';
   },
   deserialize(node, ctx) {
-    return new Headers(ctx.deserialize<HeadersInit>(node.value));
+    return new Headers(expectEntries(ctx.deserialize(node.value), expectString));
   },
 });
 

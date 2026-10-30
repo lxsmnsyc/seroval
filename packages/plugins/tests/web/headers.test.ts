@@ -1,7 +1,6 @@
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -9,12 +8,12 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from 'seroval';
 import { describe, expect, it } from 'vitest';
 import HeadersPlugin from '../../web/headers';
+import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
 
 const EXAMPLE = new Headers([
   ['Content-Type', 'text/plain'],
@@ -39,7 +38,6 @@ describe('Headers', () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [HeadersPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(Headers);
       // oxlint-disable-next-line typescript/no-base-to-string -- The existing check compares the default string tags.
@@ -51,7 +49,6 @@ describe('Headers', () => {
       const result = toJSON(EXAMPLE, {
         plugins: [HeadersPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<Headers>(result, {
         plugins: [HeadersPlugin],
       });
@@ -65,7 +62,6 @@ describe('Headers', () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE), {
         plugins: [HeadersPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result, {
         plugins: [HeadersPlugin],
       });
@@ -96,7 +92,9 @@ describe('Headers', () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [HeadersPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(back).toBeInstanceOf(Headers);
+      expect([...back]).toEqual([...EXAMPLE]);
     });
     describe('scoped', () => {
       it('supports Headers', async () => {
@@ -104,43 +102,29 @@ describe('Headers', () => {
           plugins: [HeadersPlugin],
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBeInstanceOf(Headers);
+        expect([...back]).toEqual([...EXAMPLE]);
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Headers', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(EXAMPLE), {
-          plugins: [HeadersPlugin],
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Headers', async () => {
+      const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [HeadersPlugin],
+      });
+      expect(back).toBeInstanceOf(Headers);
+      expect([...back]).toEqual([...EXAMPLE]);
+    });
     describe('scoped', () => {
-      it('supports Headers', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(EXAMPLE), {
-            plugins: [HeadersPlugin],
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports Headers', async () => {
+        const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+          plugins: [HeadersPlugin],
+          scopeId: 'example',
+        });
+        expect(back).toBeInstanceOf(Headers);
+        expect([...back]).toEqual([...EXAMPLE]);
+      });
     });
   });
   describe('toCrossJSON', () => {
@@ -148,7 +132,6 @@ describe('Headers', () => {
       const result = toCrossJSON(EXAMPLE, {
         plugins: [HeadersPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         plugins: [HeadersPlugin],
         refs: new Map(),
@@ -162,7 +145,6 @@ describe('Headers', () => {
       const result = await toCrossJSONAsync(example, {
         plugins: [HeadersPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<typeof example>(result, {
         plugins: [HeadersPlugin],
         refs: new Map(),
@@ -171,20 +153,12 @@ describe('Headers', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Headers', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(EXAMPLE), {
-          plugins: [HeadersPlugin],
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Headers', async () => {
+      const back = await streamCrossJSON<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [HeadersPlugin],
+      });
+      expect(back).toBeInstanceOf(Headers);
+      expect([...back]).toEqual([...EXAMPLE]);
+    });
   });
 });

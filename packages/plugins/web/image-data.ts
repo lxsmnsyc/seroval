@@ -1,6 +1,24 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectNumber } from './validate';
+import { expectNumber, expectObject, expectOptionalString } from './validate';
+
+// The constructor converts any other first argument to a number, which calls
+// its `valueOf`.
+function expectImageDataArray(value: unknown): Uint8ClampedArray<ArrayBuffer> {
+  if (!(value instanceof Uint8ClampedArray)) {
+    throw new Error('Expected a Uint8ClampedArray.');
+  }
+  return value as Uint8ClampedArray<ArrayBuffer>;
+}
+
+// Copies only the known fields, each checked, so the constructor never
+// converts an input object to a string.
+function expectImageDataSettings(value: unknown): ImageDataSettings {
+  const options = expectObject(value);
+  return {
+    colorSpace: expectOptionalString(options.colorSpace) as PredefinedColorSpace | undefined,
+  };
+}
 
 type ImageDataNode = {
   data: SerovalNode;
@@ -65,10 +83,10 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
   },
   deserialize(node, ctx) {
     return new ImageData(
-      ctx.deserialize<Uint8ClampedArray<ArrayBuffer>>(node.data),
+      expectImageDataArray(ctx.deserialize(node.data)),
       expectNumber(ctx.deserialize(node.width)),
       expectNumber(ctx.deserialize(node.height)),
-      ctx.deserialize<ImageDataSettings>(node.options),
+      expectImageDataSettings(ctx.deserialize(node.options)),
     );
   },
 });
