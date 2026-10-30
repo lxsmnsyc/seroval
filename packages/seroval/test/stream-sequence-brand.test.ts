@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createLiveStream, isLiveStream } from '../src/core/live-stream';
+import { LiveStream, createLiveStream, isLiveStream } from '../src/core/live-stream';
 import { createSequence, isSequence } from '../src/core/sequence';
 import { createStream, isStream } from '../src/core/stream';
 
@@ -34,6 +34,19 @@ describe('Stream/Sequence identity', () => {
     };
     expect(isLiveStream(forged)).toBe(false);
     expect(isStream(forged)).toBe(false);
+  });
+
+  it('rejects an object made from the LiveStream prototype', () => {
+    const forged: unknown = Object.create(LiveStream.prototype);
+    expect(isLiveStream(forged)).toBe(false);
+    expect(isStream(forged)).toBe(false);
+  });
+
+  it('recognizes a LiveStream behind a Proxy', () => {
+    const { stream } = createLiveStream();
+    const proxied: unknown = new Proxy(stream, {});
+    expect(isLiveStream(proxied)).toBe(true);
+    expect(isStream(proxied)).toBe(true);
   });
 
   it('recognizes a genuine Sequence', () => {
