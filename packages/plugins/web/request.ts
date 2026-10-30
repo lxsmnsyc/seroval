@@ -43,6 +43,41 @@ function createStreamRequestOptions(
   return options;
 }
 
+// Firefox has no `Request.body` getter, so `undefined` does not mean the
+// request has no body. GET and HEAD requests cannot carry one.
+function hasRequestBody(current: Request): boolean {
+  if (current.bodyUsed) {
+    return false;
+  }
+  if (current.body !== undefined) {
+    return current.body !== null;
+  }
+  return current.method !== 'GET' && current.method !== 'HEAD';
+}
+
+function createRequestBodyStream(current: Request): ReadableStream {
+  const clone = current.clone();
+  if (clone.body) {
+    return clone.body;
+  }
+  // Without `Request.body`, read the whole body and push it into a new stream.
+  return new ReadableStream({
+    start(controller) {
+      clone.arrayBuffer().then(
+        (buffer) => {
+          if (buffer.byteLength > 0) {
+            controller.enqueue(new Uint8Array(buffer));
+          }
+          controller.close();
+        },
+        (error: unknown) => {
+          controller.error(error);
+        },
+      );
+    },
+  });
+}
+
 // Copies only the known fields, each checked, so the constructor never
 // converts an input object to a string.
 function expectRequestOptions(value: unknown): RequestInit & { duplex?: 'half' } {
@@ -85,7 +120,7 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
         options: await ctx.parse(
           createRequestOptions(
             value,
-            value.body && !value.bodyUsed ? await value.clone().arrayBuffer() : null,
+            hasRequestBody(value) ? await value.clone().arrayBuffer() : null,
           ),
         ),
       };
@@ -96,7 +131,7 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
         options: ctx.parse(
           createStreamRequestOptions(
             value,
-            value.body && !value.bodyUsed ? value.clone().body : null,
+            hasRequestBody(value) ? createRequestBodyStream(value) : null,
           ),
         ),
       };
