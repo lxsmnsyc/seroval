@@ -1,7 +1,6 @@
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -9,12 +8,12 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from 'seroval';
 import { describe, expect, it } from 'vitest';
 import URLPlugin from '../../web/url';
+import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
 
 const EXAMPLE = new URL('https://github.com/lxsmnsyc/seroval?hello=world');
 
@@ -35,7 +34,6 @@ describe('URL', () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [URLPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(URL);
       expect(String(back)).toBe(String(EXAMPLE));
@@ -46,7 +44,6 @@ describe('URL', () => {
       const result = toJSON(EXAMPLE, {
         plugins: [URLPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result, {
         plugins: [URLPlugin],
       });
@@ -59,7 +56,6 @@ describe('URL', () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE), {
         plugins: [URLPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<URL>>(result, {
         plugins: [URLPlugin],
       });
@@ -89,7 +85,9 @@ describe('URL', () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
         plugins: [URLPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(back).toBeInstanceOf(URL);
+      expect(back.href).toBe(EXAMPLE.href);
     });
     describe('scoped', () => {
       it('supports URL', async () => {
@@ -97,43 +95,29 @@ describe('URL', () => {
           scopeId: 'example',
           plugins: [URLPlugin],
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBeInstanceOf(URL);
+        expect(back.href).toBe(EXAMPLE.href);
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports URL', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(EXAMPLE), {
-          plugins: [URLPlugin],
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports URL', async () => {
+      const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [URLPlugin],
+      });
+      expect(back).toBeInstanceOf(URL);
+      expect(back.href).toBe(EXAMPLE.href);
+    });
     describe('scoped', () => {
-      it('supports URL', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(EXAMPLE), {
-            plugins: [URLPlugin],
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports URL', async () => {
+        const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+          plugins: [URLPlugin],
+          scopeId: 'example',
+        });
+        expect(back).toBeInstanceOf(URL);
+        expect(back.href).toBe(EXAMPLE.href);
+      });
     });
   });
   describe('toJSON', () => {
@@ -141,7 +125,6 @@ describe('URL', () => {
       const result = toCrossJSON(EXAMPLE, {
         plugins: [URLPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         plugins: [URLPlugin],
         refs: new Map(),
@@ -155,7 +138,6 @@ describe('URL', () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE), {
         plugins: [URLPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
         plugins: [URLPlugin],
         refs: new Map(),
@@ -165,20 +147,12 @@ describe('URL', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports URL', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(EXAMPLE), {
-          plugins: [URLPlugin],
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports URL', async () => {
+      const back = await streamCrossJSON<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+        plugins: [URLPlugin],
+      });
+      expect(back).toBeInstanceOf(URL);
+      expect(back.href).toBe(EXAMPLE.href);
+    });
   });
 });

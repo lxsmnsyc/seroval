@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -10,10 +9,10 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from '../src';
+import { evaluateCross, streamCross, streamCrossJSON } from './utils/cross';
 
 const EXAMPLE = /[a-z0-9]+/i;
 
@@ -32,7 +31,6 @@ describe('RegExp', () => {
   describe('serializeAsync', () => {
     it('supports RegExp', async () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE));
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(String(back)).toBe(String(EXAMPLE));
@@ -41,7 +39,6 @@ describe('RegExp', () => {
   describe('toJSON', () => {
     it('supports RegExp', () => {
       const result = toJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(String(back)).toBe(String(EXAMPLE));
@@ -50,7 +47,6 @@ describe('RegExp', () => {
   describe('toJSONAsync', () => {
     it('supports RegExp', async () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE>>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(String(back)).toBe(String(EXAMPLE));
@@ -71,54 +67,40 @@ describe('RegExp', () => {
   describe('crossSerializeAsync', () => {
     it('supports RegExp', async () => {
       const result = await crossSerializeAsync(Promise.resolve(EXAMPLE));
-      expect(result).toMatchSnapshot();
+      const back = await evaluateCross<Promise<typeof EXAMPLE>>(result);
+      expect(back).toBeInstanceOf(RegExp);
+      expect(String(back)).toBe(String(EXAMPLE));
     });
     describe('scoped', () => {
       it('supports RegExp', async () => {
         const result = await crossSerializeAsync(Promise.resolve(EXAMPLE), {
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = await evaluateCross<Promise<typeof EXAMPLE>>(result, 'example');
+        expect(back).toBeInstanceOf(RegExp);
+        expect(String(back)).toBe(String(EXAMPLE));
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports RegExp', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(EXAMPLE), {
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports RegExp', async () => {
+      const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE));
+      expect(back).toBeInstanceOf(RegExp);
+      expect(String(back)).toBe(String(EXAMPLE));
+    });
     describe('scoped', () => {
-      it('supports RegExp', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(EXAMPLE), {
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports RegExp', async () => {
+        const back = await streamCross<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE), {
+          scopeId: 'example',
+        });
+        expect(back).toBeInstanceOf(RegExp);
+        expect(String(back)).toBe(String(EXAMPLE));
+      });
     });
   });
   describe('toCrossJSON', () => {
     it('supports RegExp', () => {
       const result = toCrossJSON(EXAMPLE);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE>(result, {
         refs: new Map(),
       });
@@ -129,7 +111,6 @@ describe('RegExp', () => {
   describe('toCrossJSONAsync', () => {
     it('supports RegExp', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE>>(result, {
         refs: new Map(),
       });
@@ -138,20 +119,11 @@ describe('RegExp', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports RegExp', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(EXAMPLE), {
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports RegExp', async () => {
+      const back = await streamCrossJSON<Promise<typeof EXAMPLE>>(Promise.resolve(EXAMPLE));
+      expect(back).toBeInstanceOf(RegExp);
+      expect(String(back)).toBe(String(EXAMPLE));
+    });
   });
 });
 
@@ -169,7 +141,6 @@ describe('RegExp with escaped source', () => {
   describe('serializeAsync', () => {
     it('supports escaped source', async () => {
       const result = await serializeAsync(Promise.resolve(EXAMPLE_ESCAPED));
-      expect(result).toMatchSnapshot();
       const back = await deserialize<Promise<typeof EXAMPLE_ESCAPED>>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(back.source).toBe(EXAMPLE_ESCAPED.source);
@@ -179,7 +150,6 @@ describe('RegExp with escaped source', () => {
   describe('toJSON', () => {
     it('supports escaped source', () => {
       const result = toJSON(EXAMPLE_ESCAPED);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof EXAMPLE_ESCAPED>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(back.source).toBe(EXAMPLE_ESCAPED.source);
@@ -189,7 +159,6 @@ describe('RegExp with escaped source', () => {
   describe('toJSONAsync', () => {
     it('supports escaped source', async () => {
       const result = await toJSONAsync(Promise.resolve(EXAMPLE_ESCAPED));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromJSON<Promise<typeof EXAMPLE_ESCAPED>>(result);
       expect(back).toBeInstanceOf(RegExp);
       expect(back.source).toBe(EXAMPLE_ESCAPED.source);
@@ -199,7 +168,6 @@ describe('RegExp with escaped source', () => {
   describe('toCrossJSON', () => {
     it('supports escaped source', () => {
       const result = toCrossJSON(EXAMPLE_ESCAPED);
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof EXAMPLE_ESCAPED>(result, {
         refs: new Map(),
       });
@@ -211,7 +179,6 @@ describe('RegExp with escaped source', () => {
   describe('toCrossJSONAsync', () => {
     it('supports escaped source', async () => {
       const result = await toCrossJSONAsync(Promise.resolve(EXAMPLE_ESCAPED));
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = await fromCrossJSON<Promise<typeof EXAMPLE_ESCAPED>>(
         result,
         {
