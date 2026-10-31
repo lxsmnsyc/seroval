@@ -8,11 +8,10 @@ import {
   serialize,
   toJSON,
 } from 'seroval';
-import { version } from '../../../packages/seroval/package.json';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
+import { SHORT_VERSION } from '../lib/ui';
 
-const SHORT_VERSION = version.split('.').slice(0, 2).join('.');
 const INSTALL_COMMAND = 'npm install seroval';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 

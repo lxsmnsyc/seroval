@@ -1,11 +1,7 @@
 import type { JSX } from '@solidjs/web';
-import { version } from '../../../packages/seroval/package.json';
 import { FIRST_PAGE } from '../lib/docs';
-import { REPOSITORY_URL, menuOpen, setMenuOpen, setSearchOpen } from '../lib/ui';
+import { REPOSITORY_URL, SHORT_VERSION, menuOpen, setMenuOpen, setSearchOpen } from '../lib/ui';
 import { LogoMark, MenuIcon } from './Icons';
-
-// The badge shows the major and minor version, like "v1.7".
-const SHORT_VERSION = version.split('.').slice(0, 2).join('.');
 
 export default function Header(): JSX.Element {
   return (
