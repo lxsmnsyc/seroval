@@ -1,6 +1,5 @@
 import type { CrossSerializeStreamOptions, ToCrossJSONStreamOptions } from 'seroval/write';
 import { crossSerializeStream, getCrossReferenceHeader, toCrossJSONStream } from 'seroval/write';
-import { encodeFrame } from './frame';
 import type { Message } from './message';
 import { DATA, DONE, FAIL, SerovalTransportError } from './message';
 
@@ -24,6 +23,8 @@ export interface WriterOptions<T = unknown> extends MessageSink<T> {
    * serialize. The reader only learns that the value failed.
    */
   onError?: (error: unknown, key: string) => void;
+  /** Closes the writer with the abort reason when it aborts. */
+  signal?: AbortSignal;
 }
 
 export interface JSONWriterOptions
@@ -73,11 +74,23 @@ type StartValue<T> = (value: unknown, callbacks: ValueCallbacks<T>) => (reason?:
 function createWriter<T>(options: WriterOptions<T>, start: StartValue<T>): Writer {
   // The stop function of each value that is still sending.
   const active = new Map<string, (reason?: unknown) => void>();
-  // Every key ever written, so a key cannot start a second value.
-  const keys = new Set<string>();
+  // Every key that `write` used, so a key cannot start a second value. Keys
+  // from `push` are below `ids`, so they need no entry, and a long-lived
+  // writer that only pushes keeps no state for values that are done.
+  const written = new Set<string>();
+  const signal = options.signal;
   let alive = true;
   let flushed = false;
   let ids = 0;
+
+  function isUsed(key: string): boolean {
+    if (written.has(key)) {
+      return true;
+    }
+    // Only the canonical form of a number below `ids` came from `push`.
+    const id = Number(key);
+    return Number.isSafeInteger(id) && id >= 0 && id < ids && String(id) === key;
+  }
 
   function send(message: Message<T>): void | PromiseLike<void> {
     if (alive) {
@@ -89,8 +102,17 @@ function createWriter<T>(options: WriterOptions<T>, start: StartValue<T>): Write
   function finish(): void {
     if (alive) {
       alive = false;
+      signal?.removeEventListener('abort', onAbort);
       options.onDone?.();
     }
+  }
+
+  function onAbort(): void {
+    // An error thrown in an event listener reaches no caller, so a source
+    // that throws while it stops is ignored here.
+    try {
+      close(signal?.reason);
+    } catch {}
   }
 
   function settle(key: string): void {
@@ -99,14 +121,7 @@ function createWriter<T>(options: WriterOptions<T>, start: StartValue<T>): Write
     }
   }
 
-  function write(key: string, value: unknown): void {
-    if (!alive || flushed) {
-      return;
-    }
-    if (keys.has(key)) {
-      throw new SerovalTransportError(`The key "${key}" was already written.`);
-    }
-    keys.add(key);
+  function begin(key: string, value: unknown): void {
     // The value can finish while it starts, before `stop` exists.
     active.set(key, () => {});
     const stop = start(value, {
@@ -130,14 +145,58 @@ function createWriter<T>(options: WriterOptions<T>, start: StartValue<T>): Write
     }
   }
 
+  function close(reason?: unknown): void {
+    if (!alive) {
+      return;
+    }
+    // Tell the reader first, since `finish` stops sending.
+    const stops = [...active.values()];
+    for (const key of active.keys()) {
+      send([FAIL, key]);
+    }
+    active.clear();
+    let failure: { value: unknown } | undefined;
+    for (const stop of stops) {
+      try {
+        stop(reason);
+      } catch (error) {
+        failure ??= { value: error };
+      }
+    }
+    finish();
+    if (failure) {
+      throw failure.value;
+    }
+  }
+
+  // A signal that already aborted closes the writer before any value starts.
+  if (signal?.aborted) {
+    finish();
+  } else {
+    signal?.addEventListener('abort', onAbort);
+  }
+
   return {
-    write,
+    write(key, value) {
+      if (!alive || flushed) {
+        return;
+      }
+      if (isUsed(key)) {
+        throw new SerovalTransportError(`The key "${key}" was already written.`);
+      }
+      written.add(key);
+      begin(key, value);
+    },
     push(value) {
-      while (keys.has(String(ids))) {
+      while (written.has(String(ids))) {
+        written.delete(String(ids));
         ids++;
       }
       const key = String(ids);
-      write(key, value);
+      ids++;
+      if (alive && !flushed) {
+        begin(key, value);
+      }
       return key;
     },
     cancel(key, reason) {
@@ -156,29 +215,7 @@ function createWriter<T>(options: WriterOptions<T>, start: StartValue<T>): Write
         }
       }
     },
-    close(reason) {
-      if (!alive) {
-        return;
-      }
-      // Tell the reader first, since `finish` stops sending.
-      const stops = [...active.values()];
-      for (const key of active.keys()) {
-        send([FAIL, key]);
-      }
-      active.clear();
-      let failure: { value: unknown } | undefined;
-      for (const stop of stops) {
-        try {
-          stop(reason);
-        } catch (error) {
-          failure ??= { value: error };
-        }
-      }
-      finish();
-      if (failure) {
-        throw failure.value;
-      }
-    },
+    close,
   };
 }
 
@@ -247,75 +284,4 @@ export function toJSStream(value: unknown, options: JSWriterOptions): Writer {
   writer.push(value);
   writer.flush();
   return writer;
-}
-
-/** The default `highWaterMark`, in bytes. */
-const DEFAULT_HIGH_WATER_MARK = 64 * 1024;
-
-export interface WebStreamOptions {
-  /**
-   * How many bytes the stream buffers before the writer holds back the next
-   * message. Defaults to 64KiB.
-   */
-  highWaterMark?: number;
-}
-
-/**
- * Turns the messages of a writer into a `ReadableStream` of frames, such as
- * a `fetch` or `Response` body. `start` receives the sink to pass to the
- * writer. Cancelling the stream closes the writer, which stops every source
- * that is still running. Read it with `fromWebStream`.
- */
-export function toWebStream(
-  start: (sink: Required<MessageSink>) => Pick<Writer, 'close'>,
-  options: WebStreamOptions = {},
-): ReadableStream<Uint8Array> {
-  let writer: Pick<Writer, 'close'> | undefined;
-  // Each value that waits for room holds back on its own promise.
-  let waiting: (() => void)[] = [];
-  let closed = false;
-  return new ReadableStream<Uint8Array>(
-    {
-      start(controller) {
-        writer = start({
-          send(message) {
-            if (closed) {
-              return undefined;
-            }
-            const [header, encoded] = encodeFrame(JSON.stringify(message));
-            controller.enqueue(header);
-            controller.enqueue(encoded);
-            // When the queue is full, wait for the next pull.
-            if ((controller.desiredSize ?? 1) <= 0) {
-              return new Promise<void>((resolve) => {
-                waiting.push(resolve);
-              });
-            }
-            return undefined;
-          },
-          onDone() {
-            if (!closed) {
-              closed = true;
-              controller.close();
-            }
-          },
-        });
-      },
-      pull() {
-        const current = waiting;
-        waiting = [];
-        for (const resolve of current) {
-          resolve();
-        }
-      },
-      cancel(reason) {
-        closed = true;
-        waiting = [];
-        writer?.close(reason);
-      },
-    },
-    new ByteLengthQueuingStrategy({
-      highWaterMark: options.highWaterMark ?? DEFAULT_HIGH_WATER_MARK,
-    }),
-  );
 }

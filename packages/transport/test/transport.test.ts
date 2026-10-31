@@ -7,12 +7,11 @@ import {
   createJSReader,
   createJSWriter,
   fromJSONStream,
-  fromWebStream,
   SerovalTransportError,
   toJSONStream,
   toJSStream,
-  toWebStream,
 } from '../src';
+import { fromResponse, fromWebStream, toResponse, toWebStream } from '../src/web';
 
 async function collect(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
   return new Uint8Array(await new Response(stream).arrayBuffer());
@@ -269,6 +268,108 @@ describe('JSON messages', () => {
   });
 });
 
+describe('Writer keys', () => {
+  it('refuses a key that push already used', () => {
+    const writer = createJSONWriter({ send() {} });
+    expect(writer.push('a')).toBe('0');
+    expect(() => writer.write('0', 'b')).toThrow(SerovalTransportError);
+    writer.write('00', 'c');
+    expect(writer.push('d')).toBe('1');
+  });
+
+  it('skips a number that write used before push reaches it', () => {
+    const writer = createJSONWriter({ send() {} });
+    writer.write('2', 'a');
+    expect(writer.push('b')).toBe('0');
+    expect(writer.push('c')).toBe('1');
+    expect(writer.push('d')).toBe('3');
+    expect(() => writer.write('2', 'e')).toThrow(SerovalTransportError);
+  });
+});
+
+describe('Writer signal', () => {
+  it('closes the writer when the signal aborts', async () => {
+    const controller = new AbortController();
+    const reader = createJSONReader();
+    const onDone = vi.fn();
+    const writer = createJSONWriter({ send: pipeTo(reader), onDone, signal: controller.signal });
+    writer.write('a', { later: new Promise(() => {}) });
+    const value = await reader.get<{ later: Promise<unknown> }>('a');
+    controller.abort(new Error('stop'));
+    expect(onDone).toHaveBeenCalledOnce();
+    await expect(value.later).rejects.toThrow(SerovalTransportError);
+    await expect(reader.settled('a')).rejects.toThrow(SerovalTransportError);
+  });
+
+  it('starts closed when the signal already aborted', () => {
+    const controller = new AbortController();
+    controller.abort();
+    const send = vi.fn();
+    const onDone = vi.fn();
+    const writer = createJSONWriter({ send, onDone, signal: controller.signal });
+    writer.write('a', 1);
+    expect(send).not.toHaveBeenCalled();
+    expect(onDone).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Reader settled', () => {
+  it('resolves once everything in the value settled', async () => {
+    const reader = createJSONReader();
+    const writer = createJSONWriter({ send: pipeTo(reader) });
+    let resolve!: (value: number) => void;
+    writer.write('a', { later: new Promise<number>((res) => (resolve = res)) });
+    const settled = vi.fn();
+    void reader.settled('a').then(settled);
+    await reader.get('a');
+    await Promise.resolve();
+    expect(settled).not.toHaveBeenCalled();
+    resolve(1);
+    await expect(reader.settled('a')).resolves.toBeUndefined();
+    expect(settled).toHaveBeenCalledOnce();
+  });
+
+  it('rejects when the writer cancels the value', async () => {
+    const reader = createJSONReader();
+    const writer = createJSONWriter({ send: pipeTo(reader) });
+    writer.write('a', new Promise(() => {}));
+    writer.cancel('a');
+    await expect(reader.settled('a')).rejects.toThrow(SerovalTransportError);
+  });
+
+  it('rejects when the reader cancels or ends first', async () => {
+    const reader = createJSONReader();
+    const writer = createJSONWriter({ send: pipeTo(reader) });
+    writer.write('a', new Promise(() => {}));
+    writer.write('b', new Promise(() => {}));
+    const a = reader.settled('a');
+    reader.cancel('a', new Error('cancelled'));
+    await expect(a).rejects.toThrow('cancelled');
+    reader.end(new Error('ended'));
+    await expect(reader.settled('b')).rejects.toThrow('ended');
+    await expect(reader.settled('c')).rejects.toThrow('ended');
+  });
+
+  it('is on the reader of one value', async () => {
+    const reader = fromJSONStream<{ later: Promise<number> }>();
+    toJSONStream({ later: Promise.resolve(1) }, { send: pipeTo(reader as unknown as Reader) });
+    await expect(reader.settled).resolves.toBeUndefined();
+  });
+});
+
+describe('Reader cancel', () => {
+  it('forgets a value that settled', async () => {
+    const reader = createJSONReader();
+    const writer = createJSONWriter({ send: pipeTo(reader) });
+    writer.write('a', 1);
+    await expect(reader.get('a')).resolves.toBe(1);
+    reader.cancel('a');
+    const next = reader.get('a');
+    reader.end(new Error('ended'));
+    await expect(next).rejects.toThrow('ended');
+  });
+});
+
 describe('Web Streams', () => {
   function toBody(value: unknown, highWaterMark?: number): ReadableStream<Uint8Array> {
     return toWebStream((sink) => toJSONStream(value, sink), { highWaterMark });
@@ -426,6 +527,49 @@ describe('Web Streams', () => {
     const data = new TextDecoder().decode(firstFrame(bytes).subarray(12));
     expect(firstFrame(bytes)).toEqual(frame(data));
     expect(JSON.parse(data)).toEqual([0, '0', { t: 1, s: 'abc' }]);
+  });
+});
+
+describe('Responses', () => {
+  it('sends values through a Response', async () => {
+    const response = toResponse(
+      (sink) => {
+        const writer = createJSONWriter(sink);
+        writer.write('user', { name: 'Ada', later: Promise.resolve(1) });
+        writer.flush();
+        return writer;
+      },
+      { status: 201, headers: { 'x-id': '1' } },
+    );
+    expect(response.status).toBe(201);
+    expect(response.headers.get('x-id')).toBe('1');
+    expect(response.headers.get('content-type')).toBe('application/octet-stream');
+    const reader = createJSONReader();
+    void fromResponse(response, reader);
+    const user = await reader.get<{ name: string; later: Promise<number> }>('user');
+    expect(user.name).toBe('Ada');
+    await expect(user.later).resolves.toBe(1);
+  });
+
+  it('keeps a Content-Type that the options set', () => {
+    const response = toResponse((sink) => toJSONStream(1, sink), {
+      headers: { 'content-type': 'application/x-app' },
+    });
+    expect(response.headers.get('content-type')).toBe('application/x-app');
+  });
+
+  it('fails the reader on an error status', async () => {
+    const reader = createJSONReader();
+    const onError = vi.fn();
+    await fromResponse(new Response('<html>', { status: 500 }), reader, { onError });
+    await expect(reader.get('user')).rejects.toThrow('status 500');
+    expect(onError).toHaveBeenCalledWith(expect.any(SerovalTransportError));
+  });
+
+  it('fails the reader on a response without a body', async () => {
+    const reader = createJSONReader();
+    await fromResponse(new Response(null), reader);
+    await expect(reader.get('user')).rejects.toThrow('no body');
   });
 });
 

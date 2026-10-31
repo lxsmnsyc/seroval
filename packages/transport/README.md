@@ -1,6 +1,6 @@
 # `@seroval/transport`
 
-> Send seroval streams over `fetch`, WebSockets, workers and other connections
+> Send seroval streams over `fetch`, Node streams, WebSockets, workers and other connections
 
 [![NPM](https://img.shields.io/npm/v/@seroval/transport.svg)](https://www.npmjs.com/package/@seroval/transport)
 
@@ -14,7 +14,8 @@ npm install --save seroval @seroval/transport
 
 ```js
 // server
-import { createJSONWriter, toWebStream } from '@seroval/transport/write';
+import { createJSONWriter } from '@seroval/transport/write';
+import { toWebStream } from '@seroval/transport/web';
 
 return new Response(
   toWebStream((sink) => {
@@ -29,7 +30,8 @@ return new Response(
 
 ```js
 // client
-import { createJSONReader, fromWebStream } from '@seroval/transport/read';
+import { createJSONReader } from '@seroval/transport/read';
+import { fromWebStream } from '@seroval/transport/web';
 
 const response = await fetch('/api');
 const reader = createJSONReader();

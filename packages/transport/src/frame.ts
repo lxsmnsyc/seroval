@@ -1,4 +1,8 @@
+import type { Message } from './message';
 import { SerovalTransportError } from './message';
+
+export type { Message } from './message';
+export { SerovalTransportError } from './message';
 
 /**
  * Each frame is a 12-byte header followed by the UTF-8 data. The header holds
@@ -8,7 +12,10 @@ import { SerovalTransportError } from './message';
  * The header is the one SolidStart uses for server functions. The data is a
  * transport message, not a bare node.
  */
-export const FRAME_HEADER_SIZE = 12;
+const FRAME_HEADER_SIZE = 12;
+
+/** The default `maxFrameSize`, in bytes. */
+const DEFAULT_MAX_FRAME_SIZE = 64 * 1024 * 1024;
 
 const SEMICOLON = 0x3b;
 const ZERO = 0x30;
@@ -31,11 +38,12 @@ function createFrameHeader(size: number): Uint8Array {
 }
 
 /**
- * Encodes `data` as one frame. The header and the data are separate pieces,
- * so the data is not copied into a second buffer.
+ * Encodes `message` as one frame of JSON. The header and the data are
+ * separate pieces, so the data is not copied into a second buffer. Send both,
+ * in order.
  */
-export function encodeFrame(data: string): [Uint8Array, Uint8Array] {
-  const encoded = encoder.encode(data);
+export function encodeFrame(message: Message): [Uint8Array, Uint8Array] {
+  const encoded = encoder.encode(JSON.stringify(message));
   if (encoded.length > 0xffffffff) {
     throw new SerovalTransportError(
       `A frame of ${encoded.length} bytes does not fit in the header.`,
@@ -82,98 +90,113 @@ function malformed(): SerovalTransportError {
   return new SerovalTransportError('The stream has a malformed frame.');
 }
 
-export class FrameReader {
-  private reader: ReadableStreamDefaultReader<Uint8Array>;
-
-  private done = false;
-
-  /** Pieces read from the stream and not yet consumed, in order. */
-  private pieces: Uint8Array[] = [];
-
-  private length = 0;
-
-  constructor(
-    stream: ReadableStream<Uint8Array>,
-    private maxFrameSize: number,
-  ) {
-    this.reader = stream.getReader();
-  }
-
-  /** Reads until `size` bytes are buffered or the stream ends. */
-  private async fill(size: number): Promise<void> {
-    while (this.length < size && !this.done) {
-      const result = await this.reader.read();
-      if (result.done) {
-        this.done = true;
-      } else if (result.value.length > 0) {
-        this.pieces.push(result.value);
-        this.length += result.value.length;
-      }
-    }
-  }
-
+export interface FrameDecoderOptions {
   /**
-   * Removes the first `size` bytes from the buffer. Pieces are only joined
-   * when the bytes span more than one, so each byte is copied at most once.
+   * Receives each message, parsed but not checked. Pass it to `reader.push`,
+   * which checks it.
    */
-  private take(size: number): Uint8Array {
-    const first = this.pieces[0];
-    if (first && first.length >= size) {
-      if (first.length === size) {
-        this.pieces.shift();
+  onMessage(message: unknown): void;
+  /** Refuses any frame larger than this many bytes. Defaults to 64MiB. */
+  maxFrameSize?: number;
+}
+
+export interface FrameDecoder {
+  /**
+   * Takes the next bytes, in any size, and passes on every frame they
+   * complete. Throws a `SerovalTransportError` on a malformed or oversized
+   * frame. Stop decoding then.
+   */
+  push(chunk: Uint8Array): void;
+  /** Throws a `SerovalTransportError` when the bytes end inside a frame. */
+  end(): void;
+}
+
+/** Creates a decoder of the frames of `encodeFrame`. */
+export function createFrameDecoder(options: FrameDecoderOptions): FrameDecoder {
+  const maxFrameSize = options.maxFrameSize ?? DEFAULT_MAX_FRAME_SIZE;
+  // Bytes received and not yet decoded, in order.
+  let pieces: Uint8Array[] = [];
+  let length = 0;
+  // The data size of the frame being read, or -1 while its header is read.
+  let size = -1;
+
+  // Removes the first `count` bytes. Pieces are only joined when the bytes
+  // span more than one, so each byte is copied at most once.
+  function take(count: number): Uint8Array {
+    const first = pieces[0];
+    if (first.length >= count) {
+      if (first.length === count) {
+        pieces.shift();
       } else {
-        this.pieces[0] = first.subarray(size);
+        pieces[0] = first.subarray(count);
       }
-      this.length -= size;
-      return first.subarray(0, size);
+      length -= count;
+      return first.subarray(0, count);
     }
-    const result = new Uint8Array(size);
+    const result = new Uint8Array(count);
     let offset = 0;
-    while (offset < size) {
-      const piece = this.pieces[0];
-      const count = Math.min(piece.length, size - offset);
-      result.set(piece.subarray(0, count), offset);
-      offset += count;
-      if (count === piece.length) {
-        this.pieces.shift();
+    while (offset < count) {
+      const piece = pieces[0];
+      const part = Math.min(piece.length, count - offset);
+      result.set(piece.subarray(0, part), offset);
+      offset += part;
+      if (part === piece.length) {
+        pieces.shift();
       } else {
-        this.pieces[0] = piece.subarray(count);
+        pieces[0] = piece.subarray(part);
       }
     }
-    this.length -= size;
+    length -= count;
     return result;
   }
 
-  /** Returns the data of the next frame, or `undefined` at the end. */
-  async next(): Promise<string | undefined> {
-    await this.fill(FRAME_HEADER_SIZE);
-    if (this.length === 0) {
-      return undefined;
-    }
-    if (this.length < FRAME_HEADER_SIZE) {
-      throw malformed();
-    }
-    const size = parseFrameHeader(this.take(FRAME_HEADER_SIZE));
-    if (size === -1) {
-      throw malformed();
-    }
-    if (size > this.maxFrameSize) {
-      throw new SerovalTransportError(
-        `A frame of ${size} bytes is larger than the limit of ${this.maxFrameSize} bytes.`,
-      );
-    }
-    await this.fill(size);
-    if (this.length < size) {
-      throw malformed();
-    }
-    return decoder.decode(this.take(size));
-  }
+  return {
+    push(chunk) {
+      if (chunk.length === 0) {
+        return;
+      }
+      pieces.push(chunk);
+      length += chunk.length;
+      for (;;) {
+        // Read the header, and refuse the frame before its data is buffered.
+        if (size === -1) {
+          if (length < FRAME_HEADER_SIZE) {
+            return;
+          }
+          size = parseFrameHeader(take(FRAME_HEADER_SIZE));
+          if (size === -1) {
+            throw malformed();
+          }
+          if (size > maxFrameSize) {
+            throw new SerovalTransportError(
+              `A frame of ${size} bytes is larger than the limit of ${maxFrameSize} bytes.`,
+            );
+          }
+        }
 
-  /** Stops reading and releases the stream. */
-  async cancel(reason?: unknown): Promise<void> {
-    this.pieces = [];
-    this.length = 0;
-    this.done = true;
-    await this.reader.cancel(reason).catch(() => {});
-  }
+        // Read the data once all of it arrived.
+        if (length < size) {
+          return;
+        }
+        const data = decoder.decode(take(size));
+        size = -1;
+        let message: unknown;
+        try {
+          message = JSON.parse(data);
+        } catch {
+          throw malformed();
+        }
+        options.onMessage(message);
+      }
+    },
+    end() {
+      const partial = size !== -1 || length > 0;
+      pieces = [];
+      length = 0;
+      size = -1;
+      if (partial) {
+        throw malformed();
+      }
+    },
+  };
 }

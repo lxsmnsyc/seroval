@@ -1,6 +1,5 @@
 import type { CrossDeserializer, CrossDeserializerOptions, SerovalNode } from 'seroval/read';
 import { createCrossDeserializer, deserialize, isStream } from 'seroval/read';
-import { FrameReader } from './frame';
 import { DATA, DONE, SerovalTransportError, assertMessage } from './message';
 
 export type { Message } from './message';
@@ -19,8 +18,16 @@ export interface Reader {
    */
   get<T>(key: string): Promise<T>;
   /**
+   * Resolves once the value of `key` and every promise and stream in it
+   * settled. Rejects when the value fails, is cancelled, or the reader ends
+   * first.
+   */
+  settled(key: string): Promise<void>;
+  /**
    * Stops reading `key`: fails what still waits in it, forgets it, and drops
    * its later messages. Tell the writer to `cancel` it too, if it can hear.
+   * The reader keeps every value until then, so on a long-lived connection,
+   * cancel each key once you are done with its value.
    */
   cancel(key: string, reason?: unknown): void;
   /**
@@ -34,6 +41,8 @@ export interface Reader {
 /** A reader of a single value, from `fromJSONStream` or `fromJSStream`. */
 export interface ValueReader<T> extends Pick<Reader, 'push' | 'end'> {
   value: Promise<T>;
+  /** Resolves once the value and every promise and stream in it settled. */
+  settled: Promise<void>;
 }
 
 export interface JSONReaderOptions extends CrossDeserializerOptions {
@@ -64,26 +73,44 @@ const WAITING = 0;
 const OPEN = 1;
 const SETTLED = 2;
 
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve(value: T): void;
+  reject(reason: unknown): void;
+}
+
 interface Slot {
   state: typeof WAITING | typeof OPEN | typeof SETTLED;
-  promise: Promise<unknown>;
-  resolve(value: unknown): void;
-  reject(reason: unknown): void;
+  value: Deferred<unknown>;
+  settled: Deferred<void>;
 }
 
 // A value that nobody reads can fail, and must not cause an unhandled
 // rejection. Code that awaits it still gets the rejection.
 const ignoreRejection = (): void => {};
 
-function createSlot(): Slot {
-  let resolve!: (value: unknown) => void;
+function createDeferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
   let reject!: (reason: unknown) => void;
-  const promise = new Promise<unknown>((res, rej) => {
+  const promise = new Promise<T>((res, rej) => {
     resolve = res;
     reject = rej;
   });
   promise.catch(ignoreRejection);
-  return { state: WAITING, promise, resolve, reject };
+  return { promise, resolve, reject };
+}
+
+function createSlot(): Slot {
+  return { state: WAITING, value: createDeferred(), settled: createDeferred() };
+}
+
+/** Fails a slot that has not settled. A slot that is open has its value. */
+function failSlot(slot: Slot, reason: unknown): void {
+  if (slot.state === WAITING) {
+    slot.value.reject(reason);
+  }
+  slot.state = SETTLED;
+  slot.settled.reject(reason);
 }
 
 function createEndError(): SerovalTransportError {
@@ -119,11 +146,24 @@ function createReader(decoder: Decoder): Reader {
     return slot;
   }
 
+  /** Returns the slot of `key` for `get` and `settled`, which never open it. */
+  function requestSlot(key: string): Slot {
+    const slot = slots.get(key);
+    if (slot) {
+      return slot;
+    }
+    const created = getSlot(key);
+    if (ended) {
+      failSlot(created, endReason ?? createMissingError(key));
+    }
+    return created;
+  }
+
   function onData(key: string, data: unknown): void {
     const slot = getSlot(key);
     if (slot.state === WAITING) {
       slot.state = OPEN;
-      slot.resolve(decoder.open(key, data));
+      slot.value.resolve(decoder.open(key, data));
     } else if (slot.state === OPEN) {
       decoder.next(key, data);
     } else {
@@ -136,14 +176,17 @@ function createReader(decoder: Decoder): Reader {
     if (slot.state === SETTLED || (done && slot.state === WAITING)) {
       throw createUnexpectedError(key);
     }
-    const state = slot.state;
-    slot.state = SETTLED;
-    if (state === WAITING) {
-      slot.reject(createFailError(key));
-    } else if (done) {
+    if (done) {
+      slot.state = SETTLED;
+      slot.settled.resolve();
       decoder.done(key);
-    } else {
-      decoder.fail(key, createFailError(key));
+      return;
+    }
+    const state = slot.state;
+    const reason = createFailError(key);
+    failSlot(slot, reason);
+    if (state === OPEN) {
+      decoder.fail(key, reason);
     }
   }
 
@@ -167,16 +210,10 @@ function createReader(decoder: Decoder): Reader {
       }
     },
     get<T>(key: string): Promise<T> {
-      const slot = slots.get(key);
-      if (slot) {
-        return slot.promise as Promise<T>;
-      }
-      const created = getSlot(key);
-      if (ended) {
-        created.reject(endReason ?? createMissingError(key));
-        created.state = SETTLED;
-      }
-      return created.promise as Promise<T>;
+      return requestSlot(key).value.promise as Promise<T>;
+    },
+    settled(key) {
+      return requestSlot(key).settled.promise;
     },
     cancel(key, reason = new SerovalTransportError(`"${key}" was cancelled.`)) {
       const slot = slots.get(key);
@@ -185,10 +222,12 @@ function createReader(decoder: Decoder): Reader {
         return;
       }
       cancelled.add(key);
-      if (slot?.state === WAITING) {
-        slot.reject(reason);
-      } else if (slot?.state === OPEN) {
-        decoder.fail(key, reason);
+      if (slot) {
+        const state = slot.state;
+        failSlot(slot, reason);
+        if (state === OPEN) {
+          decoder.fail(key, reason);
+        }
       }
     },
     end(reason) {
@@ -199,10 +238,12 @@ function createReader(decoder: Decoder): Reader {
       endReason = reason;
       cancelled.clear();
       for (const [key, slot] of slots) {
-        if (slot.state === WAITING) {
-          slot.reject(reason ?? createMissingError(key));
+        if (slot.state !== SETTLED) {
+          failSlot(
+            slot,
+            reason ?? (slot.state === WAITING ? createMissingError(key) : createEndError()),
+          );
         }
-        slot.state = SETTLED;
       }
       decoder.end(reason ?? createEndError());
     },
@@ -337,7 +378,12 @@ export function createJSReader(options: JSReaderOptions): Reader {
 const VALUE_KEY = '0';
 
 function createValueReader<T>(reader: Reader): ValueReader<T> {
-  return { value: reader.get<T>(VALUE_KEY), push: reader.push, end: reader.end };
+  return {
+    value: reader.get<T>(VALUE_KEY),
+    settled: reader.settled(VALUE_KEY),
+    push: reader.push,
+    end: reader.end,
+  };
 }
 
 /** Reads the value of `toJSONStream`. */
@@ -348,77 +394,4 @@ export function fromJSONStream<T>(options: JSONReaderOptions = {}): ValueReader<
 /** Reads the value of `toJSStream`. */
 export function fromJSStream<T>(options: JSReaderOptions): ValueReader<T> {
   return createValueReader(createJSReader(options));
-}
-
-/** The default `maxFrameSize`, in bytes. */
-const DEFAULT_MAX_FRAME_SIZE = 64 * 1024 * 1024;
-
-export interface FromWebStreamOptions {
-  /** Refuses any frame larger than this many bytes. Defaults to 64MiB. */
-  maxFrameSize?: number;
-  /** Stops reading, and ends the reader with the abort reason. */
-  signal?: AbortSignal;
-  /**
-   * Receives an error of the stream, such as a malformed frame or a dropped
-   * connection. The reader also ends with it.
-   */
-  onError?: (error: unknown) => void;
-}
-
-/**
- * Reads the frames of `toWebStream` from `stream` into `reader`, and ends the
- * reader when the stream ends. Settles when it stops, and never rejects.
- */
-export async function fromWebStream(
-  stream: ReadableStream<Uint8Array>,
-  reader: Pick<Reader, 'push' | 'end'>,
-  options: FromWebStreamOptions = {},
-): Promise<void> {
-  const frames = new FrameReader(stream, options.maxFrameSize ?? DEFAULT_MAX_FRAME_SIZE);
-  const signal = options.signal;
-  let stopped = false;
-
-  // Ends the reader once. A stream listener that throws while its value
-  // fails is reported, since nothing awaits this function's errors.
-  function stop(reason: unknown, report: boolean): void {
-    if (stopped) {
-      return;
-    }
-    stopped = true;
-    signal?.removeEventListener('abort', onAbort);
-    try {
-      reader.end(reason);
-    } catch (error) {
-      options.onError?.(error);
-    }
-    if (report) {
-      options.onError?.(reason);
-    }
-  }
-
-  function onAbort(): void {
-    void frames.cancel(signal?.reason);
-    stop(signal?.reason, false);
-  }
-
-  if (signal?.aborted) {
-    onAbort();
-    return;
-  }
-  signal?.addEventListener('abort', onAbort);
-  try {
-    let data: string | undefined;
-    while (!stopped && (data = await frames.next()) !== undefined) {
-      // The signal can abort while the frame is read.
-      if (!stopped) {
-        reader.push(JSON.parse(data));
-      }
-    }
-    stop(undefined, false);
-  } catch (error) {
-    if (!stopped) {
-      await frames.cancel(error);
-      stop(error, true);
-    }
-  }
 }
