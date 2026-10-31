@@ -1,4 +1,5 @@
 import { createSignal } from 'solid-js';
+import { version } from '../../../packages/seroval/package.json';
 
 // State shared by the header and the pages. Each page load renders one
 // tree, so module-level signals are enough here.
@@ -11,3 +12,6 @@ export const [searchOpen, setSearchOpen] = createSignal(false);
 
 export const SITE_URL = 'https://seroval.vercel.app';
 export const REPOSITORY_URL = 'https://github.com/lxsmnsyc/seroval';
+
+/** The major and minor version of seroval, like "1.7". */
+export const SHORT_VERSION = version.split('.').slice(0, 2).join('.');
