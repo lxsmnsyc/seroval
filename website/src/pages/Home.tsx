@@ -1,6 +1,7 @@
 import type { JSX } from '@solidjs/web';
 import { For, onSettled } from 'solid-js';
 import {
+  Feature,
   crossSerialize,
   crossSerializeStream,
   deserialize,
@@ -175,7 +176,13 @@ function compare(label: string, value: unknown, why: string): ComparisonRow {
     json = 'TypeError';
     reason = error instanceof Error ? error.message.split('\n')[0].slice(0, 46) : '';
   }
-  return { label, json, why: reason, output: serialize(value) };
+  // Leave out the error stack: it is long and differs per machine.
+  return {
+    label,
+    json,
+    why: reason,
+    output: serialize(value, { disabledFeatures: Feature.ErrorPrototypeStack }),
+  };
 }
 
 function createComparisonRows(): ComparisonRow[] {
