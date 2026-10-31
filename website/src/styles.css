@@ -595,8 +595,8 @@ kbd {
 
 .home .install .cp .icon {
   grid-area: 1 / 1;
-  width: 14px;
-  height: 14px;
+  width: 1em;
+  height: 1em;
 }
 
 .home .install .cp-done,
