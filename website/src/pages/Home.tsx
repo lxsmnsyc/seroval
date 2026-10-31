@@ -282,12 +282,20 @@ function escapeHTML(text: string): string {
 }
 
 function colorizeOutput(text: string): string {
-  return escapeHTML(text)
-    .replace(/new Date\([^)]*\)/g, '<span class="t-date">$&</span>')
-    .replace(/new Set\b/g, '<span class="t-set">$&</span>')
-    .replace(/new Map\b/g, '<span class="t-map">$&</span>')
-    .replace(/\b\d+n\b/g, '<span class="t-big">$&</span>')
-    .replace(/\b[a-z]\.(self|notes)\b|,[a-z]\)/g, '<span class="t-ref">$&</span>');
+  return (
+    escapeHTML(text)
+      // References first, before the other spans add markup: the slot
+      // capture (`j=new Map`) and the deferred assignments that close
+      // the cycles (`j.set("by",h)`, `h.self=h`).
+      .replace(
+        /\b[a-z]=(?=new )|\b[a-z]\.set\([^)]*\)|\b[a-z]\.[a-z]+=[a-z]\b/g,
+        '<span class="t-ref">$&</span>',
+      )
+      .replace(/new Date\([^)]*\)/g, '<span class="t-date">$&</span>')
+      .replace(/new Set\b/g, '<span class="t-set">$&</span>')
+      .replace(/new Map\b/g, '<span class="t-map">$&</span>')
+      .replace(/\b\d+n\b/g, '<span class="t-big">$&</span>')
+  );
 }
 
 async function wait(ms: number): Promise<void> {

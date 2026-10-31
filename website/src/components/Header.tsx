@@ -1,7 +1,7 @@
 import type { JSX } from '@solidjs/web';
 import { FIRST_PAGE } from '../lib/docs';
 import { REPOSITORY_URL, SHORT_VERSION, menuOpen, setMenuOpen, setSearchOpen } from '../lib/ui';
-import { LogoMark, MenuIcon } from './Icons';
+import { LogoMark, MenuIcon, SearchIcon } from './Icons';
 
 export default function Header(): JSX.Element {
   return (
@@ -36,12 +36,13 @@ export default function Header(): JSX.Element {
         <button
           type="button"
           class="search-trigger"
-          aria-label="Search docs"
           onClick={() => {
             setSearchOpen(true);
           }}
         >
-          ⌘ K
+          <SearchIcon />
+          <span class="search-placeholder">Search docs</span>
+          <kbd>⌘K</kbd>
         </button>
       </div>
     </header>
