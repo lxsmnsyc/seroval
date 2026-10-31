@@ -584,10 +584,29 @@ kbd {
 }
 
 .home .install .cp {
+  display: inline-grid;
   color: var(--fg-subtle);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  transition: color 0.3s;
+}
+
+.home .install:hover .cp {
+  color: var(--fg);
+}
+
+.home .install .cp .icon {
+  grid-area: 1 / 1;
+  width: 14px;
+  height: 14px;
+}
+
+.home .install .cp-done,
+.home .install.copied .cp-copy {
+  display: none;
+}
+
+.home .install.copied .cp-done {
+  display: block;
+  color: var(--signal);
 }
 
 /* Hero stage */

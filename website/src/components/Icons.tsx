@@ -129,3 +129,20 @@ export function ReturnIcon(props: IconProps): JSX.Element {
     </Icon>
   );
 }
+
+export function CopyIcon(props: IconProps): JSX.Element {
+  return (
+    <Icon class={props.class}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h8" />
+    </Icon>
+  );
+}
+
+export function CheckIcon(props: IconProps): JSX.Element {
+  return (
+    <Icon class={props.class}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </Icon>
+  );
+}

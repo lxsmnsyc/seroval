@@ -9,6 +9,7 @@ import {
   serialize,
   toJSON,
 } from 'seroval';
+import { CheckIcon, CopyIcon } from '../components/Icons';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
 import { SHORT_VERSION } from '../lib/ui';
@@ -589,16 +590,19 @@ function animate(root: HTMLElement): () => void {
   const installButtons = root.querySelectorAll<HTMLButtonElement>('.install');
   function onInstallClick(event: Event): void {
     const button = event.currentTarget;
-    const label = button instanceof HTMLElement ? button.querySelector('.cp') : null;
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
     navigator.clipboard
       .writeText(INSTALL_COMMAND)
       .then(() => {
-        if (label) {
-          label.textContent = 'copied';
-          setTimeout(() => {
-            label.textContent = 'copy';
-          }, 1400);
-        }
+        // Swap the clipboard icon for a check mark for a moment.
+        button.classList.add('copied');
+        button.setAttribute('aria-label', `Copied: ${INSTALL_COMMAND}`);
+        setTimeout(() => {
+          button.classList.remove('copied');
+          button.setAttribute('aria-label', `Copy: ${INSTALL_COMMAND}`);
+        }, 1400);
       })
       .catch(() => undefined);
   }
@@ -669,8 +673,12 @@ function animate(root: HTMLElement): () => void {
 
 function InstallButton(props: { class?: string }): JSX.Element {
   return (
-    <button type="button" class={['install', props.class]}>
-      <span class="p">$</span> {INSTALL_COMMAND} <span class="cp">copy</span>
+    <button type="button" class={['install', props.class]} aria-label={`Copy: ${INSTALL_COMMAND}`}>
+      <span class="p">$</span> {INSTALL_COMMAND}
+      <span class="cp">
+        <CopyIcon class="cp-copy" />
+        <CheckIcon class="cp-done" />
+      </span>
     </button>
   );
 }
