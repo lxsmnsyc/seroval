@@ -90,7 +90,7 @@ release:
 - Q3, answered: `channel.with({ signal }).run(...)` on the caller, `this.signal` in the called function. The spike may still change it before the contracts freeze.
 - Q4, answered: no WebSocket in rpc-0.1.
 - Q5, opt-out for two-way generators (affects rpc-generators). Default: no marker in 0.x; add `stream(generator)` if a fast producer needs the one-way push.
-- Q6, seroval 1.8.0 (blocks rpc-transport-release). Transport needs seroval ^1.8.0, and the errors roadmap (`roadmaps/errors`) also plans 1.8.0. Decide what 1.8.0 contains.
+- Q6, answered 2026-10-31: seroval 1.8.0 ships `feat/split-entry-points` and `feat/plugin-validate`; the errors roadmap moves to 1.9.0.
 
 ## Gates
 

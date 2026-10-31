@@ -1,5 +1,5 @@
 ---
-milestones: [seroval-1.8, seroval-2.0]
+milestones: [seroval-1.9, seroval-2.0]
 run: parallel
 review: auto
 merge:
@@ -27,8 +27,8 @@ Every error seroval and seroval-plugins throw is a `SerovalError` with its own `
 
 ## Priorities
 
-- must: needed for the seroval-1.8 minor release: the base class, the catalog, names, codes, one production format, no plain throws in seroval, malformed-node detail, and the docs pages production messages link to.
-- should: worth shipping, in 1.8 or a later minor (value paths, plugin errors). No milestone, so the release does not wait for them.
+- must: needed for the seroval-1.9 minor release: the base class, the catalog, names, codes, one production format, no plain throws in seroval, malformed-node detail, and the docs pages production messages link to.
+- should: worth shipping, in 1.9 or a later minor (value paths, plugin errors). No milestone, so the release does not wait for them.
 - could: when agents are free.
 - later: seroval-2.0 (removing deprecated exports).
 
@@ -66,10 +66,10 @@ Every error seroval and seroval-plugins throw is a `SerovalError` with its own `
 - Q3, answered: merge `feat/plugin-validate` before wave 2 (blocks errors-base, errors-malformed-detail, errors-plugins, errors-docs). That branch edits `errors.ts`, `deserializer.ts`, `src/index.ts` and `website/src/content/docs/errors.md`, and requires seroval 1.8.0 in seroval-plugins. errors-contract can run meanwhile.
 - Q4, answered: minor release, with the changed names and messages called out in the changeset.
 - Q5, answered: errors caused by the data are seroval errors; errors caused by how the API is called stay standard JavaScript errors with a `code` added. So `ArrayBuffer exceeds maxBase64Length` (`deserializer.ts:418`) becomes a coded seroval limit error with `limit`, like `SerovalDepthLimitError`; it already reaches users wrapped in `SerovalDeserializationError`, so only `cause instanceof RangeError` breaks. `maxBase64Length must be a non-negative safe integer` (`deserializer.ts:117`) stays a `RangeError` with a `code`.
-- Q6, open: which release is 1.8.0. `feat/split-entry-points` (needed by `@seroval/transport`, see `roadmaps/rpc`), `feat/plugin-validate` and this roadmap all point at 1.8.0. Decide before errors-release-1.8; the milestone name may change.
+- Q6, answered 2026-10-31: seroval 1.8.0 ships `feat/split-entry-points` and `feat/plugin-validate` (which already requires 1.8.0 in seroval-plugins). This roadmap releases as 1.9.0.
 
 ## Gates
 
 - errors-contract: the catalog, code format and production message are reviewed before the classes change.
 - errors-path-spike: the measured cost decides whether errors-path goes ahead.
-- errors-release-1.8.
+- errors-release-1.9.

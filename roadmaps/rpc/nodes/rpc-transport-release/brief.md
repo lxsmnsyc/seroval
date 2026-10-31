@@ -33,7 +33,7 @@ Steps S2 and S4 of the debate: release seroval 1.8.0, then the manual 0.0.0 publ
 
 ## Context
 
-- Q6 in `GOAL.md`: the errors roadmap also plans seroval 1.8.0.
+- Q6 in `GOAL.md`: 1.8.0 holds `feat/split-entry-points` and `feat/plugin-validate`; the errors work is 1.9.0.
 
 ## Acceptance
 

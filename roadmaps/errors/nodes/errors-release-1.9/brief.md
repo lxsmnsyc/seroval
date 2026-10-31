@@ -1,13 +1,13 @@
 ---
-id: errors-release-1.8
-title: Release seroval 1.8.0 with the new errors
+id: errors-release-1.9
+title: Release seroval 1.9.0 with the new errors
 status: todo
 priority: must
 type: release
 story: 
 early: false
 outline: false
-milestone: seroval-1.8
+milestone: seroval-1.9
 target: 
 ship: auto
 size: S
@@ -16,7 +16,7 @@ verify:
 exclusive: []
 gate: true
 owns:
-  - .changeset/errors-release-1.8.md
+  - .changeset/errors-release-1.9.md
 shared: []
 reserves: []
 provides: []
@@ -31,7 +31,7 @@ depends_on:
     kind: hard
     why: production messages link to the pages
 ---
-# Release seroval 1.8.0 with the new errors
+# Release seroval 1.9.0 with the new errors
 
 ## Goal
 
@@ -39,8 +39,8 @@ A minor changeset for seroval, and one for seroval-plugins if errors-plugins lan
 
 ## Acceptance
 
-- [ ] A changeset for seroval, and for seroval-plugins if errors-plugins or `feat/plugin-validate` changed it, with seroval-plugins' peer range matching what it needs (that branch already requires seroval 1.8.0).
-- [ ] `npm view seroval@1.8.0 dist.attestations` shows provenance (allow for registry lag).
+- [ ] A changeset for seroval, and for seroval-plugins if errors-plugins or `feat/plugin-validate` changed it, with seroval-plugins' peer range matching what it needs (that branch requires seroval 1.8.0; with these errors it may need ^1.9.0).
+- [ ] `npm view seroval@1.9.0 dist.attestations` shows provenance (allow for registry lag).
 
 ## Sizing
 

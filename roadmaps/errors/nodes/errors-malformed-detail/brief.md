@@ -7,7 +7,7 @@ type: feature
 story: 
 early: false
 outline: false
-milestone: seroval-1.8
+milestone: seroval-1.9
 target: 
 ship: auto
 size: M

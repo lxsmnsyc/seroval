@@ -20,7 +20,7 @@ shared: []
 reserves: []
 provides: []
 depends_on:
-  - on: errors-release-1.8
+  - on: errors-release-1.9
     kind: hard
     why: removal belongs to the next major
 ---
