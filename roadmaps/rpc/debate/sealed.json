@@ -1,0 +1,676 @@
+{
+  "round": 3,
+  "claims": {
+    "J1": {
+      "id": "J1",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "device",
+      "text": "8 cores at load 9.4, 2.7 GB of 8 GB RAM free, 14 GB disk free (94% used); capacity.py recommends 1 parallel worktree, limited by CPU",
+      "evidence": {
+        "type": "measured",
+        "source": "pr-author capacity.py --json; df -h",
+        "detail": "evidence/capacity.json"
+      }
+    },
+    "J2": {
+      "id": "J2",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "time",
+      "text": "Unmerged branch origin/feat/transport (6 commits, 2026-10-23 to 10-29, 34 files, +2323) adds @seroval/transport: keyed multi-value writer/reader over postMessage-able messages [0,key,data]/[1,key]/[2,key], per-value cancel, per-value refs or sharedRefs, backpressure via a promise from send, and length-prefixed web stream frames",
+      "evidence": {
+        "type": "measured",
+        "source": "git log/diff main..origin/feat/transport; packages/transport/README.md and website/src/content/docs/transport.md on that branch",
+        "detail": ""
+      }
+    },
+    "J3": {
+      "id": "J3",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "time",
+      "text": "The rpc roadmap (roadmaps/rpc) does not mention @seroval/transport; it plans its own message protocol, per-stream refs and backpressure in rpc-contract and rpc-endpoint",
+      "evidence": {
+        "type": "measured",
+        "source": "grep -r transport roadmaps/rpc",
+        "detail": ""
+      }
+    },
+    "J4": {
+      "id": "J4",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "time",
+      "text": "brumate's consumers are not scheduled: worker-functions and realtime are both outline nodes with priority later, milestone backlog",
+      "evidence": {
+        "type": "measured",
+        "source": "git -C brumate show origin/HEAD:docs/roadmaps/brumate/nodes/{worker-functions,realtime}/brief.md",
+        "detail": ""
+      }
+    },
+    "J5": {
+      "id": "J5",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "time",
+      "text": "The brumate proposal estimates realtime at about 3 weeks and worker functions at 1 to 2 weeks after it (a few days for value-only calls); it plans to build the channel core inside brumate and extract it to a package once both use it",
+      "evidence": {
+        "type": "source",
+        "source": "brumate docs/proposals.md, Two-way realtime and Worker functions",
+        "detail": ""
+      }
+    },
+    "J6": {
+      "id": "J6",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "tokens",
+      "text": "Current rpc roadmap: 7 open nodes (2 L, 2 M, 3 S); plan.py context per node is about 2.9k to 4.8k tokens. No CALIBRATION.md exists in seroval or brumate roadmaps, so no past estimate-vs-actual data",
+      "evidence": {
+        "type": "measured",
+        "source": "plan.py roadmaps/rpc context <id>; ls docs/roadmaps",
+        "detail": ""
+      }
+    },
+    "J7": {
+      "id": "J7",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "time",
+      "text": "seroval already exposes the needed primitives: toCrossJSONStream with onParse(node, initial) that may return a promise to defer the next record (backpressure), createCrossDeserializer with deserialize/abort, plugins tested before async-iterable handling",
+      "evidence": {
+        "type": "measured",
+        "source": "packages/seroval/src/core/cross/index.ts:138,159,208; context/async-parser.ts:498; context/stream-parser.ts:401",
+        "detail": ""
+      }
+    },
+    "J8": {
+      "id": "J8",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "tokens",
+      "text": "Prior art: Comlink (GoogleChromeLabs/comlink) does RPC over postMessage with proxies and transfer handlers, no streaming or backpressure; birpc (antfu/birpc, used by Vitest/Vite devtools) does bidirectional calls by name over any message channel with a pluggable serializer, no streams; Cap'n Web (cloudflare/capnweb, 2025) passes functions and objects by reference with promise pipelining over WebSocket, HTTP batch and postMessage. None stream async iterables with credit-based flow control",
+      "evidence": {
+        "type": "prior-art",
+        "source": "https://github.com/GoogleChromeLabs/comlink; https://github.com/antfu-collective/birpc; https://github.com/cloudflare/capnweb",
+        "detail": "from the projects' READMEs; recalled, not re-fetched"
+      }
+    },
+    "O1": {
+      "id": "O1",
+      "kind": "cut",
+      "action": "merge",
+      "nodes": [
+        "rpc-endpoint",
+        "rpc-streaming",
+        "rpc-channels"
+      ],
+      "answers": [
+        "J1"
+      ],
+      "text": "Merge the three feature nodes into one sequential chain on one branch and drop the rpc-internals Extension seam (Extension, CloseStep, per-node contract test stubs). The seam exists so streaming and channels run beside endpoint, but the machine fits 1 worktree (load 9.4, 2.7 GB free), so no parallelism is bought. Saves: device, 2 extra worktrees/installs of 14 GB free disk; time, 2 rebase/merge cycles and the gate review of a 2.6 KB contract; tokens, 2 of 7 node contexts (~3-5k each plus re-reading the contract each time).",
+      "estimate": {
+        "value": 9,
+        "unit": "k tokens of node context saved, plus about 2 merge cycles"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "roadmaps/rpc/contracts/rpc-internals.md (2695 bytes), debate/evidence J1 capacity.json; plan.py overview waves 2",
+        "detail": ""
+      },
+      "round": 1,
+      "by": "opponent"
+    },
+    "O2": {
+      "id": "O2",
+      "kind": "cut",
+      "action": "park",
+      "nodes": [
+        "rpc-release-0.1"
+      ],
+      "answers": [
+        "J4"
+      ],
+      "text": "Park the 0.1.0 release and publish nothing beyond the manual 0.0.0 placeholder until a consumer exists. brumate worker-functions and realtime are both outline/later (J4), so a frozen 0.1 API ships with zero users and a minor-version freeze on an unproven API. Keep rpc-worker-example as the proof. Saves: time, the npm scope, trusted-publisher and provenance round trip (Q2) off the critical path; risk of a breaking 0.2 right after.",
+      "estimate": {
+        "value": 1,
+        "unit": "release gate and npm setup deferred"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "git -C brumate show origin/HEAD:docs/roadmaps/brumate/nodes/{worker-functions,realtime}/brief.md (judge fact J4)",
+        "detail": ""
+      },
+      "round": 1,
+      "by": "opponent"
+    },
+    "O3": {
+      "id": "O3",
+      "kind": "cut",
+      "action": "drop",
+      "nodes": [
+        "rpc-error-codes",
+        "rpc-websocket"
+      ],
+      "answers": [
+        "J4"
+      ],
+      "text": "Drop the two outline nodes from this roadmap. rpc-error-codes depends on a roadmaps/errors catalog that is not a node here, and rpc-websocket is a brumate concern (socket functions, Non-goals keep sockets in brumate). They are still read by plan.py and by every agent loading the roadmap. Saves: tokens, two briefs and a milestone from each overview call; time, none lost since both wait on release-0.1.",
+      "estimate": {
+        "value": 2,
+        "unit": "nodes and 1 milestone removed"
+      },
+      "evidence": {
+        "type": "source",
+        "source": "roadmaps/rpc/nodes/rpc-error-codes/brief.md, nodes/rpc-websocket/brief.md, GOAL.md Non-goals",
+        "detail": ""
+      },
+      "round": 1,
+      "by": "opponent"
+    },
+    "O4": {
+      "id": "O4",
+      "kind": "alternative",
+      "answers": [
+        "J2",
+        "J3"
+      ],
+      "text": "Build the message and stream layer on @seroval/transport instead of a second protocol. origin/feat/transport already has keyed values, per-value cancel, send-promise backpressure and stream frames in 964 lines of src, tested. The rpc roadmap re-plans messages, refs, cancel and backpressure in rpc-contract and rpc-endpoint and never mentions it. rpc would then add only call/response correlation, channels and close order. Saves: time, roughly the protocol, credit and cancel parts of 2 L and 1 M nodes; tokens, no second design to review against the first. Trade-off: credit windows become the transport's send-promise model.",
+      "estimate": {
+        "value": 964,
+        "unit": "lines of existing transport src to reuse"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "git diff --stat main origin/feat/transport -- packages/transport/src; grep -r transport roadmaps/rpc (J3)",
+        "detail": ""
+      },
+      "round": 1,
+      "by": "opponent"
+    },
+    "O5": {
+      "id": "O5",
+      "kind": "risk",
+      "axis": "time",
+      "severity": "medium",
+      "answers": [
+        "J3"
+      ],
+      "text": "[node rpc-contract] rpc-contract is an L gate that freezes API, protocol and internals (about 9.4 KB of contract text plus scaffold plus one contract test file per node) before any behavior exists. Q3 (with({signal})), the Extension hooks and the Message union are guesses before the worker example is written; the example is the last node, so API awkwardness surfaces after endpoint, streaming and channels are built on the frozen shape. Likely (every feature node edits against it), rework lands in 3 nodes. Mitigation: build example against stubs first, or merge as in O1.",
+      "estimate": {
+        "value": 3,
+        "unit": "nodes exposed to contract rework"
+      },
+      "evidence": {
+        "type": "source",
+        "source": "roadmaps/rpc/contracts/*.md (9405 bytes), plan.py overview critical path rpc-contract -> rpc-streaming -> rpc-worker-example -> rpc-release-0.1",
+        "detail": ""
+      },
+      "round": 1,
+      "by": "opponent"
+    },
+    "O6": {
+      "id": "O6",
+      "kind": "risk",
+      "axis": "device",
+      "severity": "low",
+      "answers": [
+        "J1"
+      ],
+      "text": "[node rpc-channels] FinalizationRegistry garbage-collection close needs a separate *.gc.test.ts vitest project with exposed gc, and GC timing is non-deterministic. On a loaded box (load 9.4) these tests flake and slow the fast check. GC auto-close is a brumate lifecycle choice and could be left to explicit close in 0.1. Likelihood of a flaky test: medium.",
+      "estimate": {
+        "value": 1,
+        "unit": "extra vitest project, nondeterministic"
+      },
+      "evidence": {
+        "type": "source",
+        "source": "roadmaps/rpc/nodes/rpc-channels/brief.md acceptance; J1 load 9.4",
+        "detail": ""
+      },
+      "round": 1,
+      "by": "opponent"
+    },
+    "O7": {
+      "id": "O7",
+      "kind": "rebuttal",
+      "answers": [
+        "J5"
+      ],
+      "text": "The brumate estimate (core built inside brumate, extracted once both consumers use it) is the cheaper order: extraction after two users is evidence-driven, while building the package first with zero consumers (J4) pays the full package cost (scaffold, publishing, docs, website page) up front for an API guessed from one example. Q1's default flips that without a measured reason.",
+      "evidence": {
+        "type": "source",
+        "source": "brumate docs/proposals.md Where the channel core lives; roadmaps/rpc/GOAL.md Q1",
+        "detail": ""
+      },
+      "round": 1,
+      "by": "opponent"
+    },
+    "J9": {
+      "id": "J9",
+      "round": 1,
+      "by": "judge",
+      "kind": "fact",
+      "axis": "device",
+      "text": "Remeasured: load 5.0 (15-min 11.4), 3.2 GB free; capacity.py still recommends 1 parallel worktree, limited by CPU and memory",
+      "evidence": {
+        "type": "measured",
+        "source": "capacity.py --json; uptime",
+        "detail": ""
+      }
+    },
+    "P1": {
+      "id": "P1",
+      "kind": "proposal",
+      "answers": [
+        "O1",
+        "O5"
+      ],
+      "text": "Ship in one sequential chain on one branch, in this order: (1) spike: types plus a worker example written against stubs, contracts stay draft; (2) endpoint with value calls and notify; (3) streaming with credit; (4) channels and close order; (5) docs. No Extension seam, no per-node contract test stubs. The contracts freeze only after the example runs on real code, at the docs node.",
+      "estimate": {
+        "value": 5,
+        "unit": "sequential nodes instead of 7, one worktree"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "plan.py roadmaps/rpc overview (7 todo nodes); ledger J1, J9 (1 worktree), O1, O5 upheld",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "proponent"
+    },
+    "P2": {
+      "id": "P2",
+      "kind": "concession",
+      "answers": [
+        "P1"
+      ],
+      "why": "O1 and J9 show the machine fits one worktree, and O5 shows the example is the only consumer check and comes last. The extension seam and the L contract gate buy no parallelism and freeze guesses.",
+      "text": "Drop rpc-internals (Extension, CloseStep) and the frozen-before-build gate of rpc-contract; move the worker example to the front as a spike.",
+      "round": 2,
+      "by": "proponent"
+    },
+    "P3": {
+      "id": "P3",
+      "kind": "proposal",
+      "answers": [
+        "O4",
+        "J2",
+        "J3"
+      ],
+      "text": "Build rpc on @seroval/transport's createJSONWriter and createJSONReader: one writer and one reader per endpoint, keys prefixed by role (a<id> arguments, r<id> results). Reuse write.ts, read.ts and message.ts, 783 of 964 src lines (81%), 31 tested cases: per-key cross streams, per-key refs, cancel, close, end. rpc adds an envelope for call (method name, notify), credit, reader-to-writer cancel, hello and close(c), the channel plugin and the close order. Not reused: frame.ts and the web stream half of write.ts (about 180 lines). Transport must merge, or rpc stacks on that branch, before the endpoint node.",
+      "estimate": {
+        "value": 783,
+        "unit": "lines of existing src reused, 81% of transport"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "git show origin/feat/transport:packages/transport/src/{write,read,message,frame}.ts; wc -l; test/transport.test.ts 31 cases",
+        "detail": "evidence/transport-vs-rpc.md"
+      },
+      "round": 2,
+      "by": "proponent"
+    },
+    "P4": {
+      "id": "P4",
+      "kind": "risk",
+      "axis": "time",
+      "severity": "medium",
+      "answers": [
+        "P3"
+      ],
+      "text": "Transport backpressure is not flow control across a worker or socket: send() on a postMessage sink returns void, and only toWebStream returns a promise tied to a real queue. Transport does not remove the credit window of rpc-streaming; it supplies only the per-record hold that credit plugs into. The saving is the message and ref layer, not the flow control node. Likelihood that rpc-streaming stays an M node: high.",
+      "evidence": {
+        "type": "source",
+        "source": "packages/transport/src/write.ts (MessageSink.send, toWebStream) and docs transport.md 'Backpressure and cancelling' on origin/feat/transport",
+        "detail": "evidence/transport-vs-rpc.md"
+      },
+      "round": 2,
+      "by": "proponent"
+    },
+    "P5": {
+      "id": "P5",
+      "kind": "concession",
+      "answers": [
+        "P3"
+      ],
+      "why": "The comparison shows 81% of transport src overlaps the protocol and ref parts of rpc-contract and rpc-endpoint, and J3 shows the roadmap never mentions it; a second protocol would duplicate tested code.",
+      "text": "Replace the roadmap's own per-stream refs, cancel and message plumbing with transport; keep only call correlation, credit and channels as rpc code. On Q2: rpc is the first non-fetch consumer of transport, so transport merges as its base.",
+      "round": 2,
+      "by": "proponent"
+    },
+    "P6": {
+      "id": "P6",
+      "kind": "concession",
+      "answers": [
+        "P1"
+      ],
+      "why": "Q1 says no brumate date and Q3 says package first, so no consumer exists to validate 0.1; a stable 0.1.0 should not come first.",
+      "text": "Park rpc-release-0.1 as the last node, off the critical path. After the chain, publish only a 0.x prerelease from the example and keep 0.1.0 for the first real consumer (brumate, or a second in-repo user). Package-first stays (Q3); npm trusted publishing can be set up once at 0.0.0 so the later release has no setup left.",
+      "round": 2,
+      "by": "proponent"
+    },
+    "P7": {
+      "id": "P7",
+      "kind": "concession",
+      "answers": [
+        "P1"
+      ],
+      "why": "O6 upheld: GC-timed close is non-deterministic and the box is loaded (J1, J9).",
+      "text": "Remove FinalizationRegistry auto-close and the *.gc.test.ts project from 0.1; channels close only explicitly, by endpoint close, or by the peer. Revisit when brumate asks for it.",
+      "round": 2,
+      "by": "proponent"
+    },
+    "A1": {
+      "id": "A1",
+      "kind": "alternative",
+      "answers": [
+        "P1"
+      ],
+      "text": "Release in two cuts: first value-only calls and notify over transport (no streams, no channels), then streaming and channels. brumate estimates value-only worker calls at a few days against 1 to 2 weeks with streams, so the first cut gives the example and the transport decision a cheap check before the L work. If streams look unwanted, the package stops at the small core.",
+      "estimate": {
+        "value": 3,
+        "unit": "days for the value-only core, per brumate proposal"
+      },
+      "evidence": {
+        "type": "source",
+        "source": "brumate docs/proposals.md, Worker functions (see J5); no estimate-vs-actual exists (J6)",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "proponent"
+    },
+    "P8": {
+      "id": "P8",
+      "kind": "proposal",
+      "answers": [
+        "P3",
+        "J8"
+      ],
+      "text": "Prior art supports the shape and shows the gap: Comlink and birpc prove typed bidirectional calls over message channels work at scale (birpc in Vitest) with value-only calls; Cap'n Web passes functions and objects over postMessage and WebSocket. None has credit-based async-iterable streaming, so streaming is the part with no precedent. The spike should prove it with a test where a slow consumer holds a fast producer.",
+      "evidence": {
+        "type": "prior-art",
+        "source": "github.com/GoogleChromeLabs/comlink; github.com/antfu-collective/birpc; github.com/cloudflare/capnweb",
+        "detail": "READMEs, recalled not re-fetched (J8); gap: no credit-based streams"
+      },
+      "round": 2,
+      "by": "proponent"
+    },
+    "O8": {
+      "id": "O8",
+      "kind": "cost",
+      "axis": "time",
+      "severity": "high",
+      "answers": [
+        "P3"
+      ],
+      "text": "Transport is not mergeable alone: it imports seroval/write and seroval/read, entry points that exist only on origin/feat/split-entry-points (main's package.json has no ./read or ./write) and peers seroval ^1.8.0 while main is 1.7.6. rpc's first node therefore waits for split-entry-points merge, a seroval 1.8.0 release, a transport 0.0.0 manual publish with trusted publisher, and a transport release, all maintainer steps. Branch diff vs main is 39 files, +2328.",
+      "estimate": {
+        "value": 4,
+        "unit": "maintainer-gated steps before rpc-endpoint can install transport from npm"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "git show main:packages/seroval/package.json | grep ./write (none); git show origin/feat/transport:packages/transport/package.json peerDependencies; git diff --stat main origin/feat/transport",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "opponent"
+    },
+    "O9": {
+      "id": "O9",
+      "kind": "risk",
+      "axis": "time",
+      "severity": "medium",
+      "answers": [
+        "P3"
+      ],
+      "text": "Transport is 0.0.0 and unpublished, so its API (Writer/Reader, Message tuples, MessageSink) may still change by the maintainer's own answer ('depends on what use the transport is for rpc'). rpc pins a moving target while rpc's first consumer is also undecided; any change to write/read costs a rebase of the endpoint, streaming and channels chain. Mitigation: freeze transport's rpc-facing surface (the three gaps below) in the transport PR itself. Likelihood medium.",
+      "estimate": {
+        "value": 783,
+        "unit": "transport lines rpc depends on, unreleased"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "git log main..origin/feat/transport (6 commits 2026-10-23 to 10-29, includes a rename commit a499c100); packages/transport/package.json version 0.0.0",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "opponent"
+    },
+    "O10": {
+      "id": "O10",
+      "kind": "risk",
+      "axis": "time",
+      "severity": "medium",
+      "answers": [
+        "P3",
+        "P4"
+      ],
+      "text": "Transport lacks three things rpc needs, so transport changes land before rpc can use it: reader-to-writer cancel (read.ts:23 says 'tell the writer to cancel too, if it can hear'), a way to carry a channel plugin (plugins pass through seroval options, but transport's 31-case test file has zero plugin cases), and a control envelope around its [0,key,data] tuples. The envelope adds a wrapper array allocation per record in addition to the tuple. Each is a transport PR on a package the proposal treats as given.",
+      "estimate": {
+        "value": 3,
+        "unit": "gaps needing transport changes; 0 plugin tests"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "git show origin/feat/transport:packages/transport/src/read.ts:23; grep -c plugin packages/transport/test/transport.test.ts on that branch = 0; debate/evidence/transport-vs-rpc.md table rows cancel and channels",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "opponent"
+    },
+    "O11": {
+      "id": "O11",
+      "kind": "risk",
+      "axis": "device",
+      "severity": "medium",
+      "answers": [
+        "P3"
+      ],
+      "text": "One writer and one reader per endpoint with role-prefixed keys: writer.write throws on a reused key and keeps every key ever written in a Set, so a long-lived worker or socket accumulates one string per call forever, a leak that grows with call count. Channels in values compound it: one nested channel reference lives in the key's refs, so a channel held across calls cannot be shared between keys unless sharedRefs is on, which retains all refs until the writer is done. So either per-call isolation (channel ids as plugin ids, as rpc-channels plans) or unbounded retention.",
+      "estimate": {
+        "value": 1,
+        "unit": "string retained per call, unbounded"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "write.ts: 'Every key ever written, so a key cannot start a second value' (const keys = new Set), and sharedRefs doc 'references are then kept until the writer is done'",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "opponent"
+    },
+    "O12": {
+      "id": "O12",
+      "kind": "cost",
+      "axis": "time",
+      "severity": "medium",
+      "answers": [
+        "P1"
+      ],
+      "text": "The sequential chain on one branch has 5 steps (spike, endpoint, streaming, channels, docs), each blocked on the last, plus transport prerequisites (O8) first. With one worktree there is no parallelism lost, but there is no early merge either unless each step is its own PR; a single long branch stacks on two unmerged branches and conflicts with sync-branch-chain rules (main first). Estimated by the brumate figure (about 3 weeks realtime core, J5) as the lower bound for streaming, channels, close order plus transport prep.",
+      "estimate": {
+        "value": 3,
+        "unit": "weeks, from brumate's own realtime estimate J5"
+      },
+      "evidence": {
+        "type": "source",
+        "source": "brumate docs/proposals.md Two-way realtime (J5); P1",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "opponent"
+    },
+    "O13": {
+      "id": "O13",
+      "kind": "alternative",
+      "answers": [
+        "P3",
+        "O8"
+      ],
+      "text": "Cheaper first cut: ship rpc 0.x with its own small message layer (call, result, chunk, credit, cancel, close) over seroval's cross API directly, with no transport dependency, and let transport adopt rpc's layer later if a use appears. Own layer needs seroval ^1.7 only (no split-entry wait, no seroval 1.8 release), and credit/cancel need to be written anyway (P4). Reuse the 783 lines only as read-only reference. Saves the O8 chain of 4 maintainer-gated steps and the O9/O10/O11 risks. Costs the 81% reuse the proponent measured.",
+      "estimate": {
+        "value": 4,
+        "unit": "gated steps avoided"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "packages/seroval/src/core/cross/index.ts exposes toCrossJSONStream/createCrossDeserializer on main (J7); O8 evidence",
+        "detail": ""
+      },
+      "round": 2,
+      "by": "opponent"
+    },
+    "P9": {
+      "id": "P9",
+      "kind": "proposal",
+      "answers": [
+        "O8",
+        "O12",
+        "P1",
+        "P3"
+      ],
+      "text": "Prerequisites are their own steps, each its own PR or action, in this order, before any rpc code. S1 seroval repo, maintainer: merge feat/split-entry-points into main. S2 seroval repo, maintainer: release seroval 1.8.0 through the changesets release workflow. S3 seroval repo, a worker PR plus maintainer: land the transport fixes of P10 on feat/transport rebased on main, and merge it. S4 maintainer: manual 0.0.0 first publish of @seroval/transport with a trusted publisher, then release it. Only then rpc starts on main, one PR per node (spike, endpoint, streaming, channels, docs), so no node stacks on an unmerged branch. Agents can do S3 and the rebase; S1, S2 and S4 need the maintainer.",
+      "estimate": {
+        "value": 4,
+        "unit": "gated steps before rpc-endpoint, 3 of them maintainer-only"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "O8 evidence: main package.json has no ./read or ./write; transport peers seroval ^1.8.0; git log main..origin/feat/split-entry-points (2 commits)",
+        "detail": ""
+      },
+      "round": 3,
+      "by": "proponent"
+    },
+    "P10": {
+      "id": "P10",
+      "kind": "proposal",
+      "answers": [
+        "O9",
+        "O10",
+        "O11",
+        "P3"
+      ],
+      "text": "The transport fixes, made in transport before S4 and frozen as its rpc-facing surface: (a) delete the key from the writer's `keys` Set when it settles (keys stay unique because rpc uses a monotonic call id, even for initiator and odd for the peer), removing the per-call leak; (b) a reader-to-writer cancel path, which rpc carries as its own control message and calls writer.cancel with; (c) 3 or more plugin test cases (a plugin value in a call, in a stream chunk, and after cancel). rpc keeps default per-key refs, never sharedRefs: a channel in a value is a seroval plugin that writes only the channel id, and the endpoint's own channel table, not seroval refs, resolves the id on the other side. No envelope allocation: rpc demuxes on message[0], passing transport tuples (types 0 to 2) to the reader unchanged and sending its own control messages (call-less ones: credit, cancel, hello, close) with types 3 and up; the method name rides inside the call value as [name, args], one extra array per call, not per record.",
+      "estimate": {
+        "value": 3,
+        "unit": "small transport PRs, each about 5 to 40 lines of src plus tests"
+      },
+      "evidence": {
+        "type": "source",
+        "source": "write.ts 'keys' Set and key check; read.ts cancel doc; message.ts assertMessage accepts only types 0 to 2 so rpc must demux first; test/transport.test.ts has 0 plugin cases (O10)",
+        "detail": "evidence/transport-vs-rpc.md"
+      },
+      "round": 3,
+      "by": "proponent"
+    },
+    "P11": {
+      "id": "P11",
+      "kind": "proposal",
+      "answers": [
+        "P1",
+        "P9"
+      ],
+      "text": "Order and cost. Maintainer gates S1, S2, S4: calendar time is the maintainer's, not measured, and sets when rpc can start. Agent work after that, on one worktree (J9): S3 about 1 node (S), then spike (S), endpoint (M), streaming with credit (M), channels and close order (M), docs (S). Tokens at the measured 2.9k to 4.8k per node context (J6): about 6 nodes times 4k = 24k context plus building, with the 2 L nodes of the old plan now M because transport carries the message and ref layer. Time estimate: brumate's 3 weeks for realtime (J5) includes brumate-side work; the rpc chain alone is an estimate of 1.5 to 2 weeks of agent time after the gates. Release stays parked per P6.",
+      "estimate": {
+        "value": 2,
+        "unit": "weeks of agent time after the gates, estimate"
+      },
+      "evidence": {
+        "type": "estimate",
+        "source": "J5 brumate figure, J6 node context sizes; no estimate-vs-actual data exists so this is the weakest claim here",
+        "detail": ""
+      },
+      "round": 3,
+      "by": "proponent"
+    },
+    "P12": {
+      "id": "P12",
+      "kind": "concession",
+      "answers": [
+        "P1"
+      ],
+      "why": "O8 and O12: P1 said one branch and treated transport as given, but transport and split-entry-points are both unmerged, so a long chain would stack on two unmerged branches and break the sync rule (main first).",
+      "text": "Drop the single long branch of P1. rpc work starts only after S1 to S4 and ships as one PR per node on main.",
+      "round": 3,
+      "by": "proponent"
+    },
+    "P13": {
+      "id": "P13",
+      "kind": "concession",
+      "answers": [
+        "P3"
+      ],
+      "why": "O10 and O11 are measured against write.ts and read.ts: transport lacks reader-to-writer cancel and plugin tests, and its key Set grows per call, so P3's 81% reuse claim holds only after three transport fixes and role-prefixed keys over a single writer would leak.",
+      "text": "Amend P3: transport is reused after the fixes of P10, not as is. The role-prefixed single writer stays, but with the Set fix, and with no sharedRefs. The reuse figure of 783 lines counts code that must first change by about 50 lines.",
+      "round": 3,
+      "by": "proponent"
+    },
+    "O14": {
+      "id": "O14",
+      "kind": "concession",
+      "answers": [
+        "O9",
+        "O10"
+      ],
+      "why": "P10 freezes the rpc-facing transport surface and puts the cancel, plugin tests and key fixes in S3; demux on message[0] is safe because assertMessage runs only inside reader.push (read.ts:155), so rpc control types 3+ never reach it. The message[0] collision I was going to raise does not exist.",
+      "text": "Conceded: O9 (API churn) and the envelope part of O10, given P10 and S3.",
+      "round": 3,
+      "by": "opponent"
+    },
+    "O15": {
+      "id": "O15",
+      "kind": "risk",
+      "axis": "device",
+      "severity": "medium",
+      "answers": [
+        "P10",
+        "P13"
+      ],
+      "text": "P10 fixes only the writer's keys Set. The reader keeps one slot per key in its slots Map after the value settles (read.ts onEnd sets SETTLED, never deletes) and only reader.cancel(key) removes it, so a long-lived endpoint still leaks one slot (promise, resolvers) per call and per result unless rpc calls reader.cancel on every settled key. cancel on an OPEN key also adds to the cancelled Set, which empties only on a terminal message or end(), so a peer that never sends one leaks the key. The 'about 50 lines' of P13 does not cover this reader side; rpc must own the call to cancel after each settle, plus a test with 10,000 sequential calls checking Map sizes.",
+      "estimate": {
+        "value": 2,
+        "unit": "unbounded per-call retentions (slots, cancelled) not covered by the writer fix"
+      },
+      "evidence": {
+        "type": "measured",
+        "source": "git show origin/feat/transport:packages/transport/src/read.ts lines 104-205 (slots Map, cancelled Set, onEnd, cancel)",
+        "detail": ""
+      },
+      "round": 3,
+      "by": "opponent"
+    },
+    "O16": {
+      "id": "O16",
+      "kind": "risk",
+      "axis": "time",
+      "severity": "medium",
+      "answers": [
+        "P9",
+        "P11"
+      ],
+      "text": "P11's about 2 weeks counts agent time for the 6 rpc nodes but S1 to S4 are gated on the maintainer (merge, seroval 1.8.0 release, transport manual 0.0.0 publish with trusted publisher, release) and rpc nodes cannot merge to main with a published dependency before S4. Elapsed time is set by those four steps, not the 2 weeks. Mitigation: build rpc against workspace:* transport (as the branch's devDependencies do for seroval) and gate only the rpc publish, which is already parked, so S4 stops blocking merges.",
+      "estimate": {
+        "value": 4,
+        "unit": "maintainer-gated steps ahead of the first rpc merge"
+      },
+      "evidence": {
+        "type": "source",
+        "source": "P9 steps S1-S4; packages/transport/package.json on origin/feat/transport (seroval: workspace:*)",
+        "detail": ""
+      },
+      "round": 3,
+      "by": "opponent"
+    }
+  }
+}
