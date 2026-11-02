@@ -1377,9 +1377,6 @@ function serializeCross(ctx: CrossSerializerContext, tree: SerovalNode): string 
   const patches = resolvePatches(ctx.base);
   // Get the variable that represents the root
   const ref = getRefParam(ctx, id);
-  const scopeId = ctx.state.scopeId;
-  // Parameters needed for scoping
-  const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   // If there are patches, append it after the result
   let body = result;
   if (patches) {
@@ -1390,20 +1387,24 @@ function serializeCross(ctx: CrossSerializerContext, tree: SerovalNode): string 
     }
     body = '(' + body + ',' + patches + ref + ')';
   }
-  // If there are no params, there's no need to generate a function
-  if (params === '') {
+  const scopeId = ctx.state.scopeId;
+  // Without a scope, there's no need to generate a function
+  if (scopeId == null) {
     if (tree.t === SerovalNodeType.Object && !patches) {
       return '(' + body + ')';
     }
     return body;
   }
-  // Get the arguments for the IIFE
-  const args =
-    scopeId == null
-      ? '()'
-      : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(scopeId) + '"])';
-  // Create the IIFE
-  return '(' + createFunction([params], body) + ')' + args;
+  // Create the IIFE that receives the scoped references
+  return (
+    '(' +
+    createFunction([GLOBAL_CONTEXT_REFERENCES], body) +
+    ')(' +
+    GLOBAL_CONTEXT_REFERENCES +
+    '["' +
+    serializeString(scopeId) +
+    '"])'
+  );
 }
 
 function wrapSerializationError(error: unknown): SerovalSerializationError {
