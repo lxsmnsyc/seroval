@@ -10,6 +10,24 @@ function createEventOptions(current: Event): EventInit {
   };
 }
 
+// Each known field is checked, so the constructor never converts an input
+// object to a boolean.
+const isEventOptions = /* @__PURE__ */ v.object({
+  bubbles: /* @__PURE__ */ v.optional(v.boolean),
+  cancelable: /* @__PURE__ */ v.optional(v.boolean),
+  composed: /* @__PURE__ */ v.optional(v.boolean),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyEventOptions(options: EventInit): EventInit {
+  return {
+    bubbles: options.bubbles,
+    cancelable: options.cancelable,
+    composed: options.composed,
+  };
+}
+
 type EventNode = {
   type: SerovalNode;
   options: SerovalNode;
@@ -47,11 +65,11 @@ const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
   serialize(node, ctx) {
     return 'new Event(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
-  validate: { type: v.string },
+  validate: { type: v.string, options: isEventOptions },
   deserialize(node, ctx) {
     return new Event(
       ctx.deserialize<string>(node.type),
-      ctx.deserialize<EventInit>(node.options),
+      copyEventOptions(ctx.deserialize<EventInit>(node.options)),
     );
   },
 });

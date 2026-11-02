@@ -29,7 +29,7 @@ export function escapeHTML(value: string): string {
 
 /**
  * Highlights code with twinkleplop. The colors come from the site's syntax
- * variables in styles.css, so they follow the light and dark themes.
+ * variables in styles.css, so the palette lives in one place.
  */
 export function highlight(code: string, lang: string): string {
   const highlighter = LANGUAGES[lang];

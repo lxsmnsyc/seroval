@@ -1,5 +1,5 @@
-import '@fontsource-variable/inter';
-import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 import type { JSX } from '@solidjs/web';
 import { onSettled } from 'solid-js';
 import Drawer from './components/Drawer';

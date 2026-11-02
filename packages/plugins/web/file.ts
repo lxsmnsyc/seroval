@@ -2,6 +2,22 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import * as v from 'seroval/validator';
 
+// Each known field is checked, so the constructor never converts an input
+// object to a string or a number.
+const isFileOptions = /* @__PURE__ */ v.object({
+  type: /* @__PURE__ */ v.optional(v.string),
+  lastModified: /* @__PURE__ */ v.optional(v.number),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyFileOptions(options: FilePropertyBag): FilePropertyBag {
+  return {
+    type: options.type,
+    lastModified: options.lastModified,
+  };
+}
+
 type FileNode = {
   name: SerovalNode;
   options: SerovalNode;
@@ -40,12 +56,16 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
       ')'
     );
   },
-  validate: { name: v.string, buffer: v.arrayBuffer },
+  validate: {
+    name: v.string,
+    options: isFileOptions,
+    buffer: /* @__PURE__ */ v.instanceOf(ArrayBuffer),
+  },
   deserialize(node, ctx) {
     return new File(
       [ctx.deserialize<ArrayBuffer>(node.buffer)],
       ctx.deserialize<string>(node.name),
-      ctx.deserialize<FilePropertyBag>(node.options),
+      copyFileOptions(ctx.deserialize<FilePropertyBag>(node.options)),
     );
   },
 });
