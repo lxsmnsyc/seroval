@@ -25,6 +25,12 @@ describe('Stream/Sequence identity', () => {
     expect(isStream(stream)).toBe(true);
   });
 
+  it('recognizes a LiveStream made with its public constructor', () => {
+    const stream = new LiveStream();
+    expect(isLiveStream(stream)).toBe(true);
+    expect(isStream(stream)).toBe(true);
+  });
+
   it('rejects a POJO forging the LiveStream marker', () => {
     const forged = {
       __SEROVAL_STREAM__: 2,
