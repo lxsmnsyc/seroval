@@ -406,7 +406,7 @@ function pushObjectFlag(ctx: SerializerContext, flag: SerovalObjectFlags, id: nu
   }
 }
 
-function resolveFlags(ctx: BaseSerializerContext): string | undefined {
+function resolveFlags(ctx: BaseSerializerContext): string {
   let result = '';
   for (let i = 0, current = ctx.flags, len = current.length; i < len; i++) {
     const flag = current[i];
@@ -508,10 +508,6 @@ function createSequenceAssign(
   createAssignment(ctx.base, getRefParam(ctx, ref) + '.v[' + index + ']', value);
 }
 
-/**
- * Checks if the value is in the stack. Stack here is a reference
- * structure to know if a object is to be accessed in a TDZ.
- */
 function getKeyKind(key: string): KeyKind {
   const first = key.charCodeAt(0);
   // Canonical non-negative numbers start with a digit ('0'..'9') or are
@@ -528,6 +524,10 @@ function getKeyKind(key: string): KeyKind {
   return isValidIdentifier(key) ? KeyKind.Identifier : KeyKind.Quoted;
 }
 
+/**
+ * Checks if the value is in the stack. Stack here is a reference
+ * structure to know if a object is to be accessed in a TDZ.
+ */
 function isIndexedValueInStack(ctx: BaseSerializerContext, node: SerovalNode): boolean {
   return node.t === SerovalNodeType.IndexedValue && ctx.stack.includes(node.i);
 }
@@ -645,16 +645,7 @@ function serializeProperty(
     if (isIndexedValueInStack(ctx.base, val)) {
       const refParam = getRefParam(ctx, (val as SerovalIndexedValueNode).i);
       markSerializerRef(ctx.base, source.i);
-      if (kind === KeyKind.Identifier) {
-        createObjectAssign(ctx, source.i, key, refParam);
-      } else {
-        createArrayAssign(
-          ctx,
-          source.i,
-          kind === KeyKind.Numeric ? key : '"' + key + '"',
-          refParam,
-        );
-      }
+      createKeyAssign(ctx, source.i, kind, key, refParam);
       return '';
     }
     if (key !== '__proto__') {
