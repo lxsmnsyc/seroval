@@ -1,3 +1,4 @@
+import 'temporal-polyfill/global';
 import { describe, expect, it } from 'vitest';
 import {
   Sequence,
