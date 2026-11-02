@@ -1,0 +1,104 @@
+{
+  "name": "@seroval/transport",
+  "type": "module",
+  "sideEffects": false,
+  "version": "0.0.0",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "keywords": [
+    "seroval",
+    "serialization",
+    "streaming"
+  ],
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "seroval": "workspace:*",
+    "tsdown": "^0.23.1",
+    "tslib": "^2.8.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "peerDependencies": {
+    "seroval": "^1.8.0"
+  },
+  "scripts": {
+    "prepublishOnly": "tsdown",
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "test": "vitest"
+  },
+  "private": false,
+  "description": "Send seroval streams over fetch and other byte streams",
+  "repository": {
+    "url": "https://github.com/lxsmnsyc/seroval.git",
+    "type": "git"
+  },
+  "homepage": "https://seroval.vercel.app/docs/transport",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/seroval/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Alexis Munsayac",
+  "types": "./dist/index.d.cts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "typesVersions": {
+    "*": {
+      "read": [
+        "./dist/read.d.cts"
+      ],
+      "write": [
+        "./dist/write.d.cts"
+      ],
+      "web": [
+        "./dist/web.d.cts"
+      ],
+      "frame": [
+        "./dist/frame.d.cts"
+      ],
+      "node": [
+        "./dist/node.d.cts"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./read": {
+      "import": "./dist/read.js",
+      "require": "./dist/read.cjs",
+      "default": "./dist/read.js"
+    },
+    "./write": {
+      "import": "./dist/write.js",
+      "require": "./dist/write.cjs",
+      "default": "./dist/write.js"
+    },
+    "./web": {
+      "import": "./dist/web.js",
+      "require": "./dist/web.cjs",
+      "default": "./dist/web.js"
+    },
+    "./frame": {
+      "import": "./dist/frame.js",
+      "require": "./dist/frame.cjs",
+      "default": "./dist/frame.js"
+    },
+    "./node": {
+      "import": "./dist/node.js",
+      "require": "./dist/node.cjs",
+      "default": "./dist/node.js"
+    },
+    "./package.json": "./package.json"
+  }
+}
