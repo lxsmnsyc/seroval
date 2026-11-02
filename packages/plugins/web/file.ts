@@ -1,20 +1,20 @@
 import type { SerovalNode } from 'seroval';
-import { createPlugin } from 'seroval';
-import {
-  expectArrayBuffer,
-  expectObject,
-  expectOptionalNumber,
-  expectOptionalString,
-  expectString,
-} from './validate';
+import { SerovalPluginValidationError, createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 
-// Copies only the known fields, each checked, so the constructor never
-// converts an input object to a string or a number.
-function expectFileOptions(value: unknown): FilePropertyBag {
-  const options = expectObject(value);
+// Each known field is checked, so the constructor never converts an input
+// object to a string or a number.
+const isFileOptions = /* @__PURE__ */ v.object({
+  type: /* @__PURE__ */ v.optional(v.string),
+  lastModified: /* @__PURE__ */ v.optional(v.number),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyFileOptions(options: FilePropertyBag): FilePropertyBag {
   return {
-    type: expectOptionalString(options.type),
-    lastModified: expectOptionalNumber(options.lastModified),
+    type: options.type,
+    lastModified: options.lastModified,
   };
 }
 
@@ -24,7 +24,16 @@ type FileNode = {
   buffer: SerovalNode;
 };
 
-const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
+type FileBinaryData = {
+  name: string;
+  options: {
+    type: string;
+    lastModified: number;
+  };
+  buffer: Promise<ArrayBuffer>;
+};
+
+const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>({
   tag: 'seroval-plugins/web/File',
   skipPlainObjects: true,
   test(value) {
@@ -56,12 +65,43 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
       ')'
     );
   },
+  validate: {
+    name: v.string,
+    options: isFileOptions,
+    buffer: /* @__PURE__ */ v.instanceOf(ArrayBuffer),
+  },
   deserialize(node, ctx) {
     return new File(
-      [expectArrayBuffer(ctx.deserialize(node.buffer))],
-      expectString(ctx.deserialize(node.name)),
-      expectFileOptions(ctx.deserialize(node.options)),
+      [ctx.deserialize<ArrayBuffer>(node.buffer)],
+      ctx.deserialize<string>(node.name),
+      copyFileOptions(ctx.deserialize<FilePropertyBag>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        name: value.name,
+        options: {
+          type: value.type,
+          lastModified: value.lastModified,
+        },
+        buffer: value.arrayBuffer(),
+      };
+    },
+    validate: {
+      name: v.string,
+      options: isFileOptions,
+      buffer: /* @__PURE__ */ v.instanceOf(Promise),
+    },
+    async deserialize(data) {
+      // `buffer` is checked to be a Promise, but what it resolves to is only
+      // known here.
+      const buffer: unknown = await data.buffer;
+      if (!(buffer instanceof ArrayBuffer)) {
+        throw new SerovalPluginValidationError('seroval-plugins/web/File', 'buffer');
+      }
+      return new File([buffer], data.name, copyFileOptions(data.options));
+    },
   },
 });
 

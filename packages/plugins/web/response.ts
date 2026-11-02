@@ -1,14 +1,9 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import {
-  expectBody,
-  expectHeaders,
-  expectObject,
-  expectOptionalNumber,
-  expectOptionalString,
-} from './validate';
+import { isBody, isOptionalHeaders } from './validate';
 
 function createResponseOptions(current: Response): ResponseInit {
   return {
@@ -18,14 +13,21 @@ function createResponseOptions(current: Response): ResponseInit {
   };
 }
 
-// Copies only the known fields, each checked, so the constructor never
-// converts an input object to a string or a number.
-function expectResponseOptions(value: unknown): ResponseInit {
-  const options = expectObject(value);
+// Each known field is checked, so the constructor never converts an input
+// object to a string or a number.
+const isResponseOptions = /* @__PURE__ */ v.object({
+  headers: isOptionalHeaders,
+  status: /* @__PURE__ */ v.optional(v.number),
+  statusText: /* @__PURE__ */ v.optional(v.string),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyResponseOptions(options: ResponseInit): ResponseInit {
   return {
-    headers: expectHeaders(options.headers),
-    status: expectOptionalNumber(options.status),
-    statusText: expectOptionalString(options.statusText),
+    headers: options.headers,
+    status: options.status,
+    statusText: options.statusText,
   };
 }
 
@@ -34,7 +36,12 @@ type ResponseNode = {
   options: SerovalNode;
 };
 
-const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
+type ResponseBinarydata = {
+  body: ReadableStream<Uint8Array> | null;
+  options: ResponseInit;
+};
+
+const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode, ResponseBinarydata>({
   tag: 'seroval-plugins/web/Response',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   skipPlainObjects: true,
@@ -63,11 +70,24 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
   serialize(node, ctx) {
     return 'new Response(' + ctx.serialize(node.body) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { body: isBody, options: isResponseOptions },
   deserialize(node, ctx) {
     return new Response(
-      expectBody(ctx.deserialize(node.body)),
-      expectResponseOptions(ctx.deserialize(node.options)),
+      ctx.deserialize<BodyInit | null>(node.body),
+      copyResponseOptions(ctx.deserialize<ResponseInit>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        body: value.body && !value.bodyUsed ? value.clone().body : null,
+        options: createResponseOptions(value),
+      };
+    },
+    validate: { body: isBody, options: isResponseOptions },
+    deserialize(data) {
+      return new Response(data.body, copyResponseOptions(data.options));
+    },
   },
 });
 

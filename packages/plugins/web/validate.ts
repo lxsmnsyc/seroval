@@ -1,91 +1,51 @@
-// A plugin's `deserialize` reads nodes that may come from untrusted input, so
-// values handed to Web constructors are checked at runtime, not only cast.
+import type { Validator } from 'seroval';
 
-export function expectString(value: unknown): string {
-  if (typeof value !== 'string') {
-    throw new Error('Expected a string.');
-  }
-  return value;
-}
+// Validators for the values that the web plugins hand to Web constructors. A
+// constructor converts a plain object to a string or a number, so each field is
+// checked to have the type the constructor expects.
 
-export function expectNumber(value: unknown): number {
-  if (typeof value !== 'number') {
-    throw new Error('Expected a number.');
-  }
-  return value;
-}
+type Entry<T> = [key: string, value: T];
 
-export function expectArrayBuffer(value: unknown): ArrayBuffer {
-  if (!(value instanceof ArrayBuffer)) {
-    throw new Error('Expected an ArrayBuffer.');
-  }
-  return value;
-}
-
-export function expectOptionalString(value: unknown): string | undefined {
-  if (value === undefined) {
-    return value;
-  }
-  return expectString(value);
-}
-
-export function expectOptionalNumber(value: unknown): number | undefined {
-  if (value === undefined) {
-    return value;
-  }
-  return expectNumber(value);
-}
-
-export function expectOptionalBoolean(value: unknown): boolean | undefined {
-  if (value === undefined || typeof value === 'boolean') {
-    return value;
-  }
-  throw new Error('Expected a boolean.');
-}
-
-export function expectObject(value: unknown): Record<string, unknown> {
-  if (typeof value !== 'object' || value === null) {
-    throw new Error('Expected an object.');
-  }
-  return value as Record<string, unknown>;
-}
-
-export function expectHeaders(value: unknown): Headers | undefined {
-  if (value === undefined || value instanceof Headers) {
-    return value;
-  }
-  throw new Error('Expected a Headers instance.');
-}
-
-// An entry list is copied into fresh pairs, so the constructor never iterates
-// an array the input built.
-export function expectEntries<T>(
-  value: unknown,
-  expectValue: (value: unknown) => T,
-): [key: string, value: T][] {
-  if (!Array.isArray(value)) {
-    throw new Error('Expected an array.');
-  }
-  const entries: [key: string, value: T][] = [];
-  for (const entry of value as unknown[]) {
-    if (!Array.isArray(entry) || entry.length !== 2) {
-      throw new Error('Expected a key-value pair.');
+// Matches an array of key-value pairs with string keys.
+export function entries<T>(value: Validator<T>): Validator<Entry<T>[]> {
+  return (list): list is Entry<T>[] => {
+    if (!Array.isArray(list)) {
+      return false;
     }
-    entries.push([expectString(entry[0]), expectValue(entry[1])]);
+    for (const entry of list as unknown[]) {
+      if (
+        !Array.isArray(entry) ||
+        entry.length !== 2 ||
+        typeof entry[0] !== 'string' ||
+        !value(entry[1])
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+}
+
+// Copies an entry list into fresh pairs, so the constructor never iterates an
+// array the input built.
+export function copyEntries<T>(list: Entry<T>[]): Entry<T>[] {
+  const result: Entry<T>[] = [];
+  for (const entry of list) {
+    result.push([entry[0], entry[1]]);
   }
-  return entries;
+  return result;
+}
+
+export function isOptionalHeaders(value: unknown): value is Headers | undefined {
+  return value === undefined || value instanceof Headers;
 }
 
 // Body values are limited to what the plugins emit, so a body is never
 // converted to a string.
-export function expectBody(value: unknown): ArrayBuffer | ReadableStream | null {
-  if (
-    value === null ||
-    value === undefined ||
+export function isBody(value: unknown): value is ArrayBuffer | ReadableStream | null | undefined {
+  return (
+    value == null ||
     value instanceof ArrayBuffer ||
     (typeof ReadableStream !== 'undefined' && value instanceof ReadableStream)
-  ) {
-    return value ?? null;
-  }
-  throw new Error('Expected an ArrayBuffer, a ReadableStream or null.');
+  );
 }

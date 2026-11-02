@@ -1,16 +1,25 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectEntries, expectString } from './validate';
+import * as v from 'seroval/validator';
+import { copyEntries, entries } from './validate';
 
-function convertHeaders(instance: Headers): HeadersInit {
-  const items: HeadersInit = [];
+const isHeadersInit = /* @__PURE__ */ entries(v.string);
+
+type HeadersEntries = [key: string, value: string][];
+
+function convertHeaders(instance: Headers): HeadersEntries {
+  const items: HeadersEntries = [];
   instance.forEach((value, key) => {
     items.push([key, value]);
   });
   return items;
 }
 
-const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode }>({
+const HeadersPlugin = /* @__PURE__ */ createPlugin<
+  Headers,
+  { value: SerovalNode },
+  { value: HeadersEntries }
+>({
   tag: 'seroval-plugins/web/Headers',
   skipPlainObjects: true,
   test(value) {
@@ -39,8 +48,18 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode
   serialize(node, ctx) {
     return 'new Headers(' + ctx.serialize(node.value) + ')';
   },
+  validate: { value: isHeadersInit },
   deserialize(node, ctx) {
-    return new Headers(expectEntries(ctx.deserialize(node.value), expectString));
+    return new Headers(copyEntries(ctx.deserialize<HeadersEntries>(node.value)));
+  },
+  binary: {
+    serialize(value) {
+      return { value: convertHeaders(value) };
+    },
+    validate: { value: isHeadersInit },
+    deserialize(data) {
+      return new Headers(copyEntries(data.value));
+    },
   },
 });
 
