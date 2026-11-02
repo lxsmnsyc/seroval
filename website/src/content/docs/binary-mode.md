@@ -302,3 +302,5 @@ Pass the same plugins on both sides. A value that matches a plugin with no `bina
 ## Wire format
 
 The [binary format](./binary-format.md) page describes every node, its byte layout and the rules the decoder checks.
+
+The format can change in a minor release. Both sides must use the same seroval version. See [Compatibility](./compatibility.md#versions).

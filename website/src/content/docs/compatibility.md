@@ -88,6 +88,10 @@ serialize(value, { disabledFeatures: Feature.ObjectAssign });
 // (h=>h=(h=Object.create(null),h.x=1,h))()
 ```
 
+## Versions
+
+seroval does not keep payloads compatible across versions. A minor release can change how a node is encoded in JavaScript, JSON and binary output. Serialize and deserialize with the same seroval version. When a server and a client are deployed separately, deploy them with the same version.
+
 ## Runtimes
 
 seroval runs anywhere modern JavaScript runs: Node.js 20 or later, Deno, Bun, browsers and edge runtimes. It has no dependencies.
