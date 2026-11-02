@@ -7,6 +7,7 @@ import type { MessageSink, Writer } from './write';
 
 export type { Message } from './message';
 export { SerovalTransportError } from './message';
+export * from './form';
 
 /** The default `highWaterMark`, in bytes. */
 const DEFAULT_HIGH_WATER_MARK = 64 * 1024;

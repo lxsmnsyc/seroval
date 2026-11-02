@@ -45,6 +45,7 @@ console.log(await reader.get('posts'));
 - Either side can cancel one value. The writer stops its sources, and the reader fails what still waits in it.
 - When the reader ends, every value and promise that still waits fails.
 - Promises that nobody awaits do not cause unhandled rejections.
+- `toFormRequest` and `fromFormRequest` send a value with files and blobs in a `Request` as form data.
 
 See the [docs](https://seroval.vercel.app/docs/transport) for the options and the message format.
 

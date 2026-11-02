@@ -57,6 +57,36 @@ void fromResponse(await fetch('/api'), reader);
 - `toResponse` takes the options of `Response` and `highWaterMark`. It sets `Content-Type: application/octet-stream` unless the headers set one.
 - `fromResponse` takes the options of `fromWebStream`. A response without a body, or with a status outside 200 to 299, ends the reader with a `SerovalTransportError`.
 
+## Files in a request
+
+A request body that streams needs `duplex: 'half'`, which not every browser supports. `toFormRequest` sends a value in a `Request` as form data instead. Each file and blob in the value goes in a part of its own, and the value holds only its index, so the bytes are not base64 in the JSON. Form data in the value works too. It needs no plugin of `seroval-plugins/web`.
+
+```js
+// client
+import { toFormRequest } from '@seroval/transport/web';
+
+const request = await toFormRequest('/api/upload', {
+  title: 'Report',
+  attachments: [input.files[0], input.files[1]],
+});
+await fetch(request);
+```
+
+```js
+// server
+import { fromFormRequest } from '@seroval/transport/web';
+
+const { title, attachments } = await fromFormRequest(request);
+```
+
+- `toFormData(value, options)` and `fromFormData(form, options)` do the same with a `FormData`, such as to add fields of your own.
+- The value goes in the `seroval` field as JSON, and the file of index `i` in the `seroval:i` field.
+- Promises in the value are awaited before the request is created.
+- `toFormData` takes the options of `toJSONAsync`, and `fromFormData` those of `fromJSON`. Your plugins come after the ones of files and form data.
+- `fromFormData` validates the value and runs no code, as `fromJSON` does, so the form can come from an untrusted client.
+- `request.formData()` reads the whole body, so limit the size of the body in the server first.
+- A blob comes back as a `Blob`, and a file as a `File` with its name, type and `lastModified`.
+
 ## Over Node streams
 
 `@seroval/transport/node` does the same with Node streams. `toNodeStream` returns a `Readable` of frames, and `fromNodeStream` reads a `Readable`, such as an `IncomingMessage`.
@@ -204,6 +234,8 @@ Values fail with `SerovalTransportError` when:
 - the reader ended before they arrived or settled.
 - a frame header or a message is malformed.
 - a frame is larger than `maxFrameSize`.
+
+`fromFormData` and `fromFormRequest` throw a `SerovalTransportError` when the body is not form data, or when the `seroval` field is missing or is not JSON. A malformed value, such as an index whose part is missing, throws the errors of `fromJSON`.
 
 ## Message format
 
