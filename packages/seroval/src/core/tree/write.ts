@@ -1,15 +1,9 @@
-import { ALL_ENABLED } from '../compat';
 import { createAsyncParserContext, parseTopAsync } from '../context/async-parser';
-import {
-  type BaseDeserializerContextOptions,
-  createVanillaDeserializerContext,
-  deserializeTop,
-} from '../context/deserializer';
 import type { BaseParserContextOptions } from '../context/parser';
 import { createVanillaSerializerContext, serializeTopVanilla } from '../context/serializer';
 import { createSyncParserContext, parseTop } from '../context/sync-parser';
 import { type PluginAccessOptions, resolvePlugins } from '../plugin';
-import type { SerovalNode } from '../types';
+import type { SerovalJSON } from './read';
 
 /**
  * Options for `serialize`. The same as the parser options, without `refs`:
@@ -60,24 +54,6 @@ export async function serializeAsync<T>(
   return serializeTopVanilla(serial, tree);
 }
 
-export function deserialize<T>(source: string): T {
-  // oxlint-disable-next-line no-eval -- Deserializing runs the serialized source by design.
-  return (0, eval)(source) as T;
-}
-
-export interface SerovalJSON {
-  t: SerovalNode;
-  f: number;
-  m: number[];
-}
-
-export interface FromJSONOptions
-  extends
-    PluginAccessOptions,
-    Pick<BaseDeserializerContextOptions, 'depthLimit' | 'maxBase64Length'> {
-  disabledFeatures?: number;
-}
-
 export function toJSON<T>(source: T, options: ToJSONOptions = {}): SerovalJSON {
   const plugins = resolvePlugins(options.plugins);
   const ctx = createSyncParserContext({
@@ -119,20 +95,4 @@ export function compileJSON(source: SerovalJSON, options: PluginAccessOptions = 
     markedRefs: source.m,
   });
   return serializeTopVanilla(ctx, source.t);
-}
-
-export function fromJSON<T>(source: SerovalJSON, options: FromJSONOptions = {}): T {
-  const plugins = resolvePlugins(options.plugins);
-  const disabledFeatures = options.disabledFeatures ?? 0;
-  // oxlint-disable-next-line no-unnecessary-condition -- Untrusted JSON can omit the features.
-  const sourceFeatures = source.f ?? ALL_ENABLED;
-  const ctx = createVanillaDeserializerContext({
-    depthLimit: options.depthLimit,
-    maxBase64Length: options.maxBase64Length,
-    plugins,
-    markedRefs: source.m,
-    features: sourceFeatures & ~disabledFeatures,
-    disabledFeatures,
-  });
-  return deserializeTop(ctx, source.t) as T;
 }
