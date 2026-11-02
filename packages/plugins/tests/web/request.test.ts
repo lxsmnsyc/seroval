@@ -9,17 +9,31 @@ import {
   toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, expect, it, onTestFinished } from 'vitest';
 import RequestPlugin from '../../web/request';
 import { evaluateCross } from '../utils/cross';
 
 const EXAMPLE_URL = 'http://localhost:3000';
 const EXAMPLE_BODY = 'Hello World!';
 
-// Hides `Request.body` the way Firefox does, which has no such getter.
-function hideRequestBody(request: Request): Request {
-  Object.defineProperty(request, 'body', { value: undefined });
-  return request;
+// Hides `Request.body` the way Firefox does, which has no such getter. It
+// patches the prototype so that `clone()` copies lack the getter too. Returns
+// a function that restores the getter, which also runs when the test ends.
+function hideRequestBody(): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(Request.prototype, 'body');
+  Object.defineProperty(Request.prototype, 'body', {
+    configurable: true,
+    get() {
+      return undefined;
+    },
+  });
+  function restoreRequestBody(): void {
+    if (descriptor) {
+      Object.defineProperty(Request.prototype, 'body', descriptor);
+    }
+  }
+  onTestFinished(restoreRequestBody);
+  return restoreRequestBody;
 }
 
 describe('Request', () => {
@@ -106,25 +120,27 @@ describe('Request', () => {
     });
 
     it('supports Request without the body getter', async () => {
-      const example = hideRequestBody(
-        new Request(EXAMPLE_URL, {
-          method: 'POST',
-          body: EXAMPLE_BODY,
-        }),
-      );
+      const restoreRequestBody = hideRequestBody();
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
       const result = await crossSerializeAsync(example, {
         plugins: [RequestPlugin],
       });
+      restoreRequestBody();
       const back = evaluateCross<typeof example>(result);
       expect(back).toBeInstanceOf(Request);
       expect(await back.text()).toBe(EXAMPLE_BODY);
     });
 
     it('supports GET Request without the body getter', async () => {
-      const example = hideRequestBody(new Request(EXAMPLE_URL));
+      const restoreRequestBody = hideRequestBody();
+      const example = new Request(EXAMPLE_URL);
       const result = await crossSerializeAsync(example, {
         plugins: [RequestPlugin],
       });
+      restoreRequestBody();
       const back = evaluateCross<typeof example>(result);
       expect(back).toBeInstanceOf(Request);
       expect(back.body).toBe(null);
@@ -195,12 +211,11 @@ describe('Request', () => {
       expect(back.method).toBe(example.method);
     });
     it('round-trips the Request body without the body getter', async () => {
-      const example = hideRequestBody(
-        new Request(EXAMPLE_URL, {
-          method: 'POST',
-          body: EXAMPLE_BODY,
-        }),
-      );
+      const restoreRequestBody = hideRequestBody();
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
       const $R: unknown[] = [];
       await new Promise<void>((resolve, reject) => {
         crossSerializeStream(example, {
@@ -217,6 +232,7 @@ describe('Request', () => {
           },
         });
       });
+      restoreRequestBody();
       const back = $R[0];
       assert(back instanceof Request);
       expect(await back.text()).toBe(EXAMPLE_BODY);
