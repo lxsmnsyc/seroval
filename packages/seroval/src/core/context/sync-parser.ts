@@ -54,6 +54,7 @@ import type {
 } from '../types';
 import { getErrorOptions } from '../utils/error';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
+import { readArrayBufferView } from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import type { StreamParsePluginContext } from './stream-parser';
 import {
@@ -309,8 +310,11 @@ function parseView(
   id: number,
   current: TypedArrayValue | BigIntTypedArrayValue | DataView,
 ): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode {
-  current = getArrayBufferView(ctx.base, current);
-  return createViewNode(type, id, current, parseSOS(ctx, depth, current.buffer));
+  const view = getArrayBufferView(
+    ctx.base,
+    readArrayBufferView(current, type === SerovalNodeType.DataView),
+  );
+  return createViewNode(type, id, current, view, parseSOS(ctx, depth, view.buffer));
 }
 
 function parseError(
@@ -563,6 +567,7 @@ function parseObjectPhase2(
       return createTemporalNode(
         id,
         getTemporalType(currentClass)!,
+        currentClass as { prototype: Temporal.Instant },
         current as unknown as Temporal.Instant,
       );
     case ObjectKind.Iterable:

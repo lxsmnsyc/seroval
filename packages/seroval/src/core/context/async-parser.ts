@@ -58,6 +58,7 @@ import type {
 import { getErrorOptions } from '../utils/error';
 import promiseToResult from '../utils/promise-to-result';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
+import { readArrayBufferView } from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   ObjectKind,
@@ -214,8 +215,11 @@ async function parseView(
   id: number,
   current: TypedArrayValue | BigIntTypedArrayValue | DataView,
 ): Promise<SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode> {
-  current = getArrayBufferView(ctx.base, current);
-  return createViewNode(type, id, current, await parseAsync(ctx, depth, current.buffer));
+  const view = getArrayBufferView(
+    ctx.base,
+    readArrayBufferView(current, type === SerovalNodeType.DataView),
+  );
+  return createViewNode(type, id, current, view, await parseAsync(ctx, depth, view.buffer));
 }
 
 async function parseError(
@@ -558,6 +562,7 @@ export async function parseObjectAsync(
       return createTemporalNode(
         id,
         getTemporalType(currentClass)!,
+        currentClass as { prototype: Temporal.Instant },
         current as unknown as Temporal.Instant,
       );
     case ObjectKind.Iterable:
