@@ -11,6 +11,25 @@ function createCustomEventOptions(current: CustomEvent): CustomEventInit {
   };
 }
 
+// Each known field is checked, so the constructor never converts an input
+// object to a boolean. `detail` can be any value.
+const isCustomEventOptions = /* @__PURE__ */ v.object({
+  bubbles: /* @__PURE__ */ v.optional(v.boolean),
+  cancelable: /* @__PURE__ */ v.optional(v.boolean),
+  composed: /* @__PURE__ */ v.optional(v.boolean),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyCustomEventOptions(options: CustomEventInit): CustomEventInit {
+  return {
+    detail: options.detail,
+    bubbles: options.bubbles,
+    cancelable: options.cancelable,
+    composed: options.composed,
+  };
+}
+
 type CustomEventNode = {
   type: SerovalNode;
   options: SerovalNode;
@@ -57,11 +76,11 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<
   serialize(node, ctx) {
     return 'new CustomEvent(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
-  validate: { type: v.string },
+  validate: { type: v.string, options: isCustomEventOptions },
   deserialize(node, ctx) {
     return new CustomEvent(
       ctx.deserialize<string>(node.type),
-      ctx.deserialize<CustomEventInit>(node.options),
+      copyCustomEventOptions(ctx.deserialize<CustomEventInit>(node.options)),
     );
   },
   binary: {
@@ -71,9 +90,9 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<
         options: createCustomEventOptions(value),
       };
     },
-    validate: { type: v.string },
+    validate: { type: v.string, options: isCustomEventOptions },
     deserialize(data) {
-      return new CustomEvent(data.type, data.options);
+      return new CustomEvent(data.type, copyCustomEventOptions(data.options));
     },
   },
 });

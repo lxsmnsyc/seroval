@@ -104,13 +104,20 @@ export function createTemporalNode(
   return createSerovalNode(SerovalNodeType.Temporal, id, current.toString(), type);
 }
 
+// Own `source` and `flags` properties on the value cannot replace these
+// getters. The `source` getter reads the RegExp's internal state and throws
+// for anything that is not a real RegExp, such as a Proxy around one. The
+// `flags` getter only ever returns flag letters.
+const getRegExpSource = Object.getOwnPropertyDescriptor(RegExp.prototype, 'source')!.get!;
+const getRegExpFlags = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags')!.get!;
+
 export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode {
   return createSerovalNode(
     SerovalNodeType.RegExp,
     id,
     NIL,
-    serializeString(current.source),
-    current.flags,
+    serializeString(getRegExpSource.call(current) as string),
+    getRegExpFlags.call(current) as string,
   );
 }
 

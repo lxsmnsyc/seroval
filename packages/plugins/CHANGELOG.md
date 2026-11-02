@@ -1,5 +1,11 @@
 # seroval-plugins
 
+## 1.7.6
+
+### Patch Changes
+
+- eb60188: Check the File, ImageData, Event and CustomEvent fields during deserialization. The options of each are checked field by field and copied, and ImageData's data must be a `Uint8ClampedArray`.
+
 ## 1.7.5
 
 ### Patch Changes

@@ -12,9 +12,6 @@ export const boolean: Validator<boolean> = (value): value is boolean => typeof v
 
 export const bigint: Validator<bigint> = (value): value is bigint => typeof value === 'bigint';
 
-export const arrayBuffer: Validator<ArrayBuffer> = (value): value is ArrayBuffer =>
-  value instanceof ArrayBuffer;
-
 /** Matches an instance of the given constructor. */
 export function instanceOf<T>(ctor: abstract new (...args: never[]) => T): Validator<T> {
   return (value): value is T => value instanceof ctor;

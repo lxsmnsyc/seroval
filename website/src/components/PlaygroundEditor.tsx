@@ -319,7 +319,7 @@ function formatError(error: unknown): string {
   return error.cause ? `${message}\n\nCaused by ${formatError(error.cause)}` : message;
 }
 
-// Colors come from CSS variables, so the editor follows the site theme.
+// Colors come from CSS variables, so the editor matches the site palette.
 const HIGHLIGHT = HighlightStyle.define([
   { tag: [tags.keyword, tags.operatorKeyword], color: 'var(--syntax-keyword)' },
   { tag: [tags.string, tags.regexp], color: 'var(--syntax-string)' },

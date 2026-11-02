@@ -9,10 +9,10 @@ export default function NotFound(): JSX.Element {
   return (
     <div class="not-found">
       <PageMeta title="Page not found" description="This page does not exist." />
-      <p class="not-found-code gradient-text">404</p>
+      <p class="not-found-code">404</p>
       <h1>Page not found</h1>
       <p>The page you were looking for does not exist or has moved.</p>
-      <div class="hero-actions">
+      <div class="not-found-actions">
         <a class="button button-primary" href={FIRST_PAGE.href}>
           Read the docs <ArrowRightIcon />
         </a>

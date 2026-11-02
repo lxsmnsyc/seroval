@@ -2,6 +2,29 @@ import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import * as v from 'seroval/validator';
 
+// Each known field is checked, so the constructor never converts an input
+// object to a string.
+const isImageDataSettings = /* @__PURE__ */ v.object({
+  colorSpace: /* @__PURE__ */ v.optional(v.string),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyImageDataSettings(options: ImageDataSettings): ImageDataSettings {
+  return {
+    colorSpace: options.colorSpace,
+  };
+}
+
+// The constructor converts any other first argument to a number, which calls
+// its `valueOf`.
+const IMAGE_DATA_VALIDATE = {
+  data: /* @__PURE__ */ v.instanceOf(Uint8ClampedArray),
+  width: v.number,
+  height: v.number,
+  options: isImageDataSettings,
+};
+
 type ImageDataNode = {
   data: SerovalNode;
   width: SerovalNode;
@@ -73,13 +96,13 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode, I
         ')'
       );
     },
-    validate: { width: v.number, height: v.number },
+    validate: IMAGE_DATA_VALIDATE,
     deserialize(node, ctx) {
       return new ImageData(
         ctx.deserialize<Uint8ClampedArray<ArrayBuffer>>(node.data),
         ctx.deserialize<number>(node.width),
         ctx.deserialize<number>(node.height),
-        ctx.deserialize<ImageDataSettings>(node.options),
+        copyImageDataSettings(ctx.deserialize<ImageDataSettings>(node.options)),
       );
     },
     binary: {
@@ -93,9 +116,14 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode, I
           },
         };
       },
-      validate: { width: v.number, height: v.number },
+      validate: IMAGE_DATA_VALIDATE,
       deserialize(data) {
-        return new ImageData(data.data, data.width, data.height, data.options);
+        return new ImageData(
+          data.data as Uint8ClampedArray<ArrayBuffer>,
+          data.width,
+          data.height,
+          copyImageDataSettings(data.options),
+        );
       },
     },
   },

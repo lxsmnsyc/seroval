@@ -1,5 +1,11 @@
 # seroval
 
+## 1.7.6
+
+### Patch Changes
+
+- Read a RegExp's pattern and flags through the `RegExp.prototype` getters, so own `source` or `flags` properties on the value no longer change the output.
+
 ## 1.7.5
 
 ### Patch Changes

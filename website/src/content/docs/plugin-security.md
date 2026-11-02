@@ -19,7 +19,7 @@ import * as v from 'seroval/validator';
 
 const BlobPlugin = createPlugin({
   // ...
-  validate: { buffer: v.arrayBuffer, type: v.string },
+  validate: { buffer: /* @__PURE__ */ v.instanceOf(ArrayBuffer), type: v.string },
   deserialize(node, ctx) {
     return new Blob([ctx.deserialize(node.buffer)], {
       type: ctx.deserialize(node.type),
@@ -35,7 +35,6 @@ When `deserialize` reads a listed field with `ctx.deserialize`, seroval checks t
 | Validator | Matches |
 | --- | --- |
 | `v.string`, `v.number`, `v.boolean`, `v.bigint` | A value of that `typeof`. |
-| `v.arrayBuffer` | An `ArrayBuffer`. |
 | `v.instanceOf(Class)` | An instance of `Class`. |
 | `v.optional(validator)` | `undefined`, or a value that matches `validator`. |
 | `v.union(...validators)` | A value that matches any of `validators`. |
@@ -43,6 +42,8 @@ When `deserialize` reads a listed field with `ctx.deserialize`, seroval checks t
 | `v.object({ key: validator })` | An object whose listed keys match their validators. Other keys are not checked. |
 
 The validators are also exported as `v` from `seroval`. In a plugin that other people bundle, import them from `seroval/validator` as shown above, so that bundlers can still remove the plugin when it is unused.
+
+`v.instanceOf`, `v.optional`, `v.union`, `v.array` and `v.object` are function calls. Put `/* @__PURE__ */` before each call, as in the example above. Without it, esbuild keeps the plugin in the bundle even when nothing uses it.
 
 A validator is a function that takes a value and returns `true` or `false`, so you can also write your own. For checks that depend on more than one field, check the values by hand in `deserialize`, and throw when they are wrong.
 
