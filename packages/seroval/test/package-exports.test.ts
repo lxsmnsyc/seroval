@@ -110,6 +110,7 @@ describe('built package exports (run build first)', () => {
           ...(browser ? ['browser'] : []),
         ];
         const target = `dist/${development ? 'dev/' : ''}index.${format === 'import' ? 'js' : 'cjs'}`;
+        const validatorTarget = target.replace('index.', 'validator.');
         const label = `${development ? 'development' : 'production'}, ${browser ? 'browser' : 'default'}, ${format}`;
 
         it(`resolves real package conditions in Node (${label})`, async () => {
@@ -117,10 +118,14 @@ describe('built package exports (run build first)', () => {
             format === 'import'
               ? `const selected = await import('seroval');
                  const fallback = await import('./${target}');
-                 assert.equal(import.meta.resolve('seroval'), new URL('./${target}', import.meta.url).href);`
+                 assert.equal(import.meta.resolve('seroval'), new URL('./${target}', import.meta.url).href);
+                 const validator = await import('seroval/validator');
+                 assert.equal(import.meta.resolve('seroval/validator'), new URL('./${validatorTarget}', import.meta.url).href);`
               : `const selected = require('seroval');
                  const fallback = require('./${target}');
-                 assert.equal(require.resolve('seroval'), fileURLToPath(new URL('./${target}', import.meta.url)));`;
+                 assert.equal(require.resolve('seroval'), fileURLToPath(new URL('./${target}', import.meta.url)));
+                 const validator = require('seroval/validator');
+                 assert.equal(require.resolve('seroval/validator'), fileURLToPath(new URL('./${validatorTarget}', import.meta.url)));`;
           await execFileAsync(
             process.execPath,
             [
@@ -134,6 +139,9 @@ describe('built package exports (run build first)', () => {
                ${load}
                for (const key of Object.keys(selected)) {
                  assert.equal(selected[key], fallback[key], key);
+               }
+               for (const key of ['string', 'number', 'instanceOf', 'object']) {
+                 assert.equal(selected.v[key], validator[key], key);
                }
                const ref = selected.createReference('built-package', () => 42);
                assert.equal(fallback.fromJSON(selected.toJSON(ref)), ref);

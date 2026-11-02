@@ -1,15 +1,9 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import {
-  expectBody,
-  expectHeaders,
-  expectObject,
-  expectOptionalBoolean,
-  expectOptionalString,
-  expectString,
-} from './validate';
+import { isBody, isOptionalHeaders } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -30,23 +24,41 @@ function createRequestOptions(
   };
 }
 
-// Copies only the known fields, each checked, so the constructor never
-// converts an input object to a string.
-function expectRequestOptions(value: unknown): RequestInit & { duplex?: 'half' } {
-  const options = expectObject(value);
+type RequestOptions = RequestInit & { duplex?: 'half' };
+
+// Each known field is checked, so the constructor never converts an input
+// object to a string.
+const isRequestOptions = /* @__PURE__ */ v.object({
+  body: isBody,
+  cache: /* @__PURE__ */ v.optional(v.string),
+  credentials: /* @__PURE__ */ v.optional(v.string),
+  headers: isOptionalHeaders,
+  integrity: /* @__PURE__ */ v.optional(v.string),
+  keepalive: /* @__PURE__ */ v.optional(v.boolean),
+  method: /* @__PURE__ */ v.optional(v.string),
+  mode: /* @__PURE__ */ v.optional(v.string),
+  redirect: /* @__PURE__ */ v.optional(v.string),
+  referrer: /* @__PURE__ */ v.optional(v.string),
+  referrerPolicy: /* @__PURE__ */ v.optional(v.string),
+  duplex: /* @__PURE__ */ v.optional(v.string),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyRequestOptions(options: RequestOptions): RequestOptions {
   return {
-    body: expectBody(options.body),
-    cache: expectOptionalString(options.cache) as RequestCache | undefined,
-    credentials: expectOptionalString(options.credentials) as RequestCredentials | undefined,
-    headers: expectHeaders(options.headers),
-    integrity: expectOptionalString(options.integrity),
-    keepalive: expectOptionalBoolean(options.keepalive),
-    method: expectOptionalString(options.method),
-    mode: expectOptionalString(options.mode) as RequestMode | undefined,
-    redirect: expectOptionalString(options.redirect) as RequestRedirect | undefined,
-    referrer: expectOptionalString(options.referrer),
-    referrerPolicy: expectOptionalString(options.referrerPolicy) as ReferrerPolicy | undefined,
-    duplex: expectOptionalString(options.duplex) as 'half' | undefined,
+    body: options.body,
+    cache: options.cache,
+    credentials: options.credentials,
+    headers: options.headers,
+    integrity: options.integrity,
+    keepalive: options.keepalive,
+    method: options.method,
+    mode: options.mode,
+    redirect: options.redirect,
+    referrer: options.referrer,
+    referrerPolicy: options.referrerPolicy,
+    duplex: options.duplex,
   };
 }
 
@@ -89,10 +101,11 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   serialize(node, ctx) {
     return 'new Request(' + ctx.serialize(node.url) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { url: v.string, options: isRequestOptions },
   deserialize(node, ctx) {
     return new Request(
-      expectString(ctx.deserialize(node.url)),
-      expectRequestOptions(ctx.deserialize(node.options)),
+      ctx.deserialize<string>(node.url),
+      copyRequestOptions(ctx.deserialize<RequestOptions>(node.options)),
     );
   },
 });

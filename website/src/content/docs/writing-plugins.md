@@ -69,6 +69,7 @@ The JavaScript output calls `new Point`, so `Point` must be in scope wherever th
 | `parse.stream` | Takes the value apart for the streaming functions and `Serializer`. |
 | `serialize(node, ctx)` | Returns a JavaScript expression that rebuilds the value. Used by the JavaScript output and `compileJSON`. |
 | `deserialize(node, ctx)` | Rebuilds the value from its node. Used by `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`. |
+| `validate` | Optional. Validators for the fields of the node, by field name. A listed field is checked when `deserialize` reads it with `ctx.deserialize`. See [Plugin security](./plugin-security.md#validate-every-value). |
 | `extends` | Other plugins this plugin needs. They are added automatically. |
 | `skipPlainObjects` | Optional. Set it to `true` if `test` never returns `true` for a plain object, whose prototype is `Object.prototype`, such as an object literal. The parsers then do not call `test` for those objects, which makes parsing faster. A plugin that sets it is never applied to such objects. |
 
@@ -94,4 +95,4 @@ Each function gets a context to process nested values:
 
 - Always parse nested values with `ctx.parse`, never by hand. This keeps references and cycles inside them intact.
 - Build the JavaScript output only from `ctx.serialize` results and fixed strings. Never insert a value from the node yourself.
-- Validate everything `ctx.deserialize` returns before you use it. See [Plugin security](./plugin-security.md).
+- Validate everything `ctx.deserialize` returns before you use it, with `validate` or by hand. See [Plugin security](./plugin-security.md).

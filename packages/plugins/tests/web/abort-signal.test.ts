@@ -1,5 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import {
+  SerovalDeserializationError,
+  SerovalPluginValidationError,
   createReference,
   crossSerialize,
   crossSerializeAsync,
@@ -16,6 +18,21 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 import { AbortSignalPlugin } from '../../web';
 import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
+
+// Decoding wraps any error in `SerovalDeserializationError`, with the original
+// error as `cause`.
+function expectValidationError(run: () => unknown): void {
+  let error: unknown;
+  try {
+    run();
+  } catch (caught) {
+    error = caught;
+  }
+  expect(error).toBeInstanceOf(SerovalDeserializationError);
+  expect(error instanceof SerovalDeserializationError && error.cause).toBeInstanceOf(
+    SerovalPluginValidationError,
+  );
+}
 
 const delayedAbortSignal = (): AbortSignal => {
   const controller = new AbortController();
@@ -277,11 +294,17 @@ describe('AbortSignal', () => {
       expect(back.reason).toBe(SYNC_EXAMPLE.reason);
     });
     it('supports future AbortSignal', async () => {
+      // The node of a signal that is not aborted yet also holds the factory
+      // node, which must not be decoded.
       const instance = delayedAbortSignal();
       const back = await streamCrossJSON<typeof instance>(instance, {
         plugins: [AbortSignalPlugin],
       });
       expect(back).toBeInstanceOf(AbortSignal);
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      expect(back.aborted).toBe(true);
     });
   });
   describe('malformed input', () => {
@@ -295,7 +318,7 @@ describe('AbortSignal', () => {
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: toJSON(42).t,
       };
-      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
+      expectValidationError(() => fromJSON(result, { plugins: [AbortSignalPlugin] }));
     });
 
     it('never invokes `then` on a fake thenable controller', () => {
@@ -313,7 +336,7 @@ describe('AbortSignal', () => {
       (result.t as unknown as { s: Record<string, SerovalNode> }).s = {
         controller: template.t,
       };
-      expect(() => fromJSON(result, { plugins: [AbortSignalPlugin] })).toThrow();
+      expectValidationError(() => fromJSON(result, { plugins: [AbortSignalPlugin] }));
       expect(thenSpy).not.toHaveBeenCalled();
     });
 

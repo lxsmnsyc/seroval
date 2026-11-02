@@ -17,6 +17,7 @@ import {
   SerovalMalformedNodeError,
   SerovalMissingInstanceError,
   SerovalMissingPluginError,
+  SerovalPluginValidationError,
   SerovalUnsupportedNodeError,
 } from '../errors';
 import type { PluginAccessOptions } from '../plugin';
@@ -59,6 +60,7 @@ import type {
   SerovalTemporalNode,
   SerovalTypedArrayNode,
 } from '../types';
+import type { Validator } from '../validator';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
 import { getTypedArrayConstructor } from '../utils/typed-array';
 import { isValidKey, isValidSymbol } from '../utils/valid-properties';
@@ -234,10 +236,7 @@ function deserializeReference(ctx: DeserializerContext, node: SerovalReferenceNo
 // its `length` drives allocation and iteration with no matching data on the
 // wire, so a tiny payload forces unbounded work. A genuine list can only be as
 // large as the elements actually present in the input.
-function validateNodeList(
-  node: SerovalNode | SerovalObjectRecordNode,
-  list: unknown,
-): void {
+function validateNodeList(node: SerovalNode | SerovalObjectRecordNode, list: unknown): void {
   if (!Array.isArray(list)) {
     throw new SerovalMalformedNodeError(node as SerovalNode);
   }
@@ -509,6 +508,28 @@ function deserializeBoxed(
   return assignIndexedValue(ctx, node.i, Object(deserialize(ctx, depth, node.f)));
 }
 
+type PluginFieldCheck = [fieldNode: unknown, field: string, check: Validator<unknown>];
+
+// Lists the field nodes that a plugin's `validate` checks. A field is checked
+// when the plugin reads it, so fields it never reads are not decoded.
+function getPluginFieldChecks(
+  node: SerovalPluginNode,
+  validate: Partial<Record<string, Validator<unknown>>>,
+): PluginFieldCheck[] {
+  const info: unknown = node.s;
+  if (info == null || typeof info !== 'object') {
+    throw new SerovalMalformedNodeError(node);
+  }
+  const checks: PluginFieldCheck[] = [];
+  for (const field of Object.keys(validate)) {
+    const check = validate[field];
+    if (check) {
+      checks.push([Reflect.get(info, field), field, check]);
+    }
+  }
+  return checks;
+}
+
 function deserializePlugin(
   ctx: DeserializerContext,
   depth: number,
@@ -520,13 +541,24 @@ function deserializePlugin(
     for (let i = 0, len = currentPlugins.length; i < len; i++) {
       const plugin = currentPlugins[i];
       if (plugin.tag === tag) {
+        const checks = plugin.validate ? getPluginFieldChecks(node, plugin.validate) : undefined;
         return assignIndexedValue(
           ctx,
           node.i,
           plugin.deserialize(
             node.s,
             {
-              deserialize: (current) => deserialize(ctx, depth, current) as never,
+              deserialize: (current) => {
+                const value = deserialize(ctx, depth, current);
+                if (checks) {
+                  for (const [fieldNode, field, check] of checks) {
+                    if (fieldNode === current && !check(value)) {
+                      throw new SerovalPluginValidationError(tag, field);
+                    }
+                  }
+                }
+                return value as never;
+              },
             },
             {
               id: node.i,
@@ -666,9 +698,7 @@ function deserializeAsyncIteratorFactory(
 }
 
 function isSequenceIndex(value: unknown, size: number): boolean {
-  return (
-    Number.isInteger(value) && (value as number) >= -1 && (value as number) < size
-  );
+  return Number.isInteger(value) && (value as number) >= -1 && (value as number) < size;
 }
 
 function deserializeSequence(

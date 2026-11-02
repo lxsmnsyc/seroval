@@ -1,22 +1,18 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectNumber, expectObject, expectOptionalString } from './validate';
+import * as v from 'seroval/validator';
 
-// The constructor converts any other first argument to a number, which calls
-// its `valueOf`.
-function expectImageDataArray(value: unknown): Uint8ClampedArray<ArrayBuffer> {
-  if (!(value instanceof Uint8ClampedArray)) {
-    throw new Error('Expected a Uint8ClampedArray.');
-  }
-  return value as Uint8ClampedArray<ArrayBuffer>;
-}
+// Each known field is checked, so the constructor never converts an input
+// object to a string.
+const isImageDataSettings = /* @__PURE__ */ v.object({
+  colorSpace: /* @__PURE__ */ v.optional(v.string),
+});
 
-// Copies only the known fields, each checked, so the constructor never
-// converts an input object to a string.
-function expectImageDataSettings(value: unknown): ImageDataSettings {
-  const options = expectObject(value);
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyImageDataSettings(options: ImageDataSettings): ImageDataSettings {
   return {
-    colorSpace: expectOptionalString(options.colorSpace) as PredefinedColorSpace | undefined,
+    colorSpace: options.colorSpace,
   };
 }
 
@@ -81,12 +77,20 @@ const ImageDataPlugin = /* @__PURE__ */ createPlugin<ImageData, ImageDataNode>({
       ')'
     );
   },
+  validate: {
+    // The constructor converts any other first argument to a number, which
+    // calls its `valueOf`.
+    data: /* @__PURE__ */ v.instanceOf(Uint8ClampedArray),
+    width: v.number,
+    height: v.number,
+    options: isImageDataSettings,
+  },
   deserialize(node, ctx) {
     return new ImageData(
-      expectImageDataArray(ctx.deserialize(node.data)),
-      expectNumber(ctx.deserialize(node.width)),
-      expectNumber(ctx.deserialize(node.height)),
-      expectImageDataSettings(ctx.deserialize(node.options)),
+      ctx.deserialize<Uint8ClampedArray<ArrayBuffer>>(node.data),
+      ctx.deserialize<number>(node.width),
+      ctx.deserialize<number>(node.height),
+      copyImageDataSettings(ctx.deserialize<ImageDataSettings>(node.options)),
     );
   },
 });
