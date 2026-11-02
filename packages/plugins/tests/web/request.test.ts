@@ -9,12 +9,18 @@ import {
   toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import RequestPlugin from '../../web/request';
 import { evaluateCross } from '../utils/cross';
 
 const EXAMPLE_URL = 'http://localhost:3000';
 const EXAMPLE_BODY = 'Hello World!';
+
+// Hides `Request.body` the way Firefox does, which has no such getter.
+function hideRequestBody(request: Request): Request {
+  Object.defineProperty(request, 'body', { value: undefined });
+  return request;
+}
 
 describe('Request', () => {
   describe('serializeAsync', () => {
@@ -98,6 +104,31 @@ describe('Request', () => {
       expect(back.url).toBe(example.url);
       expect(back.method).toBe(example.method);
     });
+
+    it('supports Request without the body getter', async () => {
+      const example = hideRequestBody(
+        new Request(EXAMPLE_URL, {
+          method: 'POST',
+          body: EXAMPLE_BODY,
+        }),
+      );
+      const result = await crossSerializeAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      const back = evaluateCross<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+    });
+
+    it('supports GET Request without the body getter', async () => {
+      const example = hideRequestBody(new Request(EXAMPLE_URL));
+      const result = await crossSerializeAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      const back = evaluateCross<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(back.body).toBe(null);
+    });
     describe('scoped', () => {
       it('supports Request', async () => {
         const example = new Request(EXAMPLE_URL, {
@@ -136,6 +167,62 @@ describe('Request', () => {
           },
         });
       }));
+    it('round-trips the Request body', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const $R: unknown[] = [];
+      await new Promise<void>((resolve, reject) => {
+        crossSerializeStream(example, {
+          plugins: [RequestPlugin],
+          onSerialize(data) {
+            // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
+            new Function('$R', data)($R);
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      });
+      const back = $R[0];
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
+    it('round-trips the Request body without the body getter', async () => {
+      const example = hideRequestBody(
+        new Request(EXAMPLE_URL, {
+          method: 'POST',
+          body: EXAMPLE_BODY,
+        }),
+      );
+      const $R: unknown[] = [];
+      await new Promise<void>((resolve, reject) => {
+        crossSerializeStream(example, {
+          plugins: [RequestPlugin],
+          onSerialize(data) {
+            // oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval, typescript/no-unsafe-call -- evaluates the serialized output.
+            new Function('$R', data)($R);
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      });
+      const back = $R[0];
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
     describe('scoped', () => {
       it('supports Request', async () =>
         new Promise<void>((resolve, reject) => {
@@ -217,5 +304,34 @@ describe('Request', () => {
           },
         });
       }));
+    it('round-trips the Request body', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const refs = new Map<number, unknown>();
+      let back: unknown;
+      await new Promise<void>((resolve, reject) => {
+        toCrossJSONStream(example, {
+          plugins: [RequestPlugin],
+          onParse(node, initial) {
+            const value = fromCrossJSON(node, { plugins: [RequestPlugin], refs });
+            if (initial) {
+              back = value;
+            }
+          },
+          onDone() {
+            resolve();
+          },
+          onError(error) {
+            reject(error);
+          },
+        });
+      });
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
   });
 });
