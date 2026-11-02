@@ -1,6 +1,22 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectArrayBuffer, expectString } from './validate';
+import {
+  expectArrayBuffer,
+  expectObject,
+  expectOptionalNumber,
+  expectOptionalString,
+  expectString,
+} from './validate';
+
+// Copies only the known fields, each checked, so the constructor never
+// converts an input object to a string or a number.
+function expectFileOptions(value: unknown): FilePropertyBag {
+  const options = expectObject(value);
+  return {
+    type: expectOptionalString(options.type),
+    lastModified: expectOptionalNumber(options.lastModified),
+  };
+}
 
 type FileNode = {
   name: SerovalNode;
@@ -44,7 +60,7 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
     return new File(
       [expectArrayBuffer(ctx.deserialize(node.buffer))],
       expectString(ctx.deserialize(node.name)),
-      ctx.deserialize<FilePropertyBag>(node.options),
+      expectFileOptions(ctx.deserialize(node.options)),
     );
   },
 });

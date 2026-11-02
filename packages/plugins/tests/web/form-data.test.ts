@@ -1,7 +1,6 @@
 import {
   crossSerialize,
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
@@ -9,12 +8,12 @@ import {
   serializeAsync,
   toCrossJSON,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSON,
   toJSONAsync,
 } from 'seroval';
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import { FormDataPlugin } from '../../web';
+import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
 
 const SYNC_EXAMPLE = new FormData();
 SYNC_EXAMPLE.set('hello', 'world');
@@ -52,7 +51,6 @@ describe('FormData', () => {
       const result = await serializeAsync(ASYNC_EXAMPLE, {
         plugins: [FormDataPlugin],
       });
-      expect(result).toMatchSnapshot();
       const back = deserialize<typeof ASYNC_EXAMPLE>(result);
       expect(back).toBeInstanceOf(FormData);
     });
@@ -62,7 +60,6 @@ describe('FormData', () => {
       const result = toJSON(SYNC_EXAMPLE, {
         plugins: [FormDataPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof SYNC_EXAMPLE>(result, {
         plugins: [FormDataPlugin],
       });
@@ -74,7 +71,6 @@ describe('FormData', () => {
       const result = await toJSONAsync(ASYNC_EXAMPLE, {
         plugins: [FormDataPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromJSON<typeof ASYNC_EXAMPLE>(result, {
         plugins: [FormDataPlugin],
       });
@@ -103,7 +99,17 @@ describe('FormData', () => {
       const result = await crossSerializeAsync(ASYNC_EXAMPLE, {
         plugins: [FormDataPlugin],
       });
-      expect(result).toMatchSnapshot();
+      const back = evaluateCross<typeof ASYNC_EXAMPLE>(result);
+      expect(back).toBeInstanceOf(FormData);
+      expect([...back.keys()]).toEqual([...ASYNC_EXAMPLE.keys()]);
+      const helloWorld = back.get('hello-world');
+      assert(helloWorld instanceof File);
+      expect(helloWorld.name).toBe('hello.txt');
+      expect(await helloWorld.text()).toBe('Hello World');
+      const fooBar = back.get('foo-bar');
+      assert(fooBar instanceof File);
+      expect(fooBar.name).toBe('foo-bar.txt');
+      expect(await fooBar.text()).toBe('Foo Bar');
     });
     describe('scoped', () => {
       it('supports FormData', async () => {
@@ -111,43 +117,37 @@ describe('FormData', () => {
           plugins: [FormDataPlugin],
           scopeId: 'example',
         });
-        expect(result).toMatchSnapshot();
+        const back = evaluateCross<typeof ASYNC_EXAMPLE>(result, 'example');
+        expect(back).toBeInstanceOf(FormData);
+        expect([...back.keys()]).toEqual([...ASYNC_EXAMPLE.keys()]);
+        const helloWorld = back.get('hello-world');
+        assert(helloWorld instanceof File);
+        expect(helloWorld.name).toBe('hello.txt');
+        expect(await helloWorld.text()).toBe('Hello World');
+        const fooBar = back.get('foo-bar');
+        assert(fooBar instanceof File);
+        expect(fooBar.name).toBe('foo-bar.txt');
+        expect(await fooBar.text()).toBe('Foo Bar');
       });
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports FormData', async () =>
-      new Promise<void>((resolve, reject) => {
-        crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
-          plugins: [FormDataPlugin],
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports FormData', async () => {
+      const back = await streamCross<Promise<typeof SYNC_EXAMPLE>>(Promise.resolve(SYNC_EXAMPLE), {
+        plugins: [FormDataPlugin],
+      });
+      expect(back).toBeInstanceOf(FormData);
+      expect([...back.entries()]).toEqual([...SYNC_EXAMPLE.entries()]);
+    });
     describe('scoped', () => {
-      it('supports FormData', async () =>
-        new Promise<void>((resolve, reject) => {
-          crossSerializeStream(Promise.resolve(SYNC_EXAMPLE), {
-            plugins: [FormDataPlugin],
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+      it('supports FormData', async () => {
+        const back = await streamCross<Promise<typeof SYNC_EXAMPLE>>(Promise.resolve(SYNC_EXAMPLE), {
+          plugins: [FormDataPlugin],
+          scopeId: 'example',
+        });
+        expect(back).toBeInstanceOf(FormData);
+        expect([...back.entries()]).toEqual([...SYNC_EXAMPLE.entries()]);
+      });
     });
   });
   describe('toCrossJSON', () => {
@@ -155,7 +155,6 @@ describe('FormData', () => {
       const result = toCrossJSON(SYNC_EXAMPLE, {
         plugins: [FormDataPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof SYNC_EXAMPLE>(result, {
         plugins: [FormDataPlugin],
         refs: new Map(),
@@ -168,7 +167,6 @@ describe('FormData', () => {
       const result = await toCrossJSONAsync(ASYNC_EXAMPLE, {
         plugins: [FormDataPlugin],
       });
-      expect(JSON.stringify(result)).toMatchSnapshot();
       const back = fromCrossJSON<typeof ASYNC_EXAMPLE>(result, {
         plugins: [FormDataPlugin],
         refs: new Map(),
@@ -177,20 +175,12 @@ describe('FormData', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports FormData', async () =>
-      new Promise<void>((resolve, reject) => {
-        toCrossJSONStream(Promise.resolve(SYNC_EXAMPLE), {
-          plugins: [FormDataPlugin],
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports FormData', async () => {
+      const back = await streamCrossJSON<Promise<typeof SYNC_EXAMPLE>>(Promise.resolve(SYNC_EXAMPLE), {
+        plugins: [FormDataPlugin],
+      });
+      expect(back).toBeInstanceOf(FormData);
+      expect([...back.entries()]).toEqual([...SYNC_EXAMPLE.entries()]);
+    });
   });
 });

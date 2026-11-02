@@ -1,5 +1,27 @@
 # seroval
 
+## 1.7.6
+
+### Patch Changes
+
+- Read a RegExp's pattern and flags through the `RegExp.prototype` getters, so own `source` or `flags` properties on the value no longer change the output.
+
+## 1.7.5
+
+### Patch Changes
+
+- d85ec3f: Keep two round-trip cases intact. An object whose own `constructor` key holds a falsy value, such as `{ constructor: undefined }`, now keeps `Object.prototype` instead of coming back with a null prototype. A null-prototype object with an own `__proto__` key, or any object serialized with `Feature.ObjectAssign` disabled, no longer turns equal-looking values such as two `new Set()` into one shared object in `serialize`, `crossSerialize` and `compileJSON` output.
+
+## 1.7.4
+
+No changes in this release.
+
+## 1.7.3
+
+### Patch Changes
+
+- 3a60f79: Republish the 1.7.2 changes through CI with npm provenance. 1.7.2 was published manually without an attestation, so pnpm's `trustPolicy: no-downgrade` refused to install it (#278). No code changes.
+
 ## 1.7.2
 
 ### Patch Changes

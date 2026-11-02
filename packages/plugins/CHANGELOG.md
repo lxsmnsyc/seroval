@@ -1,5 +1,27 @@
 # seroval-plugins
 
+## 1.7.6
+
+### Patch Changes
+
+- eb60188: Check the File, ImageData, Event and CustomEvent fields during deserialization. The options of each are checked field by field and copied, and ImageData's data must be a `Uint8ClampedArray`.
+
+## 1.7.5
+
+### Patch Changes
+
+- Check the FormData, Headers, Response and Request fields during deserialization.
+
+## 1.7.4
+
+### Patch Changes
+
+- Check that a ReadableStream's stream source is a seroval Stream before deserializing it.
+
+## 1.7.3
+
+No changes in this release.
+
 ## 1.7.2
 
 No changes in this release.
