@@ -140,7 +140,7 @@ describe('built package exports (run build first)', () => {
                for (const key of Object.keys(selected)) {
                  assert.equal(selected[key], fallback[key], key);
                }
-               for (const key of ['string', 'number', 'arrayBuffer', 'instanceOf', 'object']) {
+               for (const key of ['string', 'number', 'instanceOf', 'object']) {
                  assert.equal(selected.v[key], validator[key], key);
                }
                const ref = selected.createReference('built-package', () => 42);

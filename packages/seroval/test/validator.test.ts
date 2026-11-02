@@ -14,8 +14,9 @@ describe('v', () => {
   });
 
   it('validates instances', () => {
-    expect(v.arrayBuffer(new ArrayBuffer(1))).toBe(true);
-    expect(v.arrayBuffer(new Uint8Array(1))).toBe(false);
+    const isArrayBuffer = v.instanceOf(ArrayBuffer);
+    expect(isArrayBuffer(new ArrayBuffer(1))).toBe(true);
+    expect(isArrayBuffer(new Uint8Array(1))).toBe(false);
     const isPromise = v.instanceOf(Promise);
     expect(isPromise(Promise.resolve())).toBe(true);
     // oxlint-disable-next-line unicorn/no-thenable -- A thenable is not a Promise.

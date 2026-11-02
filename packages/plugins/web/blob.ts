@@ -27,7 +27,7 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
   serialize(node, ctx) {
     return 'new Blob([' + ctx.serialize(node.buffer) + '],{type:' + ctx.serialize(node.type) + '})';
   },
-  validate: { type: v.string, buffer: v.arrayBuffer },
+  validate: { type: v.string, buffer: /* @__PURE__ */ v.instanceOf(ArrayBuffer) },
   deserialize(node, ctx) {
     return new Blob([ctx.deserialize<ArrayBuffer>(node.buffer)], {
       type: ctx.deserialize<string>(node.type),
