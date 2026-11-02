@@ -5,7 +5,6 @@ import markedFootnote from 'marked-footnote';
 import type { Plugin, ViteDevServer } from 'vite';
 import { parse as parseYAML } from 'yaml';
 import { codeFrame, escapeHTML, highlight } from './highlight.ts';
-import { renderShowcase } from './showcase.ts';
 
 export interface Heading {
   depth: number;
@@ -241,7 +240,6 @@ function createSearchEntries(doc: RenderedDoc): SearchEntry[] {
 
 const MANIFEST_ID = 'virtual:docs-manifest';
 const SEARCH_ID = 'virtual:search-index';
-const SHOWCASE_ID = 'virtual:showcase';
 
 /**
  * Serves the docs in `src/content/docs`:
@@ -249,7 +247,6 @@ const SHOWCASE_ID = 'virtual:showcase';
  * - Importing a doc gives `{ doc }` and a default page component.
  * - `virtual:docs-manifest` lists every doc's slug, title and description.
  * - `virtual:search-index` holds the text of every section, for search.
- * - `virtual:showcase` holds the home page examples, serialized at build time.
  */
 export default function content(root: string): Plugin {
   const docsDir = path.join(import.meta.dirname, '../src/content/docs');
@@ -286,7 +283,7 @@ export default function content(root: string): Plugin {
       }
     },
     resolveId(id) {
-      if (id === MANIFEST_ID || id === SEARCH_ID || id === SHOWCASE_ID) {
+      if (id === MANIFEST_ID || id === SEARCH_ID) {
         return `\0${id}`;
       }
       return null;
@@ -302,9 +299,6 @@ export default function content(root: string): Plugin {
       if (id === `\0${SEARCH_ID}`) {
         const docs = await loadDocs();
         return `export default ${JSON.stringify(docs.flatMap(createSearchEntries))};`;
-      }
-      if (id === `\0${SHOWCASE_ID}`) {
-        return `export default ${JSON.stringify(await renderShowcase())};`;
       }
       if (!id.endsWith('.md')) {
         return null;
