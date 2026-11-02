@@ -24,8 +24,7 @@ import { OpaqueReference } from '../opaque-reference';
 import type { Plugin } from '../plugin';
 import { type Sequence, createSequenceFromIterable, isSequence } from '../sequence';
 import { SpecialReference } from '../special-reference';
-import type { Stream } from '../stream';
-import { isStream } from '../stream';
+import { Stream } from '../stream';
 import { serializeString } from '../string';
 import {
   SYM_ASYNC_ITERATOR,
@@ -583,10 +582,11 @@ function parseObject(
   if (Array.isArray(current)) {
     return parseArray(ctx, depth, id, current);
   }
-  if (isStream(current)) {
-    return isLiveStream(current)
-      ? parseLiveStream(ctx, depth, id, current)
-      : parseStream(ctx, depth, id, current);
+  if (isLiveStream(current)) {
+    return parseLiveStream(ctx, depth, id, current);
+  }
+  if (current instanceof Stream) {
+    return parseStream(ctx, depth, id, current);
   }
   if (isSequence(current)) {
     return parseSequence(ctx, depth, id, current);
