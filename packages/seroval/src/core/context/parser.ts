@@ -91,10 +91,6 @@ export function markParserRef(ctx: BaseParserContext, id: number): void {
   ctx.marked.add(id);
 }
 
-export function isParserRefMarked(ctx: BaseParserContext, id: number): boolean {
-  return ctx.marked.has(id);
-}
-
 /**
  * Creates an identifier for a value
  * @param ctx
