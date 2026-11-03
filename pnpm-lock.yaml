@@ -315,10 +315,10 @@ importers:
       '@codemirror/view':
         specifier: ^6.43.15
         version: 6.43.15
-      '@fontsource-variable/inter':
+      '@fontsource-variable/geist':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource-variable/jetbrains-mono':
+      '@fontsource-variable/geist-mono':
         specifier: ^5.3.0
         version: 5.3.0
       '@lezer/highlight':
@@ -761,11 +761,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@fontsource-variable/inter@5.3.0':
-    resolution: {integrity: sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==}
+  '@fontsource-variable/geist-mono@5.3.0':
+    resolution: {integrity: sha512-vBbuwDEo9AkrqADMXOrlAR3DFcJi4/JxeuU43FoiQERnNwsfXNnvxvReZG02cQKmyk4DZkZdBZX3oTDvy2zBAw==}
 
-  '@fontsource-variable/jetbrains-mono@5.3.0':
-    resolution: {integrity: sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw==}
+  '@fontsource-variable/geist@5.3.0':
+    resolution: {integrity: sha512-j0m+vLQuG5XAYoHtGCVu0spvlGreR3EzpECUVzkFmI1mTVnAO38l/NEPDCFgZ177JxzYJCLSmTQibIiYPilGrA==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -2953,9 +2953,9 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@fontsource-variable/inter@5.3.0': {}
+  '@fontsource-variable/geist-mono@5.3.0': {}
 
-  '@fontsource-variable/jetbrains-mono@5.3.0': {}
+  '@fontsource-variable/geist@5.3.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

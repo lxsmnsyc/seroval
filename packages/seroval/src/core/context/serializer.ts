@@ -818,13 +818,16 @@ function serializeNullConstructor(
   return serializeDictionary(ctx, node, NULL_CONSTRUCTOR);
 }
 
+// `node.s` and the numbers below come from the parser, but `compileJSON`
+// takes nodes from anywhere, so they are escaped or converted to numbers here
+// as well.
 function serializeDate(node: SerovalDateNode): string {
-  return 'new Date("' + node.s + '")';
+  return 'new Date("' + serializeString(node.s) + '")';
 }
 
 function serializeTemporal(ctx: SerializerContext, node: SerovalTemporalNode): string {
   if (ctx.base.features & FeatureFlag.Temporal) {
-    return 'Temporal.' + TEMPORAL_TYPE_NAME[node.c] + '.from("' + node.s + '")';
+    return 'Temporal.' + TEMPORAL_TYPE_NAME[node.c] + '.from("' + serializeString(node.s) + '")';
   }
   throw new SerovalUnsupportedNodeError(node);
 }
@@ -1000,9 +1003,11 @@ function serializeView(
     '(' +
     serialize(ctx, node.f) +
     ',' +
-    node.b +
+    // oxlint-disable-next-line no-unnecessary-type-conversion -- `compileJSON` nodes can hold any value here.
+    +node.b +
     ',' +
-    node.l +
+    // oxlint-disable-next-line no-unnecessary-type-conversion -- Same as above.
+    +node.l +
     ')'
   );
 }
@@ -1236,7 +1241,9 @@ function serializeSequence(ctx: SerializerContext, node: SerovalSequenceNode): s
     }
     ctx.base.stack.pop();
     if (result) {
-      return '{__SEROVAL_SEQUENCE__:!0,v:[' + result + '],t:' + node.s + ',d:' + node.l + '}';
+      // A `Sequence` takes `throwAt` and `doneAt` unchecked from its caller.
+      // oxlint-disable-next-line no-unnecessary-type-conversion -- They may not be numbers.
+      return '{__SEROVAL_SEQUENCE__:!0,v:[' + result + '],t:' + +node.s + ',d:' + +node.l + '}';
     }
   }
   return '{__SEROVAL_SEQUENCE__:!0,v:[],t:-1,d:0}';
