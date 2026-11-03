@@ -234,7 +234,7 @@ function formatOutput(chunks: string[]): string {
   return chunks.map((chunk, i) => `// Chunk ${i + 1}\n${chunk}`).join('\n\n');
 }
 
-// Colors come from CSS variables, so the editor follows the site theme.
+// Colors come from CSS variables, so the editor matches the site palette.
 const HIGHLIGHT = HighlightStyle.define([
   { tag: [tags.keyword, tags.operatorKeyword], color: 'var(--syntax-keyword)' },
   { tag: [tags.string, tags.regexp], color: 'var(--syntax-string)' },

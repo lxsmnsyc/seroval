@@ -21,10 +21,11 @@ All entry points load the same files, so a value imported from one is the same v
 import { fromCrossJSON } from 'seroval/read';
 
 // Loaded only when a server function runs.
-import { toJSONAsync, fromJSON } from 'seroval';
+import { fromJSON } from 'seroval/read';
+import { toJSONAsync } from 'seroval/write';
 ```
 
-The bundler keeps the serializers out of the first chunk. This also works when both chunks import `seroval`, because its build is split into the same files. `seroval/read` makes sure a chunk never pulls in a serializer by mistake.
+The bundler keeps the serializers out of the first chunk. Import the subpaths to get this in every bundler. Some bundlers, such as rolldown, also split the code when both chunks import `seroval`, because its build is split into the same files. Others, such as esbuild, keep the serializers in the first chunk in that case. `seroval/read` makes sure a chunk never pulls in a serializer by mistake.
 
 ## Serialize to JavaScript
 

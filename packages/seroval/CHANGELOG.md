@@ -1,5 +1,18 @@
 # seroval
 
+## 1.7.7
+
+### Patch Changes
+
+- Serialization reads an object's class from its prototype instead of its `constructor` property, and reads `Date`, Temporal, typed array and `DataView` values through the built-in methods and getters instead of properties on the value. An object whose own `constructor` names a built-in class is now serialized as a plain object, and an object that only inherits a built-in prototype, such as `Object.create(Date.prototype)`, is rejected.
+- 00e3abf: Bundles that never create a live stream no longer include the `LiveStream` class: about 570 bytes gzipped less for `toJSONAsync`, `fromJSON` or `fromCrossJSON` on the production ESM build, measured with seroval's bundle size report. An object made with `Object.create(LiveStream.prototype)` is no longer treated as a live stream.
+
+## 1.7.6
+
+### Patch Changes
+
+- Read a RegExp's pattern and flags through the `RegExp.prototype` getters, so own `source` or `flags` properties on the value no longer change the output.
+
 ## 1.7.5
 
 ### Patch Changes

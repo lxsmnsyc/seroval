@@ -42,7 +42,11 @@ import type {
 } from './types';
 import { getErrorConstructor } from './utils/error';
 import { getObjectFlag } from './utils/get-object-flag';
-import type { BigIntTypedArrayValue, TypedArrayValue } from './utils/typed-array';
+import type {
+  ArrayBufferViewState,
+  BigIntTypedArrayValue,
+  TypedArrayValue,
+} from './utils/typed-array';
 import { getTypedArrayName } from './utils/typed-array';
 
 export function createNumberNode(value: number): SerovalConstantNode | SerovalNumberNode {
@@ -73,12 +77,20 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
   return createSerovalNode(SerovalNodeType.IndexedValue, id);
 }
 
+// Own `valueOf` and `toISOString` properties on the value cannot replace
+// these. Both read the Date's internal time and throw for anything that is
+// not a real Date.
+// oxlint-disable-next-line unbound-method -- Only called with `.call`.
+const getDateTime = Date.prototype.getTime;
+// oxlint-disable-next-line unbound-method -- Only called with `.call`.
+const getDateISOString = Date.prototype.toISOString;
+
 export function createDateNode(id: number, current: Date): SerovalDateNode {
-  const timestamp = current.valueOf();
+  const timestamp = getDateTime.call(current);
   return createSerovalNode(
     SerovalNodeType.Date,
     id,
-    timestamp === timestamp ? current.toISOString() : '',
+    timestamp === timestamp ? getDateISOString.call(current) : '',
   );
 }
 
@@ -92,21 +104,37 @@ type SerovalTemporalValue =
   | Temporal.PlainYearMonth
   | Temporal.ZonedDateTime;
 
+// `temporalClass` is the value's class, found from its prototype. Its
+// `toString` reads the value's internal state, so an own `toString` property
+// cannot replace it, and it throws for anything that is not a real instance.
 export function createTemporalNode(
   id: number,
   type: SerovalTemporalType,
+  temporalClass: { prototype: SerovalTemporalValue },
   current: SerovalTemporalValue,
 ): SerovalTemporalNode {
-  return createSerovalNode(SerovalNodeType.Temporal, id, current.toString(), type);
+  return createSerovalNode(
+    SerovalNodeType.Temporal,
+    id,
+    temporalClass.prototype.toString.call(current),
+    type,
+  );
 }
+
+// Own `source` and `flags` properties on the value cannot replace these
+// getters. The `source` getter reads the RegExp's internal state and throws
+// for anything that is not a real RegExp, such as a Proxy around one. The
+// `flags` getter only ever returns flag letters.
+const getRegExpSource = Object.getOwnPropertyDescriptor(RegExp.prototype, 'source')!.get!;
+const getRegExpFlags = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags')!.get!;
 
 export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode {
   return createSerovalNode(
     SerovalNodeType.RegExp,
     id,
     NIL,
-    serializeString(current.source),
-    current.flags,
+    serializeString(getRegExpSource.call(current) as string),
+    getRegExpFlags.call(current) as string,
   );
 }
 
@@ -157,11 +185,12 @@ const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 export function createViewNode(
   type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray | SerovalNodeType.DataView,
   id: number,
-  current: ArrayBufferView & { readonly length?: number },
+  current: ArrayBufferView,
+  view: ArrayBufferViewState,
   buffer: SerovalNode,
 ): SerovalTypedArrayNode | SerovalBigIntTypedArrayNode | SerovalDataViewNode {
   const isDataView = type === SerovalNodeType.DataView;
-  const size = isDataView ? current.byteLength : current.length!;
+  const size = view.length;
   if (size > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(current);
   }
@@ -175,7 +204,7 @@ export function createViewNode(
     NIL,
     NIL,
     buffer,
-    current.byteOffset,
+    view.byteOffset,
     NIL,
     size,
   );

@@ -1,20 +1,38 @@
 import {
   crossSerializeAsync,
-  crossSerializeStream,
   deserialize,
   fromCrossJSON,
   fromJSON,
   serializeAsync,
   toCrossJSONAsync,
-  toCrossJSONStream,
   toJSONAsync,
 } from 'seroval';
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it, onTestFinished } from 'vitest';
 import RequestPlugin from '../../web/request';
-import { evaluateCross } from '../utils/cross';
+import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
 
 const EXAMPLE_URL = 'http://localhost:3000';
 const EXAMPLE_BODY = 'Hello World!';
+
+// Hides `Request.body` the way Firefox does, which has no such getter. It
+// patches the prototype so that `clone()` copies lack the getter too. Returns
+// a function that restores the getter, which also runs when the test ends.
+function hideRequestBody(): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(Request.prototype, 'body');
+  Object.defineProperty(Request.prototype, 'body', {
+    configurable: true,
+    get() {
+      return undefined;
+    },
+  });
+  function restoreRequestBody(): void {
+    if (descriptor) {
+      Object.defineProperty(Request.prototype, 'body', descriptor);
+    }
+  }
+  onTestFinished(restoreRequestBody);
+  return restoreRequestBody;
+}
 
 describe('Request', () => {
   describe('serializeAsync', () => {
@@ -98,6 +116,33 @@ describe('Request', () => {
       expect(back.url).toBe(example.url);
       expect(back.method).toBe(example.method);
     });
+
+    it('supports Request without the body getter', async () => {
+      const restoreRequestBody = hideRequestBody();
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const result = await crossSerializeAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      restoreRequestBody();
+      const back = evaluateCross<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+    });
+
+    it('supports GET Request without the body getter', async () => {
+      const restoreRequestBody = hideRequestBody();
+      const example = new Request(EXAMPLE_URL);
+      const result = await crossSerializeAsync(example, {
+        plugins: [RequestPlugin],
+      });
+      restoreRequestBody();
+      const back = evaluateCross<typeof example>(result);
+      expect(back).toBeInstanceOf(Request);
+      expect(back.body).toBe(null);
+    });
     describe('scoped', () => {
       it('supports Request', async () => {
         const example = new Request(EXAMPLE_URL, {
@@ -117,46 +162,49 @@ describe('Request', () => {
     });
   });
   describe('crossSerializeStream', () => {
-    it('supports Request', async () =>
-      new Promise<void>((resolve, reject) => {
+    it('supports Request', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const back = await streamCross<typeof example>(example, {
+        plugins: [RequestPlugin],
+      });
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
+    it('supports Request without the body getter', async () => {
+      const restoreRequestBody = hideRequestBody();
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const back = await streamCross<typeof example>(example, {
+        plugins: [RequestPlugin],
+      });
+      restoreRequestBody();
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
+    describe('scoped', () => {
+      it('supports Request', async () => {
         const example = new Request(EXAMPLE_URL, {
           method: 'POST',
           body: EXAMPLE_BODY,
         });
-        crossSerializeStream(example, {
+        const back = await streamCross<typeof example>(example, {
           plugins: [RequestPlugin],
-          onSerialize(data) {
-            expect(data).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
+          scopeId: 'example',
         });
-      }));
-    describe('scoped', () => {
-      it('supports Request', async () =>
-        new Promise<void>((resolve, reject) => {
-          const example = new Request(EXAMPLE_URL, {
-            method: 'POST',
-            body: EXAMPLE_BODY,
-          });
-          crossSerializeStream(example, {
-            plugins: [RequestPlugin],
-            scopeId: 'example',
-            onSerialize(data) {
-              expect(data).toMatchSnapshot();
-            },
-            onDone() {
-              resolve();
-            },
-            onError(error) {
-              reject(error);
-            },
-          });
-        }));
+        assert(back instanceof Request);
+        expect(await back.text()).toBe(EXAMPLE_BODY);
+        expect(back.url).toBe(example.url);
+        expect(back.method).toBe(example.method);
+      });
     });
   });
   describe('toJSONAsync', () => {
@@ -198,24 +246,18 @@ describe('Request', () => {
     });
   });
   describe('toCrossJSONStream', () => {
-    it('supports Request', async () =>
-      new Promise<void>((resolve, reject) => {
-        const example = new Request(EXAMPLE_URL, {
-          method: 'POST',
-          body: EXAMPLE_BODY,
-        });
-        toCrossJSONStream(example, {
-          plugins: [RequestPlugin],
-          onParse(data) {
-            expect(JSON.stringify(data)).toMatchSnapshot();
-          },
-          onDone() {
-            resolve();
-          },
-          onError(error) {
-            reject(error);
-          },
-        });
-      }));
+    it('supports Request', async () => {
+      const example = new Request(EXAMPLE_URL, {
+        method: 'POST',
+        body: EXAMPLE_BODY,
+      });
+      const back = await streamCrossJSON<typeof example>(example, {
+        plugins: [RequestPlugin],
+      });
+      assert(back instanceof Request);
+      expect(await back.text()).toBe(EXAMPLE_BODY);
+      expect(back.url).toBe(example.url);
+      expect(back.method).toBe(example.method);
+    });
   });
 });

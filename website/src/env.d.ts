@@ -28,14 +28,3 @@ declare module 'virtual:search-index' {
   }[];
   export default entries;
 }
-
-declare module 'virtual:showcase' {
-  const examples: {
-    id: string;
-    label: string;
-    description: string;
-    input: string;
-    output: string;
-  }[];
-  export default examples;
-}
