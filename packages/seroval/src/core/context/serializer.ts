@@ -406,7 +406,7 @@ function pushObjectFlag(ctx: SerializerContext, flag: SerovalObjectFlags, id: nu
   }
 }
 
-function resolveFlags(ctx: BaseSerializerContext): string | undefined {
+function resolveFlags(ctx: BaseSerializerContext): string {
   let result = '';
   for (let i = 0, current = ctx.flags, len = current.length; i < len; i++) {
     const flag = current[i];
@@ -508,10 +508,6 @@ function createSequenceAssign(
   createAssignment(ctx.base, getRefParam(ctx, ref) + '.v[' + index + ']', value);
 }
 
-/**
- * Checks if the value is in the stack. Stack here is a reference
- * structure to know if a object is to be accessed in a TDZ.
- */
 function getKeyKind(key: string): KeyKind {
   const first = key.charCodeAt(0);
   // Canonical non-negative numbers start with a digit ('0'..'9') or are
@@ -528,6 +524,10 @@ function getKeyKind(key: string): KeyKind {
   return isValidIdentifier(key) ? KeyKind.Identifier : KeyKind.Quoted;
 }
 
+/**
+ * Checks if the value is in the stack. Stack here is a reference
+ * structure to know if a object is to be accessed in a TDZ.
+ */
 function isIndexedValueInStack(ctx: BaseSerializerContext, node: SerovalNode): boolean {
   return node.t === SerovalNodeType.IndexedValue && ctx.stack.includes(node.i);
 }
@@ -645,16 +645,7 @@ function serializeProperty(
     if (isIndexedValueInStack(ctx.base, val)) {
       const refParam = getRefParam(ctx, (val as SerovalIndexedValueNode).i);
       markSerializerRef(ctx.base, source.i);
-      if (kind === KeyKind.Identifier) {
-        createObjectAssign(ctx, source.i, key, refParam);
-      } else {
-        createArrayAssign(
-          ctx,
-          source.i,
-          kind === KeyKind.Numeric ? key : '"' + key + '"',
-          refParam,
-        );
-      }
+      createKeyAssign(ctx, source.i, kind, key, refParam);
       return '';
     }
     if (key !== '__proto__') {
@@ -818,13 +809,16 @@ function serializeNullConstructor(
   return serializeDictionary(ctx, node, NULL_CONSTRUCTOR);
 }
 
+// `node.s` and the numbers below come from the parser, but `compileJSON`
+// takes nodes from anywhere, so they are escaped or converted to numbers here
+// as well.
 function serializeDate(node: SerovalDateNode): string {
-  return 'new Date("' + node.s + '")';
+  return 'new Date("' + serializeString(node.s) + '")';
 }
 
 function serializeTemporal(ctx: SerializerContext, node: SerovalTemporalNode): string {
   if (ctx.base.features & FeatureFlag.Temporal) {
-    return 'Temporal.' + TEMPORAL_TYPE_NAME[node.c] + '.from("' + node.s + '")';
+    return 'Temporal.' + TEMPORAL_TYPE_NAME[node.c] + '.from("' + serializeString(node.s) + '")';
   }
   throw new SerovalUnsupportedNodeError(node);
 }
@@ -1000,9 +994,11 @@ function serializeView(
     '(' +
     serialize(ctx, node.f) +
     ',' +
-    node.b +
+    // oxlint-disable-next-line no-unnecessary-type-conversion -- `compileJSON` nodes can hold any value here.
+    +node.b +
     ',' +
-    node.l +
+    // oxlint-disable-next-line no-unnecessary-type-conversion -- Same as above.
+    +node.l +
     ')'
   );
 }
@@ -1236,7 +1232,9 @@ function serializeSequence(ctx: SerializerContext, node: SerovalSequenceNode): s
     }
     ctx.base.stack.pop();
     if (result) {
-      return '{__SEROVAL_SEQUENCE__:!0,v:[' + result + '],t:' + node.s + ',d:' + node.l + '}';
+      // A `Sequence` takes `throwAt` and `doneAt` unchecked from its caller.
+      // oxlint-disable-next-line no-unnecessary-type-conversion -- They may not be numbers.
+      return '{__SEROVAL_SEQUENCE__:!0,v:[' + result + '],t:' + +node.s + ',d:' + +node.l + '}';
     }
   }
   return '{__SEROVAL_SEQUENCE__:!0,v:[],t:-1,d:0}';
@@ -1370,9 +1368,6 @@ function serializeCross(ctx: CrossSerializerContext, tree: SerovalNode): string 
   const patches = resolvePatches(ctx.base);
   // Get the variable that represents the root
   const ref = getRefParam(ctx, id);
-  const scopeId = ctx.state.scopeId;
-  // Parameters needed for scoping
-  const params = scopeId == null ? '' : GLOBAL_CONTEXT_REFERENCES;
   // If there are patches, append it after the result
   let body = result;
   if (patches) {
@@ -1383,20 +1378,24 @@ function serializeCross(ctx: CrossSerializerContext, tree: SerovalNode): string 
     }
     body = '(' + body + ',' + patches + ref + ')';
   }
-  // If there are no params, there's no need to generate a function
-  if (params === '') {
+  const scopeId = ctx.state.scopeId;
+  // Without a scope, there's no need to generate a function
+  if (scopeId == null) {
     if (tree.t === SerovalNodeType.Object && !patches) {
       return '(' + body + ')';
     }
     return body;
   }
-  // Get the arguments for the IIFE
-  const args =
-    scopeId == null
-      ? '()'
-      : '(' + GLOBAL_CONTEXT_REFERENCES + '["' + serializeString(scopeId) + '"])';
-  // Create the IIFE
-  return '(' + createFunction([params], body) + ')' + args;
+  // Create the IIFE that receives the scoped references
+  return (
+    '(' +
+    createFunction([GLOBAL_CONTEXT_REFERENCES], body) +
+    ')(' +
+    GLOBAL_CONTEXT_REFERENCES +
+    '["' +
+    serializeString(scopeId) +
+    '"])'
+  );
 }
 
 function wrapSerializationError(error: unknown): SerovalSerializationError {
