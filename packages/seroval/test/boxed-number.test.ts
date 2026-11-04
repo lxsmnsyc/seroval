@@ -43,6 +43,14 @@ describe('boxed number', () => {
         'Promise.resolve(Object(-0))',
       );
     });
+    it('matches serialize when valueOf returns an object', async () => {
+      const inner = { a: 1 };
+      const value = Object.defineProperty(Object(1), 'valueOf', {
+        value: () => inner,
+      }) as object;
+      expect(await serializeAsync(value)).toBe(serialize(value));
+      expect(await serializeAsync({ value, inner })).toBe(serialize({ value, inner }));
+    });
   });
   describe('toJSON', () => {
     it('supports boxed numbers', () => {

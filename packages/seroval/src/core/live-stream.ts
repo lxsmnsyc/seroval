@@ -59,8 +59,12 @@ interface PendingRead<T> {
   reject: (reason: unknown) => void;
 }
 
+// Brand instead of `instanceof`: JSON cannot forge a symbol key, and not naming the
+// class lets bundles that never create a live stream drop it. Per module copy, like `instanceof`.
+const BRAND = /* @__PURE__ */ Symbol('LiveStream');
+
 export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
-  return value instanceof LiveStream;
+  return value != null && (value as { [BRAND]?: unknown })[BRAND] === true;
 }
 
 /**
@@ -69,10 +73,11 @@ export function isLiveStream<T>(value: unknown): value is LiveStream<T> {
  * producer operation that sent it settles only when the consumer accepts it.
  *
  * An internal class rather than a tagged POJO: identity is checked with
- * `instanceof`, which untrusted input cannot forge. The class is exported
+ * `isLiveStream`, which untrusted input cannot forge. The class is exported
  * because bundlers cannot drop an unexported top-level class.
  */
 export class LiveStream<T> {
+  private readonly [BRAND] = true;
   private pending: PendingEvent<T> | undefined;
   private waiting: PendingRead<T> | undefined;
   private consumed = false;

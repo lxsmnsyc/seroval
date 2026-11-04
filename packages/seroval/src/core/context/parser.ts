@@ -6,16 +6,11 @@ import {
 } from '../base-primitives';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import {
-  BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
   DEFAULT_DEPTH_LIMIT,
-  getBigIntTypedArrayTag,
-  getTypedArrayTag,
   isWellKnownSymbol,
   NIL,
   SerovalNodeType,
   SerovalTemporalType,
-  TYPED_ARRAY_CONSTRUCTOR,
-  type TypedArrayValue,
 } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
@@ -39,6 +34,7 @@ import type {
   SerovalWKSymbolNode,
 } from '../types';
 import { getObjectFlag } from '../utils/get-object-flag';
+import type { ArrayBufferViewState } from '../utils/typed-array';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
@@ -98,10 +94,6 @@ export function getObjectPlugins(
  */
 export function markParserRef(ctx: BaseParserContext, id: number): void {
   ctx.marked.add(id);
-}
-
-export function isParserRefMarked(ctx: BaseParserContext, id: number): boolean {
-  return ctx.marked.has(id);
 }
 
 /**
@@ -244,18 +236,31 @@ export const enum ObjectKind {
 }
 
 export function getObjectClass(current: object): unknown {
-  const currentClass: unknown = current.constructor;
-  // `constructor` is an ordinary own property, so data can shadow it
-  // (`JSON.parse('{"constructor":1}')`) and hide the real class. A class is
-  // always callable, so anything else means the lookup was shadowed or the
-  // object has a null prototype; only then read the prototype, keeping the
-  // common path free of it. `{ constructor: undefined }` must still count as
-  // a plain object.
-  if (typeof currentClass !== 'function') {
-    const proto = Object.getPrototypeOf(current) as object | null;
-    return proto === null ? NIL : proto.constructor;
+  // The class comes from the prototype, never from `current.constructor`: an
+  // own `constructor` property on the value could name any class, such as
+  // `{ constructor: Date }`.
+  const proto = Object.getPrototypeOf(current) as object | null;
+  if (proto === null) {
+    return NIL;
   }
-  return currentClass;
+  if (proto === Object.prototype) {
+    return Object;
+  }
+  const currentClass: unknown = proto.constructor;
+  // A class counts only when `proto` is its own prototype. Otherwise an
+  // intermediate prototype like `Object.create({ constructor: Date })`, or a
+  // polluted `Object.prototype.constructor`, could name it. Prototypes that
+  // reach the real `Object.prototype.constructor` stay plain objects, and
+  // prototypes with no class (null-prototype chains, generator objects) keep
+  // whatever non-function value they have.
+  if (
+    typeof currentClass !== 'function' ||
+    currentClass === Object ||
+    currentClass.prototype === proto
+  ) {
+    return currentClass;
+  }
+  return proto;
 }
 
 /**
@@ -412,24 +417,21 @@ export function createPromiseConstructorNode(
   );
 }
 
-export function getArrayBufferView<T extends ArrayBufferView>(
+export function getArrayBufferView(
   ctx: BaseParserContext,
-  current: T,
-): T {
+  view: ArrayBufferViewState,
+): ArrayBufferViewState {
   if (!ctx.compactArrayBufferViews) {
-    return current;
+    return view;
   }
-  const buffer = new Uint8Array(current.buffer, current.byteOffset, current.byteLength).slice()
-    .buffer;
-  // Not `current.constructor`, which the value's own properties can replace.
-  const Constructor = (
-    current instanceof DataView
-      ? DataView
-      : current instanceof BigInt64Array || current instanceof BigUint64Array
-        ? BIG_INT_TYPED_ARRAY_CONSTRUCTOR[getBigIntTypedArrayTag(current)]
-        : TYPED_ARRAY_CONSTRUCTOR[getTypedArrayTag(current as unknown as TypedArrayValue)]
-  ) as unknown as new (buffer: ArrayBuffer) => T;
-  return new Constructor(buffer);
+  // Copy only the bytes the view covers, so the output holds no unrelated
+  // parts of the buffer.
+  return {
+    buffer: new Uint8Array(view.buffer, view.byteOffset, view.byteLength).slice().buffer,
+    byteOffset: 0,
+    byteLength: view.byteLength,
+    length: view.length,
+  };
 }
 
 export function createArrayBufferNode(

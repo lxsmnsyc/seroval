@@ -35,7 +35,8 @@ export enum Feature {
   /** `AggregateError`. */
   AggregateError = 0x01,
   /**
-   * @deprecated Has no effect. Output always uses arrow functions.
+   * @deprecated Has no effect. Output follows the syntax of the build seroval
+   * runs in: arrow functions, or `function` expressions in an ES5 build.
    */
   ArrowFunction = 0x02,
   /** Preserving `Error.prototype.stack`. */

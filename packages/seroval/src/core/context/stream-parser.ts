@@ -279,10 +279,6 @@ function wrapPromiseResult(
       ),
       node,
     ],
-    NIL,
-    NIL,
-    NIL,
-    NIL,
   );
 }
 
