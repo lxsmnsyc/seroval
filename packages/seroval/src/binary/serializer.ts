@@ -1,5 +1,4 @@
 import type { SerovalTemporalValue } from '../core/base-primitives';
-import { getDateTime, getRegExpFlags, getRegExpSource } from '../core/base-primitives';
 import { ALL_ENABLED, Feature } from '../core/compat';
 import {
   type BigIntTypedArrayValue,
@@ -30,8 +29,6 @@ import {
 } from '../core/symbols';
 import { getErrorConstructor, getErrorOptions } from '../core/utils/error';
 import { getObjectFlag } from '../core/utils/get-object-flag';
-import type { ArrayBufferViewState } from '../core/utils/typed-array';
-import { readArrayBufferView } from '../core/utils/typed-array';
 import {
   type ByteWriter,
   createByteWriter,
@@ -560,7 +557,7 @@ function serializePlainObject(ctx: SerializerContext, value: object, empty: bool
 
 function serializeDate(ctx: SerializerContext, value: Date) {
   const id = createID(ctx, value);
-  writeNumber(writeNode(ctx, SerovalBinaryType.Date, id, NUMBER), getDateTime.call(value));
+  writeNumber(writeNode(ctx, SerovalBinaryType.Date, id, NUMBER), value.getTime());
   return id;
 }
 
@@ -603,58 +600,53 @@ function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
 
 // With `compactArrayBufferViews`, a view sends a copy of only the bytes it
 // covers, which starts at offset 0. Otherwise it sends its whole buffer.
-function serializeViewBuffer(ctx: SerializerContext, view: ArrayBufferViewState): number {
+function serializeViewBuffer(ctx: SerializerContext, value: ArrayBufferView): number {
   return serialize(
     ctx,
     ctx.compactArrayBufferViews
-      ? view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength)
-      : view.buffer,
+      ? value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength)
+      : value.buffer,
   );
 }
 
-// The view's state comes from the built-in getters, so own `buffer`,
-// `byteOffset`, `byteLength` and `length` properties cannot replace it.
 function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
-  const view = readArrayBufferView(value, false);
-  if (view.length > MAX_TYPED_ARRAY_LENGTH) {
+  if (value.length > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serializeViewBuffer(ctx, view);
+  const buffer = serializeViewBuffer(ctx, value);
   const writer = writeNode(ctx, SerovalBinaryType.TypedArray, id, BYTE + UINT + UINT + UINT);
   writeByte(writer, getTypedArrayTag(value));
   writeUint(writer, buffer);
-  writeUint(writer, ctx.compactArrayBufferViews ? 0 : view.byteOffset);
-  writeUint(writer, view.length);
+  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
+  writeUint(writer, value.length);
   return id;
 }
 
 function serializeBigIntTypedArray(ctx: SerializerContext, value: BigIntTypedArrayValue) {
-  const view = readArrayBufferView(value, false);
-  if (view.length > MAX_TYPED_ARRAY_LENGTH) {
+  if (value.length > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serializeViewBuffer(ctx, view);
+  const buffer = serializeViewBuffer(ctx, value);
   const writer = writeNode(ctx, SerovalBinaryType.BigIntTypedArray, id, BYTE + UINT + UINT + UINT);
   writeByte(writer, getBigIntTypedArrayTag(value));
   writeUint(writer, buffer);
-  writeUint(writer, ctx.compactArrayBufferViews ? 0 : view.byteOffset);
-  writeUint(writer, view.length);
+  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
+  writeUint(writer, value.length);
   return id;
 }
 
 function serializeDataView(ctx: SerializerContext, value: DataView) {
-  const view = readArrayBufferView(value, true);
-  if (view.byteLength > MAX_TYPED_ARRAY_LENGTH) {
+  if (value.byteLength > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serializeViewBuffer(ctx, view);
+  const buffer = serializeViewBuffer(ctx, value);
   const writer = writeNode(ctx, SerovalBinaryType.DataView, id, UINT + UINT + UINT);
   writeUint(writer, buffer);
-  writeUint(writer, ctx.compactArrayBufferViews ? 0 : view.byteOffset);
-  writeUint(writer, view.byteLength);
+  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
+  writeUint(writer, value.byteLength);
   return id;
 }
 
@@ -727,10 +719,8 @@ function serializePromise(ctx: SerializerContext, value: Promise<unknown>) {
 
 function serializeRegExp(ctx: SerializerContext, value: RegExp) {
   const id = createID(ctx, value);
-  // The `RegExp.prototype` getters read the internal state, so own `source`
-  // and `flags` properties on the value cannot replace them.
-  const source = serialize(ctx, getRegExpSource.call(value) as string);
-  const flags = serialize(ctx, getRegExpFlags.call(value) as string);
+  const source = serialize(ctx, value.source);
+  const flags = serialize(ctx, value.flags);
   writePairNode(ctx, SerovalBinaryType.RegExp, id, source, flags);
   return id;
 }
@@ -747,17 +737,9 @@ function serializeTemporal(
   ctx: SerializerContext,
   value: SerovalTemporalValue,
   type: SerovalTemporalType,
-  temporalClass: unknown,
 ) {
   const id = createID(ctx, value);
-  // `temporalClass` is the value's class, found from its prototype. Its
-  // `toString` reads the internal state, so an own `toString` property on the
-  // value cannot replace it, and it throws for anything that is not a real
-  // instance.
-  const iso = serialize(
-    ctx,
-    (temporalClass as { prototype: SerovalTemporalValue }).prototype.toString.call(value),
-  );
+  const iso = serialize(ctx, value.toString());
   const writer = writeNode(ctx, SerovalBinaryType.Temporal, id, BYTE + UINT);
   writeByte(writer, type);
   writeUint(writer, iso);
@@ -842,56 +824,48 @@ function serializeObjectPhase2(
           ctx,
           current as unknown as Temporal.Duration,
           SerovalTemporalType.Duration,
-          currentClass,
         );
       case Temporal.Instant:
         return serializeTemporal(
           ctx,
           current as unknown as Temporal.Instant,
           SerovalTemporalType.Instant,
-          currentClass,
         );
       case Temporal.PlainDate:
         return serializeTemporal(
           ctx,
           current as unknown as Temporal.PlainDate,
           SerovalTemporalType.PlainDate,
-          currentClass,
         );
       case Temporal.PlainDateTime:
         return serializeTemporal(
           ctx,
           current as unknown as Temporal.PlainDateTime,
           SerovalTemporalType.PlainDateTime,
-          currentClass,
         );
       case Temporal.PlainMonthDay:
         return serializeTemporal(
           ctx,
           current as unknown as Temporal.PlainMonthDay,
           SerovalTemporalType.PlainMonthDay,
-          currentClass,
         );
       case Temporal.PlainTime:
         return serializeTemporal(
           ctx,
           current as unknown as Temporal.PlainTime,
           SerovalTemporalType.PlainTime,
-          currentClass,
         );
       case Temporal.PlainYearMonth:
         return serializeTemporal(
           ctx,
           current as unknown as Temporal.PlainYearMonth,
           SerovalTemporalType.PlainYearMonth,
-          currentClass,
         );
       case Temporal.ZonedDateTime:
         return serializeTemporal(
           ctx,
           current as unknown as Temporal.ZonedDateTime,
           SerovalTemporalType.ZonedDateTime,
-          currentClass,
         );
     }
   }

@@ -82,7 +82,7 @@ export function createIndexedValueNode(id: number): SerovalIndexedValueNode {
 // these. Both read the Date's internal time and throw for anything that is
 // not a real Date.
 // oxlint-disable-next-line unbound-method -- Only called with `.call`.
-export const getDateTime = Date.prototype.getTime;
+const getDateTime = Date.prototype.getTime;
 // oxlint-disable-next-line unbound-method -- Only called with `.call`.
 const getDateISOString = Date.prototype.toISOString;
 
@@ -126,8 +126,8 @@ export function createTemporalNode(
 // getters. The `source` getter reads the RegExp's internal state and throws
 // for anything that is not a real RegExp, such as a Proxy around one. The
 // `flags` getter only ever returns flag letters.
-export const getRegExpSource = Object.getOwnPropertyDescriptor(RegExp.prototype, 'source')!.get!;
-export const getRegExpFlags = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags')!.get!;
+const getRegExpSource = Object.getOwnPropertyDescriptor(RegExp.prototype, 'source')!.get!;
+const getRegExpFlags = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags')!.get!;
 
 export function createRegExpNode(id: number, current: RegExp): SerovalRegExpNode {
   return createSerovalNode(
