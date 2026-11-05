@@ -9,6 +9,17 @@ description: Send many streamed values over fetch, a WebSocket, a worker or any 
 npm install seroval @seroval/transport
 ```
 
+| Entry point | Exports |
+| --- | --- |
+| `@seroval/transport` | Everything in `@seroval/transport/read` and `@seroval/transport/write`. |
+| `@seroval/transport/write` | [Writers](#the-writer): `createJSONWriter`, `createJSWriter`, `toJSONStream`, `toJSStream`. |
+| `@seroval/transport/read` | [Readers](#the-reader): `createJSONReader`, `createJSReader`, `fromJSONStream`, `fromJSStream`. |
+| `@seroval/transport/web` | [Web streams](#over-fetch) and [form data](#files-in-a-request): `toWebStream`, `fromWebStream`, `toResponse`, `fromResponse`, `toFormData`, `fromFormData`, `toFormRequest`, `fromFormRequest`. |
+| `@seroval/transport/node` | [Node streams](#over-node-streams): `toNodeStream`, `fromNodeStream`. |
+| `@seroval/transport/frame` | [Frames](#frames): `encodeFrame`, `createFrameDecoder`. |
+
+Every entry point also exports `SerovalTransportError`.
+
 ## Over `fetch`
 
 `@seroval/transport/web` connects a writer and a reader to web streams. `toWebStream` turns the messages of a writer into a `ReadableStream<Uint8Array>`, and `fromWebStream` reads them back into a reader.

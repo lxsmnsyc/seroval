@@ -1,28 +1,7 @@
 ---
 title: API reference
-description: Every export of seroval, with its signature and options, and the packages built on it.
+description: Every export of seroval, with its signature and options.
 ---
-
-## Packages
-
-| Package | Description | Guide |
-| --- | --- | --- |
-| `seroval` | Serializes and deserializes values. The rest of this page lists its exports. | [Introduction](./introduction.md) |
-| `seroval-plugins` | Plugins for web platform types, such as `Blob`, `File`, `FormData`, `Headers` and `Request`. | [Using plugins](./using-plugins.md#seroval-plugins) |
-| `@seroval/transport` | Sends values over `fetch`, Node streams, WebSockets, workers or any other connection, and files in a form data request. | [Transport](./transport.md) |
-
-`@seroval/transport` has these entry points:
-
-| Entry point | Exports |
-| --- | --- |
-| `@seroval/transport` | Everything in `@seroval/transport/read` and `@seroval/transport/write`. |
-| `@seroval/transport/write` | `createJSONWriter`, `createJSWriter`, `toJSONStream`, `toJSStream`. |
-| `@seroval/transport/read` | `createJSONReader`, `createJSReader`, `fromJSONStream`, `fromJSStream`. |
-| `@seroval/transport/web` | `toWebStream`, `fromWebStream`, `toResponse`, `fromResponse`, `toFormData`, `fromFormData`, `toFormRequest`, `fromFormRequest`. |
-| `@seroval/transport/node` | `toNodeStream`, `fromNodeStream`. |
-| `@seroval/transport/frame` | `encodeFrame`, `createFrameDecoder`. |
-
-Every entry point also exports `SerovalTransportError`.
 
 ## Entry points
 

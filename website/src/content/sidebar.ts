@@ -17,7 +17,6 @@ export const SIDEBAR: SidebarSection[] = [
       'json',
       'cross-reference',
       'streaming',
-      'transport',
       'streams-and-iterables',
       'isomorphic-references',
       'binary-data',
@@ -26,6 +25,10 @@ export const SIDEBAR: SidebarSection[] = [
   {
     title: 'Plugins',
     pages: ['using-plugins', 'writing-plugins', 'plugin-security'],
+  },
+  {
+    title: 'Packages',
+    pages: ['transport'],
   },
   {
     title: 'Reference',
