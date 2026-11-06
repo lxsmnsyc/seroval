@@ -101,6 +101,11 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
   depthLimit: number;
   maxBase64Length: number;
   /**
+   * Unicode property escapes left for the RegExp nodes of the current call.
+   * The engine builds each one eagerly, so they are counted across nodes.
+   */
+  regexpPropertyEscapes: number;
+  /**
    * Ids of promise resolvers and streams that were created but not yet
    * settled. Only maintained by `createCrossDeserializer`.
    */
@@ -108,6 +113,10 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
 }
 
 const DEFAULT_DEPTH_LIMIT = 1000;
+// Each escape such as `\p{L}` or `\p{RGI_Emoji}` can cost the engine a large
+// share of a millisecond to build, so one call builds only a few dozen.
+const MAX_REGEXP_PROPERTY_ESCAPES = 32;
+const REGEXP_PROPERTY_ESCAPE = /\\[pP]\{/g;
 
 export function createBaseDeserializerContext(
   options: BaseDeserializerContextOptions,
@@ -129,6 +138,7 @@ export function createBaseDeserializerContext(
     // oxlint-disable-next-line prefer-nullish-coalescing -- A zero limit falls back to the default.
     depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
     maxBase64Length,
+    regexpPropertyEscapes: MAX_REGEXP_PROPERTY_ESCAPES,
   };
 }
 
@@ -374,6 +384,17 @@ function deserializeRegExp(ctx: DeserializerContext, node: SerovalRegExpNode): R
     const source = deserializeString(node.c);
     if (source.length > MAX_REGEXP_SOURCE_LENGTH) {
       throw new SerovalMalformedNodeError(node);
+    }
+    // Property escapes only exist in unicode mode. An escaped backslash
+    // before `p{` is counted too, which only makes the limit stricter.
+    if (/[uv]/.test(String(node.m))) {
+      const escapes = source.match(REGEXP_PROPERTY_ESCAPE);
+      if (escapes) {
+        ctx.base.regexpPropertyEscapes -= escapes.length;
+        if (ctx.base.regexpPropertyEscapes < 0) {
+          throw new SerovalMalformedNodeError(node);
+        }
+      }
     }
     return assignIndexedValue(ctx, node.i, new RegExp(source, node.m));
   }
@@ -785,6 +806,8 @@ function deserialize(ctx: DeserializerContext, depth: number, node: SerovalNode)
 }
 
 export function deserializeTop(ctx: DeserializerContext, node: SerovalNode): unknown {
+  // Each call, including each record of a session, gets its own budget.
+  ctx.base.regexpPropertyEscapes = MAX_REGEXP_PROPERTY_ESCAPES;
   try {
     return deserialize(ctx, 0, node);
   } catch (error) {
