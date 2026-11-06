@@ -84,6 +84,7 @@ const enum SpecificErrorCodes {
   DepthLimit = 10,
   Aborted = 11,
   LiveStream = 12,
+  PluginValidation = 13,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -120,6 +121,19 @@ export class SerovalMissingPluginError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.MissingPlugin)
         : 'Missing plugin for tag "' + tag + '".',
+    );
+  }
+}
+
+export class SerovalPluginValidationError extends Error {
+  constructor(
+    public tag: string,
+    public field: string,
+  ) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.PluginValidation)
+        : 'Plugin "' + tag + '" received a value for "' + field + '" that failed its validator.',
     );
   }
 }

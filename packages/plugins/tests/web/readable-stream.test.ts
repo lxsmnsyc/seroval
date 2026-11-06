@@ -1,4 +1,6 @@
 import {
+  SerovalDeserializationError,
+  SerovalPluginValidationError,
   createReference,
   crossSerializeAsync,
   crossSerializeStream,
@@ -14,6 +16,21 @@ import type { SerovalNode } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import ReadableStreamPlugin from '../../web/readable-stream';
 import { evaluateCross, streamCross, streamCrossJSON } from '../utils/cross';
+
+// Decoding wraps any error in `SerovalDeserializationError`, with the original
+// error as `cause`.
+function expectValidationError(run: () => unknown): void {
+  let error: unknown;
+  try {
+    run();
+  } catch (caught) {
+    error = caught;
+  }
+  expect(error).toBeInstanceOf(SerovalDeserializationError);
+  expect(error instanceof SerovalDeserializationError && error.cause).toBeInstanceOf(
+    SerovalPluginValidationError,
+  );
+}
 
 describe('ReadableStream', () => {
   describe('serializeAsync', () => {
@@ -480,7 +497,7 @@ describe('ReadableStream', () => {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
       const info = (result.t as unknown as { s: Record<string, SerovalNode> }).s;
       info.stream = toJSON(42).t;
-      expect(() => fromJSON(result, { plugins: [ReadableStreamPlugin] })).toThrow();
+      expectValidationError(() => fromJSON(result, { plugins: [ReadableStreamPlugin] }));
     });
 
     it('never invokes `on` on a fake stream source', async () => {

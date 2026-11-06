@@ -55,6 +55,7 @@ Options: `plugins`, `disabledFeatures`, `depthLimit`, `compactArrayBufferViews`.
 | `createReference(id, value)` | Sends `value` by its key. | [Isomorphic references](./isomorphic-references.md) |
 | `new OpaqueReference(value, replacement?)` | Sends `replacement` instead of `value`. | [OpaqueReference](./isomorphic-references.md#opaquereference) |
 | `createPlugin(plugin)` | Defines a plugin, with type inference. | [Writing plugins](./writing-plugins.md) |
+| `v` | Validators for a plugin's `validate` field. Also available as `seroval/validator`. | [Plugin security](./plugin-security.md#validate-every-value) |
 | `Feature` | Feature flags for `disabledFeatures`. | [Compatibility](./compatibility.md#feature-flags) |
 
 ## Options

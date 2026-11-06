@@ -1,6 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectArrayBuffer, expectString } from './validate';
+import * as v from 'seroval/validator';
+import { claim } from './validate';
 
 type BlobNode = {
   type: SerovalNode;
@@ -27,9 +28,10 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
   serialize(node, ctx) {
     return 'new Blob([' + ctx.serialize(node.buffer) + '],{type:' + ctx.serialize(node.type) + '})';
   },
+  validate: { type: v.string, buffer: /* @__PURE__ */ v.instanceOf(ArrayBuffer) },
   deserialize(node, ctx) {
-    return new Blob([expectArrayBuffer(ctx.deserialize(node.buffer))], {
-      type: expectString(ctx.deserialize(node.type)),
+    return new Blob([claim(ctx.deserialize<ArrayBuffer>(node.buffer))], {
+      type: ctx.deserialize<string>(node.type),
     });
   },
 });
