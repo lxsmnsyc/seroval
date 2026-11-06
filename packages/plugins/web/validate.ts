@@ -15,11 +15,24 @@ export function expectNumber(value: unknown): number {
   return value;
 }
 
+// Values that a plugin copies or subscribes to. The parser builds a fresh one
+// for every plugin value, so a value claimed twice means the input pointed
+// several plugin values at it to make each one copy it again.
+const CLAIMED = new WeakSet<object>();
+
+export function claim<T extends object>(value: T): T {
+  if (CLAIMED.has(value)) {
+    throw new Error('Expected a value used by one plugin value only.');
+  }
+  CLAIMED.add(value);
+  return value;
+}
+
 export function expectArrayBuffer(value: unknown): ArrayBuffer {
   if (!(value instanceof ArrayBuffer)) {
     throw new Error('Expected an ArrayBuffer.');
   }
-  return value;
+  return claim(value);
 }
 
 export function expectOptionalString(value: unknown): string | undefined {
@@ -51,8 +64,11 @@ export function expectObject(value: unknown): Record<string, unknown> {
 }
 
 export function expectHeaders(value: unknown): Headers | undefined {
-  if (value === undefined || value instanceof Headers) {
+  if (value === undefined) {
     return value;
+  }
+  if (value instanceof Headers) {
+    return claim(value);
   }
   throw new Error('Expected a Headers instance.');
 }
@@ -66,6 +82,7 @@ export function expectEntries<T>(
   if (!Array.isArray(value)) {
     throw new Error('Expected an array.');
   }
+  claim(value);
   const entries: [key: string, value: T][] = [];
   for (const entry of value as unknown[]) {
     if (!Array.isArray(entry) || entry.length !== 2) {
@@ -79,13 +96,14 @@ export function expectEntries<T>(
 // Body values are limited to what the plugins emit, so a body is never
 // converted to a string.
 export function expectBody(value: unknown): ArrayBuffer | ReadableStream | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
   if (
-    value === null ||
-    value === undefined ||
     value instanceof ArrayBuffer ||
     (typeof ReadableStream !== 'undefined' && value instanceof ReadableStream)
   ) {
-    return value ?? null;
+    return claim(value);
   }
   throw new Error('Expected an ArrayBuffer, a ReadableStream or null.');
 }

@@ -385,6 +385,7 @@ function createStreamParserState(options: StreamParserContextOptions): StreamPar
     writing: false,
     inFlight: NIL,
     reason: NIL,
+    starting: false,
     onParse: options.onParse,
     onError: options.onError,
     onDone: options.onDone,
@@ -561,26 +562,31 @@ export function startStreamParse(ctx: StreamParserContext, current: unknown): vo
   const state = ctx.state;
   let parsed: SerovalNode | undefined;
   let failure: { value: unknown } | undefined;
-  state.parsing++;
+  state.starting = true;
   try {
-    parsed = parseSOS(ctx, 0, current);
-  } catch (error) {
-    failure = { value: error };
+    state.parsing++;
+    try {
+      parsed = parseSOS(ctx, 0, current);
+    } catch (error) {
+      failure = { value: error };
+    } finally {
+      state.parsing--;
+      if (!state.alive) {
+        releaseParserValues(ctx);
+      }
+    }
+    if (failure) {
+      if (state.alive) {
+        stopStreamParse(ctx, 1, failure.value);
+      } else {
+        throw failure.value;
+      }
+    } else if (parsed && state.alive) {
+      state.queue.unshift({ node: parsed, initial: true, accept: NIL });
+      drainOutput(ctx);
+    }
   } finally {
-    state.parsing--;
-    if (!state.alive) {
-      releaseParserValues(ctx);
-    }
-  }
-  if (failure) {
-    if (state.alive) {
-      stopStreamParse(ctx, 1, failure.value);
-    } else {
-      throw failure.value;
-    }
-  } else if (parsed && state.alive) {
-    state.queue.unshift({ node: parsed, initial: true, accept: NIL });
-    drainOutput(ctx);
+    state.starting = false;
   }
 }
 
@@ -653,9 +659,11 @@ function stopStreamParse(ctx: StreamParserContext, mode: 0 | 1 | 2, reason?: unk
       if (mode === 1) {
         if (onError) {
           onError(reason);
-        } else {
+        } else if (state.starting) {
           throw reason;
         }
+        // Without onError, a later failure has no caller to reach. Throwing it
+        // from a promise or iterator callback would be an unhandled rejection.
       } else if (mode === 0) {
         onDone?.();
       }

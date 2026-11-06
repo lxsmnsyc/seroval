@@ -144,6 +144,9 @@ export interface StreamParserState {
   inFlight: OutputRecord | undefined;
   // Why the parse stopped early, handed to live stream sources on cleanup.
   reason: unknown;
+  // The first synchronous step is running, so a failure can still reach the
+  // caller as a thrown error.
+  starting: boolean;
   // Callbacks
   onParse: ((node: SerovalNode, initial: boolean) => void | PromiseLike<void>) | undefined;
   onError?: (error: unknown) => void;
