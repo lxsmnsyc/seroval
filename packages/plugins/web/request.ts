@@ -3,7 +3,7 @@ import { createPlugin } from 'seroval';
 import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import { isBody, isOptionalHeaders } from './validate';
+import { claim, isBody, isOptionalHeaders } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -95,10 +95,10 @@ function createRequestBodyStream(current: Request): ReadableStream {
 // validator skipped.
 function copyRequestOptions(options: RequestOptions): RequestOptions {
   return {
-    body: options.body,
+    body: claim(options.body),
     cache: options.cache,
     credentials: options.credentials,
-    headers: options.headers,
+    headers: claim(options.headers),
     integrity: options.integrity,
     keepalive: options.keepalive,
     method: options.method,
