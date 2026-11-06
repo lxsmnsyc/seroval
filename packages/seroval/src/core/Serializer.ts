@@ -65,6 +65,9 @@ export default class Serializer {
     if (this.alive && !this.flushed && options) {
       this.pending++;
       this.keys.add(key);
+      // A failure while crossSerializeStream is still running can be thrown
+      // to the caller. A later one has no caller to reach.
+      let starting = true;
       const cleanup = crossSerializeStream(value, {
         plugins: this.plugins,
         scopeId: options.scopeId,
@@ -78,7 +81,7 @@ export default class Serializer {
             // oxlint-disable-next-line no-unnecessary-condition -- JavaScript callers can omit onError.
             if (options.onError) {
               options.onError(error);
-            } else {
+            } else if (starting) {
               throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
             }
           } catch (handlerError) {
@@ -107,6 +110,7 @@ export default class Serializer {
           this.finishWrite();
         },
       });
+      starting = false;
       // oxlint-disable-next-line no-unnecessary-condition -- The callbacks above can close the serializer.
       if (this.alive) {
         this.cleanups.push(cleanup);
