@@ -4,7 +4,9 @@ export const NATIVE_LITTLE_ENDIAN =
   /* @__PURE__ */ new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
 
 const ENCODER = /* @__PURE__ */ new TextEncoder();
-const DECODER = /* @__PURE__ */ new TextDecoder();
+// `ignoreBOM` keeps a leading U+FEFF as a character. By default the decoder
+// drops it, so a string or key that starts with one would decode as another.
+const DECODER = /* @__PURE__ */ new TextDecoder('utf-8', { ignoreBOM: true });
 
 // The top bit of a String node's byte length says its bytes are UTF-16 code
 // units instead of UTF-8. UTF-8 cannot hold a lone surrogate, so only strings

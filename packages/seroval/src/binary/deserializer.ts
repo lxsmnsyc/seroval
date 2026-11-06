@@ -72,6 +72,9 @@ interface PendingState {
   // Assignment nodes read for the container. Its `Pending` node must state
   // the same amount.
   received: number;
+  // The last assignment that waits on a plugin, or on such an assignment.
+  // Later assignments queue behind it, so they apply in wire order.
+  tail: Promise<void> | undefined;
   // The declared length of an Array, which every index must stay below. -1
   // for the other containers.
   length: number;
@@ -106,6 +109,9 @@ export interface ReferenceMap {
   // no more assignments, so this never has to be undone, and later waits skip
   // these ids instead of walking them again.
   complete: Set<number>;
+  // Ids whose subtree holds no open container. A closed container takes no
+  // more assignments, so this never has to be undone either.
+  closed: Set<number>;
 }
 
 export function createReferenceMap(): ReferenceMap {
@@ -118,6 +124,7 @@ export function createReferenceMap(): ReferenceMap {
     unsettled: 0,
     children: new Map(),
     complete: new Set(),
+    closed: new Set(),
   };
 }
 
@@ -176,6 +183,14 @@ export interface DeserializerContext {
   containers: number[];
   openPromises: Set<number>;
   openStreams: Set<number>;
+  // Promises and streams whose last node was read but whose value is still
+  // being built. They are settled or ended with the error if the payload
+  // fails before that.
+  settlingPromises: Set<number>;
+  endingStreams: Set<number>;
+  // The last stream event that waits on a plugin, or on such an event, per
+  // stream. Later events queue behind it, so they arrive in wire order.
+  streamTails: Map<number, Promise<void>>;
   aborted: boolean;
   // Waits on a subtree that are still running, so a second wait on the same
   // id joins the first instead of walking the subtree again.
@@ -222,6 +237,9 @@ export function createDeserializerContext(
     containers: [],
     openPromises: new Set(),
     openStreams: new Set(),
+    settlingPromises: new Set(),
+    endingStreams: new Set(),
+    streamTails: new Map(),
     aborted: false,
     subtreeWaits: new Map(),
     regexpPropertyEscapes: MAX_REGEXP_PROPERTY_ESCAPES,
@@ -595,6 +613,7 @@ function createPending(ctx: DeserializerContext, id: number, length = -1) {
     resolver: undefined,
     received: 0,
     length,
+    tail: undefined,
   });
   ctx.refs.unsettled++;
   ctx.containers.push(id);
@@ -772,33 +791,64 @@ function runAssignment(
   valueRef: number,
   apply: (value: unknown) => void,
 ): void {
-  const pending = ctx.refs.deferred.get(valueRef);
-  if (pending) {
+  queueAssignment(ctx, container, [valueRef], (values) => {
+    apply(values[0]);
+  });
+}
+
+function queueAssignment(
+  ctx: DeserializerContext,
+  container: number,
+  valueRefs: number[],
+  apply: (values: unknown[]) => void,
+): void {
+  const entry = ctx.refs.pendingResolvers.get(container);
+  let deferred = false;
+  for (const ref of valueRefs) {
+    if (ctx.refs.deferred.has(ref)) {
+      deferred = true;
+    }
+  }
+  // A write that waits on a plugin also holds back every later write of the
+  // container. Otherwise a Set, a Map or an object would take its entries out
+  // of the order they were sent in.
+  if (entry && (deferred || entry.tail)) {
     trackInflight(ctx, container, 1);
-    pending.then(
-      (value) => {
-        try {
-          apply(value);
-        } catch (err) {
-          ctx.onError(err);
-        } finally {
-          trackInflight(ctx, container, -1);
-          popPendingState(ctx, container);
-        }
-      },
-      (err) => {
-        ctx.onError(err);
-        trackInflight(ctx, container, -1);
-        popPendingState(ctx, container);
-      },
-    );
+    entry.tail = applyQueuedAssignment(ctx, container, entry.tail, valueRefs, apply);
     return;
   }
   try {
-    apply(getRefSync(ctx, valueRef));
+    const values: unknown[] = [];
+    for (const ref of valueRefs) {
+      values.push(getRefSync(ctx, ref));
+    }
+    apply(values);
   } catch (err) {
     ctx.onError(err);
   } finally {
+    popPendingState(ctx, container);
+  }
+}
+
+async function applyQueuedAssignment(
+  ctx: DeserializerContext,
+  container: number,
+  previous: Promise<void> | undefined,
+  valueRefs: number[],
+  apply: (values: unknown[]) => void,
+): Promise<void> {
+  // The previous write never rejects: its errors go to `onError`.
+  await previous;
+  try {
+    const values: unknown[] = [];
+    for (const ref of valueRefs) {
+      values.push((await getRefAsync(ctx, ref)).value);
+    }
+    apply(values);
+  } catch (err) {
+    ctx.onError(err);
+  } finally {
+    trackInflight(ctx, container, -1);
     popPendingState(ctx, container);
   }
 }
@@ -813,6 +863,18 @@ function deserializeObjectAssign(ctx: DeserializerContext) {
     SerovalBinaryType.WKSymbol,
   ]);
   const value = deserializeUint(ctx);
+
+  // An Iterator or AsyncIterator node decodes to a function. The serializer
+  // only sends one as the `Symbol.iterator` or `Symbol.asyncIterator` of its
+  // object. Under any other key, such as `then`, the function would turn the
+  // object into a thenable that never settles, or into a hostile `toJSON`.
+  const valueType = ctx.refs.types.get(value);
+  if (
+    (valueType === SerovalBinaryType.Iterator && getRefSync(ctx, key) !== SYM_ITERATOR) ||
+    (valueType === SerovalBinaryType.AsyncIterator && getRefSync(ctx, key) !== SYM_ASYNC_ITERATOR)
+  ) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.ObjectAssign);
+  }
 
   openAssignment(ctx, SerovalBinaryType.ObjectAssign, object);
   trackChild(ctx, object, value);
@@ -911,50 +973,90 @@ function assertOpenStream(ctx: DeserializerContext, type: SerovalBinaryType, str
   }
 }
 
-async function deserializeStreamNextInner(ctx: DeserializerContext, stream: number, value: number) {
-  const s = getRefSync(ctx, stream) as Stream<unknown>;
-  s.next((await getRefAsync(ctx, value)).value);
+// Sends one stream event. An event whose value is a plugin still being built
+// waits for it, and every later event of the stream waits behind it, so the
+// events keep their order and none arrives after the stream ended.
+function queueStreamEvent(
+  ctx: DeserializerContext,
+  stream: number,
+  value: number,
+  send: (target: Stream<unknown>, value: unknown) => void,
+): void {
+  const tail = ctx.streamTails.get(stream);
+  if (!tail && !ctx.refs.deferred.has(value)) {
+    try {
+      send(getRefSync(ctx, stream) as Stream<unknown>, getRefSync(ctx, value));
+    } catch (error) {
+      ctx.onError(error);
+    }
+    return;
+  }
+  ctx.streamTails.set(stream, sendQueuedStreamEvent(ctx, stream, tail, value, send));
+}
+
+async function sendQueuedStreamEvent(
+  ctx: DeserializerContext,
+  stream: number,
+  previous: Promise<void> | undefined,
+  value: number,
+  send: (target: Stream<unknown>, value: unknown) => void,
+): Promise<void> {
+  // The previous event never rejects: its errors go to `onError`.
+  await previous;
+  try {
+    const resolved = (await getRefAsync(ctx, value)).value;
+    // An aborted payload already threw into the stream.
+    if (!ctx.aborted) {
+      send(getRefSync(ctx, stream) as Stream<unknown>, resolved);
+    }
+  } catch (error) {
+    ctx.onError(error);
+  }
+}
+
+function sendNext(target: Stream<unknown>, value: unknown): void {
+  target.next(value);
+}
+
+function sendThrow(target: Stream<unknown>, value: unknown): void {
+  target.throw(value);
+}
+
+function sendReturn(target: Stream<unknown>, value: unknown): void {
+  target.return(value);
 }
 
 function deserializeStreamNext(ctx: DeserializerContext) {
   const stream = deserializeRef(ctx, SerovalBinaryType.StreamNext, SerovalBinaryType.Stream);
   const value = deserializeUint(ctx);
   assertOpenStream(ctx, SerovalBinaryType.StreamNext, stream);
-  deserializeStreamNextInner(ctx, stream, value).catch(ctx.onError);
+  queueStreamEvent(ctx, stream, value, sendNext);
 }
 
-async function deserializeStreamThrowInner(
+// Ends a stream. It stays in `endingStreams` until its last event is sent,
+// so a payload that fails before then still ends it with the error.
+function endStream(
   ctx: DeserializerContext,
-  stream: number,
-  value: number,
-) {
-  const s = getRefSync(ctx, stream) as Stream<unknown>;
-  s.throw((await getRefAsync(ctx, value)).value);
+  type: SerovalBinaryType,
+  send: (target: Stream<unknown>, value: unknown) => void,
+): void {
+  const stream = deserializeRef(ctx, type, SerovalBinaryType.Stream);
+  const value = deserializeUint(ctx);
+  assertOpenStream(ctx, type, stream);
+  ctx.openStreams.delete(stream);
+  ctx.endingStreams.add(stream);
+  queueStreamEvent(ctx, stream, value, (target, resolved) => {
+    ctx.endingStreams.delete(stream);
+    send(target, resolved);
+  });
 }
 
 function deserializeStreamThrow(ctx: DeserializerContext) {
-  const stream = deserializeRef(ctx, SerovalBinaryType.StreamThrow, SerovalBinaryType.Stream);
-  const value = deserializeUint(ctx);
-  assertOpenStream(ctx, SerovalBinaryType.StreamThrow, stream);
-  ctx.openStreams.delete(stream);
-  deserializeStreamThrowInner(ctx, stream, value).catch(ctx.onError);
-}
-
-async function deserializeStreamReturnInner(
-  ctx: DeserializerContext,
-  stream: number,
-  value: number,
-) {
-  const s = getRefSync(ctx, stream) as Stream<unknown>;
-  s.return((await getRefAsync(ctx, value)).value);
+  endStream(ctx, SerovalBinaryType.StreamThrow, sendThrow);
 }
 
 function deserializeStreamReturn(ctx: DeserializerContext) {
-  const stream = deserializeRef(ctx, SerovalBinaryType.StreamReturn, SerovalBinaryType.Stream);
-  const value = deserializeUint(ctx);
-  assertOpenStream(ctx, SerovalBinaryType.StreamReturn, stream);
-  ctx.openStreams.delete(stream);
-  deserializeStreamReturnInner(ctx, stream, value).catch(ctx.onError);
+  endStream(ctx, SerovalBinaryType.StreamReturn, sendReturn);
 }
 
 function deserializeSequence(ctx: DeserializerContext) {
@@ -1103,45 +1205,17 @@ function deserializeMap(ctx: DeserializerContext) {
   upsert(ctx, id, new Map());
 }
 
-// A Map entry is the one assignment with two potentially-deferred refs (a
-// plugin can be a key as well as a value), so it cannot reuse `runAssignment`.
+// A Map entry is the one assignment with two potentially-deferred refs: a
+// plugin can be a key as well as a value.
 function deserializeMapSetEntry(
   ctx: DeserializerContext,
   id: number,
   key: number,
   value: number,
 ): void {
-  const set = (k: unknown, v: unknown) => {
-    (getRefSync(ctx, id) as Map<unknown, unknown>).set(k, v);
-  };
-  if (ctx.refs.deferred.get(key) || ctx.refs.deferred.get(value)) {
-    trackInflight(ctx, id, 1);
-    Promise.all([getRefAsync(ctx, key), getRefAsync(ctx, value)]).then(
-      ([k, v]) => {
-        try {
-          set(k.value, v.value);
-        } catch (err) {
-          ctx.onError(err);
-        } finally {
-          trackInflight(ctx, id, -1);
-          popPendingState(ctx, id);
-        }
-      },
-      (err) => {
-        ctx.onError(err);
-        trackInflight(ctx, id, -1);
-        popPendingState(ctx, id);
-      },
-    );
-    return;
-  }
-  try {
-    set(getRefSync(ctx, key), getRefSync(ctx, value));
-  } catch (err) {
-    ctx.onError(err);
-  } finally {
-    popPendingState(ctx, id);
-  }
+  queueAssignment(ctx, id, [key, value], (values) => {
+    (getRefSync(ctx, id) as Map<unknown, unknown>).set(values[0], values[1]);
+  });
 }
 
 function deserializeMapSet(ctx: DeserializerContext) {
@@ -1201,6 +1275,9 @@ function settlePromiseNode(
     throw new SerovalMalformedBinaryTypeError(type);
   }
   ctx.openPromises.delete(promise);
+  // Its value may still be building. Until it settles, a failed payload
+  // rejects it like an open promise.
+  ctx.settlingPromises.add(promise);
 }
 
 async function deserializePromiseFulfillInner(
@@ -1227,6 +1304,7 @@ async function deserializePromiseFulfillInner(
   }
   // Same contract as the root: a settled Promise hands over a finished value.
   await awaitSubtree(ctx, value);
+  ctx.settlingPromises.delete(resolver);
   if (success) {
     currentResolver.s(resolvingValue);
   } else {
@@ -1259,6 +1337,7 @@ function deserializePromiseFailure(ctx: DeserializerContext) {
 // A settle node that cannot be applied still ends its promise, with the
 // error, so the promise does not wait for a node that will never come.
 function rejectPromiseNode(ctx: DeserializerContext, promise: number, error: unknown): void {
+  ctx.settlingPromises.delete(promise);
   ctx.onError(error);
   ctx.refs.promiseResolvers.get(promise)?.f(error);
 }
@@ -1349,11 +1428,49 @@ async function deserializePluginInner(
   throw new SerovalMissingPluginError(actualTag);
 }
 
+/**
+ * The serializer writes a plugin's payload, with the `Pending` node of every
+ * container in it, before the Plugin node. Requiring that here means a
+ * payload can only hold plugins declared before it, never a plugin that is
+ * still waiting on it, so two plugins can never wait on each other forever.
+ */
+function assertClosedPayload(ctx: DeserializerContext, options: number): void {
+  const closed = ctx.refs.closed;
+  if (closed.has(options)) {
+    return;
+  }
+  if (!ctx.refs.types.has(options)) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Plugin);
+  }
+  const seen = new Set<number>([options]);
+  const queue = [options];
+  for (let i = 0; i < queue.length; i++) {
+    const current = queue[i];
+    const entry = ctx.refs.pendingResolvers.get(current);
+    if (entry && !entry.declared) {
+      throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Plugin);
+    }
+    const children = ctx.refs.children.get(current);
+    if (children) {
+      for (const child of children) {
+        if (!seen.has(child) && !closed.has(child)) {
+          seen.add(child);
+          queue.push(child);
+        }
+      }
+    }
+  }
+  for (const walked of queue) {
+    closed.add(walked);
+  }
+}
+
 function deserializePlugin(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.Plugin);
   const tag = deserializeRef(ctx, SerovalBinaryType.Plugin, SerovalBinaryType.String);
   const options = deserializeUint(ctx);
 
+  assertClosedPayload(ctx, options);
   trackChild(ctx, id, options);
   // A Plugin is the one node whose identity is not known synchronously, so it
   // is registered as deferred; consumers of its value await this promise. It
@@ -1756,21 +1873,22 @@ function abortDeserialize(ctx: DeserializerContext, reason: unknown): void {
   // The failure is already reported through `onError`. The promises are
   // marked as handled when they are created, so rejecting them here does not
   // report the failure again as unhandled.
-  for (const id of ctx.openPromises) {
-    const resolver = ctx.refs.promiseResolvers.get(id);
-    if (resolver) {
-      resolver.f(reason);
+  for (const promises of [ctx.openPromises, ctx.settlingPromises]) {
+    for (const id of promises) {
+      ctx.refs.promiseResolvers.get(id)?.f(reason);
     }
+    promises.clear();
   }
-  ctx.openPromises.clear();
-  for (const id of ctx.openStreams) {
-    try {
-      (ctx.refs.values.get(id) as Stream<unknown>).throw(reason);
-    } catch {
-      // A listener error must not stop the other streams from ending.
+  for (const streams of [ctx.openStreams, ctx.endingStreams]) {
+    for (const id of streams) {
+      try {
+        (ctx.refs.values.get(id) as Stream<unknown>).throw(reason);
+      } catch {
+        // A listener error must not stop the other streams from ending.
+      }
     }
+    streams.clear();
   }
-  ctx.openStreams.clear();
 }
 
 export function deserializeStart<T>(ctx: DeserializerContext): Promise<DeserializeResult<T>> {
@@ -1799,7 +1917,12 @@ export function deserializeStart<T>(ctx: DeserializerContext): Promise<Deseriali
   return (ctx.root.resolver.p as Promise<{ value: T }>).then(({ value }) => ({
     value,
     get pending(): number {
-      return ctx.openPromises.size + ctx.openStreams.size;
+      return (
+        ctx.openPromises.size +
+        ctx.openStreams.size +
+        ctx.settlingPromises.size +
+        ctx.endingStreams.size
+      );
     },
   }));
 }

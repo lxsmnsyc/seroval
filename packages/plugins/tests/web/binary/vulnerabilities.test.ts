@@ -1,6 +1,6 @@
 import { SerovalPluginValidationError, createStream } from 'seroval';
 import * as binary from 'seroval/binary';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import AbortSignalPlugin from '../../../web/abort-signal';
 import BlobPlugin from '../../../web/blob';
 import FilePlugin from '../../../web/file';
@@ -557,7 +557,7 @@ describe('plugin binary shared payloads', () => {
   it('refuses two ReadableStream values on one stream', async () => {
     const stream = createStream<string>();
     stream.next('a');
-    stream.return(undefined);
+    stream.return('b');
     const errors = await deliverShared(
       ReadableStreamPlugin.tag,
       [{ stream }, { stream }],
@@ -596,5 +596,49 @@ describe('plugin binary shared payloads', () => {
       [BlobPlugin],
     );
     expect(errors).toEqual([]);
+  });
+});
+
+describe('plugin binary serializer cleanup', () => {
+  it('removes the AbortSignal listener when serialization stops', () => {
+    const controller = new AbortController();
+    const remove = vi.spyOn(controller.signal, 'removeEventListener');
+    const handle = startSerialize(controller.signal, [AbortSignalPlugin]);
+    handle.done.catch(() => undefined);
+    handle.abort();
+    expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
+  });
+
+  it('handles a failed Blob read when serialization stops at the depth limit', async () => {
+    // The read promise exists before the payload is serialized. If the depth
+    // limit stops serialization first, its rejection must still be handled.
+    class FailingBlob extends Blob {
+      override arrayBuffer(): Promise<ArrayBuffer> {
+        return Promise.reject(new Error('read failed'));
+      }
+    }
+    // The limit is tried at several depths, so one of them lands after the
+    // plugin has started the read and before its payload is written.
+    for (let depthLimit = 1; depthLimit <= 4; depthLimit++) {
+      await new Promise<void>((resolve) => {
+        binary.serialize(
+          { a: { b: new FailingBlob(['x']) } },
+          {
+            refs: new Map(),
+            plugins: [BlobPlugin],
+            depthLimit,
+            onSerialize() {},
+            onDone() {
+              resolve();
+            },
+            onError() {
+              resolve();
+            },
+          },
+        );
+      });
+    }
+    // Give an unhandled rejection the chance to surface.
+    await new Promise((resolve) => setTimeout(resolve, 10));
   });
 });

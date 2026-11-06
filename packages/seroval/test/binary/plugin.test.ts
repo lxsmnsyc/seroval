@@ -4,7 +4,9 @@ import {
   type PluginWithBinaryMode,
   type SerovalNode,
   SerovalPluginValidationError,
+  type Stream,
   createPlugin,
+  createStream,
   v,
 } from '../../src';
 import { captureSerializeError, createTransport, roundtrip, startSerialize } from './utils';
@@ -152,6 +154,50 @@ describe('binary Plugin', () => {
       const { value } = await roundtrip<Set<Vector>>(new Set([new Vector(7, 8)]), SLOW);
       expect(value.size).toBe(1);
       expect([...value][0]).toBeInstanceOf(Vector);
+    });
+
+    it('keeps the order of Set entries that follow a plugin value', async () => {
+      const { value } = await roundtrip<Set<unknown>>(new Set([new Vector(7, 8), 's', 't']), SLOW);
+      const entries = [...value];
+      expect(entries[0]).toBeInstanceOf(Vector);
+      expect(entries.slice(1)).toEqual(['s', 't']);
+    });
+
+    it('keeps the order of object keys that follow a plugin value', async () => {
+      const { value } = await roundtrip<Record<string, unknown>>(
+        { first: new Vector(1, 1), second: 2, third: 3 },
+        SLOW,
+      );
+      expect(Object.keys(value)).toEqual(['first', 'second', 'third']);
+    });
+
+    it('keeps the order of stream events that follow a plugin value', async () => {
+      const stream = createStream<unknown>();
+      stream.next(new Vector(1, 2));
+      stream.next('a');
+      stream.next(new Vector(3, 4));
+      stream.return('end');
+      const { value } = await roundtrip<Stream<unknown>>(stream, SLOW);
+      const events: unknown[] = [];
+      await new Promise<void>((resolve) => {
+        value.on({
+          next(item) {
+            events.push(item);
+          },
+          throw() {
+            resolve();
+          },
+          return(item) {
+            events.push(item);
+            resolve();
+          },
+        });
+      });
+      expect(events).toHaveLength(4);
+      expect(events[0]).toBeInstanceOf(Vector);
+      expect(events[1]).toBe('a');
+      expect(events[2]).toBeInstanceOf(Vector);
+      expect(events[3]).toBe('end');
     });
 
     it('hands over a Map at the root fully populated', async () => {

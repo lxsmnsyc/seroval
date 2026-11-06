@@ -19,6 +19,23 @@ function resolveAbortSignal(this: AbortSignal, resolve: (value: unknown) => void
   });
 }
 
+// Resolves with the abort reason, and registers the removal of its listener.
+// oxlint-disable-next-line typescript/promise-function-async -- async would change the timing.
+function watchAbortSignal(
+  signal: AbortSignal,
+  addCleanup: (cleanup: () => void) => void,
+): Promise<unknown> {
+  return new Promise((resolve) => {
+    const listener = (): void => {
+      resolve(signal.reason);
+    };
+    signal.addEventListener('abort', listener, { once: true });
+    addCleanup(() => {
+      signal.removeEventListener('abort', listener);
+    });
+  });
+}
+
 // oxlint-disable-next-line typescript/promise-function-async -- async would change the timing.
 function abortSignalToPromise(signal: AbortSignal): Promise<unknown> {
   return new Promise(resolveAbortSignal.bind(signal));
@@ -145,17 +162,17 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
     return controller.signal;
   },
   binary: {
-    serialize(value) {
+    serialize(value, ctx) {
       if (value.aborted) {
         return {
           reason: value.reason,
         };
       }
 
-      const promise = abortSignalToPromise(value);
-
+      // The listener is removed when serialization ends, so a long-lived
+      // signal does not keep every serialization that sent it alive.
       return {
-        controller: promise,
+        controller: watchAbortSignal(value, ctx.addCleanup),
       };
     },
     validate: { controller: /* @__PURE__ */ v.optional(/* @__PURE__ */ v.instanceOf(Promise)) },

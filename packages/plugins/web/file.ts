@@ -80,13 +80,18 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>(
   },
   binary: {
     serialize(value) {
+      // The serializer handles this promise only once it reaches the field.
+      // If serialization stops before that, at the depth limit say, a failed
+      // read would be an unhandled rejection, which stops the process.
+      const buffer = value.arrayBuffer();
+      buffer.catch(() => undefined);
       return {
         name: value.name,
         options: {
           type: value.type,
           lastModified: value.lastModified,
         },
-        buffer: value.arrayBuffer(),
+        buffer,
       };
     },
     validate: {

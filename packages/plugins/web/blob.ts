@@ -42,9 +42,14 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode, BlobBinaryData>(
 
   binary: {
     serialize(value) {
+      // The serializer handles this promise only once it reaches the field.
+      // If serialization stops before that, at the depth limit say, a failed
+      // read would be an unhandled rejection, which stops the process.
+      const bytes = value.arrayBuffer();
+      bytes.catch(() => undefined);
       return {
         type: value.type,
-        bytes: value.arrayBuffer(),
+        bytes,
       };
     },
     validate: { type: v.string, bytes: /* @__PURE__ */ v.instanceOf(Promise) },

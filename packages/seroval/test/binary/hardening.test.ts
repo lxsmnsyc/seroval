@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as binary from '../../src/binary';
-import { SerovalMalformedBinaryTypeError, type Stream, createStream } from '../../src';
+import {
+  SerovalMalformedBinarySourceError,
+  SerovalMalformedBinaryTypeError,
+  type Stream,
+  createStream,
+} from '../../src';
 import { roundtrip } from './utils';
 
 /**
@@ -535,6 +540,7 @@ describe('binary amplification limits', () => {
       const chunks: Uint8Array[] = [];
       return new Promise((resolve, reject) => {
         binary.serialize(value, {
+          refs: new Map(),
           onSerialize(bytes) {
             chunks.push(bytes);
           },
@@ -609,6 +615,7 @@ describe('binary onSerialize failures', () => {
     let calls = 0;
     const done = new Promise<void>((resolve) => {
       binary.serialize(value, {
+        refs: new Map(),
         onSerialize() {
           calls++;
           return onSerialize(calls) as void;
@@ -653,8 +660,103 @@ describe('binary onSerialize failures', () => {
       }
     });
     stream.next(1);
-    stream.return(undefined);
+    stream.return(2);
     await done;
     expect((errors[0] as Error).message).toBe('write failed');
+  });
+});
+
+describe('binary decoder integrity', () => {
+  it('keeps a leading U+FEFF in strings and keys', async () => {
+    const source = { '﻿a': 1, a: 2, v: '﻿admin' };
+    const { value } = await roundtrip<typeof source>(source);
+    expect(value).toEqual(source);
+    expect(Object.keys(value)).toHaveLength(3);
+  });
+
+  it('rejects an Iterator value under a key other than Symbol.iterator', async () => {
+    // Under `then`, the iterator function would make the object a thenable
+    // that never settles.
+    const { settled, errors } = feed([
+      preamble(),
+      sequenceNode(0, -1, -1),
+      pending(0, 0),
+      iteratorNode(1, 0),
+      objectNode(2),
+      stringNode(3, 'then'),
+      objectAssign(2, 3, 1),
+      pending(2, 1),
+      root(2),
+      undefined as unknown as Uint8Array,
+    ]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('rejects a settled promise whose value never completes when the input ends', async () => {
+    // The object never gets its Pending node, so the promise's value can
+    // never be handed over. The promise is rejected with the payload error.
+    const { settled } = feed([
+      preamble(),
+      objectNode(0),
+      promiseNode(1),
+      promiseSuccess(1, 0),
+      arrayNode(2, 1),
+      arrayAssign(2, 0, 1),
+      pending(2, 1),
+      root(2),
+      undefined as unknown as Uint8Array,
+    ]);
+    const result = await settled;
+    // The root array was handed over before the input ended.
+    const promise = (result as { value: Promise<unknown>[] }).value[0];
+    await expect(promise).rejects.toBeInstanceOf(SerovalMalformedBinarySourceError);
+  });
+
+  it('rejects a Plugin node whose payload is still open', async () => {
+    // A payload that can still take assignments could take a later plugin
+    // that waits on this one, and both would wait forever.
+    const plugin = {
+      tag: 'Open',
+      test: () => false,
+      parse: {},
+      serialize: () => '',
+      deserialize: () => undefined,
+      binary: { serialize: () => undefined, deserialize: (value: unknown) => value },
+    };
+    const errors: unknown[] = [];
+    const chunks = [
+      preamble(),
+      objectNode(0),
+      stringNode(1, 'Open'),
+      node(17, u32(2), u32(1), u32(0)),
+      pending(0, 0),
+      root(2),
+      undefined as unknown as Uint8Array,
+    ];
+    let index = 0;
+    const result = binary.deserialize({
+      read: () => Promise.resolve(chunks[index++]),
+      plugins: [plugin as never],
+      onError(error) {
+        errors.push(error);
+      },
+    });
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+});
+
+describe('binary typed array subclasses', () => {
+  it('sends a Buffer as a Uint8Array of its own bytes', async () => {
+    // Small Buffers share one pool, so sending the whole backing buffer
+    // would send other Buffers' contents.
+    const other = Buffer.from('secret');
+    const value = Buffer.from('abc');
+    expect(value.buffer).toBe(other.buffer);
+    const { value: decoded } = await roundtrip<Uint8Array>(value);
+    expect(decoded).toBeInstanceOf(Uint8Array);
+    expect([...decoded]).toEqual([97, 98, 99]);
+    expect(decoded.buffer.byteLength).toBe(3);
   });
 });

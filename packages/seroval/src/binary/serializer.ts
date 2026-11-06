@@ -630,52 +630,68 @@ function serializeArrayBuffer(ctx: SerializerContext, value: ArrayBuffer) {
 
 // With `compactArrayBufferViews`, a view sends a copy of only the bytes it
 // covers, which starts at offset 0. Otherwise it sends its whole buffer.
-function serializeViewBuffer(ctx: SerializerContext, value: ArrayBufferView): number {
+function serializeViewBuffer(
+  ctx: SerializerContext,
+  value: ArrayBufferView,
+  compact: boolean,
+): number {
   return serialize(
     ctx,
-    ctx.compactArrayBufferViews
+    compact
       ? value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength)
       : value.buffer,
   );
 }
 
-function serializeTypedArray(ctx: SerializerContext, value: TypedArrayValue) {
+function serializeTypedArray(
+  ctx: SerializerContext,
+  value: TypedArrayValue,
+  compact = ctx.compactArrayBufferViews,
+) {
   if (value.length > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serializeViewBuffer(ctx, value);
+  const buffer = serializeViewBuffer(ctx, value, compact);
   const writer = writeNode(ctx, SerovalBinaryType.TypedArray, id, BYTE + UINT + UINT + UINT);
   writeByte(writer, getTypedArrayTag(value));
   writeUint(writer, buffer);
-  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
+  writeUint(writer, compact ? 0 : value.byteOffset);
   writeUint(writer, value.length);
   return id;
 }
 
-function serializeBigIntTypedArray(ctx: SerializerContext, value: BigIntTypedArrayValue) {
+function serializeBigIntTypedArray(
+  ctx: SerializerContext,
+  value: BigIntTypedArrayValue,
+  compact = ctx.compactArrayBufferViews,
+) {
   if (value.length > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serializeViewBuffer(ctx, value);
+  const buffer = serializeViewBuffer(ctx, value, compact);
   const writer = writeNode(ctx, SerovalBinaryType.BigIntTypedArray, id, BYTE + UINT + UINT + UINT);
   writeByte(writer, getBigIntTypedArrayTag(value));
   writeUint(writer, buffer);
-  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
+  writeUint(writer, compact ? 0 : value.byteOffset);
   writeUint(writer, value.length);
   return id;
 }
 
-function serializeDataView(ctx: SerializerContext, value: DataView) {
+function serializeDataView(
+  ctx: SerializerContext,
+  value: DataView,
+  compact = ctx.compactArrayBufferViews,
+) {
   if (value.byteLength > MAX_TYPED_ARRAY_LENGTH) {
     throw new SerovalUnsupportedTypeError(value);
   }
   const id = createID(ctx, value);
-  const buffer = serializeViewBuffer(ctx, value);
+  const buffer = serializeViewBuffer(ctx, value, compact);
   const writer = writeNode(ctx, SerovalBinaryType.DataView, id, UINT + UINT + UINT);
   writeUint(writer, buffer);
-  writeUint(writer, ctx.compactArrayBufferViews ? 0 : value.byteOffset);
+  writeUint(writer, compact ? 0 : value.byteOffset);
   writeUint(writer, value.byteLength);
   return id;
 }
@@ -774,6 +790,22 @@ function serializeTemporal(
   writeByte(writer, type);
   writeUint(writer, iso);
   return id;
+}
+
+// Matches the typed arrays that `getTypedArrayTag` can name, subclasses
+// included.
+function isTypedArray(value: object): value is TypedArrayValue {
+  return (
+    value instanceof Int8Array ||
+    value instanceof Int16Array ||
+    value instanceof Int32Array ||
+    value instanceof Uint8Array ||
+    value instanceof Uint16Array ||
+    value instanceof Uint32Array ||
+    value instanceof Uint8ClampedArray ||
+    value instanceof Float32Array ||
+    value instanceof Float64Array
+  );
 }
 
 function serializeObjectPhase2(
@@ -903,6 +935,25 @@ function serializeObjectPhase2(
   // since they have very broad implementations.
   if (current instanceof Error) {
     return serializeError(ctx, current);
+  }
+  // A subclass of a typed array, such as Node's `Buffer`, is sent as its base
+  // class. The iterator path below would send one property per element, many
+  // times the size, and skip the typed array length limit. Only the view's
+  // own bytes are sent: small Buffers share one pool of memory, and sending
+  // the whole pool would send other Buffers' contents.
+  if (ArrayBuffer.isView(current)) {
+    if (current instanceof DataView) {
+      return serializeDataView(ctx, current, true);
+    }
+    if (isTypedArray(current)) {
+      return serializeTypedArray(ctx, current, true);
+    }
+    if (
+      currentFeatures & Feature.BigIntTypedArray &&
+      (current instanceof BigInt64Array || current instanceof BigUint64Array)
+    ) {
+      return serializeBigIntTypedArray(ctx, current, true);
+    }
   }
   // Generator functions don't have a global constructor
   // despite existing
