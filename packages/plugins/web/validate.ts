@@ -6,6 +6,21 @@ import type { Validator } from 'seroval';
 
 type Entry<T> = [key: string, value: T];
 
+// Values that a plugin copies or subscribes to. The parser builds a fresh one
+// for every plugin value, so a value claimed twice means the input pointed
+// several plugin values at it to make each one copy it again.
+const CLAIMED = new WeakSet<object>();
+
+export function claim<T>(value: T): T {
+  if (typeof value === 'object' && value !== null) {
+    if (CLAIMED.has(value)) {
+      throw new Error('Expected a value used by one plugin value only.');
+    }
+    CLAIMED.add(value);
+  }
+  return value;
+}
+
 // Matches an array of key-value pairs with string keys.
 export function entries<T>(value: Validator<T>): Validator<Entry<T>[]> {
   return (list): list is Entry<T>[] => {
@@ -29,6 +44,7 @@ export function entries<T>(value: Validator<T>): Validator<Entry<T>[]> {
 // Copies an entry list into fresh pairs, so the constructor never iterates an
 // array the input built.
 export function copyEntries<T>(list: Entry<T>[]): Entry<T>[] {
+  claim(list);
   const result: Entry<T>[] = [];
   for (const entry of list) {
     result.push([entry[0], entry[1]]);

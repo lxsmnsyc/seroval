@@ -3,7 +3,7 @@ import { createPlugin } from 'seroval';
 import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import { isBody, isOptionalHeaders } from './validate';
+import { claim, isBody, isOptionalHeaders } from './validate';
 
 function createResponseOptions(current: Response): ResponseInit {
   return {
@@ -25,7 +25,7 @@ const isResponseOptions = /* @__PURE__ */ v.object({
 // validator skipped.
 function copyResponseOptions(options: ResponseInit): ResponseInit {
   return {
-    headers: options.headers,
+    headers: claim(options.headers),
     status: options.status,
     statusText: options.statusText,
   };
@@ -73,7 +73,7 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode, Resp
   validate: { body: isBody, options: isResponseOptions },
   deserialize(node, ctx) {
     return new Response(
-      ctx.deserialize<BodyInit | null>(node.body),
+      claim(ctx.deserialize<BodyInit | null>(node.body)),
       copyResponseOptions(ctx.deserialize<ResponseInit>(node.options)),
     );
   },

@@ -1,5 +1,6 @@
 import type { SerovalNode, Stream } from 'seroval';
 import { createPlugin, isStream } from 'seroval';
+import { claim } from './validate';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -179,7 +180,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
   validate: { stream: isStream },
   deserialize(node, ctx) {
     const stream = ctx.deserialize<Stream<unknown>>(node.stream);
-    return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);
+    // Each ReadableStream subscribes to its source, so a source shared by
+    // several of them would deliver every chunk once per ReadableStream.
+    return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(stream));
   },
   binary: {
     serialize(value, ctx) {

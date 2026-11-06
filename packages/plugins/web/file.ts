@@ -1,6 +1,7 @@
 import type { SerovalNode } from 'seroval';
 import { SerovalPluginValidationError, createPlugin } from 'seroval';
 import * as v from 'seroval/validator';
+import { claim } from './validate';
 
 // Each known field is checked, so the constructor never converts an input
 // object to a string or a number.
@@ -72,7 +73,7 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>(
   },
   deserialize(node, ctx) {
     return new File(
-      [ctx.deserialize<ArrayBuffer>(node.buffer)],
+      [claim(ctx.deserialize<ArrayBuffer>(node.buffer))],
       ctx.deserialize<string>(node.name),
       copyFileOptions(ctx.deserialize<FilePropertyBag>(node.options)),
     );
