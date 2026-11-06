@@ -192,7 +192,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
     },
     validate: { stream: isStream },
     deserialize(data) {
-      return READABLE_STREAM_FACTORY_CONSTRUCTOR(data.stream);
+      // A stream replays its events to every subscriber, so a stream shared
+      // between ReadableStream values would be copied into each of them.
+      return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(claim(data).stream));
     },
   },
 });

@@ -102,7 +102,7 @@ The first chunk holds the object and a pending promise. `fromByteStream` returns
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `refs` | `Map` | required | The values already sent. Pass a new `Map` for each payload, or share one to [send references between payloads](#sharing-references-between-payloads). |
-| `onSerialize(bytes)` | function | required | Receives each `Uint8Array` chunk. It may return a promise, see [Live streams](#live-streams). |
+| `onSerialize(bytes)` | function | required | Receives each `Uint8Array` chunk. It may return a promise, see [Live streams](#live-streams). If it throws or its promise rejects, the error goes to `onError` and serialization stops. |
 | `onDone()` | function | required | Runs once every promise and stream has settled. |
 | `onError(error)` | function | required | Runs when a value cannot be serialized. |
 | `plugins` | `Plugin[]` | none | Plugins for extra types. Each one needs a [`binary` section](./writing-plugins.md#binary-mode). |
@@ -153,7 +153,7 @@ If a cleanup throws, the first error goes to `onError`. Calling the function aga
 | `disabledFeatures` | `number` | `0` | Feature flags to reject. |
 | `features` | `number` | all features | The features to accept, as a bit mask. Overrides `disabledFeatures`. |
 | `maxArrayBufferLength` | `number` | `1000000` | The largest `ArrayBuffer`, in bytes, that the input may hold. |
-| `maxArrayLength` | `number` | `1000000` | The largest array length that the input may hold. |
+| `maxArrayLength` | `number` | `1000000` | The largest array length that the input may hold, and the most holes that all its arrays may hold together. |
 | `signal` | `AbortSignal` | none | Stops decoding when it aborts. See [Stopping decoding](#stopping-decoding). |
 
 It returns a promise for `{ value, pending }`. The value is wrapped, so a root value that is a promise is handed over as is. `pending` is the number of promises and streams in the value that have not settled or ended yet. The promise resolves as soon as the root value is decoded, with every object, array, `Map` and `Set` in it filled in. Promises and streams inside the value may still be pending.
@@ -180,9 +180,9 @@ When the signal aborts, decoding stops calling `read`. The returned promise, if 
 - It never evaluates code from the input.
 - It checks every node against the rules in the [binary format](./binary-format.md#validation). For example, a reference must point to a value that was already declared, with a type the node accepts.
 - It defines reserved property names such as `__proto__` and `constructor` as own properties instead of assigning them.
-- It rejects typed arrays longer than 1,000,000 elements, `DataView`s longer than 1,000,000 bytes and `RegExp` patterns longer than 20,000 characters.
+- It rejects typed arrays longer than 1,000,000 elements, `DataView`s longer than 1,000,000 bytes and `RegExp` patterns longer than 20,000 characters. It accepts at most 32 Unicode property escapes such as `\p{L}` across the `RegExp` values of one payload, like the JSON functions.
 - It rejects an `ArrayBuffer` longer than `maxArrayBufferLength` bytes, 1,000,000 by default, as soon as it reads the length. Raise the limit to receive larger files.
-- It rejects an array longer than `maxArrayLength`, 1,000,000 by default. An array states its length up front and its holes take no bytes, so without the limit a few bytes could claim an array of billions of holes. Raise the limit to receive larger arrays.
+- It rejects an array longer than `maxArrayLength`, 1,000,000 by default. An array states its length up front and its holes take no bytes, so without the limit a few bytes could claim an array of billions of holes. The holes of all the arrays in one payload also count against this limit. Raise the limit to receive larger or sparser arrays.
 - It rejects `RegExp` and `Temporal` values when their [feature](./compatibility.md#feature-flags) is disabled.
 
 When the input is invalid, or when it ends before every value has settled:

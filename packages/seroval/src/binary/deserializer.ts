@@ -43,6 +43,11 @@ import {
 import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
+// Each escape such as `\p{L}` or `\p{RGI_Emoji}` can cost the engine a large
+// share of a millisecond to build, so one payload builds only a few dozen.
+// Same limit as JSON mode.
+const MAX_REGEXP_PROPERTY_ESCAPES = 32;
+const REGEXP_PROPERTY_ESCAPE = /\\[pP]\{/g;
 
 // Same as the default `maxArrayBufferLength` of the deserializer.
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
@@ -64,6 +69,12 @@ interface PendingState {
   inflight: number;
   // Set once every assignment has been applied.
   settled: boolean;
+  // Assignment nodes read for the container. Its `Pending` node must state
+  // the same amount.
+  received: number;
+  // The declared length of an Array, which every index must stay below. -1
+  // for the other containers.
+  length: number;
   // Created only when something waits for the container to settle.
   resolver: PromiseConstructorResolver | undefined;
 }
@@ -91,6 +102,10 @@ export interface ReferenceMap {
   unsettled: number;
   // Maps a container id to the ids it holds, so a subtree can be awaited
   children: Map<number, number[]>;
+  // Ids whose whole subtree is known to be settled. A settled container takes
+  // no more assignments, so this never has to be undone, and later waits skip
+  // these ids instead of walking them again.
+  complete: Set<number>;
 }
 
 export function createReferenceMap(): ReferenceMap {
@@ -102,6 +117,7 @@ export function createReferenceMap(): ReferenceMap {
     pendingResolvers: new Map(),
     unsettled: 0,
     children: new Map(),
+    complete: new Set(),
   };
 }
 
@@ -141,7 +157,8 @@ export interface DeserializerContext {
   root: {
     resolver: PromiseConstructorResolver;
     found: boolean;
-    id: number | undefined;
+    // Set by the payload's `Root` node. A payload has one.
+    read: boolean;
   };
   done: boolean;
   // The bytes being parsed, a view over them, and the read position.
@@ -160,6 +177,17 @@ export interface DeserializerContext {
   openPromises: Set<number>;
   openStreams: Set<number>;
   aborted: boolean;
+  // Waits on a subtree that are still running, so a second wait on the same
+  // id joins the first instead of walking the subtree again.
+  subtreeWaits: Map<number, Promise<void>>;
+  // Unicode property escapes the payload's RegExp nodes may still use.
+  regexpPropertyEscapes: number;
+  // Array holes the payload may still declare. A hole costs no bytes on the
+  // wire but a slot in memory, so their total is capped by `maxArrayLength`.
+  arrayHoles: number;
+  // Decoded BigInt values by String id and sign, so BigInt nodes that share a
+  // string decode it once.
+  bigints: Map<number, bigint>;
 }
 
 const EMPTY_BYTES = new Uint8Array(0);
@@ -195,10 +223,14 @@ export function createDeserializerContext(
     openPromises: new Set(),
     openStreams: new Set(),
     aborted: false,
+    subtreeWaits: new Map(),
+    regexpPropertyEscapes: MAX_REGEXP_PROPERTY_ESCAPES,
+    arrayHoles: maxArrayLength,
+    bigints: new Map(),
     root: {
       resolver: PROMISE_CONSTRUCTOR(),
       found: false,
-      id: undefined,
+      read: false,
     },
   };
 }
@@ -426,13 +458,38 @@ function trackChild(ctx: DeserializerContext, parent: number, child: number): vo
  * settle - that value is what we are building - so it is stepped over. A
  * payload of plugin A holding plugin B whose payload holds A is beyond that
  * guard and is not supported.
+ *
+ * Many nodes can wait on one large subtree (several Promise nodes settled with
+ * the same value, say), so a finished walk records its ids in `complete` and a
+ * wait on an id that is already being walked joins that walk.
  */
-async function awaitSubtree(ctx: DeserializerContext, id: number, owner?: number): Promise<void> {
-  if (ctx.refs.unsettled === 0) {
-    return;
+function awaitSubtree(ctx: DeserializerContext, id: number, owner?: number): Promise<void> {
+  if (ctx.refs.unsettled === 0 || ctx.refs.complete.has(id)) {
+    return Promise.resolve();
   }
+  // A plugin's wait steps over its own value, so it cannot share a walk.
+  if (owner != null) {
+    return walkSubtree(ctx, id, owner);
+  }
+  let wait = ctx.subtreeWaits.get(id);
+  if (!wait) {
+    wait = walkSubtree(ctx, id, undefined);
+    ctx.subtreeWaits.set(id, wait);
+  }
+  return wait;
+}
+
+async function walkSubtree(
+  ctx: DeserializerContext,
+  id: number,
+  owner: number | undefined,
+): Promise<void> {
+  const complete = ctx.refs.complete;
   const seen = new Set<number>([id]);
   const queue = [id];
+  // A container stepped over by the owner guard may still be open, so the
+  // walk proves nothing about it.
+  let skipped = false;
 
   for (let i = 0; i < queue.length; i++) {
     const current = queue[i];
@@ -445,9 +502,13 @@ async function awaitSubtree(ctx: DeserializerContext, id: number, owner?: number
       if (held && owner != null) {
         blocked = held.indexOf(owner) !== -1;
       }
-      const wait = blocked ? undefined : waitPending(entry);
-      if (wait) {
-        await wait;
+      if (blocked) {
+        skipped = true;
+      } else {
+        const wait = waitPending(entry);
+        if (wait) {
+          await wait;
+        }
       }
     }
     // Re-read: more assignments may have been parsed while awaiting.
@@ -455,11 +516,18 @@ async function awaitSubtree(ctx: DeserializerContext, id: number, owner?: number
     if (children) {
       for (let j = 0, len = children.length; j < len; j++) {
         const child = children[j];
-        if (!seen.has(child)) {
+        if (!seen.has(child) && !complete.has(child)) {
           seen.add(child);
           queue.push(child);
         }
       }
+    }
+  }
+  // Every container reached was settled, and a settled container takes no
+  // more children, so each id walked heads a finished subtree.
+  if (!skipped) {
+    for (const walked of queue) {
+      complete.add(walked);
     }
   }
 }
@@ -518,24 +586,33 @@ function trackInflight(ctx: DeserializerContext, id: number, delta: number) {
   }
 }
 
-function createPending(ctx: DeserializerContext, id: number) {
+function createPending(ctx: DeserializerContext, id: number, length = -1) {
   ctx.refs.pendingResolvers.set(id, {
     count: 0,
     declared: false,
     inflight: 0,
     settled: false,
     resolver: undefined,
+    received: 0,
+    length,
   });
   ctx.refs.unsettled++;
   ctx.containers.push(id);
 }
 
-// Rejects an assignment to a container whose `Pending` node was already read.
-function assertOpenContainer(ctx: DeserializerContext, type: SerovalBinaryType, id: number): void {
+// Counts an assignment to a container, and rejects it if the container's
+// `Pending` node was already read.
+function openAssignment(
+  ctx: DeserializerContext,
+  type: SerovalBinaryType,
+  id: number,
+): PendingState {
   const entry = ctx.refs.pendingResolvers.get(id);
   if (!entry || entry.declared) {
     throw new SerovalMalformedBinaryTypeError(type);
   }
+  entry.received++;
+  return entry;
 }
 
 function isSequenceIndex(value: number, size: number): boolean {
@@ -551,19 +628,32 @@ function deserializePending(ctx: DeserializerContext) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Pending);
   }
   // The serializer sends every assignment of a container before its
-  // `Pending` node, so the amount must match what was received.
-  const received = ctx.refs.children.get(id)?.length ?? 0;
-  if (ctx.refs.types.get(id) === SerovalBinaryType.Sequence) {
+  // `Pending` node, so the amount must match what was received. A smaller
+  // amount would settle the container while assignments that wait on a
+  // plugin are still running, and hand it over incomplete.
+  if (amount !== entry.received) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Pending);
+  }
+  const type = ctx.refs.types.get(id);
+  if (type === SerovalBinaryType.Sequence) {
     // A sequence iterator stops only once its index passes the done index, so
     // both indices must point inside the values that were actually sent.
     const sequence = getRefSync(ctx, id) as Sequence;
-    if (
-      amount !== received ||
-      !isSequenceIndex(sequence.t, amount) ||
-      !isSequenceIndex(sequence.d, amount)
-    ) {
+    if (!isSequenceIndex(sequence.t, amount) || !isSequenceIndex(sequence.d, amount)) {
       throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Sequence);
     }
+  } else if (type === SerovalBinaryType.Array) {
+    // The array was built empty and grew with its assignments. Each slot
+    // that no assignment filled is a hole, which costs memory once the
+    // array takes its declared length, so holes draw on a payload budget.
+    const holes = entry.length - amount;
+    if (holes > ctx.arrayHoles) {
+      throw new RangeError('Array exceeds maxArrayLength (' + ctx.maxArrayLength + ')');
+    }
+    if (holes > 0) {
+      ctx.arrayHoles -= holes;
+    }
+    (getRefSync(ctx, id) as unknown[]).length = entry.length;
   }
   entry.declared = true;
   entry.count += amount;
@@ -604,8 +694,17 @@ function deserializeBigint(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.BigInt);
   const sign = deserializeByte(ctx);
   const stringRef = deserializeRef(ctx, SerovalBinaryType.BigInt, SerovalBinaryType.String);
-  const value = decodeBigint(getRefSync(ctx, stringRef) as string);
-  upsert(ctx, id, sign ? -value : value);
+  // A 10-byte BigInt node can point at a long string that another node
+  // already sent, so the decoded value is cached per string and sign, and
+  // each node costs a lookup instead of a decode.
+  const key = stringRef * 2 + (sign ? 1 : 0);
+  let value = ctx.bigints.get(key);
+  if (value === undefined) {
+    const decoded = decodeBigint(getRefSync(ctx, stringRef) as string);
+    value = sign ? -decoded : decoded;
+    ctx.bigints.set(key, value);
+  }
+  upsert(ctx, id, value);
 }
 
 function deserializeWKSymbol(ctx: DeserializerContext) {
@@ -715,7 +814,7 @@ function deserializeObjectAssign(ctx: DeserializerContext) {
   ]);
   const value = deserializeUint(ctx);
 
-  assertOpenContainer(ctx, SerovalBinaryType.ObjectAssign, object);
+  openAssignment(ctx, SerovalBinaryType.ObjectAssign, object);
   trackChild(ctx, object, value);
   runAssignment(ctx, object, value, (resolved) => {
     assignProperty(
@@ -731,7 +830,11 @@ function deserializeArrayAssign(ctx: DeserializerContext) {
   const index = deserializeUint(ctx);
   const value = deserializeUint(ctx);
 
-  assertOpenContainer(ctx, SerovalBinaryType.ArrayAssign, object);
+  // An index past the declared length would grow the array past it, and
+  // past `maxArrayLength`.
+  if (index >= openAssignment(ctx, SerovalBinaryType.ArrayAssign, object).length) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.ArrayAssign);
+  }
   trackChild(ctx, object, value);
   runAssignment(ctx, object, value, (resolved) => {
     (getRefSync(ctx, object) as unknown[])[index] = resolved;
@@ -785,8 +888,11 @@ function deserializeArray(ctx: DeserializerContext) {
   if (length > ctx.maxArrayLength) {
     throw new RangeError('Array exceeds maxArrayLength (' + ctx.maxArrayLength + ')');
   }
-  createPending(ctx, id);
-  upsert(ctx, id, new Array(length));
+  createPending(ctx, id, length);
+  // `new Array(length)` reserves a slot per element up front, so a few
+  // bytes could reserve megabytes. The array grows with its assignments and
+  // takes its declared length at its `Pending` node.
+  upsert(ctx, id, []);
 }
 
 function deserializeStream(ctx: DeserializerContext) {
@@ -861,7 +967,7 @@ function deserializeSequence(ctx: DeserializerContext) {
 function deserializeSequencePush(ctx: DeserializerContext) {
   const sequence = deserializeRef(ctx, SerovalBinaryType.SequencePush, SerovalBinaryType.Sequence);
   const value = deserializeUint(ctx);
-  assertOpenContainer(ctx, SerovalBinaryType.SequencePush, sequence);
+  openAssignment(ctx, SerovalBinaryType.SequencePush, sequence);
   trackChild(ctx, sequence, value);
   runAssignment(ctx, sequence, value, (resolved) => {
     (getRefSync(ctx, sequence) as Sequence).v.push(resolved);
@@ -1043,7 +1149,7 @@ function deserializeMapSet(ctx: DeserializerContext) {
   const key = deserializeUint(ctx);
   const value = deserializeUint(ctx);
 
-  assertOpenContainer(ctx, SerovalBinaryType.MapSet, object);
+  openAssignment(ctx, SerovalBinaryType.MapSet, object);
   trackChild(ctx, object, key);
   trackChild(ctx, object, value);
   deserializeMapSetEntry(ctx, object, key, value);
@@ -1059,7 +1165,7 @@ function deserializeSetAdd(ctx: DeserializerContext) {
   const object = deserializeRef(ctx, SerovalBinaryType.SetAdd, SerovalBinaryType.Set);
   const value = deserializeUint(ctx);
 
-  assertOpenContainer(ctx, SerovalBinaryType.SetAdd, object);
+  openAssignment(ctx, SerovalBinaryType.SetAdd, object);
   trackChild(ctx, object, value);
   runAssignment(ctx, object, value, (resolved) => {
     (getRefSync(ctx, object) as Set<unknown>).add(resolved);
@@ -1168,7 +1274,19 @@ function deserializeRegExp(ctx: DeserializerContext) {
   if (actualPattern.length > MAX_REGEXP_SOURCE_LENGTH) {
     throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.RegExp);
   }
-  upsert(ctx, id, new RegExp(actualPattern, getRefSync(ctx, flags) as string));
+  const actualFlags = getRefSync(ctx, flags) as string;
+  // Property escapes only exist in unicode mode. An escaped backslash before
+  // `p{` is counted too, which only makes the limit stricter.
+  if (/[uv]/.test(actualFlags)) {
+    const escapes = actualPattern.match(REGEXP_PROPERTY_ESCAPE);
+    if (escapes) {
+      ctx.regexpPropertyEscapes -= escapes.length;
+      if (ctx.regexpPropertyEscapes < 0) {
+        throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.RegExp);
+      }
+    }
+  }
+  upsert(ctx, id, new RegExp(actualPattern, actualFlags));
 }
 
 function deserializeAggregateError(ctx: DeserializerContext) {
@@ -1278,14 +1396,17 @@ async function deserializeRootInner(ctx: DeserializerContext, ref: number) {
     // when its own ref resolves.
     await awaitSubtree(ctx, ref);
     ctx.root.resolver.s({ value: getRefSync(ctx, ref) });
-  } else {
-    // we might be earlier
-    ctx.root.id = ref;
   }
 }
 
 function deserializeRoot(ctx: DeserializerContext) {
   const ref = deserializeUint(ctx);
+  // The serializer writes one Root node, after the value it points to. A
+  // second one would only repeat the wait on the whole value.
+  if (ctx.root.read || !ctx.refs.types.has(ref)) {
+    throw new SerovalMalformedBinaryTypeError(SerovalBinaryType.Root);
+  }
+  ctx.root.read = true;
   deserializeRootInner(ctx, ref).catch(ctx.onError);
 }
 

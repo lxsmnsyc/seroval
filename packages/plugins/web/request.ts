@@ -180,6 +180,9 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, Request
     },
     validate: { url: v.string, options: isRequestOptions },
     deserialize(data) {
+      // A payload shared between Request values would hand each of them the
+      // same body. `copyRequestOptions` also claims the body and headers.
+      claim(data);
       return new Request(data.url, copyRequestOptions(data.options));
     },
   },

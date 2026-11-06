@@ -1,8 +1,9 @@
-import { SerovalPluginValidationError } from 'seroval';
+import { SerovalPluginValidationError, createStream } from 'seroval';
 import * as binary from 'seroval/binary';
 import { describe, expect, it } from 'vitest';
 import AbortSignalPlugin from '../../../web/abort-signal';
 import BlobPlugin from '../../../web/blob';
+import FilePlugin from '../../../web/file';
 import DOMExceptionPlugin from '../../../web/dom-exception';
 import FormDataPlugin from '../../../web/form-data';
 import HeadersPlugin from '../../../web/headers';
@@ -469,5 +470,131 @@ describe('plugin binary hostile payloads', () => {
       );
       expect(result.ok).toBe(false);
     });
+  });
+});
+
+/**
+ * The serializer builds a fresh payload for every plugin value. Hostile bytes
+ * can point several Plugin nodes at one payload, or at one buffer, stream or
+ * body inside it, so every node would copy or subscribe to it again.
+ */
+async function deliverShared(
+  tag: string,
+  payloads: [unknown, unknown],
+  plugins: AnyPlugin[],
+): Promise<unknown[]> {
+  const first = {};
+  const second = {};
+  const plugin = {
+    tag,
+    test: (value: unknown) => value === first || value === second,
+    parse: {},
+    serialize: () => '',
+    deserialize: () => undefined,
+    binary: {
+      serialize: (value: unknown) => (value === first ? payloads[0] : payloads[1]),
+      deserialize: () => undefined,
+    },
+  };
+  // The genuine plugins serialize values inside the payload, such as Headers.
+  const handle = startSerialize([first, second], [plugin, ...plugins]);
+  handle.done.catch(() => undefined);
+  const errors: unknown[] = [];
+  await binary
+    .deserialize({
+      read: () => handle.transport.read(),
+      plugins,
+      onError(error) {
+        errors.push(error);
+      },
+    })
+    .catch((error: unknown) => {
+      errors.push(error);
+    });
+  return errors;
+}
+
+const SHARED = 'Expected a value used by one plugin value only.';
+
+function hasSharedError(errors: unknown[]): boolean {
+  return errors.some((error) => error instanceof Error && error.message === SHARED);
+}
+
+describe('plugin binary shared payloads', () => {
+  it('refuses two Blob values on one payload', async () => {
+    const payload = BlobPlugin.binary.serialize(new Blob(['abc']), {} as never);
+    const errors = await deliverShared(BlobPlugin.tag, [payload, payload], [BlobPlugin]);
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two Blob values on one buffer promise', async () => {
+    const bytes = Promise.resolve(new ArrayBuffer(4));
+    const errors = await deliverShared(
+      BlobPlugin.tag,
+      [
+        { type: '', bytes },
+        { type: '', bytes },
+      ],
+      [BlobPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two File values on one buffer', async () => {
+    const buffer = new ArrayBuffer(4);
+    const options = () => ({ type: '', lastModified: 0 });
+    const errors = await deliverShared(
+      FilePlugin.tag,
+      [
+        { name: 'a', options: options(), buffer: Promise.resolve(buffer) },
+        { name: 'b', options: options(), buffer: Promise.resolve(buffer) },
+      ],
+      [FilePlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two ReadableStream values on one stream', async () => {
+    const stream = createStream<string>();
+    stream.next('a');
+    stream.return(undefined);
+    const errors = await deliverShared(
+      ReadableStreamPlugin.tag,
+      [{ stream }, { stream }],
+      [ReadableStreamPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two Response values on one payload', async () => {
+    const payload = ResponsePlugin.binary.serialize(new Response(null), {} as never);
+    const errors = await deliverShared(
+      ResponsePlugin.tag,
+      [payload, payload],
+      [ResponsePlugin, HeadersPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two Request values on one payload', async () => {
+    const payload = RequestPlugin.binary.serialize(new Request('https://example.com'), {} as never);
+    const errors = await deliverShared(
+      RequestPlugin.tag,
+      [payload, payload],
+      [RequestPlugin, HeadersPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('still decodes separate Blob values', async () => {
+    const errors = await deliverShared(
+      BlobPlugin.tag,
+      [
+        BlobPlugin.binary.serialize(new Blob(['a']), {} as never),
+        BlobPlugin.binary.serialize(new Blob(['b']), {} as never),
+      ],
+      [BlobPlugin],
+    );
+    expect(errors).toEqual([]);
   });
 });

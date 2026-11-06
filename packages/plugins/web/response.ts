@@ -86,7 +86,8 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode, Resp
     },
     validate: { body: isBody, options: isResponseOptions },
     deserialize(data) {
-      return new Response(data.body, copyResponseOptions(data.options));
+      // A body shared between Response values would be read by each of them.
+      return new Response(claim(claim(data).body), copyResponseOptions(data.options));
     },
   },
 });

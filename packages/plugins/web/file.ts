@@ -95,13 +95,16 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>(
       buffer: /* @__PURE__ */ v.instanceOf(Promise),
     },
     async deserialize(data) {
+      // The serializer sends a fresh payload, promise and buffer for every
+      // File. Input that shares one between File values would make each of
+      // them copy the same bytes, so each is claimed once.
       // `buffer` is checked to be a Promise, but what it resolves to is only
       // known here.
-      const buffer: unknown = await data.buffer;
+      const buffer: unknown = await claim(claim(data).buffer);
       if (!(buffer instanceof ArrayBuffer)) {
         throw new SerovalPluginValidationError('seroval-plugins/web/File', 'buffer');
       }
-      return new File([buffer], data.name, copyFileOptions(data.options));
+      return new File([claim(buffer)], data.name, copyFileOptions(data.options));
     },
   },
 });

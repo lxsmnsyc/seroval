@@ -269,6 +269,32 @@ function flush(ctx: SerializerContext): void | PromiseLike<void> {
   }
 }
 
+// A write failed: the transport is gone, so nothing more can be delivered.
+// The error is reported even after `onDone`, since the last chunk can fail
+// after the value has settled.
+function failWrite(ctx: SerializerContext, error: unknown): void {
+  ctx.onError(error);
+  stopSerialize(ctx);
+}
+
+/**
+ * Flushes, and handles a failed write. `onSerialize` may throw, or return a
+ * promise that rejects when the peer disconnects. Left alone, that rejection
+ * is unhandled and stops the process by default.
+ */
+function send(ctx: SerializerContext): void {
+  let result: void | PromiseLike<void>;
+  try {
+    result = flush(ctx);
+  } catch (error) {
+    failWrite(ctx, error);
+    return;
+  }
+  if (result && typeof result.then === 'function') {
+    result.then(undefined, failWrite.bind(null, ctx));
+  }
+}
+
 function serializePending(ctx: SerializerContext, source: number, amount: number): void {
   writeUintNode(ctx, SerovalBinaryType.Pending, source, amount);
 }
@@ -362,7 +388,7 @@ function serializeStreamNext(ctx: SerializerContext, depth: number, id: number, 
     if (serialized) {
       writeRefNode(ctx, SerovalBinaryType.StreamNext, id, serialized);
     }
-    flush(ctx);
+    send(ctx);
   }
 }
 
@@ -372,7 +398,7 @@ function serializeStreamThrow(ctx: SerializerContext, depth: number, id: number,
     if (serialized) {
       writeRefNode(ctx, SerovalBinaryType.StreamThrow, id, serialized);
     }
-    flush(ctx);
+    send(ctx);
   }
   popPendingState(ctx);
 }
@@ -383,7 +409,7 @@ function serializeStreamReturn(ctx: SerializerContext, depth: number, id: number
     if (serialized) {
       writeRefNode(ctx, SerovalBinaryType.StreamReturn, id, serialized);
     }
-    flush(ctx);
+    send(ctx);
   }
   popPendingState(ctx);
 }
@@ -434,11 +460,15 @@ function serializeLiveEvent(
     return error;
   }
   writeRefNode(ctx, type, id, serialized);
-  const result = flush(ctx);
+  let result: void | PromiseLike<void>;
+  try {
+    result = flush(ctx);
+  } catch (error) {
+    failWrite(ctx, error);
+    return error;
+  }
   if (result && typeof result.then === 'function') {
-    result.then(accept, (error: unknown) => {
-      ctx.onError(error);
-    });
+    result.then(accept, failWrite.bind(null, ctx));
   } else {
     accept();
   }
@@ -684,7 +714,7 @@ function serializePromiseSuccess(
     if (serialized) {
       writeRefNode(ctx, SerovalBinaryType.PromiseSuccess, id, serialized);
     }
-    flush(ctx);
+    send(ctx);
   }
   popPendingState(ctx);
 }
@@ -700,7 +730,7 @@ function serializePromiseFailure(
     if (serialized) {
       writeRefNode(ctx, SerovalBinaryType.PromiseFailure, id, serialized);
     }
-    flush(ctx);
+    send(ctx);
   }
   popPendingState(ctx);
 }
@@ -1027,12 +1057,12 @@ export function startSerialize<T>(ctx: SerializerContext, value: T) {
     reserveBytes(writer, BYTE + UINT);
     writeByte(writer, SerovalBinaryType.Root);
     writeUint(writer, serialized);
-    flush(ctx);
+    send(ctx);
 
     popPendingState(ctx);
   } else {
     // Nodes written before the failure are still sent.
-    flush(ctx);
+    send(ctx);
     // The root failed and was reported through `onError`. Sources that already
     // started would otherwise keep running with no root to attach to.
     stopSerialize(ctx);

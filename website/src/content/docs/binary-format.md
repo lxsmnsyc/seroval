@@ -47,12 +47,13 @@ The decoder treats its input as untrusted. It rejects a payload that breaks any 
 - Every enumerated byte, such as a constant, a symbol, an error constructor, a typed array constructor or a `Temporal` type, has a known value.
 - A typed array or `DataView` fits inside its `ArrayBuffer`. A typed array has at most 1,000,000 elements, and a `DataView` at most 1,000,000 bytes.
 - An `ArrayBuffer` has at most `maxArrayBufferLength` bytes, 1,000,000 by default.
-- An array has a length of at most `maxArrayLength`, 1,000,000 by default.
+- An array has a length of at most `maxArrayLength`, 1,000,000 by default, and an `ArrayAssign` index is below the array's length. The holes of all the arrays in a payload together number at most `maxArrayLength`.
 - A UTF-16 `String` has an even number of bytes.
-- A `RegExp` pattern has at most 20,000 characters.
+- A `RegExp` pattern has at most 20,000 characters. The `RegExp` nodes of a payload hold at most 32 Unicode property escapes (`\p{...}` or `\P{...}`) in `u` or `v` mode, because the engine builds each one eagerly.
 - A `RegExp` or `Temporal` node is only accepted when its feature is enabled. A `Temporal` node also needs the `Temporal` global.
 - A container gets no assignments after its `Pending` node, and only one `Pending` node.
-- A `Sequence` gets exactly as many `SequencePush` nodes as its `Pending` amount, and its indices are in range.
+- A container gets exactly as many assignments as its `Pending` amount. A `Sequence`'s indices are also in range.
+- A payload has one `Root` node, after the value it points to.
 - A `Promise` gets at most one `PromiseSuccess` or `PromiseFailure`, and does not settle with a `Promise` or any other value that has a `then` method.
 - A `Stream` gets no events after its `StreamThrow` or `StreamReturn`.
 - When the input ends, no node is cut off, the `Root` has been read, every container has its `Pending` node and all its assignments, and every `Promise` and `Stream` has settled.
@@ -198,7 +199,7 @@ The serializer only sends four symbol keys: `Symbol.iterator`, `Symbol.asyncIter
 <byte:array-assign=8> <ref:target=array> <uint:index> <ref:value>
 ```
 
-Sets the element at `index` of `target` to `value`. It follows an `Array` node, before the array's `Pending` node.
+Sets the element at `index` of `target` to `value`. It follows an `Array` node, before the array's `Pending` node. `index` is below the array's `length`.
 
 ### ObjectFlag
 
@@ -494,7 +495,7 @@ A `Symbol.asyncIterator` method that yields the values of `stream`.
 <byte:pending=38> <ref:target> <uint:amount>
 ```
 
-Closes a container: an `Object`, `NullConstructor`, `Array`, `Map`, `Set`, `Sequence`, `Error` or `AggregateError`. `amount` is the number of assignments the container received, and the decoder uses it to know when the container is complete.
+Closes a container: an `Object`, `NullConstructor`, `Array`, `Map`, `Set`, `Sequence`, `Error` or `AggregateError`. `amount` is the number of assignments the container received, and the decoder uses it to know when the container is complete. An `amount` that differs from the assignments received is malformed.
 
 The serializer sends it after the container's assignments. Every container gets exactly one `Pending` node, even with no assignments. An assignment after the `Pending` node, or a second `Pending` node, is malformed.
 

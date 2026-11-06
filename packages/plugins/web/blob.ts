@@ -49,13 +49,16 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode, BlobBinaryData>(
     },
     validate: { type: v.string, bytes: /* @__PURE__ */ v.instanceOf(Promise) },
     async deserialize(data) {
+      // The serializer sends a fresh payload, promise and buffer for every
+      // Blob. Input that shares one between Blob values would make each of
+      // them copy the same bytes, so each is claimed once.
       // `bytes` is checked to be a Promise, but what it resolves to is only
       // known here.
-      const bytes: unknown = await data.bytes;
+      const bytes: unknown = await claim(claim(data).bytes);
       if (!(bytes instanceof ArrayBuffer)) {
         throw new SerovalPluginValidationError('seroval-plugins/web/Blob', 'bytes');
       }
-      return new Blob([bytes], {
+      return new Blob([claim(bytes)], {
         type: data.type,
       });
     },

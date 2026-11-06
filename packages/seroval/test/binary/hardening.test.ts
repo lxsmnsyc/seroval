@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as binary from '../../src/binary';
-import { type Stream, createStream } from '../../src';
+import { SerovalMalformedBinaryTypeError, type Stream, createStream } from '../../src';
 import { roundtrip } from './utils';
 
 /**
@@ -433,5 +433,228 @@ describe('binary maxArrayLength', () => {
         maxArrayLength: Number.NaN,
       }),
     ).rejects.toThrow(RangeError);
+  });
+});
+
+describe('binary amplification limits', () => {
+  const bigintNode = (id: number, sign: number, string: number) =>
+    node(5, u32(id), sign, u32(string));
+
+  it('rejects an ArrayAssign index past the declared length', async () => {
+    // One 13-byte node would otherwise make the array 4,294,967,295 long.
+    const { settled } = feed([
+      preamble(),
+      arrayNode(0, 1),
+      numberNode(1, 5),
+      arrayAssign(0, 0xfffffffe, 1),
+      pending(0, 1),
+      root(0),
+      undefined as unknown as Uint8Array,
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('charges array holes against maxArrayLength across the payload', async () => {
+    // Each Array node may declare up to the limit, but the holes of all of
+    // them together may not exceed it.
+    const errors: unknown[] = [];
+    const chunks = [
+      preamble(),
+      arrayNode(0, 2),
+      arrayNode(1, 6),
+      arrayNode(2, 6),
+      arrayAssign(0, 0, 1),
+      arrayAssign(0, 1, 2),
+      pending(1, 0),
+      pending(2, 0),
+      pending(0, 2),
+      root(0),
+    ];
+    let index = 0;
+    const result = binary.deserialize({
+      read: () => Promise.resolve(chunks[index++]),
+      maxArrayLength: 10,
+      onError(error) {
+        errors.push(error);
+      },
+    });
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('keeps sparse arrays and their length', async () => {
+    const source = [1, , , 4, , ,];
+    const { value } = await roundtrip<unknown[]>(source);
+    expect(value).toHaveLength(6);
+    expect(1 in value).toBe(false);
+    expect(value).toEqual(source);
+  });
+
+  it('rejects a Pending amount that does not match the assignments of an object', async () => {
+    // A smaller amount would hand the object over before its assignments ran.
+    const { settled, errors } = feed([
+      preamble(),
+      objectNode(0),
+      stringNode(1, 'a'),
+      numberNode(2, 1),
+      objectAssign(0, 1, 2),
+      pending(0, 0),
+      root(0),
+      undefined as unknown as Uint8Array,
+    ]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('rejects a second Root node', async () => {
+    const { settled, errors } = feed([
+      preamble(),
+      numberNode(0, 1),
+      root(0),
+      root(0),
+      undefined as unknown as Uint8Array,
+    ]);
+    // The first Root already handed the value over.
+    await settled;
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('rejects a Root node before its value', async () => {
+    const { settled, errors } = feed([
+      preamble(),
+      root(0),
+      numberNode(0, 1),
+      undefined as unknown as Uint8Array,
+    ]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('limits Unicode property escapes across the RegExp nodes of a payload', async () => {
+    function encode(value: unknown): Promise<Uint8Array[]> {
+      const chunks: Uint8Array[] = [];
+      return new Promise((resolve, reject) => {
+        binary.serialize(value, {
+          onSerialize(bytes) {
+            chunks.push(bytes);
+          },
+          onDone() {
+            resolve(chunks);
+          },
+          onError: reject,
+        });
+      });
+    }
+    // Distinct sources, so each RegExp is its own node.
+    const create = (count: number) =>
+      Array.from({ length: count }, (_, i) => new RegExp('\\p{L}' + i, 'u'));
+
+    const accepted = await feed(await encode(create(32))).settled;
+    expect(accepted.status).toBe('resolved');
+
+    const rejected = feed(await encode(create(33)));
+    expect((await rejected.settled).status).toBe('rejected');
+    expect(rejected.errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('decodes a string shared by many BigInt nodes once', async () => {
+    // Every BigInt node points at the same 100,000-character string. Decoding
+    // it per node would take seconds.
+    const nodes = 2000;
+    const chunks: Uint8Array[] = [preamble(), stringNode(0, 'a'.repeat(100_000))];
+    chunks.push(arrayNode(1, nodes));
+    for (let i = 0; i < nodes; i++) {
+      chunks.push(bigintNode(2 + i, i % 2, 0));
+      chunks.push(arrayAssign(1, i, 2 + i));
+    }
+    chunks.push(pending(1, nodes), root(1));
+    const start = performance.now();
+    const { settled } = feed(chunks);
+    const result = await settled;
+    expect(performance.now() - start).toBeLessThan(1000);
+    expect(result.status).toBe('resolved');
+    const values = (result as { value: bigint[] }).value;
+    expect(values[1]).toBe(-values[0]);
+    expect(values[0] > 0n).toBe(true);
+  });
+
+  it('walks a subtree shared by many settled promises once', async () => {
+    // An object that never gets its Pending node keeps the decoder from
+    // skipping subtree waits, and every promise settles with the same large
+    // array.
+    const children = 50_000;
+    const promises = 5000;
+    const chunks: Uint8Array[] = [preamble(), objectNode(0), numberNode(1, 1)];
+    chunks.push(arrayNode(2, children));
+    for (let i = 0; i < children; i++) {
+      chunks.push(arrayAssign(2, i, 1));
+    }
+    chunks.push(pending(2, children));
+    for (let i = 0; i < promises; i++) {
+      chunks.push(promiseNode(3 + i), promiseSuccess(3 + i, 2));
+    }
+    chunks.push(root(2));
+    const start = performance.now();
+    const { settled } = feed(chunks);
+    await settled;
+    // About 40 ms when each walk is shared, about 750 ms when every promise
+    // walks the array again.
+    expect(performance.now() - start).toBeLessThan(400);
+  });
+});
+
+describe('binary onSerialize failures', () => {
+  function serializeWith(value: unknown, onSerialize: (calls: number) => unknown) {
+    const errors: unknown[] = [];
+    let calls = 0;
+    const done = new Promise<void>((resolve) => {
+      binary.serialize(value, {
+        onSerialize() {
+          calls++;
+          return onSerialize(calls) as void;
+        },
+        onDone() {
+          resolve();
+        },
+        onError(error) {
+          errors.push(error);
+          resolve();
+        },
+      });
+    });
+    return { done, errors };
+  }
+
+  it('reports a rejected write of a settled Promise through onError', async () => {
+    const { done, errors } = serializeWith(Promise.resolve(1), (calls) =>
+      calls === 2 ? Promise.reject(new Error('peer disconnected')) : undefined,
+    );
+    await done;
+    // The rejection arrives after the value settled.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(errors).toHaveLength(1);
+    expect((errors[0] as Error).message).toBe('peer disconnected');
+  });
+
+  it('reports a rejected write of the root through onError', async () => {
+    const { done, errors } = serializeWith({ a: 1 }, () =>
+      Promise.reject(new Error('peer disconnected')),
+    );
+    await done;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect((errors[0] as Error).message).toBe('peer disconnected');
+  });
+
+  it('reports a throwing write through onError and stops', async () => {
+    const stream = createStream<number>();
+    const { done, errors } = serializeWith(stream, (calls) => {
+      if (calls === 2) {
+        throw new Error('write failed');
+      }
+    });
+    stream.next(1);
+    stream.return(undefined);
+    await done;
+    expect((errors[0] as Error).message).toBe('write failed');
   });
 });
