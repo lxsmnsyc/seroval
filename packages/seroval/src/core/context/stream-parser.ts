@@ -17,7 +17,12 @@ import { SpecialReference } from '../special-reference';
 import type { Stream, StreamListener } from '../stream';
 import { SYM_ASYNC_ITERATOR } from '../symbols';
 import type { SerovalNode, SerovalPluginNode } from '../types';
-import { createBaseParserContext, createIndexForValue, parseSpecialReference } from './parser';
+import {
+  createBaseParserContext,
+  createIndexForValue,
+  parseSpecialReference,
+  rollbackRefs,
+} from './parser';
 import {
   type OutputRecord,
   ParserMode,
@@ -96,7 +101,7 @@ function createStreamParsePluginContext(
     },
     onParse(node) {
       if (state.alive) {
-        state.queue.push({ node, initial: false, accept: NIL });
+        state.queue.push({ node, initial: false, accept: NIL, refs: ctx.base.refs.size });
         drainOutput(ctx);
       }
     },
@@ -302,9 +307,22 @@ function watchPromise(
   current: Promise<unknown>,
 ): void {
   pushPendingState(ctx);
+  // The value supplies `then`, so it may call back more than once. Only the
+  // first call counts; a second one would pop the pending slot again.
+  let settled = false;
   current.then(
-    handlePromise.bind(ctx, SerovalNodeType.PromiseSuccess, resolver, depth),
-    handlePromise.bind(ctx, SerovalNodeType.PromiseFailure, resolver, depth),
+    (data) => {
+      if (!settled) {
+        settled = true;
+        handlePromise.call(ctx, SerovalNodeType.PromiseSuccess, resolver, depth, data);
+      }
+    },
+    (data: unknown) => {
+      if (!settled) {
+        settled = true;
+        handlePromise.call(ctx, SerovalNodeType.PromiseFailure, resolver, depth, data);
+      }
+    },
   );
 }
 
@@ -382,6 +400,7 @@ function createStreamParserState(options: StreamParserContextOptions): StreamPar
     pending: 0,
     parsing: 0,
     queue: [],
+    head: 0,
     writing: false,
     inFlight: NIL,
     reason: NIL,
@@ -436,7 +455,7 @@ function parseEvent(
   accept: (() => void) | undefined,
 ): unknown {
   const state = ctx.state;
-  const record: OutputRecord = { node: NIL, initial: false, accept };
+  const record: OutputRecord = { node: NIL, initial: false, accept, refs: ctx.base.refs.size };
   let failure: { value: unknown } | undefined;
   state.queue.push(record);
   state.parsing++;
@@ -458,6 +477,21 @@ function parseEvent(
   return failure?.value;
 }
 
+function takeRecord(state: StreamParserState): OutputRecord {
+  const record = state.queue[state.head]!;
+  state.queue[state.head++] = NIL;
+  // Reset once drained. A queue that never drains drops its taken slots
+  // after they make up half of it.
+  if (state.head === state.queue.length) {
+    state.queue.length = 0;
+    state.head = 0;
+  } else if (state.head > 1024 && state.head * 2 > state.queue.length) {
+    state.queue.splice(0, state.head);
+    state.head = 0;
+  }
+  return record;
+}
+
 /**
  * Emits queued records one at a time. A callback that returns a promise
  * pauses emission until it settles; the source event behind the record is
@@ -468,8 +502,8 @@ function drainOutput(ctx: StreamParserContext): void {
   if (state.writing || state.parsing > 0) {
     return;
   }
-  while (state.alive && state.queue.length > 0) {
-    const record = state.queue.shift()!;
+  while (state.alive && state.head < state.queue.length) {
+    const record = takeRecord(state);
     if (!record.node) {
       continue;
     }
@@ -551,7 +585,7 @@ function checkStreamParse(ctx: StreamParserContext): void {
     state.alive &&
     state.parsing === 0 &&
     state.pending <= 0 &&
-    state.queue.length === 0 &&
+    state.head === state.queue.length &&
     !state.writing
   ) {
     stopStreamParse(ctx, 0);
@@ -562,6 +596,8 @@ export function startStreamParse(ctx: StreamParserContext, current: unknown): vo
   const state = ctx.state;
   let parsed: SerovalNode | undefined;
   let failure: { value: unknown } | undefined;
+  const refs = ctx.base.refs;
+  const size = refs.size;
   state.starting = true;
   try {
     state.parsing++;
@@ -576,13 +612,16 @@ export function startStreamParse(ctx: StreamParserContext, current: unknown): vo
       }
     }
     if (failure) {
+      // Nothing was emitted, so no id from this parse may stay.
+      rollbackRefs(refs, size);
       if (state.alive) {
         stopStreamParse(ctx, 1, failure.value);
       } else {
         throw failure.value;
       }
     } else if (parsed && state.alive) {
-      state.queue.unshift({ node: parsed, initial: true, accept: NIL });
+      // Events replayed during the parse are already queued. The root goes first.
+      state.queue.unshift({ node: parsed, initial: true, accept: NIL, refs: size });
       drainOutput(ctx);
     }
   } finally {
@@ -596,9 +635,12 @@ function runCleanups(state: StreamParserState): void {
   let failure: { value: unknown } | undefined;
   state.cleanups = [];
   for (const record of state.queue) {
-    releaseRecord(record);
+    if (record) {
+      releaseRecord(record);
+    }
   }
   state.queue.length = 0;
+  state.head = 0;
   if (state.inFlight) {
     releaseRecord(state.inFlight);
   }
@@ -643,6 +685,12 @@ function stopStreamParse(ctx: StreamParserContext, mode: 0 | 1 | 2, reason?: unk
   const state = ctx.state;
   if (state.alive) {
     state.alive = false;
+    // Records that never reached the output callback leave ids behind in a
+    // caller-owned refs map. Later calls would point at them.
+    const unsent = state.queue[state.head];
+    if (mode !== 0 && unsent) {
+      rollbackRefs(ctx.base.refs, unsent.refs);
+    }
     const onError = state.onError;
     const onDone = state.onDone;
     if (mode === 1 && !onError && !(reason instanceof SerovalParserError)) {

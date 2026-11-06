@@ -1,4 +1,5 @@
 import {
+  assertArrayHoles,
   createArrayNode,
   createBigIntNode,
   createBoxedNode,
@@ -79,6 +80,7 @@ import {
   parseMapSentinel,
   parseSpecialReference,
   parseWellKnownSymbol,
+  rollbackRefs,
 } from './parser';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode | SerovalPromiseNode;
@@ -100,6 +102,24 @@ export interface AsyncParsePluginContext {
   parseStreamSource(current: AsyncIterable<unknown>): Promise<SerovalNode>;
 }
 
+function ignoreRejection(): void {
+  // The walk reports the rejection when it reaches the promise.
+}
+
+/**
+ * A promise gets its rejection handler only when the walk reaches it. While an
+ * earlier sibling is still pending, a later one that rejects would be an
+ * unhandled rejection, which ends a Node.js process by default. Mark the
+ * promises among the children as handled before walking them.
+ */
+function handleChildPromises(values: unknown[]): void {
+  for (const value of values) {
+    if (value instanceof Promise) {
+      Promise.prototype.then.call(value, NIL, ignoreRejection);
+    }
+  }
+}
+
 // Only objects and functions can produce a Promise; awaiting a plain node
 // would still cost a microtask turn per primitive.
 type MaybeAsyncNode = SerovalNode | Promise<SerovalNode>;
@@ -109,12 +129,23 @@ async function parseItems(
   depth: number,
   current: unknown[],
 ): Promise<(SerovalNode | 0)[]> {
+  assertArrayHoles(current);
   const len = current.length;
   const nodes = new Array<SerovalNode | 0>(len);
+  // Each element is read once, before any of them is walked.
+  const values = new Array<unknown>(len);
+  const present = new Array<boolean>(len);
+  for (let i = 0; i < len; i++) {
+    present[i] = i in current;
+    if (present[i]) {
+      values[i] = current[i];
+    }
+  }
+  handleChildPromises(values);
   for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
     // For consistency in holes
-    if (i in current) {
-      node = parseValueAsync(ctx, depth, current[i]);
+    if (present[i]) {
+      node = parseValueAsync(ctx, depth, values[i]);
       nodes[i] = node instanceof Promise ? await node : node;
     } else {
       nodes[i] = 0;
@@ -143,10 +174,15 @@ async function parseProperties(
   // every object, and the length is already known.
   const keyNodes = new Array<SerovalObjectRecordKey>(len);
   const valueNodes = new Array<SerovalNode>(len);
-  for (let i = 0, key: string, node: MaybeAsyncNode; i < len; i++) {
-    key = keys[i];
-    keyNodes[i] = serializeString(key);
-    node = parseValueAsync(ctx, depth, properties[key]);
+  // Each property is read once, before any of them is walked.
+  const values = new Array<unknown>(len);
+  for (let i = 0; i < len; i++) {
+    values[i] = properties[keys[i]];
+  }
+  handleChildPromises(values);
+  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
+    keyNodes[i] = serializeString(keys[i]);
+    node = parseValueAsync(ctx, depth, values[i]);
     valueNodes[i] = node instanceof Promise ? await node : node;
   }
   // Check special properties
@@ -246,16 +282,22 @@ async function parseMap(
   current: Map<unknown, unknown>,
 ): Promise<SerovalMapNode> {
   const sentinel = parseMapSentinel(ctx.base);
-  const keyNodes = new Array<SerovalNode>(current.size);
-  const valueNodes = new Array<SerovalNode>(current.size);
-  let node: MaybeAsyncNode;
-  let i = 0;
-  for (const [key, value] of current.entries()) {
-    node = parseValueAsync(ctx, depth, key);
+  const entries = [...current.entries()];
+  const keyNodes = new Array<SerovalNode>(entries.length);
+  const valueNodes = new Array<SerovalNode>(entries.length);
+  const keys = new Array<unknown>(entries.length);
+  const values = new Array<unknown>(entries.length);
+  for (let i = 0; i < entries.length; i++) {
+    keys[i] = entries[i][0];
+    values[i] = entries[i][1];
+  }
+  handleChildPromises(keys);
+  handleChildPromises(values);
+  for (let i = 0, node: MaybeAsyncNode; i < entries.length; i++) {
+    node = parseValueAsync(ctx, depth, keys[i]);
     keyNodes[i] = node instanceof Promise ? await node : node;
-    node = parseValueAsync(ctx, depth, value);
+    node = parseValueAsync(ctx, depth, values[i]);
     valueNodes[i] = node instanceof Promise ? await node : node;
-    i++;
   }
   return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
@@ -266,12 +308,12 @@ async function parseSet(
   id: number,
   current: Set<unknown>,
 ): Promise<SerovalSetNode> {
-  const items = new Array<SerovalNode>(current.size);
-  let node: MaybeAsyncNode;
-  let i = 0;
-  for (const item of current.keys()) {
-    node = parseValueAsync(ctx, depth, item);
-    items[i++] = node instanceof Promise ? await node : node;
+  const values = [...current.keys()];
+  const items = new Array<SerovalNode>(values.length);
+  handleChildPromises(values);
+  for (let i = 0, node: MaybeAsyncNode; i < values.length; i++) {
+    node = parseValueAsync(ctx, depth, values[i]);
+    items[i] = node instanceof Promise ? await node : node;
   }
   return createSetNode(id, items);
 }
@@ -638,9 +680,12 @@ export async function parseTopAsync(
   ctx: AsyncParserContext,
   current: unknown,
 ): Promise<SerovalNode> {
+  const refs = ctx.base.refs;
+  const size = refs.size;
   try {
     return await parseAsync(ctx, 0, current);
   } catch (error) {
+    rollbackRefs(refs, size);
     throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
   }
 }
