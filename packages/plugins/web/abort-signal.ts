@@ -23,14 +23,14 @@ function resolveAbortSignal(this: AbortSignal, resolve: (value: unknown) => void
 // oxlint-disable-next-line typescript/promise-function-async -- async would change the timing.
 function watchAbortSignal(
   signal: AbortSignal,
-  addCleanup: (cleanup: () => void) => void,
+  ctx: { addCleanup(cleanup: () => void): void },
 ): Promise<unknown> {
   return new Promise((resolve) => {
     const listener = (): void => {
       resolve(signal.reason);
     };
     signal.addEventListener('abort', listener, { once: true });
-    addCleanup(() => {
+    ctx.addCleanup(() => {
       signal.removeEventListener('abort', listener);
     });
   });
@@ -172,7 +172,7 @@ const AbortSignalPlugin = /* @__PURE__ */ createPlugin<
       // The listener is removed when serialization ends, so a long-lived
       // signal does not keep every serialization that sent it alive.
       return {
-        controller: watchAbortSignal(value, ctx.addCleanup),
+        controller: watchAbortSignal(value, ctx),
       };
     },
     validate: { controller: /* @__PURE__ */ v.optional(/* @__PURE__ */ v.instanceOf(Promise)) },

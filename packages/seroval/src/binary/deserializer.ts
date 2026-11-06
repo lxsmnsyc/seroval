@@ -34,12 +34,7 @@ import {
   SYM_TO_STRING_TAG,
 } from '../core/symbols';
 import type { Validator } from '../core/validator';
-import {
-  STRING_LENGTH_MASK,
-  decodeBigint,
-  decodeString,
-  decodeStringUTF16,
-} from './encoder';
+import { STRING_LENGTH_MASK, decodeBigint, decodeString, decodeStringUTF16 } from './encoder';
 import { SerovalBinaryType, SerovalEndianness } from './nodes';
 
 const MAX_REGEXP_SOURCE_LENGTH = 20_000;
@@ -481,20 +476,21 @@ function trackChild(ctx: DeserializerContext, parent: number, child: number): vo
  * the same value, say), so a finished walk records its ids in `complete` and a
  * wait on an id that is already being walked joins that walk.
  */
-function awaitSubtree(ctx: DeserializerContext, id: number, owner?: number): Promise<void> {
+async function awaitSubtree(ctx: DeserializerContext, id: number, owner?: number): Promise<void> {
   if (ctx.refs.unsettled === 0 || ctx.refs.complete.has(id)) {
-    return Promise.resolve();
+    return;
   }
   // A plugin's wait steps over its own value, so it cannot share a walk.
   if (owner != null) {
-    return walkSubtree(ctx, id, owner);
+    await walkSubtree(ctx, id, owner);
+    return;
   }
   let wait = ctx.subtreeWaits.get(id);
   if (!wait) {
     wait = walkSubtree(ctx, id, undefined);
     ctx.subtreeWaits.set(id, wait);
   }
-  return wait;
+  await wait;
 }
 
 async function walkSubtree(

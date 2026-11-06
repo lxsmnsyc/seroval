@@ -43,10 +43,7 @@ const isRequestOptions = /* @__PURE__ */ v.object({
   duplex: /* @__PURE__ */ v.optional(v.string),
 });
 
-function createStreamRequestOptions(
-  current: Request,
-  body: ReadableStream | null,
-): RequestOptions {
+function createStreamRequestOptions(current: Request, body: ReadableStream | null): RequestOptions {
   const options: RequestOptions = createRequestOptions(current, body);
   if (body) {
     // A stream body needs `duplex: 'half'` where stream bodies are supported

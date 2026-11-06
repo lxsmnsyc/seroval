@@ -497,12 +497,12 @@ async function deliverShared(
     },
   };
   // The genuine plugins serialize values inside the payload, such as Headers.
-  const handle = startSerialize([first, second], [plugin, ...plugins]);
+  const handle = startSerialize([first, second], [plugin].concat(plugins));
   handle.done.catch(() => undefined);
   const errors: unknown[] = [];
   await binary
     .deserialize({
-      read: () => handle.transport.read(),
+      read: async () => await handle.transport.read(),
       plugins,
       onError(error) {
         errors.push(error);
@@ -516,13 +516,21 @@ async function deliverShared(
 
 const SHARED = 'Expected a value used by one plugin value only.';
 
+// What `binary.serialize` of the web plugins below receives besides the value.
+const SERIALIZE_CONTEXT: Parameters<typeof BlobPlugin.binary.serialize>[1] = {
+  addCleanup() {},
+  streamSource() {
+    throw new Error('Not used by these plugins.');
+  },
+};
+
 function hasSharedError(errors: unknown[]): boolean {
   return errors.some((error) => error instanceof Error && error.message === SHARED);
 }
 
 describe('plugin binary shared payloads', () => {
   it('refuses two Blob values on one payload', async () => {
-    const payload = BlobPlugin.binary.serialize(new Blob(['abc']), {} as never);
+    const payload = BlobPlugin.binary.serialize(new Blob(['abc']), SERIALIZE_CONTEXT);
     const errors = await deliverShared(BlobPlugin.tag, [payload, payload], [BlobPlugin]);
     expect(hasSharedError(errors)).toBe(true);
   });
@@ -542,7 +550,7 @@ describe('plugin binary shared payloads', () => {
 
   it('refuses two File values on one buffer', async () => {
     const buffer = new ArrayBuffer(4);
-    const options = () => ({ type: '', lastModified: 0 });
+    const options = (): FilePropertyBag => ({ type: '', lastModified: 0 });
     const errors = await deliverShared(
       FilePlugin.tag,
       [
@@ -567,7 +575,7 @@ describe('plugin binary shared payloads', () => {
   });
 
   it('refuses two Response values on one payload', async () => {
-    const payload = ResponsePlugin.binary.serialize(new Response(null), {} as never);
+    const payload = ResponsePlugin.binary.serialize(new Response(null), SERIALIZE_CONTEXT);
     const errors = await deliverShared(
       ResponsePlugin.tag,
       [payload, payload],
@@ -577,7 +585,10 @@ describe('plugin binary shared payloads', () => {
   });
 
   it('refuses two Request values on one payload', async () => {
-    const payload = RequestPlugin.binary.serialize(new Request('https://example.com'), {} as never);
+    const payload = RequestPlugin.binary.serialize(
+      new Request('https://example.com'),
+      SERIALIZE_CONTEXT,
+    );
     const errors = await deliverShared(
       RequestPlugin.tag,
       [payload, payload],
@@ -590,8 +601,8 @@ describe('plugin binary shared payloads', () => {
     const errors = await deliverShared(
       BlobPlugin.tag,
       [
-        BlobPlugin.binary.serialize(new Blob(['a']), {} as never),
-        BlobPlugin.binary.serialize(new Blob(['b']), {} as never),
+        BlobPlugin.binary.serialize(new Blob(['a']), SERIALIZE_CONTEXT),
+        BlobPlugin.binary.serialize(new Blob(['b']), SERIALIZE_CONTEXT),
       ],
       [BlobPlugin],
     );
@@ -612,17 +623,22 @@ describe('plugin binary serializer cleanup', () => {
   it('handles a failed Blob read when serialization stops at the depth limit', async () => {
     // The read promise exists before the payload is serialized. If the depth
     // limit stops serialization first, its rejection must still be handled.
-    class FailingBlob extends Blob {
-      override arrayBuffer(): Promise<ArrayBuffer> {
-        return Promise.reject(new Error('read failed'));
-      }
+    function createFailingBlob(): Blob {
+      const blob = new Blob(['x']);
+      Object.defineProperty(blob, 'arrayBuffer', {
+        value: async (): Promise<ArrayBuffer> => {
+          await Promise.resolve();
+          throw new Error('read failed');
+        },
+      });
+      return blob;
     }
     // The limit is tried at several depths, so one of them lands after the
     // plugin has started the read and before its payload is written.
     for (let depthLimit = 1; depthLimit <= 4; depthLimit++) {
       await new Promise<void>((resolve) => {
         binary.serialize(
-          { a: { b: new FailingBlob(['x']) } },
+          { a: { b: createFailingBlob() } },
           {
             refs: new Map(),
             plugins: [BlobPlugin],
@@ -639,6 +655,8 @@ describe('plugin binary serializer cleanup', () => {
       });
     }
     // Give an unhandled rejection the chance to surface.
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 10);
+    });
   });
 });
