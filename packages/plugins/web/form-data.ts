@@ -1,16 +1,15 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
 import FilePlugin from './file';
-import { expectEntries } from './validate';
+import { copyEntries, entries } from './validate';
 
 type FormDataInit = [key: string, value: FormDataEntryValue][];
 
-function expectFormDataEntryValue(value: unknown): FormDataEntryValue {
-  if (typeof value === 'string' || value instanceof Blob) {
-    return value as FormDataEntryValue;
-  }
-  throw new Error('Expected a string or a Blob.');
+function isFormDataEntryValue(value: unknown): value is FormDataEntryValue {
+  return typeof value === 'string' || value instanceof Blob;
 }
+
+const isFormDataInit = /* @__PURE__ */ entries(isFormDataEntryValue);
 
 function convertFormData(instance: FormData): FormDataInit {
   const items: FormDataInit = [];
@@ -36,7 +35,11 @@ const FORM_DATA_FACTORY_CONSTRUCTOR = (
   return f;
 };
 
-const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<string, never>>({
+const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  Record<string, never>,
+  Record<string, never>
+>({
   tag: 'seroval-plugins/web/FormDataFactory',
   test(value) {
     return value === FORM_DATA_FACTORY;
@@ -58,6 +61,14 @@ const FormDataFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<string
   deserialize() {
     return FORM_DATA_FACTORY;
   },
+  binary: {
+    serialize() {
+      return FORM_DATA_FACTORY;
+    },
+    deserialize() {
+      return FORM_DATA_FACTORY;
+    },
+  },
 });
 
 type FormDataNode = {
@@ -65,7 +76,11 @@ type FormDataNode = {
   entries: SerovalNode;
 };
 
-const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
+type FormDataBinaryData = {
+  entries: FormDataInit;
+};
+
+const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode, FormDataBinaryData>({
   tag: 'seroval-plugins/web/FormData',
   extends: [FilePlugin, FormDataFactoryPlugin],
   skipPlainObjects: true,
@@ -98,10 +113,20 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
   serialize(node, ctx) {
     return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.entries) + ')';
   },
+  validate: { entries: isFormDataInit },
   deserialize(node, ctx) {
-    return FORM_DATA_FACTORY_CONSTRUCTOR(
-      expectEntries(ctx.deserialize(node.entries), expectFormDataEntryValue),
-    );
+    return FORM_DATA_FACTORY_CONSTRUCTOR(copyEntries(ctx.deserialize<FormDataInit>(node.entries)));
+  },
+  binary: {
+    serialize(value) {
+      return {
+        entries: convertFormData(value),
+      };
+    },
+    validate: { entries: isFormDataInit },
+    deserialize(data) {
+      return FORM_DATA_FACTORY_CONSTRUCTOR(copyEntries(data.entries));
+    },
   },
 });
 

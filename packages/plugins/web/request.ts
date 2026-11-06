@@ -1,15 +1,9 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 import HeadersPlugin from './headers';
 import ReadableStreamPlugin from './readable-stream';
-import {
-  expectBody,
-  expectHeaders,
-  expectObject,
-  expectOptionalBoolean,
-  expectOptionalString,
-  expectString,
-} from './validate';
+import { claim, isBody, isOptionalHeaders } from './validate';
 
 function createRequestOptions(
   current: Request,
@@ -30,11 +24,27 @@ function createRequestOptions(
   };
 }
 
-function createStreamRequestOptions(
-  current: Request,
-  body: ReadableStream | null,
-): RequestInit & { duplex?: 'half' } {
-  const options: RequestInit & { duplex?: 'half' } = createRequestOptions(current, body);
+type RequestOptions = RequestInit & { duplex?: 'half' };
+
+// Each known field is checked, so the constructor never converts an input
+// object to a string.
+const isRequestOptions = /* @__PURE__ */ v.object({
+  body: isBody,
+  cache: /* @__PURE__ */ v.optional(v.string),
+  credentials: /* @__PURE__ */ v.optional(v.string),
+  headers: isOptionalHeaders,
+  integrity: /* @__PURE__ */ v.optional(v.string),
+  keepalive: /* @__PURE__ */ v.optional(v.boolean),
+  method: /* @__PURE__ */ v.optional(v.string),
+  mode: /* @__PURE__ */ v.optional(v.string),
+  redirect: /* @__PURE__ */ v.optional(v.string),
+  referrer: /* @__PURE__ */ v.optional(v.string),
+  referrerPolicy: /* @__PURE__ */ v.optional(v.string),
+  duplex: /* @__PURE__ */ v.optional(v.string),
+});
+
+function createStreamRequestOptions(current: Request, body: ReadableStream | null): RequestOptions {
+  const options: RequestOptions = createRequestOptions(current, body);
   if (body) {
     // A stream body needs `duplex: 'half'` where stream bodies are supported
     // (Chrome 105+, Node 19.1+). Runtimes without the option ignore the key.
@@ -78,23 +88,22 @@ function createRequestBodyStream(current: Request): ReadableStream {
   });
 }
 
-// Copies only the known fields, each checked, so the constructor never
-// converts an input object to a string.
-function expectRequestOptions(value: unknown): RequestInit & { duplex?: 'half' } {
-  const options = expectObject(value);
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyRequestOptions(options: RequestOptions): RequestOptions {
   return {
-    body: expectBody(options.body),
-    cache: expectOptionalString(options.cache) as RequestCache | undefined,
-    credentials: expectOptionalString(options.credentials) as RequestCredentials | undefined,
-    headers: expectHeaders(options.headers),
-    integrity: expectOptionalString(options.integrity),
-    keepalive: expectOptionalBoolean(options.keepalive),
-    method: expectOptionalString(options.method),
-    mode: expectOptionalString(options.mode) as RequestMode | undefined,
-    redirect: expectOptionalString(options.redirect) as RequestRedirect | undefined,
-    referrer: expectOptionalString(options.referrer),
-    referrerPolicy: expectOptionalString(options.referrerPolicy) as ReferrerPolicy | undefined,
-    duplex: expectOptionalString(options.duplex) as 'half' | undefined,
+    body: claim(options.body),
+    cache: options.cache,
+    credentials: options.credentials,
+    headers: claim(options.headers),
+    integrity: options.integrity,
+    keepalive: options.keepalive,
+    method: options.method,
+    mode: options.mode,
+    redirect: options.redirect,
+    referrer: options.referrer,
+    referrerPolicy: options.referrerPolicy,
+    duplex: options.duplex,
   };
 }
 
@@ -103,7 +112,12 @@ type RequestNode = {
   options: SerovalNode;
 };
 
-const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
+type RequestBinaryData = {
+  url: string;
+  options: RequestOptions;
+};
+
+const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, RequestBinaryData>({
   tag: 'seroval-plugins/web/Request',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   skipPlainObjects: true,
@@ -140,11 +154,34 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
   serialize(node, ctx) {
     return 'new Request(' + ctx.serialize(node.url) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { url: v.string, options: isRequestOptions },
   deserialize(node, ctx) {
     return new Request(
-      expectString(ctx.deserialize(node.url)),
-      expectRequestOptions(ctx.deserialize(node.options)),
+      ctx.deserialize<string>(node.url),
+      copyRequestOptions(ctx.deserialize<RequestOptions>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      const body = value.body && !value.bodyUsed ? value.clone().body : null;
+      const options = createRequestOptions(value, body);
+      if (body) {
+        // A streamed request body is only accepted in half duplex mode.
+        // Without this the receiving `new Request()` throws.
+        (options as { duplex?: string }).duplex = 'half';
+      }
+      return {
+        url: value.url,
+        options,
+      };
+    },
+    validate: { url: v.string, options: isRequestOptions },
+    deserialize(data) {
+      // A payload shared between Request values would hand each of them the
+      // same body. `copyRequestOptions` also claims the body and headers.
+      claim(data);
+      return new Request(data.url, copyRequestOptions(data.options));
+    },
   },
 });
 

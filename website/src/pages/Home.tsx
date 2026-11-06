@@ -9,6 +9,7 @@ import {
   serialize,
   toJSON,
 } from 'seroval';
+import * as binary from 'seroval/binary';
 import { CheckIcon, CopyIcon } from '../components/Icons';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
@@ -206,7 +207,7 @@ function createComparisonRows(): ComparisonRow[] {
 
 const COMPARISON_ROWS = createComparisonRows();
 
-/* 03: one value in three output formats */
+/* 03: one value in four output formats */
 
 interface ModeValue {
   id: string;
@@ -233,7 +234,57 @@ interface OutputMode {
   call: string;
   needsEval: string;
   render: () => string;
-  roundTrips: () => boolean;
+  // The payload size in bytes. Without it, the size is the length of the
+  // rendered text.
+  size?: () => number;
+  roundTrips: () => boolean | Promise<boolean>;
+}
+
+// A value with no async parts is written synchronously, so the chunks are all
+// there when `binary.serialize` returns.
+function serializeBinary(value: unknown): Uint8Array[] {
+  const chunks: Uint8Array[] = [];
+  binary.serialize(value, {
+    refs: new Map(),
+    onSerialize(chunk) {
+      chunks.push(chunk);
+    },
+    onDone() {},
+    onError(error) {
+      throw error;
+    },
+  });
+  return chunks;
+}
+
+// The bytes in hex, one space apart, so the output wraps at any width.
+function formatHex(chunks: Uint8Array[]): string {
+  let hex = '';
+  for (const chunk of chunks) {
+    for (const byte of chunk) {
+      hex += (hex ? ' ' : '') + byte.toString(16).padStart(2, '0');
+    }
+  }
+  return hex;
+}
+
+function measureBytes(chunks: Uint8Array[]): number {
+  let size = 0;
+  for (const chunk of chunks) {
+    size += chunk.length;
+  }
+  return size;
+}
+
+async function roundTripBinary(): Promise<boolean> {
+  const chunks = serializeBinary(createModeValue());
+  let index = 0;
+  const { value } = await binary.deserialize<ModeValue>({
+    // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+    read: () => Promise.resolve(chunks[index++]),
+    onError() {},
+  });
+  return value.self === value;
 }
 
 const MODES: OutputMode[] = [
@@ -280,6 +331,21 @@ const MODES: OutputMode[] = [
     roundTrips() {
       return true;
     },
+  },
+  {
+    id: 'binary',
+    letter: 'D',
+    title: 'Binary',
+    description: 'Uint8Array chunks. No eval, streams as it goes.',
+    call: '<b>binary.serialize</b>(value, { onSerialize })',
+    needsEval: 'No',
+    render() {
+      return formatHex(serializeBinary(createModeValue()));
+    },
+    size() {
+      return measureBytes(serializeBinary(createModeValue()));
+    },
+    roundTrips: roundTripBinary,
   },
 ];
 
@@ -554,7 +620,18 @@ function animate(root: HTMLElement): () => void {
 
   // 03: show a mode's output one character at a time.
   const modeButtons = root.querySelectorAll<HTMLButtonElement>('.mode-btn');
+  let selectedMode = '';
+  async function showRoundTrip(mode: OutputMode): Promise<void> {
+    // Binary decoding is async. A click on another mode while it runs wins.
+    const roundTrip = query(root, '.mode-rt');
+    roundTrip.textContent = '…';
+    const ok = await mode.roundTrips();
+    if (alive && selectedMode === mode.id) {
+      roundTrip.textContent = ok ? 'self === self ✓' : '—';
+    }
+  }
   function showMode(id: string): void {
+    selectedMode = id;
     for (const button of modeButtons) {
       button.setAttribute('aria-selected', String(button.dataset.mode === id));
     }
@@ -571,9 +648,9 @@ function animate(root: HTMLElement): () => void {
         i++;
       }
       query(root, '.mode-pre').innerHTML = html;
-      query(root, '.mode-size').textContent = `${output.length} B`;
+      query(root, '.mode-size').textContent = `${mode.size ? mode.size() : output.length} B`;
       query(root, '.mode-eval').textContent = mode.needsEval;
-      query(root, '.mode-rt').textContent = mode.roundTrips() ? 'self === self ✓' : '—';
+      showRoundTrip(mode).catch(() => undefined);
     }
   }
   function onModeClick(event: Event): void {
@@ -864,7 +941,7 @@ export default function Home(): JSX.Element {
           </div>
           <div>
             <h2>
-              Three output formats. <em>Same references.</em>
+              Four output formats. <em>Same references.</em>
             </h2>
             <p>Pick the format that fits the wire. Same graph, same references, every time.</p>
           </div>

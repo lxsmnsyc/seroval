@@ -1,13 +1,22 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectString } from './validate';
+import * as v from 'seroval/validator';
 
 type DOMExceptionNode = {
   name: SerovalNode;
   message: SerovalNode;
 };
 
-const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<DOMException, DOMExceptionNode>({
+type DOMExceptionBinaryData = {
+  name: string;
+  message: string;
+};
+
+const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<
+  DOMException,
+  DOMExceptionNode,
+  DOMExceptionBinaryData
+>({
   tag: 'seroval-plugins/web/DOMException',
   skipPlainObjects: true,
   test(value) {
@@ -39,11 +48,24 @@ const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<DOMException, DOMExcepti
   serialize(node, ctx) {
     return 'new DOMException(' + ctx.serialize(node.message) + ',' + ctx.serialize(node.name) + ')';
   },
+  validate: { name: v.string, message: v.string },
   deserialize(node, ctx) {
     return new DOMException(
-      expectString(ctx.deserialize(node.message)),
-      expectString(ctx.deserialize(node.name)),
+      ctx.deserialize<string>(node.message),
+      ctx.deserialize<string>(node.name),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        name: value.name,
+        message: value.message,
+      };
+    },
+    validate: { name: v.string, message: v.string },
+    deserialize(data) {
+      return new DOMException(data.message, data.name);
+    },
   },
 });
 

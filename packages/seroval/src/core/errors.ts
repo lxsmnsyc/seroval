@@ -1,5 +1,6 @@
 /// <reference types="tsdown" />
 
+import { NODE_TYPE_NAME, type SerovalBinaryType } from '../binary/nodes';
 import { serializeString } from './string';
 import type { SerovalNode } from './types';
 
@@ -45,11 +46,7 @@ export class SerovalError extends Error {
     type: string,
     public cause: unknown,
   ) {
-    super(
-      import.meta.env.PROD
-        ? getErrorMessageProd(type)
-        : getErrorMessageDev(type, cause),
-    );
+    super(import.meta.env.PROD ? getErrorMessageProd(type) : getErrorMessageDev(type, cause));
   }
 }
 
@@ -84,6 +81,12 @@ const enum SpecificErrorCodes {
   DepthLimit = 10,
   Aborted = 11,
   LiveStream = 12,
+  PluginValidation = 13,
+  MalformedBinarySource = 14,
+  MalformedBinaryType = 15,
+  UnknownBinaryType = 16,
+  UnexpectedBinaryType = 17,
+  MissingBinaryRef = 18,
 }
 
 function getSpecificErrorMessage(code: SpecificErrorCodes): string {
@@ -120,6 +123,19 @@ export class SerovalMissingPluginError extends Error {
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.MissingPlugin)
         : 'Missing plugin for tag "' + tag + '".',
+    );
+  }
+}
+
+export class SerovalPluginValidationError extends Error {
+  constructor(
+    public tag: string,
+    public field: string,
+  ) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.PluginValidation)
+        : 'Plugin "' + tag + '" received a value for "' + field + '" that failed its validator.',
     );
   }
 }
@@ -163,11 +179,11 @@ export class SerovalMissingReferenceForIdError extends Error {
 }
 
 export class SerovalUnknownTypedArrayError extends Error {
-  constructor(name: string) {
+  constructor() {
     super(
       import.meta.env.PROD
         ? getSpecificErrorMessage(SpecificErrorCodes.UnknownTypedArray)
-        : 'Unknown TypedArray "' + name + '"',
+        : 'Unknown TypedArray detected',
     );
   }
 }
@@ -212,11 +228,57 @@ export class SerovalAbortedError extends Error {
   }
 }
 
-export type LiveStreamErrorReason =
-  | 'consumed'
-  | 'pending'
-  | 'reading'
-  | 'closed';
+export class SerovalMalformedBinarySourceError extends Error {
+  constructor() {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinarySource)
+        : 'Malformed binary source detected. ',
+    );
+  }
+}
+
+export class SerovalMalformedBinaryTypeError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedBinaryType)
+        : `Malformed binary type detected. (type: ${NODE_TYPE_NAME[nodeType]}) `,
+    );
+  }
+}
+
+export class SerovalUnknownBinaryTypeError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.UnknownBinaryType)
+        : `Malformed binary detected. (type: ${nodeType}) `,
+    );
+  }
+}
+
+export class SerovalMissingBinaryRefError extends Error {
+  constructor(nodeType: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.MissingBinaryRef)
+        : `Missing binary ref detected. (type: ${nodeType}) `,
+    );
+  }
+}
+
+export class SerovalUnexpectedBinaryTypeError extends Error {
+  constructor(from: SerovalBinaryType, expected: SerovalBinaryType, received: SerovalBinaryType) {
+    super(
+      import.meta.env.PROD
+        ? getSpecificErrorMessage(SpecificErrorCodes.UnexpectedBinaryType)
+        : `Unexpected binary type from type ${NODE_TYPE_NAME[from]}. (expected: ${NODE_TYPE_NAME[expected]}, received: ${NODE_TYPE_NAME[received]}) `,
+    );
+  }
+}
+
+export type LiveStreamErrorReason = 'consumed' | 'pending' | 'reading' | 'closed';
 
 const LIVE_STREAM_ERROR_MESSAGES: Record<LiveStreamErrorReason, string> = {
   consumed: 'Live stream already has a consumer',

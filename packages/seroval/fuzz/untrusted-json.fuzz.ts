@@ -21,13 +21,10 @@ import {
   toJSON,
 } from '../src';
 import { FUZZ_PARAMETERS, valueArb } from './arbitraries';
+import { isExpectedError, snapshotPrototypes } from './safety';
 
-// `fromJSON` and `fromCrossJSON` must withstand untrusted input. They may
-// reject it with an Error, but must not overflow the stack, hang, or touch the
-// built-in prototypes. With `FUZZ_STRICT_ERRORS=1`, the Error must also be one
-// of these, which finds input the decoder does not validate yet.
-const STRICT_ERRORS = !!process.env.FUZZ_STRICT_ERRORS;
-
+// `fromJSON` and `fromCrossJSON` must withstand untrusted input. See
+// `safety.ts` for what that means.
 const EXPECTED_ERRORS = [
   SerovalError,
   SerovalAbortedError,
@@ -40,19 +37,6 @@ const EXPECTED_ERRORS = [
   SerovalUnknownTypedArrayError,
   SerovalUnsupportedNodeError,
   SerovalUnsupportedTypeError,
-];
-
-const PROTOTYPES: object[] = [
-  Object.prototype,
-  Array.prototype,
-  Function.prototype,
-  Map.prototype,
-  Set.prototype,
-  Promise.prototype,
-  Error.prototype,
-  RegExp.prototype,
-  Date.prototype,
-  String.prototype,
 ];
 
 const NODE_FIELDS = ['t', 'i', 's', 'c', 'm', 'p', 'e', 'a', 'f', 'b', 'o', 'l', 'k', 'v'];
@@ -137,44 +121,12 @@ function mutate(root: unknown, mutations: Mutation[]): void {
   }
 }
 
-function snapshotPrototypes(): unknown[][] {
-  const snapshot: unknown[][] = [];
-  for (const prototype of PROTOTYPES) {
-    const entries: unknown[] = [Object.getPrototypeOf(prototype)];
-    for (const key of Reflect.ownKeys(prototype)) {
-      const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
-      // oxlint-disable-next-line unbound-method -- The accessors are compared, never called.
-      entries.push(key, descriptor?.value as unknown, descriptor?.get, descriptor?.set);
-    }
-    snapshot.push(entries);
-  }
-  return snapshot;
-}
-
-function isExpectedError(error: unknown): boolean {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-  if (error instanceof RangeError && error.message.includes('call stack')) {
-    return false;
-  }
-  if (!STRICT_ERRORS) {
-    return true;
-  }
-  for (const constructor of EXPECTED_ERRORS) {
-    if (error instanceof constructor) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function expectSafeDecode(decode: () => unknown): void {
   const before = snapshotPrototypes();
   try {
     decode();
   } catch (error) {
-    if (!isExpectedError(error)) {
+    if (!isExpectedError(error, EXPECTED_ERRORS)) {
       throw new Error(`decoding threw an unexpected error: ${String(error)}`, { cause: error });
     }
   }
