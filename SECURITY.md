@@ -21,6 +21,5 @@ The advisory text becomes public when the advisory is published. Comments stay p
 ## What happens next
 
 1. The maintainer reviews the report and either accepts it or closes it with an explanation.
-2. An accepted advisory stays in draft while the fix is prepared and released.
-3. After the fix is released, the advisory stays in draft for about a month. This gives users time to upgrade before the details are public.
-4. The advisory is then published with the affected and patched versions.
+2. An accepted advisory stays in draft while the fix is prepared.
+3. The advisory is published with the affected and patched versions as soon as the fixed release is out.

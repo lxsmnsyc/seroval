@@ -1,5 +1,17 @@
 # seroval
 
+## 1.7.9
+
+### Patch Changes
+
+- Harden decoding limits.
+
+## 1.7.8
+
+### Patch Changes
+
+- Harden string encoding and stream error handling.
+
 ## 1.7.7
 
 ### Patch Changes

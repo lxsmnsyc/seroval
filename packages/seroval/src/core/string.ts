@@ -47,7 +47,10 @@ function escapeCharCode(code: number): string | undefined {
 // not listed as DoubleStringCharacters on
 // Also includes "<" to escape "</script>" and "\" to avoid invalid escapes in the output.
 // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
-export function serializeString(str: string): string {
+export function serializeString(input: string): string {
+  // Callers can pass a value read from user data, such as an Error message.
+  // Convert it once so the escape check and the output see the same text.
+  const str = '' + input;
   if (!NEEDS_ESCAPE.test(str)) {
     return str;
   }

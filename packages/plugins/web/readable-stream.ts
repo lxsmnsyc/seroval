@@ -1,5 +1,6 @@
 import type { SerovalNode, Stream } from 'seroval';
 import { createPlugin, isStream } from 'seroval';
+import { claim } from './validate';
 
 const READABLE_STREAM_FACTORY = {};
 
@@ -163,7 +164,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, Readab
     if (!isStream(stream)) {
       throw new Error('Expected a stream source.');
     }
-    return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream as Stream<unknown>);
+    // Each ReadableStream subscribes to its source, so a source shared by
+    // several of them would deliver every chunk once per ReadableStream.
+    return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(stream) as Stream<unknown>);
   },
 });
 
