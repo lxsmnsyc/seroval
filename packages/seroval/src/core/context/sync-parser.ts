@@ -1,4 +1,5 @@
 import {
+  assertArrayHoles,
   createArrayNode,
   createBigIntNode,
   createBoxedNode,
@@ -77,6 +78,7 @@ import {
   parseMapSentinel,
   parseSpecialReference,
   parseWellKnownSymbol,
+  rollbackRefs,
 } from './parser';
 
 type ObjectLikeNode = SerovalObjectNode | SerovalNullConstructorNode;
@@ -126,6 +128,9 @@ export interface OutputRecord {
   initial: boolean;
   // Releases the live stream event behind this record once it is emitted.
   accept: (() => void) | undefined;
+  // Size of the refs map before this record was parsed. Ids from here on
+  // belong to this record or later ones.
+  refs: number;
 }
 
 export interface StreamParserState {
@@ -137,8 +142,10 @@ export interface StreamParserState {
   // held until their containing parse is queued; terminal reason release waits
   // until all frames that can register late cleanup have unwound.
   parsing: number;
-  // Records waiting to be emitted, in order.
-  queue: OutputRecord[];
+  // Records waiting to be emitted, in order, from `head` on. Advancing an
+  // index keeps each removal constant-time, unlike `shift`.
+  queue: (OutputRecord | undefined)[];
+  head: number;
   // An output callback returned a promise that has not settled yet.
   writing: boolean;
   inFlight: OutputRecord | undefined;
@@ -186,6 +193,7 @@ export interface StreamParserState {
 type SOSParserContext = SyncParserContext | StreamParserContext;
 
 function parseItems(ctx: SOSParserContext, depth: number, current: unknown[]): (SerovalNode | 0)[] {
+  assertArrayHoles(current);
   const len = current.length;
   const nodes = new Array<SerovalNode | 0>(len);
   for (let i = 0; i < len; i++) {
@@ -661,9 +669,12 @@ export function parseSOS(ctx: SOSParserContext, depth: number, current: unknown)
 }
 
 export function parseTop(ctx: SyncParserContext, current: unknown): SerovalNode {
+  const refs = ctx.base.refs;
+  const size = refs.size;
   try {
     return parseSOS(ctx, 0, current);
   } catch (error) {
+    rollbackRefs(refs, size);
     throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
   }
 }
