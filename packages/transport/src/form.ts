@@ -70,9 +70,13 @@ function refuseSerialize(): never {
 
 /**
  * Takes each file and blob of the value into `files`, and writes its index.
- * `form` is the form data of the reader, whose fields the indexes read.
+ * `parts` holds the file fields of the reader's form data by name, which the
+ * indexes read.
  */
-function createBlobPlugin(files: Blob[] | undefined, form: FormData | undefined) {
+function createBlobPlugin(
+  files: Blob[] | undefined,
+  parts: Map<string, FormDataEntryValue> | undefined,
+) {
   return createPlugin<Blob, BlobNode>({
     tag: BLOB_TAG,
     skipPlainObjects: true,
@@ -99,7 +103,7 @@ function createBlobPlugin(files: Blob[] | undefined, form: FormData | undefined)
     },
     serialize: refuseSerialize,
     deserialize(node, ctx) {
-      if (!form) {
+      if (!parts) {
         throw malformed();
       }
       const index = ctx.deserialize(node.i);
@@ -112,7 +116,7 @@ function createBlobPlugin(files: Blob[] | undefined, form: FormData | undefined)
       ) {
         throw malformed();
       }
-      const part = form.get(FILE_FIELD + index);
+      const part = parts.get(FILE_FIELD + index);
       if (!(part instanceof Blob)) {
         throw malformed();
       }
@@ -176,7 +180,10 @@ export interface ToFormDataOptions extends ToJSONAsyncOptions {}
  * a browser reads each one as it sends the request. Promises in the value are
  * awaited. Read it with `fromFormData`.
  */
-export async function toFormData(value: unknown, options: ToFormDataOptions = {}): Promise<FormData> {
+export async function toFormData(
+  value: unknown,
+  options: ToFormDataOptions = {},
+): Promise<FormData> {
   // The plugins of this module go first, so a blob plugin of the caller,
   // such as the one of seroval-plugins, does not take the files.
   const files: Blob[] = [];
@@ -193,7 +200,9 @@ export async function toFormData(value: unknown, options: ToFormDataOptions = {}
     copies.push(
       file instanceof Blob
         ? Promise.resolve(file)
-        : (file as Blob).arrayBuffer().then((data) => new Blob([data], { type: (file as Blob).type })),
+        : (file as Blob)
+            .arrayBuffer()
+            .then((data) => new Blob([data], { type: (file as Blob).type })),
     );
   }
   const blobs = await Promise.all(copies);
@@ -227,9 +236,19 @@ export function fromFormData<T>(form: FormData, options: FromFormDataOptions = {
   if (typeof json !== 'object' || json === null) {
     throw malformed();
   }
+
+  // Index the file fields once. `form.get` scans every entry, so calling it
+  // for each blob node would cost the nodes times the parts. The first field
+  // of a name wins, as with `form.get`.
+  const parts = new Map<string, FormDataEntryValue>();
+  for (const [name, part] of form.entries()) {
+    if (name.startsWith(FILE_FIELD) && !parts.has(name)) {
+      parts.set(name, part);
+    }
+  }
   return fromJSON<T>(json as SerovalJSON, {
     ...options,
-    plugins: [createBlobPlugin(undefined, form), FormDataPlugin, ...(options.plugins ?? [])],
+    plugins: [createBlobPlugin(undefined, parts), FormDataPlugin, ...(options.plugins ?? [])],
   });
 }
 

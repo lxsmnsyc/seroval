@@ -68,6 +68,23 @@ describe('frames', () => {
     expect(() => decode([header], 10)).toThrow(/larger than the limit/);
   });
 
+  it('decodes a frame sent in many small chunks in linear time', () => {
+    const [header, data] = encodeFrame([0, 'a', 'x'.repeat(200_000)]);
+    const chunks = [header];
+    for (let i = 0; i < data.length; i++) {
+      chunks.push(data.subarray(i, i + 1));
+    }
+    const start = performance.now();
+    expect(decode(chunks)).toEqual([[0, 'a', 'x'.repeat(200_000)]]);
+    // Shifting each piece off the array made this take tens of seconds.
+    expect(performance.now() - start).toBeLessThan(2000);
+  });
+
+  it('refuses an empty frame as malformed', () => {
+    const header = new TextEncoder().encode(';0x00000000;');
+    expect(() => decode([header])).toThrow(SerovalTransportError);
+  });
+
   it('throws on a malformed header or data', () => {
     expect(() => decode([new TextEncoder().encode('<html><body>')])).toThrow(SerovalTransportError);
     const data = new TextEncoder().encode('{bad');

@@ -162,8 +162,11 @@ function createReader(decoder: Decoder): Reader {
   function onData(key: string, data: unknown): void {
     const slot = getSlot(key);
     if (slot.state === WAITING) {
+      // Open before the state changes, so a value that fails to decode stays
+      // waiting and fails when the reader ends.
+      const value = decoder.open(key, data);
       slot.state = OPEN;
-      slot.value.resolve(decoder.open(key, data));
+      slot.value.resolve(value);
     } else if (slot.state === OPEN) {
       decoder.next(key, data);
     } else {

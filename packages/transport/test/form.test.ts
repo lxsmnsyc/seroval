@@ -1,5 +1,5 @@
 import { SerovalDeserializationError } from 'seroval';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   FILE_FIELD,
   SerovalTransportError,
@@ -87,6 +87,21 @@ describe('form data', () => {
     const form = await toFormData(new Blob(['x']));
     form.set(FILE_FIELD + '0', 'text');
     expect(() => fromFormData(form)).toThrow(SerovalDeserializationError);
+  });
+
+  it('reads the form fields once, however many blobs the value has', async () => {
+    const blobs: Blob[] = [];
+    for (let i = 0; i < 100; i++) {
+      blobs.push(new Blob([String(i)]));
+    }
+    const form = await toFormData(blobs);
+    const get = vi.spyOn(form, 'get');
+    const result = fromFormData<Blob[]>(form);
+    expect(result).toHaveLength(100);
+    expect(await result[99].text()).toBe('99');
+    // One read of the value field. The parts are indexed in one pass, since
+    // `form.get` scans every entry.
+    expect(get).toHaveBeenCalledTimes(1);
   });
 
   it('refuses a request body that is not form data', async () => {

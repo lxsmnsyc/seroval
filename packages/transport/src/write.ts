@@ -225,16 +225,42 @@ function createWriter<T>(options: WriterOptions<T>, start: StartValue<T>): Write
  */
 export function createJSONWriter(options: JSONWriterOptions): Writer {
   const shared = options.sharedRefs ? new Map<unknown, number>() : undefined;
-  return createWriter(options, (value, callbacks) =>
+  return createWriter(options, (value, callbacks) => {
+    // The first piece of a value is parsed before `toCrossJSONStream`
+    // returns, so the references it adds are the ones after `mark`.
+    const mark = shared ? shared.size : 0;
+    let sent = false;
     // seroval ignores the writer's own options, such as `send`.
-    toCrossJSONStream(value, {
+    return toCrossJSONStream(value, {
       ...options,
       refs: shared ?? new Map(),
-      onParse: callbacks.onData,
+      onParse(data, initial) {
+        sent = true;
+        return callbacks.onData(data, initial);
+      },
       onDone: callbacks.onDone,
-      onError: callbacks.onError,
-    }),
-  );
+      onError(error) {
+        // A value that fails before its first message added references the
+        // reader never received. Drop them, so a later value sends its own
+        // copy instead of a reference the reader cannot resolve.
+        if (shared && !sent) {
+          dropReferences(shared, mark);
+        }
+        callbacks.onError(error);
+      },
+    });
+  });
+}
+
+/** Removes the references of `refs` that were added after the first `count`. */
+function dropReferences(refs: Map<unknown, number>, count: number): void {
+  let index = 0;
+  for (const key of Array.from(refs.keys())) {
+    if (index >= count) {
+      refs.delete(key);
+    }
+    index++;
+  }
 }
 
 /**

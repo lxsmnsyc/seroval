@@ -114,21 +114,35 @@ export interface FrameDecoder {
 /** Creates a decoder of the frames of `encodeFrame`. */
 export function createFrameDecoder(options: FrameDecoderOptions): FrameDecoder {
   const maxFrameSize = options.maxFrameSize ?? DEFAULT_MAX_FRAME_SIZE;
-  // Bytes received and not yet decoded, in order.
+  // Bytes received and not yet decoded, in order, from `pieces[head]`.
   let pieces: Uint8Array[] = [];
+  let head = 0;
   let length = 0;
   // The data size of the frame being read, or -1 while its header is read.
   let size = -1;
 
+  // Drops the first piece. Moving `head` instead of shifting the array keeps
+  // a frame sent in many small chunks linear in its chunks.
+  function dropPiece(): void {
+    head++;
+    if (head === pieces.length) {
+      pieces = [];
+      head = 0;
+    }
+  }
+
   // Removes the first `count` bytes. Pieces are only joined when the bytes
   // span more than one, so each byte is copied at most once.
   function take(count: number): Uint8Array {
-    const first = pieces[0];
+    if (count === 0) {
+      return new Uint8Array(0);
+    }
+    const first = pieces[head];
     if (first.length >= count) {
       if (first.length === count) {
-        pieces.shift();
+        dropPiece();
       } else {
-        pieces[0] = first.subarray(count);
+        pieces[head] = first.subarray(count);
       }
       length -= count;
       return first.subarray(0, count);
@@ -136,14 +150,14 @@ export function createFrameDecoder(options: FrameDecoderOptions): FrameDecoder {
     const result = new Uint8Array(count);
     let offset = 0;
     while (offset < count) {
-      const piece = pieces[0];
+      const piece = pieces[head];
       const part = Math.min(piece.length, count - offset);
       result.set(piece.subarray(0, part), offset);
       offset += part;
       if (part === piece.length) {
-        pieces.shift();
+        dropPiece();
       } else {
-        pieces[0] = piece.subarray(part);
+        pieces[head] = piece.subarray(part);
       }
     }
     length -= count;
@@ -192,6 +206,7 @@ export function createFrameDecoder(options: FrameDecoderOptions): FrameDecoder {
     end() {
       const partial = size !== -1 || length > 0;
       pieces = [];
+      head = 0;
       length = 0;
       size = -1;
       if (partial) {

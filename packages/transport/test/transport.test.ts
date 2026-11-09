@@ -148,6 +148,17 @@ describe('JSON messages', () => {
     expect(b.shared).toBe(a);
   });
 
+  it('sends a shared reference again after the value that held it failed', async () => {
+    const reader = createJSONReader({ sharedRefs: true });
+    const writer = createJSONWriter({ send: pipeTo(reader), sharedRefs: true });
+    const shared = { id: 1 };
+    writer.write('a', { shared, fn: Symbol('local') });
+    writer.write('b', { shared });
+    await expect(reader.get('a')).rejects.toBeInstanceOf(SerovalTransportError);
+    const b = await reader.get<{ shared: unknown }>('b');
+    expect(b.shared).toEqual({ id: 1 });
+  });
+
   it('calls onDone once every value is done after flush', async () => {
     const onDone = vi.fn();
     const writer = createJSONWriter({ send() {}, onDone });
@@ -430,6 +441,15 @@ describe('Web Streams', () => {
     await fromWebStream(fromBytes(frame('{"not":"a message"}')), reader, { onError });
     await expect(reader.value).rejects.toBeInstanceOf(SerovalTransportError);
     expect(onError).toHaveBeenCalledWith(expect.any(SerovalTransportError));
+  });
+
+  it('fails the value when its first message does not decode', async () => {
+    const onError = vi.fn();
+    const reader = fromJSONStream();
+    await fromWebStream(fromBytes(frame('[0,"0",{"t":9999,"i":0}]')), reader, { onError });
+    await expect(reader.value).rejects.toThrow();
+    await expect(reader.settled).rejects.toThrow();
+    expect(onError).toHaveBeenCalledOnce();
   });
 
   it('refuses a frame larger than maxFrameSize', async () => {
