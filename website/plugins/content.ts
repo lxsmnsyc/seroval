@@ -4,7 +4,8 @@ import { Marked, type Tokens } from 'marked';
 import markedFootnote from 'marked-footnote';
 import type { Plugin, ViteDevServer } from 'vite';
 import { parse as parseYAML } from 'yaml';
-import { codeFrame, escapeHTML, highlight } from './highlight.ts';
+import { createInstallCommands, parseNpmInstall } from '../src/lib/package-manager.ts';
+import { codeFrame, escapeHTML, highlight, installFrame } from './highlight.ts';
 
 export interface Heading {
   depth: number;
@@ -167,6 +168,14 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
       code(token: Tokens.Code) {
         const [lang = 'text', ...rest] = (token.lang ?? '').split(WHITESPACE);
         const title = CODE_TITLE.exec(rest.join(' '))?.[1];
+        // A one-line `npm install` gets a package manager picker.
+        const installArgs =
+          (lang === 'bash' || lang === 'sh') && title == null
+            ? parseNpmInstall(token.text)
+            : undefined;
+        if (installArgs != null) {
+          return installFrame(createInstallCommands(installArgs));
+        }
         return codeFrame(highlight(token.text, lang), title ?? LANGUAGE_LABELS[lang] ?? lang);
       },
       link(token: Tokens.Link) {
