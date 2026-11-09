@@ -1,6 +1,7 @@
 import type { JSX } from '@solidjs/web';
 import { type Component, For, Show, createSignal, onSettled } from 'solid-js';
 import { getSectionTitle, getSiblings } from '../lib/docs';
+import { syncPackageManagerButtons } from '../lib/package-manager';
 import { REPOSITORY_URL } from '../lib/ui';
 import DocsNav from './DocsNav';
 import { ArrowLeftIcon, ArrowRightIcon, EditIcon } from './Icons';
@@ -70,6 +71,11 @@ function TableOfContents(props: { doc: RenderedDoc }): JSX.Element {
 /** The layout for a page built from a doc in `src/content/docs`. */
 export default function DocPage(props: { doc: RenderedDoc }): JSX.Element {
   const siblings = (): ReturnType<typeof getSiblings> => getSiblings(props.doc.slug);
+
+  // Install commands in the doc are prerendered with npm chosen.
+  onSettled(() => {
+    syncPackageManagerButtons();
+  });
 
   return (
     <div class="docs-layout">

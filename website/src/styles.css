@@ -511,7 +511,7 @@ kbd {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  align-items: center;
+  align-items: flex-end;
   margin-top: 40px;
   opacity: 0;
   animation: home-fade 1s 0.7s forwards;
@@ -607,6 +607,13 @@ kbd {
 .home .install.copied .cp-done {
   display: block;
   color: var(--signal);
+}
+
+.home .install-group {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 /* Hero stage */
@@ -1413,9 +1420,12 @@ kbd {
 }
 
 .home .big-install {
-  display: inline-flex;
+  align-items: center;
+  margin-top: 64px;
+}
+
+.home .big-install .install {
   height: 72px;
-  margin: 64px auto 0;
   padding: 0 36px;
   font-size: 20px;
 }
@@ -1924,6 +1934,54 @@ kbd {
 .copy-button:hover,
 .code-block:hover .copy-button {
   opacity: 1;
+}
+
+/* Package manager picker */
+
+.pm-picker {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.code-header .pm-picker {
+  margin-left: -8px;
+}
+
+.pm-option {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
+}
+
+.pm-option:hover {
+  color: var(--fg);
+}
+
+/* The chosen manager, from the data-pm attribute on the root element. */
+:root:not([data-pm]) [data-pm-option='npm'],
+:root[data-pm='npm'] [data-pm-option='npm'],
+:root[data-pm='pnpm'] [data-pm-option='pnpm'],
+:root[data-pm='yarn'] [data-pm-option='yarn'],
+:root[data-pm='bun'] [data-pm-option='bun'] {
+  background: var(--bg-muted);
+  color: var(--fg);
+}
+
+:root:not([data-pm]) [data-pm-command]:not([data-pm-command='npm']),
+:root[data-pm='npm'] [data-pm-command]:not([data-pm-command='npm']),
+:root[data-pm='pnpm'] [data-pm-command]:not([data-pm-command='pnpm']),
+:root[data-pm='yarn'] [data-pm-command]:not([data-pm-command='yarn']),
+:root[data-pm='bun'] [data-pm-command]:not([data-pm-command='bun']) {
+  display: none;
 }
 
 .code-block pre {

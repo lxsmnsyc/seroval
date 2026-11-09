@@ -5,6 +5,7 @@ import { language as javascript } from '@twinkleplop/javascript';
 import { language as json } from '@twinkleplop/json';
 import { language as tsx } from '@twinkleplop/tsx';
 import { language as typescript } from '@twinkleplop/typescript';
+import { PACKAGE_MANAGERS, type PackageManager } from '../src/lib/package-manager.ts';
 
 type Highlighter = (code: string) => string;
 
@@ -48,6 +49,33 @@ export function codeFrame(html: string, label: string): string {
     '<button type="button" class="copy-button" data-copy aria-label="Copy code">Copy</button>',
     '</div>',
     html,
+    '</div>',
+  ].join('');
+}
+
+/**
+ * Wraps an install command in a frame with a package manager picker and a
+ * copy button. It holds the command for every manager, and the stylesheet
+ * shows the chosen one.
+ */
+export function installFrame(commands: Record<PackageManager, string>): string {
+  const options: string[] = [];
+  const panels: string[] = [];
+  for (const manager of PACKAGE_MANAGERS) {
+    options.push(
+      `<button type="button" class="pm-option" data-pm-option="${manager}" aria-pressed="${manager === 'npm'}">${manager}</button>`,
+    );
+    panels.push(
+      `<div class="pm-command" data-pm-command="${manager}">${highlight(commands[manager], 'bash')}</div>`,
+    );
+  }
+  return [
+    '<div class="code-block">',
+    '<div class="code-header">',
+    `<span class="pm-picker" role="group" aria-label="Package manager">${options.join('')}</span>`,
+    '<button type="button" class="copy-button" data-copy aria-label="Copy code">Copy</button>',
+    '</div>',
+    ...panels,
     '</div>',
   ].join('');
 }
