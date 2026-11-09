@@ -86,6 +86,7 @@ async function bundleAndRun(): Promise<Payloads> {
       'seroval/validator': fileURLToPath(
         new URL('../../../seroval/dist/validator.js', import.meta.url),
       ),
+      'seroval/shared': fileURLToPath(new URL('../../../seroval/dist/shared.js', import.meta.url)),
       seroval: fileURLToPath(new URL('../../../seroval/dist/index.js', import.meta.url)),
     },
     bundle: true,

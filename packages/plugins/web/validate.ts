@@ -1,4 +1,4 @@
-import type { Validator } from 'seroval';
+import type { Validator } from 'seroval/shared';
 
 // Validators for the values that the web plugins hand to Web constructors. A
 // constructor converts a plain object to a string or a number, so each field is
