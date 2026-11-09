@@ -1,6 +1,6 @@
 import type { SerovalNode } from 'seroval';
 import { createPlugin } from 'seroval';
-import { expectObject, expectOptionalBoolean, expectString } from './validate';
+import * as v from 'seroval/validator';
 
 function createEventOptions(current: Event): EventInit {
   return {
@@ -10,14 +10,21 @@ function createEventOptions(current: Event): EventInit {
   };
 }
 
-// Copies only the known fields, each checked, so the constructor never reads
-// an input object.
-function expectEventOptions(value: unknown): EventInit {
-  const options = expectObject(value);
+// Each known field is checked, so the constructor never converts an input
+// object to a boolean.
+const isEventOptions = /* @__PURE__ */ v.object({
+  bubbles: /* @__PURE__ */ v.optional(v.boolean),
+  cancelable: /* @__PURE__ */ v.optional(v.boolean),
+  composed: /* @__PURE__ */ v.optional(v.boolean),
+});
+
+// Copies only the known fields, so the constructor never reads one the
+// validator skipped.
+function copyEventOptions(options: EventInit): EventInit {
   return {
-    bubbles: expectOptionalBoolean(options.bubbles),
-    cancelable: expectOptionalBoolean(options.cancelable),
-    composed: expectOptionalBoolean(options.composed),
+    bubbles: options.bubbles,
+    cancelable: options.cancelable,
+    composed: options.composed,
   };
 }
 
@@ -58,10 +65,11 @@ const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
   serialize(node, ctx) {
     return 'new Event(' + ctx.serialize(node.type) + ',' + ctx.serialize(node.options) + ')';
   },
+  validate: { type: v.string, options: isEventOptions },
   deserialize(node, ctx) {
     return new Event(
-      expectString(ctx.deserialize(node.type)),
-      expectEventOptions(ctx.deserialize(node.options)),
+      ctx.deserialize<string>(node.type),
+      copyEventOptions(ctx.deserialize<EventInit>(node.options)),
     );
   },
 });
