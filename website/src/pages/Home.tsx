@@ -704,7 +704,11 @@ function InstallButton(props: { class?: string }): JSX.Element {
             data-command={INSTALL_COMMANDS[manager]}
             aria-label={`Copy: ${INSTALL_COMMANDS[manager]}`}
           >
-            <span class="p">$</span> {INSTALL_COMMANDS[manager]}
+            <span class="p">$</span>
+            {/* The command needs its own element. As a bare text node next
+                to the static space, the server merges the two and hydration
+                fails. */}
+            <span>{INSTALL_COMMANDS[manager]}</span>
             <span class="cp">
               <CopyIcon class="cp-copy" />
               <CheckIcon class="cp-done" />

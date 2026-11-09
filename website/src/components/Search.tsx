@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router';
 import type { JSX } from '@solidjs/web';
 import type MiniSearch from 'minisearch';
-import { For, Show, createMemo, createSignal, onSettled } from 'solid-js';
+import { For, Show, createEffect, createMemo, createSignal, onSettled } from 'solid-js';
 import { Command, CommandInput, CommandOption, CommandOptions } from 'terracotta/command';
 import {
   CommandBar,
@@ -93,8 +93,17 @@ export default function Search(): JSX.Element {
 
   function open(): void {
     setSearchOpen(true);
-    void loadIndex().then(setIndex);
   }
+
+  // Load the index on every way of opening, including the header button.
+  createEffect(
+    () => searchOpen(),
+    (isOpen) => {
+      if (isOpen) {
+        void loadIndex().then(setIndex);
+      }
+    },
+  );
 
   onSettled(() => {
     function onKeyDown(event: KeyboardEvent): void {
