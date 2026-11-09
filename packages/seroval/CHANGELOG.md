@@ -1,5 +1,30 @@
 # seroval
 
+## 1.8.0
+
+### Minor Changes
+
+- 7fe0193: Add the optional `validate` plugin field and the `v` validators. `validate` lists a validator for each field of a plugin's node. When `deserialize` reads a listed field with `ctx.deserialize`, the decoded value is checked first, and `SerovalPluginValidationError` is thrown if it fails. It applies to `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`. The validators are exported as `v` from `seroval`, and as a module from `seroval/validator`.
+- d1ada33: Add the `seroval/read`, `seroval/write` and `seroval/shared` entry points, so bundlers can put reading and writing in separate chunks.
+
+  - `seroval/read` exports `fromJSON`, `fromCrossJSON`, `createCrossDeserializer` and `deserialize`.
+  - `seroval/write` exports the serializers, `Serializer` and `getCrossReferenceHeader`.
+  - `seroval/shared` exports what both sides use, such as `createPlugin`, `Feature`, `Stream` and the errors. `seroval/read` and `seroval/write` also export it.
+  - `seroval` still exports everything. All entry points load the same chunks, so classes keep one identity.
+
+## 1.7.10
+
+### Patch Changes
+
+- 7ae5573: Fix several parser edge cases:
+
+  - The async parser no longer leaves a rejecting promise unhandled while an earlier sibling is still pending.
+  - The stream parser removes queued records in constant time, so a consumer that applies backpressure no longer makes emission quadratic.
+  - A failed parse no longer leaves ids in a caller-owned `refs` map, so later calls and `Serializer` writes define those values again.
+  - The stream parser counts only the first settlement of a promise whose `then` calls back more than once.
+  - Arrays with more than 1,000,000 holes are rejected with a `SerovalParserError` instead of exhausting memory.
+  - `Buffer` and other typed array subclasses serialize as their base typed array, and the typed array size limit applies to them.
+
 ## 1.7.9
 
 ### Patch Changes

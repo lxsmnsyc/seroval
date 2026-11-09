@@ -183,6 +183,18 @@ export function createBoxedNode(id: number, boxed: SerovalNode): SerovalBoxedNod
 // (DEFAULT_MAX_BASE64_LENGTH).
 const MAX_TYPED_ARRAY_LENGTH = 1_000_000;
 
+/**
+ * Rejects a sparse array with more holes than the typed array limit. Each hole
+ * still costs a node and output, however few elements the array holds.
+ */
+export function assertArrayHoles(current: unknown[]): void {
+  const len = current.length;
+  // An array this short cannot hold more holes than the limit.
+  if (len > MAX_TYPED_ARRAY_LENGTH && len - Object.keys(current).length > MAX_TYPED_ARRAY_LENGTH) {
+    throw new SerovalUnsupportedTypeError(current);
+  }
+}
+
 export function createViewNode(
   type: SerovalNodeType.TypedArray | SerovalNodeType.BigIntTypedArray | SerovalNodeType.DataView,
   id: number,

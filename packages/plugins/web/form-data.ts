@@ -1,5 +1,5 @@
-import type { SerovalNode } from 'seroval';
-import { createPlugin } from 'seroval';
+import type { SerovalNode } from 'seroval/shared';
+import { createPlugin } from 'seroval/shared';
 import FilePlugin from './file';
 import { copyEntries, entries } from './validate';
 

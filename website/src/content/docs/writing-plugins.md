@@ -58,6 +58,8 @@ serialize(new Point(1, 2), { plugins: [PointPlugin] });
 
 The JavaScript output calls `new Point`, so `Point` must be in scope wherever the output runs.
 
+A plugin that is shared between the reading and the writing side can import `createPlugin` from `seroval/shared`. That entry point has no serializer or deserializer. See [Entry points](./api.md#entry-points).
+
 ## Fields
 
 | Field | Description |

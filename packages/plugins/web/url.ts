@@ -1,5 +1,5 @@
-import type { SerovalNode } from 'seroval';
-import { createPlugin } from 'seroval';
+import type { SerovalNode } from 'seroval/shared';
+import { createPlugin } from 'seroval/shared';
 import * as v from 'seroval/validator';
 
 const URLPlugin = /* @__PURE__ */ createPlugin<URL, { value: SerovalNode }, { value: string }>({

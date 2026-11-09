@@ -1,4 +1,5 @@
 import { SerovalUnknownTypedArrayError } from './errors';
+import { getTypedArrayName } from './utils/typed-array';
 import {
   SYM_ASYNC_ITERATOR,
   SYM_HAS_INSTANCE,
@@ -305,43 +306,41 @@ export type TypedArrayValue =
 
 export type BigIntTypedArrayValue = BigInt64Array | BigUint64Array;
 
+// Each tag comes from the array's internal type. `instanceof` follows the
+// prototype chain, which `Object.setPrototypeOf` can point at another typed
+// array class.
 export function getTypedArrayTag(value: TypedArrayValue): TypedArrayTag {
-  if (value instanceof Int8Array) {
-    return TypedArrayTag.Int8Array;
+  switch (getTypedArrayName(value)) {
+    case 'Int8Array':
+      return TypedArrayTag.Int8Array;
+    case 'Int16Array':
+      return TypedArrayTag.Int16Array;
+    case 'Int32Array':
+      return TypedArrayTag.Int32Array;
+    case 'Uint8Array':
+      return TypedArrayTag.Uint8Array;
+    case 'Uint16Array':
+      return TypedArrayTag.Uint16Array;
+    case 'Uint32Array':
+      return TypedArrayTag.Uint32Array;
+    case 'Uint8ClampedArray':
+      return TypedArrayTag.Uint8ClampedArray;
+    case 'Float32Array':
+      return TypedArrayTag.Float32Array;
+    case 'Float64Array':
+      return TypedArrayTag.Float64Array;
+    default:
+      throw new SerovalUnknownTypedArrayError();
   }
-  if (value instanceof Int16Array) {
-    return TypedArrayTag.Int16Array;
-  }
-  if (value instanceof Int32Array) {
-    return TypedArrayTag.Int32Array;
-  }
-  if (value instanceof Uint8Array) {
-    return TypedArrayTag.Uint8Array;
-  }
-  if (value instanceof Uint16Array) {
-    return TypedArrayTag.Uint16Array;
-  }
-  if (value instanceof Uint32Array) {
-    return TypedArrayTag.Uint32Array;
-  }
-  if (value instanceof Uint8ClampedArray) {
-    return TypedArrayTag.Uint8ClampedArray;
-  }
-  if (value instanceof Float32Array) {
-    return TypedArrayTag.Float32Array;
-  }
-  if (value instanceof Float64Array) {
-    return TypedArrayTag.Float64Array;
-  }
-  throw new SerovalUnknownTypedArrayError();
 }
 
 export function getBigIntTypedArrayTag(value: BigIntTypedArrayValue): BigIntTypedArrayTag {
-  if (value instanceof BigInt64Array) {
-    return BigIntTypedArrayTag.BigInt64Array;
+  switch (getTypedArrayName(value)) {
+    case 'BigInt64Array':
+      return BigIntTypedArrayTag.BigInt64Array;
+    case 'BigUint64Array':
+      return BigIntTypedArrayTag.BigUint64Array;
+    default:
+      throw new SerovalUnknownTypedArrayError();
   }
-  if (value instanceof BigUint64Array) {
-    return BigIntTypedArrayTag.BigUint64Array;
-  }
-  throw new SerovalUnknownTypedArrayError();
 }

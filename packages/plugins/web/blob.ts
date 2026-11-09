@@ -1,5 +1,5 @@
-import type { SerovalNode } from 'seroval';
-import { SerovalPluginValidationError, createPlugin } from 'seroval';
+import type { SerovalNode } from 'seroval/shared';
+import { SerovalPluginValidationError, createPlugin } from 'seroval/shared';
 import * as v from 'seroval/validator';
 import { claim } from './validate';
 

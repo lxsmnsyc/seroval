@@ -1,6 +1,19 @@
 import { defineConfig } from 'tsdown';
 
-// Both builds keep the validators in their own module. `index` imports them
+// Each entry point is built in one pass, so code that two entry points use
+// goes into a shared chunk. Then `seroval`, `seroval/read`, `seroval/write`
+// and `seroval/shared` load the same `Stream`, `Sequence` and error classes,
+// and bundlers can split reading from writing.
+const entry = {
+  index: 'src/index.ts',
+  read: 'src/read.ts',
+  write: 'src/write.ts',
+  shared: 'src/shared.ts',
+  binary: 'src/binary/index.ts',
+  validator: 'src/core/validator.ts',
+};
+
+// Both builds keep the validators in their own module. `shared` imports them
 // from `./validator`, and `seroval/validator` points at that file. A plugin
 // that uses `import * as v from 'seroval/validator'` then gets plain
 // functions, so bundlers can still remove the plugin when it is unused.
@@ -16,11 +29,7 @@ const validatorOptions = {
 
 export default defineConfig([
   {
-    entry: {
-      index: 'src/index.ts',
-      binary: 'src/binary/index.ts',
-      validator: 'src/core/validator.ts',
-    },
+    entry,
     platform: 'neutral',
     target: 'es2020',
     dts: true,
@@ -32,11 +41,7 @@ export default defineConfig([
     },
   },
   {
-    entry: {
-      index: 'src/index.ts',
-      binary: 'src/binary/index.ts',
-      validator: 'src/core/validator.ts',
-    },
+    entry,
     platform: 'neutral',
     target: 'es2020',
     dts: true,

@@ -1,5 +1,5 @@
-import type { SerovalNode } from 'seroval';
-import { createPlugin } from 'seroval';
+import type { SerovalNode } from 'seroval/shared';
+import { createPlugin } from 'seroval/shared';
 import * as v from 'seroval/validator';
 
 function createCustomEventOptions(current: CustomEvent): CustomEventInit {

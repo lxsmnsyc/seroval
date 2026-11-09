@@ -28,6 +28,10 @@ export const SIDEBAR: SidebarSection[] = [
     pages: ['using-plugins', 'writing-plugins', 'plugin-security'],
   },
   {
+    title: 'Packages',
+    pages: ['transport'],
+  },
+  {
     title: 'Reference',
     pages: ['api', 'binary-format', 'compatibility', 'errors', 'security'],
   },

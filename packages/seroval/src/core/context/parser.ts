@@ -11,6 +11,7 @@ import {
   NIL,
   SerovalNodeType,
   SerovalTemporalType,
+  type TypedArrayValue,
 } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
@@ -34,7 +35,7 @@ import type {
   SerovalWKSymbolNode,
 } from '../types';
 import { getObjectFlag } from '../utils/get-object-flag';
-import type { ArrayBufferViewState } from '../utils/typed-array';
+import { type ArrayBufferViewState, getTypedArrayName } from '../utils/typed-array';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
@@ -105,6 +106,20 @@ export function createIndexForValue(ctx: BaseParserContext, current: unknown): n
   const id = ctx.refs.size;
   ctx.refs.set(current, id);
   return id;
+}
+
+/**
+ * Removes the ids registered from `size` on. A parse that fails emits none of
+ * them, so a caller-owned map must not keep them for later calls.
+ */
+export function rollbackRefs(refs: Map<unknown, number>, size: number): void {
+  if (refs.size > size) {
+    for (const [value, id] of refs) {
+      if (id >= size) {
+        refs.delete(value);
+      }
+    }
+  }
 }
 
 export function getNodeForIndexedValue(
@@ -338,6 +353,21 @@ export function getObjectKind(
     getTemporalType(currentClass) != null
   ) {
     return ObjectKind.Temporal;
+  }
+  // Subclasses of typed arrays and DataView, such as Node's Buffer, are parsed
+  // as their base type, so the typed array size limit applies to them too.
+  if (ArrayBuffer.isView(current)) {
+    // DataView has no typed array name.
+    const name: string | undefined = getTypedArrayName(current as TypedArrayValue);
+    if (name === NIL) {
+      return ObjectKind.DataView;
+    }
+    if (name !== 'BigInt64Array' && name !== 'BigUint64Array') {
+      return ObjectKind.TypedArray;
+    }
+    if (features & FeatureFlag.BigIntTypedArray) {
+      return ObjectKind.BigIntTypedArray;
+    }
   }
   // Slow path. Errors and iterables have very broad implementations.
   if (current instanceof Error) {

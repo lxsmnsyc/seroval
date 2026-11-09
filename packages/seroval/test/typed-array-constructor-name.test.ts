@@ -52,4 +52,20 @@ describe('typed array constructor name', () => {
     expect(output.startsWith('new Uint8Array(')).toBe(true);
     expect([...deserialize<Uint8Array>(output)]).toEqual([7, 8, 9]);
   });
+
+  // `instanceof` would name these by the swapped prototype.
+  it.each([
+    () => Object.setPrototypeOf(new Uint8Array([1, 2, 3]), Float64Array.prototype) as Uint8Array,
+    () =>
+      Object.setPrototypeOf(
+        new BigInt64Array([1n, -2n]),
+        BigUint64Array.prototype,
+      ) as BigInt64Array,
+  ])('uses the real type of %# after a prototype swap', (make) => {
+    const value = make();
+    const type = Object.prototype.toString.call(value).slice(8, -1);
+    const back = fromJSON<typeof value>(toJSON(value));
+    expect(Object.prototype.toString.call(back)).toBe(`[object ${type}]`);
+    expect(serialize(value).startsWith('new ' + type + '(')).toBe(true);
+  });
 });

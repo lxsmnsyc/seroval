@@ -1,5 +1,5 @@
-import type { SerovalNode, Stream } from 'seroval';
-import { createPlugin, isStream } from 'seroval';
+import type { SerovalNode, Stream } from 'seroval/shared';
+import { createPlugin, isStream } from 'seroval/shared';
 import { claim } from './validate';
 
 const READABLE_STREAM_FACTORY = {};

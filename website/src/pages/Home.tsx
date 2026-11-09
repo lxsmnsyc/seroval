@@ -13,9 +13,14 @@ import * as binary from 'seroval/binary';
 import { CheckIcon, CopyIcon } from '../components/Icons';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
+import {
+  PACKAGE_MANAGERS,
+  createInstallCommands,
+  syncPackageManagerButtons,
+} from '../lib/package-manager';
 import { SHORT_VERSION } from '../lib/ui';
 
-const INSTALL_COMMAND = 'npm install seroval';
+const INSTALL_COMMANDS = createInstallCommands('seroval');
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /* Hero: an object graph that serializes itself */
@@ -663,22 +668,24 @@ function animate(root: HTMLElement): () => void {
     button.addEventListener('click', onModeClick);
   }
 
-  // Install buttons copy the command.
+  // Install buttons copy the command of the chosen package manager.
+  syncPackageManagerButtons();
   const installButtons = root.querySelectorAll<HTMLButtonElement>('.install');
   function onInstallClick(event: Event): void {
     const button = event.currentTarget;
-    if (!(button instanceof HTMLElement)) {
+    const command = button instanceof HTMLElement ? button.dataset.command : undefined;
+    if (!(button instanceof HTMLElement) || command == null) {
       return;
     }
     navigator.clipboard
-      .writeText(INSTALL_COMMAND)
+      .writeText(command)
       .then(() => {
         // Swap the clipboard icon for a check mark for a moment.
         button.classList.add('copied');
-        button.setAttribute('aria-label', `Copied: ${INSTALL_COMMAND}`);
+        button.setAttribute('aria-label', `Copied: ${command}`);
         setTimeout(() => {
           button.classList.remove('copied');
-          button.setAttribute('aria-label', `Copy: ${INSTALL_COMMAND}`);
+          button.setAttribute('aria-label', `Copy: ${command}`);
         }, 1400);
       })
       .catch(() => undefined);
@@ -750,13 +757,43 @@ function animate(root: HTMLElement): () => void {
 
 function InstallButton(props: { class?: string }): JSX.Element {
   return (
-    <button type="button" class={['install', props.class]} aria-label={`Copy: ${INSTALL_COMMAND}`}>
-      <span class="p">$</span> {INSTALL_COMMAND}
-      <span class="cp">
-        <CopyIcon class="cp-copy" />
-        <CheckIcon class="cp-done" />
+    <div class={['install-group', props.class]}>
+      <span class="pm-picker" role="group" aria-label="Package manager">
+        <For each={PACKAGE_MANAGERS}>
+          {(manager) => (
+            <button
+              type="button"
+              class="pm-option"
+              data-pm-option={manager}
+              aria-pressed={manager === 'npm' ? 'true' : 'false'}
+            >
+              {manager}
+            </button>
+          )}
+        </For>
       </span>
-    </button>
+      <For each={PACKAGE_MANAGERS}>
+        {(manager) => (
+          <button
+            type="button"
+            class="install"
+            data-pm-command={manager}
+            data-command={INSTALL_COMMANDS[manager]}
+            aria-label={`Copy: ${INSTALL_COMMANDS[manager]}`}
+          >
+            <span class="p">$</span>
+            {/* The command needs its own element. As a bare text node next
+                to the static space, the server merges the two and hydration
+                fails. */}
+            <span>{INSTALL_COMMANDS[manager]}</span>
+            <span class="cp">
+              <CopyIcon class="cp-copy" />
+              <CheckIcon class="cp-done" />
+            </span>
+          </button>
+        )}
+      </For>
+    </div>
   );
 }
 
