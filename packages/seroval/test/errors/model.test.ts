@@ -33,7 +33,6 @@ const RENDER: { [C in ErrorCode]: () => string } = {
   SRV018: () => getDevMessage('SRV018', {}),
   SRV019: () => getDevMessage('SRV019', { value: -1 }),
   SRV020: () => getDevMessage('SRV020', { limit: 5 }),
-  SRV021: () => getDevMessage('SRV021', { tag: 'tag', expected: 'expected' }),
 };
 
 describe('error catalog', () => {
@@ -47,7 +46,7 @@ describe('error catalog', () => {
     expect(new Set(CODES).size).toBe(CODES.length);
   });
 
-  it('numbers codes in strictly increasing order up to SRV021', () => {
+  it('numbers codes in strictly increasing order up to SRV020', () => {
     // A removed code leaves its number unused, so gaps are allowed.
     let previous = 0;
     for (const code of CODES) {
@@ -55,7 +54,7 @@ describe('error catalog', () => {
       expect(value).toBeGreaterThan(previous);
       previous = value;
     }
-    expect(CODES[CODES.length - 1]).toBe('SRV021');
+    expect(CODES[CODES.length - 1]).toBe('SRV020');
   });
 
   it('has one entry per code with a unique name', () => {

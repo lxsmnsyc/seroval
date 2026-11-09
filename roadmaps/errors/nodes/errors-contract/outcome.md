@@ -3,11 +3,11 @@
 ## Built
 
 - `packages/seroval/src/core/error-catalog.ts`: `ERROR_CODES` (name to code), `ErrorCode`, `CatalogDetails` (details type per code), `CatalogEntry`, `SerovalErrorShape` (type-only base skeleton), `SerovalErrorStep`, `LiveStreamErrorReason`, `DOCS_ERRORS_URL`, `getCatalogEntry(code)`, `getDevMessage(code, details)`, `getProdMessage(code, step?)`.
-- `packages/seroval/test/errors/model.test.ts`: codes unique, well formed (`SRV` + 3 digits), one entry and unique name per code, codes strictly increasing up to SRV021 (gaps allowed, per the header comment), dev message renders, production format.
+- `packages/seroval/test/errors/model.test.ts`: codes unique, well formed (`SRV` + 3 digits), one entry and unique name per code, codes strictly increasing up to SRV020 (gaps allowed, per the header comment), dev message renders, production format.
 - `core/errors.ts` is untouched. Nothing imports the catalog yet.
 - `LiveStreamErrorReason` is defined in the catalog too (same union as in `errors.ts`). errors-base should make `errors.ts` re-export it from the catalog.
 
-Codes (append-only; codes after SRV021 are free for binary mode):
+Codes (append-only; codes after SRV020 are free for binary mode):
 
 | Code | Class or throw site | Details |
 | --- | --- | --- |
@@ -31,13 +31,12 @@ Codes (append-only; codes after SRV021 are free for binary mode):
 | SRV018 | "Stream output callback is unavailable" in `core/context/stream-parser.ts`; proposed SerovalStreamOutputError | none |
 | SRV019 | `maxBase64Length` option check in `core/context/deserializer.ts` (entry name `RangeError`); stays a RangeError with `code` | value |
 | SRV020 | ArrayBuffer over `maxBase64Length` in `deserializer.ts`; proposed SerovalBase64LimitError with `limit` | limit |
-| SRV021 | Plugin errors via `createSerovalPluginError(tag, expected)`: `plugins/web/validate.ts` claim and `plugins/web/abort-signal.ts` factory deserialize | tag, expected |
 
 Production message: `Seroval SRV008 (deserialize): https://seroval.vercel.app/docs/errors/SRV008`; without a step: `Seroval SRV011: <url>`.
 
 ## Deviations
 
-- The brief says 14 plain throws in `packages/plugins/web`; release/1.9.0 has 2 (both under SRV021).
+- The brief says 14 plain throws in `packages/plugins/web`; release/1.9.0 has 2 (mapped to SRV013 and SRV008, see Gotchas).
 - The five seroval plain throws are no longer at the brief's line numbers; the table gives their files.
 
 ## Stubs left
@@ -50,9 +49,9 @@ Production message: `Seroval SRV008 (deserialize): https://seroval.vercel.app/do
 - `CatalogDetails` for SRV001, SRV005 and SRV019 hold the raw value, only for the dev message. Never copy it into a prod message.
 - The docs-pages test (brief acceptance) can read `ERROR_CODES` and `getCatalogEntry(code).title` in the dev test environment.
 - SRV008 details are optional so a throw site that passes a sub-field can omit `nodeType` and `nodeId`.
-- `CatalogEntry.name` is the class that throws the code, or the standard class (`RangeError`) for API-misuse codes. SRV021 has name `SerovalError`.
-- SRV021 covers a data error (`validate.ts` claim) and an invalid path (`abort-signal.ts` factory). Recommendation: keep one code. Both mean a plugin refused a payload, the fix for the user is the same (do not send that payload), and `expected` tells them apart in the dev message. Split only if the docs page needs two different fixes; a split would be SRV022.
-- Maintainer to confirm: numbering order, shared SRV017 and SRV021, names of the three new classes.
+- `CatalogEntry.name` is the class that throws the code, or the standard class (`RangeError`) for API-misuse codes.
+- The two plain plugin throws have no code of their own (maintainer decision, SRV021 dropped before release). `plugins/web/validate.ts` `claim()` maps to SRV013 `SerovalPluginValidationError(tag, field)`; `claim()` needs the tag from its callers, or they catch and rethrow with it, and errors-plugins decides how. `plugins/web/abort-signal.ts` AbortControllerFactoryPlugin.deserialize maps to SRV008 `SerovalMalformedNodeError`. There is no `createSerovalPluginError` helper.
+- Maintainer to confirm: numbering order, shared SRV017, names of the three new classes.
 
 ## Proposed learnings
 

@@ -42,8 +42,6 @@ export const ERROR_CODES = {
   StreamOutputUnavailable: 'SRV018',
   InvalidMaxBase64Length: 'SRV019',
   Base64LengthLimit: 'SRV020',
-  // Plain throws of `packages/plugins/web`.
-  Plugin: 'SRV021',
 } as const;
 
 export type ErrorName = keyof typeof ERROR_CODES;
@@ -71,7 +69,6 @@ export interface CatalogDetails {
   SRV018: Record<never, never>;
   SRV019: { value: unknown };
   SRV020: { limit: number };
-  SRV021: { tag: string; expected: string };
 }
 
 export interface CatalogEntry<C extends ErrorCode = ErrorCode> {
@@ -286,12 +283,6 @@ There are few workarounds for this problem:
       'SerovalBase64LimitError',
       'An ArrayBuffer is larger than maxBase64Length',
       ({ limit }) => 'ArrayBuffer exceeds maxBase64Length (' + limit + ')',
-    ),
-    SRV021: defineEntry(
-      'SRV021',
-      'SerovalError',
-      'A plugin received a value it cannot use',
-      ({ tag, expected }) => 'Plugin "' + tag + '": ' + expected,
     ),
   };
 }
