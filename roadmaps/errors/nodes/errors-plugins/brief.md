@@ -10,7 +10,7 @@ outline: false
 milestone: 
 target: 
 ship: auto
-size: M
+size: S
 spike: false
 verify: 
 exclusive: []
@@ -23,8 +23,8 @@ reserves: []
 provides: []
 depends_on:
   - on: errors-base
-    kind: hard
-    why: needs the exported plugin error helper and a built seroval dist with it
+    kind: behavior
+    via: error-model
   - on: errors-contract
     kind: contract
     via: error-model
@@ -33,7 +33,12 @@ depends_on:
 
 ## Goal
 
-Replace the 14 plain `Error('Expected ...')` throws in `packages/plugins/web` (9 in `validate.ts`, 2 multi-line ones in `abort-signal.ts`, 1 each in `form-data.ts`, `readable-stream.ts`, `image-data.ts`) with a seroval error that carries the plugin tag and what was expected. Export a helper from seroval so third-party plugins can throw the same way.
+Replace the plain throws left in `packages/plugins/web` with existing seroval errors. Since seroval 1.8.0 the validators throw `SerovalPluginValidationError`, so 2 remain:
+
+- `validate.ts` `claim()` ("Expected a value used by one plugin value only."): throw `SerovalPluginValidationError(tag, field)` (SRV013). `claim()` has no tag today; pass it from the callers, or catch and rethrow with it at the deserialize sites.
+- `abort-signal.ts` `AbortControllerFactoryPlugin.deserialize`: throw `SerovalMalformedNodeError` (SRV008).
+
+No new code and no new helper (contract `error-model`, maintainer decision 2026-11-09). seroval-plugins keeps its `seroval: ^1.8.0` peer range.
 
 ## Context
 
@@ -42,13 +47,14 @@ Replace the 14 plain `Error('Expected ...')` throws in `packages/plugins/web` (9
 ## Acceptance
 
 - [ ] No plain `throw new Error(` left in `packages/plugins/web` (`grep -rn -A1 'throw new'`).
-- [ ] Plugin tests check `code` and `tag` on a rejected value.
+- [ ] Plugin tests check `code` (and `tag` for SRV013) on both throws.
+- [ ] The `seroval` peer range in `packages/plugins/package.json` stays `^1.8.0`.
 - [ ] Fast check passes.
 
 ## Sizing
 
-M: many small edits; coordination with another branch.
+S: two throw sites and their tests.
 
 ## Notes for the worker
 
-- Use `createSerovalPluginError` from `error-model`; errors-base implements it.
+- Both classes already exist in seroval 1.8.0; errors-base gives them their `code`. Code tests need errors-base, the class swap does not.

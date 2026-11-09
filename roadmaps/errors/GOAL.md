@@ -74,6 +74,7 @@ Every error seroval and seroval-plugins throw is a `SerovalError` with its own `
 - Q4, answered: minor release, with the changed names and messages called out in the changeset.
 - Q5, answered: errors caused by the data are seroval errors; errors caused by how the API is called stay standard JavaScript errors with a `code` added. So `ArrayBuffer exceeds maxBase64Length` (`deserializer.ts:418`) becomes a coded seroval limit error with `limit`, like `SerovalDepthLimitError`; it already reaches users wrapped in `SerovalDeserializationError`, so only `cause instanceof RangeError` breaks. `maxBase64Length must be a non-negative safe integer` (`deserializer.ts:117`) stays a `RangeError` with a `code`.
 - Q6, answered 2026-10-31: seroval 1.8.0 ships `feat/split-entry-points` and `feat/plugin-validate` (which already requires 1.8.0 in seroval-plugins). This roadmap releases as 1.9.0.
+- Q7, answered 2026-11-09: plugins get no codes of their own. A rejected plugin payload is `SerovalPluginValidationError` (SRV013), a node that must never be deserialized is `SerovalMalformedNodeError` (SRV008). seroval-plugins keeps `seroval: ^1.8.0`.
 
 ## Gates
 

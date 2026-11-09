@@ -63,10 +63,10 @@ Seroval SRV008 (deserialize): https://seroval.vercel.app/docs/errors/SRV008
 - The catalog has one generic code per step for wrappers around non-seroval errors.
 - Each code has a typed details interface (`CatalogDetails` keyed by code), so the throw sites and the messages agree on keys.
 - `SerovalMalformedNodeError(node, detail?)`: `node` is whatever the throw site passes today, which can be a sub-field such as a key or `node.f`. `nodeId` and `nodeType` are set only when it is a node.
-- The plugin error helper: `createSerovalPluginError(tag: string, expected: string): SerovalError`, with its own code.
+- Plugins have no codes of their own and no separate helper. A plugin that rejects its payload throws `SerovalPluginValidationError(tag, field)` (SRV013), which third-party plugins can import from `seroval`. A node that must never be deserialized, such as `AbortControllerFactoryPlugin`, throws `SerovalMalformedNodeError` (SRV008).
 - `cause` uses the ES2022 `{ cause }` option. The public `cause` field stays readable.
 - A wrapper around a non-seroval error uses a generic code for its step.
-- Codes are append-only. errors-contract assigns every code this roadmap needs, including plugin codes, so no later node reserves one.
+- Codes are append-only. errors-contract assigns every code this roadmap needs, so no later node reserves one.
 
 ## Stub
 
@@ -79,3 +79,4 @@ errors-contract freezes `packages/seroval/src/core/error-catalog.ts` with every 
 ## Changes
 
 - v1: initial draft, with the rules added after the adversarial review (`reviews/adversarial.md`).
+- v1, 2026-11-09 (before freeze): the maintainer dropped `createSerovalPluginError` and its code. Plugin errors use SRV013 and SRV008, so seroval-plugins keeps its `seroval: ^1.8.0` peer range.
