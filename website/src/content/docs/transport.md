@@ -192,16 +192,22 @@ const data = await reader.value;
 | `settled(key)` | Resolves once the value of `key` and every promise and stream in it settled. Rejects when the value fails, is cancelled, or the reader ends first. |
 | `cancel(key, reason?)` | Fails what still waits in `key`, forgets it, and drops its later messages. Tell the writer to cancel it too, if it can hear. |
 | `end(reason?)` | Fails every value that has not arrived, and every promise and stream that still waits. |
+| `size` | How many keys the reader holds. |
 
-The reader keeps each value until you `cancel` its key, so `get` returns the same value every time. On a connection that stays open, cancel each key once you are done with its value:
+The reader frees a key once it settled and you called both `get` and `settled` for it. You then hold both promises, so keep them instead of calling `get` again. A later `get` of a freed key waits for a new value under that key. On a connection that stays open, request both for each key:
 
 ```js
 const user = await reader.get('user');
 await reader.settled('user');
-reader.cancel('user');
 ```
 
-`createJSONReader` takes the options of [`createCrossDeserializer`](./streaming.md#receiving-a-json-stream), and `sharedRefs`. Pass the same `plugins` to the writer and the reader.
+A key that you only `get`, or never request, stays until you `cancel` it or the reader ends. The writer can send at most `maxKeys` keys that you have not requested. One more makes `push` throw a `SerovalTransportError`, so a writer cannot fill the reader's memory with values nobody reads.
+
+| Option | Description |
+| --- | --- |
+| `maxKeys` | The most keys the writer can send before you request them. Defaults to 1000. |
+
+`createJSONReader` also takes the options of [`createCrossDeserializer`](./streaming.md#receiving-a-json-stream), and `sharedRefs`. Pass the same `plugins` to the writer and the reader. `createJSReader` takes `scopeId` and `maxKeys`.
 
 ## References
 

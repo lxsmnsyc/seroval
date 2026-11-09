@@ -381,6 +381,82 @@ describe('Reader cancel', () => {
   });
 });
 
+describe('Reader memory', () => {
+  it('keeps no state for 10,000 sequential values', async () => {
+    const reader = createJSONReader();
+    const onDone = vi.fn();
+    const writer = createJSONWriter({ send: pipeTo(reader), onDone });
+    for (let i = 0; i < 10_000; i++) {
+      const key = writer.push({ i, later: Promise.resolve(i) });
+      const value = reader.get<{ i: number; later: Promise<number> }>(key);
+      const settled = reader.settled(key);
+      expect((await value).i).toBe(i);
+      await settled;
+      expect(reader.size).toBe(0);
+    }
+    writer.flush();
+    // The writer finishes only once it holds no value that is still sending.
+    expect(onDone).toHaveBeenCalledOnce();
+  });
+
+  it('keeps a value that settled before it was requested', async () => {
+    const reader = createJSONReader();
+    const writer = createJSONWriter({ send: pipeTo(reader) });
+    writer.write('a', 1);
+    expect(reader.size).toBe(1);
+    await expect(reader.get('a')).resolves.toBe(1);
+    await expect(reader.settled('a')).resolves.toBeUndefined();
+    expect(reader.size).toBe(0);
+  });
+
+  it('keeps a value that was only requested with get', async () => {
+    const reader = createJSONReader();
+    const writer = createJSONWriter({ send: pipeTo(reader) });
+    writer.write('a', 1);
+    await expect(reader.get('a')).resolves.toBe(1);
+    await expect(reader.get('a')).resolves.toBe(1);
+    expect(reader.size).toBe(1);
+    reader.cancel('a');
+    expect(reader.size).toBe(0);
+  });
+
+  it('does not remember a cancel of a key it freed', async () => {
+    const reader = createJSONReader();
+    const writer = createJSONWriter({ send: pipeTo(reader) });
+    writer.write('a', 1);
+    await reader.get('a');
+    await reader.settled('a');
+    reader.cancel('a');
+    expect(reader.size).toBe(0);
+  });
+
+  it('fails once the writer sends more than maxKeys values nobody requested', async () => {
+    const reader = createJSONReader({ maxKeys: 2 });
+    const wanted = reader.get('wanted');
+    reader.push([0, 'wanted', { t: 1, s: 'x' }]);
+    reader.push([0, 'a', { t: 1, s: 'x' }]);
+    reader.push([0, 'b', { t: 1, s: 'x' }]);
+    expect(() => {
+      reader.push([0, 'c', { t: 1, s: 'x' }]);
+    }).toThrow(SerovalTransportError);
+    // Requesting a key frees its place.
+    const a = reader.get('a');
+    reader.push([0, 'c', { t: 1, s: 'x' }]);
+    expect(reader.size).toBe(4);
+    await expect(wanted).resolves.toBe('x');
+    await expect(a).resolves.toBe('x');
+  });
+
+  it('applies maxKeys to the JS reader', () => {
+    const reader = createJSReader({ scopeId: 'max-keys', maxKeys: 1 });
+    reader.push([0, 'a', '1']);
+    expect(() => {
+      reader.push([0, 'b', '1']);
+    }).toThrow(SerovalTransportError);
+    reader.end();
+  });
+});
+
 describe('Web Streams', () => {
   function toBody(value: unknown, highWaterMark?: number): ReadableStream<Uint8Array> {
     return toWebStream((sink) => toJSONStream(value, sink), { highWaterMark });

@@ -7,14 +7,15 @@ export { SerovalTransportError } from './message';
 
 export interface Reader {
   /**
-   * Takes the next message from the writer. Throws on a malformed message;
-   * end the reader with that error then, since the writer cannot be trusted
-   * anymore.
+   * Takes the next message from the writer. Throws on a malformed message,
+   * or on a key past `maxKeys`; end the reader with that error then, since
+   * the writer cannot be trusted anymore.
    */
   push(message: unknown): void;
   /**
    * Resolves with the value of `key` once its first message arrives. Later
-   * messages settle the promises and streams in it.
+   * messages settle the promises and streams in it. Keep the promise: once
+   * the key is freed, a later call waits for a new value under it.
    */
   get<T>(key: string): Promise<T>;
   /**
@@ -26,10 +27,15 @@ export interface Reader {
   /**
    * Stops reading `key`: fails what still waits in it, forgets it, and drops
    * its later messages. Tell the writer to `cancel` it too, if it can hear.
-   * The reader keeps every value until then, so on a long-lived connection,
-   * cancel each key once you are done with its value.
+   * A key the reader no longer holds, such as one that settled after both
+   * `get` and `settled` were called, is left alone.
    */
   cancel(key: string, reason?: unknown): void;
+  /**
+   * How many keys the reader holds. A key is freed once it settled and both
+   * `get` and `settled` were called for it, or when it is cancelled.
+   */
+  readonly size: number;
   /**
    * Stops reading. Every value that has not arrived, and every promise and
    * stream that still waits, fails with `reason`, or with a
@@ -45,15 +51,28 @@ export interface ValueReader<T> extends Pick<Reader, 'push' | 'end'> {
   settled: Promise<void>;
 }
 
-export interface JSONReaderOptions extends CrossDeserializerOptions {
+export interface ReaderOptions {
+  /**
+   * The most keys the writer can send that `get` and `settled` were not
+   * called for. The reader keeps these values until they are requested, so
+   * a writer that sends more fails with a `SerovalTransportError`.
+   * Defaults to 1000.
+   */
+  maxKeys?: number;
+}
+
+export interface JSONReaderOptions extends CrossDeserializerOptions, ReaderOptions {
   /** Shares one set of references across every value. Match the writer. */
   sharedRefs?: boolean;
 }
 
-export interface JSReaderOptions {
+export interface JSReaderOptions extends ReaderOptions {
   /** The `scopeId` that the writer used. */
   scopeId: string;
 }
+
+/** The default `maxKeys`. */
+const DEFAULT_MAX_KEYS = 1000;
 
 /** How a reader turns the data of each key into values. */
 interface Decoder {
@@ -83,6 +102,10 @@ interface Slot {
   state: typeof WAITING | typeof OPEN | typeof SETTLED;
   value: Deferred<unknown>;
   settled: Deferred<void>;
+  // Whether `get` and `settled` were called. Once both were and the key
+  // settled, the caller holds both promises and the slot can be freed.
+  gotValue: boolean;
+  gotSettled: boolean;
 }
 
 // A value that nobody reads can fail, and must not cause an unhandled
@@ -101,7 +124,18 @@ function createDeferred<T>(): Deferred<T> {
 }
 
 function createSlot(): Slot {
-  return { state: WAITING, value: createDeferred(), settled: createDeferred() };
+  return {
+    state: WAITING,
+    value: createDeferred(),
+    settled: createDeferred(),
+    gotValue: false,
+    gotSettled: false,
+  };
+}
+
+/** True when nobody called `get` or `settled` for the slot yet. */
+function isUnrequested(slot: Slot): boolean {
+  return !slot.gotValue && !slot.gotSettled;
 }
 
 /** Fails a slot that has not settled. A slot that is open has its value. */
@@ -129,34 +163,64 @@ function createUnexpectedError(key: string): SerovalTransportError {
   return new SerovalTransportError(`The transport received a message for "${key}" after it ended.`);
 }
 
-function createReader(decoder: Decoder): Reader {
+function createReader(decoder: Decoder, options: ReaderOptions): Reader {
+  const maxKeys = options.maxKeys ?? DEFAULT_MAX_KEYS;
   const slots = new Map<string, Slot>();
   // Keys that the reader cancelled before the writer ended them. Their later
   // messages are dropped.
   const cancelled = new Set<string>();
+  // How many slots the writer opened that nobody requested yet.
+  let unrequested = 0;
   let ended = false;
   let endReason: unknown;
 
+  /** Returns the slot of `key` for a message, and counts a new one. */
   function getSlot(key: string): Slot {
     let slot = slots.get(key);
     if (!slot) {
+      // Only the app can free these, so a writer cannot open them freely.
+      if (unrequested >= maxKeys) {
+        throw new SerovalTransportError(
+          `The writer sent more than ${maxKeys} values that were not requested.`,
+        );
+      }
       slot = createSlot();
       slots.set(key, slot);
+      unrequested++;
     }
     return slot;
   }
 
+  /** Forgets `key`. */
+  function removeSlot(key: string, slot: Slot): void {
+    slots.delete(key);
+    if (isUnrequested(slot)) {
+      unrequested--;
+    }
+  }
+
+  /** Frees a slot that settled once the caller holds both of its promises. */
+  function releaseSlot(key: string, slot: Slot): void {
+    if (slot.state === SETTLED && slot.gotValue && slot.gotSettled) {
+      removeSlot(key, slot);
+    }
+  }
+
   /** Returns the slot of `key` for `get` and `settled`, which never open it. */
   function requestSlot(key: string): Slot {
-    const slot = slots.get(key);
+    let slot = slots.get(key);
     if (slot) {
-      return slot;
+      if (isUnrequested(slot)) {
+        unrequested--;
+      }
+    } else {
+      slot = createSlot();
+      slots.set(key, slot);
+      if (ended) {
+        failSlot(slot, endReason ?? createMissingError(key));
+      }
     }
-    const created = getSlot(key);
-    if (ended) {
-      failSlot(created, endReason ?? createMissingError(key));
-    }
-    return created;
+    return slot;
   }
 
   function onData(key: string, data: unknown): void {
@@ -182,12 +246,14 @@ function createReader(decoder: Decoder): Reader {
     if (done) {
       slot.state = SETTLED;
       slot.settled.resolve();
+      releaseSlot(key, slot);
       decoder.done(key);
       return;
     }
     const state = slot.state;
     const reason = createFailError(key);
     failSlot(slot, reason);
+    releaseSlot(key, slot);
     if (state === OPEN) {
       decoder.fail(key, reason);
     }
@@ -213,25 +279,37 @@ function createReader(decoder: Decoder): Reader {
       }
     },
     get<T>(key: string): Promise<T> {
-      return requestSlot(key).value.promise as Promise<T>;
+      const slot = requestSlot(key);
+      slot.gotValue = true;
+      releaseSlot(key, slot);
+      return slot.value.promise as Promise<T>;
     },
     settled(key) {
-      return requestSlot(key).settled.promise;
+      const slot = requestSlot(key);
+      slot.gotSettled = true;
+      releaseSlot(key, slot);
+      return slot.settled.promise;
     },
     cancel(key, reason = new SerovalTransportError(`"${key}" was cancelled.`)) {
+      // A key the reader does not hold has nothing to fail. Remembering it
+      // would keep every key that is cancelled after it was freed.
       const slot = slots.get(key);
-      slots.delete(key);
-      if (ended || slot?.state === SETTLED) {
+      if (!slot) {
+        return;
+      }
+      removeSlot(key, slot);
+      if (ended || slot.state === SETTLED) {
         return;
       }
       cancelled.add(key);
-      if (slot) {
-        const state = slot.state;
-        failSlot(slot, reason);
-        if (state === OPEN) {
-          decoder.fail(key, reason);
-        }
+      const state = slot.state;
+      failSlot(slot, reason);
+      if (state === OPEN) {
+        decoder.fail(key, reason);
       }
+    },
+    get size() {
+      return slots.size + cancelled.size;
     },
     end(reason) {
       if (ended) {
@@ -258,23 +336,26 @@ function createReader(decoder: Decoder): Reader {
  * from the messages.
  */
 export function createJSONReader(options: JSONReaderOptions = {}): Reader {
-  const { sharedRefs, ...deserializer } = options;
+  const { sharedRefs, maxKeys, ...deserializer } = options;
   if (sharedRefs) {
     const session = createCrossDeserializer(deserializer);
-    return createReader({
-      open: (_, data) => session.deserialize(data as SerovalNode),
-      next(_, data) {
-        session.deserialize(data as SerovalNode);
+    return createReader(
+      {
+        open: (_, data) => session.deserialize(data as SerovalNode),
+        next(_, data) {
+          session.deserialize(data as SerovalNode);
+        },
+        // The references are shared, so a key cannot free or fail them alone.
+        done() {},
+        fail() {},
+        end(reason) {
+          if (session.pending > 0) {
+            session.abort(reason);
+          }
+        },
       },
-      // The references are shared, so a key cannot free or fail them alone.
-      done() {},
-      fail() {},
-      end(reason) {
-        if (session.pending > 0) {
-          session.abort(reason);
-        }
-      },
-    });
+      { maxKeys },
+    );
   }
   const sessions = new Map<string, CrossDeserializer>();
   function stopSession(key: string, reason: unknown): void {
@@ -284,34 +365,37 @@ export function createJSONReader(options: JSONReaderOptions = {}): Reader {
       session.abort(reason);
     }
   }
-  return createReader({
-    open(key, data) {
-      const session = createCrossDeserializer(deserializer);
-      sessions.set(key, session);
-      return session.deserialize(data as SerovalNode);
-    },
-    next(key, data) {
-      sessions.get(key)?.deserialize(data as SerovalNode);
-    },
-    done(key) {
-      stopSession(key, createEndError());
-    },
-    fail: stopSession,
-    end(reason) {
-      // Abort every session, even when a stream listener throws.
-      let failure: { value: unknown } | undefined;
-      for (const key of Array.from(sessions.keys())) {
-        try {
-          stopSession(key, reason);
-        } catch (error) {
-          failure ??= { value: error };
+  return createReader(
+    {
+      open(key, data) {
+        const session = createCrossDeserializer(deserializer);
+        sessions.set(key, session);
+        return session.deserialize(data as SerovalNode);
+      },
+      next(key, data) {
+        sessions.get(key)?.deserialize(data as SerovalNode);
+      },
+      done(key) {
+        stopSession(key, createEndError());
+      },
+      fail: stopSession,
+      end(reason) {
+        // Abort every session, even when a stream listener throws.
+        let failure: { value: unknown } | undefined;
+        for (const key of Array.from(sessions.keys())) {
+          try {
+            stopSession(key, reason);
+          } catch (error) {
+            failure ??= { value: error };
+          }
         }
-      }
-      if (failure) {
-        throw failure.value;
-      }
+        if (failure) {
+          throw failure.value;
+        }
+      },
     },
-  });
+    { maxKeys },
+  );
 }
 
 /**
@@ -364,17 +448,20 @@ function releaseScope(scopeId: string, reason: unknown): void {
  */
 export function createJSReader(options: JSReaderOptions): Reader {
   const scopeId = options.scopeId;
-  return createReader({
-    open: (_, data) => deserialize(data as string),
-    next(_, data) {
-      deserialize(data as string);
+  return createReader(
+    {
+      open: (_, data) => deserialize(data as string),
+      next(_, data) {
+        deserialize(data as string);
+      },
+      done() {},
+      fail() {},
+      end(reason) {
+        releaseScope(scopeId, reason);
+      },
     },
-    done() {},
-    fail() {},
-    end(reason) {
-      releaseScope(scopeId, reason);
-    },
-  });
+    options,
+  );
 }
 
 /** The key that `toJSONStream` and `toJSStream` send their value under. */
