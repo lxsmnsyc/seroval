@@ -1,4 +1,4 @@
-import { SerovalDeserializationError } from 'seroval';
+import { SerovalDeserializationError, SerovalPluginValidationError, toJSON } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import {
   FILE_FIELD,
@@ -9,6 +9,28 @@ import {
   toFormData,
   toFormRequest,
 } from '../src/web';
+
+function getCause(run: () => unknown): unknown {
+  try {
+    run();
+  } catch (error) {
+    expect(error).toBeInstanceOf(SerovalDeserializationError);
+    return error instanceof SerovalDeserializationError ? error.cause : undefined;
+  }
+  throw new Error('Expected an error.');
+}
+
+// Copies `form` with one field of the root plugin node replaced by `value`.
+function tamperRoot(form: FormData, field: string, value: unknown): FormData {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
+  const json = JSON.parse(String(form.get(VALUE_FIELD))) as { t: { s: Record<string, unknown> } };
+  json.t.s[field] = toJSON(value).t;
+  const tampered = new FormData();
+  for (const [name, part] of form.entries()) {
+    tampered.set(name, name === VALUE_FIELD ? JSON.stringify(json) : part);
+  }
+  return tampered;
+}
 
 describe('form data', () => {
   it('sends files and blobs as parts', async () => {
@@ -87,6 +109,32 @@ describe('form data', () => {
     const form = await toFormData(new Blob(['x']));
     form.set(FILE_FIELD + '0', 'text');
     expect(() => fromFormData(form)).toThrow(SerovalDeserializationError);
+  });
+
+  it('checks the fields of a blob node with its validators', async () => {
+    const form = await toFormData(new File(['x'], 'a.txt', { lastModified: 1 }));
+    const fields: [field: string, value: unknown][] = [
+      ['i', -1],
+      ['i', 0.5],
+      ['t', 1],
+      ['n', 1],
+      ['l', '1'],
+    ];
+    for (const [field, value] of fields) {
+      const cause = getCause(() => fromFormData(tamperRoot(form, field, value)));
+      expect(cause).toBeInstanceOf(SerovalPluginValidationError);
+      expect(cause).toMatchObject({ field });
+    }
+  });
+
+  it('checks the entries of a form data node with its validator', async () => {
+    const form = await toFormData(new FormData());
+    const entries: unknown[] = ['text', [['name']], [[1, 'value']], [['name', 1]]];
+    for (const value of entries) {
+      const cause = getCause(() => fromFormData(tamperRoot(form, 'e', value)));
+      expect(cause).toBeInstanceOf(SerovalPluginValidationError);
+      expect(cause).toMatchObject({ field: 'e' });
+    }
   });
 
   it('reads the form fields once, however many blobs the value has', async () => {
