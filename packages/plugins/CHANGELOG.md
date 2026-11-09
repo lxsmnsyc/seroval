@@ -1,5 +1,15 @@
 # seroval-plugins
 
+## 1.8.0
+
+### Minor Changes
+
+- 7fe0193: The web plugins check their fields with `validate`. A field with the wrong type now throws `SerovalPluginValidationError`, as the `cause` of the decoding error. The ReadableStream plugin now also checks that its source is a stream. `seroval-plugins` now needs `seroval` 1.8.0 or newer.
+
+### Patch Changes
+
+- 9250406: The web plugins import from `seroval/shared` instead of `seroval`, so a bundle that only reads or only writes does not pull in the other side through them.
+
 ## 1.7.8
 
 ### Patch Changes

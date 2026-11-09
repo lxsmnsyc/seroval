@@ -1,5 +1,17 @@
 # seroval
 
+## 1.8.0
+
+### Minor Changes
+
+- 7fe0193: Add the optional `validate` plugin field and the `v` validators. `validate` lists a validator for each field of a plugin's node. When `deserialize` reads a listed field with `ctx.deserialize`, the decoded value is checked first, and `SerovalPluginValidationError` is thrown if it fails. It applies to `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`. The validators are exported as `v` from `seroval`, and as a module from `seroval/validator`.
+- d1ada33: Add the `seroval/read`, `seroval/write` and `seroval/shared` entry points, so bundlers can put reading and writing in separate chunks.
+
+  - `seroval/read` exports `fromJSON`, `fromCrossJSON`, `createCrossDeserializer` and `deserialize`.
+  - `seroval/write` exports the serializers, `Serializer` and `getCrossReferenceHeader`.
+  - `seroval/shared` exports what both sides use, such as `createPlugin`, `Feature`, `Stream` and the errors. `seroval/read` and `seroval/write` also export it.
+  - `seroval` still exports everything. All entry points load the same chunks, so classes keep one identity.
+
 ## 1.7.10
 
 ### Patch Changes
