@@ -11,7 +11,6 @@ import {
   NIL,
   SerovalNodeType,
   SerovalTemporalType,
-  type TypedArrayValue,
 } from '../constants';
 import { SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
@@ -35,7 +34,7 @@ import type {
   SerovalWKSymbolNode,
 } from '../types';
 import { getObjectFlag } from '../utils/get-object-flag';
-import { type ArrayBufferViewState, getTypedArrayName } from '../utils/typed-array';
+import type { ArrayBufferViewState } from '../utils/typed-array';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
@@ -357,12 +356,12 @@ export function getObjectKind(
   // Subclasses of typed arrays and DataView, such as Node's Buffer, are parsed
   // as their base type, so the typed array size limit applies to them too.
   if (ArrayBuffer.isView(current)) {
-    // DataView has no typed array name.
-    const name: string | undefined = getTypedArrayName(current as TypedArrayValue);
-    if (name === NIL) {
+    if (current instanceof DataView) {
       return ObjectKind.DataView;
     }
-    if (name !== 'BigInt64Array' && name !== 'BigUint64Array') {
+    // The serializers name the type by tag, so the output never carries a name
+    // taken from the value.
+    if (!(current instanceof BigInt64Array || current instanceof BigUint64Array)) {
       return ObjectKind.TypedArray;
     }
     if (features & FeatureFlag.BigIntTypedArray) {
