@@ -76,7 +76,10 @@ export interface CatalogDetails {
 
 export interface CatalogEntry<C extends ErrorCode = ErrorCode> {
   code: C;
-  /** The class name, or the throw site for errors that are not seroval classes. */
+  /**
+   * The class that throws the code, or the standard class (such as
+   * `RangeError`) for errors caused by how the API is called.
+   */
   name: string;
   /** One line for the docs page. */
   title: string;
@@ -98,6 +101,9 @@ export interface SerovalErrorShape {
   readonly tag?: string;
   readonly limit?: number;
   readonly detail?: string;
+  readonly value?: unknown;
+  readonly field?: string;
+  readonly reason?: LiveStreamErrorReason;
   readonly cause?: unknown;
 }
 
@@ -270,7 +276,7 @@ There are few workarounds for this problem:
     ),
     SRV019: defineEntry(
       'SRV019',
-      'RangeError (createBaseDeserializerContext)',
+      'RangeError',
       'The maxBase64Length option is invalid',
       ({ value }) =>
         'maxBase64Length must be a non-negative safe integer, received ' + describeValue(value),
@@ -283,7 +289,7 @@ There are few workarounds for this problem:
     ),
     SRV021: defineEntry(
       'SRV021',
-      'SerovalError (createSerovalPluginError)',
+      'SerovalError',
       'A plugin received a value it cannot use',
       ({ tag, expected }) => 'Plugin "' + tag + '": ' + expected,
     ),
@@ -296,7 +302,7 @@ const CATALOG: Catalog | undefined = import.meta.env.PROD ? undefined : createCa
 
 /** The entry of a code. It is `undefined` in production builds. */
 export function getCatalogEntry<C extends ErrorCode>(code: C): CatalogEntry<C> | undefined {
-  return CATALOG && (CATALOG[code] as CatalogEntry<C>);
+  return CATALOG?.[code];
 }
 
 /** The development message of a code. It is empty in production builds. */

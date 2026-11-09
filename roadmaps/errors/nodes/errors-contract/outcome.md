@@ -3,7 +3,7 @@
 ## Built
 
 - `packages/seroval/src/core/error-catalog.ts`: `ERROR_CODES` (name to code), `ErrorCode`, `CatalogDetails` (details type per code), `CatalogEntry`, `SerovalErrorShape` (type-only base skeleton), `SerovalErrorStep`, `LiveStreamErrorReason`, `DOCS_ERRORS_URL`, `getCatalogEntry(code)`, `getDevMessage(code, details)`, `getProdMessage(code, step?)`.
-- `packages/seroval/test/errors/model.test.ts`: codes unique, well formed (`SRV` + 3 digits), no gaps, one entry and unique name per code, dev message renders, production format.
+- `packages/seroval/test/errors/model.test.ts`: codes unique, well formed (`SRV` + 3 digits), one entry and unique name per code, codes strictly increasing up to SRV021 (gaps allowed, per the header comment), dev message renders, production format.
 - `core/errors.ts` is untouched. Nothing imports the catalog yet.
 - `LiveStreamErrorReason` is defined in the catalog too (same union as in `errors.ts`). errors-base should make `errors.ts` re-export it from the catalog.
 
@@ -29,7 +29,7 @@ Codes (append-only; codes after SRV021 are free for binary mode):
 | SRV016 | SerovalDeserializationError (generic, deserialize step) | cause |
 | SRV017 | "Stream consumed" in `core/stream.ts` and `core/constructors.ts`; proposed class SerovalStreamConsumedError | none |
 | SRV018 | "Stream output callback is unavailable" in `core/context/stream-parser.ts`; proposed SerovalStreamOutputError | none |
-| SRV019 | `maxBase64Length` option check in `core/context/deserializer.ts`; stays a RangeError with `code` | value |
+| SRV019 | `maxBase64Length` option check in `core/context/deserializer.ts` (entry name `RangeError`); stays a RangeError with `code` | value |
 | SRV020 | ArrayBuffer over `maxBase64Length` in `deserializer.ts`; proposed SerovalBase64LimitError with `limit` | limit |
 | SRV021 | Plugin errors via `createSerovalPluginError(tag, expected)`: `plugins/web/validate.ts` claim and `plugins/web/abort-signal.ts` factory deserialize | tag, expected |
 
@@ -50,6 +50,8 @@ Production message: `Seroval SRV008 (deserialize): https://seroval.vercel.app/do
 - `CatalogDetails` for SRV001, SRV005 and SRV019 hold the raw value, only for the dev message. Never copy it into a prod message.
 - The docs-pages test (brief acceptance) can read `ERROR_CODES` and `getCatalogEntry(code).title` in the dev test environment.
 - SRV008 details are optional so a throw site that passes a sub-field can omit `nodeType` and `nodeId`.
+- `CatalogEntry.name` is the class that throws the code, or the standard class (`RangeError`) for API-misuse codes. SRV021 has name `SerovalError`.
+- SRV021 covers a data error (`validate.ts` claim) and an invalid path (`abort-signal.ts` factory). Recommendation: keep one code. Both mean a plugin refused a payload, the fix for the user is the same (do not send that payload), and `expected` tells them apart in the dev message. Split only if the docs page needs two different fixes; a split would be SRV022.
 - Maintainer to confirm: numbering order, shared SRV017 and SRV021, names of the three new classes.
 
 ## Proposed learnings
@@ -58,9 +60,9 @@ Production message: `Seroval SRV008 (deserialize): https://seroval.vercel.app/do
 
 ## Verification
 
-- `pnpm --filter seroval build && pnpm --filter seroval test --run && pnpm --filter seroval-plugins test --run`: pass (1435 and 265 tests).
-- `npx oxlint` and `npx oxfmt` on the two new files: clean.
-- PROD strip: esbuild bundle of the catalog with `import.meta.env.PROD=true`, minified, is 263 bytes with no message strings; with `false` it is 4.9 kB. Existing dist is unchanged because nothing imports the catalog yet.
+- `pnpm --filter seroval build && pnpm --filter seroval test --run && pnpm --filter seroval-plugins test --run`: pass (1436 and 265 tests).
+- `npx oxlint` and `npx oxfmt --check` on the two new files: clean (after the review fixes; the first version had 2 oxlint errors).
+- PROD strip is also a test in `model.test.ts` (esbuild with `PROD=true`, minified, no titles, names or message text in the output). By hand: esbuild bundle of the catalog with `import.meta.env.PROD=true`, minified, is 263 bytes with no message strings; with `false` it is 4.9 kB. Existing dist is unchanged because nothing imports the catalog yet.
 
 ## Size
 

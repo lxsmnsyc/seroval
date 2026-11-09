@@ -1,6 +1,7 @@
+import { fileURLToPath } from 'node:url';
+import { build } from 'esbuild';
 import { describe, expect, it } from 'vitest';
 import {
-  type CatalogDetails,
   DOCS_ERRORS_URL,
   ERROR_CODES,
   type ErrorCode,
@@ -11,28 +12,28 @@ import {
 
 const CODES = Object.values(ERROR_CODES) as ErrorCode[];
 
-const SAMPLE_DETAILS: { [C in ErrorCode]: CatalogDetails[C] } = {
-  SRV001: { value: Symbol('secret') },
-  SRV002: { nodeType: 99 },
-  SRV003: { tag: 'tag' },
-  SRV004: { tag: 'tag' },
-  SRV005: { value: {} },
-  SRV006: { id: 'id' },
-  SRV007: { name: 'Foo' },
-  SRV008: { nodeType: 1, nodeId: 2, detail: 'detail' },
-  SRV009: { nodeId: 3 },
-  SRV010: { limit: 10 },
-  SRV011: {},
-  SRV012: { reason: 'closed' },
-  SRV013: { tag: 'tag', field: 'field' },
-  SRV014: { cause: new Error('cause') },
-  SRV015: { cause: 'text' },
-  SRV016: { cause: new Error('cause') },
-  SRV017: {},
-  SRV018: {},
-  SRV019: { value: -1 },
-  SRV020: { limit: 5 },
-  SRV021: { tag: 'tag', expected: 'expected' },
+const RENDER: { [C in ErrorCode]: () => string } = {
+  SRV001: () => getDevMessage('SRV001', { value: Symbol('secret') }),
+  SRV002: () => getDevMessage('SRV002', { nodeType: 99 }),
+  SRV003: () => getDevMessage('SRV003', { tag: 'tag' }),
+  SRV004: () => getDevMessage('SRV004', { tag: 'tag' }),
+  SRV005: () => getDevMessage('SRV005', { value: {} }),
+  SRV006: () => getDevMessage('SRV006', { id: 'id' }),
+  SRV007: () => getDevMessage('SRV007', { name: 'Foo' }),
+  SRV008: () => getDevMessage('SRV008', { nodeType: 1, nodeId: 2, detail: 'detail' }),
+  SRV009: () => getDevMessage('SRV009', { nodeId: 3 }),
+  SRV010: () => getDevMessage('SRV010', { limit: 10 }),
+  SRV011: () => getDevMessage('SRV011', {}),
+  SRV012: () => getDevMessage('SRV012', { reason: 'closed' }),
+  SRV013: () => getDevMessage('SRV013', { tag: 'tag', field: 'field' }),
+  SRV014: () => getDevMessage('SRV014', { cause: new Error('cause') }),
+  SRV015: () => getDevMessage('SRV015', { cause: 'text' }),
+  SRV016: () => getDevMessage('SRV016', { cause: new Error('cause') }),
+  SRV017: () => getDevMessage('SRV017', {}),
+  SRV018: () => getDevMessage('SRV018', {}),
+  SRV019: () => getDevMessage('SRV019', { value: -1 }),
+  SRV020: () => getDevMessage('SRV020', { limit: 5 }),
+  SRV021: () => getDevMessage('SRV021', { tag: 'tag', expected: 'expected' }),
 };
 
 describe('error catalog', () => {
@@ -46,15 +47,15 @@ describe('error catalog', () => {
     expect(new Set(CODES).size).toBe(CODES.length);
   });
 
-  it('numbers codes from SRV001 without gaps', () => {
-    const numbers: number[] = [];
+  it('numbers codes in strictly increasing order up to SRV021', () => {
+    // A removed code leaves its number unused, so gaps are allowed.
+    let previous = 0;
     for (const code of CODES) {
-      numbers.push(Number(code.slice(3)));
+      const value = Number(code.slice(3));
+      expect(value).toBeGreaterThan(previous);
+      previous = value;
     }
-    numbers.sort((a, b) => a - b);
-    for (let i = 0; i < numbers.length; i++) {
-      expect(numbers[i]).toBe(i + 1);
-    }
+    expect(CODES[CODES.length - 1]).toBe('SRV021');
   });
 
   it('has one entry per code with a unique name', () => {
@@ -76,9 +77,30 @@ describe('error catalog', () => {
 
   it('renders a development message for every code', () => {
     for (const code of CODES) {
-      const details = SAMPLE_DETAILS[code];
-      expect(getDevMessage(code, details as never).length).toBeGreaterThan(0);
+      expect(RENDER[code]().length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('production build', () => {
+  it('strips the development messages', async () => {
+    const result = await build({
+      entryPoints: [fileURLToPath(new URL('../../src/core/error-catalog.ts', import.meta.url))],
+      bundle: true,
+      minify: true,
+      format: 'esm',
+      write: false,
+      define: { 'import.meta.env.PROD': 'true' },
+    });
+    const output = result.outputFiles[0].text;
+    for (const code of CODES) {
+      const entry = getCatalogEntry(code)!;
+      expect(output).not.toContain(entry.title);
+      expect(output).not.toContain(entry.name);
+    }
+    expect(output).not.toContain('Malformed node');
+    expect(output).not.toContain('Missing plugin');
+    expect(output).not.toContain('Depth limit');
   });
 });
 

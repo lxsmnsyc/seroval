@@ -9,3 +9,4 @@
 - Type-only base skeleton is `SerovalErrorShape` in error-catalog.ts. `core/errors.ts` is untouched.
 - Prod format helper `getProdMessage(code, step?)` and `DOCS_ERRORS_URL` are in the catalog, so errors-base only calls them.
 - Dead end: tsc could not run in the worktree without node_modules; ran `pnpm install --frozen-lockfile`. Type check comes from the build and vitest.
+- Review fixes: removed cast and `as never`, strictly-increasing test replaces no-gaps test, plain names for SRV019 and SRV021, value/field/reason added to SerovalErrorShape, PROD strip test added. SRV021 stays one code (see outcome).
