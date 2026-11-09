@@ -1,7 +1,7 @@
 ---
 id: errors-contract
 title: Error model and catalog
-status: todo
+status: active
 priority: must
 type: contract
 story: 
