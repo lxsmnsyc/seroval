@@ -13,6 +13,14 @@ const DEV_BUILDS: Record<string, string> = {
   'seroval-plugins/web': path.join(ROOT, 'packages/plugins/dist/dev/web.js'),
 };
 
+// Link previews need absolute URLs. Vercel sets the production domain at
+// build time. `SITE_URL` overrides it, for a preview or another host.
+const SITE_URL =
+  process.env.SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://seroval.vercel.app');
+
 function workspaceDevBuilds(): Plugin {
   const importers = [path.join(import.meta.dirname, 'src'), path.join(ROOT, 'packages')];
   return {
@@ -32,6 +40,9 @@ function workspaceDevBuilds(): Plugin {
 }
 
 export default defineConfig({
+  define: {
+    'import.meta.env.SITE_URL': JSON.stringify(SITE_URL),
+  },
   plugins: [
     workspaceDevBuilds(),
     content(ROOT),

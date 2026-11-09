@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- The share image. `pnpm og` renders it to public/og.png at 1200 by 630. -->
+    <style>
+      @font-face {
+        font-family: 'Geist';
+        font-weight: 100 900;
+        src: url('../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2')
+          format('woff2');
+      }
+
+      @font-face {
+        font-family: 'Geist Mono';
+        font-weight: 100 900;
+        src: url('../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2')
+          format('woff2');
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      /* The same tokens as src/styles.css. */
+      :root {
+        --bg: #07080a;
+        --bg-subtle: #0d0f12;
+        --fg: #e8eaed;
+        --fg-muted: #9aa1ab;
+        --fg-subtle: #59606b;
+        --border: #1b1f25;
+        --signal: #ff3d81;
+        --c-date: #ffb547;
+        --c-set: #4fd8e8;
+        --c-map: #a98bff;
+        --c-big: #b6f35c;
+        --sans: 'Geist', system-ui, sans-serif;
+        --mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+      }
+
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+
+      body {
+        display: grid;
+        grid-template-columns: 640px 1fr;
+        background:
+          radial-gradient(560px 420px at 88% 30%, rgb(255 61 129 / 12%), transparent 70%),
+          var(--bg);
+        color: var(--fg);
+        font-family: var(--sans);
+      }
+
+      .copy {
+        display: flex;
+        flex-direction: column;
+        padding: 64px 0 64px 72px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .mark {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border: 1.5px solid var(--signal);
+        border-radius: 8px;
+        color: var(--signal);
+        font-family: var(--mono);
+        font-size: 19px;
+      }
+
+      h1 {
+        margin-top: 64px;
+        font-size: 84px;
+        font-weight: 600;
+        letter-spacing: -0.055em;
+        line-height: 0.95;
+      }
+
+      h1 .tok {
+        color: var(--signal);
+        font-family: var(--mono);
+        font-weight: 400;
+        letter-spacing: -0.06em;
+      }
+
+      h1 em {
+        color: var(--fg-subtle);
+        font-style: normal;
+      }
+
+      .lede {
+        margin-top: 28px;
+        max-width: 500px;
+        color: var(--fg-muted);
+        font-size: 25px;
+        line-height: 1.4;
+      }
+
+      .install {
+        display: inline-flex;
+        align-self: flex-start;
+        gap: 12px;
+        margin-top: auto;
+        padding: 12px 18px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-subtle);
+        color: var(--fg-muted);
+        font-family: var(--mono);
+        font-size: 21px;
+      }
+
+      .install b {
+        color: var(--signal);
+        font-weight: 400;
+      }
+
+      /* A value and the code seroval writes for it. */
+      .stage {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 18px;
+        padding-right: 64px;
+        font-family: var(--mono);
+      }
+
+      .panel {
+        padding: 22px 26px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-subtle);
+        font-size: 17px;
+        line-height: 1.6;
+        white-space: pre;
+      }
+
+      .label {
+        margin-bottom: 10px;
+        color: var(--fg-subtle);
+        font-size: 15px;
+      }
+
+      .k {
+        color: var(--fg-subtle);
+      }
+
+      .date {
+        color: var(--c-date);
+      }
+
+      .map {
+        color: var(--c-map);
+      }
+
+      .set {
+        color: var(--c-set);
+      }
+
+      .big {
+        color: var(--c-big);
+      }
+
+      .ref {
+        color: var(--signal);
+      }
+    </style>
+  </head>
+  <body>
+    <section class="copy">
+      <div class="brand">
+        <span class="mark">{}</span>
+        seroval
+      </div>
+      <h1>Serialize what<br /><span class="tok">JSON</span> <em>can't.</em></h1>
+      <p class="lede">Cyclic references, Dates, Maps, promises, streams and more.</p>
+      <div class="install"><b>$</b> npm install seroval</div>
+    </section>
+
+    <section class="stage" aria-hidden="true">
+      <div class="panel"><div class="label">value</div><span class="k">const</span> a = {
+  at: <span class="date">new Date(0)</span>,
+  tags: <span class="set">new Set(['x'])</span>,
+  ids: <span class="map">new Map([[1, <span class="big">2n</span>]])</span>,
+};
+a.<span class="ref">self</span> = a;</div>
+      <div class="panel"><div class="label">serialize(a)</div>(h=&gt;(h={
+  at:<span class="date">new Date("1970-01-01T00:00:00.000Z")</span>,
+  tags:<span class="set">new Set(["x"])</span>,
+  ids:<span class="map">new Map([[1,<span class="big">2n</span>]])</span>},
+  h.<span class="ref">self</span>=h,h))()</div>
+    </section>
+  </body>
+</html>

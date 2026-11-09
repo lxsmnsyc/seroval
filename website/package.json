@@ -9,7 +9,8 @@
     "dev": "vite",
     "build": "vite build && node scripts/prerender.js",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "og": "node scripts/og.ts"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.5",

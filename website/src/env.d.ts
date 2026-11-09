@@ -1,3 +1,8 @@
+interface ImportMetaEnv {
+  /** The site's origin, for absolute URLs in link previews. */
+  readonly SITE_URL: string;
+}
+
 declare module '*.md' {
   import type { Component } from 'solid-js';
 
