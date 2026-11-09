@@ -62,6 +62,9 @@
       ],
       "shared": [
         "./dist/shared.d.cts"
+      ],
+      "validator": [
+        "./dist/validator.d.cts"
       ]
     }
   },
@@ -145,6 +148,26 @@
       "import": "./dist/shared.js",
       "require": "./dist/shared.cjs",
       "default": "./dist/shared.js"
+      },
+    "./validator": {
+      "development": {
+        "browser": {
+          "import": "./dist/dev/validator.js",
+          "require": "./dist/dev/validator.cjs",
+          "default": "./dist/dev/validator.js"
+        },
+        "import": "./dist/dev/validator.js",
+        "require": "./dist/dev/validator.cjs",
+        "default": "./dist/dev/validator.js"
+      },
+      "browser": {
+        "import": "./dist/validator.js",
+        "require": "./dist/validator.cjs",
+        "default": "./dist/validator.js"
+      },
+      "import": "./dist/validator.js",
+      "require": "./dist/validator.cjs",
+      "default": "./dist/validator.js"
     },
     "./package.json": "./package.json"
   },

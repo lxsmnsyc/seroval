@@ -157,16 +157,12 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, Readab
   serialize(node, ctx) {
     return '(' + ctx.serialize(node.factory) + ')(' + ctx.serialize(node.stream) + ')';
   },
+  validate: { stream: isStream },
   deserialize(node, ctx) {
-    const stream = ctx.deserialize(node.stream);
-    // `node.stream` is any node the input picked; it must resolve to a seroval
-    // Stream before it is handed to the factory, which calls `stream.on(...)`.
-    if (!isStream(stream)) {
-      throw new Error('Expected a stream source.');
-    }
+    const stream = ctx.deserialize<Stream<unknown>>(node.stream);
     // Each ReadableStream subscribes to its source, so a source shared by
     // several of them would deliver every chunk once per ReadableStream.
-    return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(stream) as Stream<unknown>);
+    return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(stream));
   },
 });
 

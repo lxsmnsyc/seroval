@@ -47,6 +47,7 @@ These usually arrive as the `cause` of a wrapper error.
 | `SerovalDepthLimitError` | 10 | The value or input is nested deeper than `depthLimit`. |
 | `SerovalAbortedError` | 11 | `deserialize` was called on a [cross deserializer](./streaming.md#receiving-a-json-stream) after `abort`. |
 | `SerovalLiveStreamError` | 12 | A [live stream](./streams-and-iterables.md#live-streams) was misused. `reason` is `'consumed'`, `'pending'`, `'reading'` or `'closed'`. |
+| `SerovalPluginValidationError` | 13 | A plugin's [`validate`](./plugin-security.md#validate-every-value) rejected a field. The plugin's tag is in `tag` and the field name is in `field`. |
 
 ## Messages in production
 
