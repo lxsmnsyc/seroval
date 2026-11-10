@@ -1,5 +1,5 @@
 import type { FromJSONOptions, SerovalJSON, SerovalNode } from 'seroval/read';
-import { createPlugin, fromJSON } from 'seroval/read';
+import { createPlugin, fromJSON, v } from 'seroval/read';
 import type { ToJSONAsyncOptions } from 'seroval/write';
 import { toJSONAsync } from 'seroval/write';
 import { SerovalTransportError } from './message';
@@ -56,6 +56,22 @@ function isFormData(value: unknown): value is FormData {
   return typeof FormData !== 'undefined' && value instanceof FormData;
 }
 
+// A file index, which is a safe integer that is not negative.
+function isIndex(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isFormDataEntry(value: unknown): value is [string, FormDataEntryValue] {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    typeof value[0] === 'string' &&
+    (typeof value[1] === 'string' || value[1] instanceof Blob)
+  );
+}
+
+const isFormDataEntries = /* @__PURE__ */ v.array(isFormDataEntry);
+
 function malformed(): SerovalTransportError {
   return new SerovalTransportError('The form data is malformed.');
 }
@@ -102,20 +118,13 @@ function createBlobPlugin(
       },
     },
     serialize: refuseSerialize,
+    validate: { i: isIndex, t: v.string, n: v.string, l: v.number },
     deserialize(node, ctx) {
       if (!parts) {
         throw malformed();
       }
-      const index = ctx.deserialize(node.i);
-      const type = ctx.deserialize(node.t);
-      if (
-        typeof index !== 'number' ||
-        !Number.isSafeInteger(index) ||
-        index < 0 ||
-        typeof type !== 'string'
-      ) {
-        throw malformed();
-      }
+      const index = ctx.deserialize<number>(node.i);
+      const type = ctx.deserialize<string>(node.t);
       const part = parts.get(FILE_FIELD + index);
       if (!(part instanceof Blob)) {
         throw malformed();
@@ -126,11 +135,11 @@ function createBlobPlugin(
       if (node.n === undefined) {
         return new Blob([part], { type });
       }
-      const name = ctx.deserialize(node.n);
-      const lastModified = node.l === undefined ? undefined : ctx.deserialize(node.l);
-      if (typeof name !== 'string' || typeof lastModified !== 'number') {
+      if (node.l === undefined) {
         throw malformed();
       }
+      const name = ctx.deserialize<string>(node.n);
+      const lastModified = ctx.deserialize<number>(node.l);
       return new File([part], name, { type, lastModified });
     },
   });
@@ -151,21 +160,10 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
     },
   },
   serialize: refuseSerialize,
+  validate: { e: isFormDataEntries },
   deserialize(node, ctx) {
-    const entries = ctx.deserialize(node.e);
-    if (!Array.isArray(entries)) {
-      throw malformed();
-    }
     const result = new FormData();
-    for (const entry of entries) {
-      if (
-        !Array.isArray(entry) ||
-        entry.length !== 2 ||
-        typeof entry[0] !== 'string' ||
-        !(typeof entry[1] === 'string' || entry[1] instanceof Blob)
-      ) {
-        throw malformed();
-      }
+    for (const entry of ctx.deserialize<[string, FormDataEntryValue][]>(node.e)) {
       result.append(entry[0], entry[1]);
     }
     return result;
