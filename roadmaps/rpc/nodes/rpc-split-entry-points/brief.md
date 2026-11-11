@@ -1,7 +1,8 @@
 ---
 id: rpc-split-entry-points
 title: Merge feat/split-entry-points (maintainer)
-status: todo
+status: done
+fulfilled_by: seroval 1.8.0 (packages/seroval exports ./write and ./read)
 priority: must
 type: chore
 story: 
