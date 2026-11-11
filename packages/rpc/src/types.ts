@@ -6,14 +6,17 @@ export interface CallContext {
   readonly signal: AbortSignal;
 }
 
+/** One function a channel exposes. */
+export type RemoteFunction = (this: CallContext, ...args: never[]) => unknown;
+
 /**
- * The functions a channel exposes. Declare them as a `type` or take
- * `typeof` an object: an `interface` has no index signature and does not fit.
+ * The functions a channel exposes, as a `type`, an `interface` or `typeof`
+ * an object. A mapped type and not a `Record`, so an interface fits too.
  */
-export type Functions = Record<string, (this: CallContext, ...args: never[]) => unknown>;
+export type Functions<T = Record<string, RemoteFunction>> = { [K in keyof T]: RemoteFunction };
 
 /** The part of a channel that makes calls. */
-export interface Caller<T extends Functions> {
+export interface Caller<T extends Functions<T>> {
   /** Calls `name` on the owner and resolves with its result. */
   run<K extends keyof T & string>(
     name: K,
@@ -27,7 +30,7 @@ export interface Caller<T extends Functions> {
  * One end of a channel. The owner made it with `createChannel`; the holder
  * got it from `connect()` or inside a value.
  */
-export interface Channel<T extends Functions> extends Caller<T> {
+export interface Channel<T extends Functions<T>> extends Caller<T> {
   /** Returns a caller whose calls cancel when `signal` aborts. */
   with(options: { signal?: AbortSignal }): Caller<T>;
   /** Closes the channel for the owner and every holder. */
@@ -73,7 +76,7 @@ export interface Endpoint {
   /** Makes `root` the channel that the other side gets from `connect()`. */
   serve(root: Channel<Functions>): void;
   /** The root channel that the other side served. */
-  connect<T extends Functions>(): Channel<T>;
+  connect<T extends Functions<T>>(): Channel<T>;
   /** Closes every channel and the transport. */
   close(reason?: unknown): void;
 }

@@ -11,7 +11,7 @@ export * from './errors';
 export type * from './types';
 
 /** Makes a channel that owns `functions`. */
-export function createChannel<T extends Functions>(
+export function createChannel<T extends Functions<T>>(
   _functions: T,
   _options?: ChannelOptions,
 ): Channel<T> {
