@@ -171,8 +171,8 @@ export function startCall(
   name: string,
   args: unknown[],
   middleware?: Middleware,
+  controller: RpcSignalController = createRpcSignal(),
 ): Promise<unknown> {
-  const controller = createRpcSignal();
   core.calls.add(controller);
   const context: CallContext = { signal: controller.signal, channel: core.channel };
   function next(): Promise<unknown> {

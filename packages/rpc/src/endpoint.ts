@@ -1,9 +1,14 @@
 /* oxlint-disable typescript/promise-function-async, typescript/no-unsafe-type-assertion, typescript/no-unnecessary-type-assertion, typescript/unbound-method -- calls must start in order, so they return promises without async; generic channels need casts at the type boundary. */
 import { createJSONReader, createJSONWriter } from '@seroval/transport';
+import type { Message } from '@seroval/transport';
 import { closeOwner, getOwnerCore, rejectHandled, startCall, wrapBackend } from './channel';
 import type { OwnerCore } from './channel';
+import { createCreditGate, isStreamItem, resolveWindow } from './streaming/gate';
+import { watchStreams } from './streaming/watch';
+import { createRpcSignal } from './signal';
+import type { RpcSignalController } from './signal';
 import { RpcClosedError, RpcRemoteError, RpcTransportError } from './errors';
-import type { Channel, Endpoint, EndpointOptions, Functions } from './types';
+import type { Channel, Endpoint, EndpointOptions, Functions, RpcSignal } from './types';
 
 /**
  * A runtime-neutral port: the only thing the core knows about the connection.
@@ -44,8 +49,17 @@ interface Holder {
 
 interface PendingCall {
   holder: Holder;
+  /** Stops listening to the caller's signal. */
+  off?: () => void;
   resolve(value: unknown): void;
   reject(reason: unknown): void;
+}
+
+/** A call that runs here for the other end. */
+interface RunningCall {
+  controller: RpcSignalController;
+  /** The caller cancelled it, so there is no reply to send. */
+  cancelled: boolean;
 }
 
 interface PushResult {
@@ -63,6 +77,25 @@ export interface EndpointSizes {
   readerKeys: number;
 }
 
+/** What the tests can look at to check that streaming leaves nothing. */
+export interface StreamingSizes {
+  /** Incoming calls that have not finished. */
+  running: number;
+  /** Keys that hold credit state. */
+  windowKeys: number;
+}
+
+const streamInspectors = new WeakMap<Endpoint, () => StreamingSizes>();
+
+/** Returns how much streaming state an endpoint holds. */
+export function inspectStreaming(endpoint: Endpoint): StreamingSizes {
+  const inspect = streamInspectors.get(endpoint);
+  if (!inspect) {
+    throw new TypeError('Not an endpoint.');
+  }
+  return inspect();
+}
+
 const inspectors = new WeakMap<Endpoint, () => EndpointSizes>();
 
 /** Returns how much state an endpoint holds. */
@@ -75,6 +108,12 @@ export function inspectEndpoint(endpoint: Endpoint): EndpointSizes {
 }
 
 function ignoreRejection(): void {}
+
+/** Reports an error that has no caller, as an unhandled rejection. */
+function reportError(error: unknown): void {
+  // oxlint-disable-next-line typescript/no-floating-promises, typescript/prefer-promise-reject-errors -- an unhandled rejection with the error as it is, is the report.
+  Promise.reject(error);
+}
 
 function isCanonicalKey(key: unknown): key is string {
   if (typeof key !== 'string') {
@@ -126,6 +165,10 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
   const remote = new Map<number, Holder>();
   // Calls that wait for a result, by the key the call went out under.
   const pending = new Map<string, PendingCall>();
+  // Calls that run here, by the key they arrived under.
+  const running = new Map<string, RunningCall>();
+  const window = resolveWindow(options.window);
+  const gate = createCreditGate(window);
   // Sends that wait for hello, and incoming calls that wait for serve.
   let held: (() => void)[] = [];
   let waiting: (() => void)[] = [];
@@ -153,9 +196,20 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     }
   }
 
+  /** Sends a transport message and holds the source back past the window. */
+  function sendTransport(message: Message): Promise<void> | undefined {
+    sendMessage(message);
+    if (message[0] === 0) {
+      return isStreamItem(message) ? gate.sent(message[1]) : undefined;
+    }
+    // The value ended or failed, so nothing waits for credit anymore.
+    gate.end(message[1]);
+    return undefined;
+  }
+
   const writer = createJSONWriter({
     plugins: options.plugins,
-    send: sendMessage,
+    send: sendTransport,
     onError(error, key) {
       // Only a value that fails while it is pushed is told to the caller.
       if (pushing) {
@@ -200,6 +254,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     for (const [key, call] of pending) {
       if (call.holder === holder) {
         pending.delete(key);
+        call.off?.();
         call.reject(new RpcClosedError());
       }
     }
@@ -220,13 +275,13 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     });
     const holder: Holder = { id, isClosed: false, resolveClosed };
     const channel = wrapBackend<Functions>({
-      call(name, args, notify) {
+      call(name, args, notify, signal) {
         if (holder.isClosed || closed) {
           return rejectHandled(new RpcClosedError());
         }
         return new Promise((resolve, reject) => {
           function send(): void {
-            sendCall(holder, name, args, notify, resolve, reject);
+            sendCall(holder, name, args, notify, signal, resolve, reject);
           }
           // Hold the call until hello gives the channel its ID.
           if (holder.id === undefined) {
@@ -249,11 +304,17 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     name: string,
     args: unknown[],
     notify: boolean,
+    signal: RpcSignal | undefined,
     resolve: (value: unknown) => void,
     reject: (reason: unknown) => void,
   ): void {
     if (closed || holder.isClosed) {
       reject(closed ? stopReason : new RpcClosedError());
+      return;
+    }
+    // A call that was cancelled while it waited for hello never goes out.
+    if (signal?.aborted) {
+      reject(signal.reason);
       return;
     }
     const call: unknown[] = [holder.id, name, args];
@@ -266,7 +327,15 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     } else if (notify) {
       resolve(undefined);
     } else {
-      pending.set(result.key, { holder, resolve, reject });
+      const entry: PendingCall = { holder, resolve, reject };
+      pending.set(result.key, entry);
+      // Cancelling tells the callee, and the reply is not waited for.
+      entry.off = signal?.onAbort(() => {
+        if (pending.get(result.key) === entry) {
+          pending.delete(result.key);
+          sendMessage([CANCEL, result.key, 1]);
+        }
+      });
     }
   }
 
@@ -289,16 +358,24 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       }
       return;
     }
-    startCall(core, name, args, options.onCall).then(
+    // The caller may cancel a call that expects a reply.
+    const entry: RunningCall = { controller: createRpcSignal(), cancelled: false };
+    if (!notify) {
+      running.set(key, entry);
+    }
+    function reply(value: unknown, failed: boolean): void {
+      running.delete(key);
+      // A cancelled call has no caller left to hear the reply.
+      if (!notify && !entry.cancelled) {
+        sendResult(key, value, failed);
+      }
+    }
+    startCall(core, name, args, options.onCall, entry.controller).then(
       (value) => {
-        if (!notify) {
-          sendResult(key, value, false);
-        }
+        reply(value, false);
       },
       (error: unknown) => {
-        if (!notify) {
-          sendResult(key, describeError(error), true);
-        }
+        reply(describeError(error), true);
       },
     );
   }
@@ -310,6 +387,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       return;
     }
     pending.delete(callKey);
+    call.off?.();
     if (failed) {
       call.reject(createRemoteError(value));
     } else {
@@ -330,11 +408,72 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       if (typeof name !== 'string' || !Array.isArray(args)) {
         throw new RpcTransportError('The other end sent a malformed call.');
       }
+      // Streams in the arguments give credit back and cancel through this key.
+      watchValue(key, args);
       handleCall(key, id, name, args, notify === 1);
     } else if (typeof value[0] === 'string') {
       // A result is [callKey, value] and a failure has a 1 after them.
-      handleResult(value[0], value[1], value[2] === 1);
+      const failed = value[2] === 1;
+      if (failed) {
+        handleResult(value[0], value[1], true);
+      } else if (pending.has(value[0])) {
+        watchValue(key, value[1]);
+        handleResult(value[0], value[1], false);
+      } else {
+        // The call was cancelled, so stop the streams of the reply.
+        abandonValue(key);
+      }
     }
+  }
+
+  /** Gives credit back to the writer of `key` as its streams are consumed. */
+  function watchValue(key: string, root: unknown): void {
+    watchStreams(root, window, {
+      credit(count) {
+        sendMessage([CREDIT, key, count]);
+      },
+      cancel() {
+        abandonValue(key);
+      },
+    });
+  }
+
+  /** Stops reading `key` and tells the writer to stop its source. */
+  function abandonValue(key: string): void {
+    reader.cancel(key);
+    sendMessage([CANCEL, key]);
+  }
+
+  function receiveCredit(key: unknown, count: unknown): void {
+    if (typeof key === 'string' && typeof count === 'number' && count > 0) {
+      gate.credit(key, count);
+    }
+  }
+
+  function receiveCancel(key: unknown, call: unknown): void {
+    if (typeof key !== 'string') {
+      return;
+    }
+    if (call === 1) {
+      // The caller cancelled a call that runs here.
+      const entry = running.get(key);
+      if (entry && !entry.cancelled) {
+        entry.cancelled = true;
+        try {
+          entry.controller.abort(new RpcClosedError('The caller cancelled the call.'));
+        } catch (error) {
+          reportError(error);
+        }
+      }
+      return;
+    }
+    // The reader left a value this side writes, so stop its source.
+    try {
+      writer.cancel(key);
+    } catch (error) {
+      reportError(error);
+    }
+    gate.end(key);
   }
 
   function readValue(key: string): void {
@@ -437,8 +576,10 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
         receiveClose(message[1], message[2]);
         break;
       case CREDIT:
+        receiveCredit(message[1], message[2]);
+        break;
       case CANCEL:
-        // Flow control and cancelling belong to rpc-streaming.
+        receiveCancel(message[1], message[2]);
         break;
       default:
         fail(new RpcTransportError('The other end sent an unknown message.'));
@@ -475,9 +616,11 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     stopReason = error;
     // Fail the calls in flight.
     for (const call of pending.values()) {
+      call.off?.();
       call.reject(error);
     }
     pending.clear();
+    running.clear();
     // Run the sends that still wait for hello; each one fails as closed.
     const calls = held;
     held = [];
@@ -500,6 +643,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     try {
       writer.close(error);
     } catch {}
+    gate.clear();
     try {
       reader.end(error);
     } catch {}
@@ -567,5 +711,6 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     held: held.length + waiting.length,
     readerKeys: reader.size,
   }));
+  streamInspectors.set(endpoint, () => ({ running: running.size, windowKeys: gate.size }));
   return endpoint;
 }
