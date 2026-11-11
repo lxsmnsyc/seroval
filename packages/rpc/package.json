@@ -1,0 +1,63 @@
+{
+  "name": "@seroval/rpc",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Typed calls in both directions over a message transport",
+  "keywords": [
+    "channel",
+    "rpc",
+    "seroval",
+    "streaming"
+  ],
+  "homepage": "https://seroval.vercel.app/docs/rpc",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/seroval/issues"
+  },
+  "license": "MIT",
+  "author": "Alexis Munsayac",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lxsmnsyc/seroval.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "tsdown",
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@seroval/transport": "workspace:*",
+    "@types/node": "^26.6.5",
+    "seroval": "workspace:*",
+    "tsdown": "^0.23.1",
+    "tslib": "^2.8.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "peerDependencies": {
+    "@seroval/transport": "^0.1.1",
+    "seroval": "^1.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
