@@ -249,15 +249,7 @@ export function createDeserializerContext(
 }
 
 async function readChunk(ctx: DeserializerContext) {
-  const chunk = await ctx.read();
-  if (chunk) {
-    if (chunk.length) {
-      ctx.chunks.push(chunk);
-      ctx.chunkSize += chunk.length;
-    }
-  } else {
-    ctx.done = true;
-  }
+  pushDeserializeChunk(ctx, await ctx.read());
 }
 
 function bufferedBytes(ctx: DeserializerContext): number {
@@ -1827,14 +1819,16 @@ function getNodeSize(ctx: DeserializerContext): number {
   return size;
 }
 
-// Parses every node that is fully buffered, and reads more chunks when the
-// next node is not. Nodes are parsed synchronously, so a buffered payload is
-// decoded without waiting between nodes.
-async function drain(ctx: DeserializerContext) {
+/**
+ * Decodes every node that is buffered. Returns true once the payload is
+ * finished, or false when it needs more bytes. Throws when the bytes are
+ * malformed.
+ */
+export function pumpDeserialize(ctx: DeserializerContext): boolean {
   while (true) {
     // An aborted payload is already settled, so the rest is not read.
     if (ctx.aborted) {
-      return;
+      return true;
     }
     if (ensureBuffered(ctx, 1)) {
       const size = getNodeSize(ctx);
@@ -1843,14 +1837,37 @@ async function drain(ctx: DeserializerContext) {
       } else if (ctx.done) {
         throw new SerovalMalformedBinarySourceError();
       } else {
-        await readChunk(ctx);
+        return false;
       }
     } else if (ctx.done) {
       assertComplete(ctx);
-      return;
+      return true;
     } else {
-      await readChunk(ctx);
+      return false;
     }
+  }
+}
+
+/** Adds `chunk` to the bytes of the payload, or ends it when `undefined`. */
+export function pushDeserializeChunk(
+  ctx: DeserializerContext,
+  chunk: Uint8Array | undefined,
+): void {
+  if (chunk) {
+    if (chunk.length) {
+      ctx.chunks.push(chunk);
+      ctx.chunkSize += chunk.length;
+    }
+  } else {
+    ctx.done = true;
+  }
+}
+
+// Decodes every buffered node, and reads more chunks when the next node is
+// not buffered yet.
+async function drain(ctx: DeserializerContext) {
+  while (!pumpDeserialize(ctx)) {
+    await readChunk(ctx);
   }
 }
 
@@ -1860,7 +1877,7 @@ async function drain(ctx: DeserializerContext) {
  * into, all with `reason`. Without this they would wait forever for nodes
  * that will never arrive.
  */
-function abortDeserialize(ctx: DeserializerContext, reason: unknown): void {
+export function abortDeserialize(ctx: DeserializerContext, reason: unknown): void {
   if (ctx.aborted) {
     return;
   }
@@ -1909,16 +1926,26 @@ export function deserializeStart<T>(ctx: DeserializerContext): Promise<Deseriali
         signal?.removeEventListener('abort', onAbort);
       });
   }
+  return getDeserializeResult<T>(ctx);
+}
+
+/** Promises and streams of the payload that have not settled or ended yet. */
+export function countPending(ctx: DeserializerContext): number {
+  return (
+    ctx.openPromises.size +
+    ctx.openStreams.size +
+    ctx.settlingPromises.size +
+    ctx.endingStreams.size
+  );
+}
+
+/** Resolves once the root value of the payload is decoded. */
+export function getDeserializeResult<T>(ctx: DeserializerContext): Promise<DeserializeResult<T>> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The root resolver settles with `{ value }` for the decoded root.
   return (ctx.root.resolver.p as Promise<{ value: T }>).then(({ value }) => ({
     value,
     get pending(): number {
-      return (
-        ctx.openPromises.size +
-        ctx.openStreams.size +
-        ctx.settlingPromises.size +
-        ctx.endingStreams.size
-      );
+      return countPending(ctx);
     },
   }));
 }

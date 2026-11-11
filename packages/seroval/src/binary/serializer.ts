@@ -184,8 +184,22 @@ function serializeWithError<T>(
   try {
     return serializeWithDepth(ctx, depth, current);
   } catch (err) {
-    ctx.onError(err);
+    reportError(ctx, err);
     return NIL;
+  }
+}
+
+/**
+ * Reports a value that failed, after it sends the nodes written so far. Those
+ * nodes already have ids in `refs`, so with refs shared between payloads, a
+ * later payload can refer to them. They must reach the reader first.
+ */
+function reportError(ctx: SerializerContext, error: unknown): void {
+  const alive = ctx.alive;
+  send(ctx);
+  // A write that fails reports its own error and stops serialization.
+  if (alive === ctx.alive) {
+    ctx.onError(error);
   }
 }
 
@@ -456,7 +470,7 @@ function serializeLiveEvent(
   try {
     serialized = serializeWithDepth(ctx, depth, value);
   } catch (error) {
-    ctx.onError(error);
+    reportError(ctx, error);
     return error;
   }
   writeRefNode(ctx, type, id, serialized);
