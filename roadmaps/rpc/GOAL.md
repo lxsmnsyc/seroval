@@ -4,7 +4,15 @@ run: sequential
 review: auto
 merge:
   mode: maintainer
+land: direct
 branches:
+  default: release/1.9.0
+  feature: release/1.9.0
+  fix: release/1.9.0
+  chore: release/1.9.0
+  test: release/1.9.0
+  docs: release/1.9.0
+  release: main
 budget:
 release:
   publish: changesets
