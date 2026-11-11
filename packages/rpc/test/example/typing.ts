@@ -10,8 +10,8 @@ export function checkThisContext(): void {
   // `this` is CallContext without an annotation.
   createChannel({
     scan(query: string) {
-      this.signal.throwIfAborted();
-      return [query];
+      this.channel.close();
+      return [query, this.signal.aborted];
     },
   });
   // An annotation on the method also fits.

@@ -1,9 +1,27 @@
 import type { Plugin } from 'seroval';
 
+/**
+ * A cancel signal that needs no Web API. rpc makes the one a called function
+ * sees, and `with` accepts any object of this shape.
+ */
+export interface RpcSignal {
+  readonly aborted: boolean;
+  /** Why it aborted. `undefined` until then. */
+  readonly reason: unknown;
+  /**
+   * Calls `listener` once with the reason when it aborts, or never if it does
+   * not. Returns a function that removes the listener. A listener added after
+   * the abort is not called; check `aborted` first.
+   */
+  onAbort(listener: (reason: unknown) => void): () => void;
+}
+
 /** What a function sees as `this` while it runs for a call. */
 export interface CallContext {
   /** Aborts when the caller cancels or the endpoint closes. Valid across awaits. */
-  readonly signal: AbortSignal;
+  readonly signal: RpcSignal;
+  /** The channel this call came in on, for example to close it. */
+  readonly channel: Channel<Functions>;
 }
 
 /** One function a channel exposes. */
@@ -32,7 +50,7 @@ export interface Caller<T extends Functions<T>> {
  */
 export interface Channel<T extends Functions<T>> extends Caller<T> {
   /** Returns a caller whose calls cancel when `signal` aborts. */
-  with(options: { signal?: AbortSignal }): Caller<T>;
+  with(options: { signal?: RpcSignal }): Caller<T>;
   /** Closes the channel for the owner and every holder. */
   close(): void;
   /** Resolves once the channel closed, from either end. */

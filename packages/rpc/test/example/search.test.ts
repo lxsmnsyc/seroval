@@ -6,6 +6,7 @@ import {
   RpcTransportError,
   createChannel,
   createEndpoint,
+  createRpcSignal,
   transfer,
 } from '../../src/index';
 import type { Channel, Endpoint } from '../../src/index';
@@ -79,7 +80,7 @@ describe('worker example', () => {
 
   it.skip('cancels a call and the function sees the signal (rpc-streaming)', async () => {
     const { search } = startWorker();
-    const controller = new AbortController();
+    const controller = createRpcSignal();
     const pending = search.with({ signal: controller.signal }).run('scan', 'apple');
     controller.abort(new Error('stop'));
     await expect(pending).rejects.toThrow('stop');

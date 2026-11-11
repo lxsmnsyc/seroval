@@ -8,6 +8,7 @@ import type {
 } from './types';
 
 export * from './errors';
+export * from './signal';
 export type * from './types';
 
 /** Makes a channel that owns `functions`. */

@@ -2,15 +2,13 @@ import { parentPort } from 'node:worker_threads';
 // The worker runs in plain Node, which cannot load `../../src` without file
 // extensions, so it imports the built package through its own name.
 import { createChannel, createEndpoint } from '@seroval/rpc';
-import type { CallContext, Channel } from '@seroval/rpc';
+import type { CallContext, RpcSignal } from '@seroval/rpc';
 import toPort from '../support/node-port.ts';
 import type { SearchFunctions } from './api.ts';
 
 /* oxlint-disable typescript/require-await */
 
 const documents: string[] = [];
-// The root channel, set once the endpoint exists. `quit` closes it.
-const lifecycle: { root?: Channel<SearchFunctions> } = {};
 let lastScanCancelled = false;
 
 function matchDocuments(query: string): string[] {
@@ -31,18 +29,14 @@ function matchDocuments(query: string): string[] {
   return result;
 }
 
-async function waitForAbort(signal: AbortSignal): Promise<void> {
+async function waitForAbort(signal: RpcSignal): Promise<void> {
   await new Promise<void>((resolve) => {
     if (signal.aborted) {
       resolve();
     } else {
-      signal.addEventListener(
-        'abort',
-        () => {
-          resolve();
-        },
-        { once: true },
-      );
+      signal.onAbort(() => {
+        resolve();
+      });
     }
   });
 }
@@ -88,7 +82,7 @@ const functions: SearchFunctions = {
   },
   quit() {
     // Closing the root channel closes the endpoint; the port closes with it.
-    lifecycle.root?.close();
+    this.channel.close();
   },
 };
 
@@ -97,6 +91,5 @@ if (!parentPort) {
 }
 
 const root = createChannel(functions);
-lifecycle.root = root;
 const endpoint = createEndpoint(toPort(parentPort), { initiator: false });
 endpoint.serve(root);
