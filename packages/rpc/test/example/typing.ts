@@ -1,6 +1,6 @@
 // Compile-time checks of the draft types; `tsc -p packages/rpc` runs them.
 import { createChannel, createEndpoint } from '../../src/index';
-import type { CallContext, Channel, MessagePortLike } from '../../src/index';
+import type { CallContext, Channel, Port } from '../../src/index';
 
 interface AsInterface {
   search(query: string): Promise<string[]>;
@@ -24,7 +24,7 @@ export function checkThisContext(): void {
   createChannel({ value: 1 });
 }
 
-export function checkInterfaces(port: MessagePortLike, owned: AsInterface): Promise<unknown>[] {
+export function checkInterfaces(port: Port, owned: AsInterface): Promise<unknown>[] {
   // An interface fits, both for the owner and the holder.
   const local: Channel<AsInterface> = createChannel(owned);
   const endpoint = createEndpoint(port, { initiator: true });

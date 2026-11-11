@@ -79,17 +79,6 @@ export interface EndpointOptions {
   window?: number;
 }
 
-/**
- * The part of a `MessagePort` that rpc uses. A `worker_threads` `Worker` has
- * `on` and not `addEventListener`; wrap it (see `test/support/node-port.ts`).
- */
-export interface MessagePortLike {
-  postMessage(message: unknown, transfer?: Transferable[]): void;
-  addEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
-  addEventListener(type: 'error' | 'messageerror', listener: (event: unknown) => void): void;
-  close?(): void;
-}
-
 export interface Endpoint {
   /** Makes `root` the channel that the other side gets from `connect()`. */
   serve(root: Channel<Functions>): void;
