@@ -1,7 +1,8 @@
 ---
 id: rpc-transport-release
 title: Release seroval 1.8.0 and first-publish @seroval/transport (maintainer)
-status: todo
+status: done
+fulfilled_by: "@seroval/transport 0.1.1 on npm with SLSA provenance"
 priority: later
 type: chore
 story: 
