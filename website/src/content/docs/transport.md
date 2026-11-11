@@ -259,13 +259,15 @@ void fromResponse(await fetch('/api'), reader);
 const image = await reader.get('image');
 ```
 
-`createBinaryWriter` takes the options of [`binary.serialize`](./binary-mode.md), such as `plugins` and `depthLimit`, and the writer options above except `sharedRefs`. `createBinaryReader` takes the options of `binary.deserialize`, such as `plugins`, `maxArrayBufferLength` and `maxArrayLength`, and `maxKeys`. It also takes:
+`createBinaryWriter` takes the options of [`binary.serialize`](./binary-mode.md), such as `plugins` and `depthLimit`, and the writer options above. `createBinaryReader` takes the options of [`binary.createDeserializer`](./binary-mode.md#payloads-that-stream-at-once), such as `plugins`, `maxArrayBufferLength` and `maxArrayLength`, and `maxKeys` and `sharedRefs`. It also takes:
 
 | Option | Description |
 | --- | --- |
-| `onError(error, key)` | Receives an error that stopped a value, such as bytes that do not decode. The value and what still waits in it fail with that error. |
+| `onError(error, key)` | Receives an error that stopped a value after its message was read, such as a plugin whose `deserialize` failed, or bytes that end inside the value. The value and what still waits in it fail with that error. |
 
-Each value has its own references. `toBinaryStream` and `fromBinaryStream` send one value. The reader decodes the bytes of a value after it receives them, so `settled` resolves once the reader decoded every byte of the value, not when the last message arrives.
+The reader decodes each message before `push` returns, and `push` throws on bytes that do not decode, as it does on a malformed JSON message. `toBinaryStream` and `fromBinaryStream` send one value.
+
+`sharedRefs` works as in [References](#references), with one difference: each value fails on its own. A value that fails or that the reader cancels fails what waits in it right away, and a later value can still refer to the objects it sent.
 
 For `postMessage`, pass the bytes as they are. A WebSocket can send each message with `encodeFrame`, as in [Frames](#frames), since JSON cannot hold the bytes.
 

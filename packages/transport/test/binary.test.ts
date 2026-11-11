@@ -97,6 +97,77 @@ describe('binary messages', () => {
     expect(b).toEqual(a[0]);
   });
 
+  it('keeps references across values with sharedRefs', async () => {
+    const reader = createBinaryReader({ sharedRefs: true });
+    const writer = createBinaryWriter({ send: pipeTo(reader), sharedRefs: true });
+    const shared = { id: 1 };
+    writer.write('a', shared);
+    writer.write('b', { shared });
+    const a = await reader.get('a');
+    const b = await reader.get<{ shared: unknown }>('b');
+    expect(b.shared).toBe(a);
+  });
+
+  it('keeps references between values that stream at once with sharedRefs', async () => {
+    const pool = Array.from({ length: 4 }, (_, id) => ({ id }));
+    async function* items(offset: number): AsyncGenerator<object> {
+      for (let i = 0; i < 3; i++) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, (offset * 5 + i) % 4);
+        });
+        yield pool[(offset + i) % pool.length];
+      }
+    }
+    const reader = createBinaryReader({ sharedRefs: true });
+    const writer = createBinaryWriter({ send: pipeTo(reader), sharedRefs: true });
+    const keys: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      keys.push(writer.push({ first: pool[i % pool.length], items: items(i) }));
+    }
+    writer.flush();
+    const seen = new Map<number, object>();
+    for (const key of keys) {
+      const value = await reader.get<{
+        first: { id: number };
+        items: AsyncIterable<{ id: number }>;
+      }>(key);
+      for (const item of [value.first, ...(await collectItems(value.items))]) {
+        const known = seen.get(item.id);
+        if (known) {
+          expect(item).toBe(known);
+        } else {
+          seen.set(item.id, item);
+        }
+      }
+      await reader.settled(key);
+    }
+    expect(seen.size).toBe(pool.length);
+  });
+
+  it('refers to the nodes of a value that failed with sharedRefs', async () => {
+    const reader = createBinaryReader({ sharedRefs: true });
+    const writer = createBinaryWriter({ send: pipeTo(reader), sharedRefs: true });
+    const shared = { id: 1 };
+    writer.write('a', { later: Promise.resolve({ shared, fn: Symbol('local') }) });
+    await expect(reader.settled('a')).rejects.toBeInstanceOf(SerovalTransportError);
+    writer.write('b', { shared });
+    const b = await reader.get<{ shared: unknown }>('b');
+    expect(b.shared).toEqual({ id: 1 });
+  });
+
+  it('fails what waits in one value alone with sharedRefs', async () => {
+    const reader = createBinaryReader({ sharedRefs: true });
+    const writer = createBinaryWriter({ send: pipeTo(reader), sharedRefs: true });
+    writer.write('a', { later: new Promise(() => {}) });
+    writer.write('b', { later: Promise.resolve(2) });
+    const a = await reader.get<{ later: Promise<never> }>('a');
+    const reason = new Error('stop');
+    reader.cancel('a', reason);
+    await expect(a.later).rejects.toBe(reason);
+    const b = await reader.get<{ later: Promise<number> }>('b');
+    await expect(b.later).resolves.toBe(2);
+  });
+
   it('settles a value once the reader decoded every byte', async () => {
     const reader = createBinaryReader();
     const messages: Message[] = [];
@@ -184,30 +255,40 @@ describe('binary messages', () => {
     expect(() => reader.push([0, 'a', { t: 1, s: 'x' }])).toThrow(SerovalTransportError);
   });
 
-  it('fails the value and reports bytes that do not decode', async () => {
-    const onError = vi.fn();
-    const reader = createBinaryReader({ onError });
+  it('throws on bytes that do not decode', async () => {
+    const reader = createBinaryReader();
     const value = reader.get('a');
-    const settled = reader.settled('a');
-    reader.push([0, 'a', new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff])]);
-    reader.push([1, 'a']);
-    await expect(value).rejects.toBeInstanceOf(Error);
-    await expect(settled).rejects.toBeInstanceOf(Error);
-    expect(onError).toHaveBeenCalledWith(expect.any(Error), 'a');
+    expect(() =>
+      reader.push([0, 'a', new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff])]),
+    ).toThrow();
+    // The caller ends the reader with the error, as `fromWebStream` does.
+    const reason = new Error('malformed');
+    reader.end(reason);
+    await expect(value).rejects.toBe(reason);
   });
 
-  it('fails settled when bytes that do not decode arrive before the end', async () => {
+  it('throws on bytes that do not decode after the value opened', async () => {
+    const reader = createBinaryReader();
+    const writer = createBinaryWriter({ send: pipeTo(reader) });
+    writer.write('a', { later: new Promise(() => {}) });
+    const a = await reader.get<{ later: Promise<never> }>('a');
+    expect(() =>
+      reader.push([0, 'a', new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff])]),
+    ).toThrow();
+    await expect(a.later).rejects.toBeInstanceOf(Error);
+  });
+
+  it('fails settled when the bytes end inside the value', async () => {
     const onError = vi.fn();
     const reader = createBinaryReader({ onError });
-    const value = reader.get('a');
-    const settled = reader.settled('a');
-    reader.push([0, 'a', new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff])]);
-    // The deserializer fails before the writer settles the value.
-    await expect(value).rejects.toBeInstanceOf(Error);
-    reader.push([1, 'a']);
+    const messages: Message[] = [];
+    toBinaryStream({ name: 'Ada' }, { send: (message) => void messages.push(message) });
+    const settled = reader.settled('0');
+    const data = messages[0][2] as Uint8Array;
+    reader.push([0, '0', data.subarray(0, 3)]);
+    reader.push([1, '0']);
     await expect(settled).rejects.toBeInstanceOf(Error);
-    expect(onError).toHaveBeenCalledTimes(1);
-    expect(reader.size).toBe(0);
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), '0');
   });
 
   it('cancels a value that the writer settled while it still decodes', async () => {
@@ -264,7 +345,7 @@ describe('binary messages', () => {
       writer.write('a', { failed: Promise.reject(new Error('ignored')) });
       writer.write('b', { fn: Symbol('local') });
       writer.write('c', { later: new Promise(() => {}) });
-      reader.push([0, 'd', new Uint8Array([0xff])]);
+      reader.push([0, 'd', new Uint8Array([2, 1])]);
       reader.push([1, 'd']);
       reader.get('never');
       await tick();

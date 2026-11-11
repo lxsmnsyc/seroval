@@ -1,5 +1,5 @@
-import type { DeserializeOptions, SerializeOptions } from 'seroval/binary';
-import { deserialize, serialize } from 'seroval/binary';
+import type { DeserializerOptions, DeserializerPayload, SerializeOptions } from 'seroval/binary';
+import { createDeserializer, serialize } from 'seroval/binary';
 import type { Reader, ReaderOptions, ValueReader } from './create-reader';
 import { createReader, createValueReader } from './create-reader';
 import type { Writer, WriterOptions } from './create-writer';
@@ -14,32 +14,42 @@ export type { MessageSink, Writer, WriterOptions } from './create-writer';
 export interface BinaryWriterOptions
   extends
     Omit<SerializeOptions, 'onSerialize' | 'onDone' | 'onError' | 'refs'>,
-    WriterOptions<Uint8Array> {}
-
-export interface BinaryReaderOptions
-  extends
-    Omit<DeserializeOptions, 'read' | 'onError' | 'onDone' | 'refs' | 'signal'>,
-    ReaderOptions {
+    WriterOptions<Uint8Array> {
   /**
-   * Receives an error that stopped a value, such as bytes that do not decode.
-   * The value, and what still waits in it, fail with the error.
+   * Shares one set of references across every value, so a later value can
+   * refer to an earlier one. The references are then kept until the writer
+   * is done. By default, each value has its own and frees them when it is
+   * done. The reader must use the same setting.
+   */
+  sharedRefs?: boolean;
+}
+
+export interface BinaryReaderOptions extends Omit<DeserializerOptions, 'onError'>, ReaderOptions {
+  /** Shares one set of references across every value. Match the writer. */
+  sharedRefs?: boolean;
+  /**
+   * Receives an error that stopped a value after its message was read, such
+   * as a plugin whose `deserialize` failed. The value and what still waits
+   * in it fail with the error. Bytes that do not decode make `push` throw.
    */
   onError?: (error: unknown, key: string) => void;
 }
 
 /**
  * Creates a writer that sends each value in seroval's binary format, as
- * bytes. Each value has its own references. Read the messages with
- * `createBinaryReader`. The frames of `encodeFrame` carry the bytes as they
- * are, without JSON.
+ * bytes. Read the messages with `createBinaryReader`. The frames of
+ * `encodeFrame` carry the bytes as they are, without JSON.
  */
 export function createBinaryWriter(options: BinaryWriterOptions): Writer {
+  const shared = options.sharedRefs ? new Map<unknown, number>() : undefined;
   return createWriter<Uint8Array>(options, (value, callbacks) => {
     let initial = true;
-    // seroval ignores the writer's own options, such as `send`.
+    // seroval ignores the writer's own options, such as `send`. A value that
+    // fails sends the bytes it wrote before `onError`, so a later value can
+    // refer to them.
     return serialize(value, {
       ...options,
-      refs: new Map(),
+      refs: shared ?? new Map(),
       onSerialize(bytes) {
         const first = initial;
         initial = false;
@@ -51,40 +61,10 @@ export function createBinaryWriter(options: BinaryWriterOptions): Writer {
   });
 }
 
-/** The bytes of one value, which its deserializer pulls one chunk at a time. */
-interface Session {
-  chunks: Uint8Array[];
-  // The read that waits for the next chunk, or for the end.
-  waiting: ((chunk: Uint8Array | undefined) => void) | undefined;
-  ended: boolean;
-  // Settles once the deserializer read every byte, or the value fails.
-  decoded: Promise<void>;
-  // Fails the value and stops its deserializer.
-  stop(reason: unknown): void;
-}
-
-function readSession(session: Session): Promise<Uint8Array | undefined> {
-  const chunk = session.chunks.shift();
-  if (chunk || session.ended) {
-    return Promise.resolve(chunk);
-  }
-  return new Promise((resolve) => {
-    session.waiting = resolve;
-  });
-}
-
-/** Passes `chunk` to the deserializer, or the end when it is `undefined`. */
-function pushSession(session: Session, chunk: Uint8Array | undefined): void {
-  if (chunk === undefined) {
-    session.ended = true;
-  }
-  const waiting = session.waiting;
-  if (waiting) {
-    session.waiting = undefined;
-    waiting(chunk);
-  } else if (chunk) {
-    session.chunks.push(chunk);
-  }
+interface Entry {
+  payload: DeserializerPayload<unknown>;
+  // The error that stopped the payload after `push` or `end` returned.
+  failure: { error: unknown } | undefined;
 }
 
 function assertBytes(data: unknown): asserts data is Uint8Array {
@@ -95,70 +75,27 @@ function assertBytes(data: unknown): asserts data is Uint8Array {
 
 /**
  * Creates a reader of the messages of `createBinaryWriter`. It never runs
- * code from the messages.
+ * code from the messages. Each message is decoded before `push` returns, so
+ * values that share references decode in the order the writer sent them.
  */
 export function createBinaryReader(options: BinaryReaderOptions = {}): Reader {
-  const { maxKeys, onError, ...deserializer } = options;
-  // The session of each key until it is decoded, fails or is stopped. One
-  // that failed stays, so `done` can still reject with its error.
-  const sessions = new Map<string, Session>();
+  const { sharedRefs, maxKeys, onError, ...deserializer } = options;
+  const shared = sharedRefs ? createDeserializer(deserializer) : undefined;
+  // The payload of each key until its value is decoded or stopped. One that
+  // failed stays until the writer ends it, so `done` can reject.
+  const entries = new Map<string, Entry>();
 
-  function forget(key: string, session: Session): void {
-    if (sessions.get(key) === session) {
-      sessions.delete(key);
+  function forget(key: string, entry: Entry): void {
+    if (entries.get(key) === entry) {
+      entries.delete(key);
     }
   }
 
-  /** Starts decoding `key`, and returns its value. */
-  function openSession(key: string, data: Uint8Array): Promise<unknown> {
-    const controller = new AbortController();
-    let resolve!: () => void;
-    let reject!: (reason: unknown) => void;
-    const session: Session = {
-      chunks: [data],
-      waiting: undefined,
-      ended: false,
-      decoded: new Promise<void>((res, rej) => {
-        resolve = res;
-        reject = rej;
-      }),
-      stop(reason) {
-        // Reject before the abort, which ends the deserializer as if it read
-        // every byte.
-        reject(reason);
-        session.chunks = [];
-        pushSession(session, undefined);
-        controller.abort(reason);
-      },
-    };
-    // Nothing waits on it when the writer fails the value.
-    session.decoded.catch(() => {});
-    sessions.set(key, session);
-
-    return deserialize({
-      ...deserializer,
-      signal: controller.signal,
-      read: () => readSession(session),
-      onDone() {
-        forget(key, session);
-        resolve();
-      },
-      onError(error) {
-        // A peer that sends bytes that do not decode cannot be trusted with
-        // the rest of the value.
-        if (!controller.signal.aborted) {
-          session.stop(error);
-          onError?.(error, key);
-        }
-      },
-    }).then((result) => result.value);
-  }
-
-  function stopSession(key: string, reason: unknown): void {
-    const session = sessions.get(key);
-    if (session) {
-      sessions.delete(key);
-      session.stop(reason);
+  function stopPayload(key: string, reason: unknown): void {
+    const entry = entries.get(key);
+    if (entry) {
+      entries.delete(key);
+      entry.payload.abort(reason);
     }
   }
 
@@ -166,30 +103,60 @@ export function createBinaryReader(options: BinaryReaderOptions = {}): Reader {
     {
       open(key, data) {
         assertBytes(data);
-        return openSession(key, data);
+        const session = shared ?? createDeserializer(deserializer);
+        const entry: Entry = {
+          payload: session.open({
+            onError(error) {
+              entry.failure = { error };
+              onError?.(error, key);
+            },
+          }),
+          failure: undefined,
+        };
+        entries.set(key, entry);
+        try {
+          entry.payload.push(data);
+        } catch (error) {
+          forget(key, entry);
+          throw error;
+        }
+        return entry.payload.result.then((result) => result.value);
       },
       next(key, data) {
         assertBytes(data);
-        const session = sessions.get(key);
-        if (session && !session.ended) {
-          pushSession(session, data);
-        }
+        entries.get(key)?.payload.push(data);
       },
       done(key) {
-        const session = sessions.get(key);
-        if (!session) {
+        const entry = entries.get(key);
+        if (!entry) {
           return undefined;
         }
-        pushSession(session, undefined);
-        // A session that failed is forgotten here, since `onDone` never runs.
-        session.decoded.catch(() => forget(key, session));
-        return session.decoded;
-      },
-      fail: stopSession,
-      end(reason) {
-        for (const key of Array.from(sessions.keys())) {
-          stopSession(key, reason);
+        let finished: Promise<void>;
+        if (entry.failure) {
+          finished = Promise.reject(entry.failure.error);
+        } else {
+          try {
+            entry.payload.end();
+            // The writer sent every byte. Settle once the root and the
+            // containers in it are filled in, after the last byte.
+            finished = entry.payload.result.then(() => undefined);
+          } catch (error) {
+            onError?.(error, key);
+            finished = Promise.reject(error);
+          }
         }
+        finished.then(
+          () => forget(key, entry),
+          () => forget(key, entry),
+        );
+        return finished;
+      },
+      fail: stopPayload,
+      end(reason) {
+        for (const key of Array.from(entries.keys())) {
+          stopPayload(key, reason);
+        }
+        shared?.abort(reason);
       },
     },
     { maxKeys },
