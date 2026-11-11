@@ -33,6 +33,9 @@ const LOWER_X = 0x78;
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+// Keys of byte frames must be valid UTF-8, so a broken one is refused
+// instead of read as a different key.
+const keyDecoder = new TextDecoder('utf-8', { fatal: true });
 
 function assertFrameSize(size: number): void {
   if (size > 0xffffffff) {
@@ -90,7 +93,13 @@ function decodeBytesFrame(data: Uint8Array): Message<Uint8Array> {
   if (end > data.length) {
     throw malformed();
   }
-  return [DATA, decoder.decode(data.subarray(BYTES_PREFIX_SIZE, end)), data.subarray(end)];
+  let key: string;
+  try {
+    key = keyDecoder.decode(data.subarray(BYTES_PREFIX_SIZE, end));
+  } catch {
+    throw malformed();
+  }
+  return [DATA, key, data.subarray(end)];
 }
 
 function hexValue(code: number): number {

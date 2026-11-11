@@ -375,6 +375,40 @@ describe('binary frames', () => {
     expect(messages).toEqual([[0, 'kéy', data]]);
   });
 
+  it('decodes JSON frames and byte frames mixed in one stream', () => {
+    const messages: Message[] = [
+      [0, 'json', { t: 1, s: 'a' }],
+      [0, '', new Uint8Array([1, 2])],
+      [0, 'ключ', new Uint8Array(0)],
+      [1, 'json'],
+      [2, ''],
+    ];
+    const bytes: number[] = [];
+    for (const message of messages) {
+      for (const piece of encodeFrame(message)) {
+        bytes.push(...piece);
+      }
+    }
+    const decoded: unknown[] = [];
+    const decoder = createFrameDecoder({ onMessage: (message) => void decoded.push(message) });
+    for (const byte of bytes) {
+      decoder.push(new Uint8Array([byte]));
+    }
+    decoder.end();
+    expect(decoded).toEqual(messages);
+  });
+
+  it('refuses a byte frame whose key is not UTF-8', () => {
+    const [head, body] = encodeFrame([0, 'k', new Uint8Array([7])]);
+    // Replace the key with a lone continuation byte.
+    head[12 + 5] = 0x80;
+    const decoder = createFrameDecoder({ onMessage() {} });
+    expect(() => {
+      decoder.push(head);
+      decoder.push(body);
+    }).toThrow(SerovalTransportError);
+  });
+
   it('refuses a frame whose key runs past its data', () => {
     const [head] = encodeFrame([0, 'key', new Uint8Array(0)]);
     // Claim a key of 255 bytes.
