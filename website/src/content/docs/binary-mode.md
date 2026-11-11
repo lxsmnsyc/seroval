@@ -276,7 +276,7 @@ const { value } = await payload.result;
 | `result` | A promise for `{ value, pending }`, as `binary.deserialize` returns. |
 | `pending` | The promises and streams of the payload that have not settled or ended yet. |
 
-The session has `open()`, `pending` across every payload, and `abort(reason)`, which aborts every payload and makes later calls to `open` throw a `SerovalAbortedError`. An error that stops a payload after `push` or `end` returned, such as a plugin whose `deserialize` fails, aborts the payload and goes to `onError`.
+The session has `open(options?)`, `pending` across every payload, and `abort(reason)`, which aborts every payload and makes later calls to `open` throw a `SerovalAbortedError`. An error that stops a payload after `push` or `end` returned, such as a plugin whose `deserialize` fails, aborts the payload and goes to `onError`. Pass `{ onError }` to `open` to receive the errors of one payload instead.
 
 When a value fails, the serializer sends the nodes it wrote before it calls `onError`. A later payload can then refer to them, even though the value that sent them failed.
 

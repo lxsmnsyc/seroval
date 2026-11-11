@@ -293,6 +293,21 @@ describe('binary deserializer session', () => {
     );
     await expect(payload.result).rejects.toBe(failure);
     expect(onError).toHaveBeenCalledWith(failure);
+
+    // A payload's own `onError` runs instead of the session's.
+    const own = vi.fn();
+    const session = binary.createDeserializer({ plugins: [BoxPlugin], onError });
+    const other = session.open({ onError: own });
+    for (const [, chunk] of events) {
+      if (chunk === 'done') {
+        other.end();
+      } else if (chunk instanceof Uint8Array) {
+        other.push(chunk);
+      }
+    }
+    await expect(other.result).rejects.toBe(failure);
+    expect(own).toHaveBeenCalledWith(failure);
+    expect(onError).toHaveBeenCalledTimes(1);
   });
 
   it('sends the nodes of a failed value before it reports the error', async () => {

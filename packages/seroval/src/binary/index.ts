@@ -80,6 +80,14 @@ export interface DeserializerOptions extends Omit<
   onError?: (error: unknown) => void;
 }
 
+export interface DeserializerPayloadOptions {
+  /**
+   * Receives an error that stopped this payload after `push` or `end`
+   * returned. Runs instead of the session's `onError`.
+   */
+  onError?: (error: unknown) => void;
+}
+
 /** One payload of a {@link Deserializer}, which takes its bytes as they arrive. */
 export interface DeserializerPayload<T> {
   /**
@@ -110,7 +118,7 @@ export interface DeserializerPayload<T> {
 /** A session of payloads that share references, from {@link createDeserializer}. */
 export interface Deserializer {
   /** Starts a payload. Throws a `SerovalAbortedError` once the session aborted. */
-  open<T>(): DeserializerPayload<T>;
+  open<T>(options?: DeserializerPayloadOptions): DeserializerPayload<T>;
   /** Promises and streams of every payload that have not settled or ended yet. */
   readonly pending: number;
   /** Aborts every payload. Later calls to `open` throw. Idempotent. */
@@ -125,7 +133,7 @@ function readNothing(): Promise<undefined> {
 
 function createPayload<T>(
   ctx: DeserializerContext,
-  options: DeserializerOptions,
+  report: ((error: unknown) => void) | undefined,
   // Runs once the payload ended or aborted.
   onClose: () => void,
 ): DeserializerPayload<T> {
@@ -142,7 +150,7 @@ function createPayload<T>(
     if (running) {
       failure ??= { error };
     } else {
-      options.onError?.(error);
+      report?.(error);
     }
   };
 
@@ -225,7 +233,7 @@ export function createDeserializer(options: DeserializerOptions = {}): Deseriali
   }
 
   return {
-    open<T>() {
+    open<T>(payloadOptions: DeserializerPayloadOptions = {}) {
       if (aborted) {
         throw new SerovalAbortedError();
       }
@@ -238,7 +246,7 @@ export function createDeserializer(options: DeserializerOptions = {}): Deseriali
         onError() {},
       });
       payloads.add(ctx);
-      return createPayload<T>(ctx, options, () => {
+      return createPayload<T>(ctx, payloadOptions.onError ?? options.onError, () => {
         prune(ctx);
       });
     },
