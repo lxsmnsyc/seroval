@@ -25,7 +25,7 @@
 
 ## Gotchas
 
-- Change request `contracts/rpc-protocol.change-request.md` (accepted): hello is `[3, 2, rootId | null, window]` and carries the reader window; every endpoint sends one at creation (root null) and one on `serve`. A writer holds its streams until it knows the peer's window. A call cancel is `[7, key]`; `[5, key]` is the reader leaving a value. The protocol version is 2.
+- Change request `contracts/rpc-protocol.change-request.md` (accepted): hello is `[3, 1, rootId | null, window]` and carries the reader window; every endpoint sends one at creation (root null) and one on `serve`. A writer holds its streams until it knows the peer's window. A call cancel is `[7, key]`; `[5, key]` is the reader leaving a value. The protocol version stays 1 until rpc is published; no bumps before the first release.
 - A result stream the caller never iterates keeps its producer and gate key until the endpoint closes (no garbage-collection close, a non-goal). Iterate it, `return()` it, or abort the call. For rpc-docs.
 - Two streams in one value (`[g1, g2]`) fail with `Malformed node type "4"` on release/1.9.0 as well, outside this node. So "several streams share one window" is untested.
 - Seroval's reader buffers every item it receives, so the window only holds back the producer; the credit comes from wrapping the iterable the reader hands out. A stream outside arrays, plain objects, maps and sets (inside a class instance or a plugin value) is not wrapped, so its producer stalls after `window` items. Documenting this belongs to rpc-docs.

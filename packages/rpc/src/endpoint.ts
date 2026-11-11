@@ -28,7 +28,7 @@ export interface Port {
 }
 
 /** The version in hello. A different version fails the endpoint. */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 1;
 
 // Transport messages go to the reader unchanged.
 const DATA = 0;
