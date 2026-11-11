@@ -810,7 +810,9 @@ function deserialize(ctx: DeserializerContext, depth: number, node: SerovalNode)
     case SerovalNodeType.Promise:
       return deserializePromise(ctx, depth, node);
     case SerovalNodeType.WKSymbol:
-      return deserializeKnownValue(node, SYMBOL_REF, node.s);
+      // The parser gives a well-known symbol an id and refers to it by that
+      // id when it appears again, so the symbol must be stored under it.
+      return assignIndexedValue(ctx, node.i, deserializeKnownValue(node, SYMBOL_REF, node.s));
     case SerovalNodeType.Boxed:
       return deserializeBoxed(ctx, depth, node);
     case SerovalNodeType.Plugin:
