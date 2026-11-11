@@ -8,7 +8,7 @@ story:
 early: false
 outline: false
 milestone: rpc-0.1
-target: 
+target: main
 ship: auto
 size: M
 spike: false
