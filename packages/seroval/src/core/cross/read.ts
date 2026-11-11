@@ -24,6 +24,13 @@ function createFromCrossJSONContext(options: FromCrossJSONOptions): CrossDeseria
   });
 }
 
+/**
+ * Rebuilds a value from a {@link SerovalNode} tree produced by the
+ * cross-reference parsers ({@link toCrossJSON}, {@link toCrossJSONAsync},
+ * {@link toCrossJSONStream}). The `refs` map must be shared across every chunk
+ * of the same value so cross-references resolve to the same instances; it never
+ * evaluates code.
+ */
 export function fromCrossJSON<T>(source: SerovalNode, options: FromCrossJSONOptions): T {
   return deserializeTop(createFromCrossJSONContext(options), source) as T;
 }

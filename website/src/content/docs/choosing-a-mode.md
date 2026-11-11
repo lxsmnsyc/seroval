@@ -5,27 +5,31 @@ description: Pick the right function for your data, your transport and your trus
 
 seroval has one function for each combination of output format and timing. Start with two questions:
 
-1. **Does the receiver trust the sender?** If not, use the JSON functions, and decode with `fromJSON` or `fromCrossJSON`. Never evaluate JavaScript output from a source you do not trust.
+1. **Does the receiver trust the sender?** If not, use the JSON functions or binary mode, and decode with `fromJSON`, `fromCrossJSON` or `binary.deserialize`. Never evaluate JavaScript output from a source you do not trust.
 2. **Does the value contain promises or streams?** If so, use an async or streaming function.
 
 ## All functions
 
-| | JavaScript output | JSON output |
-| --- | --- | --- |
-| Sync values | `serialize` | `toJSON` |
-| Async values, one result | `serializeAsync` | `toJSONAsync` |
-| Shared references, sync | `crossSerialize` | `toCrossJSON` |
-| Shared references, async | `crossSerializeAsync` | `toCrossJSONAsync` |
-| Streaming | `crossSerializeStream` | `toCrossJSONStream` |
-| Decoding | `deserialize` (runs the code) | `fromJSON`, `fromCrossJSON` |
+| | JavaScript output | JSON output | Binary output |
+| --- | --- | --- | --- |
+| Sync values | `serialize` | `toJSON` | |
+| Async values, one result | `serializeAsync` | `toJSONAsync` | |
+| Shared references, sync | `crossSerialize` | `toCrossJSON` | |
+| Shared references, async | `crossSerializeAsync` | `toCrossJSONAsync` | |
+| Streaming | `crossSerializeStream` | `toCrossJSONStream` | `binary.serialize` |
+| Decoding | `deserialize` (runs the code) | `fromJSON`, `fromCrossJSON` | `binary.deserialize` |
 
 The `Serializer` class wraps `crossSerializeStream` for apps that write many values to one page. See [Streaming](./streaming.md#the-serializer-class).
 
-## JavaScript or JSON?
+[Binary mode](./binary-mode.md) only streams. Its output is `Uint8Array` chunks, and it can share references between payloads, like the cross-reference functions.
+
+## JavaScript, JSON or binary?
 
 **JavaScript output** is smaller and needs no decoder: the browser runs it directly. Use it when the server sends data to its own pages, such as server-rendered HTML.
 
 **JSON output** is larger, but decoding it runs no code from the sender. Use it when the receiver cannot trust the sender. The usual case is a server that reads a request body from a client.
+
+**Binary output** is bytes. Like JSON output, decoding it runs no code from the sender. It sends strings as UTF-8 and buffers as raw bytes, without base64. Use it when the transport carries bytes, such as a `fetch` body or a WebSocket. It always streams, and it needs `binary.deserialize` on the receiving side.
 
 ## One result or a stream?
 
@@ -49,4 +53,5 @@ The `Serializer` class wraps `crossSerializeStream` for apps that write many val
 | Stream state into the page as it loads | `crossSerializeStream` or `Serializer` |
 | Send a request body from client to server | `toJSON`, then `fromJSON` on the server |
 | Stream data to a client that must not evaluate it | `toCrossJSONStream`, then `createCrossDeserializer` |
+| Stream bytes to a receiver that must not evaluate them | `binary.serialize`, then `binary.deserialize` |
 | Store a value and load it later | `toJSON` and `fromJSON` |

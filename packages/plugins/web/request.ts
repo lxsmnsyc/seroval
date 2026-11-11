@@ -43,10 +43,7 @@ const isRequestOptions = /* @__PURE__ */ v.object({
   duplex: /* @__PURE__ */ v.optional(v.string),
 });
 
-function createStreamRequestOptions(
-  current: Request,
-  body: ReadableStream | null,
-): RequestOptions {
+function createStreamRequestOptions(current: Request, body: ReadableStream | null): RequestOptions {
   const options: RequestOptions = createRequestOptions(current, body);
   if (body) {
     // A stream body needs `duplex: 'half'` where stream bodies are supported
@@ -115,7 +112,12 @@ type RequestNode = {
   options: SerovalNode;
 };
 
-const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
+type RequestBinaryData = {
+  url: string;
+  options: RequestOptions;
+};
+
+const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode, RequestBinaryData>({
   tag: 'seroval-plugins/web/Request',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   skipPlainObjects: true,
@@ -158,6 +160,28 @@ const RequestPlugin = /* @__PURE__ */ createPlugin<Request, RequestNode>({
       ctx.deserialize<string>(node.url),
       copyRequestOptions(ctx.deserialize<RequestOptions>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      const body = value.body && !value.bodyUsed ? value.clone().body : null;
+      const options = createRequestOptions(value, body);
+      if (body) {
+        // A streamed request body is only accepted in half duplex mode.
+        // Without this the receiving `new Request()` throws.
+        (options as { duplex?: string }).duplex = 'half';
+      }
+      return {
+        url: value.url,
+        options,
+      };
+    },
+    validate: { url: v.string, options: isRequestOptions },
+    deserialize(data) {
+      // A payload shared between Request values would hand each of them the
+      // same body. `copyRequestOptions` also claims the body and headers.
+      claim(data);
+      return new Request(data.url, copyRequestOptions(data.options));
+    },
   },
 });
 

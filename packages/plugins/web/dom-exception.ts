@@ -7,7 +7,16 @@ type DOMExceptionNode = {
   message: SerovalNode;
 };
 
-const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<DOMException, DOMExceptionNode>({
+type DOMExceptionBinaryData = {
+  name: string;
+  message: string;
+};
+
+const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<
+  DOMException,
+  DOMExceptionNode,
+  DOMExceptionBinaryData
+>({
   tag: 'seroval-plugins/web/DOMException',
   skipPlainObjects: true,
   test(value) {
@@ -45,6 +54,18 @@ const DOMExceptionPlugin = /* @__PURE__ */ createPlugin<DOMException, DOMExcepti
       ctx.deserialize<string>(node.message),
       ctx.deserialize<string>(node.name),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        name: value.name,
+        message: value.message,
+      };
+    },
+    validate: { name: v.string, message: v.string },
+    deserialize(data) {
+      return new DOMException(data.message, data.name);
+    },
   },
 });
 

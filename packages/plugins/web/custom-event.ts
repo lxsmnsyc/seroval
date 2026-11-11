@@ -35,7 +35,16 @@ type CustomEventNode = {
   options: SerovalNode;
 };
 
-const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventNode>({
+type CustomEventBinaryData = {
+  type: string;
+  options: CustomEventInit;
+};
+
+const CustomEventPlugin = /* @__PURE__ */ createPlugin<
+  CustomEvent,
+  CustomEventNode,
+  CustomEventBinaryData
+>({
   tag: 'seroval-plugins/web/CustomEvent',
   skipPlainObjects: true,
   test(value) {
@@ -73,6 +82,18 @@ const CustomEventPlugin = /* @__PURE__ */ createPlugin<CustomEvent, CustomEventN
       ctx.deserialize<string>(node.type),
       copyCustomEventOptions(ctx.deserialize<CustomEventInit>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        type: value.type,
+        options: createCustomEventOptions(value),
+      };
+    },
+    validate: { type: v.string, options: isCustomEventOptions },
+    deserialize(data) {
+      return new CustomEvent(data.type, copyCustomEventOptions(data.options));
+    },
   },
 });
 

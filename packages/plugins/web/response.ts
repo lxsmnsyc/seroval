@@ -36,7 +36,12 @@ type ResponseNode = {
   options: SerovalNode;
 };
 
-const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
+type ResponseBinarydata = {
+  body: ReadableStream<Uint8Array> | null;
+  options: ResponseInit;
+};
+
+const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode, ResponseBinarydata>({
   tag: 'seroval-plugins/web/Response',
   extends: [ReadableStreamPlugin, HeadersPlugin],
   skipPlainObjects: true,
@@ -71,6 +76,19 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
       claim(ctx.deserialize<BodyInit | null>(node.body)),
       copyResponseOptions(ctx.deserialize<ResponseInit>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        body: value.body && !value.bodyUsed ? value.clone().body : null,
+        options: createResponseOptions(value),
+      };
+    },
+    validate: { body: isBody, options: isResponseOptions },
+    deserialize(data) {
+      // A body shared between Response values would be read by each of them.
+      return new Response(claim(claim(data).body), copyResponseOptions(data.options));
+    },
   },
 });
 

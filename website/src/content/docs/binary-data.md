@@ -64,3 +64,11 @@ Details:
 - An invalid limit throws a `RangeError` when decoding starts.
 - An oversized buffer is rejected before it is decoded. The error is a `SerovalDeserializationError` whose `cause` is a `RangeError`.
 - `deserialize` does not use this limit, because it runs JavaScript instead of decoding JSON.
+
+## In binary mode
+
+[Binary mode](./binary-mode.md) sends a buffer's bytes as they are, without base64. Its rules differ:
+
+- Views always share their buffer. There is no `compactArrayBufferViews` option.
+- `maxBase64Length` does not apply, and an `ArrayBuffer` has no size limit.
+- Typed arrays longer than 1,000,000 elements, and `DataView`s longer than 1,000,000 bytes, are rejected on both sides.

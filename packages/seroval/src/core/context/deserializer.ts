@@ -1,13 +1,17 @@
 import { decodeArrayBuffer } from '../binary-neutral';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
+import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import {
+  BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
   CONSTANT_VAL,
+  DEFAULT_DEPTH_LIMIT,
   ERROR_CONSTRUCTOR,
   NIL,
   SYMBOL_REF,
   SerovalNodeType,
   SerovalObjectFlags,
   TEMPORAL_TYPE_NAME,
+  TYPED_ARRAY_CONSTRUCTOR,
 } from '../constants';
 import { PROMISE_CONSTRUCTOR, type PromiseConstructorResolver } from '../constructors';
 import {
@@ -61,8 +65,6 @@ import type {
   SerovalTypedArrayNode,
 } from '../types';
 import type { Validator } from '../validator';
-import type { BigIntTypedArrayValue, TypedArrayValue } from '../utils/typed-array';
-import { getTypedArrayConstructor } from '../utils/typed-array';
 import { isValidKey, isValidSymbol } from '../utils/valid-properties';
 
 const DEFAULT_MAX_BASE64_LENGTH = 1_000_000; // ~0.75MB decoded
@@ -114,7 +116,6 @@ export interface BaseDeserializerContext extends PluginAccessOptions {
   pending?: Set<number>;
 }
 
-const DEFAULT_DEPTH_LIMIT = 1000;
 // Each escape such as `\p{L}` or `\p{RGI_Emoji}` can cost the engine a large
 // share of a millisecond to build, so one call builds only a few dozen.
 const MAX_REGEXP_PROPERTY_ESCAPES = 32;
@@ -783,12 +784,22 @@ function deserialize(ctx: DeserializerContext, depth: number, node: SerovalNode)
     case SerovalNodeType.ArrayBuffer:
       return deserializeArrayBuffer(ctx, node);
     case SerovalNodeType.BigIntTypedArray:
+      return deserializeView(
+        ctx,
+        depth,
+        node,
+        deserializeKnownValue(
+          node,
+          BIG_INT_TYPED_ARRAY_CONSTRUCTOR,
+          node.s,
+        ) as unknown as Int8ArrayConstructor,
+      );
     case SerovalNodeType.TypedArray:
       return deserializeView(
         ctx,
         depth,
         node,
-        getTypedArrayConstructor(node.c) as Int8ArrayConstructor,
+        deserializeKnownValue(node, TYPED_ARRAY_CONSTRUCTOR, node.s) as Int8ArrayConstructor,
       );
     case SerovalNodeType.DataView:
       return deserializeView(ctx, depth, node);

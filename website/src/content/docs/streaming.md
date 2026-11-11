@@ -5,6 +5,8 @@ description: Send each part of a value as soon as it is ready, with crossSeriali
 
 The async functions wait for every promise before they return anything. Streaming sends the parts that are ready right away, then sends each promise result or stream event as it happens. The receiver can start using the value before the slow parts arrive.
 
+This page covers the string and JSON streams. To stream bytes instead, see [Binary mode](./binary-mode.md).
+
 ## crossSerializeStream
 
 `crossSerializeStream` calls `onSerialize` once with the synchronous part of the value, then once more for every update. Each call receives a [cross-reference](./cross-reference.md) script.

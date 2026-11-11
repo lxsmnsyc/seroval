@@ -15,7 +15,11 @@ function convertHeaders(instance: Headers): HeadersEntries {
   return items;
 }
 
-const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode }>({
+const HeadersPlugin = /* @__PURE__ */ createPlugin<
+  Headers,
+  { value: SerovalNode },
+  { value: HeadersEntries }
+>({
   tag: 'seroval-plugins/web/Headers',
   skipPlainObjects: true,
   test(value) {
@@ -47,6 +51,15 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode
   validate: { value: isHeadersInit },
   deserialize(node, ctx) {
     return new Headers(copyEntries(ctx.deserialize<HeadersEntries>(node.value)));
+  },
+  binary: {
+    serialize(value) {
+      return { value: convertHeaders(value) };
+    },
+    validate: { value: isHeadersInit },
+    deserialize(data) {
+      return new Headers(copyEntries(data.value));
+    },
   },
 });
 
