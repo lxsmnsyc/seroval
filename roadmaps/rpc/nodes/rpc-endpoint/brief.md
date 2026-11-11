@@ -1,7 +1,7 @@
 ---
 id: rpc-endpoint
 title: Endpoint, value calls and postMessage
-status: active
+status: done
 priority: must
 type: feature
 story: 
