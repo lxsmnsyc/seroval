@@ -11,7 +11,7 @@ export type SearchFunctions = {
   load(
     this: CallContext,
     documents: string[],
-    progress: Channel<ProgressFunctions>,
+    progress?: Channel<ProgressFunctions>,
   ): Promise<number>;
   /** Returns the documents that contain every word of the query. */
   search(this: CallContext, query: string): Promise<string[]>;

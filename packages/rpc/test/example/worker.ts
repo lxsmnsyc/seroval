@@ -2,8 +2,8 @@ import { parentPort } from 'node:worker_threads';
 // The worker runs in plain Node, which cannot load `../../src` without file
 // extensions, so it imports the built package through its own name.
 import { createChannel, createEndpoint } from '@seroval/rpc';
+import { fromNodeWorker } from '@seroval/rpc/node';
 import type { CallContext, RpcSignal } from '@seroval/rpc';
-import toPort from '../support/node-port.ts';
 import type { SearchFunctions } from './api.ts';
 
 /* oxlint-disable typescript/require-await */
@@ -48,7 +48,7 @@ const functions: SearchFunctions = {
     for (const document of documentsToIndex) {
       documents.push(document);
       done++;
-      progress.notify('report', done, documentsToIndex.length);
+      progress?.notify('report', done, documentsToIndex.length);
     }
     return documents.length;
   },
@@ -91,5 +91,5 @@ if (!parentPort) {
 }
 
 const root = createChannel(functions);
-const endpoint = createEndpoint(toPort(parentPort), { initiator: false });
+const endpoint = createEndpoint(fromNodeWorker(parentPort), {});
 endpoint.serve(root);

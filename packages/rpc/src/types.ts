@@ -70,24 +70,11 @@ export interface IncomingCall {
 }
 
 export interface EndpointOptions {
-  /** True on one side only. It picks even or odd call IDs. */
-  initiator: boolean;
   plugins?: Plugin<any, any>[];
   /** Wraps every incoming call. Call `next` to run the function. */
   onCall?(call: IncomingCall, next: () => Promise<unknown>): Promise<unknown>;
   /** How many items of a stream the reader allows in flight. */
   window?: number;
-}
-
-/**
- * The part of a `MessagePort` that rpc uses. A `worker_threads` `Worker` has
- * `on` and not `addEventListener`; wrap it (see `test/support/node-port.ts`).
- */
-export interface MessagePortLike {
-  postMessage(message: unknown, transfer?: Transferable[]): void;
-  addEventListener(type: 'message', listener: (event: { data: unknown }) => void): void;
-  addEventListener(type: 'error' | 'messageerror', listener: (event: unknown) => void): void;
-  close?(): void;
 }
 
 export interface Endpoint {

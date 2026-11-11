@@ -7,10 +7,9 @@ import {
   createChannel,
   createEndpoint,
   createRpcSignal,
-  transfer,
 } from '../../src/index';
 import type { Channel, Endpoint } from '../../src/index';
-import toPort from '../support/node-port';
+import { fromNodeWorker } from '../../src/node';
 import type { ProgressFunctions, SearchFunctions } from './api';
 
 const DOCUMENTS = ['red apple pie', 'green apple tart', 'banana bread', 'apple cider'];
@@ -31,7 +30,7 @@ async function waitForExit(worker: Worker): Promise<number> {
 
 function startWorker(): Started {
   const worker = new Worker(new URL('./worker.ts', import.meta.url));
-  const endpoint = createEndpoint(toPort(worker), { initiator: true });
+  const endpoint = createEndpoint(fromNodeWorker(worker), {});
   const search: Channel<SearchFunctions> = endpoint.connect<SearchFunctions>();
   return { worker, endpoint, search };
 }
@@ -40,7 +39,6 @@ describe('package surface', () => {
   it('exports the draft API', () => {
     expect(typeof createChannel).toBe('function');
     expect(typeof createEndpoint).toBe('function');
-    expect(typeof transfer).toBe('function');
     expect(new RpcClosedError()).toBeInstanceOf(Error);
     expect(new RpcTransportError()).toBeInstanceOf(Error);
     expect(new RpcRemoteError('TypeError', 'bad').remoteName).toBe('TypeError');
@@ -48,10 +46,10 @@ describe('package surface', () => {
 });
 
 describe('worker example', () => {
-  it.skip('runs a query on the index in the worker (rpc-endpoint)', async () => {
+  it('runs a query on the index in the worker (rpc-endpoint)', async () => {
     const { search } = startWorker();
-    const progress = createChannel<ProgressFunctions>({ report() {} });
-    expect(await search.run('load', DOCUMENTS, progress)).toBe(4);
+    // The progress channel is optional; passing one is rpc-channels.
+    expect(await search.run('load', DOCUMENTS)).toBe(4);
     expect(await search.run('search', 'apple')).toEqual([
       'red apple pie',
       'green apple tart',
