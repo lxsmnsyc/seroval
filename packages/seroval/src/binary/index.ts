@@ -119,9 +119,15 @@ export interface DeserializerPayload<T> {
 export interface Deserializer {
   /** Starts a payload. Throws a `SerovalAbortedError` once the session aborted. */
   open<T>(options?: DeserializerPayloadOptions): DeserializerPayload<T>;
-  /** Promises and streams of every payload that have not settled or ended yet. */
+  /**
+   * Promises and streams that have not settled or ended yet, in the payloads
+   * that have not ended or aborted.
+   */
   readonly pending: number;
-  /** Aborts every payload. Later calls to `open` throw. Idempotent. */
+  /**
+   * Aborts every payload that has not ended or aborted. Later calls to `open`
+   * throw. Idempotent.
+   */
   abort(reason: unknown): void;
 }
 
@@ -220,17 +226,12 @@ function createPayload<T>(
 export function createDeserializer(options: DeserializerOptions = {}): Deserializer {
   const plugins = resolvePlugins(options.plugins);
   const refs = createReferenceMap();
-  // Payloads that can still hold pending values.
+  // Payloads that have not ended or aborted. A payload that ended has no
+  // open promise or stream left, only values that a plugin still decodes,
+  // which settle on their own. Dropping it then keeps a long-lived session
+  // from holding every payload it decoded.
   const payloads = new Set<DeserializerContext>();
   let aborted = false;
-
-  // A closed payload takes no more nodes. Once it has nothing pending, it
-  // never will again.
-  function prune(ctx: DeserializerContext): void {
-    if ((ctx.done || ctx.aborted) && countPending(ctx) === 0) {
-      payloads.delete(ctx);
-    }
-  }
 
   return {
     open<T>(payloadOptions: DeserializerPayloadOptions = {}) {
@@ -247,13 +248,12 @@ export function createDeserializer(options: DeserializerOptions = {}): Deseriali
       });
       payloads.add(ctx);
       return createPayload<T>(ctx, payloadOptions.onError ?? options.onError, () => {
-        prune(ctx);
+        payloads.delete(ctx);
       });
     },
     get pending() {
       let count = 0;
       for (const ctx of payloads) {
-        prune(ctx);
         count += countPending(ctx);
       }
       return count;

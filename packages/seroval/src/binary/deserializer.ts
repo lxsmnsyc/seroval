@@ -1819,9 +1819,6 @@ function getNodeSize(ctx: DeserializerContext): number {
   return size;
 }
 
-// Parses every node that is fully buffered, and reads more chunks when the
-// next node is not. Nodes are parsed synchronously, so a buffered payload is
-// decoded without waiting between nodes.
 /**
  * Decodes every node that is buffered. Returns true once the payload is
  * finished, or false when it needs more bytes. Throws when the bytes are
@@ -1852,7 +1849,10 @@ export function pumpDeserialize(ctx: DeserializerContext): boolean {
 }
 
 /** Adds `chunk` to the bytes of the payload, or ends it when `undefined`. */
-export function pushDeserializeChunk(ctx: DeserializerContext, chunk: Uint8Array | undefined): void {
+export function pushDeserializeChunk(
+  ctx: DeserializerContext,
+  chunk: Uint8Array | undefined,
+): void {
   if (chunk) {
     if (chunk.length) {
       ctx.chunks.push(chunk);
@@ -1863,6 +1863,8 @@ export function pushDeserializeChunk(ctx: DeserializerContext, chunk: Uint8Array
   }
 }
 
+// Decodes every buffered node, and reads more chunks when the next node is
+// not buffered yet.
 async function drain(ctx: DeserializerContext) {
   while (!pumpDeserialize(ctx)) {
     await readChunk(ctx);
@@ -1930,7 +1932,10 @@ export function deserializeStart<T>(ctx: DeserializerContext): Promise<Deseriali
 /** Promises and streams of the payload that have not settled or ended yet. */
 export function countPending(ctx: DeserializerContext): number {
   return (
-    ctx.openPromises.size + ctx.openStreams.size + ctx.settlingPromises.size + ctx.endingStreams.size
+    ctx.openPromises.size +
+    ctx.openStreams.size +
+    ctx.settlingPromises.size +
+    ctx.endingStreams.size
   );
 }
 

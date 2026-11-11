@@ -248,7 +248,7 @@ const second = await receive(await send({ author: user }));
 second.author === first.user; // true
 ```
 
-Decode the payloads in the order they were sent, with the same pair of maps. If a payload refers to a value the receiver never decoded, `onError` receives an error such as `SerovalMissingBinaryRefError`, and the value is incomplete.
+Decode the payloads in the order they were sent, with the same pair of maps. If a payload refers to a value the receiver never decoded, `onError` receives an error such as `SerovalMissingBinaryRefError`, and the value is incomplete. In a [session](#payloads-that-stream-at-once), `push` throws that error instead.
 
 ### Payloads that stream at once
 
@@ -276,7 +276,7 @@ const { value } = await payload.result;
 | `result` | A promise for `{ value, pending }`, as `binary.deserialize` returns. |
 | `pending` | The promises and streams of the payload that have not settled or ended yet. |
 
-The session has `open(options?)`, `pending` across every payload, and `abort(reason)`, which aborts every payload and makes later calls to `open` throw a `SerovalAbortedError`. An error that stops a payload after `push` or `end` returned, such as a plugin whose `deserialize` fails, aborts the payload and goes to `onError`. Pass `{ onError }` to `open` to receive the errors of one payload instead.
+The session has `open(options?)`, `pending` across the payloads that have not ended, and `abort(reason)`, which aborts every payload that has not ended and makes later calls to `open` throw a `SerovalAbortedError`. The session forgets a payload once it ends or aborts. An error that stops a payload after `push` or `end` returned, such as a plugin whose `deserialize` fails, aborts the payload and goes to `onError`. Pass `{ onError }` to `open` to receive the errors of one payload instead.
 
 When a value fails, the serializer sends the nodes it wrote before it calls `onError`. A later payload can then refer to them, even though the value that sent them failed.
 

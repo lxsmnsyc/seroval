@@ -251,6 +251,19 @@ describe('binary deserializer session', () => {
     expect(session.pending).toBe(0);
   });
 
+  it('forgets a payload once it ends', async () => {
+    const events = await serializeAll([{ later: Promise.resolve(1) }]);
+    const session = binary.createDeserializer();
+    const [payload] = pushAll(session, events, 1);
+    const { value } = await valueOf<{ later: Promise<number> }>(payload).then((v) => ({
+      value: v,
+    }));
+    expect(session.pending).toBe(0);
+    // An abort of the session does not reach a payload that ended.
+    session.abort(new Error('stop'));
+    await expect(value.later).resolves.toBe(1);
+  });
+
   it('aborts every payload, and refuses new ones', async () => {
     const session = binary.createDeserializer();
     const refs = new Map<unknown, number>();
