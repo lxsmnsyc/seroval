@@ -57,6 +57,9 @@
       "write": [
         "./dist/write.d.cts"
       ],
+      "binary": [
+        "./dist/binary.d.cts"
+      ],
       "web": [
         "./dist/web.d.cts"
       ],
@@ -83,6 +86,11 @@
       "import": "./dist/write.js",
       "require": "./dist/write.cjs",
       "default": "./dist/write.js"
+    },
+    "./binary": {
+      "import": "./dist/binary.js",
+      "require": "./dist/binary.cjs",
+      "default": "./dist/binary.js"
     },
     "./web": {
       "import": "./dist/web.js",
