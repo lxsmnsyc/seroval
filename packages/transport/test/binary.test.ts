@@ -1,4 +1,5 @@
 import { createLiveStream } from 'seroval';
+import { Readable } from 'node:stream';
 import { describe, expect, it, vi } from 'vitest';
 import type { Message, Reader } from '../src/binary';
 import {
@@ -10,7 +11,7 @@ import {
 } from '../src/binary';
 import { createFrameDecoder, encodeFrame } from '../src/frame';
 import { fromNodeStream, toNodeStream } from '../src/node';
-import { fromWebStream, toWebStream } from '../src/web';
+import { fromResponse, fromWebStream, toResponse, toWebStream } from '../src/web';
 
 /** Sends each message through `structuredClone`, as `postMessage` does. */
 function pipeTo(reader: Pick<Reader, 'push'>): (message: Message) => void {
@@ -449,6 +450,158 @@ describe('binary frames', () => {
     const value = await reader.get<{ big: Uint8Array }>('0');
     await reader.settled('0');
     expect(value.big.length).toBe(100_000);
+    await reading;
+  });
+});
+
+/** Re-sends the bytes of `body` in pieces of `size` bytes. */
+async function rechunk(
+  body: ReadableStream<Uint8Array>,
+  size: number,
+): Promise<ReadableStream<Uint8Array>> {
+  const bytes = new Uint8Array(await new Response(body).arrayBuffer());
+  let offset = 0;
+  return new ReadableStream({
+    pull(controller) {
+      if (offset >= bytes.length) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(bytes.slice(offset, offset + size));
+      offset += size;
+    },
+  });
+}
+
+describe('binary responses and streams', () => {
+  it('sends values through a Response', async () => {
+    const response = toResponse(
+      (sink) => {
+        const writer = createBinaryWriter(sink);
+        writer.write('user', {
+          name: 'Ada',
+          avatar: new Uint8Array([1, 2, 3]),
+          later: Promise.resolve(1),
+        });
+        writer.write('items', { items: numbers() });
+        writer.flush();
+        return writer;
+      },
+      { status: 201 },
+    );
+    expect(response.status).toBe(201);
+    expect(response.headers.get('content-type')).toBe('application/octet-stream');
+    const reader = createBinaryReader();
+    const reading = fromResponse(response, reader);
+    const user = await reader.get<{ name: string; avatar: Uint8Array; later: Promise<number> }>(
+      'user',
+    );
+    expect(user.name).toBe('Ada');
+    expect(user.avatar).toEqual(new Uint8Array([1, 2, 3]));
+    await expect(user.later).resolves.toBe(1);
+    const { items } = await reader.get<{ items: AsyncIterable<number> }>('items');
+    expect(await collectItems(items)).toEqual([1, 2]);
+    await reading;
+  });
+
+  it('reads one value of a Response with fromBinaryStream', async () => {
+    const response = toResponse((sink) => toBinaryStream({ later: Promise.resolve('done') }, sink));
+    const reader = fromBinaryStream<{ later: Promise<string> }>();
+    void fromResponse(response, reader);
+    const value = await reader.value;
+    await expect(value.later).resolves.toBe('done');
+    await expect(reader.settled).resolves.toBeUndefined();
+  });
+
+  it('keeps references with sharedRefs through a Response split into small chunks', async () => {
+    const shared = { id: 1 };
+    const response = toResponse((sink) => {
+      const writer = createBinaryWriter({ ...sink, sharedRefs: true });
+      writer.write('a', { shared, later: Promise.resolve(shared) });
+      writer.write('b', [shared]);
+      writer.flush();
+      return writer;
+    });
+    const reader = createBinaryReader({ sharedRefs: true });
+    const reading = fromWebStream(await rechunk(response.body!, 3), reader);
+    const a = await reader.get<{ shared: object; later: Promise<object> }>('a');
+    const b = await reader.get<object[]>('b');
+    expect(await a.later).toBe(a.shared);
+    expect(b[0]).toBe(a.shared);
+    await reading;
+  });
+
+  it('reports bytes that do not decode and ends the reader', async () => {
+    const [head] = encodeFrame([0, 'a', new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff])]);
+    const body = new Uint8Array(head.length + 6);
+    body.set(head);
+    body.fill(0xff, head.length);
+    const onError = vi.fn();
+    const reader = createBinaryReader();
+    const value = reader.get('a');
+    await fromResponse(new Response(body), reader, { onError });
+    await expect(value).rejects.toBeInstanceOf(Error);
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails pending values and stops the writer when the reading stops', async () => {
+    const onCancel = vi.fn();
+    const { stream: live } = createLiveStream<number>({ onCancel });
+    const response = toResponse((sink) =>
+      toBinaryStream({ live, later: new Promise(() => {}) }, sink),
+    );
+    const reader = createBinaryReader();
+    const controller = new AbortController();
+    const reading = fromResponse(response, reader, { signal: controller.signal });
+    const value = await reader.get<{ later: Promise<never> }>('0');
+    // Stop reading, as a client that goes away does.
+    const reason = new Error('gone');
+    controller.abort(reason);
+    await expect(value.later).rejects.toBe(reason);
+    await reading;
+    // Cancelling the body closes the writer, which stops its sources.
+    await vi.waitFor(() => expect(onCancel).toHaveBeenCalled());
+  });
+
+  it('stops the sources when the web stream is cancelled', async () => {
+    const onCancel = vi.fn();
+    const { stream: live } = createLiveStream<number>({ onCancel });
+    const stream = toWebStream((sink) => toBinaryStream({ live }, sink));
+    await stream.cancel(new Error('gone'));
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('stops the sources when the Node stream is destroyed', () => {
+    const onCancel = vi.fn();
+    const { stream: live } = createLiveStream<number>({ onCancel });
+    const stream = toNodeStream((sink) => toBinaryStream({ live }, sink));
+    stream.destroy();
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('reads a Node stream that sends bytes in small chunks', async () => {
+    const shared = { id: 1 };
+    const pieces: Buffer[] = [];
+    for await (const chunk of toNodeStream((sink) => {
+      const writer = createBinaryWriter({ ...sink, sharedRefs: true });
+      writer.write('a', shared);
+      writer.write('b', { shared, items: numbers() });
+      writer.flush();
+      return writer;
+    })) {
+      pieces.push(chunk as Buffer);
+    }
+    const bytes = Buffer.concat(pieces);
+    const chunks: Buffer[] = [];
+    for (let i = 0; i < bytes.length; i += 2) {
+      chunks.push(bytes.subarray(i, i + 2));
+    }
+    const reader = createBinaryReader({ sharedRefs: true });
+    const reading = fromNodeStream(Readable.from(chunks), reader);
+    const a = await reader.get('a');
+    const b = await reader.get<{ shared: unknown; items: AsyncIterable<number> }>('b');
+    expect(b.shared).toBe(a);
+    expect(await collectItems(b.items)).toEqual([1, 2]);
     await reading;
   });
 });
