@@ -120,7 +120,7 @@ function createRemoteError(description: unknown): Error {
 }
 
 /** Ties a channel table and the transport to one port. */
-export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
+export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpoint {
   // Channels this side made and sent, and channels the other side sent.
   const owned = new Map<number, OwnerCore>();
   const remote = new Map<number, Holder>();
