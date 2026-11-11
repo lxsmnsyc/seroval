@@ -76,10 +76,12 @@ describe('worker example', () => {
     search.close();
   });
 
-  it.skip('cancels a call and the function sees the signal (rpc-streaming)', async () => {
+  it('cancels a call and the function sees the signal', async () => {
     const { search } = startWorker();
     const controller = createRpcSignal();
     const pending = search.with({ signal: controller.signal }).run('scan', 'apple');
+    // Calls start in order, so once this answers, `scan` is running.
+    await search.run('search', 'apple');
     controller.abort(new Error('stop'));
     await expect(pending).rejects.toThrow('stop');
     expect(await search.run('scanWasCancelled')).toBe(true);
