@@ -91,5 +91,5 @@ if (!parentPort) {
 }
 
 const root = createChannel(functions);
-const endpoint = createEndpoint(fromNodeWorker(parentPort), { initiator: false });
+const endpoint = createEndpoint(fromNodeWorker(parentPort), {});
 endpoint.serve(root);

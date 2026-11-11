@@ -197,7 +197,7 @@ export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
     }
     holder.isClosed = true;
     // Fail the calls that wait on this channel.
-    for (const [key, call] of [...pending]) {
+    for (const [key, call] of pending) {
       if (call.holder === holder) {
         pending.delete(key);
         call.reject(new RpcClosedError());
@@ -206,7 +206,8 @@ export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
     if (holder.id !== undefined) {
       remote.delete(holder.id);
       if (notifyPeer) {
-        sendMessage([CLOSE, holder.id]);
+        // Side 0: the holder closed, so the other end looks in `owned`.
+        sendMessage([CLOSE, holder.id, 0]);
       }
     }
     holder.resolveClosed();
@@ -394,20 +395,24 @@ export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
     }
   }
 
-  function receiveClose(id: unknown): void {
+  function receiveClose(id: unknown, side: unknown): void {
     if (typeof id !== 'number') {
       return;
     }
-    const core = owned.get(id);
-    if (core) {
-      // Forget the channel first, so closing it does not echo the message.
-      owned.delete(id);
-      closeOwner(core).catch(ignoreRejection);
-      return;
-    }
-    const holder = remote.get(id);
-    if (holder) {
-      closeHolder(holder, false);
+    if (side === 0) {
+      // The holder closed its end, so the channel is one this side owns.
+      const core = owned.get(id);
+      if (core) {
+        // Forget the channel first, so closing it does not echo the message.
+        owned.delete(id);
+        closeOwner(core).catch(ignoreRejection);
+      }
+    } else if (side === 1) {
+      // The owner closed the channel, so it is one this side holds.
+      const holder = remote.get(id);
+      if (holder) {
+        closeHolder(holder, false);
+      }
     }
   }
 
@@ -429,7 +434,7 @@ export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
         receiveHello(message[1], message[2]);
         break;
       case CLOSE:
-        receiveClose(message[1]);
+        receiveClose(message[1], message[2]);
         break;
       case CREDIT:
       case CANCEL:
@@ -469,7 +474,7 @@ export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
     closed = true;
     stopReason = error;
     // Fail the calls in flight.
-    for (const call of [...pending.values()]) {
+    for (const call of pending.values()) {
       call.reject(error);
     }
     pending.clear();
@@ -481,13 +486,13 @@ export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
     }
     waiting = [];
     // Close the channels, which tells the other end while the port is open.
-    for (const holder of [...remote.values()]) {
+    for (const holder of remote.values()) {
       closeHolder(holder, true);
     }
     if (rootHolderState) {
       closeHolder(rootHolderState, true);
     }
-    for (const core of [...owned.values()]) {
+    for (const core of owned.values()) {
       closeOwner(core).catch(ignoreRejection);
     }
     owned.clear();
@@ -525,7 +530,8 @@ export function createEndpoint(port: Port, options: EndpointOptions): Endpoint {
       core.watchers.add(() => {
         if (owned.get(core.id) === core) {
           owned.delete(core.id);
-          sendMessage([CLOSE, core.id]);
+          // Side 1: the owner closed, so the other end looks in `remote`.
+          sendMessage([CLOSE, core.id, 1]);
         }
       });
       sendMessage([HELLO, PROTOCOL_VERSION, core.id]);

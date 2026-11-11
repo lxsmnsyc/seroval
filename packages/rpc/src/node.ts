@@ -43,6 +43,7 @@ export function fromNodeWorker(source: Worker | MessagePort): Port {
         stopClose();
       };
     },
+    /** Closes a MessagePort. It does not terminate a Worker. */
     close() {
       // Terminating a Worker would drop messages still on the way to it. The
       // worker closes its own port when it closes, and then exits by itself.

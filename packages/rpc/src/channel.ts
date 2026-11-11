@@ -196,7 +196,7 @@ export async function closeOwner(core: OwnerCore): Promise<void> {
   core.isClosed = true;
   // Stop the calls that still run.
   const reason = new RpcClosedError();
-  for (const controller of [...core.calls]) {
+  for (const controller of core.calls) {
     try {
       controller.abort(reason);
     } catch (error) {
@@ -205,7 +205,7 @@ export async function closeOwner(core: OwnerCore): Promise<void> {
   }
   core.calls.clear();
   // Tell the endpoint, which tells the other side.
-  for (const watcher of [...core.watchers]) {
+  for (const watcher of core.watchers) {
     watcher();
   }
   core.watchers.clear();

@@ -1,7 +1,5 @@
 import type { Port } from './endpoint';
 
-export { isTransfer, transfer } from './transfer';
-
 /**
  * The part of a `Worker`, `MessagePort` or `DedicatedWorkerGlobalScope` that
  * the adapter uses.
@@ -47,6 +45,12 @@ export function fromMessagePort(source: MessagePortLike): Port {
         stopError();
         stopMessage();
       };
+    },
+    onClose(listener) {
+      // A MessagePort emits `close` when the peer goes away; a Worker has none.
+      return listen('close', () => {
+        listener();
+      });
     },
     close() {
       source.close?.();

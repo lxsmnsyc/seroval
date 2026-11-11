@@ -30,7 +30,7 @@ async function waitForExit(worker: Worker): Promise<number> {
 
 function startWorker(): Started {
   const worker = new Worker(new URL('./worker.ts', import.meta.url));
-  const endpoint = createEndpoint(fromNodeWorker(worker), { initiator: true });
+  const endpoint = createEndpoint(fromNodeWorker(worker), {});
   const search: Channel<SearchFunctions> = endpoint.connect<SearchFunctions>();
   return { worker, endpoint, search };
 }

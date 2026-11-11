@@ -27,7 +27,7 @@ export function checkThisContext(): void {
 export function checkInterfaces(port: Port, owned: AsInterface): Promise<unknown>[] {
   // An interface fits, both for the owner and the holder.
   const local: Channel<AsInterface> = createChannel(owned);
-  const endpoint = createEndpoint(port, { initiator: true });
+  const endpoint = createEndpoint(port, {});
   endpoint.serve(local);
   const remote = endpoint.connect<AsInterface>();
   return [

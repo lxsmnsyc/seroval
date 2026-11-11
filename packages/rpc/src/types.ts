@@ -70,8 +70,6 @@ export interface IncomingCall {
 }
 
 export interface EndpointOptions {
-  /** True on one side only. It picks even or odd call IDs. */
-  initiator: boolean;
   plugins?: Plugin<any, any>[];
   /** Wraps every incoming call. Call `next` to run the function. */
   onCall?(call: IncomingCall, next: () => Promise<unknown>): Promise<unknown>;

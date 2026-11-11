@@ -1,6 +1,6 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion -- the tests call names the types forbid. */
 import { MessageChannel } from 'node:worker_threads';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   RpcClosedError,
   RpcRemoteError,
@@ -92,9 +92,9 @@ function connectPair(
   ports: [Port, Port],
   server: Channel<MathFunctions>,
 ): { client: Endpoint; host: Endpoint; math: Channel<MathFunctions> } {
-  const host = createEndpoint(ports[1], { initiator: false });
+  const host = createEndpoint(ports[1], {});
   host.serve(server);
-  const client = createEndpoint(ports[0], { initiator: true });
+  const client = createEndpoint(ports[0], {});
   return { client, host, math: client.connect<MathFunctions>() };
 }
 
@@ -160,21 +160,20 @@ describe.each([false, true])('in-memory pair (sync delivery: %s)', (sync) => {
     const ports = createPair(sync);
     const seen: string[] = [];
     const host = createEndpoint(ports[1], {
-      initiator: false,
       async onCall(call, next) {
         seen.push(`${call.name}:${call.args.join(',')}`);
         return (await next()) === 3 ? 30 : await next();
       },
     });
     host.serve(createMath());
-    const math = createEndpoint(ports[0], { initiator: true }).connect<MathFunctions>();
+    const math = createEndpoint(ports[0], {}).connect<MathFunctions>();
     expect(await math.run('add', 1, 2)).toBe(30);
     expect(seen).toEqual(['add:1,2']);
   });
 
   it('refuses a peer with another protocol version', async () => {
     const ports = createPair(sync);
-    const client = createEndpoint(ports[0], { initiator: true });
+    const client = createEndpoint(ports[0], {});
     const math = client.connect<MathFunctions>();
     const pending = math.run('add', 1, 2);
     ports[1].send([3, 99, 1]);
@@ -201,9 +200,9 @@ describe.each([false, true])('in-memory pair (sync delivery: %s)', (sync) => {
         return () => {};
       },
     };
-    const host = createEndpoint(ports[1], { initiator: false });
+    const host = createEndpoint(ports[1], {});
     host.serve(createMath());
-    const math = createEndpoint(port, { initiator: true }).connect<MathFunctions>();
+    const math = createEndpoint(port, {}).connect<MathFunctions>();
     const slow = math.run('slow', 1000);
     await math.run('add', 1, 1);
     fail(new Error('lost'));
@@ -263,9 +262,9 @@ describe('message channel', () => {
   async function runOver(wrap: 'node' | 'web'): Promise<void> {
     const { port1, port2 } = new MessageChannel();
     const adapt = wrap === 'node' ? fromNodeWorker : fromMessagePort;
-    const host = createEndpoint(adapt(port2), { initiator: false });
+    const host = createEndpoint(adapt(port2), {});
     host.serve(createMath());
-    const client = createEndpoint(adapt(port1), { initiator: true });
+    const client = createEndpoint(adapt(port1), {});
     const math = client.connect<MathFunctions>();
     expect(await math.run('add', 20, 22)).toBe(42);
     client.close();
@@ -278,5 +277,33 @@ describe('message channel', () => {
 
   it('carries calls through the postMessage adapter', async () => {
     await runOver('web');
+  });
+});
+
+describe('two loaded copies of rpc', () => {
+  it('closes only the channel that closed, even when both have ID 1', async () => {
+    // Each copy has its own ID counter, so both roots get the same ID.
+    vi.resetModules();
+    const copyA = await import('../../src/index');
+    vi.resetModules();
+    const copyB = await import('../../src/index');
+    const ports = createPair();
+    const endpointA = copyA.createEndpoint(ports[0], {});
+    const endpointB = copyB.createEndpoint(ports[1], {});
+    const rootA = copyA.createChannel({ who: () => 'A' });
+    const rootB = copyB.createChannel({ who: () => 'B' });
+    endpointA.serve(rootA);
+    endpointB.serve(rootB);
+    const toB = endpointA.connect<{ who(): string }>();
+    expect(await toB.run('who')).toBe('B');
+    let closedA = false;
+    rootA.closed
+      .then(() => {
+        closedA = true;
+      })
+      .catch(() => {});
+    rootB.close();
+    await toB.closed;
+    expect(closedA).toBe(false);
   });
 });
