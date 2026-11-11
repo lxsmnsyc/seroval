@@ -37,6 +37,7 @@ interface Streams {
   fail(): AsyncGenerator<number>;
   sink(items: AsyncIterable<number>): Promise<number>;
   hold(this: CallContext): Promise<string>;
+  hang(this: CallContext, items: AsyncIterable<number>): Promise<string>;
 }
 
 /** The channel as the tests call it: results are cast where they are read. */
@@ -85,6 +86,15 @@ function setup(options: EndpointOptions = {}, clientOptions: EndpointOptions = o
           total += item;
         }
         return total;
+      },
+      async hang() {
+        // Waits for the caller to cancel, without reading the stream.
+        const { signal } = this;
+        return await new Promise<string>((resolve) => {
+          signal.onAbort(() => {
+            resolve('stopped');
+          });
+        });
       },
       async hold() {
         // The signal must reach the function after an await.
@@ -289,5 +299,72 @@ describe('cancelling a call', () => {
       expect(inspectEndpoint(endpoint)).toMatchObject({ pending: 0, readerKeys: 0 });
       expect(inspectStreaming(endpoint).windowKeys).toBe(0);
     }
+  });
+});
+
+describe('the window of each end', () => {
+  it('writes with the window the reader advertised, host window 2 and client window 16', async () => {
+    const { streams, probe } = setup({ window: 2 }, { window: 16 });
+    const items = (await streams.run('count', 20)) as AsyncIterable<number>;
+    await settle();
+    expect(probe.produced).toBe(16);
+    let total = 0;
+    for await (const item of items) {
+      total += item;
+    }
+    expect(total).toBe(190);
+  });
+
+  it('writes with the window the reader advertised, host window 16 and client window 2', async () => {
+    const { streams, probe } = setup({ window: 16 }, { window: 2 });
+    const items = (await streams.run('count', 20)) as AsyncIterable<number>;
+    await settle();
+    expect(probe.produced).toBe(2);
+    let total = 0;
+    for await (const item of items) {
+      total += item;
+    }
+    expect(total).toBe(190);
+  });
+});
+
+describe('cancelling and closing with streams', () => {
+  it('stops the argument streams of a call that was cancelled', async () => {
+    const { streams, client, host } = setup({ window: 2 });
+    let stopped!: () => void;
+    const finallyRan = new Promise<void>((resolve) => {
+      stopped = resolve;
+    });
+    async function* source(): AsyncGenerator<number> {
+      try {
+        for (let index = 0; index < 1000; index++) {
+          yield index;
+        }
+      } finally {
+        stopped();
+      }
+    }
+    const controller = createRpcSignal();
+    const call = streams.with({ signal: controller.signal }).run('hang', source());
+    await settle();
+    controller.abort(new Error('stop'));
+    await expect(call).rejects.toThrow('stop');
+    await finallyRan;
+    await settle();
+    for (const endpoint of [client, host]) {
+      expect(inspectEndpoint(endpoint)).toMatchObject({ pending: 0, readerKeys: 0 });
+      expect(inspectStreaming(endpoint)).toEqual({ running: 0, windowKeys: 0 });
+    }
+  });
+
+  it('aborts the signal of a running call when the endpoint closes', async () => {
+    const { streams, host, aborted } = setup();
+    const call = streams.run('hold');
+    call.catch(() => {});
+    await settle();
+    expect(inspectStreaming(host).running).toBe(1);
+    host.close();
+    expect(await aborted).toBeInstanceOf(RpcClosedError);
+    expect(inspectStreaming(host).running).toBe(0);
   });
 });

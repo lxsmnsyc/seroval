@@ -28,7 +28,7 @@ export interface Port {
 }
 
 /** The version in hello. A different version fails the endpoint. */
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 // Transport messages go to the reader unchanged.
 const DATA = 0;
@@ -39,6 +39,7 @@ const HELLO = 3;
 const CREDIT = 4;
 const CANCEL = 5;
 const CLOSE = 6;
+const CANCEL_CALL = 7;
 
 interface Holder {
   /** Undefined until hello arrives, for the root. */
@@ -168,7 +169,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
   // Calls that run here, by the key they arrived under.
   const running = new Map<string, RunningCall>();
   const window = resolveWindow(options.window);
-  const gate = createCreditGate(window);
+  const gate = createCreditGate();
   // Sends that wait for hello, and incoming calls that wait for serve.
   let held: (() => void)[] = [];
   let waiting: (() => void)[] = [];
@@ -333,7 +334,14 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       entry.off = signal?.onAbort(() => {
         if (pending.get(result.key) === entry) {
           pending.delete(result.key);
-          sendMessage([CANCEL, result.key, 1]);
+          sendMessage([CANCEL_CALL, result.key]);
+          // Stop the streams of the arguments too.
+          try {
+            writer.cancel(result.key);
+          } catch (error) {
+            reportError(error);
+          }
+          gate.end(result.key);
         }
       });
     }
@@ -450,21 +458,25 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     }
   }
 
-  function receiveCancel(key: unknown, call: unknown): void {
+  function receiveCancelCall(key: unknown): void {
     if (typeof key !== 'string') {
       return;
     }
-    if (call === 1) {
-      // The caller cancelled a call that runs here.
-      const entry = running.get(key);
-      if (entry && !entry.cancelled) {
-        entry.cancelled = true;
-        try {
-          entry.controller.abort(new RpcClosedError('The caller cancelled the call.'));
-        } catch (error) {
-          reportError(error);
-        }
+    // The caller cancelled a call that runs here: stop its argument streams.
+    reader.cancel(key);
+    const entry = running.get(key);
+    if (entry && !entry.cancelled) {
+      entry.cancelled = true;
+      try {
+        entry.controller.abort(new RpcClosedError('The caller cancelled the call.'));
+      } catch (error) {
+        reportError(error);
       }
+    }
+  }
+
+  function receiveCancel(key: unknown): void {
+    if (typeof key !== 'string') {
       return;
     }
     // The reader left a value this side writes, so stop its source.
@@ -512,13 +524,23 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     }
   }
 
-  function receiveHello(version: unknown, id: unknown): void {
+  function receiveHello(version: unknown, id: unknown, peerWindow: unknown): void {
     if (version !== PROTOCOL_VERSION) {
       fail(new RpcTransportError(`The other end speaks protocol ${String(version)}.`));
       return;
     }
-    if (typeof id !== 'number' || rootId !== undefined) {
+    if (
+      typeof peerWindow !== 'number' ||
+      !Number.isSafeInteger(peerWindow) ||
+      peerWindow < 1 ||
+      (id !== null && (typeof id !== 'number' || rootId !== undefined))
+    ) {
       fail(new RpcTransportError('The other end sent a malformed hello.'));
+      return;
+    }
+    // Write streams with the window that the other end reads with.
+    gate.setWindow(peerWindow);
+    if (id === null) {
       return;
     }
     rootId = id;
@@ -570,7 +592,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
         receiveTransport(message);
         break;
       case HELLO:
-        receiveHello(message[1], message[2]);
+        receiveHello(message[1], message[2], message[3]);
         break;
       case CLOSE:
         receiveClose(message[1], message[2]);
@@ -579,7 +601,10 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
         receiveCredit(message[1], message[2]);
         break;
       case CANCEL:
-        receiveCancel(message[1], message[2]);
+        receiveCancel(message[1]);
+        break;
+      case CANCEL_CALL:
+        receiveCancelCall(message[1]);
         break;
       default:
         fail(new RpcTransportError('The other end sent an unknown message.'));
@@ -620,6 +645,15 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       call.reject(error);
     }
     pending.clear();
+    // The calls that still run lose their caller.
+    for (const entry of running.values()) {
+      entry.cancelled = true;
+      try {
+        entry.controller.abort(new RpcClosedError());
+      } catch (caught) {
+        reportError(caught);
+      }
+    }
     running.clear();
     // Run the sends that still wait for hello; each one fails as closed.
     const calls = held;
@@ -656,6 +690,9 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     } catch {}
   }
 
+  // Tell the other end the window this side reads with, before any root.
+  sendMessage([HELLO, PROTOCOL_VERSION, null, window]);
+
   const endpoint: Endpoint = {
     serve(root) {
       const core = getOwnerCore(root);
@@ -678,7 +715,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
           sendMessage([CLOSE, core.id, 1]);
         }
       });
-      sendMessage([HELLO, PROTOCOL_VERSION, core.id]);
+      sendMessage([HELLO, PROTOCOL_VERSION, core.id, window]);
       // Calls that came before serve can run now.
       const calls = waiting;
       waiting = [];

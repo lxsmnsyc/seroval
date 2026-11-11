@@ -2,7 +2,7 @@
 /** The `t` of a seroval node that carries one more item of a stream. */
 const STREAM_NEXT = 32;
 
-/** The window when `EndpointOptions.window` is not set. */
+/** The window of a reader when `EndpointOptions.window` is not set. */
 export const DEFAULT_WINDOW = 16;
 
 /** Checks `EndpointOptions.window` and fills in the default. */
@@ -48,11 +48,15 @@ export interface CreditGate {
   end(key: string): void;
   /** Frees every key and lets every held source go. */
   clear(): void;
+  /** Sets the window the peer advertised, and lets held sources go. */
+  setWindow(size: number): void;
   /** How many keys hold state. */
   readonly size: number;
 }
 
-export function createCreditGate(window: number): CreditGate {
+export function createCreditGate(): CreditGate {
+  // Zero until the peer says how many items it allows in flight.
+  let window = 0;
   const states = new Map<string, KeyState>();
 
   function release(state: KeyState): void {
@@ -74,7 +78,7 @@ export function createCreditGate(window: number): CreditGate {
         states.set(key, state);
       }
       state.inflight++;
-      if (state.inflight < window) {
+      if (window > 0 && state.inflight < window) {
         return undefined;
       }
       const held = state;
@@ -88,8 +92,16 @@ export function createCreditGate(window: number): CreditGate {
         return;
       }
       state.inflight = Math.max(0, state.inflight - count);
-      if (state.inflight < window) {
+      if (window > 0 && state.inflight < window) {
         release(state);
+      }
+    },
+    setWindow(size) {
+      window = size;
+      for (const state of states.values()) {
+        if (state.inflight < window) {
+          release(state);
+        }
       }
     },
     end(key) {
