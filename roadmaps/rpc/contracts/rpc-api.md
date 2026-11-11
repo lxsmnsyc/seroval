@@ -48,17 +48,18 @@ interface Channel<T extends Functions<T>> extends Caller<T> {
 function createChannel<T extends Functions<T>>(functions: T, options?: { onClose?(): void | Promise<void> }): Channel<T>;
 
 interface EndpointOptions {
-  initiator: boolean;
   plugins?: Plugin<any, any>[];
   onCall?(call: { name: string; args: unknown[]; context: CallContext }, next: () => Promise<unknown>): Promise<unknown>;
   window?: number;
 }
 
-// A runtime-neutral port. rpc-endpoint fixes its exact shape, for example:
+// The runtime-neutral port (src/endpoint.ts).
 interface Port {
   send(message: unknown): void;
   onMessage(listener: (message: unknown) => void): () => void;
   onError?(listener: (error: unknown) => void): () => void;
+  /** Fails calls in flight when the other side goes away. */
+  onClose?(listener: () => void): () => void;
   close?(): void;
 }
 
@@ -72,8 +73,9 @@ class RpcClosedError extends Error {}
 class RpcTransportError extends Error {}
 class RpcRemoteError extends Error {}
 
-// @seroval/rpc/post-message: transfer() and the postMessage port adapter.
-// @seroval/rpc/node: fromNodeWorker(worker).
+// @seroval/rpc/post-message: the postMessage port adapter (Worker, MessagePort, parentPort).
+// @seroval/rpc/node: fromNodeWorker(worker). Its close() does not terminate the worker.
+// transfer() is left out until a seroval plugin can move buffers.
 ```
 
 ## Behavior
@@ -90,3 +92,4 @@ class RpcRemoteError extends Error {}
 
 - v1: draft, rewritten after the debate: built on `@seroval/transport`, no `rpc-internals` extension contract, no garbage-collection close.
 - v2: `RpcSignal` replaces `AbortSignal`; `Functions<T>` is a mapped type so interfaces fit; `CallContext.channel`; a runtime-neutral port, with `transfer` and the postMessage adapter in `@seroval/rpc/post-message` and `fromNodeWorker` in `@seroval/rpc/node` (rpc-spike change request, accepted 2026-11-11).
+- v2 (rpc-endpoint, 2026-11-11): `Port.onClose`; `initiator` removed, since keys come from transport; `transfer` left out.
