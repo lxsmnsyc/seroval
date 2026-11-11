@@ -33,7 +33,7 @@ depends_on:
 
 ## Goal
 
-Transport's backpressure only holds back the local sender (debate P4). Add the `credit` control message so at most `window` items of an async iterable are in flight across the connection, `cancel` from the reader so the producer's `finally` runs, and `with({ signal })` with `this.signal` on the callee. Signals are `RpcSignal` from `src/signal.ts`, not `AbortSignal` (`contracts/rpc-api.change-request.md`).
+Transport's backpressure only holds back the local sender (debate P4). Add the `credit` control message so at most `window` items of an async iterable are in flight across the connection, `cancel` from the reader so the producer's `finally` runs, and `with({ signal })` with `this.signal` on the callee. Signals are `RpcSignal` from `src/signal.ts`, not `AbortSignal` (`contracts/rpc-api.md` v2).
 
 ## Acceptance
 

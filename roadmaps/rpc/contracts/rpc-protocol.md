@@ -1,6 +1,6 @@
 ---
 name: rpc-protocol
-version: 1
+version: 2
 status: draft
 defined_by: rpc-docs
 ---
@@ -20,21 +20,28 @@ The messages between two endpoints. Transport carries the values; rpc adds a few
 //   [2, key]        value failed or cancelled by the writer
 // rpc control messages, demuxed on message[0] before the reader:
 type Control =
-  | [3, version: number]                 // hello
-  | [4, key: string, n: number]          // credit
-  | [5, key: string]                     // cancel, reader to writer; the writer calls writer.cancel(key)
+  | [3, version: number, rootId: number] // hello, sent by serve(root)
+  | [4, key: number, n: number]          // credit
+  | [5, key: number]                     // cancel, reader to writer; the writer calls writer.cancel(key)
   | [6, channel: number];                // close a channel
 ```
 
 ## Behavior
 
-- Keys are call IDs: `a<id>` for arguments, `r<id>` for results. IDs only increase, even for the initiator and odd for the other side, so a key is never reused.
-- A call's argument value is `[name, args]`. `notify` sends no result key.
+- Every call and every result is sent with `writer.push()`, which keeps no state per key. Keys are transport's numbers; rpc does not name them.
+- A call's value is `[channelId, name, args]`. `notify` uses the same shape and gets no result.
+- A result's value is `[callKey, result]`, where `callKey` is the key the call arrived under. A failed call sends `[callKey, error]` with a flag or a separate tag, decided by rpc-endpoint. Only `name` and `message` cross.
+- `createChannel` takes the channel's ID from a counter in the module. The ID belongs to the channel for its whole life.
+- Each endpoint keeps `owned: Map<id, Channel>` for channels it sent and `remote: Map<id, receiver>` for channels it received. A channel that arrives twice reuses its receiver. The two maps never share entries, so both sides may use the same numbers.
+- `owned` refuses a second channel under an ID it already holds and fails that send. This stops two loaded copies of `@seroval/rpc` (CJS and ESM), each with its own counter, from misrouting calls.
+- `connect()` returns a receiver at once and holds its calls until hello arrives.
+- A call to an ID missing from `owned` fails with `RpcClosedError`. Calls that arrive before `serve` wait for it; `endpoint.close` fails them.
 - Each key has its own refs; rpc never uses `sharedRefs`.
-- A channel in a value is a plugin that writes only the channel ID; the endpoint's channel table resolves it.
+- A channel in a value is a plugin that writes only the channel ID; the endpoint's maps resolve it.
 - `assertMessage` in transport's reader only runs inside `reader.push`, so control types 3 and up never reach it (debate O14).
-- After a key settles, the writer drops it from its key set and the reader frees its slot (rpc-transport-fixes).
+- After a key settles, the reader frees its slot (rpc-transport-fixes).
 
 ## Changes
 
 - v1: draft, rewritten after the debate.
+- v2: calls and results go through `writer.push()` with transport keys; calls carry the channel ID; channel IDs come from `createChannel` with `owned` and `remote` maps; hello carries the root ID (rpc-spike change request, accepted 2026-11-11).

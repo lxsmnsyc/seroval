@@ -1,6 +1,6 @@
 ---
 name: rpc-api
-version: 1
+version: 2
 status: draft
 defined_by: rpc-docs
 ---
@@ -13,25 +13,39 @@ The public API of `@seroval/rpc`. It stays a draft through the chain and freezes
 
 ## Interface
 
-The spike writes the first version to `packages/rpc/src/types.ts`.
+The spike wrote the draft to `packages/rpc/src/types.ts` and `src/signal.ts`. The core uses no Web API.
 
 ```ts
-type Functions = Record<string, (this: CallContext, ...args: never[]) => unknown>;
+type RemoteFunction = (this: CallContext, ...args: never[]) => unknown;
+type Functions<T = Record<string, RemoteFunction>> = { [K in keyof T]: RemoteFunction };
+
+interface RpcSignal {
+  readonly aborted: boolean;
+  readonly reason: unknown;
+  onAbort(listener: (reason: unknown) => void): () => void;
+}
+
+function createRpcSignal(): { readonly signal: RpcSignal; abort(reason?: unknown): void };
 
 interface CallContext {
   /** Aborts when the caller cancels or the endpoint closes. Valid across awaits. */
-  readonly signal: AbortSignal;
+  readonly signal: RpcSignal;
+  /** The channel the call came in on. */
+  readonly channel: Channel<Functions>;
 }
 
-interface Channel<T extends Functions> {
+interface Caller<T extends Functions<T>> {
   run<K extends keyof T & string>(name: K, ...args: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>;
   notify<K extends keyof T & string>(name: K, ...args: Parameters<T[K]>): void;
-  with(options: { signal?: AbortSignal }): Pick<Channel<T>, 'run' | 'notify'>;
+}
+
+interface Channel<T extends Functions<T>> extends Caller<T> {
+  with(options: { signal?: RpcSignal }): Caller<T>;
   close(): void;
   readonly closed: Promise<void>;
 }
 
-function createChannel<T extends Functions>(functions: T, options?: { onClose?(): void | Promise<void> }): Channel<T>;
+function createChannel<T extends Functions<T>>(functions: T, options?: { onClose?(): void | Promise<void> }): Channel<T>;
 
 interface EndpointOptions {
   initiator: boolean;
@@ -40,17 +54,26 @@ interface EndpointOptions {
   window?: number;
 }
 
-function createEndpoint(port: MessagePortLike, options: EndpointOptions): {
+// A runtime-neutral port. rpc-endpoint fixes its exact shape, for example:
+interface Port {
+  send(message: unknown): void;
+  onMessage(listener: (message: unknown) => void): () => void;
+  onError?(listener: (error: unknown) => void): () => void;
+  close?(): void;
+}
+
+function createEndpoint(port: Port, options: EndpointOptions): {
   serve(root: Channel<Functions>): void;
-  connect<T extends Functions>(): Channel<T>;
+  connect<T extends Functions<T>>(): Channel<T>;
   close(reason?: unknown): void;
 };
-
-function transfer<T extends Transferable>(value: T): T;
 
 class RpcClosedError extends Error {}
 class RpcTransportError extends Error {}
 class RpcRemoteError extends Error {}
+
+// @seroval/rpc/post-message: transfer() and the postMessage port adapter.
+// @seroval/rpc/node: fromNodeWorker(worker).
 ```
 
 ## Behavior
@@ -59,8 +82,11 @@ class RpcRemoteError extends Error {}
 - `run`, `notify`, `with` and `close` are channel methods, so functions may use those names.
 - After a close, `run` rejects with `RpcClosedError` and handles its own rejection.
 - Close order: stop taking messages, close channels, stop sent streams, fail read streams, run `onClose` nested first and root last. A throwing `onClose` is reported and the rest run.
+- A cancelled `run` rejects with the signal's `reason`.
+- A real `AbortSignal` is the user's to convert to an `RpcSignal`. An `AbortSignal` inside a value needs `AbortSignalPlugin`; rpc gives it no special handling.
 - A native generator in a value becomes a two-way `AsyncGenerator` on the other side (rpc-generators).
 
 ## Changes
 
 - v1: draft, rewritten after the debate: built on `@seroval/transport`, no `rpc-internals` extension contract, no garbage-collection close.
+- v2: `RpcSignal` replaces `AbortSignal`; `Functions<T>` is a mapped type so interfaces fit; `CallContext.channel`; a runtime-neutral port, with `transfer` and the postMessage adapter in `@seroval/rpc/post-message` and `fromNodeWorker` in `@seroval/rpc/node` (rpc-spike change request, accepted 2026-11-11).

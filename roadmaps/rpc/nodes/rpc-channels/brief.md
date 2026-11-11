@@ -33,7 +33,7 @@ depends_on:
 
 ## Goal
 
-A channel in an argument or result becomes a remote channel, through a plugin that writes only the ID `createChannel` gave it (`contracts/rpc-protocol.change-request.md`). The receiving endpoint reuses one receiver per remote ID, and the owner refuses a second channel under an ID it already holds. Either end closes a channel; closing the root closes the endpoint. Run the close order of `rpc-api`. No garbage-collection close (debate P7).
+A channel in an argument or result becomes a remote channel, through a plugin that writes only the ID `createChannel` gave it (`contracts/rpc-protocol.md` v2). The receiving endpoint reuses one receiver per remote ID, and the owner refuses a second channel under an ID it already holds. Either end closes a channel; closing the root closes the endpoint. Run the close order of `rpc-api`. No garbage-collection close (debate P7).
 
 ## Acceptance
 

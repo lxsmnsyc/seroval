@@ -41,7 +41,7 @@ depends_on:
 
 The endpoint over one transport writer and reader: `hello` and the version check, calls, results, `notify`, call ordering, in-place calls on local channels, `onCall`, `this` as the call context, `RpcRemoteError` with name and message only, and the transport closing with calls in flight.
 
-Read `contracts/rpc-protocol.change-request.md` and `contracts/rpc-api.change-request.md` first; both are accepted and replace v1 where they differ.
+Both contracts are at v2 from the rpc-spike change requests; the port shape and the error flag are yours to decide.
 
 - Calls and results go through `writer.push()`. A call is `[channelId, name, args]`; a result is `[callKey, result]`.
 - Channel IDs come from `createChannel`. Keep `owned` and `remote` maps per endpoint. The root ID travels in hello `[3, version, rootId]`, and `connect()` holds calls until it arrives.
