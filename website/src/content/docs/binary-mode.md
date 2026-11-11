@@ -148,6 +148,7 @@ If a cleanup throws, the first error goes to `onError`. Calling the function aga
 | --- | --- | --- | --- |
 | `read()` | function | required | Returns a promise for the next chunk, or for `undefined` at the end of the input. |
 | `onError(error)` | function | required | Runs when the input is invalid or a value cannot be rebuilt. |
+| `onDone()` | function | none | Runs once the input ended and every node in it was read, unless decoding failed or stopped first. A plugin value can still be decoding then. |
 | `refs` | `ReferenceMap` | a new map | The map from `binary.createReferenceMap()`. Share one to [resolve references between payloads](#sharing-references-between-payloads). |
 | `plugins` | `Plugin[]` | none | Plugins for extra types. They need the same tags as the sender's. |
 | `disabledFeatures` | `number` | `0` | Feature flags to reject. |

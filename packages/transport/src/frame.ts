@@ -1,5 +1,5 @@
 import type { Message } from './message';
-import { SerovalTransportError } from './message';
+import { DATA, SerovalTransportError } from './message';
 
 export type { Message } from './message';
 export { SerovalTransportError } from './message';
@@ -11,11 +11,21 @@ export { SerovalTransportError } from './message';
  *
  * The header is the one SolidStart uses for server functions. The data is a
  * transport message, not a bare node.
+ *
+ * A data message whose data is bytes, as binary mode sends, is not JSON. Its
+ * frame data is a zero byte, the size of the key in UTF-8 as a big-endian
+ * 32-bit integer, the key, and then the bytes. JSON never starts with a zero
+ * byte, so one decoder reads both kinds.
  */
 const FRAME_HEADER_SIZE = 12;
 
 /** The default `maxFrameSize`, in bytes. */
 const DEFAULT_MAX_FRAME_SIZE = 64 * 1024 * 1024;
+
+/** The first byte of the data of a frame that carries bytes. */
+const BYTES_TAG = 0x00;
+/** The tag and the key size that come before the key in such a frame. */
+const BYTES_PREFIX_SIZE = 5;
 
 const SEMICOLON = 0x3b;
 const ZERO = 0x30;
@@ -24,9 +34,16 @@ const LOWER_X = 0x78;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-function createFrameHeader(size: number): Uint8Array {
+function assertFrameSize(size: number): void {
+  if (size > 0xffffffff) {
+    throw new SerovalTransportError(`A frame of ${size} bytes does not fit in the header.`);
+  }
+}
+
+/** Creates the header of a frame, with `extra` bytes of room after it. */
+function createFrameHeader(size: number, extra = 0): Uint8Array {
   const hex = size.toString(16).padStart(8, '0');
-  const header = new Uint8Array(FRAME_HEADER_SIZE);
+  const header = new Uint8Array(FRAME_HEADER_SIZE + extra);
   header[0] = SEMICOLON;
   header[1] = ZERO;
   header[2] = LOWER_X;
@@ -38,18 +55,42 @@ function createFrameHeader(size: number): Uint8Array {
 }
 
 /**
- * Encodes `message` as one frame of JSON. The header and the data are
- * separate pieces, so the data is not copied into a second buffer. Send both,
- * in order.
+ * Encodes `message` as one frame, of JSON or, when its data is bytes, of
+ * those bytes. The header and the data are separate pieces, so the data is
+ * not copied into a second buffer. Send both, in order.
  */
 export function encodeFrame(message: Message): [Uint8Array, Uint8Array] {
-  const encoded = encoder.encode(JSON.stringify(message));
-  if (encoded.length > 0xffffffff) {
-    throw new SerovalTransportError(
-      `A frame of ${encoded.length} bytes does not fit in the header.`,
-    );
+  if (message[0] === DATA && message[2] instanceof Uint8Array) {
+    return encodeBytesFrame(message[1], message[2]);
   }
+  const encoded = encoder.encode(JSON.stringify(message));
+  assertFrameSize(encoded.length);
   return [createFrameHeader(encoded.length), encoded];
+}
+
+/** Encodes a data message of bytes. The key goes in the first piece. */
+function encodeBytesFrame(key: string, data: Uint8Array): [Uint8Array, Uint8Array] {
+  const encodedKey = encoder.encode(key);
+  const extra = BYTES_PREFIX_SIZE + encodedKey.length;
+  assertFrameSize(extra + data.length);
+  const head = createFrameHeader(extra + data.length, extra);
+  head[FRAME_HEADER_SIZE] = BYTES_TAG;
+  new DataView(head.buffer).setUint32(FRAME_HEADER_SIZE + 1, encodedKey.length);
+  head.set(encodedKey, FRAME_HEADER_SIZE + BYTES_PREFIX_SIZE);
+  return [head, data];
+}
+
+/** Decodes the data of a frame that carries bytes, or throws when it is malformed. */
+function decodeBytesFrame(data: Uint8Array): Message<Uint8Array> {
+  if (data.length < BYTES_PREFIX_SIZE) {
+    throw malformed();
+  }
+  const keySize = new DataView(data.buffer, data.byteOffset, data.byteLength).getUint32(1);
+  const end = BYTES_PREFIX_SIZE + keySize;
+  if (end > data.length) {
+    throw malformed();
+  }
+  return [DATA, decoder.decode(data.subarray(BYTES_PREFIX_SIZE, end)), data.subarray(end)];
 }
 
 function hexValue(code: number): number {
@@ -192,13 +233,17 @@ export function createFrameDecoder(options: FrameDecoderOptions): FrameDecoder {
         if (length < size) {
           return;
         }
-        const data = decoder.decode(take(size));
+        const data = take(size);
         size = -1;
         let message: unknown;
-        try {
-          message = JSON.parse(data);
-        } catch {
-          throw malformed();
+        if (data[0] === BYTES_TAG) {
+          message = decodeBytesFrame(data);
+        } else {
+          try {
+            message = JSON.parse(decoder.decode(data));
+          } catch {
+            throw malformed();
+          }
         }
         options.onMessage(message);
       }

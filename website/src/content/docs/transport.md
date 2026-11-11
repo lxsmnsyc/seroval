@@ -14,6 +14,7 @@ npm install seroval @seroval/transport
 | `@seroval/transport` | Everything in `@seroval/transport/read` and `@seroval/transport/write`. |
 | `@seroval/transport/write` | [Writers](#the-writer): `createJSONWriter`, `createJSWriter`, `toJSONStream`, `toJSStream`. |
 | `@seroval/transport/read` | [Readers](#the-reader): `createJSONReader`, `createJSReader`, `fromJSONStream`, `fromJSStream`. |
+| `@seroval/transport/binary` | The [binary format](#binary-format): `createBinaryWriter`, `createBinaryReader`, `toBinaryStream`, `fromBinaryStream`. |
 | `@seroval/transport/web` | [Web streams](#over-fetch) and [form data](#files-in-a-request): `toWebStream`, `fromWebStream`, `toResponse`, `fromResponse`, `toFormData`, `fromFormData`, `toFormRequest`, `fromFormRequest`. |
 | `@seroval/transport/node` | [Node streams](#over-node-streams): `toNodeStream`, `fromNodeStream`. |
 | `@seroval/transport/frame` | [Frames](#frames): `encodeFrame`, `createFrameDecoder`. |
@@ -233,6 +234,41 @@ const reader = createJSReader({ scopeId: 'page' });
 
 `toJSStream` and `fromJSStream` send one value. The code declares `$R` on `self`. Node does not define `self`, so read this format in a browser or a worker.
 
+## Binary format
+
+`createBinaryWriter` and `createBinaryReader` send each value in [binary mode](./binary-mode.md) instead of JSON nodes. The data of each message is a `Uint8Array`, and `toWebStream`, `toNodeStream` and `encodeFrame` put those bytes in the frame as they are, without JSON. Byte values, such as typed arrays and files from plugins, are not encoded as base64, and the reader never runs code from the messages. This format needs seroval 1.9 or later.
+
+```js
+// server
+import { createBinaryWriter } from '@seroval/transport/binary';
+import { toResponse } from '@seroval/transport/web';
+
+return toResponse((sink) => {
+  const writer = createBinaryWriter(sink);
+  writer.write('image', { name: 'cat.png', bytes: fetchBytes() });
+  writer.flush();
+  return writer;
+});
+
+// client
+import { createBinaryReader } from '@seroval/transport/binary';
+import { fromResponse } from '@seroval/transport/web';
+
+const reader = createBinaryReader();
+void fromResponse(await fetch('/api'), reader);
+const image = await reader.get('image');
+```
+
+`createBinaryWriter` takes the options of [`binary.serialize`](./binary-mode.md), such as `plugins` and `depthLimit`, and the writer options above except `sharedRefs`. `createBinaryReader` takes the options of `binary.deserialize`, such as `plugins`, `maxArrayBufferLength` and `maxArrayLength`, and `maxKeys`. It also takes:
+
+| Option | Description |
+| --- | --- |
+| `onError(error, key)` | Receives an error that stopped a value, such as bytes that do not decode. The value and what still waits in it fail with that error. |
+
+Each value has its own references. `toBinaryStream` and `fromBinaryStream` send one value. The reader decodes the bytes of a value after it receives them, so `settled` resolves once the reader decoded every byte of the value, not when the last message arrives.
+
+For `postMessage`, pass the bytes as they are. A WebSocket can send each message with `encodeFrame`, as in [Frames](#frames), since JSON cannot hold the bytes.
+
 ## `fromWebStream`, `fromResponse` and `fromNodeStream` options
 
 | Option | Description |
@@ -258,7 +294,7 @@ Values fail with `SerovalTransportError` when:
 
 | Message | Meaning |
 | --- | --- |
-| `[0, key, data]` | The next piece of a value. The first one for a key starts it. `data` is a `SerovalNode` in JSON format, and code in the code format. |
+| `[0, key, data]` | The next piece of a value. The first one for a key starts it. `data` is a `SerovalNode` in JSON format, code in the code format, and a `Uint8Array` in the binary format. |
 | `[1, key]` | The value and everything in it settled. |
 | `[2, key]` | The writer failed or cancelled the value. |
 
@@ -269,6 +305,8 @@ Values fail with `SerovalTransportError` when:
 ```
 
 The header is the one that SolidStart uses for server functions, but the data is a transport message, so a SolidStart reader cannot read these frames.
+
+A data message of the binary format is not JSON. Its frame data is a zero byte, the size of the key in UTF-8 as a big-endian 32-bit integer, the key, and then the bytes of the message. JSON never starts with a zero byte, so one decoder reads both kinds of frames.
 
 ## Frames
 

@@ -126,6 +126,11 @@ export function createReferenceMap(): ReferenceMap {
 export interface DeserializerContextOptions {
   read(): Promise<Uint8Array | undefined>;
   onError(error: unknown): void;
+  /**
+   * Runs once the payload ended and every node in it was read, unless it
+   * failed or was aborted first. A Plugin value can still be decoding then.
+   */
+  onDone?: () => void;
   refs?: ReferenceMap;
   plugins?: PluginWithBinaryMode<any, any, any>[];
   disabledFeatures?: number;
@@ -151,6 +156,7 @@ export interface DeserializeResult<T> {
 export interface DeserializerContext {
   read(): Promise<Uint8Array | undefined>;
   onError(error: unknown): void;
+  onDone: (() => void) | undefined;
   refs: ReferenceMap;
   plugins?: PluginWithBinaryMode<any, any, any>[];
   maxArrayBufferLength: number;
@@ -216,6 +222,7 @@ export function createDeserializerContext(
   return {
     read: options.read,
     onError: options.onError,
+    onDone: options.onDone,
     refs: options.refs || createReferenceMap(),
     plugins: options.plugins,
     maxArrayBufferLength,
@@ -1918,6 +1925,12 @@ export function deserializeStart<T>(ctx: DeserializerContext): Promise<Deseriali
   }
   if (!ctx.aborted) {
     drain(ctx)
+      .then(() => {
+        // `drain` also returns when the payload was aborted.
+        if (!ctx.aborted) {
+          ctx.onDone?.();
+        }
+      })
       .catch((error) => {
         ctx.onError(error);
         abortDeserialize(ctx, error);
