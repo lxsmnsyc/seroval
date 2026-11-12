@@ -38,6 +38,8 @@ export interface OwnerCore {
   readonly watchers: Set<() => void>;
   /** Resolves `channel.closed`. */
   resolveClosed(): void;
+  /** `onClose` waits for this, so nested channels finish before the root. */
+  finishAfter?: Promise<void>;
 }
 
 type Middleware = (call: IncomingCall, next: () => Promise<unknown>) => Promise<unknown>;
@@ -188,10 +190,13 @@ export function startCall(
   });
 }
 
-/** Closes a channel this side owns. Closing it twice does nothing. */
-export async function closeOwner(core: OwnerCore): Promise<void> {
+/**
+ * The first half of a close: marks the channel closed, stops its calls and
+ * tells the endpoint. Returns false when it was closed already.
+ */
+export function stopOwner(core: OwnerCore): boolean {
   if (core.isClosed) {
-    return;
+    return false;
   }
   core.isClosed = true;
   // Stop the calls that still run.
@@ -205,10 +210,21 @@ export async function closeOwner(core: OwnerCore): Promise<void> {
   }
   core.calls.clear();
   // Tell the endpoint, which tells the other side.
-  for (const watcher of core.watchers) {
-    watcher();
-  }
+  const watchers = Array.from(core.watchers);
   core.watchers.clear();
+  for (const watcher of watchers) {
+    try {
+      watcher();
+    } catch (error) {
+      reportError(error);
+    }
+  }
+  return true;
+}
+
+/** The second half of a close: runs `onClose` and settles `closed`. */
+export async function finishOwner(core: OwnerCore): Promise<void> {
+  await core.finishAfter;
   // A throwing onClose is reported, not rethrown.
   try {
     await core.options.onClose?.();
@@ -216,6 +232,13 @@ export async function closeOwner(core: OwnerCore): Promise<void> {
     reportError(error);
   }
   core.resolveClosed();
+}
+
+/** Closes a channel this side owns. Closing it twice does nothing. */
+export async function closeOwner(core: OwnerCore): Promise<void> {
+  if (stopOwner(core)) {
+    await finishOwner(core);
+  }
 }
 
 /** Reports an error that has no caller, as an unhandled rejection. */
