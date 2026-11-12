@@ -88,7 +88,7 @@ describe('worker example', () => {
     search.close();
   });
 
-  it.skip('drives a two-way generator (rpc-generators)', async () => {
+  it('drives a two-way generator', async () => {
     const { search } = startWorker();
     await search.run('load', DOCUMENTS, createChannel<ProgressFunctions>({ report() {} }));
     const browse = await search.run('browse', 'apple');

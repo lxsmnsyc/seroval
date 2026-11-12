@@ -12,6 +12,7 @@ import {
 } from './channel';
 import type { OwnerCore } from './channel';
 import { createChannelPlugin } from './channels/plugin';
+import { createGeneratorPlugin } from './generators/plugin';
 import { createCreditGate, isStreamItem, resolveWindow } from './streaming/gate';
 import { watchStreams } from './streaming/watch';
 import { createRpcSignal } from './signal';
@@ -227,6 +228,8 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       sendChannel: registerChannel,
       receiveChannel: resolveChannel,
     }),
+    // A native generator goes out as a hidden channel, ahead of seroval's one-way stream.
+    createGeneratorPlugin({ sendChannel: registerChannel, receiveChannel: resolveChannel }),
     ...(options.plugins ?? []),
   ];
   const writer = createJSONWriter({

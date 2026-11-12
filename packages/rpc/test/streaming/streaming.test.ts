@@ -21,6 +21,19 @@ interface Probe {
   closed: Promise<void>;
 }
 
+/**
+ * Hides a native generator behind a plain async iterable. A native generator
+ * goes out as a two-way generator, and these tests read the one-way stream.
+ */
+function sendOneWay<A extends unknown[]>(
+  create: (...args: A) => AsyncGenerator<number>,
+): (...args: A) => AsyncIterable<number> {
+  return (...args) => {
+    const generator = create(...args);
+    return { [Symbol.asyncIterator]: () => generator };
+  };
+}
+
 function createProbe(): { probe: Probe; close: () => void } {
   let close!: () => void;
   const closed = new Promise<void>((resolve) => {
@@ -33,8 +46,8 @@ function createProbe(): { probe: Probe; close: () => void } {
 }
 
 interface Streams {
-  count(total: number): AsyncGenerator<number>;
-  fail(): AsyncGenerator<number>;
+  count(total: number): AsyncIterable<number>;
+  fail(): AsyncIterable<number>;
   sink(items: AsyncIterable<number>): Promise<number>;
   hold(this: CallContext): Promise<string>;
   hang(this: CallContext, items: AsyncIterable<number>): Promise<string>;
@@ -64,7 +77,7 @@ function setup(options: EndpointOptions = {}, clientOptions: EndpointOptions = o
   const host = createEndpoint(hostPort, options);
   host.serve(
     createChannel<Streams>({
-      async *count(total) {
+      count: sendOneWay(async function* produceCount(total: number) {
         try {
           for (let index = 0; index < total; index++) {
             probe.produced++;
@@ -75,11 +88,11 @@ function setup(options: EndpointOptions = {}, clientOptions: EndpointOptions = o
         } finally {
           close();
         }
-      },
-      async *fail() {
+      }),
+      fail: sendOneWay(async function* produceFailing() {
         yield 1;
         throw new TypeError('midway');
-      },
+      }),
       async sink(items) {
         let total = 0;
         for await (const item of items) {
@@ -156,14 +169,14 @@ describe('the credit window', () => {
 
   it('holds back a stream that the caller sends as an argument', async () => {
     const { streams, probe } = setup({ window: 3 });
-    async function* numbers(): AsyncGenerator<number> {
+    const numbers = sendOneWay(async function* produceNumbers() {
       for (let index = 1; index <= 50; index++) {
         probe.produced++;
         probe.maxUnread = Math.max(probe.maxUnread, probe.produced - probe.consumed);
         yield index;
         probe.consumed++;
       }
-    }
+    });
     expect(await streams.run('sink', numbers())).toBe(1275);
     expect(probe.maxUnread).toBeLessThanOrEqual(3);
   });
@@ -335,7 +348,7 @@ describe('cancelling and closing with streams', () => {
     const finallyRan = new Promise<void>((resolve) => {
       stopped = resolve;
     });
-    async function* source(): AsyncGenerator<number> {
+    const source = sendOneWay(async function* produceSource() {
       try {
         for (let index = 0; index < 1000; index++) {
           yield index;
@@ -343,7 +356,7 @@ describe('cancelling and closing with streams', () => {
       } finally {
         stopped();
       }
-    }
+    });
     const controller = createRpcSignal();
     const call = streams.with({ signal: controller.signal }).run('hang', source());
     await settle();
