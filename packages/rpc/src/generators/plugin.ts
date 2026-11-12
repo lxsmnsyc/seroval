@@ -57,7 +57,11 @@ function createGeneratorChannel(generator: AnyGenerator): Channel<Functions> {
       onClose() {
         // A channel that closes early still runs the generator's finally.
         // Do not wait: a generator stuck in a step must not hold back the close.
-        Promise.resolve(generator.return(undefined)).catch(ignoreRejection);
+        try {
+          Promise.resolve(generator.return(undefined)).catch(ignoreRejection);
+        } catch {
+          // A sync generator that is running a step throws here. It ends on its own.
+        }
       },
     },
   );
@@ -97,17 +101,24 @@ function wrapChannel(channel: Channel<Functions>): AsyncGenerator<unknown, unkno
     return result;
   }
 
+  async function dispose(): Promise<void> {
+    await step('return', undefined).catch(ignoreRejection);
+  }
+
   const wrapper: AsyncGenerator<unknown, unknown, unknown> = {
     next: (value?: unknown) => step('next', value),
     throw: (error?: unknown) => step('throw', error),
     return: (value?: unknown) => step('return', value),
-    [Symbol.asyncIterator]() {
+    [Symbol.asyncIterator](): AsyncGenerator<unknown, unknown, unknown> {
       return wrapper;
     },
-    async [Symbol.asyncDispose]() {
-      await step('return', undefined).catch(ignoreRejection);
-    },
-  };
+    // The tag lets the plugin send a received generator on to another endpoint.
+    [Symbol.toStringTag]: 'AsyncGenerator',
+  } as unknown as AsyncGenerator<unknown, unknown, unknown>;
+  // Some runtimes have no `Symbol.asyncDispose` yet.
+  if (typeof Symbol.asyncDispose === 'symbol') {
+    Object.defineProperty(wrapper, Symbol.asyncDispose, { value: dispose });
+  }
   return wrapper;
 }
 

@@ -25,6 +25,8 @@ None (feature node).
 
 ## Gotchas
 
+- After the review: the received wrapper carries the tag `AsyncGenerator`, so a received generator can be sent on to another call or returned. Each hop adds a hidden channel and a round trip per step. `Symbol.asyncDispose` is set only where the runtime has it.
+
 - Any native generator or async generator in a value is now two-way, including ones that used to stream. Code that needs the one-way push with credit must send a plain async iterable (an object with `Symbol.asyncIterator`). For rpc-docs.
 - The sender does not close the hidden channel itself. The receiver does, once a step is done or fails. A receiver that drops the generator without `return()` leaves the channel in `owned` until the endpoint closes (no garbage-collection close, a non-goal).
 - `shutdown` clears `owned` before `stopOwner`, so closing an endpoint sends no close message for nested channels. The peer learns through `Port.onClose`. A port without `onClose` leaves a pending `next` waiting.

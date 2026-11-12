@@ -208,6 +208,26 @@ describe('two-way generators', () => {
     expect(seen).toEqual(['A', 'B']);
   });
 
+  it('sends a received generator on as it is', async () => {
+    const { root } = startPair({
+      echo(source: AsyncGenerator<number, string, number>) {
+        return source;
+      },
+    });
+    const seen: number[] = [];
+    function* doubles(): Generator<number, string, number> {
+      seen.push(yield 1);
+      seen.push(yield 2);
+      return 'end';
+    }
+    const gen = await root.run('echo', doubles());
+    expect(Object.prototype.toString.call(gen)).toBe('[object AsyncGenerator]');
+    expect(await gen.next()).toEqual({ value: 1, done: false });
+    expect(await gen.next(10)).toEqual({ value: 2, done: false });
+    expect(await gen.next(20)).toEqual({ value: 'end', done: true });
+    expect(seen).toEqual([10, 20]);
+  });
+
   it('leaves one-way streams to the stream path', async () => {
     const { root } = startPair({
       stream() {
