@@ -33,6 +33,13 @@ depends_on:
 
 Document the package with the worker example as the walkthrough, add the page to the sidebar, and freeze `rpc-api` and `rpc-protocol` to match the code.
 
+Notes from rpc-streaming, to document:
+
+- A result stream the caller never iterates keeps its producer and gate key until the endpoint closes. Iterate it, `return()` it, or abort the call.
+- Streams are wrapped only inside arrays, plain objects, maps and sets. A stream inside a class instance or a plugin value stalls after `window` items.
+- A cancel for a call that still waits for `serve` is lost, and notify calls cannot be cancelled.
+- The window relies on seroval's node type 32 (`StreamNext`), which seroval does not export.
+
 ## Acceptance
 
 - [ ] Every part of the worker example runs; no `it.skip` left.

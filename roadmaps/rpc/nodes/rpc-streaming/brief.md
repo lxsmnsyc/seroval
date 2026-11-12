@@ -1,7 +1,7 @@
 ---
 id: rpc-streaming
 title: Credit window and cancelling
-status: active
+status: done
 priority: must
 type: feature
 story: 

@@ -41,6 +41,7 @@ A native generator or async generator in an argument or result becomes a two-way
 - The sender wraps the generator as a hidden channel with the functions `next`, `throw` and `return`. The receiver wraps that channel back into an `AsyncGenerator`. Channel ordering keeps the steps in order, and closing the channel fails a `next` that still waits.
 - Detection: `Object.prototype.toString` returns `[object Generator]` or `[object AsyncGenerator]`. A sync generator becomes an `AsyncGenerator` on the other side.
 - Each step is a round trip, so no credit window is needed: the reader sets the pace.
+- From rpc-streaming: a call is cancelled with `[7, key]` and a reader leaves a value with `[5, key]` (`contracts/rpc-protocol.md` v3). One worker example test (the two-way generator) waits for this node as `it.skip`.
 - Open question Q5 in `GOAL.md`: whether to add a `stream(generator)` marker that forces the one-way push for a fast producer that ignores `next`'s argument.
 
 ## Acceptance
