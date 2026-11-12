@@ -211,13 +211,13 @@ Inside a function, `this` is a `CallContext`:
 | --- | --- |
 | `plugins` | seroval plugins for the values in calls and results. Both sides need the same plugins. |
 | `onCall(call, next)` | Wraps every incoming call. See [`onCall`](#oncall). |
-| `window` | How many stream items this side reads before it gives credit back. Defaults to 16. It must be a positive integer, or `createEndpoint` throws a `RangeError`. |
+| `window` | The most stream items the other side may send before this side has consumed them. Defaults to 16. It must be a positive integer, or `createEndpoint` throws a `RangeError`. |
 
 Each side can serve a root and connect to the other side's root, so calls go in both directions. `T` in `connect<T>()` is not checked against what the other side serves.
 
 - `serve` throws a `TypeError` for a value not made by `createChannel`, an `RpcTransportError` when called twice, and an `RpcClosedError` after the endpoint closed.
 - Calls that arrive before `serve` wait for it.
-- After `serve`, a call to a channel this side does not hold fails with `RpcClosedError`. A notify to one is dropped.
+- After `serve`, a call to a channel this side does not own fails with `RpcClosedError`. A notify to one is dropped.
 
 ## Ports
 
@@ -241,7 +241,7 @@ interface Port {
 | `onClose(listener)` | Optional. The other end went away. The endpoint closes and calls in flight fail with `RpcClosedError`. Without it, calls in flight wait when the other end goes away. |
 | `close()` | Optional. Called when the endpoint closes. |
 
-Messages are plain arrays of numbers, strings and `SerovalNode` objects, so `postMessage` sends them as is. For a WebSocket, send `JSON.stringify(message)` and pass on `JSON.parse(event.data)`.
+Messages are plain arrays of numbers, strings, `null` and `SerovalNode` objects, so `postMessage` sends them as is. For a WebSocket, send `JSON.stringify(message)` and pass on `JSON.parse(event.data)`.
 
 `fromNodeWorker(source)` from `@seroval/rpc/node` adapts a `worker_threads` `Worker` or `parentPort`:
 
@@ -277,9 +277,9 @@ await pending; // rejects with the Error('stop')
 An async iterable in an argument or a result streams to the other side while the call runs. Each side tells the other its `window` when the endpoint starts:
 
 - The writer sends at most `window` stream items of a value that the reader has not consumed. Then it holds the source back.
-- The reader gives credit back as the code that reads the stream takes items, in batches of `window / 2`.
+- The reader gives credit back as the code that reads the stream takes items. Credit goes in batches of half the window, rounded down, and at least 1.
 - Leaving a stream early with `break`, `return()` or `throw()` stops the source on the other side.
-- An error the source throws reaches the reader as an `RpcRemoteError` with only the name and message.
+- An error the source throws reaches the reader as an `RpcRemoteError` with only the name and message. A transport failure reaches it as an `RpcTransportError`, and a close as an `RpcClosedError`.
 
 ```ts
 const producer = createChannel({
@@ -378,7 +378,7 @@ A failure of the transport fails every call in flight with the same `RpcTranspor
 
 Streams:
 
-- A result stream the caller never reads keeps its producer running on the other side until the endpoint closes. Read it, call `return()` on it, or cancel the call.
+- A result stream the caller never reads stays held on the other side until the endpoint closes. Its producer stops after `window` items. Read it, call `return()` on it, or cancel the call.
 - Streams get the window only inside arrays, plain objects, maps and sets. A stream anywhere else, such as inside a plugin value, stops after `window` items.
 - A cancel for a call that still waits for `serve` is lost, and the call runs. A `notify` cannot be cancelled.
 - The window counts seroval's `StreamNext` nodes (node type 32), which seroval does not export.
@@ -387,7 +387,7 @@ Channels:
 
 - A channel sent and never closed stays in the endpoint until the endpoint closes. Close it from either end.
 - A channel received from the other side cannot be sent back to it. Only channels made by `createChannel` cross, so the call fails.
-- A call to a channel ID this side does not hold waits when the endpoint never called `serve`.
+- A call to a channel ID this side does not own waits when the endpoint never called `serve`.
 - Calls that wait for `serve` have no limit on their number.
 
 Generators:
@@ -399,7 +399,7 @@ Generators:
 Other:
 
 - Buffers are copied into the message. There is no transfer of an `ArrayBuffer` to the other side.
-- `endpoint.close()` takes no reason. Calls in flight fail with `RpcClosedError`.
+- `endpoint.close(reason)` ignores the reason. Calls in flight fail with `RpcClosedError`.
 - A channel is not closed when it is garbage collected.
 
 ## Message format
