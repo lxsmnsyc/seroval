@@ -28,7 +28,7 @@ export const SIDEBAR: SidebarSection[] = [
   },
   {
     title: 'Packages',
-    pages: ['transport'],
+    pages: ['transport', 'rpc'],
   },
   {
     title: 'Reference',
