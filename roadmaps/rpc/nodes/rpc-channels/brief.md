@@ -1,7 +1,7 @@
 ---
 id: rpc-channels
 title: Channels in values and close order
-status: active
+status: done
 priority: must
 type: feature
 story: 

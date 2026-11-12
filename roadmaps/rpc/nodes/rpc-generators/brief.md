@@ -1,7 +1,7 @@
 ---
 id: rpc-generators
 title: Two-way generators over channels
-status: todo
+status: active
 priority: must
 type: feature
 story: 
@@ -21,6 +21,8 @@ owns:
   - packages/rpc/test/generators/**
 shared:
   - packages/rpc/src/index.ts
+  - packages/rpc/src/endpoint.ts
+  - packages/rpc/test/example/**
 reserves: []
 provides: []
 depends_on:
@@ -42,6 +44,10 @@ A native generator or async generator in an argument or result becomes a two-way
 - Detection: `Object.prototype.toString` returns `[object Generator]` or `[object AsyncGenerator]`. A sync generator becomes an `AsyncGenerator` on the other side.
 - Each step is a round trip, so no credit window is needed: the reader sets the pace.
 - From rpc-streaming: a call is cancelled with `[7, key]` and a reader leaves a value with `[5, key]` (`contracts/rpc-protocol.md` v3). One worker example test (the two-way generator) waits for this node as `it.skip`.
+- From rpc-channels (read its outcome): `createChannelPlugin(hooks)` in `src/channels/plugin.ts` writes a channel as its ID, and the endpoint puts it first in the plugin list of its writer and reader. Only channels made by `createChannel` pass its test. Register the generator plugin in `src/endpoint.ts` the same way.
+- A channel that is sent but never closed stays in `owned` until the endpoint closes. So the sender must close the hidden channel when the generator finishes, returns or throws, and the receiver must close it on `return()` and on a `break`. Check with `inspectEndpoint(...).owned` that nothing is left.
+- seroval sends an async iterable as a one-way stream by default. The generator plugin must take native generators before that path, and must leave other async iterables to it.
+- A plugin for an object that is a plain object must not set `skipPlainObjects`.
 - Open question Q5 in `GOAL.md`: whether to add a `stream(generator)` marker that forces the one-way push for a fast producer that ignores `next`'s argument.
 
 ## Acceptance

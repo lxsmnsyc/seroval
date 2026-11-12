@@ -40,6 +40,13 @@ Notes from rpc-streaming, to document:
 - A cancel for a call that still waits for `serve` is lost, and notify calls cannot be cancelled.
 - The window relies on seroval's node type 32 (`StreamNext`), which seroval does not export.
 
+Notes from rpc-channels, to document:
+
+- A channel sent but never closed stays in `owned` until the endpoint closes. Close it from either end.
+- A channel received from the other side cannot be sent back to it. Only channels made by `createChannel` cross.
+- A call to an ID missing from `owned` on an endpoint that never called `serve` waits for `serve`.
+- The close order, and that a throwing `onClose` is reported as an unhandled rejection while the rest run.
+
 ## Acceptance
 
 - [ ] Every part of the worker example runs; no `it.skip` left.
