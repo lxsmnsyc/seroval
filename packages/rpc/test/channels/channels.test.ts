@@ -164,10 +164,12 @@ describe('closing', () => {
 
   it('closes the endpoint when the root closes, nested channels first', async () => {
     const events: string[] = [];
+    let made = 0;
     const { server, root, rootChannel } = startPair(
       {
         makeCounter() {
-          return createCounter(0, events, 'nested');
+          made += 1;
+          return createCounter(0, events, `nested-${made}`);
         },
       },
       {
@@ -181,7 +183,7 @@ describe('closing', () => {
     rootChannel.close();
     await rootChannel.closed;
     await root.closed;
-    expect(events).toEqual(['nested', 'nested', 'root']);
+    expect(events).toEqual(['nested-2', 'nested-1', 'root']);
     await expect(root.run('makeCounter')).rejects.toBeInstanceOf(RpcClosedError);
     expect(inspectEndpoint(server).owned).toBe(0);
   });
