@@ -58,7 +58,7 @@ describe('worker example', () => {
     search.close();
   });
 
-  it.skip('sends progress back through a channel the caller passes (rpc-channels)', async () => {
+  it('sends progress back through a channel the caller passes', async () => {
     const { search } = startWorker();
     const seen: [number, number][] = [];
     const progress = createChannel({
@@ -99,7 +99,7 @@ describe('worker example', () => {
     search.close();
   });
 
-  it.skip('closes from the caller and the worker exits (rpc-channels)', async () => {
+  it('closes from the caller and the worker exits', async () => {
     const { worker, search } = startWorker();
     // Listen before the close, so the exit cannot be missed.
     const exited = waitForExit(worker);
@@ -110,7 +110,7 @@ describe('worker example', () => {
     expect(await exited).toBe(0);
   });
 
-  it.skip('closes from the worker and the caller sees it (rpc-channels)', async () => {
+  it('closes from the worker and the caller sees it', async () => {
     const { worker, search } = startWorker();
     const exited = waitForExit(worker);
     search.notify('quit');

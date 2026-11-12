@@ -1,8 +1,17 @@
 /* oxlint-disable typescript/promise-function-async, typescript/no-unsafe-type-assertion, typescript/no-unnecessary-type-assertion, typescript/unbound-method -- calls must start in order, so they return promises without async; generic channels need casts at the type boundary. */
 import { createJSONReader, createJSONWriter } from '@seroval/transport';
 import type { Message } from '@seroval/transport';
-import { closeOwner, getOwnerCore, rejectHandled, startCall, wrapBackend } from './channel';
+import {
+  closeOwner,
+  finishOwner,
+  getOwnerCore,
+  rejectHandled,
+  startCall,
+  stopOwner,
+  wrapBackend,
+} from './channel';
 import type { OwnerCore } from './channel';
+import { createChannelPlugin } from './channels/plugin';
 import { createCreditGate, isStreamItem, resolveWindow } from './streaming/gate';
 import { watchStreams } from './streaming/watch';
 import { createRpcSignal } from './signal';
@@ -42,6 +51,8 @@ const CLOSE = 6;
 const CANCEL_CALL = 7;
 
 interface Holder {
+  /** The public channel of the receiver. */
+  channel?: Channel<Functions>;
   /** Undefined until hello arrives, for the root. */
   id: number | undefined;
   isClosed: boolean;
@@ -173,6 +184,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
   // Sends that wait for hello, and incoming calls that wait for serve.
   let held: (() => void)[] = [];
   let waiting: (() => void)[] = [];
+  let rootCore: OwnerCore | undefined;
   let rootHolder: Channel<Functions> | undefined;
   let rootHolderState: Holder | undefined;
   let rootId: number | undefined;
@@ -208,8 +220,17 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     return undefined;
   }
 
+  // The plugin writes a channel as its ID, and resolves an ID to a receiver.
+  const plugins = [
+    createChannelPlugin({
+      isChannel: (value) => getOwnerCore(value) !== undefined,
+      sendChannel: registerChannel,
+      receiveChannel: resolveChannel,
+    }),
+    ...(options.plugins ?? []),
+  ];
   const writer = createJSONWriter({
-    plugins: options.plugins,
+    plugins,
     send: sendTransport,
     onError(error, key) {
       // Only a value that fails while it is pushed is told to the caller.
@@ -219,7 +240,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       }
     },
   });
-  const reader = createJSONReader({ plugins: options.plugins });
+  const reader = createJSONReader({ plugins });
 
   /** Sends a value under the writer's next key. */
   function pushValue(value: unknown): PushResult {
@@ -246,6 +267,56 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     }
   }
 
+  /** Puts a channel in a value under its ID, and returns the ID. */
+  function registerChannel(value: unknown): number {
+    const core = getOwnerCore(value);
+    if (!core) {
+      throw new TypeError('Only a channel made by createChannel can be sent.');
+    }
+    if (closed) {
+      throw new RpcClosedError('The endpoint is closed.');
+    }
+    const existing = owned.get(core.id);
+    // Another channel holds the ID, as when two copies of rpc are loaded.
+    if (existing && existing !== core) {
+      throw new RpcTransportError(`Another channel already goes out under ID ${core.id}.`);
+    }
+    if (core.isClosed) {
+      throw new RpcClosedError('The channel is closed.');
+    }
+    if (!existing) {
+      owned.set(core.id, core);
+      watchOwned(core);
+    }
+    return core.id;
+  }
+
+  /** Returns the receiver for a channel ID, one receiver for each ID. */
+  function resolveChannel(id: number): Channel<Functions> {
+    const known = remote.get(id);
+    if (known?.channel) {
+      return known.channel;
+    }
+    const created = createHolder(id);
+    remote.set(id, created.holder);
+    return created.channel;
+  }
+
+  /** Tells the other end when a channel that went out closes here. */
+  function watchOwned(core: OwnerCore): void {
+    core.watchers.add(() => {
+      if (owned.get(core.id) === core) {
+        owned.delete(core.id);
+        // Side 1: the owner closed, so the other end looks in `remote`.
+        sendMessage([CLOSE, core.id, 1]);
+      }
+      // Closing the root closes the endpoint.
+      if (core === rootCore) {
+        shutdown(new RpcClosedError());
+      }
+    });
+  }
+
   function closeHolder(holder: Holder, notifyPeer: boolean): void {
     if (holder.isClosed) {
       return;
@@ -267,6 +338,10 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       }
     }
     holder.resolveClosed();
+    // Closing the root closes the endpoint.
+    if (holder === rootHolderState) {
+      shutdown(new RpcClosedError());
+    }
   }
 
   function createHolder(id: number | undefined): { holder: Holder; channel: Channel<Functions> } {
@@ -297,6 +372,7 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       },
       closed: closedPromise,
     });
+    holder.channel = channel;
     return { holder, channel };
   }
 
@@ -669,10 +745,26 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     if (rootHolderState) {
       closeHolder(rootHolderState, true);
     }
+    // Nested channels first, in the reverse order they went out, the root last.
+    const cores: OwnerCore[] = [];
     for (const core of owned.values()) {
-      closeOwner(core).catch(ignoreRejection);
+      if (core !== rootCore) {
+        cores.unshift(core);
+      }
+    }
+    if (rootCore) {
+      cores.push(rootCore);
     }
     owned.clear();
+    const stopped: OwnerCore[] = [];
+    const skipped: OwnerCore[] = [];
+    for (const core of cores) {
+      if (stopOwner(core)) {
+        stopped.push(core);
+      } else {
+        skipped.push(core);
+      }
+    }
     // Stop the transport.
     try {
       writer.close(error);
@@ -684,6 +776,16 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
     live = false;
     for (const stop of stops) {
       stop();
+    }
+    // Run onClose one channel at a time, after the streams are stopped.
+    let previous: Promise<void> = Promise.resolve();
+    for (const core of stopped) {
+      core.finishAfter = previous;
+      previous = finishOwner(core);
+    }
+    // A channel whose close began this shutdown finishes after the others.
+    for (const core of skipped) {
+      core.finishAfter = previous;
     }
     try {
       port.close?.();
@@ -706,15 +808,11 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
         throw new RpcClosedError('The endpoint is closed.');
       }
       served = true;
-      owned.set(core.id, core);
-      // Tell the other end when the channel closes here.
-      core.watchers.add(() => {
-        if (owned.get(core.id) === core) {
-          owned.delete(core.id);
-          // Side 1: the owner closed, so the other end looks in `remote`.
-          sendMessage([CLOSE, core.id, 1]);
-        }
-      });
+      rootCore = core;
+      if (owned.get(core.id) !== core) {
+        owned.set(core.id, core);
+        watchOwned(core);
+      }
       sendMessage([HELLO, PROTOCOL_VERSION, core.id, window]);
       // Calls that came before serve can run now.
       const calls = waiting;
