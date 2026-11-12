@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { v } from '../src';
+import * as v from '../src/core/validator';
 
 describe('v', () => {
   it('validates primitives', () => {
