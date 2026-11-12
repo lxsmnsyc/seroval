@@ -45,6 +45,26 @@ describe('a received generator and the credit window', () => {
     expect(sent).toEqual([]);
   });
 
+  it('sends no credit for an async generator inside an object', async () => {
+    const { sent, root } = startRecordedPair({
+      list() {
+        async function* count() {
+          yield 1;
+          yield 2;
+        }
+        return { items: count() };
+      },
+    });
+    const seen: number[] = [];
+    const { items } = await root.run('list');
+    for await (const item of items) {
+      seen.push(item);
+    }
+    await settle();
+    expect(seen).toEqual([1, 2]);
+    expect(sent).toEqual([]);
+  });
+
   it('does not leave the value when a generator is left early', async () => {
     const { sent, root } = startRecordedPair({
       *count() {
