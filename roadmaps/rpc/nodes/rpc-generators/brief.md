@@ -1,7 +1,7 @@
 ---
 id: rpc-generators
 title: Two-way generators over channels
-status: active
+status: done
 priority: must
 type: feature
 story: 

@@ -1,7 +1,7 @@
 ---
 id: rpc-docs
 title: Docs and frozen contracts
-status: todo
+status: active
 priority: must
 type: docs
 story: 
@@ -18,6 +18,8 @@ gate: true
 owns:
   - packages/rpc/README.md
   - website/src/content/docs/rpc.md
+  - roadmaps/rpc/contracts/rpc-api.md
+  - roadmaps/rpc/contracts/rpc-protocol.md
 shared:
   - website/src/content/sidebar.ts
 reserves: []
@@ -46,6 +48,18 @@ Notes from rpc-channels, to document:
 - A channel received from the other side cannot be sent back to it. Only channels made by `createChannel` cross.
 - A call to an ID missing from `owned` on an endpoint that never called `serve` waits for `serve`.
 - The close order, and that a throwing `onClose` is reported as an unhandled rejection while the rest run.
+
+Notes from rpc-generators, to document:
+
+- Every native generator or async generator in a value is two-way: one round trip per step and no credit window. A plain async iterable (an object with `Symbol.asyncIterator`) is the way to get the one-way push with the window. There is no `stream(generator)` marker (Q5).
+- The receiver closes the hidden channel once a step is done or fails. A receiver that drops the generator without `return()` leaves that channel in `owned` until the endpoint closes.
+- A received generator can be sent on. Each hop adds a hidden channel and a round trip per step.
+- Closing an endpoint sends no close message for nested channels. The peer learns through `Port.onClose`, so a port without `onClose` leaves a pending `next` waiting.
+
+Decided by the orchestrator (2026-11-12):
+
+- The queue of calls that wait for `serve` stays unbounded in rpc-0.1. Document it as a limit. The bound stays in `inbox.md`.
+- This node edits and freezes both contracts, as their `defined_by` says. Where a contract and the code differ, the code wins: change the contract and list each difference in the outcome. A difference that looks like a bug in the code goes in the outcome under "For the maintainer", with no code change.
 
 ## Acceptance
 
