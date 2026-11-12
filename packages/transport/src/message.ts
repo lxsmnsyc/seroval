@@ -36,3 +36,19 @@ export function assertMessage(message: unknown): asserts message is Message {
     throw new SerovalTransportError('The transport received a malformed message.');
   }
 }
+
+/**
+ * Throws when a decoded value has a callable `then` and is not a native
+ * promise. A promise that resolves with such a value calls its `then`, which
+ * would run a function that the input chose.
+ */
+export function assertNotThenable(value: unknown): void {
+  if (
+    value !== null &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    !(value instanceof Promise) &&
+    typeof (value as { then?: unknown }).then === 'function'
+  ) {
+    throw new SerovalTransportError('The value has a `then` function, so it cannot be resolved.');
+  }
+}

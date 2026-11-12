@@ -1,4 +1,9 @@
-import { SerovalDeserializationError, SerovalPluginValidationError, toJSON } from 'seroval';
+import {
+  SerovalDeserializationError,
+  SerovalPluginValidationError,
+  createReference,
+  toJSON,
+} from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import {
   FILE_FIELD,
@@ -155,5 +160,15 @@ describe('form data', () => {
   it('refuses a request body that is not form data', async () => {
     const request = new Request('http://localhost/api', { method: 'POST', body: '{}' });
     await expect(fromFormRequest(request)).rejects.toThrow(SerovalTransportError);
+  });
+
+  it('refuses a request whose value is a thenable, and never calls its `then`', async () => {
+    const then = vi.fn();
+    const request = await toFormRequest('http://localhost/api', {
+      // oxlint-disable-next-line unicorn/no-thenable -- The test sends a thenable on purpose.
+      then: createReference('transport-thenable-form', then),
+    });
+    await expect(fromFormRequest(request)).rejects.toThrow(SerovalTransportError);
+    expect(then).not.toHaveBeenCalled();
   });
 });
