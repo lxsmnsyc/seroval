@@ -1,5 +1,6 @@
 import { SerovalTransportError } from '@seroval/transport';
 import { RpcClosedError, RpcRemoteError, RpcTransportError } from '../errors';
+import { isRemoteGenerator } from '../generators/plugin';
 
 /** What the reader side tells the writer about the streams of one value. */
 export interface StreamHooks {
@@ -158,7 +159,8 @@ function* children(value: object): Generator<unknown, void> {
 /**
  * Finds the async iterables in a value the other end sent, and wraps them so
  * that consuming an item gives credit back and leaving one early cancels the
- * value. It looks inside arrays, plain objects, maps and sets.
+ * value. It looks inside arrays, plain objects, maps and sets, and leaves
+ * remote generators alone.
  */
 export function watchStreams(root: unknown, window: number, hooks: StreamHooks): void {
   const watch: Watch = {
@@ -176,6 +178,10 @@ export function watchStreams(root: unknown, window: number, hooks: StreamHooks):
       continue;
     }
     seen.add(value);
+    // Each step of a remote generator is a call, so it takes no credit.
+    if (isRemoteGenerator(value)) {
+      continue;
+    }
     if (isAsyncIterable(value)) {
       wrapStream(watch, value);
       continue;
