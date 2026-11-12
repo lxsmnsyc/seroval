@@ -9,7 +9,7 @@ description: Typed calls in both directions between two endpoints over a worker,
 npm install seroval @seroval/transport @seroval/rpc
 ```
 
-`seroval` and `@seroval/transport` are peer dependencies. `@seroval/rpc` is not on npm yet.
+`seroval` and `@seroval/transport` are peer dependencies.
 
 | Entry point | Exports |
 | --- | --- |

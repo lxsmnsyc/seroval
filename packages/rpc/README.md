@@ -10,7 +10,7 @@
 npm install --save seroval @seroval/transport @seroval/rpc
 ```
 
-`seroval` and `@seroval/transport` are peer dependencies. `@seroval/rpc` is not on npm yet.
+`seroval` and `@seroval/transport` are peer dependencies.
 
 ## Usage
 
