@@ -2,7 +2,7 @@ import type { FromJSONOptions, SerovalJSON, SerovalNode } from 'seroval/read';
 import { createPlugin, fromJSON, v } from 'seroval/read';
 import type { ToJSONAsyncOptions } from 'seroval/write';
 import { toJSONAsync } from 'seroval/write';
-import { SerovalTransportError } from './message';
+import { SerovalTransportError, assertNotThenable } from './message';
 
 /**
  * The form field that holds the value, as seroval JSON. Each file and blob in
@@ -289,5 +289,9 @@ export async function fromFormRequest<T>(
   } catch {
     throw new SerovalTransportError('The request body is not form data.');
   }
-  return fromFormData<T>(form, options);
+  const value = fromFormData<T>(form, options);
+  // Returning a thenable from an async function would call its `then`, a
+  // function the client chose.
+  assertNotThenable(value);
+  return value;
 }

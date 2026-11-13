@@ -251,8 +251,9 @@ Values fail with `SerovalTransportError` when:
 - the reader ended before they arrived or settled.
 - a frame header or a message is malformed.
 - a frame is larger than `maxFrameSize`.
+- the value is an object or function with a `then` function. A promise would call it.
 
-`fromFormData` and `fromFormRequest` throw a `SerovalTransportError` when the body is not form data, or when the `seroval` field is missing or is not JSON. A malformed value, such as an index whose part is missing, throws the errors of `fromJSON`.
+`fromFormData` and `fromFormRequest` throw a `SerovalTransportError` when the body is not form data, or when the `seroval` field is missing or is not JSON. `fromFormRequest` also rejects a value with a `then` function. A malformed value, such as an index whose part is missing, throws the errors of `fromJSON`.
 
 ## Message format
 
