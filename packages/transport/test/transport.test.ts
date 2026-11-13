@@ -1,4 +1,4 @@
-import { createLiveStream } from 'seroval';
+import { createLiveStream, createReference } from 'seroval';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Message, Reader } from '../src';
 import {
@@ -702,5 +702,53 @@ describe('JS messages', () => {
     await expect(value.later).rejects.toBeInstanceOf(SerovalTransportError);
     const scopes = (globalThis as { $R?: Record<string, unknown> }).$R;
     expect(scopes?.['early-end']).toBeUndefined();
+  });
+});
+
+describe('thenable values', () => {
+  // Each key holds a registered function under `then`, as a peer could send.
+  function thenNode(id: string): unknown {
+    return {
+      t: 10,
+      i: 0,
+      p: { k: ['then'], v: [{ t: 18, i: 1, s: id }] },
+      o: 0,
+    };
+  }
+
+  it('refuses a value that is a thenable, and never calls its `then`', async () => {
+    const then = vi.fn();
+    createReference('transport-thenable-json', then);
+    const reader = createJSONReader();
+    const value = reader.get('0');
+    expect(() => {
+      reader.push([0, '0', thenNode('transport-thenable-json')]);
+    }).toThrow(SerovalTransportError);
+    reader.end();
+    await expect(value).rejects.toBeInstanceOf(SerovalTransportError);
+    expect(then).not.toHaveBeenCalled();
+  });
+
+  it('refuses a thenable value with sharedRefs', async () => {
+    const then = vi.fn();
+    createReference('transport-thenable-shared', then);
+    const reader = createJSONReader({ sharedRefs: true });
+    const value = reader.get('0');
+    expect(() => {
+      reader.push([0, '0', thenNode('transport-thenable-shared')]);
+    }).toThrow(SerovalTransportError);
+    reader.end();
+    await expect(value).rejects.toBeInstanceOf(SerovalTransportError);
+    expect(then).not.toHaveBeenCalled();
+  });
+
+  it('still reads a promise as the value', async () => {
+    const reader = fromJSONStream<number>();
+    toJSONStream(Promise.resolve(42), {
+      send(message) {
+        reader.push(structuredClone(message));
+      },
+    });
+    await expect(reader.value).resolves.toBe(42);
   });
 });
