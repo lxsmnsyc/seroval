@@ -21,6 +21,14 @@ export interface GeneratorHooks {
   receiveChannel(id: number): Channel<Functions>;
 }
 
+// The wrappers this module made for generators the other side sent.
+const REMOTE_GENERATORS = new WeakSet<object>();
+
+/** Tells a generator the other side runs from a one-way stream. */
+export function isRemoteGenerator(value: object): boolean {
+  return REMOTE_GENERATORS.has(value);
+}
+
 function isNativeGenerator(value: unknown): value is AnyGenerator {
   if (typeof value !== 'object' || value === null) {
     return false;
@@ -119,6 +127,7 @@ function wrapChannel(channel: Channel<Functions>): AsyncGenerator<unknown, unkno
   if (typeof Symbol.asyncDispose === 'symbol') {
     Object.defineProperty(wrapper, Symbol.asyncDispose, { value: dispose });
   }
+  REMOTE_GENERATORS.add(wrapper);
   return wrapper;
 }
 
