@@ -1,5 +1,6 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion -- the tests call names the types forbid. */
 import { MessageChannel } from 'node:worker_threads';
+import { createReference } from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import {
   RpcClosedError,
@@ -305,5 +306,25 @@ describe('two loaded copies of rpc', () => {
     rootB.close();
     await toB.closed;
     expect(closedA).toBe(false);
+  });
+});
+
+describe('thenable results', () => {
+  it('refuses a result that has a `then` function, and never calls it', async () => {
+    const then = vi.fn((resolve: (value: unknown) => void) => {
+      resolve('chosen by the peer');
+    });
+    const marker = createReference('rpc-thenable-result', then);
+    const [clientPort, hostPort] = createPair();
+    // The host's replies rename the `thenx` key to `then`, as a hostile peer could.
+    const tampered: Port = {
+      ...hostPort,
+      send(message) {
+        hostPort.send(JSON.parse(JSON.stringify(message).replaceAll('"thenx"', '"then"')));
+      },
+    };
+    const { math } = connectPair([clientPort, tampered], createMath());
+    await expect(math.run('echo', { thenx: marker })).rejects.toBeInstanceOf(RpcTransportError);
+    expect(then).not.toHaveBeenCalled();
   });
 });
