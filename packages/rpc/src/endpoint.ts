@@ -128,6 +128,20 @@ function reportError(error: unknown): void {
   Promise.reject(error);
 }
 
+/**
+ * Whether a decoded value has a callable `then` and is not a native promise.
+ * Resolving a promise with it would call that `then`, a function the other
+ * end chose.
+ */
+function isThenable(value: unknown): boolean {
+  return (
+    value !== null &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    !(value instanceof Promise) &&
+    typeof (value as { then?: unknown }).then === 'function'
+  );
+}
+
 function isCanonicalKey(key: unknown): key is string {
   if (typeof key !== 'string') {
     return false;
@@ -504,6 +518,9 @@ export function createEndpoint(port: Port, options: EndpointOptions = {}): Endpo
       if (failed) {
         handleResult(value[0], value[1], true);
       } else if (pending.has(value[0])) {
+        if (isThenable(value[1])) {
+          throw new RpcTransportError('The other end sent a result with a `then` function.');
+        }
         watchValue(key, value[1]);
         handleResult(value[0], value[1], false);
       } else {
