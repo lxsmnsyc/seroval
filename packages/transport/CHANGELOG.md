@@ -1,5 +1,11 @@
 # @seroval/transport
 
+## 0.1.3
+
+### Patch Changes
+
+- Harden form data decoding in `fromFormData`.
+
 ## 0.1.2
 
 ### Patch Changes
