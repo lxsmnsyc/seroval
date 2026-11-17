@@ -5,7 +5,22 @@ packages:
 linkWorkspacePackages: true
 preferWorkspacePackages: true
 overrides:
-  "js-yaml@<3.15.2": ">=3.15.2 <4"
-  "js-yaml@>=4.0.0 <4.3.2": ">=4.3.2 <5"
+  'js-yaml@<3.15.2': '>=3.15.2 <4'
+  'js-yaml@>=4.0.0 <4.3.2': '>=4.3.2 <5'
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - '@solidjs/compiler-darwin-arm64@2.0.0'
+  - '@solidjs/compiler-darwin-x64@2.0.0'
+  - '@solidjs/compiler-linux-arm64-gnu@2.0.0'
+  - '@solidjs/compiler-linux-x64-gnu@2.0.0'
+  - '@solidjs/compiler-wasm32-wasi@2.0.0'
+  - '@solidjs/compiler-win32-x64-msvc@2.0.0'
+  - '@solidjs/compiler@2.0.0'
+  - '@solidjs/router@2.0.0'
+  - '@solidjs/signals@2.0.0'
+  - '@solidjs/vite-plugin@3.0.0'
+  - '@solidjs/web@2.0.0'
+  - solid-js@2.0.0
+  - solid-use@1.0.0
+  - terracotta@2.0.0
