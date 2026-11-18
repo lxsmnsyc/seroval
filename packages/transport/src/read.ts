@@ -1,6 +1,6 @@
 import type { CrossDeserializer, CrossDeserializerOptions, SerovalNode } from 'seroval/read';
 import { createCrossDeserializer, deserialize, isStream } from 'seroval/read';
-import { DATA, DONE, SerovalTransportError, assertMessage } from './message';
+import { DATA, DONE, SerovalTransportError, assertMessage, assertNotThenable } from './message';
 
 export type { Message } from './message';
 export { SerovalTransportError } from './message';
@@ -229,6 +229,9 @@ function createReader(decoder: Decoder, options: ReaderOptions): Reader {
       // Open before the state changes, so a value that fails to decode stays
       // waiting and fails when the reader ends.
       const value = decoder.open(key, data);
+      // Resolving with a thenable would call its `then`, a function the
+      // input chose.
+      assertNotThenable(value);
       slot.state = OPEN;
       slot.value.resolve(value);
     } else if (slot.state === OPEN) {
