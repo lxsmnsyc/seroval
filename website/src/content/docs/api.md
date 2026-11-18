@@ -13,6 +13,7 @@ description: Every export of seroval, with its signature and options.
 | `seroval/read` | `fromJSON`, `fromCrossJSON`, `createCrossDeserializer`, `deserialize`, and everything in `seroval/shared`. |
 | `seroval/write` | `serialize`, `serializeAsync`, `toJSON`, `toJSONAsync`, `compileJSON`, the cross-reference serializers, `getCrossReferenceHeader`, `Serializer`, and everything in `seroval/shared`. |
 | `seroval/shared` | What both sides use: streams, references, `createPlugin`, `Feature` and the errors. |
+| `seroval/validator` | The validators for a plugin's `validate` field (see [Plugin security](./plugin-security.md#validate-every-value)). `seroval` does not export them. |
 
 All entry points load the same files, so a value imported from one is the same value in the others. For example, a framework can read page state in one chunk and serialize server function calls in another:
 
@@ -79,7 +80,6 @@ Options: `plugins`, `disabledFeatures`, `depthLimit`, `compactArrayBufferViews`.
 | `createReference(id, value)` | Sends `value` by its key. | [Isomorphic references](./isomorphic-references.md) |
 | `new OpaqueReference(value, replacement?)` | Sends `replacement` instead of `value`. | [OpaqueReference](./isomorphic-references.md#opaquereference) |
 | `createPlugin(plugin)` | Defines a plugin, with type inference. | [Writing plugins](./writing-plugins.md) |
-| `v` | Validators for a plugin's `validate` field. Also available as `seroval/validator`. | [Plugin security](./plugin-security.md#validate-every-value) |
 | `Feature` | Feature flags for `disabledFeatures`. | [Compatibility](./compatibility.md#feature-flags) |
 
 ## Options

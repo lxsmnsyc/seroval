@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Plugin, SerovalJSON, SerovalNode } from '../src';
+import * as v from '../src/core/validator';
 import {
   SerovalDeserializationError,
   SerovalMalformedNodeError,
@@ -9,7 +10,6 @@ import {
   fromJSON,
   toCrossJSON,
   toJSON,
-  v,
 } from '../src';
 
 class Label {
