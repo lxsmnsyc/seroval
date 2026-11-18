@@ -483,13 +483,36 @@ function deserializeDictionary<T extends AssignableValue>(
   return result;
 }
 
+function constructError<T extends Error>(create: () => T): T {
+  // A stack trace captured here points into the deserializer and the
+  // serialized `stack` replaces it when present, yet capturing it costs
+  // more than the rest of the node. Turn capture off while constructing.
+  // Runtimes without `Error.stackTraceLimit` are left untouched, and
+  // `Reflect.set` does not throw when the property is frozen.
+  const limit = Error.stackTraceLimit;
+  if (typeof limit !== 'number') {
+    return create();
+  }
+  Reflect.set(Error, 'stackTraceLimit', 0);
+  try {
+    return create();
+  } finally {
+    Reflect.set(Error, 'stackTraceLimit', limit);
+  }
+}
+
 function deserializeAggregateError(
   ctx: DeserializerContext,
   depth: number,
   node: SerovalAggregateErrorNode,
 ): AggregateError {
   // Serialize the required arguments
-  const result = assignIndexedValue(ctx, node.i, new AggregateError([], deserializeString(node.m)));
+  const message = deserializeString(node.m);
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    constructError(() => new AggregateError([], message)),
+  );
   // `AggregateError` might've been extended
   // either through class or custom properties
   // Make sure to assign extra properties
@@ -498,7 +521,12 @@ function deserializeAggregateError(
 
 function deserializeError(ctx: DeserializerContext, depth: number, node: SerovalErrorNode): Error {
   const construct = deserializeKnownValue(node, ERROR_CONSTRUCTOR, node.s);
-  const result = assignIndexedValue(ctx, node.i, new construct(deserializeString(node.m)));
+  const message = deserializeString(node.m);
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    constructError(() => new construct(message)),
+  );
   return deserializeDictionary(ctx, depth, node, result);
 }
 
