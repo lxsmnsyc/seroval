@@ -1,4 +1,5 @@
 import { decodeArrayBuffer } from '../binary-neutral';
+import { constructError } from '../utils/error';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import {
@@ -490,7 +491,12 @@ function deserializeAggregateError(
   node: SerovalAggregateErrorNode,
 ): AggregateError {
   // Serialize the required arguments
-  const result = assignIndexedValue(ctx, node.i, new AggregateError([], deserializeString(node.m)));
+  const message = deserializeString(node.m);
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    constructError(() => new AggregateError([], message)),
+  );
   // `AggregateError` might've been extended
   // either through class or custom properties
   // Make sure to assign extra properties
@@ -499,7 +505,12 @@ function deserializeAggregateError(
 
 function deserializeError(ctx: DeserializerContext, depth: number, node: SerovalErrorNode): Error {
   const construct = deserializeKnownValue(node, ERROR_CONSTRUCTOR, node.s);
-  const result = assignIndexedValue(ctx, node.i, new construct(deserializeString(node.m)));
+  const message = deserializeString(node.m);
+  const result = assignIndexedValue(
+    ctx,
+    node.i,
+    constructError(() => new construct(message)),
+  );
   return deserializeDictionary(ctx, depth, node, result);
 }
 
