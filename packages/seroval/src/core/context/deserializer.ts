@@ -1,4 +1,5 @@
 import { decodeArrayBuffer } from '../binary-neutral';
+import { constructError } from '../utils/error';
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import type { BigIntTypedArrayValue, TypedArrayValue } from '../constants';
 import {
@@ -482,24 +483,6 @@ function deserializeDictionary<T extends AssignableValue>(
     Object.defineProperties(result, Object.getOwnPropertyDescriptors(fields));
   }
   return result;
-}
-
-function constructError<T extends Error>(create: () => T): T {
-  // A stack trace captured here points into the deserializer and the
-  // serialized `stack` replaces it when present, yet capturing it costs
-  // more than the rest of the node. Turn capture off while constructing.
-  // Runtimes without `Error.stackTraceLimit` are left untouched, and
-  // `Reflect.set` does not throw when the property is frozen.
-  const limit = Error.stackTraceLimit;
-  if (typeof limit !== 'number') {
-    return create();
-  }
-  Reflect.set(Error, 'stackTraceLimit', 0);
-  try {
-    return create();
-  } finally {
-    Reflect.set(Error, 'stackTraceLimit', limit);
-  }
 }
 
 function deserializeAggregateError(
