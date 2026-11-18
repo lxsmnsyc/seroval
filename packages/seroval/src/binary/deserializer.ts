@@ -33,6 +33,7 @@ import {
   SYM_ITERATOR,
   SYM_TO_STRING_TAG,
 } from '../core/symbols';
+import { constructError } from '../core/utils/error';
 import type { Validator } from '../core/validator';
 import { STRING_LENGTH_MASK, decodeBigint, decodeString, decodeStringUTF16 } from './encoder';
 import { SerovalBinaryType, SerovalEndianness } from './nodes';
@@ -1096,7 +1097,12 @@ function deserializeError(ctx: DeserializerContext) {
   const message = deserializeRef(ctx, SerovalBinaryType.Error, SerovalBinaryType.String);
   const construct = deserializeKnownValue(SerovalBinaryType.Error, ERROR_CONSTRUCTOR, tag);
   createPending(ctx, id);
-  upsert(ctx, id, new construct(getRefSync(ctx, message) as string));
+  const text = getRefSync(ctx, message) as string;
+  upsert(
+    ctx,
+    id,
+    constructError(() => new construct(text)),
+  );
 }
 
 function deserializeBoxed(ctx: DeserializerContext) {
@@ -1368,7 +1374,12 @@ function deserializeAggregateError(ctx: DeserializerContext) {
   const id = deserializeId(ctx, SerovalBinaryType.AggregateError);
   const message = deserializeRef(ctx, SerovalBinaryType.AggregateError, SerovalBinaryType.String);
   createPending(ctx, id);
-  upsert(ctx, id, new AggregateError([], getRefSync(ctx, message) as string));
+  const text = getRefSync(ctx, message) as string;
+  upsert(
+    ctx,
+    id,
+    constructError(() => new AggregateError([], text)),
+  );
 }
 
 // Checks the listed fields of a plugin payload before the plugin uses it. A

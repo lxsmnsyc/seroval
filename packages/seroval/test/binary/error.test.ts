@@ -99,4 +99,18 @@ describe('binary Error', () => {
     expect(value).toBeInstanceOf(AggregateError);
     expect(value.errors).toEqual([]);
   });
+
+  it('does not capture a stack trace when constructing errors', async () => {
+    const limit = Error.stackTraceLimit;
+    const source = [new Error('a'), new TypeError('b'), new AggregateError([], 'c')];
+    for (const error of source) {
+      // Drop the stack so the decoded error keeps only what its constructor gave it
+      Reflect.deleteProperty(error, 'stack');
+    }
+    const { value } = await roundtrip<Error[]>(source);
+    for (const error of value) {
+      expect(error.stack ?? '').not.toMatch(/\n\s+at /);
+    }
+    expect(Error.stackTraceLimit).toBe(limit);
+  });
 });

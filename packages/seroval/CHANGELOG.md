@@ -1,5 +1,11 @@
 # seroval
 
+## 1.8.2
+
+### Patch Changes
+
+- Stop capturing a stack trace when deserializing `Error` and `AggregateError` nodes.
+
 ## 1.8.1
 
 ### Patch Changes

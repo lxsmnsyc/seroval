@@ -49,3 +49,21 @@ export function getErrorOptions(
   }
   return options;
 }
+
+export function constructError<T extends Error>(create: () => T): T {
+  // A stack trace captured here points into the deserializer and the
+  // serialized `stack` replaces it when present, yet capturing it costs
+  // more than the rest of the node. Turn capture off while constructing.
+  // Runtimes without `Error.stackTraceLimit` are left untouched, and
+  // `Reflect.set` does not throw when the property is frozen.
+  const limit = Error.stackTraceLimit;
+  if (typeof limit !== 'number') {
+    return create();
+  }
+  Reflect.set(Error, 'stackTraceLimit', 0);
+  try {
+    return create();
+  } finally {
+    Reflect.set(Error, 'stackTraceLimit', limit);
+  }
+}
