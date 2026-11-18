@@ -1,4 +1,9 @@
-import { SerovalDeserializationError, SerovalPluginValidationError, toJSON } from 'seroval';
+import {
+  SerovalDeserializationError,
+  SerovalPluginValidationError,
+  createReference,
+  toJSON,
+} from 'seroval';
 import { describe, expect, it, vi } from 'vitest';
 import {
   FILE_FIELD,
@@ -137,6 +142,38 @@ describe('form data', () => {
     }
   });
 
+  it('refuses form data values that share one entries list', async () => {
+    const first = new FormData();
+    first.set('name', 'value');
+    const second = new FormData();
+    second.set('name', 'value');
+    const field = (await toFormData([first, second])).get(VALUE_FIELD);
+    if (typeof field !== 'string') {
+      throw new Error('Expected the value field.');
+    }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test builds malformed input on purpose.
+    const json = JSON.parse(field) as {
+      t: { a: { s: { e: { t: number; i: number } } }[] };
+      m: number[];
+    };
+    // Point the second value at the entries list of the first.
+    const shared = json.t.a[0].s.e.i;
+    json.t.a[1].s.e = { t: 4, i: shared };
+    json.m.push(shared);
+    const tampered = new FormData();
+    tampered.set(VALUE_FIELD, JSON.stringify(json));
+    const cause = getCause(() => fromFormData(tampered));
+    expect(cause).toBeInstanceOf(SerovalTransportError);
+  });
+
+  it('decodes a form data value that the value holds twice', async () => {
+    const entry = new FormData();
+    entry.set('name', 'value');
+    const result = fromFormData<FormData[]>(await toFormData([entry, entry]));
+    expect(result[0]).toBe(result[1]);
+    expect(result[0].get('name')).toBe('value');
+  });
+
   it('reads the form fields once, however many blobs the value has', async () => {
     const blobs: Blob[] = [];
     for (let i = 0; i < 100; i++) {
@@ -155,5 +192,15 @@ describe('form data', () => {
   it('refuses a request body that is not form data', async () => {
     const request = new Request('http://localhost/api', { method: 'POST', body: '{}' });
     await expect(fromFormRequest(request)).rejects.toThrow(SerovalTransportError);
+  });
+
+  it('refuses a request whose value is a thenable, and never calls its `then`', async () => {
+    const then = vi.fn();
+    const request = await toFormRequest('http://localhost/api', {
+      // oxlint-disable-next-line unicorn/no-thenable -- The test sends a thenable on purpose.
+      then: createReference('transport-thenable-form', then),
+    });
+    await expect(fromFormRequest(request)).rejects.toThrow(SerovalTransportError);
+    expect(then).not.toHaveBeenCalled();
   });
 });
