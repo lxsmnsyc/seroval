@@ -36,7 +36,11 @@ const READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream: Stream<unknown>): ReadableS
     },
   });
 
-const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<string, never>>({
+const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<
+  object,
+  Record<string, never>,
+  Record<string, never>
+>({
   tag: 'seroval-plugins/web/ReadableStreamFactory',
   test(value) {
     return value === READABLE_STREAM_FACTORY;
@@ -57,6 +61,14 @@ const ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record<
   },
   deserialize() {
     return READABLE_STREAM_FACTORY;
+  },
+  binary: {
+    serialize() {
+      return READABLE_STREAM_FACTORY;
+    },
+    deserialize() {
+      return READABLE_STREAM_FACTORY;
+    },
   },
 });
 
@@ -128,7 +140,15 @@ type ReadableStreamNode = {
   stream: SerovalNode;
 };
 
-const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, ReadableStreamNode>({
+type ReadableStreamBinaryData = {
+  stream: Stream<unknown>;
+};
+
+const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<
+  ReadableStream,
+  ReadableStreamNode,
+  ReadableStreamBinaryData
+>({
   tag: 'seroval/plugins/web/ReadableStream',
   extends: [ReadableStreamFactoryPlugin],
   skipPlainObjects: true,
@@ -163,6 +183,19 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, Readab
     // Each ReadableStream subscribes to its source, so a source shared by
     // several of them would deliver every chunk once per ReadableStream.
     return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(stream));
+  },
+  binary: {
+    serialize(value, ctx) {
+      return {
+        stream: ctx.streamSource(toAsyncIterable(value)) as Stream<unknown>,
+      };
+    },
+    validate: { stream: isStream },
+    deserialize(data) {
+      // A stream replays its events to every subscriber, so a stream shared
+      // between ReadableStream values would be copied into each of them.
+      return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(claim(data).stream));
+    },
   },
 });
 

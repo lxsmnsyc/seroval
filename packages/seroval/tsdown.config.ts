@@ -9,6 +9,7 @@ const entry = {
   read: 'src/read.ts',
   write: 'src/write.ts',
   shared: 'src/shared.ts',
+  binary: 'src/binary/index.ts',
   validator: 'src/core/validator.ts',
 };
 

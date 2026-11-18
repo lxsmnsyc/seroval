@@ -1,0 +1,662 @@
+import { SerovalPluginValidationError, createStream } from 'seroval';
+import * as binary from 'seroval/binary';
+import { describe, expect, it, vi } from 'vitest';
+import AbortSignalPlugin from '../../../web/abort-signal';
+import BlobPlugin from '../../../web/blob';
+import FilePlugin from '../../../web/file';
+import DOMExceptionPlugin from '../../../web/dom-exception';
+import FormDataPlugin from '../../../web/form-data';
+import HeadersPlugin from '../../../web/headers';
+import ReadableStreamPlugin from '../../../web/readable-stream';
+import RequestPlugin from '../../../web/request';
+import ResponsePlugin from '../../../web/response';
+import URLPlugin from '../../../web/url';
+import URLSearchParamsPlugin from '../../../web/url-search-params';
+import { type AnyPlugin, startSerialize } from './utils';
+
+/**
+ * Models an attacker who controls the bytes: a stand-in plugin claims a real
+ * plugin's tag and emits an arbitrary payload for it. The receiving side runs
+ * the genuine plugin, so whatever it does with that payload is what a hostile
+ * stream would trigger.
+ */
+function forge(tag: string, data: unknown): { sentinel: object; plugin: AnyPlugin } {
+  const sentinel = {};
+  const plugin = {
+    tag,
+    test: (value: unknown) => value === sentinel,
+    parse: {},
+    serialize: () => '',
+    deserialize: () => undefined,
+    binary: {
+      serialize: () => data,
+      deserialize: () => undefined,
+    },
+  };
+  return { sentinel, plugin };
+}
+
+interface Delivery<T> {
+  ok: boolean;
+  value?: T;
+  errors: unknown[];
+}
+
+async function deliver<T>(tag: string, data: unknown, plugins: AnyPlugin[]): Promise<Delivery<T>> {
+  const forged = forge(tag, data);
+  const handle = startSerialize(forged.sentinel, [forged.plugin]);
+  handle.done.catch(() => undefined);
+
+  const errors: unknown[] = [];
+  const received = binary.deserialize<T>({
+    read: () => handle.transport.read(),
+    plugins,
+    onError(error) {
+      errors.push(error);
+    },
+  });
+
+  return await received.then(
+    (result) => ({ ok: true, value: result.value, errors }),
+    (error) => {
+      errors.push(error);
+      return { ok: false, errors };
+    },
+  );
+}
+
+describe('plugin binary hostile payloads', () => {
+  describe('Headers', () => {
+    it('refuses a header value carrying CRLF', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: [['x-safe', 'ok\r\nx-smuggled: injected']] },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(TypeError);
+    });
+
+    it('refuses a header name carrying CRLF', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: [['x-a\r\nx-smuggled', 'value']] },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it('does not pollute the prototype through a header name', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: [['__proto__', 'polluted']] },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.get('__proto__')).toBe('polluted');
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
+    });
+
+    it('rejects a payload that is not a HeadersInit', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: [['only-one-element']] },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it('rejects a header value that is not a string', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: [['x-test', { toString: 'value' }]] },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('rejects a header record', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: { 'x-test': 'value' } },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+  });
+
+  describe('URL', () => {
+    it('reconstructs dangerous schemes verbatim', async () => {
+      // The plugin is not a URL validator. Pinning this makes it explicit that
+      // consumers must check the scheme before navigating or fetching.
+      const result = await deliver<URL>(
+        'seroval-plugins/web/URL',
+        { value: 'javascript:alert(document.cookie)' },
+        [URLPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.protocol).toBe('javascript:');
+    });
+
+    it('reconstructs file URLs verbatim', async () => {
+      const result = await deliver<URL>(
+        'seroval-plugins/web/URL',
+        { value: 'file:///etc/passwd' },
+        [URLPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.pathname).toBe('/etc/passwd');
+    });
+
+    it('rejects a payload that is not a URL', async () => {
+      const result = await deliver<URL>('seroval-plugins/web/URL', { value: 'not a url' }, [
+        URLPlugin,
+      ]);
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(TypeError);
+    });
+
+    it('rejects a non-string payload', async () => {
+      const result = await deliver<URL>(
+        'seroval-plugins/web/URL',
+        { value: { href: 'https://example.com' } },
+        [URLPlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+  });
+
+  describe('URLSearchParams', () => {
+    it('does not pollute the prototype', async () => {
+      const result = await deliver<URLSearchParams>(
+        'seroval-plugins/web/URLSearchParams',
+        { value: '__proto__=polluted&constructor=nope' },
+        [URLSearchParamsPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.get('__proto__')).toBe('polluted');
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
+    });
+  });
+
+  describe('FormData', () => {
+    it('does not pollute the prototype through an entry key', async () => {
+      const result = await deliver<FormData>(
+        'seroval-plugins/web/FormData',
+        { entries: [['__proto__', 'polluted']] },
+        [FormDataPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.get('__proto__')).toBe('polluted');
+      expect(({} as unknown as Record<string, unknown>).polluted).toBeUndefined();
+    });
+
+    it('rejects entries that are not pairs', async () => {
+      const result = await deliver<FormData>('seroval-plugins/web/FormData', { entries: [null] }, [
+        FormDataPlugin,
+      ]);
+      expect(result.ok).toBe(false);
+    });
+
+    it('ignores a huge declared length on a non-array payload', async () => {
+      // `length` is read straight off the payload; a bogus one must not spin.
+      const result = await deliver<FormData>(
+        'seroval-plugins/web/FormData',
+        { entries: { length: 4294967295 } },
+        [FormDataPlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it('rejects an entry value that is not a string or a Blob', async () => {
+      const result = await deliver<FormData>(
+        'seroval-plugins/web/FormData',
+        { entries: [['key', { toString: 'value' }]] },
+        [FormDataPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+  });
+
+  describe('Response', () => {
+    it('rejects an out-of-range status', async () => {
+      const result = await deliver<Response>(
+        'seroval-plugins/web/Response',
+        { body: null, options: { status: 999 } },
+        [ResponsePlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(RangeError);
+    });
+
+    it('rejects a body on a null-body status', async () => {
+      const result = await deliver<Response>(
+        'seroval-plugins/web/Response',
+        { body: 'body', options: { status: 204 } },
+        [ResponsePlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it('rejects a status text carrying CRLF', async () => {
+      const result = await deliver<Response>(
+        'seroval-plugins/web/Response',
+        { body: null, options: { status: 200, statusText: 'OK\r\nEvil: 1' } },
+        [ResponsePlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it('rejects a body that is not an ArrayBuffer or a ReadableStream', async () => {
+      const result = await deliver<Response>(
+        'seroval-plugins/web/Response',
+        { body: { toString: 'body' }, options: {} },
+        [ResponsePlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it.each([
+      ['status', '200'],
+      ['statusText', { toString: 'OK' }],
+      ['headers', [['x-test', 'value']]],
+    ])('rejects a Response %s of the wrong type', async (field, value) => {
+      const result = await deliver<Response>(
+        'seroval-plugins/web/Response',
+        { body: null, options: { [field]: value } },
+        [ResponsePlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+  });
+
+  describe('Request', () => {
+    it('rejects an unparsable url', async () => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'not a url', options: {} },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(TypeError);
+    });
+
+    it('rejects an invalid method', async () => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://localhost/', options: { method: 'BAD METHOD' } },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+
+    it.each([
+      ['body', 'body'],
+      ['method', { toString: 'GET' }],
+      ['keepalive', 'true'],
+      ['headers', [['x-test', 'value']]],
+    ])('rejects a Request %s of the wrong type', async (field, value) => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://localhost/', options: { [field]: value } },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('rejects options that are not an object', async () => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://localhost/', options: 'GET' },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('drops unknown option fields', async () => {
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://localhost/', options: { window: 'unsafe' } },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(true);
+    });
+
+    it('reconstructs internal hosts verbatim', async () => {
+      // Deserializing is not fetching: the plugin must not silently rewrite
+      // the target, and callers own the SSRF decision.
+      const result = await deliver<Request>(
+        'seroval-plugins/web/Request',
+        { url: 'http://169.254.169.254/latest/meta-data/', options: {} },
+        [RequestPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.url).toBe('http://169.254.169.254/latest/meta-data/');
+    });
+  });
+
+  describe('ReadableStream', () => {
+    it('rejects a payload that is not a Stream', async () => {
+      const result = await deliver<ReadableStream>(
+        'seroval/plugins/web/ReadableStream',
+        { stream: { not: 'a stream' } },
+        [ReadableStreamPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('rejects a missing stream', async () => {
+      const result = await deliver<ReadableStream>('seroval/plugins/web/ReadableStream', {}, [
+        ReadableStreamPlugin,
+      ]);
+      expect(result.ok).toBe(false);
+    });
+  });
+
+  describe('Blob', () => {
+    it('rejects bytes that do not resolve to an ArrayBuffer', async () => {
+      const result = await deliver<Blob>(
+        'seroval-plugins/web/Blob',
+        { type: 'text/plain', bytes: Promise.resolve('not a buffer') },
+        [BlobPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+      expect(result.errors[0]).toMatchObject({ field: 'bytes' });
+    });
+
+    it('rejects bytes that are not a Promise', async () => {
+      const result = await deliver<Blob>(
+        'seroval-plugins/web/Blob',
+        { type: 'text/plain', bytes: new ArrayBuffer(1) },
+        [BlobPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+  });
+
+  describe('AbortSignal', () => {
+    it('accepts an attacker-chosen abort reason', async () => {
+      const result = await deliver<AbortSignal>(
+        'seroval-plugins/web/AbortSignal',
+        { reason: 'forged' },
+        [AbortSignalPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.aborted).toBe(true);
+      expect(result.value?.reason).toBe('forged');
+    });
+
+    it('rejects a payload with neither reason nor controller', async () => {
+      const result = await deliver<AbortSignal>('seroval-plugins/web/AbortSignal', {}, [
+        AbortSignalPlugin,
+      ]);
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(TypeError);
+    });
+
+    it('rejects a controller that is not a thenable', async () => {
+      const result = await deliver<AbortSignal>(
+        'seroval-plugins/web/AbortSignal',
+        { controller: 'not a promise' },
+        [AbortSignalPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+    });
+
+    it('never hands out the AbortController factory', async () => {
+      // The factory's helper is a function. Decoding it directly must throw
+      // instead of returning that function to the payload.
+      const result = await deliver<unknown>(
+        'seroval-plugins/web/AbortControllerFactoryPlugin',
+        {},
+        [AbortSignalPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(typeof result.value).not.toBe('function');
+    });
+  });
+
+  describe('DOMException', () => {
+    it('reconstructs an attacker-chosen name and message', async () => {
+      const result = await deliver<DOMException>(
+        'seroval-plugins/web/DOMException',
+        { name: 'SecurityError', message: 'forged' },
+        [DOMExceptionPlugin],
+      );
+      expect(result.ok).toBe(true);
+      expect(result.value?.name).toBe('SecurityError');
+      expect(result.value?.message).toBe('forged');
+    });
+
+    it('rejects a non-string name', async () => {
+      const result = await deliver<DOMException>(
+        'seroval-plugins/web/DOMException',
+        { name: 42, message: 'forged' },
+        [DOMExceptionPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(result.errors[0]).toBeInstanceOf(SerovalPluginValidationError);
+      expect(result.errors[0]).toMatchObject({ field: 'name' });
+    });
+  });
+
+  describe('plugin resolution', () => {
+    it('rejects a payload whose tag has no plugin registered', async () => {
+      const result = await deliver<unknown>(
+        'seroval-plugins/web/URL',
+        { value: 'https://example.com' },
+        [HeadersPlugin],
+      );
+      expect(result.ok).toBe(false);
+      expect(String(result.errors[0])).toContain('seroval-plugins/web/URL');
+    });
+
+    it('rejects a payload shaped for a different plugin', async () => {
+      const result = await deliver<Headers>(
+        'seroval-plugins/web/Headers',
+        { value: 'https://example.com' },
+        [HeadersPlugin, URLPlugin],
+      );
+      expect(result.ok).toBe(false);
+    });
+  });
+});
+
+/**
+ * The serializer builds a fresh payload for every plugin value. Hostile bytes
+ * can point several Plugin nodes at one payload, or at one buffer, stream or
+ * body inside it, so every node would copy or subscribe to it again.
+ */
+async function deliverShared(
+  tag: string,
+  payloads: [unknown, unknown],
+  plugins: AnyPlugin[],
+): Promise<unknown[]> {
+  const first = {};
+  const second = {};
+  const plugin = {
+    tag,
+    test: (value: unknown) => value === first || value === second,
+    parse: {},
+    serialize: () => '',
+    deserialize: () => undefined,
+    binary: {
+      serialize: (value: unknown) => (value === first ? payloads[0] : payloads[1]),
+      deserialize: () => undefined,
+    },
+  };
+  // The genuine plugins serialize values inside the payload, such as Headers.
+  const handle = startSerialize([first, second], [plugin].concat(plugins));
+  handle.done.catch(() => undefined);
+  const errors: unknown[] = [];
+  await binary
+    .deserialize({
+      read: async () => await handle.transport.read(),
+      plugins,
+      onError(error) {
+        errors.push(error);
+      },
+    })
+    .catch((error: unknown) => {
+      errors.push(error);
+    });
+  return errors;
+}
+
+const SHARED = 'Expected a value used by one plugin value only.';
+
+// What `binary.serialize` of the web plugins below receives besides the value.
+const SERIALIZE_CONTEXT: Parameters<typeof BlobPlugin.binary.serialize>[1] = {
+  addCleanup() {},
+  streamSource() {
+    throw new Error('Not used by these plugins.');
+  },
+};
+
+function hasSharedError(errors: unknown[]): boolean {
+  return errors.some((error) => error instanceof Error && error.message === SHARED);
+}
+
+describe('plugin binary shared payloads', () => {
+  it('refuses two Blob values on one payload', async () => {
+    const payload = BlobPlugin.binary.serialize(new Blob(['abc']), SERIALIZE_CONTEXT);
+    const errors = await deliverShared(BlobPlugin.tag, [payload, payload], [BlobPlugin]);
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two Blob values on one buffer promise', async () => {
+    const bytes = Promise.resolve(new ArrayBuffer(4));
+    const errors = await deliverShared(
+      BlobPlugin.tag,
+      [
+        { type: '', bytes },
+        { type: '', bytes },
+      ],
+      [BlobPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two File values on one buffer', async () => {
+    const buffer = new ArrayBuffer(4);
+    const options = (): FilePropertyBag => ({ type: '', lastModified: 0 });
+    const errors = await deliverShared(
+      FilePlugin.tag,
+      [
+        { name: 'a', options: options(), buffer: Promise.resolve(buffer) },
+        { name: 'b', options: options(), buffer: Promise.resolve(buffer) },
+      ],
+      [FilePlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two ReadableStream values on one stream', async () => {
+    const stream = createStream<string>();
+    stream.next('a');
+    stream.return('b');
+    const errors = await deliverShared(
+      ReadableStreamPlugin.tag,
+      [{ stream }, { stream }],
+      [ReadableStreamPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two Response values on one payload', async () => {
+    const payload = ResponsePlugin.binary.serialize(new Response(null), SERIALIZE_CONTEXT);
+    const errors = await deliverShared(
+      ResponsePlugin.tag,
+      [payload, payload],
+      [ResponsePlugin, HeadersPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('refuses two Request values on one payload', async () => {
+    const payload = RequestPlugin.binary.serialize(
+      new Request('https://example.com'),
+      SERIALIZE_CONTEXT,
+    );
+    const errors = await deliverShared(
+      RequestPlugin.tag,
+      [payload, payload],
+      [RequestPlugin, HeadersPlugin],
+    );
+    expect(hasSharedError(errors)).toBe(true);
+  });
+
+  it('still decodes separate Blob values', async () => {
+    const errors = await deliverShared(
+      BlobPlugin.tag,
+      [
+        BlobPlugin.binary.serialize(new Blob(['a']), SERIALIZE_CONTEXT),
+        BlobPlugin.binary.serialize(new Blob(['b']), SERIALIZE_CONTEXT),
+      ],
+      [BlobPlugin],
+    );
+    expect(errors).toEqual([]);
+  });
+});
+
+describe('plugin binary serializer cleanup', () => {
+  it('removes the AbortSignal listener when serialization stops', () => {
+    const controller = new AbortController();
+    const remove = vi.spyOn(controller.signal, 'removeEventListener');
+    const handle = startSerialize(controller.signal, [AbortSignalPlugin]);
+    handle.done.catch(() => undefined);
+    handle.abort();
+    expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
+  });
+
+  it('handles a failed Blob read when serialization stops at the depth limit', async () => {
+    // The read promise exists before the payload is serialized. If the depth
+    // limit stops serialization first, its rejection must still be handled.
+    function createFailingBlob(): Blob {
+      const blob = new Blob(['x']);
+      Object.defineProperty(blob, 'arrayBuffer', {
+        value: async (): Promise<ArrayBuffer> => {
+          await Promise.resolve();
+          throw new Error('read failed');
+        },
+      });
+      return blob;
+    }
+    // The limit is tried at several depths, so one of them lands after the
+    // plugin has started the read and before its payload is written.
+    for (let depthLimit = 1; depthLimit <= 4; depthLimit++) {
+      await new Promise<void>((resolve) => {
+        binary.serialize(
+          { a: { b: createFailingBlob() } },
+          {
+            refs: new Map(),
+            plugins: [BlobPlugin],
+            depthLimit,
+            onSerialize() {},
+            onDone() {
+              resolve();
+            },
+            onError() {
+              resolve();
+            },
+          },
+        );
+      });
+    }
+    // Give an unhandled rejection the chance to surface.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 10);
+    });
+  });
+});

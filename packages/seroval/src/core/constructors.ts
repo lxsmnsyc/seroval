@@ -191,7 +191,8 @@ export const ITERATOR_CONSTRUCTOR =
 export const SERIALIZED_ITERATOR_CONSTRUCTOR = /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
 
 // Serialized via toString() — nested functions must be shorthand methods
-// (see STREAM_CONSTRUCTOR).
+// (see STREAM_CONSTRUCTOR). `next` reports a stream error through a rejected
+// promise, even when the stream ended before `next` was called.
 export const ASYNC_ITERATOR_CONSTRUCTOR =
   (symbol: symbol, createPromise: typeof PROMISE_CONSTRUCTOR) =>
   (stream: Pick<Stream<unknown>, 'on'>) =>
@@ -272,7 +273,7 @@ export const ASYNC_ITERATOR_CONSTRUCTOR =
           };
         }
         if (isThrow) {
-          throw value;
+          return Promise.reject(value);
         }
         return {
           done: true,

@@ -32,8 +32,12 @@ type EventNode = {
   type: SerovalNode;
   options: SerovalNode;
 };
+type EventBinaryData = {
+  type: string;
+  options: EventInit;
+};
 
-const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
+const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode, EventBinaryData>({
   tag: 'seroval-plugins/web/Event',
   skipPlainObjects: true,
   test(value) {
@@ -71,6 +75,18 @@ const EventPlugin = /* @__PURE__ */ createPlugin<Event, EventNode>({
       ctx.deserialize<string>(node.type),
       copyEventOptions(ctx.deserialize<EventInit>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      return {
+        type: value.type,
+        options: createEventOptions(value),
+      };
+    },
+    validate: { type: v.string, options: isEventOptions },
+    deserialize(data) {
+      return new Event(data.type, copyEventOptions(data.options));
+    },
   },
 });
 

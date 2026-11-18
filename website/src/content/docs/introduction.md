@@ -41,11 +41,12 @@ The [compatibility page](./compatibility.md) has the full list, with what each m
 
 ## Output formats
 
-seroval can produce three kinds of output:
+seroval can produce four kinds of output:
 
 - **JavaScript.** A self-contained expression that rebuilds the value when it runs. This is the most compact form, and the natural fit for server rendering.
 - **JSON.** A tree of plain objects. `fromJSON` rebuilds the value without running any code, so it is safe for input from a client.
 - **Cross-reference scripts.** JavaScript that stores values in a shared array, so a later script can refer back to a value an earlier one sent. Streaming uses this form.
+- **Binary.** A stream of `Uint8Array` chunks. Like JSON, it is rebuilt without running any code. See [Binary mode](./binary-mode.md).
 
 [Choosing a mode](./choosing-a-mode.md) explains which one to use.
 
