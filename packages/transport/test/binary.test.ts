@@ -1,4 +1,4 @@
-import { createLiveStream } from 'seroval';
+import { createLiveStream, createReference } from 'seroval';
 import { Readable } from 'node:stream';
 import { describe, expect, it, vi } from 'vitest';
 import type { Message, Reader } from '../src/binary';
@@ -603,5 +603,27 @@ describe('binary responses and streams', () => {
     expect(b.shared).toBe(a);
     expect(await collectItems(b.items)).toEqual([1, 2]);
     await reading;
+  });
+});
+
+describe('binary thenable values', () => {
+  it('refuses a value that is a thenable, and never calls its `then`', async () => {
+    const then = vi.fn();
+    const reader = createBinaryReader();
+    const writer = createBinaryWriter({ send: pipeTo(reader) });
+    // oxlint-disable-next-line unicorn/no-thenable -- The test sends a thenable on purpose.
+    writer.write('0', { then: createReference('transport-thenable-binary', then) });
+    await expect(reader.get('0')).rejects.toBeInstanceOf(SerovalTransportError);
+    expect(then).not.toHaveBeenCalled();
+  });
+
+  it('refuses a thenable value with sharedRefs', async () => {
+    const then = vi.fn();
+    const reader = createBinaryReader({ sharedRefs: true });
+    const writer = createBinaryWriter({ send: pipeTo(reader), sharedRefs: true });
+    // oxlint-disable-next-line unicorn/no-thenable -- The test sends a thenable on purpose.
+    writer.write('0', { then: createReference('transport-thenable-binary-shared', then) });
+    await expect(reader.get('0')).rejects.toBeInstanceOf(SerovalTransportError);
+    expect(then).not.toHaveBeenCalled();
   });
 });

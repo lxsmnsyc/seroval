@@ -4,7 +4,7 @@ import type { Reader, ReaderOptions, ValueReader } from './create-reader';
 import { createReader, createValueReader } from './create-reader';
 import type { Writer, WriterOptions } from './create-writer';
 import { createWriter } from './create-writer';
-import { SerovalTransportError } from './message';
+import { SerovalTransportError, assertNotThenable } from './message';
 
 export type { Message } from './message';
 export { SerovalTransportError } from './message';
@@ -120,7 +120,12 @@ export function createBinaryReader(options: BinaryReaderOptions = {}): Reader {
           forget(key, entry);
           throw error;
         }
-        return entry.payload.result.then((result) => result.value);
+        return entry.payload.result.then((result) => {
+          // Returning a thenable here would call its `then`, a function the
+          // input chose.
+          assertNotThenable(result.value);
+          return result.value;
+        });
       },
       next(key, data) {
         assertBytes(data);
