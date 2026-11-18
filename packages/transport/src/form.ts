@@ -1,5 +1,6 @@
 import type { FromJSONOptions, Plugin, SerovalJSON, SerovalNode } from 'seroval/read';
-import { createPlugin, fromJSON, v } from 'seroval/read';
+import { createPlugin, fromJSON } from 'seroval/read';
+import * as v from 'seroval/validator';
 import type { ToJSONAsyncOptions } from 'seroval/write';
 import { toJSONAsync } from 'seroval/write';
 import { SerovalTransportError, assertNotThenable } from './message';
