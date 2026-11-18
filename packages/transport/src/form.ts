@@ -1,9 +1,9 @@
-import type { FromJSONOptions, SerovalJSON, SerovalNode } from 'seroval/read';
+import type { FromJSONOptions, Plugin, SerovalJSON, SerovalNode } from 'seroval/read';
 import { createPlugin, fromJSON } from 'seroval/read';
 import * as v from 'seroval/validator';
 import type { ToJSONAsyncOptions } from 'seroval/write';
 import { toJSONAsync } from 'seroval/write';
-import { SerovalTransportError } from './message';
+import { SerovalTransportError, assertNotThenable } from './message';
 
 /**
  * The form field that holds the value, as seroval JSON. Each file and blob in
@@ -146,30 +146,45 @@ function createBlobPlugin(
   });
 }
 
-/** Sends form data as its entries, so its files go through the blob plugin. */
-const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
-  tag: FORM_DATA_TAG,
-  skipPlainObjects: true,
-  test: isFormData,
-  parse: {
-    async async(value, ctx) {
-      const entries: [string, FormDataEntryValue][] = [];
-      for (const entry of value.entries()) {
-        entries.push(entry);
-      }
-      return { e: await ctx.parse(entries) };
+/**
+ * Sends form data as its entries, so its files go through the blob plugin.
+ * Each decode creates its own plugin, so the lists it has copied are tracked
+ * per decode.
+ */
+function createFormDataPlugin(): Plugin<FormData, FormDataNode> {
+  // The encoder builds a fresh list for every form data value, so a list
+  // copied twice means the input pointed several values at it to make each
+  // one copy it again.
+  const copied = new WeakSet<object>();
+  return createPlugin<FormData, FormDataNode>({
+    tag: FORM_DATA_TAG,
+    skipPlainObjects: true,
+    test: isFormData,
+    parse: {
+      async async(value, ctx) {
+        const entries: [string, FormDataEntryValue][] = [];
+        for (const entry of value.entries()) {
+          entries.push(entry);
+        }
+        return { e: await ctx.parse(entries) };
+      },
     },
-  },
-  serialize: refuseSerialize,
-  validate: { e: isFormDataEntries },
-  deserialize(node, ctx) {
-    const result = new FormData();
-    for (const entry of ctx.deserialize<[string, FormDataEntryValue][]>(node.e)) {
-      result.append(entry[0], entry[1]);
-    }
-    return result;
-  },
-});
+    serialize: refuseSerialize,
+    validate: { e: isFormDataEntries },
+    deserialize(node, ctx) {
+      const entries = ctx.deserialize<[string, FormDataEntryValue][]>(node.e);
+      if (copied.has(entries)) {
+        throw malformed();
+      }
+      copied.add(entries);
+      const result = new FormData();
+      for (const entry of entries) {
+        result.append(entry[0], entry[1]);
+      }
+      return result;
+    },
+  });
+}
 
 export interface ToFormDataOptions extends ToJSONAsyncOptions {}
 
@@ -188,7 +203,11 @@ export async function toFormData(
   const files: Blob[] = [];
   const json = await toJSONAsync(value, {
     ...options,
-    plugins: [createBlobPlugin(files, undefined), FormDataPlugin, ...(options.plugins ?? [])],
+    plugins: [
+      createBlobPlugin(files, undefined),
+      createFormDataPlugin(),
+      ...(options.plugins ?? []),
+    ],
   });
   const form = new FormData();
   form.set(VALUE_FIELD, JSON.stringify(json));
@@ -247,7 +266,11 @@ export function fromFormData<T>(form: FormData, options: FromFormDataOptions = {
   }
   return fromJSON<T>(json as SerovalJSON, {
     ...options,
-    plugins: [createBlobPlugin(undefined, parts), FormDataPlugin, ...(options.plugins ?? [])],
+    plugins: [
+      createBlobPlugin(undefined, parts),
+      createFormDataPlugin(),
+      ...(options.plugins ?? []),
+    ],
   });
 }
 
@@ -290,5 +313,9 @@ export async function fromFormRequest<T>(
   } catch {
     throw new SerovalTransportError('The request body is not form data.');
   }
-  return fromFormData<T>(form, options);
+  const value = fromFormData<T>(form, options);
+  // Returning a thenable from an async function would call its `then`, a
+  // function the client chose.
+  assertNotThenable(value);
+  return value;
 }

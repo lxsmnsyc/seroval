@@ -1,5 +1,17 @@
 # @seroval/transport
 
+## 0.1.3
+
+### Patch Changes
+
+- Harden form data decoding in `fromFormData`.
+
+## 0.1.2
+
+### Patch Changes
+
+- Harden value validation in the JSON reader and `fromFormRequest`.
+
 ## 0.1.1
 
 ### Patch Changes
