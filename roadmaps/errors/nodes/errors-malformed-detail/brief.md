@@ -1,7 +1,7 @@
 ---
 id: errors-malformed-detail
 title: Say what was malformed
-status: todo
+status: done
 priority: must
 type: feature
 story: 
@@ -37,9 +37,9 @@ The 15 `SerovalMalformedNodeError` sites (all in `deserializer.ts`) and 8 `Serov
 
 ## Acceptance
 
-- [ ] `malformed.test.ts` feeds a broken node to each throw site and checks its detail.
-- [ ] Production messages unchanged in format.
-- [ ] Fast check passes.
+- [x] `malformed.test.ts` feeds a broken node to each throw site and checks its detail.
+- [x] Production messages unchanged in format.
+- [x] Fast check passes.
 
 ## Sizing
 

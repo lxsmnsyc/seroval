@@ -1,7 +1,7 @@
 ---
 id: rpc-transport-fixes
 title: Rebase @seroval/transport, fix it for rpc, merge it
-status: active
+status: done
 priority: must
 type: feature
 story: 

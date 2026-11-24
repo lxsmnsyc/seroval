@@ -1,7 +1,7 @@
 ---
 id: rpc-spike
 title: Package scaffold, draft types and the worker example
-status: todo
+status: done
 priority: must
 type: feature
 story: 

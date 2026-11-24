@@ -1,3 +1,4 @@
+import { SerovalStreamConsumedError } from './errors';
 import { NIL } from './constants';
 import { ASYNC_ITERATOR_CONSTRUCTOR, PROMISE_CONSTRUCTOR } from './constructors';
 import { type LiveStream, isLiveStream } from './live-stream';
@@ -55,7 +56,7 @@ export class Stream<T> {
 
   on(listener: StreamListener<T>): () => void {
     if (this.live! > 1) {
-      throw new Error('Stream consumed');
+      throw new SerovalStreamConsumedError();
     }
     let subscribed = this.alive;
     let temp = 0;

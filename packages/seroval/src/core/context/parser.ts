@@ -7,7 +7,7 @@ import {
 import { ALL_ENABLED, FeatureFlag } from '../compat';
 import type { WellKnownSymbols } from '../constants';
 import { INV_SYMBOL_REF, NIL, SerovalNodeType, SerovalTemporalType } from '../constants';
-import { SerovalUnsupportedTypeError } from '../errors';
+import { SerovalError, SerovalParserError, SerovalUnsupportedTypeError } from '../errors';
 import { createSerovalNode } from '../node';
 import { type PluginAccessOptions, getPlainObjectPlugins } from '../plugin';
 import { getReferenceID } from '../reference';
@@ -34,6 +34,7 @@ import {
   type TypedArrayValue,
   getTypedArrayName,
 } from '../utils/typed-array';
+import { formatErrorPath } from './error-path';
 
 export interface BaseParserContextOptions extends PluginAccessOptions {
   disabledFeatures?: number;
@@ -118,6 +119,67 @@ export function rollbackRefs(refs: Map<unknown, number>, size: number): void {
       }
     }
   }
+}
+
+// Development messages without the path suffix, so each level can rewrite it.
+const BASE_MESSAGES = new WeakMap<Error, string>();
+
+// Wrappers made only to carry a path around an error
+// that is not from seroval. The stream mode hands that error to `onError`.
+const PATH_WRAPPERS = new WeakSet<Error>();
+
+/** The error a wrapper made by `addErrorPath` was made around, else the error. */
+export function unwrapPathError(error: unknown): unknown {
+  return error instanceof SerovalError && PATH_WRAPPERS.has(error) ? error.cause : error;
+}
+
+function canAddPath(error: SerovalError): boolean {
+  if (!Object.isExtensible(error)) {
+    return false;
+  }
+  const path: unknown = error.path;
+  return path === undefined || (Array.isArray(path) && Object.isExtensible(path));
+}
+
+/**
+ * Prepends the segments of one container to the path of an error that passes
+ * up through a parser, and returns the error to throw. It runs only on throw.
+ * Only a `SerovalError` gets a path. Any other value, and a seroval error that
+ * cannot take one, is wrapped in a `SerovalParserError` first and stays
+ * reachable as its `cause`, so nothing the user threw is written to.
+ */
+export function addErrorPath(error: unknown, first: string | number, second?: string): unknown {
+  let target: SerovalError;
+  if (error instanceof SerovalError && canAddPath(error)) {
+    target = error;
+  } else {
+    target = new SerovalParserError(error);
+    if (!(error instanceof SerovalError)) {
+      PATH_WRAPPERS.add(target);
+    }
+    if (!import.meta.env.PROD && target.path) {
+      // The constructor added the suffix of the path it copied; start over.
+      const suffix = '\n\nAt ' + formatErrorPath(target.path);
+      BASE_MESSAGES.set(target, target.message.slice(0, target.message.length - suffix.length));
+    }
+  }
+  if (second === undefined) {
+    if (target.path) {
+      target.path.unshift(first);
+    } else {
+      target.path = [first];
+    }
+  } else if (target.path) {
+    target.path.unshift(first, second);
+  } else {
+    target.path = [first, second];
+  }
+  if (!import.meta.env.PROD) {
+    const base = BASE_MESSAGES.get(target) ?? target.message;
+    BASE_MESSAGES.set(target, base);
+    target.message = base + '\n\nAt ' + formatErrorPath(target.path);
+  }
+  return target;
 }
 
 export function getNodeForIndexedValue(

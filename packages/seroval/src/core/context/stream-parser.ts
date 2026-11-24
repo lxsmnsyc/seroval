@@ -9,7 +9,7 @@ import {
   createStreamEventNode,
 } from '../base-primitives';
 import { NIL, SerovalNodeType } from '../constants';
-import { SerovalDepthLimitError, SerovalParserError } from '../errors';
+import { SerovalDepthLimitError, SerovalParserError, SerovalStreamOutputError } from '../errors';
 import type { LiveStream, LiveStreamSink } from '../live-stream';
 import { createSerovalNode } from '../node';
 import type { Plugin } from '../plugin';
@@ -22,6 +22,7 @@ import {
   createIndexForValue,
   parseSpecialReference,
   rollbackRefs,
+  unwrapPathError,
 } from './parser';
 import {
   type OutputRecord,
@@ -267,24 +268,15 @@ function wrapPromiseResult(
   id: number,
   node: SerovalNode,
 ): SerovalNode {
-  return createSerovalNode(
-    type,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    [
-      parseSpecialReference(
-        ctx.base,
-        type === SerovalNodeType.PromiseSuccess
-          ? SpecialReference.PromiseSuccess
-          : SpecialReference.PromiseFailure,
-      ),
-      node,
-    ],
-  );
+  return createSerovalNode(type, id, NIL, NIL, NIL, NIL, NIL, [
+    parseSpecialReference(
+      ctx.base,
+      type === SerovalNodeType.PromiseSuccess
+        ? SpecialReference.PromiseSuccess
+        : SpecialReference.PromiseFailure,
+    ),
+    node,
+  ]);
 }
 
 function handlePromise(
@@ -513,7 +505,7 @@ function drainOutput(ctx: StreamParserContext): void {
     state.parsing++;
     try {
       if (!state.onParse) {
-        throw new Error('Stream output callback is unavailable');
+        throw new SerovalStreamOutputError();
       }
       const result: unknown = state.onParse(record.node, record.initial);
       // Only objects and functions can be thenables; primitive prototypes
@@ -617,7 +609,7 @@ export function startStreamParse(ctx: StreamParserContext, current: unknown): vo
       if (state.alive) {
         stopStreamParse(ctx, 1, failure.value);
       } else {
-        throw failure.value;
+        throw unwrapPathError(failure.value);
       }
     } else if (parsed && state.alive) {
       // Events replayed during the parse are already queued. The root goes first.
@@ -693,6 +685,12 @@ function stopStreamParse(ctx: StreamParserContext, mode: 0 | 1 | 2, reason?: unk
     }
     const onError = state.onError;
     const onDone = state.onDone;
+    if (mode === 1 && onError) {
+      // A wrapper made only to carry a path around an error of the user is
+      // not for the user: `onError` gets what was thrown, as before. Without
+      // `onError` the wrapper is what the caller gets, as in the other modes.
+      reason = unwrapPathError(reason);
+    }
     if (mode === 1 && !onError && !(reason instanceof SerovalParserError)) {
       reason = new SerovalParserError(reason);
     }

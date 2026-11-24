@@ -1,4 +1,11 @@
-import { type Plugin, type SerovalNode, fromCrossJSON, toCrossJSONAsync } from 'seroval';
+import {
+  type Plugin,
+  SerovalDeserializationError,
+  type SerovalNode,
+  SerovalPluginValidationError,
+  fromCrossJSON,
+  toCrossJSONAsync,
+} from 'seroval';
 import { describe, expect, it } from 'vitest';
 import BlobPlugin from '../../web/blob';
 import FilePlugin from '../../web/file';
@@ -64,7 +71,12 @@ function stream(): ReadableStream<string> {
 const CASES: [string, Plugin<any, any>[], () => unknown, (root: Node) => Node][] = [
   ['Blob buffer', [BlobPlugin], () => new Blob(['a']), (root) => share(root, 'buffer')],
   ['File buffer', [FilePlugin], () => new File(['a'], 'a.txt'), (root) => share(root, 'buffer')],
-  ['Headers entries', [HeadersPlugin], () => new Headers({ a: 'b' }), (root) => share(root, 'value')],
+  [
+    'Headers entries',
+    [HeadersPlugin],
+    () => new Headers({ a: 'b' }),
+    (root) => share(root, 'value'),
+  ],
   [
     'FormData entries',
     [FormDataPlugin],
@@ -75,12 +87,7 @@ const CASES: [string, Plugin<any, any>[], () => unknown, (root: Node) => Node][]
     },
     (root) => share(root, 'entries'),
   ],
-  [
-    'Response body',
-    [ResponsePlugin],
-    () => new Response('a'),
-    (root) => share(root, 'body'),
-  ],
+  ['Response body', [ResponsePlugin], () => new Response('a'), (root) => share(root, 'body')],
   [
     'Request headers',
     [RequestPlugin],
@@ -95,10 +102,35 @@ const CASES: [string, Plugin<any, any>[], () => unknown, (root: Node) => Node][]
   ],
 ];
 
+// The plugin that rejects each shared value.
+const TAGS: Record<string, string> = {
+  'Blob buffer': 'seroval-plugins/web/Blob',
+  'File buffer': 'seroval-plugins/web/File',
+  'Headers entries': 'seroval-plugins/web/Headers',
+  'FormData entries': 'seroval-plugins/web/FormData',
+  'Response body': 'seroval-plugins/web/Response',
+  'Request headers': 'seroval-plugins/web/Request',
+  'ReadableStream source': 'seroval/plugins/web/ReadableStream',
+};
+
 describe('values shared between plugin values', () => {
-  it.each(CASES)('rejects a shared %s', async (_, plugins, create, tamper) => {
+  it.each(CASES)('rejects a shared %s', async (name, plugins, create, tamper) => {
     const json = (await toCrossJSONAsync([create(), create()], { plugins })) as Node;
-    expect(() => fromCrossJSON(tamper(json), { plugins, refs: new Map() })).toThrow();
+    let error: unknown;
+    try {
+      fromCrossJSON(tamper(json), { plugins, refs: new Map() });
+    } catch (caught) {
+      error = caught;
+    }
+    // Decoding wraps the plugin error in `SerovalDeserializationError`.
+    expect(error).toBeInstanceOf(SerovalDeserializationError);
+    if (error instanceof SerovalDeserializationError) {
+      expect(error.code).toBe('SRV013');
+      expect(error.cause).toBeInstanceOf(SerovalPluginValidationError);
+      expect(error.cause instanceof SerovalPluginValidationError && error.cause.tag).toBe(
+        TAGS[name],
+      );
+    }
   });
 
   it.each(CASES)('still accepts two separate %s values', async (_, plugins, create) => {
