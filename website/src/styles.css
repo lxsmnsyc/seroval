@@ -2235,7 +2235,7 @@ select.field-input {
   }
 }
 
-/* Hero stage: the graph that serializes itself, in a well that flips against the ink tile */
+/* Hero stage: a value, its string and the value back, in a well that flips against the ink tile */
 
 .stage {
   display: flex;
@@ -2251,58 +2251,109 @@ select.field-input {
   outline-color: var(--focus);
 }
 
-.hud {
+.stage {
+  gap: 8px;
+  padding: 8px;
+}
+
+.rt-pane {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-row);
+  background: var(--surface);
+}
+
+.rt-label {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 18px 0;
+  margin-bottom: 6px;
   color: var(--muted);
   font: 400 12px var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-.hud .phase {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.rt-code {
+  margin: 0;
   color: var(--text);
+  font: 400 13px/1.65 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
-.hud .phase::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-fill);
+/* The string pane keeps the height of the full output, so typing never moves the checks. */
+.rt-pane:has(.rt-out) .rt-code {
+  min-height: calc(13px * 1.65 * 4);
 }
 
-.graph {
-  display: block;
-  width: 100%;
-  height: auto;
-  flex: none;
-}
-
-.wire {
-  height: 152px;
-  margin: 0 8px 8px;
-  padding: 14px 18px 0;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  background: var(--surface);
+.rt-step {
   color: var(--muted);
-  font: 400 12px/1.7 var(--font-mono);
-  word-break: break-all;
+  font: 400 12px var(--font-mono);
+  text-align: center;
 }
 
-.wire .label {
-  display: block;
-  margin-bottom: 6px;
+.rt-checks {
+  display: grid;
+  gap: 6px;
+  list-style: none;
 }
 
-.wire .out {
-  color: var(--text);
+.rt-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 13px var(--font-mono);
+  opacity: 0.35;
+  transition: opacity var(--duration) var(--ease-out);
+}
+
+.rt-check[data-state='on'] {
+  opacity: 1;
+}
+
+.rt-check code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.rt-dot {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: var(--surface-strong);
+  color: transparent;
+  transform: scale(0.8);
+  transition:
+    background-color var(--duration-fast),
+    color var(--duration-fast),
+    transform var(--duration) var(--ease);
+}
+
+.rt-dot .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.rt-check[data-state='on'] .rt-dot {
+  background: var(--accent-fill);
+  color: var(--on-accent);
+  transform: none;
+}
+
+.t-kw {
+  color: var(--syn-keyword);
+}
+
+.t-str {
+  color: var(--syn-string);
+}
+
+.t-fn {
+  color: var(--syn-function);
 }
 
 .t-date {
@@ -2332,39 +2383,6 @@ select.field-input {
   margin-left: 1px;
   vertical-align: -2px;
   background: var(--accent-strong);
-}
-
-.node text {
-  fill: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
-}
-
-.node .type {
-  fill: var(--text);
-  font-size: 12px;
-}
-
-.node .disc {
-  fill: var(--bg-elevated);
-  stroke-width: 1.8;
-}
-
-.node .halo {
-  transition:
-    r 0.6s var(--ease-out),
-    opacity 0.6s;
-}
-
-.edge {
-  fill: none;
-  stroke: var(--subtle);
-  stroke-width: 1.5;
-}
-
-.edge.cyc {
-  stroke: var(--accent-strong);
-  stroke-dasharray: 3 4;
 }
 
 /* Section heads and rows */

@@ -10,7 +10,7 @@ import {
   toJSON,
 } from 'seroval';
 import CopyButton from '../components/CopyButton';
-import { ArrowRightIcon, CircleXIcon, ResetIcon } from '../components/Icons';
+import { ArrowRightIcon, CheckIcon, CircleXIcon, ResetIcon } from '../components/Icons';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
 import {
@@ -22,14 +22,12 @@ import { placeThumb, placeThumbs } from '../lib/thumb';
 
 const INSTALL_COMMANDS = createInstallCommands('seroval');
 
-/* Hero: an object graph that serializes itself */
+/* Hero: a value, its string, and the value back */
 
 interface HeroUser {
   name: string;
   born: Date;
-  tags: Set<string>;
-  notes: Map<string, unknown>;
-  id: bigint;
+  notes: Map<string, string>;
   self?: HeroUser;
 }
 
@@ -37,123 +35,37 @@ function createHeroUser(): HeroUser {
   const user: HeroUser = {
     name: 'Ada',
     born: new Date('1815-12-10'),
-    tags: new Set(['math', 'engines']),
-    notes: new Map<string, unknown>([['G', 'Bernoulli']]),
-    id: 1815n,
+    notes: new Map([['G', 'Bernoulli']]),
   };
   user.self = user;
-  user.notes.set('by', user);
   return user;
 }
 
+/** The source the hero shows, which builds the same value as createHeroUser. */
+const HERO_SOURCE = `const user = {
+  name: "Ada",
+  born: new Date("1815-12-10"),
+  notes: new Map([["G", "Bernoulli"]]),
+};
+user.self = user;`;
+
 const HERO_OUTPUT = serialize(createHeroUser());
 
-interface GraphNode {
-  id: string;
-  label: string;
-  sub: string;
-  x: number;
-  y: number;
-  color: string;
-  // The part of the output that lights the node up once it is typed.
-  token: string;
+interface HeroCheck {
+  source: string;
+  pass: boolean;
 }
 
-// Each node takes the color of the syntax token that its type has in code blocks.
-const NODES: GraphNode[] = [
-  {
-    id: 'obj',
-    label: 'Object',
-    sub: 'user',
-    x: 300,
-    y: 210,
-    color: 'var(--text)',
-    token: '{name',
-  },
-  {
-    id: 'date',
-    label: 'Date',
-    sub: '1815-12-10',
-    x: 120,
-    y: 110,
-    color: 'var(--syn-attr)',
-    token: 'new Date',
-  },
-  {
-    id: 'set',
-    label: 'Set',
-    sub: '2 items',
-    x: 480,
-    y: 100,
-    color: 'var(--syn-type)',
-    token: 'new Set',
-  },
-  {
-    id: 'map',
-    label: 'Map',
-    sub: '2 entries',
-    x: 470,
-    y: 330,
-    color: 'var(--syn-tag)',
-    token: 'new Map',
-  },
-  {
-    id: 'big',
-    label: 'BigInt',
-    sub: '1815n',
-    x: 130,
-    y: 330,
-    color: 'var(--syn-string)',
-    token: '1815n',
-  },
-];
-
-interface GraphEdge {
-  from: string;
-  to: string;
-  cyclic: boolean;
+function createHeroChecks(): HeroCheck[] {
+  const back = deserialize<HeroUser>(HERO_OUTPUT);
+  return [
+    { source: 'back.born instanceof Date', pass: back.born instanceof Date },
+    { source: 'back.notes.get("G") === "Bernoulli"', pass: back.notes.get('G') === 'Bernoulli' },
+    { source: 'back.self === back', pass: back.self === back },
+  ];
 }
 
-const EDGES: GraphEdge[] = [
-  { from: 'obj', to: 'date', cyclic: false },
-  { from: 'obj', to: 'set', cyclic: false },
-  { from: 'obj', to: 'map', cyclic: false },
-  { from: 'obj', to: 'big', cyclic: false },
-  { from: 'map', to: 'obj', cyclic: true },
-  { from: 'obj', to: 'obj', cyclic: true },
-];
-
-interface Point {
-  cx: number;
-  cy: number;
-}
-
-function findNode(id: string): GraphNode {
-  for (const node of NODES) {
-    if (node.id === id) {
-      return node;
-    }
-  }
-  throw new Error(`Missing node ${id}`);
-}
-
-/** The path of an edge between two node centers: a line, a curve for a cycle, a loop for a self reference. */
-function edgePath(edge: GraphEdge, a: Point, b: Point): string {
-  if (edge.from === edge.to) {
-    return `M${a.cx - 20} ${a.cy - 22} C ${a.cx - 70} ${a.cy - 120}, ${a.cx + 70} ${a.cy - 120}, ${a.cx + 20} ${a.cy - 22}`;
-  }
-  if (edge.cyclic) {
-    const mx = (a.cx + b.cx) / 2 + 60;
-    const my = (a.cy + b.cy) / 2 + 50;
-    return `M${a.cx} ${a.cy} Q ${mx} ${my} ${b.cx} ${b.cy}`;
-  }
-  return `M${a.cx} ${a.cy} L ${b.cx} ${b.cy}`;
-}
-
-function nodeCenter(id: string): Point {
-  const node = findNode(id);
-  return { cx: node.x, cy: node.y };
-}
+const HERO_CHECKS = createHeroChecks();
 
 /* The types seroval handles, by where they come from */
 
@@ -338,6 +250,13 @@ function colorizeOutput(text: string): string {
   );
 }
 
+function colorizeSource(text: string): string {
+  return escapeHTML(text)
+    .replace(/"[^"]*"/g, '<span class="t-str">$&</span>')
+    .replace(/\b(const|new|instanceof)\b/g, '<span class="t-kw">$&</span>')
+    .replace(/\b(Date|Map)\b/g, '<span class="t-fn">$&</span>');
+}
+
 async function wait(ms: number): Promise<void> {
   await new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -357,23 +276,6 @@ function query(root: Element, selector: string): HTMLElement {
   return element;
 }
 
-function querySVG(root: Element, selector: string): SVGElement {
-  const element = root.querySelector(selector);
-  if (!(element instanceof SVGElement)) {
-    throw new Error(`Missing ${selector}`);
-  }
-  return element;
-}
-
-interface LiveNode {
-  node: GraphNode;
-  group: SVGElement;
-  halo: SVGElement;
-  at: number;
-  cx: number;
-  cy: number;
-}
-
 /**
  * Runs every animation on the page and returns a function that stops them.
  * The hero pauses while it is off screen, and under reduced motion it shows
@@ -387,23 +289,6 @@ function animate(root: HTMLElement): () => void {
     return alive;
   }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Hero graph: collect the nodes and edges that the server rendered.
-  const svg = querySVG(root, '.graph');
-  const edgeElements = svg.querySelectorAll<SVGElement>('.edge');
-  const orb = querySVG(svg, '.orb');
-  const live = new Map<string, LiveNode>();
-  for (const group of svg.querySelectorAll<SVGElement>('.node')) {
-    const node = findNode(group.dataset.node ?? '');
-    live.set(node.id, {
-      node,
-      group,
-      halo: querySVG(group, '.halo'),
-      at: HERO_OUTPUT.indexOf(node.token),
-      cx: node.x,
-      cy: node.y,
-    });
-  }
 
   // The hero runs only while its stage is on screen.
   let heroVisible = true;
@@ -421,92 +306,37 @@ function animate(root: HTMLElement): () => void {
     await untilVisible();
   }
 
-  // Hero graph: drift the nodes and redraw the edges every frame.
-  const start = performance.now();
-  let frameId = 0;
-  function drawFrame(now: number): void {
-    const t = (now - start) / 1000;
-    let index = 0;
-    for (const item of live.values()) {
-      item.cx = item.node.x + Math.sin(t * 0.6 + index * 1.7) * 8;
-      item.cy = item.node.y + Math.cos(t * 0.5 + index * 1.3) * 8;
-      item.group.setAttribute('transform', `translate(${item.cx} ${item.cy})`);
-      index++;
-    }
-    for (let i = 0; i < EDGES.length; i++) {
-      const edge = EDGES[i];
-      const a = live.get(edge.from);
-      const b = live.get(edge.to);
-      if (a && b) {
-        edgeElements[i].setAttribute('d', edgePath(edge, a, b));
-      }
-    }
-    frameId = heroVisible ? requestAnimationFrame(drawFrame) : 0;
-  }
-  function startFrames(): void {
-    if (frameId === 0 && alive && !reduce) {
-      frameId = requestAnimationFrame(drawFrame);
-    }
-  }
-  startFrames();
-
-  // Hero graph: type the output, light up each node, then deserialize.
+  // Hero: type the output, then pass each check of the value read back.
+  // The server rendered the end state, which reduced motion keeps.
   async function runHero(): Promise<void> {
-    const out = query(root, '.wire .out');
-    const phase = query(root, '.hud .phase');
-    const bytes = query(root, '.hud .bytes');
-    const back = deserialize<HeroUser>(HERO_OUTPUT);
-    const restored =
-      back.self === back && back.notes.get('by') === back && back.born instanceof Date;
     if (reduce) {
-      // One still frame: the whole output, every node lit, and the round trip done.
-      out.innerHTML = colorizeOutput(HERO_OUTPUT);
-      bytes.textContent = `${HERO_OUTPUT.length} B`;
-      phase.textContent = restored ? 'restored, back.self === back' : 'restored';
-      for (const item of live.values()) {
-        item.halo.setAttribute('r', '46');
-        item.halo.setAttribute('opacity', '0.18');
-      }
       return;
     }
+    const out = query(root, '.rt-out');
+    const bytes = query(root, '.rt-bytes');
+    const checks = root.querySelectorAll<HTMLElement>('.rt-check');
     while (running()) {
-      phase.textContent = 'live graph';
-      for (const item of live.values()) {
-        item.halo.setAttribute('r', '0');
-        item.halo.setAttribute('opacity', '0');
+      for (const check of checks) {
+        check.dataset.state = 'off';
       }
       out.innerHTML = '';
       bytes.textContent = '0 B';
-      await heroWait(1400);
-      phase.textContent = 'serialize';
-      const lit = new Set<LiveNode>();
-      for (let i = 1; i <= HERO_OUTPUT.length && running(); i += 2) {
-        out.innerHTML = colorizeOutput(HERO_OUTPUT.slice(0, i));
-        bytes.textContent = `${i} B`;
-        for (const item of live.values()) {
-          if (item.at >= 0 && i >= item.at && !lit.has(item)) {
-            lit.add(item);
-            item.halo.setAttribute('r', '46');
-            item.halo.setAttribute('opacity', '0.18');
-            orb.setAttribute('cx', String(item.cx));
-            orb.setAttribute('cy', String(item.cy));
-            orb.setAttribute('opacity', '1');
-          }
+      await heroWait(900);
+      for (let i = 3; running(); i += 3) {
+        const end = Math.min(i, HERO_OUTPUT.length);
+        out.innerHTML = colorizeOutput(HERO_OUTPUT.slice(0, end));
+        bytes.textContent = `${end} B`;
+        if (end === HERO_OUTPUT.length) {
+          break;
         }
-        await heroWait(22);
+        await heroWait(28);
       }
-      orb.setAttribute('opacity', '0');
-      phase.textContent = 'string';
-      await heroWait(1800);
-      phase.textContent = 'deserialize';
-      const reversed = [...live.values()].reverse();
-      for (const item of reversed) {
-        item.halo.setAttribute('opacity', '0');
-        item.halo.setAttribute('r', '0');
-        await heroWait(120);
+      await heroWait(500);
+      for (const check of checks) {
+        check.dataset.state = check.dataset.pass === 'true' ? 'on' : 'failed';
+        await heroWait(450);
       }
-      phase.textContent = restored ? 'restored, back.self === back' : 'restored';
-      await heroWait(2600);
+      await heroWait(3200);
     }
   }
   runHero().catch(() => undefined);
@@ -708,7 +538,6 @@ function animate(root: HTMLElement): () => void {
     for (const entry of entries) {
       heroVisible = entry.isIntersecting;
       if (heroVisible) {
-        startFrames();
         wake?.();
       }
     }
@@ -718,7 +547,6 @@ function animate(root: HTMLElement): () => void {
   return () => {
     alive = false;
     streamRun++;
-    cancelAnimationFrame(frameId);
     wake?.();
     observer.disconnect();
     stageObserver.disconnect();
@@ -812,45 +640,41 @@ export default function Home(): JSX.Element {
           <InstallCommand />
         </div>
         <div class="stage">
-          <div class="hud">
-            <span class="phase">live graph</span>
-            <span class="bytes">0 B</span>
+          <div class="rt-pane">
+            <div class="rt-label">value</div>
+            {/* oxlint-disable-next-line solid/no-innerhtml -- fixed source, escaped by colorizeSource. */}
+            <pre class="rt-code" innerHTML={colorizeSource(HERO_SOURCE)} />
           </div>
-          <svg
-            class="graph"
-            viewBox="0 0 600 440"
-            role="img"
-            aria-label="A user object with a Date, a Set, a Map and a BigInt, and references that lead back to the object"
-          >
-            <For each={EDGES}>
-              {(edge) => (
-                <path
-                  class={edge.cyclic ? 'edge cyc' : 'edge'}
-                  d={edgePath(edge, nodeCenter(edge.from), nodeCenter(edge.to))}
-                />
+          <div class="rt-step">serialize(user)</div>
+          <div class="rt-pane">
+            <div class="rt-label">
+              <span>string</span>
+              <span class="rt-bytes">{HERO_OUTPUT.length} B</span>
+            </div>
+            <pre class="rt-code">
+              {/* oxlint-disable-next-line solid/no-innerhtml -- seroval output, escaped by colorizeOutput. */}
+              <span class="rt-out" innerHTML={colorizeOutput(HERO_OUTPUT)} />
+              <span class="caret" />
+            </pre>
+          </div>
+          <div class="rt-step">deserialize(string)</div>
+          <ul class="rt-pane rt-checks">
+            <For each={HERO_CHECKS}>
+              {(check) => (
+                <li
+                  class="rt-check"
+                  data-pass={check.pass ? 'true' : 'false'}
+                  data-state={check.pass ? 'on' : 'failed'}
+                >
+                  <span class="rt-dot">
+                    <CheckIcon />
+                  </span>
+                  {/* oxlint-disable-next-line solid/no-innerhtml -- fixed source, escaped by colorizeSource. */}
+                  <code innerHTML={colorizeSource(check.source)} />
+                </li>
               )}
             </For>
-            <For each={NODES}>
-              {(node) => (
-                <g class="node" data-node={node.id} transform={`translate(${node.x} ${node.y})`}>
-                  <circle class="halo" r="0" fill={node.color} opacity="0" />
-                  <circle class="disc" r="30" stroke={node.color} />
-                  <text class="type" text-anchor="middle" dy="5">
-                    {node.label}
-                  </text>
-                  <text text-anchor="middle" dy="52">
-                    {node.sub}
-                  </text>
-                </g>
-              )}
-            </For>
-            <circle class="orb" r="4" fill="var(--accent-strong)" opacity="0" />
-          </svg>
-          <div class="wire">
-            <span class="label">serialize(user)</span>
-            <span class="out" />
-            <span class="caret" />
-          </div>
+          </ul>
         </div>
       </section>
 
