@@ -1,6 +1,7 @@
 ---
 title: Isomorphic references
 description: Send functions and other values by a shared key with createReference, and hide values with OpaqueReference.
+type: concept
 ---
 
 Some values cannot be serialized at all, such as functions. If the same value exists on both the sender and the receiver, you can send a key instead, and look the value up on the other side.
@@ -48,3 +49,9 @@ serialize({ token: new OpaqueReference('secret', 'hidden') });
 ```
 
 `new OpaqueReference(value, replacement)` sends `replacement` in place of the whole reference. Without a replacement, it sends `undefined`. The original `value` stays on the sender, available as the `value` property.
+
+## Related
+
+- [Serialize to JavaScript](./javascript-output.md#when-a-value-cannot-be-serialized)
+- [SRV006](./errors/SRV006.md)
+- [API reference](./api.md#references-and-plugins)

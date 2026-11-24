@@ -1,6 +1,7 @@
 ---
 title: Streaming
 description: Send each part of a value as soon as it is ready, with crossSerializeStream, toCrossJSONStream and Serializer.
+type: concept
 ---
 
 The async functions wait for every promise before they return anything. Streaming sends the parts that are ready right away, then sends each promise result or stream event as it happens. The receiver can start using the value before the slow parts arrive.
@@ -196,3 +197,10 @@ The first chunk of each write assigns the value to the global object, for exampl
 | `close()` | Stops every write right away, then calls `onDone`. |
 
 The `Serializer` never sends the `$R` header or creates the global object. Send both before the first chunk.
+
+## Related
+
+- [Streams and iterables](./streams-and-iterables.md)
+- [Cross-reference serialization](./cross-reference.md)
+- [Transport](./transport.md), to send many streamed values over one connection
+- [API reference](./api.md#cross-reference)

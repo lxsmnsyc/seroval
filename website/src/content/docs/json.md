@@ -1,6 +1,7 @@
 ---
 title: JSON
 description: Send values as a JSON tree that can be decoded without running any code.
+type: concept
 ---
 
 The JSON functions produce a tree of plain objects instead of JavaScript. `fromJSON` rebuilds the value from the tree without running any code from the sender. This makes the JSON form the right choice whenever the receiver does not trust the sender, such as a server that reads a request body.
@@ -55,3 +56,10 @@ fromJSON(tree, { disabledFeatures: Feature.RegExp });
 ## Cross-reference JSON
 
 `toCrossJSON`, `toCrossJSONAsync` and `toCrossJSONStream` produce the JSON form of the [cross-reference functions](./cross-reference.md). Decode their output with `fromCrossJSON`, or with `createCrossDeserializer` for a stream. See [Streaming](./streaming.md#streaming-json).
+
+## Related
+
+- [Security](./security.md)
+- [Binary data](./binary-data.md#json-decoding-limits)
+- [Streaming](./streaming.md#streaming-json)
+- [API reference](./api.md#json)

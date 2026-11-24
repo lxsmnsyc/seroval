@@ -1,6 +1,7 @@
 ---
 title: Choosing a mode
 description: Pick the right function for your data, your transport and your trust level.
+type: concept
 ---
 
 seroval has one function for each combination of output format and timing. Start with two questions:
@@ -50,3 +51,10 @@ The `Serializer` class wraps `crossSerializeStream` for apps that write many val
 | Send a request body from client to server | `toJSON`, then `fromJSON` on the server |
 | Stream data to a client that must not evaluate it | `toCrossJSONStream`, then `createCrossDeserializer` |
 | Store a value and load it later | `toJSON` and `fromJSON` |
+
+## Related
+
+- [Serialize to JavaScript](./javascript-output.md)
+- [JSON](./json.md)
+- [Streaming](./streaming.md)
+- [Security](./security.md)

@@ -47,7 +47,7 @@ console.log(await reader.get('posts'));
 - Promises that nobody awaits do not cause unhandled rejections.
 - `toFormRequest` and `fromFormRequest` send a value with files and blobs in a `Request` as form data.
 
-See the [docs](https://seroval.vercel.app/docs/transport) for the options and the message format.
+See the [guide](https://seroval.vercel.app/docs/transport), the [reference](https://seroval.vercel.app/docs/transport/reference) for the options, and the [message format](https://seroval.vercel.app/docs/transport/protocol).
 
 ## License
 

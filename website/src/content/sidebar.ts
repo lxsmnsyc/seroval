@@ -2,6 +2,8 @@ export interface SidebarSection {
   title: string;
   /** Doc slugs, which are paths in `src/content/docs` without `.md`. */
   pages: string[];
+  /** Routed but left out of the sidebar and the pager, such as pages an index links. */
+  hidden?: boolean;
 }
 
 /** The docs in sidebar order. Every doc must be listed here. */
@@ -11,7 +13,7 @@ export const SIDEBAR: SidebarSection[] = [
     pages: ['introduction', 'quick-start', 'choosing-a-mode'],
   },
   {
-    title: 'Guides',
+    title: 'Concepts',
     pages: [
       'javascript-output',
       'json',
@@ -28,14 +30,26 @@ export const SIDEBAR: SidebarSection[] = [
   },
   {
     title: 'Packages',
-    pages: ['transport', 'rpc'],
+    pages: [
+      'transport',
+      'transport/reference',
+      'transport/protocol',
+      'rpc',
+      'rpc/reference',
+      'rpc/protocol',
+    ],
   },
   {
     title: 'Reference',
     pages: ['api', 'compatibility', 'errors', 'security'],
   },
   {
+    title: 'Migration',
+    pages: ['migration/1-9'],
+  },
+  {
     title: 'Error codes',
+    hidden: true,
     pages: [
       'errors/SRV001',
       'errors/SRV002',

@@ -1,6 +1,7 @@
 ---
 title: Introduction
 description: What seroval is, what it can send, and when to use it.
+type: concept
 ---
 
 seroval turns a JavaScript value into a string, and turns that string back into the value. It handles the values that `JSON.stringify` loses or rejects.

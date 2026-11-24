@@ -21,13 +21,20 @@ function toLink(slug: string): DocLink {
   return { slug, ...entry, href: `/docs/${slug}` };
 }
 
-export const SECTIONS = SIDEBAR.map(section => ({
+const ALL_SECTIONS = SIDEBAR.map(section => ({
   title: section.title,
+  hidden: section.hidden === true,
   pages: section.pages.map(toLink),
 }));
 
-/** Every doc in sidebar order. */
-export const PAGES: DocLink[] = SECTIONS.flatMap(section => section.pages);
+/** The sections the sidebar shows. */
+export const SECTIONS = ALL_SECTIONS.filter(section => !section.hidden);
+
+/** Every doc, hidden ones included, in sidebar order. */
+export const PAGES: DocLink[] = ALL_SECTIONS.flatMap(section => section.pages);
+
+/** The docs the pager steps through: the ones the sidebar shows. */
+const PAGER: DocLink[] = SECTIONS.flatMap(section => section.pages);
 
 export const FIRST_PAGE = PAGES[0];
 
@@ -36,12 +43,15 @@ export function getSiblings(slug: string): {
   previous?: DocLink;
   next?: DocLink;
 } {
-  const index = PAGES.findIndex(page => page.slug === slug);
-  return { previous: PAGES[index - 1], next: PAGES[index + 1] };
+  const index = PAGER.findIndex(page => page.slug === slug);
+  if (index === -1) {
+    return {};
+  }
+  return { previous: PAGER[index - 1], next: PAGER[index + 1] };
 }
 
 export function getSectionTitle(slug: string): string | undefined {
-  return SECTIONS.find(section =>
+  return ALL_SECTIONS.find(section =>
     section.pages.some(page => page.slug === slug),
   )?.title;
 }

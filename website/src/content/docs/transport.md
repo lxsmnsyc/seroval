@@ -1,6 +1,7 @@
 ---
 title: Transport
 description: Send many streamed values over fetch, a WebSocket, a worker or any other connection with @seroval/transport.
+type: guide
 ---
 
 `@seroval/transport` sends values over a connection while they stream. A writer turns each value into messages under a key, and a reader turns the messages back into values. The messages are plain arrays, so any connection can carry them: a `fetch` body, a WebSocket, a `MessagePort` or a worker.
@@ -12,17 +13,22 @@ npm install seroval @seroval/transport
 | Entry point | Exports |
 | --- | --- |
 | `@seroval/transport` | Everything in `@seroval/transport/read` and `@seroval/transport/write`. |
-| `@seroval/transport/write` | [Writers](#the-writer): `createJSONWriter`, `createJSWriter`, `toJSONStream`, `toJSStream`. |
-| `@seroval/transport/read` | [Readers](#the-reader): `createJSONReader`, `createJSReader`, `fromJSONStream`, `fromJSStream`. |
+| `@seroval/transport/write` | [Writers](./transport/reference.md#the-writer): `createJSONWriter`, `createJSWriter`, `toJSONStream`, `toJSStream`. |
+| `@seroval/transport/read` | [Readers](./transport/reference.md#the-reader): `createJSONReader`, `createJSReader`, `fromJSONStream`, `fromJSStream`. |
 | `@seroval/transport/web` | [Web streams](#over-fetch) and [form data](#files-in-a-request): `toWebStream`, `fromWebStream`, `toResponse`, `fromResponse`, `toFormData`, `fromFormData`, `toFormRequest`, `fromFormRequest`. |
 | `@seroval/transport/node` | [Node streams](#over-node-streams): `toNodeStream`, `fromNodeStream`. |
-| `@seroval/transport/frame` | [Frames](#frames): `encodeFrame`, `createFrameDecoder`. |
+| `@seroval/transport/frame` | [Frames](./transport/protocol.md#frames): `encodeFrame`, `createFrameDecoder`. |
 
 Every entry point also exports `SerovalTransportError`.
 
 ## Over `fetch`
 
 `@seroval/transport/web` connects a writer and a reader to web streams. `toWebStream` turns the messages of a writer into a `ReadableStream<Uint8Array>`, and `fromWebStream` reads them back into a reader.
+
+1. On the server, create a writer inside `toWebStream`, write each value under a key, and flush.
+2. Return the stream as the body of a `Response`.
+3. On the client, create a reader and pass it the response body with `fromWebStream`.
+4. Read each value with `reader.get(key)`.
 
 ```js
 // server
@@ -163,52 +169,6 @@ void fromWebStream(response.body, reader);
 const data = await reader.value;
 ```
 
-## The writer
-
-| Method | Description |
-| --- | --- |
-| `write(key, value)` | Starts sending `value` under `key`. Each key can be written once. |
-| `push(value)` | Starts sending `value` under the next unused number, and returns the key. |
-| `cancel(key, reason?)` | Stops one value and its sources, and tells the reader it failed. |
-| `flush()` | Takes no more values, and calls `onDone` once every value is done. |
-| `close(reason?)` | Stops every value, tells the reader they failed, and calls `onDone`. |
-
-`createJSONWriter` takes the options of [`toCrossJSONStream`](./streaming.md#streaming-json), such as `plugins`, `disabledFeatures` and `depthLimit`. It also takes:
-
-| Option | Description |
-| --- | --- |
-| `send(message)` | Sends one message. Return a promise to hold back the next message of the same value until it settles. |
-| `onDone()` | Runs once, after `flush` when every value is done, or after `close`. |
-| `onError(error, key)` | Receives an error that stopped a value, such as a value seroval cannot serialize. The reader only learns that the value failed. |
-| `signal` | An `AbortSignal`. Aborting it closes the writer with the abort reason. |
-| `sharedRefs` | Shares one set of references across every value. See [References](#references). |
-
-## The reader
-
-| Method | Description |
-| --- | --- |
-| `push(message)` | Takes the next message. Throws a `SerovalTransportError` on a malformed message. End the reader with that error then. |
-| `get(key)` | A promise of the value of `key`. |
-| `settled(key)` | Resolves once the value of `key` and every promise and stream in it settled. Rejects when the value fails, is cancelled, or the reader ends first. |
-| `cancel(key, reason?)` | Fails what still waits in `key`, forgets it, and drops its later messages. Tell the writer to cancel it too, if it can hear. |
-| `end(reason?)` | Fails every value that has not arrived, and every promise and stream that still waits. |
-| `size` | How many keys the reader holds. |
-
-The reader frees a key once it settled and you called both `get` and `settled` for it. You then hold both promises, so keep them instead of calling `get` again. A later `get` of a freed key waits for a new value under that key. On a connection that stays open, request both for each key:
-
-```js
-const user = await reader.get('user');
-await reader.settled('user');
-```
-
-A key that you only `get`, or never request, stays until you `cancel` it or the reader ends. The writer can send at most `maxKeys` keys that you have not requested. One more makes `push` throw a `SerovalTransportError`, so a writer cannot fill the reader's memory with values nobody reads.
-
-| Option | Description |
-| --- | --- |
-| `maxKeys` | The most keys the writer can send before you request them. Defaults to 1000. |
-
-`createJSONReader` also takes the options of [`createCrossDeserializer`](./streaming.md#receiving-a-json-stream), and `sharedRefs`. Pass the same `plugins` to the writer and the reader. `createJSReader` takes `scopeId` and `maxKeys`.
-
 ## References
 
 By default, each value has its own references. An object that appears twice in one value is one object on the reader, but the same object in two values is two copies. The references of a value are freed when it is done. A connection that stays open only keeps the references of values that are still sending.
@@ -233,73 +193,9 @@ const reader = createJSReader({ scopeId: 'page' });
 
 `toJSStream` and `fromJSStream` send one value. The code declares `$R` on `self`. Node does not define `self`, so read this format in a browser or a worker.
 
-## `fromWebStream`, `fromResponse` and `fromNodeStream` options
+## Related
 
-| Option | Description |
-| --- | --- |
-| `maxFrameSize` | Refuses any frame larger than this many bytes. Defaults to 64MiB. |
-| `signal` | An `AbortSignal`. Aborting it stops reading and ends the reader with the abort reason. |
-| `onError(error)` | Receives an error of the stream, such as a malformed frame or a dropped connection. The reader also ends with it. |
-
-`fromWebStream` ends the reader when the stream ends, and its promise never rejects.
-
-## Errors
-
-Values fail with `SerovalTransportError` when:
-
-- the writer failed or cancelled them.
-- the reader ended before they arrived or settled.
-- a frame header or a message is malformed.
-- a frame is larger than `maxFrameSize`.
-- the value is an object or function with a `then` function. A promise would call it.
-
-`fromFormData` and `fromFormRequest` throw a `SerovalTransportError` when the body is not form data, or when the `seroval` field is missing or is not JSON. `fromFormRequest` also rejects a value with a `then` function. A malformed value, such as an index whose part is missing, throws the errors of `fromJSON`.
-
-## Message format
-
-| Message | Meaning |
-| --- | --- |
-| `[0, key, data]` | The next piece of a value. The first one for a key starts it. `data` is a `SerovalNode` in JSON format, and code in the code format. |
-| `[1, key]` | The value and everything in it settled. |
-| `[2, key]` | The writer failed or cancelled the value. |
-
-`toWebStream` sends each message as JSON in a frame: a 12-byte header followed by the UTF-8 data. The header holds the data size as 8 hex digits. `@seroval/transport/frame` exports the encoder and decoder, for other connections that carry bytes.
-
-```
-;0x00000017;[0,"0",{"t":1,"s":"a"}]
-```
-
-The header is the one that SolidStart uses for server functions, but the data is a transport message, so a SolidStart reader cannot read these frames.
-
-## Frames
-
-`encodeFrame(message)` returns the header and the data of one frame. Send both, in order. `createFrameDecoder` takes bytes in chunks of any size and passes on each message it completes:
-
-```js
-import { createFrameDecoder, encodeFrame } from '@seroval/transport/frame';
-
-// writer side
-const writer = createJSONWriter({
-  send(message) {
-    for (const bytes of encodeFrame(message)) {
-      socket.send(bytes);
-    }
-  },
-});
-
-// reader side
-socket.binaryType = 'arraybuffer';
-const decoder = createFrameDecoder({ onMessage: (message) => reader.push(message) });
-socket.onmessage = (event) => decoder.push(new Uint8Array(event.data));
-socket.onclose = () => {
-  decoder.end();
-  reader.end();
-};
-```
-
-| Option | Description |
-| --- | --- |
-| `onMessage(message)` | Receives each message, parsed but not checked. `reader.push` checks it. |
-| `maxFrameSize` | Refuses any frame larger than this many bytes. Defaults to 64MiB. |
-
-`push` and `end` throw a `SerovalTransportError` on a malformed or oversized frame, and `end` throws when the bytes stop inside a frame. End the reader with that error then.
+- [Transport reference](./transport/reference.md)
+- [Transport message format](./transport/protocol.md)
+- [Streaming](./streaming.md)
+- [RPC](./rpc.md), for typed calls over the same messages
