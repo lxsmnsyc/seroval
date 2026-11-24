@@ -1,150 +1,200 @@
 /// <reference types="tsdown" />
 
-import { serializeString } from './string';
+import type {
+  CatalogDetails,
+  ErrorCode,
+  LiveStreamErrorReason,
+  SerovalErrorStep,
+} from './error-catalog';
+import { ERROR_CODES, getDevMessage, getProdMessage } from './error-catalog';
 import type { SerovalNode } from './types';
 
-const enum StepErrorCodes {
-  Parse = 1,
-  Serialize = 2,
-  Deserialize = 3,
+export type { LiveStreamErrorReason } from './error-catalog';
+
+interface ErrorFields {
+  path?: (string | number)[];
+  nodeType?: number;
+  nodeId?: number;
+  tag?: string;
+  limit?: number;
+  detail?: string;
 }
 
-function objectToString(value: unknown): string {
-  return Object.prototype.toString.call(value);
+interface ErrorInit extends ErrorFields {
+  code: ErrorCode;
+  step?: SerovalErrorStep;
+  details: unknown;
 }
 
-function getErrorMessageDev(type: string, cause: unknown): string {
-  if (cause instanceof Error) {
-    return `Seroval caught an error during the ${type} process.
-
-${cause.name}
-${cause.message}
-
-- For more information, please check the "cause" property of this error.
-- If you believe this is an error in Seroval, please submit an issue at https://github.com/lxsmnsyc/seroval/issues/new`;
-  }
-  return `Seroval caught an error during the ${type} process.
-
-"${objectToString(cause)}"
-
-For more information, please check the "cause" property of this error.`;
-}
-
-const STEP_ERROR_CODES: Record<string, StepErrorCodes> = {
-  parsing: StepErrorCodes.Parse,
-  serialization: StepErrorCodes.Serialize,
-  deserialization: StepErrorCodes.Deserialize,
+const STEPS: Record<string, SerovalErrorStep> = {
+  parsing: 'parse',
+  serialization: 'serialize',
+  deserialization: 'deserialize',
 };
 
-function getErrorMessageProd(type: string): string {
-  return `Seroval Error (step: ${STEP_ERROR_CODES[type]})`;
+const STEP_CODES: Record<SerovalErrorStep, ErrorCode> = {
+  parse: ERROR_CODES.ParseFailure,
+  serialize: ERROR_CODES.SerializeFailure,
+  deserialize: ERROR_CODES.DeserializeFailure,
+};
+
+function getMessage(init: ErrorInit): string {
+  if (import.meta.env.PROD) {
+    return getProdMessage(init.code, init.step);
+  }
+  // The details were built for this code by `createInit` or `resolveStepInit`.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the details match their code.
+  return getDevMessage(init.code, init.details as CatalogDetails[ErrorCode]);
+}
+
+function resolveStepInit(type: string, cause: unknown): ErrorInit {
+  const step = STEPS[type];
+  // oxlint-disable-next-line eslint/no-use-before-define -- the class and this function refer to each other.
+  if (cause instanceof SerovalError) {
+    // Same code as the wrapped error, so the outer error says what went wrong.
+    // The message of a wrapper is still the one of its step.
+    return {
+      code: cause.code,
+      step,
+      details: { cause },
+      path: cause.path,
+      nodeType: cause.nodeType,
+      nodeId: cause.nodeId,
+      tag: cause.tag,
+      limit: cause.limit,
+      detail: cause.detail,
+    };
+  }
+  return { code: STEP_CODES[step], step, details: { cause } };
+}
+
+function createInit<C extends ErrorCode>(
+  code: C,
+  details: CatalogDetails[C],
+  fields?: ErrorFields,
+): ErrorInit {
+  return { code, details, ...fields };
+}
+
+function isNode(value: unknown): value is SerovalNode {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- only reads `t`.
+    typeof (value as SerovalNode).t === 'number'
+  );
 }
 
 export class SerovalError extends Error {
-  constructor(
-    type: string,
-    public cause: unknown,
-  ) {
-    super(
-      import.meta.env.PROD
-        ? getErrorMessageProd(type)
-        : getErrorMessageDev(type, cause),
-    );
+  declare cause: unknown;
+  declare code: ErrorCode;
+  declare step?: SerovalErrorStep;
+  declare path?: (string | number)[];
+  declare nodeType?: number;
+  declare nodeId?: number;
+  declare tag?: string;
+  declare limit?: number;
+  declare detail?: string;
+
+  /**
+   * `type` is the step that failed (`parsing`, `serialization` or
+   * `deserialization`) and `cause` is the error it wraps. A wrapper takes the
+   * code of a wrapped seroval error. Subclasses pass `init` instead.
+   */
+  constructor(type: string, cause: unknown, init?: ErrorInit) {
+    const resolved = init ?? resolveStepInit(type, cause);
+    super(getMessage(resolved), { cause });
+    this.name = 'SerovalError';
+    this.cause = cause;
+    this.code = resolved.code;
+    if (resolved.step) {
+      this.step = resolved.step;
+    }
+    if (resolved.path) {
+      this.path = resolved.path;
+    }
+    if (resolved.nodeType !== undefined) {
+      this.nodeType = resolved.nodeType;
+    }
+    if (resolved.nodeId !== undefined) {
+      this.nodeId = resolved.nodeId;
+    }
+    if (resolved.tag !== undefined) {
+      this.tag = resolved.tag;
+    }
+    if (resolved.limit !== undefined) {
+      this.limit = resolved.limit;
+    }
+    if (resolved.detail !== undefined) {
+      this.detail = resolved.detail;
+    }
+    // The wrapped error learns the step it failed in.
+    if (!init && cause instanceof SerovalError && cause.step === undefined) {
+      cause.step = resolved.step;
+    }
   }
 }
 
 export class SerovalParserError extends SerovalError {
   constructor(cause: unknown) {
     super('parsing', cause);
+    this.name = 'SerovalParserError';
   }
 }
 
 export class SerovalSerializationError extends SerovalError {
   constructor(cause: unknown) {
     super('serialization', cause);
+    this.name = 'SerovalSerializationError';
   }
 }
 
 export class SerovalDeserializationError extends SerovalError {
   constructor(cause: unknown) {
     super('deserialization', cause);
+    this.name = 'SerovalDeserializationError';
   }
 }
 
-const enum SpecificErrorCodes {
-  UnsupportedType = 1,
-  UnsupportedNode = 2,
-  MissingPlugin = 3,
-  MissingInstance = 4,
-  MissingReference = 5,
-  MissingReferenceForId = 6,
-  UnknownTypedArray = 7,
-  MalformedNode = 8,
-  ConflictedNodeId = 9,
-  DepthLimit = 10,
-  Aborted = 11,
-  LiveStream = 12,
-  PluginValidation = 13,
-}
-
-function getSpecificErrorMessage(code: SpecificErrorCodes): string {
-  return `Seroval Error (specific: ${code})`;
-}
-
-export class SerovalUnsupportedTypeError extends Error {
+export class SerovalUnsupportedTypeError extends SerovalError {
   constructor(public value: unknown) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.UnsupportedType)
-        : `The value ${objectToString(value)} of type "${typeof value}" cannot be parsed/serialized.
-      
-There are few workarounds for this problem:
-- Transform the value in a way that it can be serialized.
-- If the reference is present on multiple runtimes (isomorphic), you can use the Reference API to map the references.`,
-    );
+    super('', undefined, createInit(ERROR_CODES.UnsupportedType, { value }));
+    this.name = 'SerovalUnsupportedTypeError';
   }
 }
 
-export class SerovalUnsupportedNodeError extends Error {
+export class SerovalUnsupportedNodeError extends SerovalError {
   constructor(node: SerovalNode) {
     super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.UnsupportedNode)
-        : 'Unsupported node type "' + node.t + '".',
+      '',
+      undefined,
+      createInit(ERROR_CODES.UnsupportedNode, { nodeType: node.t }, { nodeType: node.t }),
     );
+    this.name = 'SerovalUnsupportedNodeError';
   }
 }
 
-export class SerovalMissingPluginError extends Error {
+export class SerovalMissingPluginError extends SerovalError {
   constructor(tag: string) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.MissingPlugin)
-        : 'Missing plugin for tag "' + tag + '".',
-    );
+    super('', undefined, createInit(ERROR_CODES.MissingPlugin, { tag }, { tag }));
+    this.name = 'SerovalMissingPluginError';
   }
 }
 
-export class SerovalPluginValidationError extends Error {
+export class SerovalPluginValidationError extends SerovalError {
   constructor(
-    public tag: string,
+    tag: string,
     public field: string,
   ) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.PluginValidation)
-        : 'Plugin "' + tag + '" received a value for "' + field + '" that failed its validator.',
-    );
+    super('', undefined, createInit(ERROR_CODES.PluginValidation, { tag, field }, { tag }));
+    this.name = 'SerovalPluginValidationError';
   }
 }
 
-export class SerovalMissingInstanceError extends Error {
+export class SerovalMissingInstanceError extends SerovalError {
   constructor(tag: string) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.MissingInstance)
-        : 'Missing "' + tag + '" instance.',
-    );
+    super('', undefined, createInit(ERROR_CODES.MissingInstance, { tag }, { tag }));
+    this.name = 'SerovalMissingInstanceError';
   }
 }
 
@@ -152,99 +202,102 @@ export class SerovalMissingInstanceError extends Error {
  * @deprecated Not thrown by seroval. A missing `createReference` key throws
  * {@link SerovalMissingReferenceForIdError} instead.
  */
-export class SerovalMissingReferenceError extends Error {
+export class SerovalMissingReferenceError extends SerovalError {
   constructor(public value: unknown) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.MissingReference)
-        : 'Missing reference for the value "' +
-            objectToString(value) +
-            '" of type "' +
-            typeof value +
-            '"',
-    );
+    super('', undefined, createInit(ERROR_CODES.MissingReference, { value }));
+    this.name = 'SerovalMissingReferenceError';
   }
 }
 
-export class SerovalMissingReferenceForIdError extends Error {
+export class SerovalMissingReferenceForIdError extends SerovalError {
   constructor(id: string) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.MissingReferenceForId)
-        : 'Missing reference for id "' + serializeString(id) + '"',
-    );
+    super('', undefined, createInit(ERROR_CODES.MissingReferenceForId, { id }));
+    this.name = 'SerovalMissingReferenceForIdError';
   }
 }
 
-export class SerovalUnknownTypedArrayError extends Error {
+export class SerovalUnknownTypedArrayError extends SerovalError {
   constructor(name: string) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.UnknownTypedArray)
-        : 'Unknown TypedArray "' + name + '"',
-    );
+    super('', undefined, createInit(ERROR_CODES.UnknownTypedArray, { name }));
+    this.name = 'SerovalUnknownTypedArrayError';
   }
 }
 
-export class SerovalMalformedNodeError extends Error {
+export class SerovalMalformedNodeError extends SerovalError {
+  /**
+   * `node` is what the throw site has at hand. It can be a part of a node, such
+   * as a key, so `nodeType` and `nodeId` are set only when it is a node.
+   */
+  constructor(node: unknown, detail?: string) {
+    const fields: ErrorFields = { detail };
+    if (isNode(node)) {
+      fields.nodeType = node.t;
+      if (typeof node.i === 'number') {
+        fields.nodeId = node.i;
+      }
+    }
+    super(
+      '',
+      undefined,
+      createInit(
+        ERROR_CODES.MalformedNode,
+        { nodeType: fields.nodeType, nodeId: fields.nodeId, detail },
+        fields,
+      ),
+    );
+    this.name = 'SerovalMalformedNodeError';
+  }
+}
+
+export class SerovalConflictedNodeIdError extends SerovalError {
   constructor(node: SerovalNode) {
     super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.MalformedNode)
-        : 'Malformed node type "' + node.t + '".',
+      '',
+      undefined,
+      createInit(ERROR_CODES.ConflictedNodeId, { nodeId: node.i }, { nodeId: node.i }),
     );
+    this.name = 'SerovalConflictedNodeIdError';
   }
 }
 
-export class SerovalConflictedNodeIdError extends Error {
-  constructor(node: SerovalNode) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.ConflictedNodeId)
-        : 'Conflicted node id "' + node.i + '".',
-    );
-  }
-}
-
-export class SerovalDepthLimitError extends Error {
+export class SerovalDepthLimitError extends SerovalError {
   constructor(limit: number) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.DepthLimit)
-        : 'Depth limit of ' + limit + ' reached',
-    );
+    super('', undefined, createInit(ERROR_CODES.DepthLimit, { limit }, { limit }));
+    this.name = 'SerovalDepthLimitError';
   }
 }
 
-export class SerovalAbortedError extends Error {
+export class SerovalAbortedError extends SerovalError {
   constructor() {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.Aborted)
-        : 'Cross deserializer has been aborted.',
-    );
+    super('', undefined, createInit(ERROR_CODES.Aborted, {}));
+    this.name = 'SerovalAbortedError';
   }
 }
 
-export type LiveStreamErrorReason =
-  | 'consumed'
-  | 'pending'
-  | 'reading'
-  | 'closed';
-
-const LIVE_STREAM_ERROR_MESSAGES: Record<LiveStreamErrorReason, string> = {
-  consumed: 'Live stream already has a consumer',
-  pending: 'Live stream already has a pending event',
-  reading: 'Live stream already has a pending read',
-  closed: 'Live stream is closed',
-};
-
-export class SerovalLiveStreamError extends Error {
+export class SerovalLiveStreamError extends SerovalError {
   constructor(public reason: LiveStreamErrorReason) {
-    super(
-      import.meta.env.PROD
-        ? getSpecificErrorMessage(SpecificErrorCodes.LiveStream)
-        : LIVE_STREAM_ERROR_MESSAGES[reason],
-    );
+    super('', undefined, createInit(ERROR_CODES.LiveStream, { reason }));
+    this.name = 'SerovalLiveStreamError';
+  }
+}
+
+export class SerovalStreamConsumedError extends SerovalError {
+  constructor() {
+    super('', undefined, createInit(ERROR_CODES.StreamConsumed, {}));
+    this.name = 'SerovalStreamConsumedError';
+  }
+}
+
+export class SerovalStreamOutputError extends SerovalError {
+  constructor() {
+    super('', undefined, createInit(ERROR_CODES.StreamOutputUnavailable, {}));
+    this.name = 'SerovalStreamOutputError';
+  }
+}
+
+export class SerovalBase64LimitError extends SerovalError {
+  constructor(limit: number) {
+    super('', undefined, createInit(ERROR_CODES.Base64LengthLimit, { limit }, { limit }));
+    this.name = 'SerovalBase64LimitError';
   }
 }

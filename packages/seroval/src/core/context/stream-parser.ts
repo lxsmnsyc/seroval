@@ -9,7 +9,7 @@ import {
   createStreamEventNode,
 } from '../base-primitives';
 import { NIL, SerovalNodeType } from '../constants';
-import { SerovalDepthLimitError, SerovalParserError } from '../errors';
+import { SerovalDepthLimitError, SerovalParserError, SerovalStreamOutputError } from '../errors';
 import type { LiveStream, LiveStreamSink } from '../live-stream';
 import { createSerovalNode } from '../node';
 import type { Plugin } from '../plugin';
@@ -267,24 +267,15 @@ function wrapPromiseResult(
   id: number,
   node: SerovalNode,
 ): SerovalNode {
-  return createSerovalNode(
-    type,
-    id,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    NIL,
-    [
-      parseSpecialReference(
-        ctx.base,
-        type === SerovalNodeType.PromiseSuccess
-          ? SpecialReference.PromiseSuccess
-          : SpecialReference.PromiseFailure,
-      ),
-      node,
-    ],
-  );
+  return createSerovalNode(type, id, NIL, NIL, NIL, NIL, NIL, [
+    parseSpecialReference(
+      ctx.base,
+      type === SerovalNodeType.PromiseSuccess
+        ? SpecialReference.PromiseSuccess
+        : SpecialReference.PromiseFailure,
+    ),
+    node,
+  ]);
 }
 
 function handlePromise(
@@ -513,7 +504,7 @@ function drainOutput(ctx: StreamParserContext): void {
     state.parsing++;
     try {
       if (!state.onParse) {
-        throw new Error('Stream output callback is unavailable');
+        throw new SerovalStreamOutputError();
       }
       const result: unknown = state.onParse(record.node, record.initial);
       // Only objects and functions can be thenables; primitive prototypes

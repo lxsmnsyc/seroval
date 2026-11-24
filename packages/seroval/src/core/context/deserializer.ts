@@ -10,7 +10,9 @@ import {
   TEMPORAL_TYPE_NAME,
 } from '../constants';
 import { PROMISE_CONSTRUCTOR, type PromiseConstructorResolver } from '../constructors';
+import { ERROR_CODES, getDevMessage, getProdMessage } from '../error-catalog';
 import {
+  SerovalBase64LimitError,
   SerovalConflictedNodeIdError,
   SerovalDepthLimitError,
   SerovalDeserializationError,
@@ -125,7 +127,14 @@ export function createBaseDeserializerContext(
 ): BaseDeserializerContext {
   const maxBase64Length = options.maxBase64Length ?? DEFAULT_MAX_BASE64_LENGTH;
   if (!Number.isSafeInteger(maxBase64Length) || maxBase64Length < 0) {
-    throw new RangeError('maxBase64Length must be a non-negative safe integer');
+    // An invalid option is a mistake in how the API is called, so it stays a
+    // standard error that carries its catalog code.
+    const error = new RangeError(
+      import.meta.env.PROD
+        ? getProdMessage(ERROR_CODES.InvalidMaxBase64Length)
+        : getDevMessage(ERROR_CODES.InvalidMaxBase64Length, { value: maxBase64Length }),
+    );
+    throw Object.assign(error, { code: ERROR_CODES.InvalidMaxBase64Length });
   }
   const refs = options.refs ?? new Map<number, unknown>();
   if (!('types' in refs)) {
@@ -435,7 +444,7 @@ function deserializeArrayBuffer(
     throw new SerovalMalformedNodeError(node);
   }
   if (node.s.length > ctx.base.maxBase64Length) {
-    throw new RangeError('ArrayBuffer exceeds maxBase64Length (' + ctx.base.maxBase64Length + ')');
+    throw new SerovalBase64LimitError(ctx.base.maxBase64Length);
   }
   const source = deserializeString(node.s);
   const buffer = decodeArrayBuffer(source);

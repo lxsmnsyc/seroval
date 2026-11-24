@@ -287,13 +287,13 @@ There are few workarounds for this problem:
   };
 }
 
-// `import.meta.env.PROD` is replaced at build time, so the whole catalog is
-// removed from production builds.
-const CATALOG: Catalog | undefined = import.meta.env.PROD ? undefined : createCatalog();
+let catalog: Catalog | undefined;
 
 /** The entry of a code. It is `undefined` in production builds. */
 export function getCatalogEntry<C extends ErrorCode>(code: C): CatalogEntry<C> | undefined {
-  return CATALOG?.[code];
+  // `import.meta.env.PROD` is replaced at build time, so the whole catalog is
+  // removed from production builds. It is built on first use, not on import.
+  return import.meta.env.PROD ? undefined : (catalog ??= createCatalog())[code];
 }
 
 /** The development message of a code. It is empty in production builds. */

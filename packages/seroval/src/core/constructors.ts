@@ -1,3 +1,4 @@
+import { SerovalStreamConsumedError } from './errors';
 import type { Sequence } from './sequence';
 import type { Stream } from './stream';
 
@@ -96,7 +97,7 @@ export const STREAM_CONSTRUCTOR = (live?: number) => {
     },
     on(listener: StreamListener<unknown>, temp = 0): () => void {
       if (live! > 1) {
-        throw new Error('Stream consumed');
+        throw new SerovalStreamConsumedError();
       }
       let subscribed = alive;
       if (alive) {
