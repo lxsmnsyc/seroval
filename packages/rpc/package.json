@@ -1,6 +1,6 @@
 {
   "name": "@seroval/rpc",
-  "version": "0.0.0-stage",
+  "version": "0.0.1-stage",
   "private": false,
   "description": "Typed calls in both directions over a message transport",
   "keywords": [
