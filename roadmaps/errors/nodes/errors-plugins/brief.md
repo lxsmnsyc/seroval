@@ -1,7 +1,7 @@
 ---
 id: errors-plugins
 title: Coded errors in seroval-plugins
-status: active
+status: done
 priority: should
 type: feature
 story: 
@@ -46,10 +46,10 @@ No new code and no new helper (contract `error-model`, maintainer decision 2026-
 
 ## Acceptance
 
-- [ ] No plain `throw new Error(` left in `packages/plugins/web` (`grep -rn -A1 'throw new'`).
-- [ ] Plugin tests check `code` (and `tag` for SRV013) on both throws.
-- [ ] The `seroval` peer range in `packages/plugins/package.json` stays `^1.8.0`.
-- [ ] Fast check passes.
+- [x] No plain `throw new Error(` left in `packages/plugins/web` (`grep -rn -A1 'throw new'`).
+- [x] Plugin tests check `code` (and `tag` for SRV013) on both throws.
+- [x] The `seroval` peer range in `packages/plugins/package.json` stays `^1.8.0`.
+- [x] Fast check passes.
 
 ## Sizing
 
