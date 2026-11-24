@@ -22,21 +22,19 @@ Decisions:
 
 ## Proof
 
-Production builds, base `origin/release/1.9.0` (c55c8465) against the branch, `roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs` with perf-pass `bench.py` (interleaved, 2 warmup runs). Median ms/op, MAD in brackets.
+Production builds, base `origin/release/1.9.0` (5eb4f32e) against the branch (merge eb83736e plus this commit), `roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs` with perf-pass `bench.py` (interleaved, 2 warmup runs, 40 runs per cell). Median ms/op, MAD in brackets.
 
-| Cell              | base            | branch          | change | runs |
-| ----------------- | --------------- | --------------- | ------ | ---- |
-| sync collection   | 0.3443 (0.0113) | 0.3446 (0.0085) | +0.1%  | 40   |
-| sync tree         | 0.4935 (0.0499) | 0.5026 (0.0381) | +1.8%  | 40   |
-| async collection  | 0.7396 (0.0089) | 0.7590 (0.0081) | +2.6%  | 20   |
-| async tree        | 0.9536 (0.0087) | 0.9606 (0.0109) | +0.7%  | 20   |
-| stream collection | 0.3307 (0.0017) | 0.3343 (0.0019) | +1.1%  | 20   |
-| stream tree       | 0.3817 (0.0087) | 0.3864 (0.0077) | +1.2%  | 20   |
+| Cell              | base            | branch          | change | bench.py        |
+| ----------------- | --------------- | --------------- | ------ | --------------- |
+| sync collection   | 0.3336 (0.0056) | 0.3360 (0.0035) | +0.7%  | within noise    |
+| sync tree         | 0.4341 (0.0335) | 0.4207 (0.0178) | -3.1%  | within noise    |
+| async collection  | 0.7288 (0.0029) | 0.7308 (0.0023) | +0.3%  | within noise    |
+| async tree        | 0.9470 (0.0060) | 0.9497 (0.0106) | +0.3%  | within noise    |
+| stream collection | 0.3291 (0.0015) | 0.3349 (0.0017) | +1.8%  | worse (above 3x MAD) |
+| stream tree       | 0.3799 (0.0109) | 0.3764 (0.0067) | -0.9%  | within noise    |
 
-- Every cell is "within noise" by bench.py (a change counts only above 3x the larger MAD). The first 20-run pass gave sync collection +3.3% and sync tree +7.5%; the 40-run rerun of those two gave the +0.1% and +1.8% above.
-- Open item: rerun on a quiet machine (load below 4). The review round did not rerun the bench because the load was 6 to 21.
-- Load average was 4.1 to 7.1 during timing (8 cores), after waiting from 25 down to 4; at the edge of the "quiet" limit, so a rerun on an idle machine would still be worth it. Every branch median is above the base median, by 0.1% to 2.6% in the stable cells, which is within the spread but not nothing.
-- `parseMap` and `parseSet` in sync mode keep `i` outside the `for...of`, as before; the only extra work on the success path is the try block.
+- Load average: 1.8 at the start, 3.3 to 8.0 during the run (other processes started mid-run; the stream cells ran at 3.3 to 4.5). The 1.8% in stream collection is above noise by bench.py. Two reruns of that cell (40 runs each, load 4.7 to 5.2) gave +1.5% (0.3406 to 0.3456, MAD 0.010, within noise) and +2.2% (0.3309 to 0.3383, MAD 0.0028 and 0.0036, within noise). So the cell is consistently 1.5 to 2.2% slower (about 0.006 ms of 0.33 ms per op), the other five cells are within noise. This goes to the maintainer before the PR is marked ready.
+- An earlier round on the pre-merge branch (load 4 to 7) gave the same sign in every cell, between +0.1% and +2.6%.
 
 ## Deviations
 
