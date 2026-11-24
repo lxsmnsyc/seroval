@@ -74,6 +74,13 @@ const ALERT_ICONS: Record<string, string> = {
 };
 
 const REPOSITORY = 'https://github.com/lxsmnsyc/seroval/blob/main/';
+const DOCS_ROOT = 'website/src/content/docs/';
+
+// A doc's slug is its path in `src/content/docs` without `.md`, such as
+// `errors/SRV008`.
+function toSlug(file: string): string {
+  return file.slice(DOCS_ROOT.length, -'.md'.length);
+}
 
 function slugify(text: string): string {
   return text
@@ -104,9 +111,8 @@ function rewriteLink(href: string, file: string): string {
     return href;
   }
   const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(file), target));
-  if (resolved.startsWith('website/src/content/docs/') && resolved.endsWith('.md')) {
-    const slug = path.posix.basename(resolved, '.md');
-    return `/docs/${slug}${hash ? `#${hash}` : ''}`;
+  if (resolved.startsWith(DOCS_ROOT) && resolved.endsWith('.md')) {
+    return `/docs/${toSlug(resolved)}${hash ? `#${hash}` : ''}`;
   }
   return REPOSITORY + resolved + (hash ? `#${hash}` : '');
 }
@@ -214,7 +220,7 @@ async function renderDoc(source: string, file: string): Promise<RenderedDoc> {
   const html = await marked.parse(body);
 
   return {
-    slug: path.posix.basename(file, '.md'),
+    slug: toSlug(file),
     title: meta.title,
     description: meta.description,
     html,
@@ -261,7 +267,9 @@ export default function content(root: string): Plugin {
   const docsDir = path.join(import.meta.dirname, '../src/content/docs');
 
   async function loadDocs(): Promise<RenderedDoc[]> {
-    const files = (await readdir(docsDir)).filter((name) => name.endsWith('.md'));
+    const files = (await readdir(docsDir, { recursive: true })).filter((name) =>
+      name.endsWith('.md'),
+    );
     return Promise.all(
       files.map(async (name) => {
         const id = path.join(docsDir, name);

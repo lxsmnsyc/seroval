@@ -1,7 +1,7 @@
 ---
 name: error-model
-version: 1
-status: draft
+version: 3
+status: frozen
 defined_by: errors-contract
 ---
 
@@ -80,3 +80,4 @@ errors-contract freezes `packages/seroval/src/core/error-catalog.ts` with every 
 
 - v1: initial draft, with the rules added after the adversarial review (`reviews/adversarial.md`).
 - v1, 2026-11-09 (before freeze): the maintainer dropped `createSerovalPluginError` and its code. Plugin errors use SRV013 and SRV008, so seroval-plugins keeps its `seroval: ^1.8.0` peer range.
+- v3, 2026-11-24 (additive, from errors-malformed-detail #346): `SerovalUnsupportedNodeError(node, detail?)` takes an optional trailing `detail`, like `SerovalMalformedNodeError`. SRV002 details gain optional `nodeId` and `detail`. SRV002 and SRV008 dev messages share one format, `Malformed node 12 (type 19): <detail>`. Production messages are unchanged.

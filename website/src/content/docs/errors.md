@@ -1,20 +1,36 @@
 ---
 title: Errors
-description: The errors seroval throws, what causes them, and how to read them in production.
+description: The errors seroval throws, their codes, and how to read them in production.
 ---
+
+Every error that seroval throws because of the data is a `SerovalError`. Each one has a `code` such as `SRV008`, and each code has a page that says what it means and how to fix it.
+
+## Fields
+
+| Field | Description |
+| --- | --- |
+| `name` | The class name, such as `SerovalMalformedNodeError`. |
+| `code` | The code from the [table below](#codes). Codes never change once released. |
+| `step` | `'parse'`, `'serialize'` or `'deserialize'`. Errors that are never wrapped have none. |
+| `cause` | The error that a wrapper caught. |
+
+Some errors add fields with more detail, such as `tag`, `limit`, `nodeType`, `nodeId` or `detail`. The page of each code lists them.
 
 ## How errors are wrapped
 
 Each function wraps any error it meets in one of three errors, by the step that failed. The original error is in the `cause` property.
 
-| Error | Thrown by |
-| --- | --- |
-| `SerovalParserError` | Every serialize function, when it cannot read the value. |
-| `SerovalSerializationError` | Every function that produces JavaScript, when it cannot write the output. |
-| `SerovalDeserializationError` | `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`, when the input is invalid. |
+| Error | Step | Thrown by |
+| --- | --- | --- |
+| `SerovalParserError` | `parse` | Every serialize function, when it cannot read the value. |
+| `SerovalSerializationError` | `serialize` | Every function that produces code, when it cannot write the output. |
+| `SerovalDeserializationError` | `deserialize` | `fromJSON`, `fromCrossJSON` and `createCrossDeserializer`, when the input is invalid. |
+
+A wrapper takes the code of the seroval error it wraps, so `code` says what went wrong. A wrapper around any other error has the generic code of its step: [SRV014](./errors/SRV014.md), [SRV015](./errors/SRV015.md) or [SRV016](./errors/SRV016.md).
 
 ```js
 import {
+  SerovalError,
   SerovalParserError,
   SerovalUnsupportedTypeError,
   serialize,
@@ -23,37 +39,54 @@ import {
 try {
   serialize({ callback: () => {} });
 } catch (error) {
+  error instanceof SerovalError; // true
   error instanceof SerovalParserError; // true
+  error.code; // 'SRV001'
+  error.step; // 'parse'
   error.cause instanceof SerovalUnsupportedTypeError; // true
   error.cause.value; // the function
 }
 ```
 
-## Specific errors
-
-These usually arrive as the `cause` of a wrapper error.
-
-| Error | Code | Cause |
-| --- | --- | --- |
-| `SerovalUnsupportedTypeError` | 1 | The value has a type seroval does not support, such as a function or a class instance with no plugin. The value is in `value`. |
-| `SerovalUnsupportedNodeError` | 2 | The input has an unknown node type, or one that uses a disabled feature. |
-| `SerovalMissingPluginError` | 3 | No plugin has the tag the input asks for. |
-| `SerovalMissingInstanceError` | 4 | The input settles a promise or stream that does not exist. |
-| `SerovalMissingReferenceError` | 5 | Deprecated. Not thrown by seroval. |
-| `SerovalMissingReferenceForIdError` | 6 | The input refers to a [`createReference`](./isomorphic-references.md) key that is not registered. |
-| `SerovalUnknownTypedArrayError` | 7 | The input names an unknown typed array. |
-| `SerovalMalformedNodeError` | 8 | A node in the input is malformed. |
-| `SerovalConflictedNodeIdError` | 9 | The input declares the same value twice. |
-| `SerovalDepthLimitError` | 10 | The value or input is nested deeper than `depthLimit`. |
-| `SerovalAbortedError` | 11 | `deserialize` was called on a [cross deserializer](./streaming.md#receiving-a-json-stream) after `abort`. |
-| `SerovalLiveStreamError` | 12 | A [live stream](./streams-and-iterables.md#live-streams) was misused. `reason` is `'consumed'`, `'pending'`, `'reading'` or `'closed'`. |
-| `SerovalPluginValidationError` | 13 | A plugin's [`validate`](./plugin-security.md#validate-every-value) rejected a field. The plugin's tag is in `tag` and the field name is in `field`. |
+Errors caused by how a function is called, not by the data, are standard errors such as `RangeError`. They still have a `code`.
 
 ## Messages in production
 
-The production build of seroval replaces messages with codes, to stay small:
+In the production build, each message is one line with the code, the step and the link to the page of the code:
 
-- A wrapper error reads `Seroval Error (step: N)`, where 1 is parsing, 2 is serialization and 3 is deserialization.
-- A specific error reads `Seroval Error (specific: N)`, with the code from the table above.
+```text
+Seroval SRV008 (deserialize): https://seroval.vercel.app/docs/errors/SRV008
+```
 
-The development build has full messages. Bundlers select it through the `development` export condition, which most of them set in development mode. The error classes are the same in both builds, so `instanceof` checks work everywhere.
+An error with no step leaves out the parenthesis:
+
+```text
+Seroval SRV011: https://seroval.vercel.app/docs/errors/SRV011
+```
+
+Production messages never contain values from the data. The development build has full messages that say what was wrong. Bundlers select it through the `development` export condition, which most of them set in development mode. The error classes and fields are the same in both builds, so `instanceof` and `code` checks work everywhere.
+
+## Codes
+
+| Code | Error | Meaning |
+| --- | --- | --- |
+| [SRV001](./errors/SRV001.md) | `SerovalUnsupportedTypeError` | A value cannot be serialized. |
+| [SRV002](./errors/SRV002.md) | `SerovalUnsupportedNodeError` | A node has a type that is not supported. |
+| [SRV003](./errors/SRV003.md) | `SerovalMissingPluginError` | A plugin for a tag is missing. |
+| [SRV004](./errors/SRV004.md) | `SerovalMissingInstanceError` | A required instance is missing. |
+| [SRV005](./errors/SRV005.md) | `SerovalMissingReferenceError` | A reference is missing (deprecated). |
+| [SRV006](./errors/SRV006.md) | `SerovalMissingReferenceForIdError` | A reference id is missing. |
+| [SRV007](./errors/SRV007.md) | `SerovalUnknownTypedArrayError` | A typed array name is unknown. |
+| [SRV008](./errors/SRV008.md) | `SerovalMalformedNodeError` | A node has the wrong shape. |
+| [SRV009](./errors/SRV009.md) | `SerovalConflictedNodeIdError` | Two nodes have the same id. |
+| [SRV010](./errors/SRV010.md) | `SerovalDepthLimitError` | The depth limit was reached. |
+| [SRV011](./errors/SRV011.md) | `SerovalAbortedError` | The cross deserializer was aborted. |
+| [SRV012](./errors/SRV012.md) | `SerovalLiveStreamError` | A live stream was used in a wrong state. |
+| [SRV013](./errors/SRV013.md) | `SerovalPluginValidationError` | A plugin value failed its validator. |
+| [SRV014](./errors/SRV014.md) | `SerovalParserError` | The parser failed with an error that is not from seroval. |
+| [SRV015](./errors/SRV015.md) | `SerovalSerializationError` | The serializer failed with an error that is not from seroval. |
+| [SRV016](./errors/SRV016.md) | `SerovalDeserializationError` | The deserializer failed with an error that is not from seroval. |
+| [SRV017](./errors/SRV017.md) | `SerovalStreamConsumedError` | A stream already has a consumer. |
+| [SRV018](./errors/SRV018.md) | `SerovalStreamOutputError` | The stream parser has no output callback. |
+| [SRV019](./errors/SRV019.md) | `RangeError` | The maxBase64Length option is invalid. |
+| [SRV020](./errors/SRV020.md) | `SerovalBase64LimitError` | An ArrayBuffer is larger than maxBase64Length. |

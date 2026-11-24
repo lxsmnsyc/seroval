@@ -1,0 +1,211 @@
+diff --git a/packages/seroval/src/core/context/async-parser.ts b/packages/seroval/src/core/context/async-parser.ts
+index 2f50cf0a..a120ff62 100644
+--- a/packages/seroval/src/core/context/async-parser.ts
++++ b/packages/seroval/src/core/context/async-parser.ts
+@@ -1,3 +1,4 @@
++import { prependErrorPath } from './error-path';
+ import {
+   assertArrayHoles,
+   createArrayNode,
+@@ -142,14 +143,20 @@ async function parseItems(
+     }
+   }
+   handleChildPromises(values);
+-  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
+-    // For consistency in holes
+-    if (present[i]) {
+-      node = parseValueAsync(ctx, depth, values[i]);
+-      nodes[i] = node instanceof Promise ? await node : node;
+-    } else {
+-      nodes[i] = 0;
++  let i = 0;
++  try {
++    for (let node: MaybeAsyncNode; i < len; i++) {
++      // For consistency in holes
++      if (present[i]) {
++        node = parseValueAsync(ctx, depth, values[i]);
++        nodes[i] = node instanceof Promise ? await node : node;
++      } else {
++        nodes[i] = 0;
++      }
+     }
++  } catch (error) {
++    prependErrorPath(error, i);
++    throw error;
+   }
+   return nodes;
+ }
+@@ -180,10 +187,16 @@ async function parseProperties(
+     values[i] = properties[keys[i]];
+   }
+   handleChildPromises(values);
+-  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
+-    keyNodes[i] = serializeString(keys[i]);
+-    node = parseValueAsync(ctx, depth, values[i]);
+-    valueNodes[i] = node instanceof Promise ? await node : node;
++  let i = 0;
++  try {
++    for (let node: MaybeAsyncNode; i < len; i++) {
++      keyNodes[i] = serializeString(keys[i]);
++      node = parseValueAsync(ctx, depth, values[i]);
++      valueNodes[i] = node instanceof Promise ? await node : node;
++    }
++  } catch (error) {
++    prependErrorPath(error, keys[i]);
++    throw error;
+   }
+   // Check special properties
+   if (SYM_ITERATOR in properties) {
+@@ -293,11 +306,17 @@ async function parseMap(
+   }
+   handleChildPromises(keys);
+   handleChildPromises(values);
+-  for (let i = 0, node: MaybeAsyncNode; i < entries.length; i++) {
+-    node = parseValueAsync(ctx, depth, keys[i]);
+-    keyNodes[i] = node instanceof Promise ? await node : node;
+-    node = parseValueAsync(ctx, depth, values[i]);
+-    valueNodes[i] = node instanceof Promise ? await node : node;
++  let i = 0;
++  try {
++    for (let node: MaybeAsyncNode; i < entries.length; i++) {
++      node = parseValueAsync(ctx, depth, keys[i]);
++      keyNodes[i] = node instanceof Promise ? await node : node;
++      node = parseValueAsync(ctx, depth, values[i]);
++      valueNodes[i] = node instanceof Promise ? await node : node;
++    }
++  } catch (error) {
++    prependErrorPath(error, i);
++    throw error;
+   }
+   return createMapNode(id, sentinel, keyNodes, valueNodes);
+ }
+@@ -311,9 +330,15 @@ async function parseSet(
+   const values = [...current.keys()];
+   const items = new Array<SerovalNode>(values.length);
+   handleChildPromises(values);
+-  for (let i = 0, node: MaybeAsyncNode; i < values.length; i++) {
+-    node = parseValueAsync(ctx, depth, values[i]);
+-    items[i] = node instanceof Promise ? await node : node;
++  let i = 0;
++  try {
++    for (let node: MaybeAsyncNode; i < values.length; i++) {
++      node = parseValueAsync(ctx, depth, values[i]);
++      items[i] = node instanceof Promise ? await node : node;
++    }
++  } catch (error) {
++    prependErrorPath(error, i);
++    throw error;
+   }
+   return createSetNode(id, items);
+ }
+diff --git a/packages/seroval/src/core/context/error-path.ts b/packages/seroval/src/core/context/error-path.ts
+new file mode 100644
+index 00000000..c596eee0
+--- /dev/null
++++ b/packages/seroval/src/core/context/error-path.ts
+@@ -0,0 +1,14 @@
++/**
++ * Spike prototype: adds the key of one level to an error that passes up
++ * through a parser. Runs only on throw.
++ */
++export function prependErrorPath(error: unknown, segment: string | number): void {
++  if (typeof error === 'object' && error !== null) {
++    const target = error as { path?: (string | number)[] };
++    if (target.path) {
++      target.path.unshift(segment);
++    } else {
++      target.path = [segment];
++    }
++  }
++}
+diff --git a/packages/seroval/src/core/context/sync-parser.ts b/packages/seroval/src/core/context/sync-parser.ts
+index 511a67fc..6ac99609 100644
+--- a/packages/seroval/src/core/context/sync-parser.ts
++++ b/packages/seroval/src/core/context/sync-parser.ts
+@@ -1,3 +1,4 @@
++import { prependErrorPath } from './error-path';
+ import {
+   assertArrayHoles,
+   createArrayNode,
+@@ -196,12 +197,18 @@ function parseItems(ctx: SOSParserContext, depth: number, current: unknown[]): (
+   assertArrayHoles(current);
+   const len = current.length;
+   const nodes = new Array<SerovalNode | 0>(len);
+-  for (let i = 0; i < len; i++) {
+-    if (i in current) {
+-      nodes[i] = parseSOS(ctx, depth, current[i]);
+-    } else {
+-      nodes[i] = 0;
++  let i = 0;
++  try {
++    for (; i < len; i++) {
++      if (i in current) {
++        nodes[i] = parseSOS(ctx, depth, current[i]);
++      } else {
++        nodes[i] = 0;
++      }
+     }
++  } catch (error) {
++    prependErrorPath(error, i);
++    throw error;
+   }
+   return nodes;
+ }
+@@ -226,10 +233,16 @@ function parseProperties(
+   // every object, and the length is already known.
+   const keyNodes = new Array<SerovalObjectRecordKey>(len);
+   const valueNodes = new Array<SerovalNode>(len);
+-  for (let i = 0, key: string; i < len; i++) {
+-    key = keys[i];
+-    keyNodes[i] = serializeString(key);
+-    valueNodes[i] = parseSOS(ctx, depth, properties[key]);
++  let key = '';
++  try {
++    for (let i = 0; i < len; i++) {
++      key = keys[i];
++      keyNodes[i] = serializeString(key);
++      valueNodes[i] = parseSOS(ctx, depth, properties[key]);
++    }
++  } catch (error) {
++    prependErrorPath(error, key);
++    throw error;
+   }
+   // Check special properties, symbols in this case
+   if (SYM_ITERATOR in properties) {
+@@ -349,10 +362,15 @@ function parseMap(
+   const keyNodes = new Array<SerovalNode>(current.size);
+   const valueNodes = new Array<SerovalNode>(current.size);
+   let i = 0;
+-  for (const [key, value] of current.entries()) {
+-    keyNodes[i] = parseSOS(ctx, depth, key);
+-    valueNodes[i] = parseSOS(ctx, depth, value);
+-    i++;
++  try {
++    for (const [key, value] of current.entries()) {
++      keyNodes[i] = parseSOS(ctx, depth, key);
++      valueNodes[i] = parseSOS(ctx, depth, value);
++      i++;
++    }
++  } catch (error) {
++    prependErrorPath(error, i);
++    throw error;
+   }
+   return createMapNode(id, sentinel, keyNodes, valueNodes);
+ }
+@@ -365,8 +383,14 @@ function parseSet(
+ ): SerovalSetNode {
+   const items = new Array<SerovalNode>(current.size);
+   let i = 0;
+-  for (const item of current.keys()) {
+-    items[i++] = parseSOS(ctx, depth, item);
++  try {
++    for (const item of current.keys()) {
++      items[i] = parseSOS(ctx, depth, item);
++      i++;
++    }
++  } catch (error) {
++    prependErrorPath(error, i);
++    throw error;
+   }
+   return createSetNode(id, items);
+ }

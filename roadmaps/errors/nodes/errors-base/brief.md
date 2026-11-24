@@ -1,7 +1,7 @@
 ---
 id: errors-base
 title: Base class, names, codes and production messages
-status: todo
+status: done
 priority: must
 type: feature
 story: 
@@ -45,12 +45,12 @@ Make every class in `packages/seroval/src/core/errors.ts` extend `SerovalError` 
 
 ## Acceptance
 
-- [ ] `base.test.ts` throws each existing class and checks `name`, `code`, `instanceof` and the production message.
-- [ ] No plain `throw new Error(`/`TypeError(` left in `packages/seroval/src`; the `RangeError` at `deserializer.ts:117` carries a `code`.
-- [ ] `catalog.test.ts` throws every catalog code that seroval itself throws and checks the no-plain-throw grep for `packages/seroval/src`.
-- [ ] Tests that match message text (`live-receiver.test.ts:69`, `iterable.test.ts:213`, `binary.test.ts:342`, `:364`) are updated, and snapshot changes are only message text.
-- [ ] `error-catalog.ts` is exported from `src/index.ts`.
-- [ ] Fast check passes.
+- [x] `base.test.ts` throws each existing class and checks `name`, `code`, `instanceof` and the production message.
+- [x] No plain `throw new Error(`/`TypeError(` left in `packages/seroval/src`; the `RangeError` at `deserializer.ts:117` carries a `code`. Exception: the serialized `STREAM_CONSTRUCTOR` in `constructors.ts` keeps `throw new Error('Stream consumed')`, because it runs on the client as source text (#342 review).
+- [x] `catalog.test.ts` throws every catalog code that seroval itself throws and checks the no-plain-throw grep for `packages/seroval/src`.
+- [x] Tests that match message text (`live-receiver.test.ts:69`, `iterable.test.ts:213`, `binary.test.ts:342`, `:364`) are updated, and snapshot changes are only message text.
+- [x] `error-catalog.ts` is exported from `shared.ts`, which `src/index.ts` re-exports (`entry-points.test.ts` requires root exports to equal shared plus read and write).
+- [x] Fast check passes.
 
 ## Sizing
 

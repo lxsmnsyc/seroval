@@ -1,7 +1,7 @@
 ---
 id: errors-path-spike
 title: Spike: cost of value paths in parse errors
-status: todo
+status: done
 priority: should
 type: spike
 story: 
@@ -33,8 +33,8 @@ Measure whether adding the key of each level to an error while it passes up thro
 
 ## Acceptance
 
-- [ ] Baseline and prototype numbers for sync, async and stream parsing, with noise.
-- [ ] A recommendation: build, build with a different approach, or drop.
+- [x] Baseline and prototype numbers for sync, async and stream parsing, with noise.
+- [x] A recommendation: build, build with a different approach, or drop.
 
 ## Sizing
 

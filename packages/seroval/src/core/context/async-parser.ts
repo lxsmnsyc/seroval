@@ -63,6 +63,7 @@ import { readArrayBufferView } from '../utils/typed-array';
 import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import {
   ObjectKind,
+  addErrorPath,
   createArrayBufferNode,
   createBaseParserContext,
   createIndexForValue,
@@ -135,21 +136,27 @@ async function parseItems(
   // Each element is read once, before any of them is walked.
   const values = new Array<unknown>(len);
   const present = new Array<boolean>(len);
-  for (let i = 0; i < len; i++) {
-    present[i] = i in current;
-    if (present[i]) {
-      values[i] = current[i];
+  let i = 0;
+  try {
+    for (; i < len; i++) {
+      present[i] = i in current;
+      if (present[i]) {
+        values[i] = current[i];
+      }
     }
-  }
-  handleChildPromises(values);
-  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
-    // For consistency in holes
-    if (present[i]) {
-      node = parseValueAsync(ctx, depth, values[i]);
-      nodes[i] = node instanceof Promise ? await node : node;
-    } else {
-      nodes[i] = 0;
+    handleChildPromises(values);
+    for (i = 0; i < len; i++) {
+      let node: MaybeAsyncNode;
+      // For consistency in holes
+      if (present[i]) {
+        node = parseValueAsync(ctx, depth, values[i]);
+        nodes[i] = node instanceof Promise ? await node : node;
+      } else {
+        nodes[i] = 0;
+      }
     }
+  } catch (error) {
+    throw addErrorPath(error, i);
   }
   return nodes;
 }
@@ -161,6 +168,38 @@ async function parseArray(
   current: unknown[],
 ): Promise<SerovalArrayNode> {
   return createArrayNode(id, current, await parseItems(ctx, depth, current));
+}
+
+/**
+ * The values behind the iterator symbols get the symbol as their path
+ * segment, as in `$.items["Symbol.iterator"][2]`.
+ */
+async function parseIteratorEntry(
+  ctx: AsyncParserContext,
+  depth: number,
+  properties: Record<string | symbol, unknown>,
+): Promise<SerovalNode> {
+  try {
+    return await parseAsync(
+      ctx,
+      depth,
+      createSequenceFromIterable(properties as unknown as Iterable<unknown>),
+    );
+  } catch (error) {
+    throw addErrorPath(error, 'Symbol.iterator');
+  }
+}
+
+async function parseAsyncIteratorEntry(
+  ctx: AsyncParserContext,
+  depth: number,
+  properties: Record<string | symbol, unknown>,
+): Promise<SerovalNodeWithID> {
+  try {
+    return await parseAsyncIterable(ctx, depth, properties as unknown as AsyncIterable<unknown>);
+  } catch (error) {
+    throw addErrorPath(error, 'Symbol.asyncIterator');
+  }
 }
 
 async function parseProperties(
@@ -176,14 +215,19 @@ async function parseProperties(
   const valueNodes = new Array<SerovalNode>(len);
   // Each property is read once, before any of them is walked.
   const values = new Array<unknown>(len);
-  for (let i = 0; i < len; i++) {
-    values[i] = properties[keys[i]];
-  }
-  handleChildPromises(values);
-  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
-    keyNodes[i] = serializeString(keys[i]);
-    node = parseValueAsync(ctx, depth, values[i]);
-    valueNodes[i] = node instanceof Promise ? await node : node;
+  let i = 0;
+  try {
+    for (; i < len; i++) {
+      values[i] = properties[keys[i]];
+    }
+    handleChildPromises(values);
+    for (i = 0; i < len; i++) {
+      keyNodes[i] = serializeString(keys[i]);
+      const node = parseValueAsync(ctx, depth, values[i]);
+      valueNodes[i] = node instanceof Promise ? await node : node;
+    }
+  } catch (error) {
+    throw addErrorPath(error, keys[i]);
   }
   // Check special properties
   if (SYM_ITERATOR in properties) {
@@ -192,11 +236,7 @@ async function parseProperties(
       createIteratorFactoryInstanceNode(
         SerovalNodeType.IteratorFactoryInstance,
         parseIteratorFactory(ctx.base),
-        (await parseAsync(
-          ctx,
-          depth,
-          createSequenceFromIterable(properties as unknown as Iterable<unknown>),
-        )) as SerovalNodeWithID,
+        (await parseIteratorEntry(ctx, depth, properties)) as SerovalNodeWithID,
       ),
     );
   }
@@ -206,7 +246,7 @@ async function parseProperties(
       createIteratorFactoryInstanceNode(
         SerovalNodeType.AsyncIteratorFactoryInstance,
         parseAsyncIteratorFactory(ctx.base),
-        await parseAsyncIterable(ctx, depth, properties as unknown as AsyncIterable<unknown>),
+        await parseAsyncIteratorEntry(ctx, depth, properties),
       ),
     );
   }
@@ -241,8 +281,12 @@ async function parseBoxed(
   current: object,
 ): Promise<SerovalBoxedNode> {
   // `valueOf` is nearly always a primitive, which parses without a Promise.
-  const node = parseValueAsync(ctx, depth, current.valueOf());
-  return createBoxedNode(id, node instanceof Promise ? await node : node);
+  try {
+    const node = parseValueAsync(ctx, depth, current.valueOf());
+    return createBoxedNode(id, node instanceof Promise ? await node : node);
+  } catch (error) {
+    throw addErrorPath(error, 'valueOf');
+  }
 }
 
 async function parseView(
@@ -256,7 +300,11 @@ async function parseView(
     ctx.base,
     readArrayBufferView(current, type === SerovalNodeType.DataView),
   );
-  return createViewNode(type, id, current, view, await parseAsync(ctx, depth, view.buffer));
+  try {
+    return createViewNode(type, id, current, view, await parseAsync(ctx, depth, view.buffer));
+  } catch (error) {
+    throw addErrorPath(error, 'buffer');
+  }
 }
 
 async function parseError(
@@ -293,11 +341,17 @@ async function parseMap(
   }
   handleChildPromises(keys);
   handleChildPromises(values);
-  for (let i = 0, node: MaybeAsyncNode; i < entries.length; i++) {
-    node = parseValueAsync(ctx, depth, keys[i]);
-    keyNodes[i] = node instanceof Promise ? await node : node;
-    node = parseValueAsync(ctx, depth, values[i]);
-    valueNodes[i] = node instanceof Promise ? await node : node;
+  let i = 0;
+  try {
+    for (let node: MaybeAsyncNode; i < entries.length; i++) {
+      node = parseValueAsync(ctx, depth, keys[i]);
+      keyNodes[i] = node instanceof Promise ? await node : node;
+      node = parseValueAsync(ctx, depth, values[i]);
+      valueNodes[i] = node instanceof Promise ? await node : node;
+    }
+  } catch (error) {
+    // The key node of the failing entry is not set yet when its key threw.
+    throw addErrorPath(error, i, i in keyNodes ? 'value' : 'key');
   }
   return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
@@ -311,9 +365,14 @@ async function parseSet(
   const values = [...current.keys()];
   const items = new Array<SerovalNode>(values.length);
   handleChildPromises(values);
-  for (let i = 0, node: MaybeAsyncNode; i < values.length; i++) {
-    node = parseValueAsync(ctx, depth, values[i]);
-    items[i] = node instanceof Promise ? await node : node;
+  let i = 0;
+  try {
+    for (let node: MaybeAsyncNode; i < values.length; i++) {
+      node = parseValueAsync(ctx, depth, values[i]);
+      items[i] = node instanceof Promise ? await node : node;
+    }
+  } catch (error) {
+    throw addErrorPath(error, i);
   }
   return createSetNode(id, items);
 }
@@ -516,9 +575,14 @@ async function parseSequence(
 ): Promise<SerovalSequenceNode> {
   const len = current.v.length;
   const nodes = new Array<SerovalNode>(len);
-  for (let i = 0, node: MaybeAsyncNode; i < len; i++) {
-    node = parseValueAsync(ctx, depth, current.v[i]);
-    nodes[i] = node instanceof Promise ? await node : node;
+  let i = 0;
+  try {
+    for (let node: MaybeAsyncNode; i < len; i++) {
+      node = parseValueAsync(ctx, depth, current.v[i]);
+      nodes[i] = node instanceof Promise ? await node : node;
+    }
+  } catch (error) {
+    throw addErrorPath(error, i);
   }
   return createSequenceNode(id, nodes, current.t, current.d);
 }

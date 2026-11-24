@@ -162,7 +162,9 @@ const ReadableStreamPlugin = /* @__PURE__ */ createPlugin<ReadableStream, Readab
     const stream = ctx.deserialize<Stream<unknown>>(node.stream);
     // Each ReadableStream subscribes to its source, so a source shared by
     // several of them would deliver every chunk once per ReadableStream.
-    return READABLE_STREAM_FACTORY_CONSTRUCTOR(claim(stream));
+    return READABLE_STREAM_FACTORY_CONSTRUCTOR(
+      claim(stream, 'seroval/plugins/web/ReadableStream', 'stream'),
+    );
   },
 });
 

@@ -64,7 +64,7 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
   },
   deserialize(node, ctx) {
     return new File(
-      [claim(ctx.deserialize<ArrayBuffer>(node.buffer))],
+      [claim(ctx.deserialize<ArrayBuffer>(node.buffer), 'seroval-plugins/web/File', 'buffer')],
       ctx.deserialize<string>(node.name),
       copyFileOptions(ctx.deserialize<FilePropertyBag>(node.options)),
     );
