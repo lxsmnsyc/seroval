@@ -22,6 +22,7 @@ import {
   createIndexForValue,
   parseSpecialReference,
   rollbackRefs,
+  unwrapPathError,
 } from './parser';
 import {
   type OutputRecord,
@@ -608,7 +609,7 @@ export function startStreamParse(ctx: StreamParserContext, current: unknown): vo
       if (state.alive) {
         stopStreamParse(ctx, 1, failure.value);
       } else {
-        throw failure.value;
+        throw unwrapPathError(failure.value);
       }
     } else if (parsed && state.alive) {
       // Events replayed during the parse are already queued. The root goes first.
@@ -684,6 +685,12 @@ function stopStreamParse(ctx: StreamParserContext, mode: 0 | 1 | 2, reason?: unk
     }
     const onError = state.onError;
     const onDone = state.onDone;
+    if (mode === 1 && onError) {
+      // A wrapper made only to carry a path around an error of the user is
+      // not for the user: `onError` gets what was thrown, as before. Without
+      // `onError` the wrapper is what the caller gets, as in the other modes.
+      reason = unwrapPathError(reason);
+    }
     if (mode === 1 && !onError && !(reason instanceof SerovalParserError)) {
       reason = new SerovalParserError(reason);
     }

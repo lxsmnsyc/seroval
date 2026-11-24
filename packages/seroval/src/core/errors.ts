@@ -6,6 +6,7 @@ import type {
   LiveStreamErrorReason,
   SerovalErrorStep,
 } from './error-catalog';
+import { formatErrorPath } from './context/error-path';
 import { ERROR_CODES, getDevMessage, getProdMessage } from './error-catalog';
 import type { SerovalNode } from './types';
 
@@ -52,6 +53,20 @@ function getMessage(init: ErrorInit): string {
   return getDevMessage(init.code, init.details as CatalogDetails[ErrorCode]);
 }
 
+/**
+ * The message of a wrapped error without its `At <path>` line. The wrapper
+ * adds its own, so the message ends with one.
+ */
+function stripPathSuffix(error: SerovalError): string {
+  if (Array.isArray(error.path)) {
+    const suffix = '\n\nAt ' + formatErrorPath(error.path);
+    if (error.message.endsWith(suffix)) {
+      return error.message.slice(0, error.message.length - suffix.length);
+    }
+  }
+  return error.message;
+}
+
 function resolveStepInit(type: string, cause: unknown): ErrorInit {
   const step = STEPS[type];
   if (!step) {
@@ -70,8 +85,9 @@ function resolveStepInit(type: string, cause: unknown): ErrorInit {
       code: cause.code,
       step,
       details: { cause },
-      message: cause.message,
-      path: cause.path,
+      message: stripPathSuffix(cause),
+      // A path that is not an array is not ours to read; the wrapper owns its copy.
+      path: Array.isArray(cause.path) ? cause.path.slice() : undefined,
       nodeType: cause.nodeType,
       nodeId: cause.nodeId,
       tag: cause.tag,
@@ -126,6 +142,9 @@ export class SerovalError extends Error {
     }
     if (resolved.path) {
       this.path = resolved.path;
+      if (!import.meta.env.PROD) {
+        this.message += '\n\nAt ' + formatErrorPath(resolved.path);
+      }
     }
     if (resolved.nodeType !== undefined) {
       this.nodeType = resolved.nodeType;
@@ -143,7 +162,12 @@ export class SerovalError extends Error {
       this.detail = resolved.detail;
     }
     // The wrapped error learns the step it failed in.
-    if (!init && cause instanceof SerovalError && cause.step === undefined) {
+    if (
+      !init &&
+      cause instanceof SerovalError &&
+      cause.step === undefined &&
+      Object.isExtensible(cause)
+    ) {
       cause.step = resolved.step;
     }
   }
