@@ -3,6 +3,7 @@ import { afterEach, assert, describe, expect, it, vi } from 'vitest';
 import {
   type BaseParserContextOptions,
   Serializer,
+  SerovalBase64LimitError,
   SerovalDeserializationError,
   SerovalMalformedNodeError,
   type SerovalNode,
@@ -359,10 +360,10 @@ describe('binary decoding limits', () => {
         decode(encode(new ArrayBuffer(3)), 0);
         expect.unreachable();
       } catch (error) {
-        expect(error).toHaveProperty(
-          'cause',
-          new RangeError('ArrayBuffer exceeds maxBase64Length (0)'),
-        );
+        assert(error instanceof SerovalDeserializationError);
+        expect(error.cause).toBeInstanceOf(SerovalBase64LimitError);
+        expect(error.code).toBe('SRV020');
+        expect(error.limit).toBe(0);
       }
       expect(() =>
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the node is malformed on purpose.
