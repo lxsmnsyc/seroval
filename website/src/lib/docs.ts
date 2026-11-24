@@ -10,7 +10,7 @@ export interface DocLink {
 }
 
 const modules = import.meta.glob<{ default: Component }>(
-  '../content/docs/*.md',
+  '../content/docs/**/*.md',
 );
 
 function toLink(slug: string): DocLink {

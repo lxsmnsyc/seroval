@@ -1,6 +1,6 @@
 export interface SidebarSection {
   title: string;
-  /** Doc slugs, which are file names in `src/content/docs` without `.md`. */
+  /** Doc slugs, which are paths in `src/content/docs` without `.md`. */
   pages: string[];
 }
 
@@ -33,5 +33,30 @@ export const SIDEBAR: SidebarSection[] = [
   {
     title: 'Reference',
     pages: ['api', 'compatibility', 'errors', 'security'],
+  },
+  {
+    title: 'Error codes',
+    pages: [
+      'errors/SRV001',
+      'errors/SRV002',
+      'errors/SRV003',
+      'errors/SRV004',
+      'errors/SRV005',
+      'errors/SRV006',
+      'errors/SRV007',
+      'errors/SRV008',
+      'errors/SRV009',
+      'errors/SRV010',
+      'errors/SRV011',
+      'errors/SRV012',
+      'errors/SRV013',
+      'errors/SRV014',
+      'errors/SRV015',
+      'errors/SRV016',
+      'errors/SRV017',
+      'errors/SRV018',
+      'errors/SRV019',
+      'errors/SRV020',
+    ],
   },
 ];
