@@ -30,12 +30,15 @@ depends_on:
   - on: errors-docs
     kind: hard
     why: production messages link to the pages
+  - on: errors-wrapper-message
+    kind: hard
+    why: the wrong wrapper dev message must not ship
 ---
 # Release seroval 1.9.0 with the new errors
 
 ## Goal
 
-A minor changeset for seroval, and one for seroval-plugins if errors-plugins landed by then, that says error names and messages changed. Versions are independent since #297, so each package goes to its own next version.
+A minor changeset for seroval, and one for seroval-plugins if errors-plugins landed by then, that says error names and messages changed, including the new SRV002 and SRV008 dev message format (#346). Versions are independent since #297, so each package goes to its own next version.
 
 ## Acceptance
 

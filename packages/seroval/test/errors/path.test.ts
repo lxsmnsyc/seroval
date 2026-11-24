@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import type { Plugin, SerovalNode } from '../../src';
 import {
   SerovalDepthLimitError,
@@ -327,6 +327,23 @@ describe.each(MODES)('error paths (%s)', (mode) => {
   it('puts the path in the development message', async () => {
     const error = await capture(mode, { users: [{ avatar: new WeakMap() }] });
     expect(error instanceof Error ? error.message : '').toContain('At $.users[0].avatar');
+  });
+});
+
+describe('development messages with a path', () => {
+  it('ends the wrapper and the wrapped error with one path line', () => {
+    let caught: unknown;
+    try {
+      toJSON({ a: [{ b: new WeakMap() }] });
+    } catch (error) {
+      caught = error;
+    }
+    assert(caught instanceof SerovalError);
+    assert(caught.cause instanceof SerovalError);
+    for (const error of [caught, caught.cause]) {
+      expect(error.message.endsWith('\n\nAt $.a[0].b')).toBe(true);
+      expect(error.message.split('At $').length).toBe(2);
+    }
   });
 });
 

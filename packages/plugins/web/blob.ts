@@ -30,9 +30,12 @@ const BlobPlugin = /* @__PURE__ */ createPlugin<Blob, BlobNode>({
   },
   validate: { type: v.string, buffer: /* @__PURE__ */ v.instanceOf(ArrayBuffer) },
   deserialize(node, ctx) {
-    return new Blob([claim(ctx.deserialize<ArrayBuffer>(node.buffer))], {
-      type: ctx.deserialize<string>(node.type),
-    });
+    return new Blob(
+      [claim(ctx.deserialize<ArrayBuffer>(node.buffer), 'seroval-plugins/web/Blob', 'buffer')],
+      {
+        type: ctx.deserialize<string>(node.type),
+      },
+    );
   },
 });
 

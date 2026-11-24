@@ -53,6 +53,20 @@ function getMessage(init: ErrorInit): string {
   return getDevMessage(init.code, init.details as CatalogDetails[ErrorCode]);
 }
 
+/**
+ * The message of a wrapped error without its `At <path>` line. The wrapper
+ * adds its own, so the message ends with one.
+ */
+function stripPathSuffix(error: SerovalError): string {
+  if (Array.isArray(error.path)) {
+    const suffix = '\n\nAt ' + formatErrorPath(error.path);
+    if (error.message.endsWith(suffix)) {
+      return error.message.slice(0, error.message.length - suffix.length);
+    }
+  }
+  return error.message;
+}
+
 function resolveStepInit(type: string, cause: unknown): ErrorInit {
   const step = STEPS[type];
   if (!step) {
@@ -66,11 +80,12 @@ function resolveStepInit(type: string, cause: unknown): ErrorInit {
   // oxlint-disable-next-line eslint/no-use-before-define -- the class and this function refer to each other.
   if (cause instanceof SerovalError) {
     // Same code as the wrapped error, so the outer error says what went wrong.
-    // The message of a wrapper is still the one of its step.
+    // The development message is the one of the wrapped error.
     return {
       code: cause.code,
       step,
       details: { cause },
+      message: stripPathSuffix(cause),
       // A path that is not an array is not ours to read; the wrapper owns its copy.
       path: Array.isArray(cause.path) ? cause.path.slice() : undefined,
       nodeType: cause.nodeType,
@@ -187,11 +202,19 @@ export class SerovalUnsupportedTypeError extends SerovalError {
 }
 
 export class SerovalUnsupportedNodeError extends SerovalError {
-  constructor(node: SerovalNode) {
+  constructor(node: SerovalNode, detail?: string) {
+    const fields: ErrorFields = { nodeType: node.t, detail };
+    if (typeof node.i === 'number') {
+      fields.nodeId = node.i;
+    }
     super(
       '',
       undefined,
-      createInit(ERROR_CODES.UnsupportedNode, { nodeType: node.t }, { nodeType: node.t }),
+      createInit(
+        ERROR_CODES.UnsupportedNode,
+        { nodeType: node.t, nodeId: fields.nodeId, detail },
+        fields,
+      ),
     );
     this.name = 'SerovalUnsupportedNodeError';
   }
