@@ -124,8 +124,21 @@ export function rollbackRefs(refs: Map<unknown, number>, size: number): void {
 // Development messages without the path suffix, so each level can rewrite it.
 const BASE_MESSAGES = new WeakMap<Error, string>();
 
+// Wrappers made only to carry a path around an error
+// that is not from seroval. The stream mode hands that error to `onError`.
+const PATH_WRAPPERS = new WeakSet<Error>();
+
+/** The error a wrapper made by `addErrorPath` was made around, else the error. */
+export function unwrapPathError(error: unknown): unknown {
+  return error instanceof SerovalError && PATH_WRAPPERS.has(error) ? error.cause : error;
+}
+
 function canAddPath(error: SerovalError): boolean {
-  return Object.isExtensible(error) && (error.path === undefined || Array.isArray(error.path));
+  if (!Object.isExtensible(error)) {
+    return false;
+  }
+  const path: unknown = error.path;
+  return path === undefined || (Array.isArray(path) && Object.isExtensible(path));
 }
 
 /**
@@ -141,9 +154,13 @@ export function addErrorPath(error: unknown, first: string | number, second?: st
     target = error;
   } else {
     target = new SerovalParserError(error);
-    // The wrapper took the path of a seroval error; edit its own copy.
-    if (target.path) {
-      target.path = [...target.path];
+    if (!(error instanceof SerovalError)) {
+      PATH_WRAPPERS.add(target);
+    }
+    if (!import.meta.env.PROD && target.path) {
+      // The constructor added the suffix of the path it copied; start over.
+      const suffix = '\n\nAt ' + formatErrorPath(target.path);
+      BASE_MESSAGES.set(target, target.message.slice(0, target.message.length - suffix.length));
     }
   }
   if (second === undefined) {

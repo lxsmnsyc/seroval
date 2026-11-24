@@ -60,10 +60,10 @@ import type { BaseParserContext, BaseParserContextOptions } from './parser';
 import type { StreamParsePluginContext } from './stream-parser';
 import {
   ObjectKind,
+  addErrorPath,
   createArrayBufferNode,
   createBaseParserContext,
   createIndexForValue,
-  addErrorPath,
   createMapNode,
   createObjectNode,
   createPromiseConstructorNode,
@@ -400,7 +400,7 @@ function parseMap(
     }
   } catch (error) {
     // The key node of the failing entry is not set yet when its key threw.
-    throw addErrorPath(error, i, keyNodes[i] === undefined ? 'key' : 'value');
+    throw addErrorPath(error, i, i in keyNodes ? 'value' : 'key');
   }
   return createMapNode(id, sentinel, keyNodes, valueNodes);
 }

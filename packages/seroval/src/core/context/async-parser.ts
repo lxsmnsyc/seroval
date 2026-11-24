@@ -222,9 +222,8 @@ async function parseProperties(
     }
     handleChildPromises(values);
     for (i = 0; i < len; i++) {
-      let node: MaybeAsyncNode;
       keyNodes[i] = serializeString(keys[i]);
-      node = parseValueAsync(ctx, depth, values[i]);
+      const node = parseValueAsync(ctx, depth, values[i]);
       valueNodes[i] = node instanceof Promise ? await node : node;
     }
   } catch (error) {
@@ -352,7 +351,7 @@ async function parseMap(
     }
   } catch (error) {
     // The key node of the failing entry is not set yet when its key threw.
-    throw addErrorPath(error, i, keyNodes[i] === undefined ? 'key' : 'value');
+    throw addErrorPath(error, i, i in keyNodes ? 'value' : 'key');
   }
   return createMapNode(id, sentinel, keyNodes, valueNodes);
 }

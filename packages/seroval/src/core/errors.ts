@@ -71,7 +71,8 @@ function resolveStepInit(type: string, cause: unknown): ErrorInit {
       code: cause.code,
       step,
       details: { cause },
-      path: cause.path,
+      // A path that is not an array is not ours to read; the wrapper owns its copy.
+      path: Array.isArray(cause.path) ? cause.path.slice() : undefined,
       nodeType: cause.nodeType,
       nodeId: cause.nodeId,
       tag: cause.tag,

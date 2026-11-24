@@ -56,6 +56,18 @@ function getCause(error: unknown): unknown {
   return error instanceof SerovalError ? error.cause : undefined;
 }
 
+// A plain error thrown below the root reaches `onError` as it was thrown. The
+// other modes wrap it in a `SerovalParserError` that has the path.
+function expectOriginal(mode: Mode, error: unknown, original: unknown, path: unknown[]): void {
+  if (mode === 'stream') {
+    expect(error).toBe(original);
+    return;
+  }
+  expect(error).toBeInstanceOf(SerovalParserError);
+  expect(getCause(error)).toBe(original);
+  expect(getPath(error)).toEqual(path);
+}
+
 function getPath(error: unknown): unknown {
   return error instanceof SerovalError ? error.path : undefined;
 }
@@ -162,9 +174,7 @@ describe.each(MODES)('error paths (%s)', (mode) => {
       deserialize: () => new Bad(),
     });
     const error = await capture(mode, { p: new Bad() }, [BadPlugin]);
-    expect(error).toBeInstanceOf(SerovalParserError);
-    expect(getCause(error)).toBe(cause);
-    expect(getPath(error)).toEqual(['p']);
+    expectOriginal(mode, error, cause, ['p']);
   });
 
   it('adds the path to a depth limit error', async () => {
@@ -214,33 +224,27 @@ describe.each(MODES)('error paths (%s)', (mode) => {
     it('keeps an error with a string path unchanged', async () => {
       const original = Object.assign(new Error('ENOENT'), { path: '/tmp/x' });
       const error = await capture(mode, build(original));
-      expect(error).toBeInstanceOf(SerovalParserError);
-      expect(getCause(error)).toBe(original);
+      expectOriginal(mode, error, original, ['a', 0, 'b']);
       expect(original.path).toBe('/tmp/x');
-      expect(getPath(error)).toEqual(['a', 0, 'b']);
     });
 
     it('keeps a frozen error unchanged', async () => {
       const original = Object.freeze(new Error('frozen'));
       const error = await capture(mode, build(original));
-      expect(getCause(error)).toBe(original);
+      expectOriginal(mode, error, original, ['a', 0, 'b']);
       expect(Object.keys(original)).toEqual([]);
-      expect(getPath(error)).toEqual(['a', 0, 'b']);
     });
 
     it('keeps a plain object unchanged', async () => {
       const original = { reason: 'plain' };
       const error = await capture(mode, build(original));
-      expect(getCause(error)).toBe(original);
+      expectOriginal(mode, error, original, ['a', 0, 'b']);
       expect(original).toEqual({ reason: 'plain' });
-      expect(getPath(error)).toEqual(['a', 0, 'b']);
     });
 
     it('keeps a primitive reachable', async () => {
       const error = await capture(mode, build('text'));
-      expect(error).toBeInstanceOf(SerovalParserError);
-      expect(getCause(error)).toBe('text');
-      expect(getPath(error)).toEqual(['a', 0, 'b']);
+      expectOriginal(mode, error, 'text', ['a', 0, 'b']);
     });
 
     it('wraps a frozen seroval error with its path', async () => {
@@ -250,6 +254,74 @@ describe.each(MODES)('error paths (%s)', (mode) => {
       expect(original.path).toBeUndefined();
       expect(getPath(error)).toEqual(['a', 0, 'b']);
     });
+
+    it('wraps a seroval error with a string path and keeps it', async () => {
+      const original = Object.assign(new SerovalUnsupportedTypeError(1), { path: '/tmp/x' });
+      const error = await capture(mode, build(original));
+      expect(getCause(error)).toBe(original);
+      expect(original.path).toBe('/tmp/x');
+      expect(getPath(error)).toEqual(['a', 0, 'b']);
+    });
+
+    it('wraps a seroval error with a number path and keeps it', async () => {
+      const original = Object.assign(new SerovalUnsupportedTypeError(1), { path: 5 });
+      const error = await capture(mode, build(original));
+      expect(getCause(error)).toBe(original);
+      expect(original.path).toBe(5);
+      expect(getPath(error)).toEqual(['a', 0, 'b']);
+    });
+
+    it('wraps a seroval error with a frozen path array and keeps it', async () => {
+      const path = Object.freeze(['x']);
+      const original = Object.assign(new SerovalUnsupportedTypeError(1), { path });
+      const error = await capture(mode, build(original));
+      expect(getCause(error)).toBe(original);
+      expect(original.path).toBe(path);
+      expect(getPath(error)).toEqual(['a', 0, 'b', 'x']);
+    });
+
+    it('adds the path once to the message of a wrapper of a frozen seroval error', async () => {
+      const original = Object.freeze(
+        Object.assign(new SerovalUnsupportedTypeError(1), { path: ['x'] }),
+      );
+      const error = await capture(mode, build(original));
+      expect(getPath(error)).toEqual(['a', 0, 'b', 'x']);
+      const message = error instanceof Error ? error.message : '';
+      expect(message.split('At $').length).toBe(2);
+      expect(message).toContain('At $.a[0].b.x');
+    });
+  });
+
+  it.each([
+    ['typed array', () => new Uint8Array(2)],
+    ['DataView', () => new DataView(new ArrayBuffer(2))],
+  ])('names the buffer of a %s', async (_name, create) => {
+    // The view is at depth 2, so its buffer is the first value past the limit.
+    let error: unknown;
+    try {
+      if (mode === 'sync') {
+        toJSON({ u: create() }, { depthLimit: 2 });
+      } else if (mode === 'async') {
+        await toJSONAsync({ u: create() }, { depthLimit: 2 });
+      } else {
+        toCrossJSONStream(
+          { u: create() },
+          {
+            depthLimit: 2,
+            onParse() {
+              // Records are not needed.
+            },
+            onError(failure) {
+              error = failure;
+            },
+          },
+        );
+      }
+    } catch (failure) {
+      error = failure;
+    }
+    expect(unwrap(error)).toBeInstanceOf(SerovalDepthLimitError);
+    expect(getPath(error)).toEqual(['u', 'buffer']);
   });
 
   it('puts the path in the development message', async () => {
