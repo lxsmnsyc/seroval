@@ -1,7 +1,12 @@
 ---
 title: Quick start
 description: Install seroval, serialize a value, and read it back.
+type: tutorial
 ---
+
+## Before you start
+
+You need Node.js 20 or later, or another runtime from [Compatibility](./compatibility.md#runtimes). The examples are ES modules.
 
 ## Install
 

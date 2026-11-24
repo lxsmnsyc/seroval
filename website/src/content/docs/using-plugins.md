@@ -1,9 +1,14 @@
 ---
 title: Using plugins
 description: Add support for more types with plugins, and use the web plugins from seroval-plugins.
+type: guide
 ---
 
-Plugins teach seroval new types. Pass them in the `plugins` option of any function, on both the sending and the receiving side.
+Plugins add support for types that seroval does not handle itself. To use one:
+
+1. Install the package that has the plugin, such as `seroval-plugins`.
+2. Pass the plugin in the `plugins` option of the function that sends the value.
+3. Pass the same plugin to the function that decodes the value.
 
 ```js
 import { serializeAsync } from 'seroval';
@@ -68,3 +73,9 @@ const plugins = Object.values(web);
 ## Writing your own
 
 See [Writing plugins](./writing-plugins.md). If your plugin decodes data from a client, also read [Plugin security](./plugin-security.md).
+
+## Related
+
+- [Writing plugins](./writing-plugins.md)
+- [Plugin security](./plugin-security.md)
+- [Compatibility](./compatibility.md)

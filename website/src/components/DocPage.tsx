@@ -2,9 +2,10 @@ import type { JSX } from '@solidjs/web';
 import { type Component, For, Show, createSignal, onSettled } from 'solid-js';
 import { getSectionTitle, getSiblings } from '../lib/docs';
 import { syncPackageManagerButtons } from '../lib/package-manager';
+import { placeThumbs } from '../lib/thumb';
 import { REPOSITORY_URL } from '../lib/ui';
 import DocsNav from './DocsNav';
-import { ArrowLeftIcon, ArrowRightIcon, EditIcon } from './Icons';
+import { GithubIcon } from './Icons';
 import PageMeta from './PageMeta';
 
 export interface RenderedDoc {
@@ -16,10 +17,12 @@ export interface RenderedDoc {
   file: string;
 }
 
-/** The table of contents, with the section in view highlighted. */
+/** The table of contents, with the section in view marked. */
 function TableOfContents(props: { doc: RenderedDoc }): JSX.Element {
   const [active, setActive] = createSignal<string>();
   const headings = (): RenderedDoc['headings'] => props.doc.headings.filter((h) => h.depth <= 3);
+  // A page with a single section needs no table of contents.
+  const sections = (): number => headings().filter((h) => h.depth === 2).length;
 
   onSettled(() => {
     const elements = headings()
@@ -45,23 +48,24 @@ function TableOfContents(props: { doc: RenderedDoc }): JSX.Element {
   });
 
   return (
-    <Show when={headings().length > 0}>
+    <Show when={sections() >= 2}>
       <aside class="docs-toc">
-        <p class="docs-nav-title">On this page</p>
         <nav aria-label="On this page">
-          <For each={headings()}>
-            {(heading) => (
-              <a
-                href={`#${heading.id}`}
-                class={{
-                  nested: heading.depth === 3,
-                  current: active() === heading.id,
-                }}
-              >
-                {heading.text}
-              </a>
-            )}
-          </For>
+          <p class="toc-label">On this page</p>
+          <ul class="toc-list">
+            <For each={headings()}>
+              {(heading) => (
+                <li class={heading.depth === 3 ? 'toc-sub' : undefined}>
+                  <a
+                    href={`#${heading.id}`}
+                    aria-current={active() === heading.id ? 'true' : undefined}
+                  >
+                    {heading.text}
+                  </a>
+                </li>
+              )}
+            </For>
+          </ul>
         </nav>
       </aside>
     </Show>
@@ -75,54 +79,51 @@ export default function DocPage(props: { doc: RenderedDoc }): JSX.Element {
   // Install commands in the doc are prerendered with npm chosen.
   onSettled(() => {
     syncPackageManagerButtons();
+    placeThumbs();
   });
 
   return (
-    <div class="docs-layout">
+    <div class="docs">
       <PageMeta title={props.doc.title} description={props.doc.description} />
       <aside class="docs-sidebar">
         <DocsNav />
       </aside>
       <div class="docs-main">
-        <header class="docs-header">
-          <p class="docs-eyebrow">{getSectionTitle(props.doc.slug)}</p>
+        <header class="doc-head">
+          <div class="doc-head-meta">
+            <p class="crumb">{getSectionTitle(props.doc.slug)}</p>
+            <a
+              class="edit-link"
+              href={`${REPOSITORY_URL}/edit/main/${props.doc.file}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GithubIcon />
+              Edit this page
+            </a>
+          </div>
           <h1>{props.doc.title}</h1>
-          <p class="docs-lead">{props.doc.description}</p>
+          <p class="lead">{props.doc.description}</p>
         </header>
         <article class="prose" innerHTML={props.doc.html} />
-        <footer class="docs-footer">
-          <a
-            class="edit-link"
-            href={`${REPOSITORY_URL}/edit/main/${props.doc.file}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <EditIcon />
-            Edit this page on GitHub
-          </a>
-          <nav class="pager" aria-label="Pages">
-            <Show when={siblings().previous}>
-              {(previous) => (
-                <a class="pager-link previous" href={previous().href}>
-                  <span class="pager-label">
-                    <ArrowLeftIcon /> Previous
-                  </span>
-                  <span class="pager-title">{previous().title}</span>
-                </a>
-              )}
-            </Show>
-            <Show when={siblings().next}>
-              {(next) => (
-                <a class="pager-link next" href={next().href}>
-                  <span class="pager-label">
-                    Next <ArrowRightIcon />
-                  </span>
-                  <span class="pager-title">{next().title}</span>
-                </a>
-              )}
-            </Show>
-          </nav>
-        </footer>
+        <nav class="pager" aria-label="Pages">
+          <Show when={siblings().previous}>
+            {(previous) => (
+              <a rel="prev" href={previous().href}>
+                <span class="pager-dir">Previous</span>
+                {previous().title}
+              </a>
+            )}
+          </Show>
+          <Show when={siblings().next}>
+            {(next) => (
+              <a rel="next" href={next().href}>
+                <span class="pager-dir">Next</span>
+                {next().title}
+              </a>
+            )}
+          </Show>
+        </nav>
       </div>
       <TableOfContents doc={props.doc} />
     </div>

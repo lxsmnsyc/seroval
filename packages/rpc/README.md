@@ -93,7 +93,7 @@ search.close();
 - Closing the root channel from either side closes both endpoints.
 - A remote error arrives as `RpcRemoteError` with only its `name` and `message`.
 
-See the [docs](https://seroval.vercel.app/docs/rpc) for the options, the close order, the errors and the limits.
+See the [guide](https://seroval.vercel.app/docs/rpc) for the close order, and the [reference](https://seroval.vercel.app/docs/rpc/reference) for the options, the errors and the limits.
 
 ## License
 

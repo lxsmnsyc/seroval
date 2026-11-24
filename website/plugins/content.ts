@@ -4,6 +4,7 @@ import { Marked, type Tokens } from 'marked';
 import markedFootnote from 'marked-footnote';
 import type { Plugin, ViteDevServer } from 'vite';
 import { parse as parseYAML } from 'yaml';
+import { SIDEBAR } from '../src/content/sidebar.ts';
 import { createInstallCommands, parseNpmInstall } from '../src/lib/package-manager.ts';
 import { codeFrame, escapeHTML, highlight, installFrame } from './highlight.ts';
 
@@ -262,8 +263,10 @@ const SEARCH_ID = 'virtual:search-index';
  * - Importing a doc gives `{ doc }` and a default page component.
  * - `virtual:docs-manifest` lists every doc's slug, title and description.
  * - `virtual:search-index` holds the text of every section, for search.
+ * - The client build emits each doc as Markdown at `docs/<slug>.md`, and
+ *   `llms.txt`, which links them in sidebar order.
  */
-export default function content(root: string): Plugin {
+export default function content(root: string, siteUrl: string): Plugin {
   const docsDir = path.join(import.meta.dirname, '../src/content/docs');
 
   async function loadDocs(): Promise<RenderedDoc[]> {
@@ -304,6 +307,54 @@ export default function content(root: string): Plugin {
         return `\0${id}`;
       }
       return null;
+    },
+    async generateBundle() {
+      if (this.environment.name !== 'client') {
+        return;
+      }
+      // Each page as Markdown, with its title as the first heading. Relative
+      // links between docs still resolve, because the paths keep their folders.
+      const titles = new Map<string, string>();
+      const files = (await readdir(docsDir, { recursive: true })).filter((name) =>
+        name.endsWith('.md'),
+      );
+      for (const name of files) {
+        const source = await readFile(path.join(docsDir, name), 'utf8');
+        const match = FRONTMATTER.exec(source);
+        const meta: unknown = match ? parseYAML(match[1]) : undefined;
+        const slug = name.split(path.sep).join('/').slice(0, -'.md'.length);
+        if (!match || !isDocMeta(meta)) {
+          throw new Error(`${name} needs a title and a description`);
+        }
+        titles.set(slug, meta.title);
+        this.emitFile({
+          type: 'asset',
+          fileName: `docs/${slug}.md`,
+          source: `# ${meta.title}\n\n${meta.description}\n${source.slice(match[0].length)}`,
+        });
+      }
+      // `llms.txt` lists the pages the sidebar shows, by section.
+      let index =
+        '# seroval\n\n> seroval turns a value into a string, and the string back into the value. It handles cyclic references, Date, Map, Set, BigInt, promises and streams, with output as code, as JSON or as a stream.\n';
+      for (const section of SIDEBAR) {
+        if (section.hidden) {
+          continue;
+        }
+        index += `\n## ${section.title}\n\n`;
+        for (const slug of section.pages) {
+          index += `- [${titles.get(slug) ?? slug}](${siteUrl}/docs/${slug}.md)\n`;
+        }
+      }
+      // Pages the sidebar hides, such as the error codes, are optional reading.
+      index += '\n## Optional\n\n';
+      for (const section of SIDEBAR) {
+        if (section.hidden) {
+          for (const slug of section.pages) {
+            index += `- [${titles.get(slug) ?? slug}](${siteUrl}/docs/${slug}.md)\n`;
+          }
+        }
+      }
+      this.emitFile({ type: 'asset', fileName: 'llms.txt', source: index });
     },
     async load(id) {
       if (id === `\0${MANIFEST_ID}`) {

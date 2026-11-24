@@ -1,6 +1,7 @@
 ---
 title: Cross-reference serialization
 description: Share references between separate scripts with crossSerialize, refs and scopeId.
+type: concept
 ---
 
 `serialize` makes each result self-contained. Two calls that include the same object each send their own copy. Cross-reference serialization lets several scripts share values instead: a later script can refer back to a value an earlier script already sent.
@@ -105,3 +106,9 @@ copyA.next === copyB; // true
 ```
 
 `fromCrossJSON` requires its options argument. Pass `{}` if you have none.
+
+## Related
+
+- [Streaming](./streaming.md)
+- [Choosing a mode](./choosing-a-mode.md#isolated-or-shared-references)
+- [API reference](./api.md#cross-reference)

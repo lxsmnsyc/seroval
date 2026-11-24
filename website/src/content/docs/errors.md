@@ -1,6 +1,7 @@
 ---
 title: Errors
 description: The errors seroval throws, their codes, and how to read them in production.
+type: reference
 ---
 
 Every error that seroval throws because of the data is a `SerovalError`. Each one has a `code` such as `SRV008`, and each code has a page that says what it means and how to fix it.
@@ -12,6 +13,7 @@ Every error that seroval throws because of the data is a `SerovalError`. Each on
 | `name` | The class name, such as `SerovalMalformedNodeError`. |
 | `code` | The code from the [table below](#codes). Codes never change once released. |
 | `step` | `'parse'`, `'serialize'` or `'deserialize'`. Errors that are never wrapped have none. |
+| `path` | Where in the value a parse error happened, as keys and indexes from the root, such as `['users', 0, 'avatar']`. Only parse errors have it. See [Where it failed](#where-it-failed). |
 | `cause` | The error that a wrapper caught. |
 
 Some errors add fields with more detail, such as `tag`, `limit`, `nodeType`, `nodeId` or `detail`. The page of each code lists them.
@@ -50,6 +52,27 @@ try {
 
 Errors caused by how a function is called, not by the data, are standard errors such as `RangeError`. They still have a `code`.
 
+## Where it failed
+
+When the serializer cannot read a value, the error has a `path` from the root of the value to the part that failed. The wrapper and the error it wraps have the same `path`. In the development build, the message ends with the path:
+
+```js
+import { serialize } from 'seroval';
+
+try {
+  serialize({ users: [{ name: 'Ada', avatar: () => {} }] });
+} catch (error) {
+  error.code; // 'SRV001'
+  error.path; // ['users', 0, 'avatar']
+  error.message;
+  // The value [object Function] of type "function" cannot be parsed/serialized.
+  // ...
+  // At $.users[0].avatar
+}
+```
+
+A number in `path` is an array index, and a string is a property key. The production message leaves the path out, because it may contain keys from the data. Read `error.path` instead.
+
 ## Messages in production
 
 In the production build, each message is one line with the code, the step and the link to the page of the code:
@@ -64,7 +87,21 @@ An error with no step leaves out the parenthesis:
 Seroval SRV011: https://seroval.vercel.app/docs/errors/SRV011
 ```
 
-Production messages never contain values from the data. The development build has full messages that say what was wrong. Bundlers select it through the `development` export condition, which most of them set in development mode. The error classes and fields are the same in both builds, so `instanceof` and `code` checks work everywhere.
+Production messages never contain values or keys from the data. The development build has full messages that say what was wrong. Bundlers select it through the `development` export condition, which most of them set in development mode. The error classes and fields are the same in both builds, so `instanceof` and `code` checks work everywhere.
+
+## Reading the catalog
+
+`seroval` exports the catalog that these messages come from, for tools that show or log errors:
+
+| Export | Description |
+| --- | --- |
+| `ERROR_CODES` | Every code by its short name, such as `ERROR_CODES.MalformedNode`, which is `'SRV008'`. |
+| `DOCS_ERRORS_URL` | The base URL of the code pages. The page of a code is `` `${DOCS_ERRORS_URL}/${code}` ``. |
+| `getProdMessage(code, step?)` | The production message of a code. |
+| `getCatalogEntry(code)` | The class name, title and message function of a code. Returns `undefined` in the production build. |
+| `getDevMessage(code, details)` | The development message of a code. Returns `''` in the production build. |
+
+The types `ErrorCode`, `ErrorName`, `SerovalErrorStep`, `CatalogEntry` and `SerovalErrorShape` describe the same values.
 
 ## Codes
 
@@ -90,3 +127,9 @@ Production messages never contain values from the data. The development build ha
 | [SRV018](./errors/SRV018.md) | `SerovalStreamOutputError` | The stream parser has no output callback. |
 | [SRV019](./errors/SRV019.md) | `RangeError` | The maxBase64Length option is invalid. |
 | [SRV020](./errors/SRV020.md) | `SerovalBase64LimitError` | An ArrayBuffer is larger than maxBase64Length. |
+
+## Related
+
+- [Upgrade to 1.9](./migration/1-9.md)
+- [Security](./security.md)
+- [API reference](./api.md#errors)

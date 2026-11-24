@@ -1,6 +1,7 @@
 ---
 title: Streams and iterables
 description: Send iterables, async iterables, seroval streams and live streams with backpressure.
+type: concept
 ---
 
 A promise settles once. To send several values over time, use an async iterable or one of seroval's streams.
@@ -146,3 +147,9 @@ To read a live stream in your own code instead of serializing it, call `stream.c
 | Live stream | Throws | All values, once it ends | Each event, with backpressure |
 
 The async functions wait for the stream to end. A stream that never ends makes them wait forever.
+
+## Related
+
+- [Streaming](./streaming.md)
+- [Compatibility](./compatibility.md#supported-types)
+- [API reference](./api.md#streams)

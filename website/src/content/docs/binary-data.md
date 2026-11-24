@@ -1,6 +1,7 @@
 ---
 title: Binary data
 description: How ArrayBuffers and typed arrays are encoded, how to send only a view's bytes, and the JSON size limit.
+type: concept
 ---
 
 `ArrayBuffer`, `DataView` and every typed array are supported in all modes. A buffer's bytes are encoded as base64, using the fastest encoder the runtime offers.
@@ -61,6 +62,12 @@ Details:
 
 - The limit applies to each buffer, not to the whole payload.
 - It must be a non-negative safe integer. Zero allows only empty buffers.
-- An invalid limit throws a `RangeError` when decoding starts.
-- An oversized buffer is rejected before it is decoded. The error is a `SerovalDeserializationError` whose `cause` is a `RangeError`.
+- An invalid limit throws a `RangeError` ([SRV019](./errors/SRV019.md)) when decoding starts.
+- An oversized buffer is rejected before it is decoded. The error is a `SerovalDeserializationError` whose `cause` is a `SerovalBase64LimitError` ([SRV020](./errors/SRV020.md)). Both have the code `SRV020`.
 - `deserialize` does not use this limit, because it runs JavaScript instead of decoding JSON.
+
+## Related
+
+- [JSON](./json.md#fromjson-options)
+- [SRV020](./errors/SRV020.md)
+- [Security](./security.md)

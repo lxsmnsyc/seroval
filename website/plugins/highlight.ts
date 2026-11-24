@@ -40,14 +40,36 @@ export function highlight(code: string, lang: string): string {
   return highlighter(code);
 }
 
-/** Wraps highlighted code in a frame with a label and a copy button. */
+const FILE_NAME = /[./]/;
+
+function svg(extra: string, paths: string): string {
+  return `<svg class="icon"${extra} viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
+}
+
+/** The copy button: a copy icon that swaps to a check, or a cross when copying fails. */
+function copyButton(): string {
+  return [
+    '<button type="button" class="code-copy" data-copy aria-label="Copy"><span class="swap">',
+    svg(
+      ' data-off',
+      '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+    ),
+    svg(' data-on', '<path d="M20 6 9 17l-5-5"/>'),
+    svg(' data-fail', '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>'),
+    '</span></button>',
+  ].join('');
+}
+
+/**
+ * Wraps highlighted code in a frame with a label and a copy button. A label
+ * that looks like a file name goes on the left, a language on the right.
+ */
 export function codeFrame(html: string, label: string): string {
+  const className = FILE_NAME.test(label) ? 'code-block-name' : 'code-lang';
   return [
     '<div class="code-block">',
-    '<div class="code-header">',
-    `<span class="code-label">${escapeHTML(label)}</span>`,
-    '<button type="button" class="copy-button" data-copy aria-label="Copy code">Copy</button>',
-    '</div>',
+    // The header wrapper keeps the label and the button out of the search index.
+    `<div class="code-header"><span class="${className}">${escapeHTML(label)}</span>${copyButton()}</div>`,
     html,
     '</div>',
   ].join('');
@@ -63,18 +85,13 @@ export function installFrame(commands: Record<PackageManager, string>): string {
   const panels: string[] = [];
   for (const manager of PACKAGE_MANAGERS) {
     options.push(
-      `<button type="button" class="pm-option" data-pm-option="${manager}" aria-pressed="${manager === 'npm'}">${manager}</button>`,
+      `<button type="button" class="pill" data-pm-option="${manager}" aria-pressed="${manager === 'npm'}">${manager}</button>`,
     );
-    panels.push(
-      `<div class="pm-command" data-pm-command="${manager}">${highlight(commands[manager], 'bash')}</div>`,
-    );
+    panels.push(`<div data-pm-command="${manager}">${highlight(commands[manager], 'bash')}</div>`);
   }
   return [
-    '<div class="code-block">',
-    '<div class="code-header">',
-    `<span class="pm-picker" role="group" aria-label="Package manager">${options.join('')}</span>`,
-    '<button type="button" class="copy-button" data-copy aria-label="Copy code">Copy</button>',
-    '</div>',
+    '<div class="code-block install-block">',
+    `<div class="code-header"><span class="pills" data-thumb role="group" aria-label="Package manager">${options.join('')}</span>${copyButton()}</div>`,
     ...panels,
     '</div>',
   ].join('');

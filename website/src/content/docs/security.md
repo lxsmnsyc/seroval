@@ -1,6 +1,7 @@
 ---
 title: Security
 description: Which functions are safe for untrusted input, and how to use them safely.
+type: concept
 ---
 
 seroval has two ways to rebuild a value, with very different trust requirements:
@@ -51,3 +52,9 @@ seroval validates its own node types, but a plugin's payload is the plugin's job
 ## Reporting a vulnerability
 
 Do not open a public issue. Follow the [security policy](https://github.com/lxsmnsyc/seroval/blob/main/SECURITY.md).
+
+## Related
+
+- [Plugin security](./plugin-security.md)
+- [JSON](./json.md)
+- [Binary data](./binary-data.md#json-decoding-limits)

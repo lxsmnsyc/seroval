@@ -11,7 +11,8 @@ const SIDEBAR_FILE = fileURLToPath(
   new URL('../../../../website/src/content/sidebar.ts', import.meta.url),
 );
 
-const FRONTMATTER = /^---\ntitle: (.*)\ndescription: (.*)\n---\n/;
+// Other keys, such as the page `type`, may follow the description.
+const FRONTMATTER = /^---\ntitle: (.*)\ndescription: (.*)\n(?:[a-z]+: .*\n)*---\n/;
 
 function readPage(code: string): string {
   return readFileSync(PAGES_DIR + code + '.md', 'utf8');

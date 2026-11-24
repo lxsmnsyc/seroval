@@ -1,9 +1,17 @@
 ---
 title: Writing plugins
 description: Add support for your own types with createPlugin.
+type: guide
 ---
 
-A plugin tells seroval how to take a value apart into nodes, and how to put it back together. This page builds a plugin for a `Point` class.
+A plugin tells seroval how to take a value apart into nodes, and how to put it back together. This page builds a plugin for a `Point` class in these steps:
+
+1. Pick a `tag` that names the plugin in the output.
+2. Write `test`, which picks the values the plugin handles.
+3. Write a `parse` function for each mode the plugin supports.
+4. Write `serialize` for the JavaScript output.
+5. Write `validate` and `deserialize` for the JSON decoders.
+6. Pass the plugin to both sides.
 
 ```js
 class Point {
@@ -18,6 +26,7 @@ class Point {
 
 ```js
 import { createPlugin } from 'seroval';
+import * as v from 'seroval/validator';
 
 export const PointPlugin = createPlugin({
   tag: 'my-app/Point',
@@ -35,16 +44,13 @@ export const PointPlugin = createPlugin({
       return { x: ctx.parse(point.x), y: ctx.parse(point.y) };
     },
   },
+  validate: { x: v.number, y: v.number },
   serialize(node, ctx) {
     return `new Point(${ctx.serialize(node.x)},${ctx.serialize(node.y)})`;
   },
   deserialize(node, ctx) {
-    const x = ctx.deserialize(node.x);
-    const y = ctx.deserialize(node.y);
-    if (typeof x !== 'number' || typeof y !== 'number') {
-      throw new TypeError('Point: expected two numbers.');
-    }
-    return new Point(x, y);
+    // `validate` has checked that both are numbers.
+    return new Point(ctx.deserialize(node.x), ctx.deserialize(node.y));
   },
 });
 ```
@@ -98,3 +104,9 @@ Each function gets a context to process nested values:
 - Always parse nested values with `ctx.parse`, never by hand. This keeps references and cycles inside them intact.
 - Build the JavaScript output only from `ctx.serialize` results and fixed strings. Never insert a value from the node yourself.
 - Validate everything `ctx.deserialize` returns before you use it, with `validate` or by hand. See [Plugin security](./plugin-security.md).
+
+## Related
+
+- [Plugin security](./plugin-security.md)
+- [Using plugins](./using-plugins.md)
+- [API reference](./api.md#references-and-plugins)

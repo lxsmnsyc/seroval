@@ -1,5 +1,5 @@
 import type { JSX } from '@solidjs/web';
-import { For, onSettled } from 'solid-js';
+import { For, Show, onSettled } from 'solid-js';
 import {
   Feature,
   crossSerialize,
@@ -9,7 +9,14 @@ import {
   serialize,
   toJSON,
 } from 'seroval';
-import { CheckIcon, CopyIcon } from '../components/Icons';
+import CopyButton from '../components/CopyButton';
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  CircleXIcon,
+  ResetIcon,
+} from '../components/Icons';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
 import {
@@ -17,19 +24,16 @@ import {
   createInstallCommands,
   syncPackageManagerButtons,
 } from '../lib/package-manager';
-import { SHORT_VERSION } from '../lib/ui';
+import { placeThumb, placeThumbs } from '../lib/thumb';
 
 const INSTALL_COMMANDS = createInstallCommands('seroval');
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/* Hero: an object graph that serializes itself */
+/* Hero: a value, its string, and the value back */
 
 interface HeroUser {
   name: string;
   born: Date;
-  tags: Set<string>;
-  notes: Map<string, unknown>;
-  id: bigint;
+  notes: Map<string, string>;
   self?: HeroUser;
 }
 
@@ -37,94 +41,41 @@ function createHeroUser(): HeroUser {
   const user: HeroUser = {
     name: 'Ada',
     born: new Date('1815-12-10'),
-    tags: new Set(['math', 'engines']),
-    notes: new Map<string, unknown>([['G', 'Bernoulli']]),
-    id: 1815n,
+    notes: new Map([['G', 'Bernoulli']]),
   };
   user.self = user;
-  user.notes.set('by', user);
   return user;
 }
 
+/** The source the hero shows, which builds the same value as createHeroUser. */
+const HERO_SOURCE = `const user = {
+  name: "Ada",
+  born: new Date("1815-12-10"),
+  notes: new Map([["G", "Bernoulli"]]),
+};
+user.self = user;`;
+
 const HERO_OUTPUT = serialize(createHeroUser());
 
-interface GraphNode {
-  id: string;
-  label: string;
-  sub: string;
-  x: number;
-  y: number;
-  color: string;
-  // The part of the output that lights the node up once it is typed.
-  token: string;
+interface HeroCheck {
+  source: string;
+  pass: boolean;
 }
 
-const NODES: GraphNode[] = [
-  {
-    id: 'obj',
-    label: 'Object',
-    sub: 'user',
-    x: 300,
-    y: 210,
-    color: 'var(--c-obj)',
-    token: '{name',
-  },
-  {
-    id: 'date',
-    label: 'Date',
-    sub: '1815-12-10',
-    x: 120,
-    y: 110,
-    color: 'var(--c-date)',
-    token: 'new Date',
-  },
-  {
-    id: 'set',
-    label: 'Set',
-    sub: '2 items',
-    x: 480,
-    y: 100,
-    color: 'var(--c-set)',
-    token: 'new Set',
-  },
-  {
-    id: 'map',
-    label: 'Map',
-    sub: '2 entries',
-    x: 470,
-    y: 330,
-    color: 'var(--c-map)',
-    token: 'new Map',
-  },
-  {
-    id: 'big',
-    label: 'BigInt',
-    sub: '1815n',
-    x: 130,
-    y: 330,
-    color: 'var(--c-big)',
-    token: '1815n',
-  },
-];
-
-interface GraphEdge {
-  from: string;
-  to: string;
-  cyclic: boolean;
+function createHeroChecks(): HeroCheck[] {
+  const back = deserialize<HeroUser>(HERO_OUTPUT);
+  return [
+    { source: 'back.born instanceof Date', pass: back.born instanceof Date },
+    { source: 'back.notes.get("G") === "Bernoulli"', pass: back.notes.get('G') === 'Bernoulli' },
+    { source: 'back.self === back', pass: back.self === back },
+  ];
 }
 
-const EDGES: GraphEdge[] = [
-  { from: 'obj', to: 'date', cyclic: false },
-  { from: 'obj', to: 'set', cyclic: false },
-  { from: 'obj', to: 'map', cyclic: false },
-  { from: 'obj', to: 'big', cyclic: false },
-  { from: 'map', to: 'obj', cyclic: true },
-  { from: 'obj', to: 'obj', cyclic: true },
-];
+const HERO_CHECKS = createHeroChecks();
 
-/* Marquee */
+/* The types seroval handles, by where they come from */
 
-const TYPES = [
+const CORE_TYPES = [
   'Date',
   'Map',
   'Set',
@@ -137,12 +88,16 @@ const TYPES = [
   'Uint8Array',
   'DataView',
   'AsyncIterable',
+  'Temporal',
   'NaN',
-  '−0',
+  '-0',
   'Infinity',
   'undefined',
-  'Temporal',
+];
+
+const PLUGIN_TYPES = [
   'URL',
+  'URLSearchParams',
   'Headers',
   'FormData',
   'Blob',
@@ -150,21 +105,11 @@ const TYPES = [
   'Request',
   'Response',
   'ReadableStream',
+  'Event',
+  'DOMException',
 ];
 
-const SNIPPETS = [
-  'x.self = x',
-  'new Map([[k, v]])',
-  'Object.create(null)',
-  '[ , , 1]',
-  'Symbol.asyncIterator',
-  'await fetch()',
-  'new Uint8Array(8)',
-  '/ab+c/gi',
-  '9007199254740993n',
-];
-
-/* 01: JSON.stringify next to serialize */
+/* JSON.stringify next to serialize */
 
 interface ComparisonRow {
   label: string;
@@ -211,7 +156,7 @@ function createComparisonRows(): ComparisonRow[] {
 
 const COMPARISON_ROWS = createComparisonRows();
 
-/* 03: one value in three output formats */
+/* One value in three output formats */
 
 interface ModeValue {
   id: string;
@@ -288,6 +233,67 @@ const MODES: OutputMode[] = [
   },
 ];
 
+/* Questions that stop a visitor from starting */
+
+interface Question {
+  question: string;
+  answer: JSX.Element;
+}
+
+const QUESTIONS: Question[] = [
+  {
+    question: 'Is it safe to decode data from a client?',
+    answer: (
+      <>
+        Yes, with the JSON functions. <code>fromJSON</code> validates the tree and runs no code from
+        it. Never pass untrusted input to <code>deserialize</code>, which runs it.{' '}
+        <a href="/docs/security">Security</a>
+      </>
+    ),
+  },
+  {
+    question: 'Can the sender and receiver run different seroval versions?',
+    answer: (
+      <>
+        Use the same version on both sides. The payload format can change in a minor release.{' '}
+        <a href="/docs/errors/SRV002">SRV002</a>
+      </>
+    ),
+  },
+  {
+    question: 'Where does it run?',
+    answer: (
+      <>
+        Node.js 20 or later, Deno, Bun, browsers and edge runtimes. It has no dependencies.{' '}
+        <a href="/docs/compatibility#runtimes">Compatibility</a>
+      </>
+    ),
+  },
+  {
+    question: 'Can it send my own classes, or URL and Request?',
+    answer: (
+      <>
+        Write a plugin for your classes. <code>seroval-plugins</code> covers URL, Headers, FormData,
+        Request, Response, Blob, ReadableStream and more.{' '}
+        <a href="/docs/using-plugins">Using plugins</a>
+      </>
+    ),
+  },
+  {
+    question: 'Can it send functions?',
+    answer: (
+      <>
+        Not their code. Register a function on both sides with <code>createReference</code>, and
+        seroval sends its key. <a href="/docs/isomorphic-references">Isomorphic references</a>
+      </>
+    ),
+  },
+  {
+    question: 'What does it cost?',
+    answer: <>Nothing. seroval is MIT licensed.</>,
+  },
+];
+
 /* Helpers for the animations */
 
 function escapeHTML(text: string): string {
@@ -311,6 +317,13 @@ function colorizeOutput(text: string): string {
   );
 }
 
+function colorizeSource(text: string): string {
+  return escapeHTML(text)
+    .replace(/"[^"]*"/g, '<span class="t-str">$&</span>')
+    .replace(/\b(const|new|instanceof)\b/g, '<span class="t-kw">$&</span>')
+    .replace(/\b(Date|Map)\b/g, '<span class="t-fn">$&</span>');
+}
+
 async function wait(ms: number): Promise<void> {
   await new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -330,30 +343,10 @@ function query(root: Element, selector: string): HTMLElement {
   return element;
 }
 
-function createSVG(
-  tag: string,
-  attributes: Record<string, string | number>,
-  parent: Element,
-): SVGElement {
-  const element = document.createElementNS(SVG_NS, tag);
-  for (const name of Object.keys(attributes)) {
-    element.setAttribute(name, String(attributes[name]));
-  }
-  parent.appendChild(element);
-  return element;
-}
-
-interface LiveNode {
-  node: GraphNode;
-  group: SVGElement;
-  halo: SVGElement;
-  at: number;
-  cx: number;
-  cy: number;
-}
-
 /**
  * Runs every animation on the page and returns a function that stops them.
+ * The hero pauses while it is off screen, and under reduced motion it shows
+ * its end state once.
  */
 function animate(root: HTMLElement): () => void {
   // The cleanup function sets this, and the loops below read it through
@@ -364,122 +357,58 @@ function animate(root: HTMLElement): () => void {
   }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Hero graph: build the nodes and edges.
-  const svg = root.querySelector('.graph');
-  if (!svg) {
-    throw new Error('Missing .graph');
-  }
-  const edgeElements: SVGElement[] = [];
-  for (const edge of EDGES) {
-    edgeElements.push(createSVG('path', { class: edge.cyclic ? 'edge cyc' : 'edge' }, svg));
-  }
-  const live = new Map<string, LiveNode>();
-  for (const node of NODES) {
-    const group = createSVG('g', { class: 'node' }, svg);
-    const halo = createSVG('circle', { class: 'halo', r: 0, fill: node.color, opacity: 0 }, group);
-    createSVG(
-      'circle',
-      { r: 30, fill: 'var(--bg)', stroke: node.color, 'stroke-width': 1.2 },
-      group,
-    );
-    createSVG('text', { class: 'type', 'text-anchor': 'middle', dy: 5 }, group).textContent =
-      node.label;
-    createSVG('text', { 'text-anchor': 'middle', dy: 52 }, group).textContent = node.sub;
-    live.set(node.id, {
-      node,
-      group,
-      halo,
-      at: HERO_OUTPUT.indexOf(node.token),
-      cx: node.x,
-      cy: node.y,
-    });
-  }
-  const orb = createSVG('circle', { r: 4, fill: 'var(--signal)', opacity: 0 }, svg);
-
-  // Hero graph: drift the nodes and redraw the edges every frame.
-  const start = performance.now();
-  let frameId = 0;
-  function drawFrame(now: number): void {
-    const t = (now - start) / 1000;
-    let index = 0;
-    for (const item of live.values()) {
-      item.cx = item.node.x + Math.sin(t * 0.6 + index * 1.7) * 8;
-      item.cy = item.node.y + Math.cos(t * 0.5 + index * 1.3) * 8;
-      item.group.setAttribute('transform', `translate(${item.cx} ${item.cy})`);
-      index++;
+  // The hero runs only while its stage is on screen.
+  let heroVisible = true;
+  let wake: (() => void) | undefined;
+  async function untilVisible(): Promise<void> {
+    if (running() && !heroVisible) {
+      await new Promise<void>((resolve) => {
+        wake = resolve;
+      });
+      await untilVisible();
     }
-    for (let i = 0; i < EDGES.length; i++) {
-      const edge = EDGES[i];
-      const a = live.get(edge.from)!;
-      const b = live.get(edge.to)!;
-      let d: string;
-      if (a === b) {
-        d = `M${a.cx - 20} ${a.cy - 22} C ${a.cx - 70} ${a.cy - 120}, ${a.cx + 70} ${a.cy - 120}, ${a.cx + 20} ${a.cy - 22}`;
-      } else if (edge.cyclic) {
-        const mx = (a.cx + b.cx) / 2 + 60;
-        const my = (a.cy + b.cy) / 2 + 50;
-        d = `M${a.cx} ${a.cy} Q ${mx} ${my} ${b.cx} ${b.cy}`;
-      } else {
-        d = `M${a.cx} ${a.cy} L ${b.cx} ${b.cy}`;
-      }
-      edgeElements[i].setAttribute('d', d);
-    }
-    frameId = requestAnimationFrame(drawFrame);
   }
-  frameId = requestAnimationFrame(drawFrame);
+  async function heroWait(ms: number): Promise<void> {
+    await wait(ms);
+    await untilVisible();
+  }
 
-  // Hero graph: type the output, light up each node, then deserialize.
+  // Hero: type the output, then pass each check of the value read back.
+  // The server rendered the end state, which reduced motion keeps.
   async function runHero(): Promise<void> {
-    const out = query(root, '.wire .out');
-    const phase = query(root, '.hud .phase');
-    const bytes = query(root, '.hud .bytes');
+    if (reduce) {
+      return;
+    }
+    const out = query(root, '.rt-out');
+    const bytes = query(root, '.rt-bytes');
+    const checks = root.querySelectorAll<HTMLElement>('.rt-check');
     while (running()) {
-      phase.textContent = 'live graph';
-      for (const item of live.values()) {
-        item.halo.setAttribute('r', '0');
-        item.halo.setAttribute('opacity', '0');
+      for (const check of checks) {
+        check.dataset.state = 'off';
       }
       out.innerHTML = '';
       bytes.textContent = '0 B';
-      await wait(1400);
-      phase.textContent = 'serialize →';
-      const lit = new Set<LiveNode>();
-      const step = reduce ? HERO_OUTPUT.length : 2;
-      for (let i = 1; i <= HERO_OUTPUT.length && running(); i += step) {
-        out.innerHTML = colorizeOutput(HERO_OUTPUT.slice(0, i));
-        bytes.textContent = `${i} B`;
-        for (const item of live.values()) {
-          if (item.at >= 0 && i >= item.at && !lit.has(item)) {
-            lit.add(item);
-            item.halo.setAttribute('r', '46');
-            item.halo.setAttribute('opacity', '0.18');
-            orb.setAttribute('cx', String(item.cx));
-            orb.setAttribute('cy', String(item.cy));
-            orb.setAttribute('opacity', '1');
-          }
+      await heroWait(900);
+      for (let i = 3; running(); i += 3) {
+        const end = Math.min(i, HERO_OUTPUT.length);
+        out.innerHTML = colorizeOutput(HERO_OUTPUT.slice(0, end));
+        bytes.textContent = `${end} B`;
+        if (end === HERO_OUTPUT.length) {
+          break;
         }
-        await wait(22);
+        await heroWait(28);
       }
-      orb.setAttribute('opacity', '0');
-      phase.textContent = 'string';
-      await wait(1800);
-      phase.textContent = '← deserialize';
-      const back = deserialize<HeroUser>(HERO_OUTPUT);
-      const restored =
-        back.self === back && back.notes.get('by') === back && back.born instanceof Date;
-      const reversed = [...live.values()].reverse();
-      for (const item of reversed) {
-        item.halo.setAttribute('opacity', '0');
-        item.halo.setAttribute('r', '0');
-        await wait(120);
+      await heroWait(500);
+      for (const check of checks) {
+        check.dataset.state = check.dataset.pass === 'true' ? 'on' : 'failed';
+        await heroWait(450);
       }
-      phase.textContent = restored ? 'restored · back.self === back ✓' : 'restored';
-      await wait(2600);
+      await heroWait(3200);
     }
   }
   runHero().catch(() => undefined);
 
-  // 02: send real stream chunks across the lane.
+  // Stream: send real stream chunks across the lane.
   const lane = query(root, '.lane');
   const log = query(root, '.log');
   let streamRun = 0;
@@ -489,7 +418,7 @@ function animate(root: HTMLElement): () => void {
     packet.className = later ? 'packet later' : 'packet';
     packet.textContent = text;
     lane.appendChild(packet);
-    const distance = lane.clientWidth - 260 - packet.offsetWidth;
+    const distance = lane.clientWidth - 240 - packet.offsetWidth;
     const animation = packet.animate(
       [
         { transform: 'translate(0,-50%) scale(.6)', opacity: 0 },
@@ -557,28 +486,35 @@ function animate(root: HTMLElement): () => void {
   const replay = query(root, '.replay');
   replay.addEventListener('click', runStream);
 
-  // 03: show a mode's output one character at a time.
-  const modeButtons = root.querySelectorAll<HTMLButtonElement>('.mode-btn');
+  // Output formats: show a format's output one character at a time.
+  const tablist = query(root, '.mode-tabs');
+  const modeButtons = tablist.querySelectorAll<HTMLButtonElement>('[data-mode]');
   function showMode(id: string): void {
     for (const button of modeButtons) {
-      button.setAttribute('aria-selected', String(button.dataset.mode === id));
+      const selected = button.dataset.mode === id;
+      button.setAttribute('aria-selected', String(selected));
+      button.tabIndex = selected ? 0 : -1;
     }
+    placeThumb(tablist);
     for (const mode of MODES) {
       if (mode.id !== id) {
         continue;
       }
       const output = mode.render();
+      query(root, '.mode-note').textContent = mode.description;
       query(root, '.mode-fn').innerHTML = mode.call;
       let html = '';
       let i = 0;
       for (const char of output) {
-        html += `<span class="ch" style="animation-delay:${Math.min(i * 3, 900)}ms">${escapeHTML(char)}</span>`;
+        // Under reduced motion the output appears at once.
+        const delay = reduce ? 0 : Math.min(i * 3, 900);
+        html += `<span class="ch" style="animation-delay:${delay}ms">${escapeHTML(char)}</span>`;
         i++;
       }
       query(root, '.mode-pre').innerHTML = html;
       query(root, '.mode-size').textContent = `${output.length} B`;
       query(root, '.mode-eval').textContent = mode.needsEval;
-      query(root, '.mode-rt').textContent = mode.roundTrips() ? 'self === self ✓' : '—';
+      query(root, '.mode-rt').textContent = mode.roundTrips() ? 'Yes' : '—';
     }
   }
   function onModeClick(event: Event): void {
@@ -587,37 +523,45 @@ function animate(root: HTMLElement): () => void {
       showMode(button.dataset.mode);
     }
   }
+  // Arrow keys, Home and End move between the tabs, as in any tab list.
+  function onModeKeyDown(event: KeyboardEvent): void {
+    const tabs = [...modeButtons];
+    let at = -1;
+    for (let i = 0; i < tabs.length; i++) {
+      if (tabs[i] === document.activeElement) {
+        at = i;
+      }
+    }
+    if (at < 0) {
+      return;
+    }
+    let next: HTMLButtonElement | undefined;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      next = tabs[(at + 1) % tabs.length];
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      next = tabs[(at - 1 + tabs.length) % tabs.length];
+    } else if (event.key === 'Home') {
+      next = tabs[0];
+    } else if (event.key === 'End') {
+      next = tabs[tabs.length - 1];
+    }
+    if (next) {
+      event.preventDefault();
+      next.click();
+      next.focus();
+    }
+  }
   for (const button of modeButtons) {
     button.addEventListener('click', onModeClick);
   }
+  tablist.addEventListener('keydown', onModeKeyDown);
 
-  // Install buttons copy the command of the chosen package manager.
+  // The install pickers match the stored package manager.
   syncPackageManagerButtons();
-  const installButtons = root.querySelectorAll<HTMLButtonElement>('.install');
-  function onInstallClick(event: Event): void {
-    const button = event.currentTarget;
-    const command = button instanceof HTMLElement ? button.dataset.command : undefined;
-    if (!(button instanceof HTMLElement) || command == null) {
-      return;
-    }
-    navigator.clipboard
-      .writeText(command)
-      .then(() => {
-        // Swap the clipboard icon for a check mark for a moment.
-        button.classList.add('copied');
-        button.setAttribute('aria-label', `Copied: ${command}`);
-        setTimeout(() => {
-          button.classList.remove('copied');
-          button.setAttribute('aria-label', `Copy: ${command}`);
-        }, 1400);
-      })
-      .catch(() => undefined);
-  }
-  for (const button of installButtons) {
-    button.addEventListener('click', onInstallClick);
-  }
+  placeThumbs();
 
-  // Reveal sections as they scroll in, and start each demo once.
+  // Start each demo once, when it first scrolls in. The comparison rows
+  // strike through the lost values one after another.
   let streamed = false;
   let moded = false;
   const observer = new IntersectionObserver(
@@ -630,21 +574,14 @@ function animate(root: HTMLElement): () => void {
         if (!(element instanceof HTMLElement)) {
           continue;
         }
-        let order = 0;
-        for (const sibling of element.parentElement?.children ?? []) {
-          if (sibling === element) {
-            break;
-          }
-          if (sibling.classList.contains('reveal')) {
-            order++;
-          }
-        }
-        element.style.transitionDelay = `${order * 70}ms`;
-        element.classList.add('in');
         if (element.classList.contains('cmp-row')) {
-          setTimeout(() => {
-            element.classList.add('in-view');
-          }, 200);
+          const order = Number(element.dataset.order ?? 0);
+          setTimeout(
+            () => {
+              element.classList.add('in-view');
+            },
+            reduce ? 0 : 200 + (order % 5) * 90,
+          );
         }
         if (element.classList.contains('stream') && !streamed) {
           streamed = true;
@@ -659,34 +596,45 @@ function animate(root: HTMLElement): () => void {
     },
     { threshold: 0.2 },
   );
-  for (const element of root.querySelectorAll('.reveal')) {
+  for (const element of root.querySelectorAll('[data-reveal]')) {
     observer.observe(element);
   }
+
+  // Pause the hero while its stage is off screen.
+  const stageObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      heroVisible = entry.isIntersecting;
+      if (heroVisible) {
+        wake?.();
+      }
+    }
+  });
+  stageObserver.observe(query(root, '.stage'));
 
   return () => {
     alive = false;
     streamRun++;
-    cancelAnimationFrame(frameId);
+    wake?.();
     observer.disconnect();
+    stageObserver.disconnect();
     replay.removeEventListener('click', runStream);
     for (const button of modeButtons) {
       button.removeEventListener('click', onModeClick);
     }
-    for (const button of installButtons) {
-      button.removeEventListener('click', onInstallClick);
-    }
+    tablist.removeEventListener('keydown', onModeKeyDown);
   };
 }
 
-function InstallButton(props: { class?: string }): JSX.Element {
+/** The package manager picker, one command and a copy button. */
+function InstallCommand(): JSX.Element {
   return (
-    <div class={['install-group', props.class]}>
-      <span class="pm-picker" role="group" aria-label="Package manager">
+    <div class="install">
+      <span class="pills" data-thumb="" role="group" aria-label="Package manager">
         <For each={PACKAGE_MANAGERS}>
           {(manager) => (
             <button
               type="button"
-              class="pm-option"
+              class="pill"
               data-pm-option={manager}
               aria-pressed={manager === 'npm' ? 'true' : 'false'}
             >
@@ -697,49 +645,26 @@ function InstallButton(props: { class?: string }): JSX.Element {
       </span>
       <For each={PACKAGE_MANAGERS}>
         {(manager) => (
-          <button
-            type="button"
-            class="install"
-            data-pm-command={manager}
-            data-command={INSTALL_COMMANDS[manager]}
-            aria-label={`Copy: ${INSTALL_COMMANDS[manager]}`}
-          >
-            <span class="p">$</span>
-            {/* The command needs its own element. As a bare text node next
-                to the static space, the server merges the two and hydration
-                fails. */}
-            <span>{INSTALL_COMMANDS[manager]}</span>
-            <span class="cp">
-              <CopyIcon class="cp-copy" />
-              <CheckIcon class="cp-done" />
-            </span>
-          </button>
+          <div class="install-line" data-pm-command={manager}>
+            <code>{INSTALL_COMMANDS[manager]}</code>
+            <CopyButton text={INSTALL_COMMANDS[manager]} />
+          </div>
         )}
       </For>
     </div>
   );
 }
 
-function Track(props: { items: string[]; separator: string; reverse?: boolean }): JSX.Element {
-  // The items repeat twice so the loop has no visible seam. Each one is
-  // wrapped in an object, because For keys items by identity.
-  const items: { text: string }[] = [];
-  for (let pass = 0; pass < 2; pass++) {
-    for (const text of props.items) {
-      items.push({ text });
-    }
-  }
+function SectionHead(props: { id: string; title: string; lead?: string }): JSX.Element {
   return (
-    <div class={props.reverse ? 'track rev' : 'track'}>
-      <For each={items}>
-        {(item) => (
-          <>
-            <span>{item.text}</span>
-            <i>{props.separator}</i>
-          </>
-        )}
-      </For>
-    </div>
+    <header class="section-head">
+      <h2 class="row-title" id={props.id}>
+        {props.title}
+      </h2>
+      <Show when={props.lead}>
+        <p class="row-lead">{props.lead}</p>
+      </Show>
+    </header>
   );
 }
 
@@ -762,208 +687,264 @@ export default function Home(): JSX.Element {
     >
       <PageMeta description="Serialize the JavaScript values JSON cannot: cyclic references, Dates, Maps, promises, streams and more." />
 
-      <section class="hero">
-        <div>
-          <div class="eyebrow">v{SHORT_VERSION} · MIT · zero dependencies</div>
-          <h1>
-            <span class="line">
-              <span>Serialize what</span>
-            </span>
-            <span class="line">
-              <span>
-                <span class="tok">JSON</span> <em>can't.</em>
-              </span>
-            </span>
+      <section class="tile hero" data-tone="ink">
+        <div class="hero-copy">
+          <h1 class="hero-title">
+            Serialize what JSON <em>can't.</em>
           </h1>
-          <p class="lead">
-            seroval turns any JavaScript value into a string and back: <b>cyclic references</b>,{' '}
-            <b>Date</b>, <b>Map</b>, <b>Set</b>, <b>BigInt</b>, <b>Promise</b>,{' '}
-            <b>ReadableStream</b>. Output as a JS expression, a JSON tree, or a stream.
+          <p class="hero-tagline">
+            seroval turns JavaScript values into a string and back, including cyclic references,
+            Date, Map, Set, BigInt and Promise, as code or as JSON.
           </p>
-          <div class="cta-row">
-            <a class="btn btn-primary" href={FIRST_PAGE.href}>
-              Read the docs <span class="arr">→</span>
+          <div class="hero-actions">
+            <a class="button" data-variant="primary" href={FIRST_PAGE.href}>
+              Read the docs <ArrowRightIcon class="icon-arrow" />
             </a>
-            <InstallButton />
+            <a class="button" data-variant="quiet" href="/playground">
+              Open playground
+            </a>
           </div>
+          <InstallCommand />
         </div>
         <div class="stage">
-          <div class="hud">
-            <span class="phase">graph</span>
-            <span class="bytes">0 B</span>
+          <div class="rt-pane">
+            <div class="rt-label">value</div>
+            {/* oxlint-disable-next-line solid/no-innerhtml -- fixed source, escaped by colorizeSource. */}
+            <pre class="rt-code" innerHTML={colorizeSource(HERO_SOURCE)} />
           </div>
-          <svg class="graph" viewBox="0 0 600 440" />
-          <div class="wire">
-            <span class="label">serialize(user)</span>
-            <span class="out" />
-            <span class="caret" />
-          </div>
-        </div>
-        <div class="scroll-hint">
-          <span />
-          Scroll
-        </div>
-      </section>
-
-      <div class="marquee">
-        <Track items={TYPES} separator="·" />
-        <Track items={SNIPPETS} separator=" // " reverse />
-      </div>
-
-      <section class="chap">
-        <div class="chap-head reveal">
-          <div class="chap-num">
-            <b>01</b> LOSSLESS
-          </div>
-          <div>
-            <h2>
-              JSON.stringify drops data. <em>serialize keeps it.</em>
-            </h2>
-            <p>
-              Each row below runs live in your browser: the left column is{' '}
-              <code>JSON.stringify</code>, the right is <code>serialize</code>, both from the real
-              libraries.
-            </p>
-          </div>
-        </div>
-        <div class="cmp">
-          <div class="cmp-row hdr">
-            <span>Value</span>
-            <span>JSON.stringify</span>
-            <span>seroval</span>
-          </div>
-          <For each={COMPARISON_ROWS}>
-            {(row) => (
-              <div class="cmp-row reveal">
-                <span class="in">{row.label}</span>
-                <span class="json">
-                  <span class="v">{row.json}</span>
-                  <span class="why">{row.why}</span>
-                </span>
-                <span class="sv">{row.output}</span>
-              </div>
-            )}
-          </For>
-        </div>
-      </section>
-
-      <section class="chap">
-        <div class="chap-head reveal">
-          <div class="chap-num">
-            <b>02</b> STREAMING
-          </div>
-          <div>
-            <h2>
-              Stream values <em>as they resolve.</em>
-            </h2>
-            <p>
-              The synchronous part ships first. Promises follow the moment they settle. The page
-              renders now and fills in later. Below, real chunks from{' '}
-              <code>crossSerializeStream</code>.
-            </p>
-          </div>
-        </div>
-        <div class="stream reveal">
-          <div class="lane">
-            <div class="end srv">
-              <b>S</b>server
+          <div class="rt-step">serialize(user)</div>
+          <div class="rt-pane">
+            <div class="rt-label">
+              <span>string</span>
+              <span class="rt-bytes">{HERO_OUTPUT.length} B</span>
             </div>
-            <div class="rail" />
-            <div class="end cli">
-              <b>C</b>browser
-            </div>
+            <pre class="rt-code">
+              {/* oxlint-disable-next-line solid/no-innerhtml -- seroval output, escaped by colorizeOutput. */}
+              <span class="rt-out" innerHTML={colorizeOutput(HERO_OUTPUT)} />
+              <span class="caret" />
+            </pre>
           </div>
-          <div class="client-view">
-            <div class="cv">
-              <div class="k">user</div>
-              <div class="v pending cv-user" />
-            </div>
-            <div class="cv">
-              <div class="k">posts — 1.2 s</div>
-              <div class="v pending cv-posts" />
-            </div>
-            <div class="cv">
-              <div class="k">recommended — 2.4 s</div>
-              <div class="v pending cv-rec" />
-            </div>
-          </div>
-          <div class="log" />
-          <button type="button" class="replay">
-            ↻ Replay stream
-          </button>
-        </div>
-      </section>
-
-      <section class="chap">
-        <div class="chap-head reveal">
-          <div class="chap-num">
-            <b>03</b> OUTPUT
-          </div>
-          <div>
-            <h2>
-              Three output formats. <em>Same references.</em>
-            </h2>
-            <p>Pick the format that fits the wire. Same graph, same references, every time.</p>
-          </div>
-        </div>
-        <div class="modes reveal">
-          <div class="mode-list" role="tablist">
-            <For each={MODES}>
-              {(mode, index) => (
-                <button
-                  type="button"
-                  class="mode-btn"
-                  role="tab"
-                  aria-selected={index() === 0 ? 'true' : 'false'}
-                  data-mode={mode.id}
+          <div class="rt-step">deserialize(string)</div>
+          <ul class="rt-pane rt-checks">
+            <For each={HERO_CHECKS}>
+              {(check) => (
+                <li
+                  class="rt-check"
+                  data-pass={check.pass ? 'true' : 'false'}
+                  data-state={check.pass ? 'on' : 'failed'}
                 >
-                  <span class="n">{mode.letter}</span>
-                  <span class="t">{mode.title}</span>
-                  <span class="d">{mode.description}</span>
-                </button>
+                  <span class="rt-dot">
+                    <CheckIcon />
+                  </span>
+                  {/* oxlint-disable-next-line solid/no-innerhtml -- fixed source, escaped by colorizeSource. */}
+                  <code innerHTML={colorizeSource(check.source)} />
+                </li>
+              )}
+            </For>
+          </ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="lossless">
+        <SectionHead
+          id="lossless"
+          title="JSON.stringify drops data. serialize keeps it."
+          lead="Each row runs in your browser: JSON.stringify in the middle column, serialize in the right one."
+        />
+        <div class="tile">
+          <div class="cmp">
+            <div class="cmp-row cmp-head">
+              <span>Value</span>
+              <span>JSON.stringify</span>
+              <span>serialize</span>
+            </div>
+            <For each={COMPARISON_ROWS}>
+              {(row, index) => (
+                <div class="cmp-row" data-reveal="" data-order={index()}>
+                  <span class="in">{row.label}</span>
+                  <span class="json" data-label="JSON.stringify">
+                    <span class="v">{row.json}</span>
+                    <Show when={row.why}>
+                      <span class="why chip" data-tone="danger">
+                        <CircleXIcon />
+                        {row.why}
+                      </span>
+                    </Show>
+                  </span>
+                  <span class="sv" data-label="serialize">
+                    {row.output}
+                  </span>
+                </div>
               )}
             </For>
           </div>
-          <div class="mode-out">
-            <div class="mode-fn" />
-            <pre class="mode-pre" />
-            <div class="meta">
-              <span>
-                Size
-                <b class="mode-size" />
-              </span>
-              <span>
-                Needs eval
-                <b class="mode-eval" />
-              </span>
-              <span>
-                Round-trip
-                <b class="mode-rt" />
-              </span>
+        </div>
+      </section>
+
+      <section aria-labelledby="streaming">
+        <SectionHead
+          id="streaming"
+          title="Stream values as they resolve."
+          lead="The synchronous part ships first and each promise follows when it settles, shown with real crossSerializeStream chunks."
+        />
+        <div class="tile">
+          <div class="stream" data-reveal="">
+            <div class="lane">
+              <div class="end srv">
+                <b>S</b>server
+              </div>
+              <div class="rail" />
+              <div class="end cli">
+                <b>C</b>browser
+              </div>
+            </div>
+            <div class="client-view">
+              <div class="cv">
+                <div class="k">user</div>
+                <div class="v pending cv-user" />
+              </div>
+              <div class="cv">
+                <div class="k">posts · 1.2 s</div>
+                <div class="v pending cv-posts" />
+              </div>
+              <div class="cv">
+                <div class="k">recommended · 2.4 s</div>
+                <div class="v pending cv-rec" />
+              </div>
+            </div>
+            <div class="log" />
+            <div class="stream-actions">
+              <button type="button" class="button replay" data-size="sm">
+                <ResetIcon /> Replay
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="trust">
-        <div class="chap-num">
-          <b>04</b> USED BY
-        </div>
-        <div class="names reveal">
-          <span>SolidJS</span>
-          <span>
-            <em>/</em>
-          </span>
-          <span>TanStack Start</span>
+      <section aria-labelledby="formats">
+        <SectionHead
+          id="formats"
+          title="Three output formats, same references."
+          lead="Pick the format that fits the wire. Each one keeps shared and cyclic references."
+        />
+        <div class="tile">
+          <div class="modes" data-reveal="">
+            <div class="pills mode-tabs" data-thumb="" role="tablist" aria-label="Output format">
+              <For each={MODES}>
+                {(mode, index) => (
+                  <button
+                    type="button"
+                    class="pill"
+                    role="tab"
+                    aria-selected={index() === 0 ? 'true' : 'false'}
+                    tabindex={index() === 0 ? 0 : -1}
+                    data-mode={mode.id}
+                  >
+                    {mode.title}
+                  </button>
+                )}
+              </For>
+            </div>
+            <p class="mode-note">{MODES[0].description}</p>
+            <div class="mode-out" role="tabpanel">
+              <div class="mode-fn" />
+              <pre class="mode-pre" />
+            </div>
+            <dl class="facts">
+              <div class="fact">
+                <dt>Size</dt>
+                <dd class="mode-size" />
+              </div>
+              <div class="fact">
+                <dt>Needs eval</dt>
+                <dd class="mode-eval" />
+              </div>
+              <div class="fact">
+                <dt>Round trip</dt>
+                <dd class="mode-rt" />
+              </div>
+            </dl>
+          </div>
         </div>
       </section>
 
-      <section class="finale">
-        <div class="orb" />
-        <h2 class="reveal">
-          Send more than <span class="tok">JSON</span>.
-        </h2>
-        <InstallButton class="big-install reveal" />
+      <section aria-labelledby="types">
+        <SectionHead
+          id="types"
+          title="More types, built in or by plugin."
+          lead="Core handles the JavaScript built-ins, and seroval-plugins adds the Web API types."
+        />
+        <div class="grid">
+          <div class="tile span-6 type-card">
+            <h3 class="card-title">Built in</h3>
+            <div class="chips">
+              <For each={CORE_TYPES}>
+                {(name) => (
+                  <span class="chip" data-mono="">
+                    {name}
+                  </span>
+                )}
+              </For>
+            </div>
+          </div>
+          <div class="tile span-6 type-card">
+            <h3 class="card-title">With seroval-plugins</h3>
+            <div class="chips">
+              <For each={PLUGIN_TYPES}>
+                {(name) => (
+                  <span class="chip" data-mono="">
+                    {name}
+                  </span>
+                )}
+              </For>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="used-by">
+        <SectionHead id="used-by" title="Used by" />
+        <div class="tile">
+          <ul class="used-by">
+            <li>SolidJS</li>
+            <li>TanStack Start</li>
+          </ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="faq" id="faq-section">
+        <SectionHead id="faq" title="Questions" />
+        <div class="tile">
+          <div class="faq">
+            <For each={QUESTIONS}>
+              {(item) => (
+                <details class="faq-item">
+                  <summary>
+                    <ChevronRightIcon />
+                    {item.question}
+                  </summary>
+                  <p>{item.answer}</p>
+                </details>
+              )}
+            </For>
+          </div>
+        </div>
+      </section>
+
+      <section class="tile cta" data-tone="ink">
+        <div class="cta-copy">
+          <h2 class="cta-title">Send more than JSON.</h2>
+          <div class="hero-actions">
+            <a class="button" data-variant="primary" href={FIRST_PAGE.href}>
+              Read the docs <ArrowRightIcon class="icon-arrow" />
+            </a>
+            <a class="button" data-variant="quiet" href="/playground">
+              Open playground
+            </a>
+          </div>
+        </div>
+        <InstallCommand />
       </section>
     </div>
   );

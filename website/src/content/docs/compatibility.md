@@ -1,6 +1,7 @@
 ---
 title: Compatibility
 description: Supported types in each mode, feature flags for older runtimes, and package resolution.
+type: reference
 ---
 
 ## Supported types
@@ -100,3 +101,9 @@ The `seroval` package has ESM and CommonJS builds, and a `development` build wit
 The `seroval/read`, `seroval/write` and `seroval/shared` [entry points](./api.md#entry-points) use the same conditions. They load the same files as `seroval`, so mixing entry points does not create a second copy either. TypeScript resolves their types with the `node10`, `node16`, `nodenext` and `bundler` settings of `moduleResolution`.
 
 Resolvers that ignore export conditions, such as older bundlers and some React Native setups, can use the `main` and `module` fields. Binary encoding uses `Buffer` when it exists, and portable browser APIs otherwise. Both produce the same output.
+
+## Related
+
+- [Choosing a mode](./choosing-a-mode.md)
+- [Using plugins](./using-plugins.md)
+- [API reference](./api.md)

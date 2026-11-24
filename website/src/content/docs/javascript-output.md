@@ -1,6 +1,7 @@
 ---
 title: Serialize to JavaScript
 description: Turn a value into a JavaScript expression with serialize and serializeAsync, and read it back with deserialize.
+type: concept
 ---
 
 `serialize` and `serializeAsync` return a JavaScript expression. Running the expression rebuilds the value, with the same types, shared references and cycles.
@@ -115,3 +116,10 @@ try {
 ```
 
 To send a function, register it on both sides with [`createReference`](./isomorphic-references.md).
+
+## Related
+
+- [Choosing a mode](./choosing-a-mode.md)
+- [JSON](./json.md)
+- [Cross-reference serialization](./cross-reference.md)
+- [API reference](./api.md#serialize-to-javascript)
