@@ -46,7 +46,13 @@ const HeadersPlugin = /* @__PURE__ */ createPlugin<Headers, { value: SerovalNode
   },
   validate: { value: isHeadersInit },
   deserialize(node, ctx) {
-    return new Headers(copyEntries(ctx.deserialize<HeadersEntries>(node.value)));
+    return new Headers(
+      copyEntries(
+        ctx.deserialize<HeadersEntries>(node.value),
+        'seroval-plugins/web/Headers',
+        'value',
+      ),
+    );
   },
 });
 

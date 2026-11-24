@@ -1,5 +1,5 @@
 import type { SerovalNode } from 'seroval/shared';
-import { createPlugin } from 'seroval/shared';
+import { SerovalMalformedNodeError, createPlugin } from 'seroval/shared';
 import * as v from 'seroval/validator';
 
 const PROMISE_TO_ABORT_SIGNAL = (promise: Promise<unknown>): AbortController => {
@@ -45,13 +45,14 @@ const AbortControllerFactoryPlugin = /* @__PURE__ */ createPlugin<object, Record
   serialize() {
     return PROMISE_TO_ABORT_SIGNAL.toString();
   },
-  deserialize() {
+  deserialize(node) {
     // This factory is a serialize-only helper: `AbortSignalPlugin` calls
     // `PROMISE_TO_ABORT_SIGNAL` directly and never deserializes this node.
     // Returning the raw function would hand an untrusted payload a callable
     // gadget, so deserializing it directly is an invalid path.
-    throw new Error(
-      'seroval-plugins/web/AbortControllerFactoryPlugin cannot be deserialized directly.',
+    throw new SerovalMalformedNodeError(
+      node,
+      'AbortControllerFactoryPlugin cannot be deserialized directly',
     );
   },
 });

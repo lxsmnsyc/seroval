@@ -1,3 +1,4 @@
+import { SerovalPluginValidationError } from 'seroval/shared';
 import type { Validator } from 'seroval/shared';
 
 // Validators for the values that the web plugins hand to Web constructors. A
@@ -11,10 +12,10 @@ type Entry<T> = [key: string, value: T];
 // several plugin values at it to make each one copy it again.
 const CLAIMED = new WeakSet<object>();
 
-export function claim<T>(value: T): T {
+export function claim<T>(value: T, tag: string, field: string): T {
   if (typeof value === 'object' && value !== null) {
     if (CLAIMED.has(value)) {
-      throw new Error('Expected a value used by one plugin value only.');
+      throw new SerovalPluginValidationError(tag, field);
     }
     CLAIMED.add(value);
   }
@@ -43,8 +44,8 @@ export function entries<T>(value: Validator<T>): Validator<Entry<T>[]> {
 
 // Copies an entry list into fresh pairs, so the constructor never iterates an
 // array the input built.
-export function copyEntries<T>(list: Entry<T>[]): Entry<T>[] {
-  claim(list);
+export function copyEntries<T>(list: Entry<T>[], tag: string, field: string): Entry<T>[] {
+  claim(list, tag, field);
   const result: Entry<T>[] = [];
   for (const entry of list) {
     result.push([entry[0], entry[1]]);

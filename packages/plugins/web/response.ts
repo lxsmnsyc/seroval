@@ -25,7 +25,7 @@ const isResponseOptions = /* @__PURE__ */ v.object({
 // validator skipped.
 function copyResponseOptions(options: ResponseInit): ResponseInit {
   return {
-    headers: claim(options.headers),
+    headers: claim(options.headers, 'seroval-plugins/web/Response', 'headers'),
     status: options.status,
     statusText: options.statusText,
   };
@@ -68,7 +68,7 @@ const ResponsePlugin = /* @__PURE__ */ createPlugin<Response, ResponseNode>({
   validate: { body: isBody, options: isResponseOptions },
   deserialize(node, ctx) {
     return new Response(
-      claim(ctx.deserialize<BodyInit | null>(node.body)),
+      claim(ctx.deserialize<BodyInit | null>(node.body), 'seroval-plugins/web/Response', 'body'),
       copyResponseOptions(ctx.deserialize<ResponseInit>(node.options)),
     );
   },
