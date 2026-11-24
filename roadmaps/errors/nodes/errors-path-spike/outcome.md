@@ -2,7 +2,7 @@
 
 ## Built
 
-- Recommendation: **build errors-path**, with one `try`/`catch` per container around the whole child loop (not one per child, and no path stack). Success-path cost was within noise in every run, in sync, async and stream parsing.
+- Recommendation: **build errors-path**, with one `try`/`catch` per container around the whole child loop (not one per child, and no path stack). Success-path cost was within noise in every run, in sync, async and stream parsing. Condition: the machine was loaded during this spike, so errors-path must rerun `bench/parse.mjs` with `bench.py` on its real branch on a quiet machine. If any cell then costs more than the noise, it goes back to the orchestrator before the PR is called ready.
 - `prototype.patch`: the prototype, measured at base 9a11e7a6 (`origin/release/1.9.0`). It adds `packages/seroval/src/core/context/error-path.ts` (`prependErrorPath(error, segment)`) and wraps the child loops of `parseItems`, `parseProperties`, `parseMap` and `parseSet` in `sync-parser.ts` (sync and stream modes) and `async-parser.ts`. The catch reads the loop's current key or index, prepends it to `error.path` and rethrows. Not shipped: `packages/*/src` is unchanged on this branch.
 - `bench/parse.mjs`: the harness. `node parse.mjs <sync|async|stream> <collection|tree>`, run from a folder holding a production dist (`index.js`). Sync is `toJSON`, async is `toJSONAsync`, stream is `toCrossJSONStream` until `onDone`. Shapes: 1024 records of `{ id, text, tags: [2], active }`, and a 6-level tree where every level has an object, an array, a Map and a Set (many small containers, the worst case for a per-container try). Fresh inputs per operation, 300 ms warmup, median of 15 batch means per process.
 - `bench/results.txt`: raw `bench.py` output for every round.
@@ -17,17 +17,19 @@
 
 Change of proto median vs base median (ms/op base median in brackets):
 
-| Cell              | R1 (10 runs, load 10-19) | R2 (10 runs, load 9-19) | R3 (10 runs, load 5-8) | R4 (20 runs, load 4-12) | R5 (30 runs) |
-| ----------------- | ------------------------ | ----------------------- | ---------------------- | ----------------------- | ------------ |
-| sync collection   | -21.5%                   | +7.1%                   | +2.3% [0.331]          | +0.0% [0.354]           |              |
-| sync tree         | -9.6%                    | +14.5%                  | -3.0% [0.451]          | -1.3% [0.621]           |              |
-| async collection  | +6.1%                    | +12.6%                  | +0.9% [0.730]          | +0.4% [0.988]           |              |
-| async tree        | -5.2%                    | -3.4%                   | -0.8% [0.984]          | -4.1% [1.062]           |              |
-| stream collection | +1.3%                    | +2.0%                   | +0.0% [0.363]          | +0.9% [0.332]           |              |
-| stream tree       | +25.0%                   | -1.8%                   | +5.9% [0.416]          | +17.8% [0.506]          | -0.7% [0.966] |
+| Cell              | R1 (10 runs, load 10-19) | R2 (10 runs, load 9-19) | R3 (10 runs, load 5-8) | R4 (20 runs, load 4-12) |
+| ----------------- | ------------------------ | ----------------------- | ---------------------- | ----------------------- |
+| sync collection   | -21.5%                   | +7.1%                   | +2.3% [0.331]          | +0.0% [0.354]           |
+| sync tree         | -9.6%                    | +14.5%                  | -3.0% [0.451]          | -1.3% [0.621]           |
+| async collection  | +6.1%                    | +12.6%                  | +0.9% [0.730]          | +0.4% [0.988]           |
+| async tree        | -5.2%                    | -3.4%                   | -0.8% [0.984]          | -4.1% [1.062]           |
+| stream collection | +1.3%                    | +2.0%                   | +0.0% [0.363]          | +0.9% [0.332]           |
+| stream tree       | +25.0%                   | -1.8%                   | +5.9% [0.416]          | +17.8% [0.506]          |
+
+- R5 reran stream tree alone with 30 runs (load 6 to 14): -0.7%, base median 0.966 ms, base MAD 0.173, proto MAD 0.186, within noise.
 
 - In the quieter rounds (R3, R4) the collection cells are within +-2.3% and the MADs are 1-8% of the median; the swings in R1 and R2 go both ways and follow the load.
-- Stream tree is bimodal under load (samples cluster near 0.37 and near 0.5+ ms on both sides). The minimums match: R2 0.3709 vs 0.3708, R3 0.3691 vs 0.3691, R4 0.3694 vs 0.3708. The 30-run repeat gave -0.7%. No measurable cost.
+- Stream tree is bimodal under load (samples cluster near 0.37 and near 0.5+ ms on both sides). The minimums match: R2 0.3709 vs 0.3708, R3 0.3691 vs 0.3691, R4 0.3694 vs 0.3708. R5 gave -0.7%. No measurable cost.
 - Size: the unminified ESM `write` chunk grows from 17,674 to 17,911 bytes gzip (+237 B) for the prototype.
 
 ## Deviations
@@ -43,12 +45,20 @@ Change of proto median vs base median (ms/op base median in brackets):
 
 For errors-path:
 
-- The prototype writes `path` onto any thrown object, including a non-seroval error a plugin throws (a user object would be mutated). Annotate only `SerovalError` instances; for other errors, wrap them in `SerovalParserError` at the innermost container catch (`parseTop` already passes a `SerovalParserError` through unwrapped), then add segments to the wrapper.
+- The prototype writes `path` onto any thrown value, so it can replace the original error, not just mutate it. Found in review with a throwing getter, `{ a: [{ get b() { throw X } }] }`:
+  - `X` already has a string `path` (a Node ENOENT-style error with `path: '/tmp/x'`): the catch throws `TypeError: target.path.unshift is not a function`, and `X` is lost.
+  - `X` is frozen: the catch throws `TypeError: Cannot add property path, object is not extensible`, and `X` is lost.
+  - `X` is a plain object or a non-seroval error: it gets a `path` the user did not ask for.
+  - `X` is a primitive: it gets no path, with no sign of it.
+  errors-path must add segments only to `SerovalError` instances, and wrap any other throw in `SerovalParserError` at the innermost container catch (`parseTop` already passes a `SerovalParserError` through), then add segments to that wrapper. `path.test.ts` needs one test for each of the four cases, checking that the original value stays reachable as `cause`.
+- Map segments are the entry index whether the key or the value threw: `new Map([[new WeakMap(), 1]])` and `new Map([[1, new WeakMap()]])` under `m` both give `["m", 0]`. errors-path must decide whether a segment marks key or value.
+- The path sits on `cause` (the inner error), not on the top-level `SerovalParserError` users catch. errors-path must decide which error carries `path` under the contract (`path` is a `SerovalError` field). Copying it onto the wrapper, as the contract does for `step`, is one option.
+- The helper is in a new file, `core/context/error-path.ts`, which is not in the errors-path brief's `owns`. errors-path should put it in `parser.ts` (owned) or ask the orchestrator to add the file to `owns`.
 - `unshift` per level is O(depth^2) on throw; push and reverse once in `parseTop` (and the async and stream tops) if depth limits are large. Cost is on throw only either way.
 - Not covered by the prototype: `parseBoxed`, `parseView`, the `Symbol.iterator` / `Symbol.asyncIterator` entries in `parseProperties`, `parseSequence` (sync-parser.ts:516), plugin child `parse` callbacks, and stream-parser.ts:463. Each needs a segment choice (for example a fixed name like `'value'` or the symbol description).
 - Stream mode: values that arrive later (promise results, async iterable items, stream events) start a new `parseSOS` root without their ancestors, so their path is relative to that value. A full path there means storing the parent path when the promise is registered, which costs on the success path; keep it relative or measure that separately.
 - In async mode the path does cross promises, because `parseAsync` awaits inside the container loop.
-- The machine was loaded the whole time. A quiet rerun of `bench/parse.mjs` on the real errors-path branch is still worth doing (the perf-pass "measure once against the baseline" step).
+- The machine was loaded the whole time. The quiet rerun of `bench/parse.mjs` on the real errors-path branch is a condition of the recommendation (see Built), and is also perf-pass's final "measure once against the baseline" step.
 
 ## Proposed learnings
 
