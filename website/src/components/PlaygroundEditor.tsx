@@ -9,7 +9,8 @@ import * as seroval from 'seroval';
 import * as webPlugins from 'seroval-plugins/web';
 import { For, Show, createEffect, createSignal, onSettled } from 'solid-js';
 import { Tab, TabGroup, TabList } from 'terracotta/tabs';
-import { PlayIcon, ShareIcon } from './Icons';
+import { placeThumbs } from '../lib/thumb';
+import { CheckIcon, CircleAlertIcon, LoaderIcon, PlayIcon, ShareIcon } from './Icons';
 
 const PLUGINS = Object.values(webPlugins);
 
@@ -234,46 +235,64 @@ function formatOutput(chunks: string[]): string {
   return chunks.map((chunk, i) => `// Chunk ${i + 1}\n${chunk}`).join('\n\n');
 }
 
-// Colors come from CSS variables, so the editor matches the site palette.
+// Colors come from the syntax tokens, so the editor follows the site theme.
 const HIGHLIGHT = HighlightStyle.define([
-  { tag: [tags.keyword, tags.operatorKeyword], color: 'var(--syntax-keyword)' },
-  { tag: [tags.string, tags.regexp], color: 'var(--syntax-string)' },
-  { tag: [tags.number, tags.bool, tags.null], color: 'var(--syntax-number)' },
-  { tag: tags.comment, color: 'var(--syntax-comment)', fontStyle: 'italic' },
+  { tag: [tags.keyword, tags.operatorKeyword], color: 'var(--syn-keyword)' },
+  { tag: [tags.string, tags.regexp], color: 'var(--syn-string)' },
+  { tag: [tags.number, tags.bool, tags.null], color: 'var(--syn-number)' },
+  { tag: tags.comment, color: 'var(--syn-comment)', fontStyle: 'italic' },
   {
     tag: [tags.function(tags.variableName), tags.function(tags.propertyName)],
-    color: 'var(--syntax-function)',
+    color: 'var(--syn-function)',
   },
-  { tag: [tags.className, tags.typeName], color: 'var(--syntax-type)' },
-  { tag: tags.propertyName, color: 'var(--syntax-property)' },
+  { tag: [tags.className, tags.typeName], color: 'var(--syn-type)' },
+  { tag: tags.propertyName, color: 'var(--syn-attr)' },
+  { tag: [tags.punctuation, tags.operator, tags.bracket], color: 'var(--syn-punct)' },
 ]);
 
 const THEME = EditorView.theme({
   '&': {
     height: '100%',
     backgroundColor: 'transparent',
-    color: 'var(--fg)',
-    fontSize: '13.5px',
+    color: 'var(--text)',
+    fontSize: '12.8px',
   },
   '.cm-scroller': {
     fontFamily: 'var(--font-mono)',
     fontVariantLigatures: 'none',
-    lineHeight: '1.65',
+    lineHeight: '1.75',
   },
-  '.cm-content': { caretColor: 'var(--accent)', padding: '14px 0' },
+  '.cm-content': { caretColor: 'var(--accent-strong)', padding: '8px 0' },
   '.cm-gutters': {
     backgroundColor: 'transparent',
-    color: 'var(--fg-subtle)',
+    color: 'var(--muted)',
     border: 'none',
   },
   '.cm-activeLine, .cm-activeLineGutter': {
-    backgroundColor: 'var(--editor-active-line)',
+    backgroundColor: 'color-mix(in srgb, var(--text) 6%, transparent)',
   },
   '&.cm-focused': { outline: 'none' },
   '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': {
-    backgroundColor: 'var(--editor-selection) !important',
+    backgroundColor: 'var(--accent-tint) !important',
   },
-  '.cm-cursor': { borderLeftColor: 'var(--accent)' },
+  '.cm-cursor': { borderLeftColor: 'var(--accent-strong)' },
+  '.cm-tooltip': {
+    border: 'none',
+    borderRadius: 'var(--radius-row)',
+    backgroundColor: 'var(--bg-elevated)',
+    color: 'var(--text)',
+    overflow: 'hidden',
+  },
+  '.cm-tooltip-autocomplete ul li[aria-selected]': {
+    backgroundColor: 'var(--accent-fill)',
+    color: 'var(--on-accent)',
+  },
+  '.cm-panels': { backgroundColor: 'var(--surface-strong)', color: 'var(--text)' },
+  '.cm-foldPlaceholder': {
+    backgroundColor: 'var(--surface-strong)',
+    border: 'none',
+    color: 'var(--muted)',
+  },
 });
 
 function createEditor(parent: HTMLElement, doc: string, extensions: Extension[]): EditorView {
@@ -292,6 +311,25 @@ interface Stats {
   chunks: number;
 }
 
+const SPLIT_KEY = 'seroval:playground-split';
+const SPLIT_MIN = 20;
+const SPLIT_MAX = 80;
+const SPLIT_STEP = 16;
+const STACKED = '(max-width: 48rem)';
+
+function clampSplit(value: number): number {
+  return Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, value));
+}
+
+function readSplit(): number {
+  try {
+    const value = Number(localStorage.getItem(SPLIT_KEY));
+    return value > 0 ? clampSplit(value) : 50;
+  } catch {
+    return 50;
+  }
+}
+
 export default function PlaygroundEditor(): JSX.Element {
   const initialCode = readSharedCode() ?? EXAMPLES[0].code;
   const [mode, setMode] = createSignal<Mode>('serializeAsync');
@@ -300,9 +338,13 @@ export default function PlaygroundEditor(): JSX.Element {
   const [stats, setStats] = createSignal<Stats>();
   const [running, setRunning] = createSignal(false);
   const [shared, setShared] = createSignal(false);
+  const [split, setSplit] = createSignal(readSplit());
+  const [dragging, setDragging] = createSignal(false);
+  const [mac, setMac] = createSignal(false);
 
   let input: EditorView | undefined;
   let outputView: EditorView | undefined;
+  let panes: HTMLElement | undefined;
   let runId = 0;
 
   async function execute(nextMode = mode()): Promise<void> {
@@ -327,8 +369,8 @@ export default function PlaygroundEditor(): JSX.Element {
     try {
       show(await run(nextMode, code, show));
     } catch (err) {
+      // The last good output stays, dimmed, under the error.
       if (id === runId) {
-        setOutput('');
         setError(formatError(err));
         setStats(undefined);
       }
@@ -369,6 +411,39 @@ export default function PlaygroundEditor(): JSX.Element {
     );
   }
 
+  function saveSplit(): void {
+    try {
+      localStorage.setItem(SPLIT_KEY, String(split()));
+    } catch {
+      // Storage can be blocked. The split then lasts for this page only.
+    }
+  }
+
+  // The panes follow the pointer with no easing.
+  function dragSplit(event: PointerEvent): void {
+    if (!panes || matchMedia(STACKED).matches) {
+      return;
+    }
+    const rect = panes.getBoundingClientRect();
+    setSplit(clampSplit(((event.clientX - rect.left) / rect.width) * 100));
+  }
+
+  function keySplit(event: KeyboardEvent): void {
+    if (!panes) {
+      return;
+    }
+    const step = (SPLIT_STEP / panes.getBoundingClientRect().width) * 100;
+    if (event.key === 'ArrowLeft') {
+      setSplit((value) => clampSplit(value - step));
+    } else if (event.key === 'ArrowRight') {
+      setSplit((value) => clampSplit(value + step));
+    } else {
+      return;
+    }
+    event.preventDefault();
+    saveSplit();
+  }
+
   createEffect(
     () => output(),
     (text) => {
@@ -378,7 +453,19 @@ export default function PlaygroundEditor(): JSX.Element {
     },
   );
 
+  // The thumb of the mode tabs follows the selected tab.
+  createEffect(
+    () => mode(),
+    () => {
+      requestAnimationFrame(() => {
+        placeThumbs();
+      });
+    },
+  );
+
   onSettled(() => {
+    setMac(/Mac|iPhone|iPad/.test(navigator.platform));
+    placeThumbs();
     void execute();
     return () => {
       input?.destroy();
@@ -387,10 +474,9 @@ export default function PlaygroundEditor(): JSX.Element {
   });
 
   return (
-    <div class="playground">
-      <div class="playground-toolbar">
+    <div class="playground" data-dragging={dragging() ? '' : undefined}>
+      <div class="playground-bar">
         <TabGroup<Mode>
-          class="mode-tabs"
           horizontal={true}
           value={mode()}
           onChange={(value) => {
@@ -400,51 +486,61 @@ export default function PlaygroundEditor(): JSX.Element {
             }
           }}
         >
-          <TabList class="segmented" aria-label="Output mode">
+          <TabList class="pills" data-thumb="" aria-label="Output mode">
             <For each={MODES}>
               {(item) => (
-                <Tab class="segmented-item" value={item.id}>
+                <Tab class="pill" value={item.id}>
                   {item.id}
                 </Tab>
               )}
             </For>
           </TabList>
         </TabGroup>
-        <div class="toolbar-actions">
-          <label class="example-select">
+        <div class="playground-bar-end">
+          <label>
             <span class="visually-hidden">Load an example</span>
             <select
+              class="field-input"
               onChange={(event) => {
                 loadExample(event.currentTarget.value);
                 event.currentTarget.value = '';
               }}
             >
-              <option value="">Examples…</option>
+              <option value="">Examples</option>
               <For each={EXAMPLES}>
                 {(example) => <option value={example.id}>{example.label}</option>}
               </For>
             </select>
           </label>
-          <button type="button" class="button button-secondary button-small" onClick={share}>
-            <ShareIcon /> {shared() ? 'Link copied' : 'Share'}
+          <button type="button" class="button" data-size="sm" onClick={share}>
+            {shared() ? <CheckIcon /> : <ShareIcon />} {shared() ? 'Link copied' : 'Share'}
           </button>
           <button
             type="button"
-            class="button button-primary button-small"
+            class="button"
+            data-variant="primary"
+            data-size="sm"
+            aria-busy={running() ? 'true' : undefined}
             onClick={() => {
               void execute();
             }}
           >
-            <PlayIcon /> Run
+            {running() ? <LoaderIcon /> : <PlayIcon />} Run
           </button>
         </div>
       </div>
-      <p class="mode-description">{MODES.find((item) => item.id === mode())?.description}</p>
-      <div class="playground-panes">
-        <section class="pane" aria-label="Input">
-          <header class="pane-header">
+      <p class="playground-hint">{MODES.find((item) => item.id === mode())?.description}</p>
+      <div
+        class="playground-panes"
+        ref={(element) => {
+          panes = element;
+        }}
+        style={{ '--col-a': `${split()}fr`, '--col-b': `${100 - split()}fr` }}
+      >
+        <section class="playground-pane" aria-label="Input">
+          <header class="playground-pane-head">
             <span>Input</span>
-            <kbd>⌘ Enter to run</kbd>
+            <span class="kbd">{mac() ? '⌘ Enter' : 'Ctrl Enter'} to run</span>
           </header>
           <div
             class="pane-editor"
@@ -466,37 +562,79 @@ export default function PlaygroundEditor(): JSX.Element {
             }}
           />
         </section>
-        <section class="pane" aria-label="Output">
-          <header class="pane-header">
+        <div
+          class="playground-split"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize the panes"
+          aria-valuenow={Math.round(split())}
+          aria-valuemin={SPLIT_MIN}
+          aria-valuemax={SPLIT_MAX}
+          tabindex="0"
+          data-dragging={dragging() ? '' : undefined}
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            setDragging(true);
+          }}
+          onPointerMove={(event) => {
+            if (dragging()) {
+              dragSplit(event);
+            }
+          }}
+          onPointerUp={() => {
+            setDragging(false);
+            saveSplit();
+          }}
+          onKeyDown={keySplit}
+        />
+        <section
+          class="playground-pane"
+          aria-label="Output"
+          data-tone={error() ? 'danger' : undefined}
+        >
+          <header class="playground-pane-head">
             <span>Output</span>
-            <Show when={running()}>
-              <span class="pane-status">Running…</span>
-            </Show>
+            <span class="playground-status" data-tone={error() ? 'danger' : undefined}>
+              <Show when={running()}>
+                <LoaderIcon /> Running
+              </Show>
+              <Show when={!running() && error()}>
+                <CircleAlertIcon /> Error
+              </Show>
+              <Show when={!running() && !error() && stats()}>
+                {(current) => (
+                  <>
+                    <span>{current().bytes.toLocaleString()} bytes</span>
+                    <Show when={current().chunks > 1}>
+                      <span>{current().chunks} chunks</span>
+                    </Show>
+                    <span>{current().ms.toFixed(1)} ms</span>
+                  </>
+                )}
+              </Show>
+            </span>
           </header>
-          <Show when={error()}>{(message) => <pre class="output-error">{message()}</pre>}</Show>
-          <div
-            class={['pane-editor', { hidden: !!error() }]}
-            ref={(element) => {
-              outputView = createEditor(element, '', [
-                EditorState.readOnly.of(true),
-                EditorView.editable.of(false),
-                EditorView.lineWrapping,
-              ]);
-            }}
-          />
-          <footer class="pane-footer">
-            <Show when={stats()} fallback={<span>Ready</span>}>
-              {(current) => (
-                <>
-                  <span>{current().bytes.toLocaleString()} bytes</span>
-                  <Show when={current().chunks > 1}>
-                    <span>{current().chunks} chunks</span>
-                  </Show>
-                  <span>{current().ms.toFixed(1)} ms</span>
-                </>
+          <div class="playground-pane-body">
+            <Show when={error()}>
+              {(message) => (
+                <div class="output-error" role="alert">
+                  <CircleAlertIcon />
+                  <span>{message()}</span>
+                </div>
               )}
             </Show>
-          </footer>
+            <div
+              class="pane-editor"
+              data-dim={error() ? '' : undefined}
+              ref={(element) => {
+                outputView = createEditor(element, '', [
+                  EditorState.readOnly.of(true),
+                  EditorView.editable.of(false),
+                  EditorView.lineWrapping,
+                ]);
+              }}
+            />
+          </div>
         </section>
       </div>
     </div>

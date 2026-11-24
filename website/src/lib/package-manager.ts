@@ -1,3 +1,5 @@
+import { placeThumbs } from './thumb.ts';
+
 /**
  * The package manager picker on install commands. The choice lives in the
  * `data-pm` attribute of the root element and in local storage, and the
@@ -68,6 +70,7 @@ export function syncPackageManagerButtons(): void {
   for (const button of document.querySelectorAll<HTMLElement>('[data-pm-option]')) {
     button.setAttribute('aria-pressed', String(button.dataset.pmOption === manager));
   }
+  placeThumbs();
 }
 
 /** Switches every install command on the page when a picker button is clicked. */
