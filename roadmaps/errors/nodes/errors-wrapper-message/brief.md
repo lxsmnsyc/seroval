@@ -1,7 +1,7 @@
 ---
 id: errors-wrapper-message
 title: Fix the step wrapper dev message around seroval errors
-status: active
+status: done
 priority: must
 type: fix
 story:
@@ -43,9 +43,9 @@ When a step wrapper (`SerovalParserError`, `SerovalSerializationError`, `Seroval
 
 ## Acceptance
 
-- [ ] A test that fails on release/1.9.0 at d86de333 or later: wrapping an SRV001 error (and one other coded error) gives a dev message that names the inner problem, not `[object Undefined]`.
-- [ ] Production messages unchanged.
-- [ ] Fast check passes.
+- [x] A test that fails on release/1.9.0 at d86de333 or later: wrapping an SRV001 error (and one other coded error) gives a dev message that names the inner problem, not `[object Undefined]`.
+- [x] Production messages unchanged.
+- [x] Fast check passes.
 
 ## Sizing
 
