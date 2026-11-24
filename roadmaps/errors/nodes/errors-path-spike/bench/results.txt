@@ -1,0 +1,96 @@
+== round 1 sync collection 10.23 8.50 7.31
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync collection  (10 runs each, 1 warmup, unit: value)
+  base         median 1.223  min 0.5501  max 2.108  mad 0.305
+  proto        median 0.9609  min 0.5873  max 1.14  mad 0.0891  -21.5% vs base: within noise
+== round 1 sync tree 16.93 10.14 7.92
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync tree  (10 runs each, 1 warmup, unit: value)
+  base         median 1.432  min 0.8242  max 4.049  mad 0.418
+  proto        median 1.294  min 0.8038  max 3.198  mad 0.448  -9.6% vs base: within noise
+== round 1 async collection 19.39 11.77 8.64
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async collection  (10 runs each, 1 warmup, unit: value)
+  base         median 1.779  min 1.255  max 2.854  mad 0.465
+  proto        median 1.887  min 1.132  max 2.516  mad 0.39  +6.1% vs base: within noise
+== round 1 async tree 17.81 12.00 8.81
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async tree  (10 runs each, 1 warmup, unit: value)
+  base         median 2.299  min 1.896  max 3.984  mad 0.32
+  proto        median 2.181  min 1.849  max 7.608  mad 0.324  -5.2% vs base: within noise
+== round 1 stream collection 17.54 13.06 9.44
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream collection  (10 runs each, 1 warmup, unit: value)
+  base         median 0.9131  min 0.7082  max 1.687  mad 0.158
+  proto        median 0.9246  min 0.7155  max 1.204  mad 0.0751  +1.3% vs base: within noise
+== round 1 stream tree 15.84 12.95 9.48
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream tree  (10 runs each, 1 warmup, unit: value)
+  base         median 1.481  min 0.9327  max 4.249  mad 0.411
+  proto        median 1.85  min 1.073  max 5.878  mad 0.67  +25.0% vs base: within noise
+== round 2 sync collection 18.83 14.41 10.25
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync collection  (10 runs each, 1 warmup, unit: value)
+  base         median 0.8058  min 0.5503  max 1.523  mad 0.116
+  proto        median 0.8634  min 0.6021  max 1.337  mad 0.148  +7.1% vs base: within noise
+== round 2 sync tree 16.06 14.07 10.22
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync tree  (10 runs each, 1 warmup, unit: value)
+  base         median 1.062  min 0.7897  max 1.18  mad 0.0406
+  proto        median 1.216  min 1.033  max 1.583  mad 0.137  +14.5% vs base: within noise
+== round 2 async collection 15.11 14.04 10.35
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async collection  (10 runs each, 1 warmup, unit: value)
+  base         median 1.821  min 1.428  max 3.102  mad 0.327
+  proto        median 2.05  min 1.188  max 2.613  mad 0.491  +12.6% vs base: within noise
+== round 2 async tree 15.33 14.23 10.52
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async tree  (10 runs each, 1 warmup, unit: value)
+  base         median 1.163  min 1.041  max 2.869  mad 0.0789
+  proto        median 1.123  min 0.9481  max 1.843  mad 0.0884  -3.4% vs base: within noise
+== round 2 stream collection 10.19 13.08 10.27
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream collection  (10 runs each, 1 warmup, unit: value)
+  base         median 0.3627  min 0.3483  max 0.3918  mad 0.00944
+  proto        median 0.37  min 0.3541  max 0.414  mad 0.011  +2.0% vs base: within noise
+== round 2 stream tree 9.25 12.78 10.20
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream tree  (10 runs each, 1 warmup, unit: value)
+  base         median 0.392  min 0.3709  max 0.4527  mad 0.00948
+  proto        median 0.3849  min 0.3708  max 0.4768  mad 0.0135  -1.8% vs base: within noise
+== round 3 sync collection 8.21 12.37 10.10
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync collection  (10 runs each, 1 warmup, unit: value)
+  base         median 0.3313  min 0.3284  max 0.3747  mad 0.00225
+  proto        median 0.3388  min 0.3333  max 0.3802  mad 0.00487  +2.3% vs base: within noise
+== round 3 sync tree 7.48 12.08 10.02
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync tree  (10 runs each, 1 warmup, unit: value)
+  base         median 0.4513  min 0.3964  max 0.6297  mad 0.0527
+  proto        median 0.4377  min 0.398  max 0.5952  mad 0.0368  -3.0% vs base: within noise
+== round 3 async collection 6.63 11.66 9.91
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async collection  (10 runs each, 1 warmup, unit: value)
+  base         median 0.73  min 0.7261  max 0.7873  mad 0.00261
+  proto        median 0.7365  min 0.7322  max 0.7653  mad 0.0017  +0.9% vs base: within noise
+== round 3 async tree 5.54 11.17 9.76
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async tree  (10 runs each, 1 warmup, unit: value)
+  base         median 0.9844  min 0.8986  max 1.137  mad 0.0185
+  proto        median 0.9766  min 0.9407  max 1.388  mad 0.0333  -0.8% vs base: within noise
+== round 3 stream collection 5.26 10.65 9.61
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream collection  (10 runs each, 1 warmup, unit: value)
+  base         median 0.3632  min 0.3335  max 0.5024  mad 0.0272
+  proto        median 0.3634  min 0.337  max 0.4016  mad 0.0217  +0.0% vs base: within noise
+== round 3 stream tree 4.99 10.41 9.54
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream tree  (10 runs each, 1 warmup, unit: value)
+  base         median 0.4155  min 0.3691  max 1.254  mad 0.0445
+  proto        median 0.4402  min 0.3691  max 1.178  mad 0.052  +5.9% vs base: within noise
+== round 4 sync collection 5.41 9.96 9.41
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync collection  (20 runs each, 2 warmup, unit: value)
+  base         median 0.3541  min 0.3284  max 0.4563  mad 0.0184
+  proto        median 0.3542  min 0.3317  max 0.442  mad 0.0197  +0.0% vs base: within noise
+== round 4 sync tree 5.21 9.61 9.30
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs sync tree  (20 runs each, 2 warmup, unit: value)
+  base         median 0.621  min 0.5404  max 2.998  mad 0.0736
+  proto        median 0.6129  min 0.5162  max 2.074  mad 0.061  -1.3% vs base: within noise
+== round 4 async collection 12.38 10.72 9.71
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async collection  (20 runs each, 2 warmup, unit: value)
+  base         median 0.9875  min 0.7685  max 1.325  mad 0.075
+  proto        median 0.9919  min 0.7537  max 1.244  mad 0.051  +0.4% vs base: within noise
+== round 4 async tree 8.44 9.93 9.46
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs async tree  (20 runs each, 2 warmup, unit: value)
+  base         median 1.062  min 0.8897  max 2.791  mad 0.0649
+  proto        median 1.018  min 0.9391  max 2.229  mad 0.0374  -4.1% vs base: within noise
+== round 4 stream collection 5.44 8.91 9.11
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream collection  (20 runs each, 2 warmup, unit: value)
+  base         median 0.3323  min 0.3267  max 0.3631  mad 0.00496
+  proto        median 0.3353  min 0.3306  max 0.3803  mad 0.00258  +0.9% vs base: within noise
+== round 4 stream tree 4.32 8.43 8.93
+node /Users/alexis/Documents/GitHub/seroval/.claude/worktrees/agent-a72a3f1cb06bfa13f/roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs stream tree  (20 runs each, 2 warmup, unit: value)
+  base         median 0.5062  min 0.3694  max 0.7851  mad 0.13
+  proto        median 0.5963  min 0.3708  max 0.8243  mad 0.159  +17.8% vs base: within noise
