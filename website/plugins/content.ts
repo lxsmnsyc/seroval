@@ -266,7 +266,7 @@ const SEARCH_ID = 'virtual:search-index';
  * - The client build emits each doc as Markdown at `docs/<slug>.md`, and
  *   `llms.txt`, which links them in sidebar order.
  */
-export default function content(root: string): Plugin {
+export default function content(root: string, siteUrl: string): Plugin {
   const docsDir = path.join(import.meta.dirname, '../src/content/docs');
 
   async function loadDocs(): Promise<RenderedDoc[]> {
@@ -342,7 +342,16 @@ export default function content(root: string): Plugin {
         }
         index += `\n## ${section.title}\n\n`;
         for (const slug of section.pages) {
-          index += `- [${titles.get(slug) ?? slug}](/docs/${slug}.md)\n`;
+          index += `- [${titles.get(slug) ?? slug}](${siteUrl}/docs/${slug}.md)\n`;
+        }
+      }
+      // Pages the sidebar hides, such as the error codes, are optional reading.
+      index += '\n## Optional\n\n';
+      for (const section of SIDEBAR) {
+        if (section.hidden) {
+          for (const slug of section.pages) {
+            index += `- [${titles.get(slug) ?? slug}](${siteUrl}/docs/${slug}.md)\n`;
+          }
         }
       }
       this.emitFile({ type: 'asset', fileName: 'llms.txt', source: index });

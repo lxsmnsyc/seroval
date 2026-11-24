@@ -82,7 +82,7 @@ Options: `plugins`, `disabledFeatures`, `depthLimit`, `compactArrayBufferViews`.
 | `new OpaqueReference(value, replacement?)` | Sends `replacement` instead of `value`. | [OpaqueReference](./isomorphic-references.md#opaquereference) |
 | `createPlugin(plugin)` | Defines a plugin, with type inference. | [Writing plugins](./writing-plugins.md) |
 | `Feature` | Feature flags for `disabledFeatures`. | [Compatibility](./compatibility.md#feature-flags) |
-| `Sequence` | The recorded values of an iterable, built by the parsers. Exported only so bundlers can remove it when it is unused. Do not create one, and do not read its fields, which may change in any release. | |
+| `Sequence` | The recorded values of an iterable, built by the parsers. Exported only so bundlers can remove it when it is unused. Do not create one, and do not read its fields, which may change in any release. | Internal |
 
 ## Errors
 

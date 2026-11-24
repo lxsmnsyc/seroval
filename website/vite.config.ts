@@ -45,7 +45,7 @@ export default defineConfig({
   },
   plugins: [
     workspaceDevBuilds(),
-    content(ROOT),
+    content(ROOT, SITE_URL),
     solid({
       ssr: true,
       // Pages are prerendered to static files, so each one renders in full.
