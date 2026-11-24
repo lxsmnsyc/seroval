@@ -130,6 +130,14 @@ describe('step wrappers', () => {
     expect(inner.step).toBe('deserialize');
   });
 
+  it('give an unknown step the generic code and a message', () => {
+    const error = new SerovalError('whatever', 'text');
+    expect(error.code).toBe('SRV014');
+    expect(error.step).toBeUndefined();
+    expect(error.message).toContain('whatever');
+    expect(error.message).not.toContain('undefined');
+  });
+
   it('keep the two-argument base constructor', () => {
     const error = new SerovalError('parsing', 'text');
     expect(error.code).toBe('SRV014');

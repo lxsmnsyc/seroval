@@ -4,7 +4,6 @@ import { assert, describe, expect, it } from 'vitest';
 import {
   type SerovalNode,
   type Stream,
-  SerovalStreamConsumedError,
   createLiveStream,
   createStream,
   crossSerializeStream,
@@ -67,7 +66,7 @@ describe('live receiver', () => {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- STREAM_CONSTRUCTOR is untyped.
     const receiver = STREAM_CONSTRUCTOR(1) as unknown as Stream<number>;
     listen(receiver, []);
-    expect(() => listen(receiver, [])).toThrow(SerovalStreamConsumedError);
+    expect(() => listen(receiver, [])).toThrow('Stream consumed');
   });
 
   it('delivers the terminal event to a late first listener', () => {

@@ -1,13 +1,16 @@
 // oxlint-disable typescript/no-deprecated -- the deprecated class still has its code.
 import { readFileSync, readdirSync } from 'node:fs';
+import vm from 'node:vm';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assert, describe, expect, it } from 'vitest';
 import * as api from '../../src';
 import { ERROR_CODES, type ErrorCode, getCatalogEntry } from '../../src/core/error-catalog';
+import { SERIALIZED_STREAM_CONSTRUCTOR } from '../../src/core/constructors';
 import * as errors from '../../src/core/errors';
 import { fromCrossJSON, fromJSON, serialize, toCrossJSON, toJSON } from '../../src';
 
+const SERIALIZED_THROW = /throw new Error\('Stream consumed'\);/;
 const SRC = fileURLToPath(new URL('../../src', import.meta.url));
 const CODES = Object.values(ERROR_CODES) as ErrorCode[];
 
@@ -82,7 +85,8 @@ const THROWERS: { [C in ErrorCode]: () => unknown } = {
 describe('catalog', () => {
   it('has no plain throw in the sources', () => {
     for (const file of listSources(SRC)) {
-      const source = readFileSync(file, 'utf8');
+      // The constructors are serialized as source text and cannot reference module bindings.
+      const source = readFileSync(file, 'utf8').replace(SERIALIZED_THROW, '');
       expect(source, file).not.toMatch(/throw new (Error|TypeError)\(/);
     }
   });
@@ -117,5 +121,20 @@ describe('catalog', () => {
     expect(thrown.code).toBe('SRV020');
     expect(thrown.step).toBe('deserialize');
     expect(thrown.cause).toBeInstanceOf(errors.SerovalBase64LimitError);
+  });
+});
+
+describe('serialized constructors', () => {
+  it('throws Stream consumed for a second consumer in a fresh realm', () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the evaluated source is the stream constructor.
+    const create = vm.runInNewContext(`(${SERIALIZED_STREAM_CONSTRUCTOR})`) as (size: number) => {
+      on(listener: object): void;
+    };
+    const stream = create(1);
+    const listener = { next() {}, throw() {}, return() {} };
+    stream.on(listener);
+    expect(() => {
+      stream.on(listener);
+    }).toThrow('Stream consumed');
   });
 });

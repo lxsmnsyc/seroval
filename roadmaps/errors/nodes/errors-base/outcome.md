@@ -17,6 +17,8 @@
 - The catalog is exported from `src/shared.ts`, not `src/index.ts`. `test/entry-points.test.ts` requires the root to equal shared plus read-only plus write-only, so a root-only export fails. Errors are already exported from `shared.ts`.
 - `error-catalog.ts` (errors-contract's file) changed: the catalog is built on the first `getCatalogEntry` call, not at import. `test/keep-names.test.ts` bundles the sources with no `import.meta.env`, so the old module-level `import.meta.env.PROD` read threw. The PROD strip test still passes.
 - `iterable.test.ts:213` needed no change: the wrapper message still contains the inner message. Snapshots: none changed (seroval and plugins).
+- Serialized constructor source is excluded from the no-plain-throw rule. `STREAM_CONSTRUCTOR` in `constructors.ts` is shipped as source text (`SERIALIZED_STREAM_CONSTRUCTOR`), so it keeps `throw new Error('Stream consumed')` and must not reference module bindings. `catalog.test.ts` exempts exactly that line and evaluates the serialized source in a vm context. The `Stream` class in `stream.ts` still throws SRV017. No other serialized constructor throws a module error.
+- A public `new SerovalError(type, cause)` with an unknown `type` gets the generic SRV014 code, no step, and a dev message naming the type.
 - `rpc` and `transport` packages do not match on these messages; nothing adjusted.
 
 ## Stubs left

@@ -24,9 +24,11 @@ interface ErrorInit extends ErrorFields {
   code: ErrorCode;
   step?: SerovalErrorStep;
   details: unknown;
+  // Development message for a generic error with an unknown step.
+  message?: string;
 }
 
-const STEPS: Record<string, SerovalErrorStep> = {
+const STEPS: Partial<Record<string, SerovalErrorStep>> = {
   parsing: 'parse',
   serialization: 'serialize',
   deserialization: 'deserialize',
@@ -42,6 +44,9 @@ function getMessage(init: ErrorInit): string {
   if (import.meta.env.PROD) {
     return getProdMessage(init.code, init.step);
   }
+  if (init.message) {
+    return init.message;
+  }
   // The details were built for this code by `createInit` or `resolveStepInit`.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the details match their code.
   return getDevMessage(init.code, init.details as CatalogDetails[ErrorCode]);
@@ -49,6 +54,14 @@ function getMessage(init: ErrorInit): string {
 
 function resolveStepInit(type: string, cause: unknown): ErrorInit {
   const step = STEPS[type];
+  if (!step) {
+    // An unknown step type gets the generic parse code (SRV014) and no step.
+    return {
+      code: STEP_CODES.parse,
+      details: { cause },
+      message: 'Seroval caught an error during the ' + type + ' process.',
+    };
+  }
   // oxlint-disable-next-line eslint/no-use-before-define -- the class and this function refer to each other.
   if (cause instanceof SerovalError) {
     // Same code as the wrapped error, so the outer error says what went wrong.
