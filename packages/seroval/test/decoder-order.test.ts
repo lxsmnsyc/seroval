@@ -65,7 +65,7 @@ describe('decoder validation ordering', () => {
       json.t.i = -1;
       const error = cause(() => fromJSON(json));
       assert(error instanceof SerovalMalformedNodeError);
-      expect(error.message).toContain(`"${json.t.t}"`);
+      expect(error.message).toContain(`(type ${json.t.t})`);
     },
   );
 });

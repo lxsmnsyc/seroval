@@ -50,7 +50,7 @@ export type ErrorCode = (typeof ERROR_CODES)[ErrorName];
 /** The details of each code. Throw sites and messages agree on these keys. */
 export interface CatalogDetails {
   SRV001: { value: unknown };
-  SRV002: { nodeType: number };
+  SRV002: { nodeType: number; nodeId?: number; detail?: string };
   SRV003: { tag: string };
   SRV004: { tag: string };
   SRV005: { value: unknown };
@@ -104,6 +104,24 @@ export interface SerovalErrorShape {
   readonly cause?: unknown;
 }
 
+// `Malformed node 12 (type 6): flags must be a string`. The id, the type and
+// the detail are left out when the throw site does not have them.
+function describeNode(
+  label: string,
+  nodeType: number | undefined,
+  nodeId: number | undefined,
+  detail: string | undefined,
+): string {
+  let message = label;
+  if (nodeId !== undefined) {
+    message += ' ' + nodeId;
+  }
+  if (nodeType !== undefined) {
+    message += ' (type ' + nodeType + ')';
+  }
+  return message + (detail ? ': ' + detail : '.');
+}
+
 function describeValue(value: unknown): string {
   return Object.prototype.toString.call(value);
 }
@@ -154,7 +172,7 @@ There are few workarounds for this problem:
       'SRV002',
       'SerovalUnsupportedNodeError',
       'A node has a type that is not supported',
-      ({ nodeType }) => 'Unsupported node type "' + nodeType + '".',
+      ({ nodeType, nodeId, detail }) => describeNode('Unsupported node', nodeType, nodeId, detail),
     ),
     SRV003: defineEntry(
       'SRV003',
@@ -195,9 +213,7 @@ There are few workarounds for this problem:
       'SRV008',
       'SerovalMalformedNodeError',
       'A node has the wrong shape',
-      ({ nodeType, detail }) =>
-        (nodeType === undefined ? 'Malformed node.' : 'Malformed node type "' + nodeType + '".') +
-        (detail ? ' ' + detail : ''),
+      ({ nodeType, nodeId, detail }) => describeNode('Malformed node', nodeType, nodeId, detail),
     ),
     SRV009: defineEntry(
       'SRV009',
