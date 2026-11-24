@@ -4,8 +4,6 @@ description: Supported types in each mode, feature flags for older runtimes, and
 type: reference
 ---
 
-This page lists the types each mode supports, the feature flags for older runtimes, and how bundlers pick a build of seroval.
-
 ## Supported types
 
 The modes are:

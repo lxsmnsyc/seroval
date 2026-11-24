@@ -4,8 +4,6 @@ description: Install seroval, serialize a value, and read it back.
 type: tutorial
 ---
 
-This page installs seroval, sends a value as code and as JSON, and streams a value into a page.
-
 ## Before you start
 
 You need Node.js 20 or later, or another runtime from [Compatibility](./compatibility.md#runtimes). The examples are ES modules.

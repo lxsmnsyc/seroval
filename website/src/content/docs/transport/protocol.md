@@ -4,8 +4,6 @@ description: The messages a @seroval/transport writer sends, and the frames that
 type: reference
 ---
 
-This page describes the messages that a writer sends and a reader takes, and the frames that carry them over a byte connection. Read it to carry messages over a connection that `@seroval/transport/web` and `@seroval/transport/node` do not cover.
-
 ## Message format
 
 | Message | Meaning |

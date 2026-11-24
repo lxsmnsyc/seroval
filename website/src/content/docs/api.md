@@ -4,8 +4,6 @@ description: Every export of seroval, with its signature and options.
 type: reference
 ---
 
-This page lists every export of `seroval` by entry point and by area, with the guide that explains each one.
-
 ## Entry points
 
 `seroval` exports everything on this page. Code that only reads or only writes can import a smaller entry point instead.

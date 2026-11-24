@@ -4,8 +4,6 @@ description: Every method and option of the @seroval/transport writers, readers 
 type: reference
 ---
 
-This page lists the methods and options of the writers and readers in `@seroval/transport`, and when values fail. [Transport](../transport.md) shows how to use them.
-
 ## The writer
 
 | Method | Description |

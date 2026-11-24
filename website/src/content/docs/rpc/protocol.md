@@ -4,8 +4,6 @@ description: The messages two @seroval/rpc endpoints exchange.
 type: reference
 ---
 
-This page describes the messages that two `@seroval/rpc` endpoints exchange. You need it only to write an endpoint in another language or to debug a connection.
-
 ## Message format
 
 rpc sends the [transport messages](../transport/protocol.md#message-format) `0`, `1` and `2` for values, and these control messages beside them:

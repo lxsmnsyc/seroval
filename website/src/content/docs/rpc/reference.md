@@ -4,8 +4,6 @@ description: Every member and option of @seroval/rpc channels, endpoints and por
 type: reference
 ---
 
-This page lists the members and options of channels, endpoints and ports in `@seroval/rpc`, its errors and its limits. [RPC](../rpc.md) shows how to use them.
-
 ## Channels
 
 `createChannel(functions, options)` makes a channel that owns `functions`. The side that made it is the owner. A side that got it from `connect()` or inside a value is a holder.
