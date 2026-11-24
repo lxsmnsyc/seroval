@@ -467,6 +467,8 @@ kbd {
 }
 
 .swap > * {
+  display: grid;
+  place-items: center;
   grid-area: 1 / 1;
   transition:
     opacity var(--duration-fast) var(--ease-out),
