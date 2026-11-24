@@ -63,6 +63,7 @@ import {
   createArrayBufferNode,
   createBaseParserContext,
   createIndexForValue,
+  addErrorPath,
   createMapNode,
   createObjectNode,
   createPromiseConstructorNode,
@@ -196,12 +197,17 @@ function parseItems(ctx: SOSParserContext, depth: number, current: unknown[]): (
   assertArrayHoles(current);
   const len = current.length;
   const nodes = new Array<SerovalNode | 0>(len);
-  for (let i = 0; i < len; i++) {
-    if (i in current) {
-      nodes[i] = parseSOS(ctx, depth, current[i]);
-    } else {
-      nodes[i] = 0;
+  let i = 0;
+  try {
+    for (; i < len; i++) {
+      if (i in current) {
+        nodes[i] = parseSOS(ctx, depth, current[i]);
+      } else {
+        nodes[i] = 0;
+      }
     }
+  } catch (error) {
+    throw addErrorPath(error, i);
   }
   return nodes;
 }
@@ -215,6 +221,38 @@ function parseArray(
   return createArrayNode(id, current, parseItems(ctx, depth, current));
 }
 
+/**
+ * The values behind the iterator symbols get the symbol as their path
+ * segment, as in `$.items["Symbol.iterator"][2]`.
+ */
+function parseIteratorEntry(
+  ctx: SOSParserContext,
+  depth: number,
+  properties: Record<string | symbol, unknown>,
+): SerovalNode {
+  try {
+    return parseSOS(
+      ctx,
+      depth,
+      createSequenceFromIterable(properties as unknown as Iterable<unknown>),
+    );
+  } catch (error) {
+    throw addErrorPath(error, 'Symbol.iterator');
+  }
+}
+
+function parseAsyncIteratorEntry(
+  ctx: SOSParserContext,
+  depth: number,
+  properties: Record<string | symbol, unknown>,
+): SerovalNode {
+  try {
+    return parseAsyncIterable(ctx, depth, properties as unknown as AsyncIterable<unknown>);
+  } catch (error) {
+    throw addErrorPath(error, 'Symbol.asyncIterator');
+  }
+}
+
 function parseProperties(
   ctx: SOSParserContext,
   depth: number,
@@ -226,10 +264,15 @@ function parseProperties(
   // every object, and the length is already known.
   const keyNodes = new Array<SerovalObjectRecordKey>(len);
   const valueNodes = new Array<SerovalNode>(len);
-  for (let i = 0, key: string; i < len; i++) {
-    key = keys[i];
-    keyNodes[i] = serializeString(key);
-    valueNodes[i] = parseSOS(ctx, depth, properties[key]);
+  let key = '';
+  try {
+    for (let i = 0; i < len; i++) {
+      key = keys[i];
+      keyNodes[i] = serializeString(key);
+      valueNodes[i] = parseSOS(ctx, depth, properties[key]);
+    }
+  } catch (error) {
+    throw addErrorPath(error, key);
   }
   // Check special properties, symbols in this case
   if (SYM_ITERATOR in properties) {
@@ -238,11 +281,7 @@ function parseProperties(
       createIteratorFactoryInstanceNode(
         SerovalNodeType.IteratorFactoryInstance,
         parseIteratorFactory(ctx.base),
-        parseSOS(
-          ctx,
-          depth,
-          createSequenceFromIterable(properties as unknown as Iterable<unknown>),
-        ) as SerovalNodeWithID,
+        parseIteratorEntry(ctx, depth, properties) as SerovalNodeWithID,
       ),
     );
   }
@@ -252,11 +291,7 @@ function parseProperties(
       createIteratorFactoryInstanceNode(
         SerovalNodeType.AsyncIteratorFactoryInstance,
         parseAsyncIteratorFactory(ctx.base),
-        parseAsyncIterable(
-          ctx,
-          depth,
-          properties as unknown as AsyncIterable<unknown>,
-        ) as SerovalNodeWithID,
+        parseAsyncIteratorEntry(ctx, depth, properties) as SerovalNodeWithID,
       ),
     );
   }
@@ -311,7 +346,11 @@ function parseBoxed(
   id: number,
   current: object,
 ): SerovalBoxedNode {
-  return createBoxedNode(id, parseSOS(ctx, depth, current.valueOf()));
+  try {
+    return createBoxedNode(id, parseSOS(ctx, depth, current.valueOf()));
+  } catch (error) {
+    throw addErrorPath(error, 'valueOf');
+  }
 }
 
 function parseView(
@@ -325,7 +364,11 @@ function parseView(
     ctx.base,
     readArrayBufferView(current, type === SerovalNodeType.DataView),
   );
-  return createViewNode(type, id, current, view, parseSOS(ctx, depth, view.buffer));
+  try {
+    return createViewNode(type, id, current, view, parseSOS(ctx, depth, view.buffer));
+  } catch (error) {
+    throw addErrorPath(error, 'buffer');
+  }
 }
 
 function parseError(
@@ -349,10 +392,15 @@ function parseMap(
   const keyNodes = new Array<SerovalNode>(current.size);
   const valueNodes = new Array<SerovalNode>(current.size);
   let i = 0;
-  for (const [key, value] of current.entries()) {
-    keyNodes[i] = parseSOS(ctx, depth, key);
-    valueNodes[i] = parseSOS(ctx, depth, value);
-    i++;
+  try {
+    for (const [key, value] of current.entries()) {
+      keyNodes[i] = parseSOS(ctx, depth, key);
+      valueNodes[i] = parseSOS(ctx, depth, value);
+      i++;
+    }
+  } catch (error) {
+    // The key node of the failing entry is not set yet when its key threw.
+    throw addErrorPath(error, i, keyNodes[i] === undefined ? 'key' : 'value');
   }
   return createMapNode(id, sentinel, keyNodes, valueNodes);
 }
@@ -365,8 +413,13 @@ function parseSet(
 ): SerovalSetNode {
   const items = new Array<SerovalNode>(current.size);
   let i = 0;
-  for (const item of current.keys()) {
-    items[i++] = parseSOS(ctx, depth, item);
+  try {
+    for (const item of current.keys()) {
+      items[i] = parseSOS(ctx, depth, item);
+      i++;
+    }
+  } catch (error) {
+    throw addErrorPath(error, i);
   }
   return createSetNode(id, items);
 }
@@ -392,16 +445,21 @@ function parseEndedStream(
   if (last >= 0) {
     markParserRef(ctx.base, id);
   }
-  for (let i = 0; i <= last; i++) {
-    sequence[i] = createStreamEventNode(
-      i < last
-        ? SerovalNodeType.StreamNext
-        : events.success
-          ? SerovalNodeType.StreamReturn
-          : SerovalNodeType.StreamThrow,
-      id,
-      parseSOS(ctx, depth, values[i]),
-    );
+  let i = 0;
+  try {
+    for (; i <= last; i++) {
+      sequence[i] = createStreamEventNode(
+        i < last
+          ? SerovalNodeType.StreamNext
+          : events.success
+            ? SerovalNodeType.StreamReturn
+            : SerovalNodeType.StreamThrow,
+        id,
+        parseSOS(ctx, depth, values[i]),
+      );
+    }
+  } catch (error) {
+    throw addErrorPath(error, i);
   }
   return sequence;
 }
@@ -512,8 +570,13 @@ function parseSequence(
 ): SerovalSequenceNode {
   const len = current.v.length;
   const nodes = new Array<SerovalNode>(len);
-  for (let i = 0; i < len; i++) {
-    nodes[i] = parseSOS(ctx, depth, current.v[i]);
+  let i = 0;
+  try {
+    for (; i < len; i++) {
+      nodes[i] = parseSOS(ctx, depth, current.v[i]);
+    }
+  } catch (error) {
+    throw addErrorPath(error, i);
   }
   return createSequenceNode(id, nodes, current.t, current.d);
 }

@@ -6,6 +6,7 @@ import type {
   LiveStreamErrorReason,
   SerovalErrorStep,
 } from './error-catalog';
+import { formatErrorPath } from './context/error-path';
 import { ERROR_CODES, getDevMessage, getProdMessage } from './error-catalog';
 import type { SerovalNode } from './types';
 
@@ -125,6 +126,9 @@ export class SerovalError extends Error {
     }
     if (resolved.path) {
       this.path = resolved.path;
+      if (!import.meta.env.PROD) {
+        this.message += '\n\nAt ' + formatErrorPath(resolved.path);
+      }
     }
     if (resolved.nodeType !== undefined) {
       this.nodeType = resolved.nodeType;
@@ -142,7 +146,12 @@ export class SerovalError extends Error {
       this.detail = resolved.detail;
     }
     // The wrapped error learns the step it failed in.
-    if (!init && cause instanceof SerovalError && cause.step === undefined) {
+    if (
+      !init &&
+      cause instanceof SerovalError &&
+      cause.step === undefined &&
+      Object.isExtensible(cause)
+    ) {
       cause.step = resolved.step;
     }
   }
