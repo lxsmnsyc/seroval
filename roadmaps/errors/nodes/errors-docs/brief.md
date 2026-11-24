@@ -1,7 +1,7 @@
 ---
 id: errors-docs
 title: Docs page per error code
-status: active
+status: done
 priority: must
 type: docs
 story: 
@@ -40,8 +40,8 @@ Rewrite `website/src/content/docs/errors.md`, which documents the old three-wrap
 
 ## Acceptance
 
-- [ ] `docs.test.ts` compares the catalog codes with the pages.
-- [ ] `pnpm --filter website build` passes.
+- [x] `docs.test.ts` compares the catalog codes with the pages.
+- [x] `pnpm --filter website build` passes.
 
 ## Sizing
 

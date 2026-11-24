@@ -29,7 +29,7 @@ Every error seroval and seroval-plugins throw is a `SerovalError` with its own `
 
 - `pnpm --filter seroval test` and `pnpm --filter seroval-plugins test` pass.
 - A test in `packages/seroval/test/errors/` throws every catalog code at least once and checks `name`, `code` and the production message format.
-- No `throw new Error(` or `throw new TypeError(` remains in `packages/seroval/src` (grep in `catalog.test.ts`; the option check at `deserializer.ts:117` stays a `RangeError` with a `code`, per Q5). `packages/plugins/web` follows when errors-plugins lands.
+- No `throw new Error(` or `throw new TypeError(` remains in `packages/seroval/src` (grep in `catalog.test.ts`; the option check at `deserializer.ts:117` stays a `RangeError` with a `code`, per Q5; `STREAM_CONSTRUCTOR` in `constructors.ts` keeps a plain `Error` because it is serialized as source and runs without seroval in scope). `packages/plugins/web` follows when errors-plugins lands.
 - Every catalog code has a docs page, checked by a test that compares the catalog with the pages.
 
 ## Priorities

@@ -1,7 +1,7 @@
 ---
 id: errors-plugins
 title: Coded errors in seroval-plugins
-status: todo
+status: active
 priority: should
 type: feature
 story: 

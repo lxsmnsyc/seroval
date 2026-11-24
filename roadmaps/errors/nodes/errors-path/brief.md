@@ -1,7 +1,7 @@
 ---
 id: errors-path
 title: Value paths in parse errors
-status: todo
+status: active
 priority: should
 type: feature
 story: 
