@@ -218,10 +218,13 @@ describe('AbortSignal', () => {
     });
     describe('scoped', () => {
       it('supports aborted AbortSignal', async () => {
-        const back = await streamCross<Promise<typeof SYNC_EXAMPLE>>(Promise.resolve(SYNC_EXAMPLE), {
-          plugins: [AbortSignalPlugin],
-          scopeId: 'example',
-        });
+        const back = await streamCross<Promise<typeof SYNC_EXAMPLE>>(
+          Promise.resolve(SYNC_EXAMPLE),
+          {
+            plugins: [AbortSignalPlugin],
+            scopeId: 'example',
+          },
+        );
         expect(back).toBeInstanceOf(AbortSignal);
         expect(back.aborted).toBe(true);
         expect(back.reason).toBe(SYNC_EXAMPLE.reason);
@@ -286,9 +289,12 @@ describe('AbortSignal', () => {
   });
   describe('toCrossJSONStream', () => {
     it('supports aborted AbortSignal', async () => {
-      const back = await streamCrossJSON<Promise<typeof SYNC_EXAMPLE>>(Promise.resolve(SYNC_EXAMPLE), {
-        plugins: [AbortSignalPlugin],
-      });
+      const back = await streamCrossJSON<Promise<typeof SYNC_EXAMPLE>>(
+        Promise.resolve(SYNC_EXAMPLE),
+        {
+          plugins: [AbortSignalPlugin],
+        },
+      );
       expect(back).toBeInstanceOf(AbortSignal);
       expect(back.aborted).toBe(true);
       expect(back.reason).toBe(SYNC_EXAMPLE.reason);
@@ -354,7 +360,17 @@ describe('AbortSignal', () => {
         f: 0x7f,
         m: [] as number[],
       } as unknown as Parameters<typeof fromJSON>[0];
-      expect(() => fromJSON(json, { plugins: [AbortSignalPlugin] })).toThrow();
+      let error: unknown;
+      try {
+        fromJSON(json, { plugins: [AbortSignalPlugin] });
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(SerovalDeserializationError);
+      expect((error as SerovalDeserializationError).code).toBe('SRV008');
+      expect(((error as SerovalDeserializationError).cause as SerovalMalformedNodeError).name).toBe(
+        'SerovalMalformedNodeError',
+      );
     });
   });
 });

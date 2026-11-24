@@ -99,7 +99,13 @@ const FormDataPlugin = /* @__PURE__ */ createPlugin<FormData, FormDataNode>({
   },
   validate: { entries: isFormDataInit },
   deserialize(node, ctx) {
-    return FORM_DATA_FACTORY_CONSTRUCTOR(copyEntries(ctx.deserialize<FormDataInit>(node.entries)));
+    return FORM_DATA_FACTORY_CONSTRUCTOR(
+      copyEntries(
+        ctx.deserialize<FormDataInit>(node.entries),
+        'seroval-plugins/web/FormData',
+        'entries',
+      ),
+    );
   },
 });
 

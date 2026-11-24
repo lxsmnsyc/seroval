@@ -95,10 +95,10 @@ function createRequestBodyStream(current: Request): ReadableStream {
 // validator skipped.
 function copyRequestOptions(options: RequestOptions): RequestOptions {
   return {
-    body: claim(options.body),
+    body: claim(options.body, 'seroval-plugins/web/Request', 'body'),
     cache: options.cache,
     credentials: options.credentials,
-    headers: claim(options.headers),
+    headers: claim(options.headers, 'seroval-plugins/web/Request', 'headers'),
     integrity: options.integrity,
     keepalive: options.keepalive,
     method: options.method,
