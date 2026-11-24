@@ -193,7 +193,12 @@ export interface StreamParserState {
 
 type SOSParserContext = SyncParserContext | StreamParserContext;
 
-function parseItems(ctx: SOSParserContext, depth: number, current: unknown[]): (SerovalNode | 0)[] {
+function parseArray(
+  ctx: SOSParserContext,
+  depth: number,
+  id: number,
+  current: unknown[],
+): SerovalArrayNode {
   assertArrayHoles(current);
   const len = current.length;
   const nodes = new Array<SerovalNode | 0>(len);
@@ -209,16 +214,7 @@ function parseItems(ctx: SOSParserContext, depth: number, current: unknown[]): (
   } catch (error) {
     throw addErrorPath(error, i);
   }
-  return nodes;
-}
-
-function parseArray(
-  ctx: SOSParserContext,
-  depth: number,
-  id: number,
-  current: unknown[],
-): SerovalArrayNode {
-  return createArrayNode(id, current, parseItems(ctx, depth, current));
+  return createArrayNode(id, current, nodes);
 }
 
 /**
@@ -264,15 +260,16 @@ function parseProperties(
   // every object, and the length is already known.
   const keyNodes = new Array<SerovalObjectRecordKey>(len);
   const valueNodes = new Array<SerovalNode>(len);
-  let key = '';
+  let i = 0;
   try {
-    for (let i = 0; i < len; i++) {
+    for (let key: string; i < len; i++) {
       key = keys[i];
       keyNodes[i] = serializeString(key);
       valueNodes[i] = parseSOS(ctx, depth, properties[key]);
     }
   } catch (error) {
-    throw addErrorPath(error, key);
+    // The key is read again here so the loop needs no variable for it.
+    throw addErrorPath(error, keys[i]);
   }
   // Check special properties, symbols in this case
   if (SYM_ITERATOR in properties) {

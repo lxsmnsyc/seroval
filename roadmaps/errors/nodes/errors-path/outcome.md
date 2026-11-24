@@ -22,19 +22,21 @@ Decisions:
 
 ## Proof
 
-Production builds, base `origin/release/1.9.0` (5eb4f32e) against the branch (merge eb83736e plus this commit), `roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs` with perf-pass `bench.py` (interleaved, 2 warmup runs, 40 runs per cell). Median ms/op, MAD in brackets.
+Production builds, base `origin/release/1.9.0` (5eb4f32e) against the branch, `roadmaps/errors/nodes/errors-path-spike/bench/parse.mjs` with perf-pass `bench.py` (interleaved, 2 warmup runs, 40 runs per cell). Median ms/op, MAD in brackets.
 
-| Cell              | base            | branch          | change | bench.py        |
-| ----------------- | --------------- | --------------- | ------ | --------------- |
-| sync collection   | 0.3336 (0.0056) | 0.3360 (0.0035) | +0.7%  | within noise    |
-| sync tree         | 0.4341 (0.0335) | 0.4207 (0.0178) | -3.1%  | within noise    |
-| async collection  | 0.7288 (0.0029) | 0.7308 (0.0023) | +0.3%  | within noise    |
-| async tree        | 0.9470 (0.0060) | 0.9497 (0.0106) | +0.3%  | within noise    |
-| stream collection | 0.3291 (0.0015) | 0.3349 (0.0017) | +1.8%  | worse (above 3x MAD) |
-| stream tree       | 0.3799 (0.0109) | 0.3764 (0.0067) | -0.9%  | within noise    |
+| Cell              | base            | branch          | change | bench.py     | load (1 min) |
+| ----------------- | --------------- | --------------- | ------ | ------------ | ------------ |
+| sync collection   | 0.3480 (0.0167) | 0.3387 (0.0104) | -2.7%  | within noise | 3.4 to 3.7   |
+| sync tree         | 0.4435 (0.0410) | 0.4054 (0.0122) | -8.6%  | within noise | 3.7          |
+| async collection  | 0.7288 (0.0029) | 0.7308 (0.0023) | +0.3%  | within noise | 3 to 6       |
+| async tree        | 0.9470 (0.0060) | 0.9497 (0.0106) | +0.3%  | within noise | 3 to 6       |
+| stream collection | 0.3325 (0.0049) | 0.3262 (0.0027) | -1.9%  | within noise | 2.7 to 3.1   |
+| stream collection (rerun) | 0.3291 (0.0012) | 0.3243 (0.0012) | -1.5% | better | 3.0 to 3.4 |
+| stream tree       | 0.3729 (0.0039) | 0.3751 (0.0062) | +0.6%  | within noise | 3.4          |
 
-- Load average: 1.8 at the start, 3.3 to 8.0 during the run (other processes started mid-run; the stream cells ran at 3.3 to 4.5). The 1.8% in stream collection is above noise by bench.py. Two reruns of that cell (40 runs each, load 4.7 to 5.2) gave +1.5% (0.3406 to 0.3456, MAD 0.010, within noise) and +2.2% (0.3309 to 0.3383, MAD 0.0028 and 0.0036, within noise). So the cell is consistently 1.5 to 2.2% slower (about 0.006 ms of 0.33 ms per op), the other five cells are within noise. This goes to the maintainer before the PR is marked ready.
-- An earlier round on the pre-merge branch (load 4 to 7) gave the same sign in every cell, between +0.1% and +2.6%.
+- Async cells are from the run before the fix below; the fix touches only `sync-parser.ts`, which the async parser does not use.
+- Cause of an earlier +1.5 to +2.2% in stream collection: a separate `parseItems` function with a try/catch. Removing only that try restored base (+0.0%); moving the try to a separate `parseItems` call from `parseArray` did not help (+1.9%); merging the loop into `parseArray` with the try did (-1.5 to -1.9%). The loop of `parseArray` in `sync-parser.ts` is now inline. The try in `parseProperties` costs nothing measurable. A CPU profile showed the time moving between `parseItems`, `parseProperties` and `parsePlainObject` (inlining), not a new hot function.
+- An earlier round on the pre-merge branch (load 4 to 7) gave the same sign in every cell, between +0.1% and +2.6%; that round is superseded.
 
 ## Deviations
 
