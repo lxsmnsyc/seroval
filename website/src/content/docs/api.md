@@ -1,7 +1,10 @@
 ---
 title: API reference
 description: Every export of seroval, with its signature and options.
+type: reference
 ---
+
+This page lists every export of `seroval` by entry point and by area, with the guide that explains each one.
 
 ## Entry points
 
@@ -12,7 +15,7 @@ description: Every export of seroval, with its signature and options.
 | `seroval` | Everything. |
 | `seroval/read` | `fromJSON`, `fromCrossJSON`, `createCrossDeserializer`, `deserialize`, and everything in `seroval/shared`. |
 | `seroval/write` | `serialize`, `serializeAsync`, `toJSON`, `toJSONAsync`, `compileJSON`, the cross-reference serializers, `getCrossReferenceHeader`, `Serializer`, and everything in `seroval/shared`. |
-| `seroval/shared` | What both sides use: streams, references, `createPlugin`, `Feature` and the errors. |
+| `seroval/shared` | What both sides use: streams, references, `createPlugin`, `Feature`, the errors and the error catalog. |
 | `seroval/validator` | The validators for a plugin's `validate` field (see [Plugin security](./plugin-security.md#validate-every-value)). `seroval` does not export them. |
 
 All entry points load the same files, so a value imported from one is the same value in the others. For example, a framework can read page state in one chunk and serialize server function calls in another:
@@ -81,6 +84,16 @@ Options: `plugins`, `disabledFeatures`, `depthLimit`, `compactArrayBufferViews`.
 | `new OpaqueReference(value, replacement?)` | Sends `replacement` instead of `value`. | [OpaqueReference](./isomorphic-references.md#opaquereference) |
 | `createPlugin(plugin)` | Defines a plugin, with type inference. | [Writing plugins](./writing-plugins.md) |
 | `Feature` | Feature flags for `disabledFeatures`. | [Compatibility](./compatibility.md#feature-flags) |
+| `Sequence` | The recorded values of an iterable, built by the parsers. Exported only so bundlers can remove it when it is unused. Do not create one, and do not read its fields, which may change in any release. | |
+
+## Errors
+
+| Export | Description | Guide |
+| --- | --- | --- |
+| `SerovalError` | The base class of every error seroval throws because of the data. | [Errors](./errors.md#fields) |
+| `SerovalParserError`, `SerovalSerializationError`, `SerovalDeserializationError` | The wrappers for each step. | [Errors](./errors.md#how-errors-are-wrapped) |
+| `SerovalUnsupportedTypeError` and the other error classes | One class per code. | [Error codes](./errors.md#codes) |
+| `ERROR_CODES`, `DOCS_ERRORS_URL`, `getProdMessage`, `getCatalogEntry`, `getDevMessage` | The error catalog. | [Reading the catalog](./errors.md#reading-the-catalog) |
 
 ## Options
 
@@ -103,4 +116,10 @@ All options in one place. Each function lists the ones it accepts above.
 
 ## Types
 
-seroval also exports TypeScript types for the values above, including `SerovalJSON`, `SerovalNode`, `Plugin`, `SerializeOptions`, `SerializeAsyncOptions`, `ToJSONOptions`, `ToJSONAsyncOptions`, `CrossSerializeOptions`, `Stream`, `StreamListener`, `LiveStream`, `LiveStreamProducer`, `LiveStreamConsumer`, `CrossDeserializer` and the options type of each function.
+seroval also exports TypeScript types for the values above, including `SerovalJSON`, `SerovalNode`, `Plugin`, `SerializeOptions`, `SerializeAsyncOptions`, `ToJSONOptions`, `ToJSONAsyncOptions`, `CrossSerializeOptions`, `Stream`, `StreamListener`, `LiveStream`, `LiveStreamProducer`, `LiveStreamConsumer`, `CrossDeserializer`, `ErrorCode`, `SerovalErrorShape`, `CatalogEntry` and the options type of each function.
+
+## Related
+
+- [Choosing a mode](./choosing-a-mode.md)
+- [Errors](./errors.md)
+- [Compatibility](./compatibility.md)

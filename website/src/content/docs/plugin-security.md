@@ -1,6 +1,7 @@
 ---
 title: Plugin security
 description: Rules for plugins that decode data from untrusted sources.
+type: concept
 ---
 
 `fromJSON` and `fromCrossJSON` are built to decode data from untrusted sources, such as a request body from a client. seroval validates its own node types, but it cannot know what a plugin expects. A plugin's `deserialize` method is the one place where untrusted data becomes a live value, so the plugin must validate it.
@@ -45,7 +46,7 @@ The validators are exported only from `seroval/validator`, so bundlers can still
 
 `v.instanceOf`, `v.optional`, `v.union`, `v.array` and `v.object` are function calls. Put `/* @__PURE__ */` before each call, as in the example above. Without it, esbuild keeps the plugin in the bundle even when nothing uses it.
 
-A validator is a function that takes a value and returns `true` or `false`, so you can also write your own. For checks that depend on more than one field, check the values by hand in `deserialize`, and throw when they are wrong.
+A validator is a function that takes a value and returns `true` or `false`, so you can also write your own. For checks that depend on more than one field, check the values by hand in `deserialize`, and throw when they are wrong. To give the receiver a coded error, throw `new SerovalPluginValidationError(tag, field)`, the error that `validate` throws ([SRV013](./errors/SRV013.md)).
 
 ## Check identity, not shape
 
@@ -62,13 +63,18 @@ Many platform constructors validate their own input. `new URL(...)`, `new Header
 If your type needs a function at runtime, keep the function inside your plugin's module, and never return it from `deserialize`. A helper plugin that exists only to produce code for the JavaScript output should throw when decoded:
 
 ```js
+import { SerovalMalformedNodeError } from 'seroval';
+
+// ...inside createPlugin({ ... })
 serialize() {
   return MY_INTERNAL_FACTORY.toString();
 },
-deserialize() {
-  throw new Error('MyFactoryPlugin cannot be decoded.');
+deserialize(node) {
+  throw new SerovalMalformedNodeError(node, 'MyFactoryPlugin cannot be decoded');
 },
 ```
+
+`SerovalMalformedNodeError` has the code [SRV008](./errors/SRV008.md), so the receiver sees the same error as for any other bad node.
 
 ## Keep serialize safe
 
@@ -81,3 +87,9 @@ A plugin's `serialize` method also receives the node unchecked. When `compileJSO
 - Check identity with `instanceof`, `typeof` and ranges, not marker properties.
 - Throw when the payload is not exactly what your plugin produces.
 - Never return a function from `deserialize`.
+
+## Related
+
+- [Security](./security.md)
+- [Writing plugins](./writing-plugins.md)
+- [SRV013](./errors/SRV013.md)
