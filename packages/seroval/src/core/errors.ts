@@ -65,11 +65,12 @@ function resolveStepInit(type: string, cause: unknown): ErrorInit {
   // oxlint-disable-next-line eslint/no-use-before-define -- the class and this function refer to each other.
   if (cause instanceof SerovalError) {
     // Same code as the wrapped error, so the outer error says what went wrong.
-    // The message of a wrapper is still the one of its step.
+    // The development message is the one of the wrapped error.
     return {
       code: cause.code,
       step,
       details: { cause },
+      message: cause.message,
       path: cause.path,
       nodeType: cause.nodeType,
       nodeId: cause.nodeId,
