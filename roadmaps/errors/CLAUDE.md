@@ -9,7 +9,7 @@ Rules for agents working on a node:
 - If a contract is wrong, write `contracts/<name>.change-request.md` and adapt locally. Do not edit the contract.
 - Keep notes in your `log.md`. Finish by writing `outcome.md` from the template.
 - Read the outcomes of your direct dependencies. Do not read other nodes' logs.
-- Do not run Biome or other formatters; the maintainer runs them. Build `packages/seroval` before running `packages/plugins` tests.
+- Run oxlint and oxfmt only on files you changed, and fix only what you added. Never run oxfmt on website markdown. Build `packages/seroval` before running `packages/plugins` tests.
 - Follow the ts-style skill: for-of loops over callback Array methods, function declarations with action names.
 
 Script: `python3 <skill>/scripts/plan.py roadmaps/errors context <id>` lists the files to load for a node.

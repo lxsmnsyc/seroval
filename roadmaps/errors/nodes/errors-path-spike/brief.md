@@ -1,7 +1,7 @@
 ---
 id: errors-path-spike
 title: Spike: cost of value paths in parse errors
-status: todo
+status: active
 priority: should
 type: spike
 story: 

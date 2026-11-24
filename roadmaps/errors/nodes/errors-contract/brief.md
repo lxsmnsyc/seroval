@@ -1,7 +1,7 @@
 ---
 id: errors-contract
 title: Error model and catalog
-status: active
+status: done
 priority: must
 type: contract
 story: 
@@ -38,10 +38,10 @@ Write `error-catalog.ts` with one entry for every error seroval throws today, in
 
 ## Acceptance
 
-- [ ] The catalog has a code for every class in `packages/seroval/src/core/errors.ts` every plain throw listed above, one generic code per step, and the plugin codes (14 plain throws in `packages/plugins/web`).
-- [ ] `model.test.ts` checks that codes are unique and well formed.
-- [ ] Development messages in the catalog are stripped from the production build (check the size of `dist` built with `PROD`).
-- [ ] Fast check passes.
+- [x] The catalog has a code for every class in `packages/seroval/src/core/errors.ts` every plain throw listed above, one generic code per step, and the plugin codes (release/1.9.0 had 2 plain plugin throws, mapped to SRV013 and SRV008 by maintainer decision; see outcome).
+- [x] `model.test.ts` checks that codes are unique and well formed.
+- [x] Development messages in the catalog are stripped from the production build (check the size of `dist` built with `PROD`).
+- [x] Fast check passes.
 
 ## Sizing
 

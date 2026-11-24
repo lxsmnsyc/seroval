@@ -1,7 +1,7 @@
 ---
 id: errors-docs
 title: Docs page per error code
-status: todo
+status: active
 priority: must
 type: docs
 story: 
