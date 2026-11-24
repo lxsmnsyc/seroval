@@ -1,5 +1,11 @@
 # @seroval/transport
 
+## 0.1.4
+
+### Patch Changes
+
+- 43b843f: The form data plugin imports its validators from `seroval/validator` instead of the `v` export of `seroval/read`.
+
 ## 0.1.3
 
 ### Patch Changes
