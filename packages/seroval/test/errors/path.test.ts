@@ -330,6 +330,36 @@ describe.each(MODES)('error paths (%s)', (mode) => {
   });
 });
 
+describe('stream mode without onError', () => {
+  it('throws the wrapper with the path and the original as cause', () => {
+    const original = new Error('x');
+    let caught: unknown;
+    try {
+      toCrossJSONStream(
+        {
+          a: [
+            {
+              get b(): never {
+                throw original;
+              },
+            },
+          ],
+        },
+        {
+          onParse() {
+            // Records are not needed.
+          },
+        },
+      );
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(SerovalParserError);
+    expect(getCause(caught)).toBe(original);
+    expect(getPath(caught)).toEqual(['a', 0, 'b']);
+  });
+});
+
 describe('late stream values', () => {
   it('start a new path at the value that arrived later', async () => {
     const failure = await new Promise<unknown>((resolve) => {

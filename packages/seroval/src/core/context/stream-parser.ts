@@ -685,9 +685,10 @@ function stopStreamParse(ctx: StreamParserContext, mode: 0 | 1 | 2, reason?: unk
     }
     const onError = state.onError;
     const onDone = state.onDone;
-    if (mode === 1) {
+    if (mode === 1 && onError) {
       // A wrapper made only to carry a path around an error of the user is
-      // not for the user: `onError` gets what was thrown, as before.
+      // not for the user: `onError` gets what was thrown, as before. Without
+      // `onError` the wrapper is what the caller gets, as in the other modes.
       reason = unwrapPathError(reason);
     }
     if (mode === 1 && !onError && !(reason instanceof SerovalParserError)) {
