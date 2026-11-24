@@ -20,17 +20,17 @@
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@lezer/highlight": "^1.2.5",
-    "@solidjs/router": "2.0.0-next.44",
-    "@solidjs/web": "2.0.0-rc.21",
+    "@solidjs/router": "2.0.0",
+    "@solidjs/web": "2.0.0",
     "codemirror": "^6.0.2",
     "minisearch": "^7.2.0",
     "seroval": "workspace:*",
     "seroval-plugins": "workspace:*",
-    "solid-js": "2.0.0-rc.21",
-    "terracotta": "2.0.0-next.11"
+    "solid-js": "2.0.0",
+    "terracotta": "2.0.0"
   },
   "devDependencies": {
-    "@solidjs/vite-plugin": "3.0.0-next.57",
+    "@solidjs/vite-plugin": "3.0.0",
     "@twinkleplop/bash": "0.1.7",
     "@twinkleplop/css": "0.1.7",
     "@twinkleplop/html": "0.1.7",

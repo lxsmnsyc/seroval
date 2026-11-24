@@ -182,8 +182,9 @@ describe('built package exports (run build first)', () => {
                for (const key of Object.keys(selected)) {
                  assert.equal(selected[key], fallback[key], key);
                }
+               assert.equal(selected.v, undefined);
                for (const key of ['string', 'number', 'instanceOf', 'object']) {
-                 assert.equal(selected.v[key], validator[key], key);
+                 assert.equal(typeof validator[key], 'function', key);
                }
                const ref = selected.createReference('built-package', () => 42);
                assert.equal(fallback.fromJSON(selected.toJSON(ref)), ref);

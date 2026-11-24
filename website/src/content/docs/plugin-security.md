@@ -41,7 +41,7 @@ When `deserialize` reads a listed field with `ctx.deserialize`, seroval checks t
 | `v.array(validator)` | An array whose items all match `validator`. |
 | `v.object({ key: validator })` | An object whose listed keys match their validators. Other keys are not checked. |
 
-The validators are also exported as `v` from `seroval`. In a plugin that other people bundle, import them from `seroval/validator` as shown above, so that bundlers can still remove the plugin when it is unused.
+The validators are exported only from `seroval/validator`, so bundlers can still remove an unused plugin.
 
 `v.instanceOf`, `v.optional`, `v.union`, `v.array` and `v.object` are function calls. Put `/* @__PURE__ */` before each call, as in the example above. Without it, esbuild keeps the plugin in the bundle even when nothing uses it.
 
