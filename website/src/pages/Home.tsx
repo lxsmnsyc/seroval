@@ -10,7 +10,13 @@ import {
   toJSON,
 } from 'seroval';
 import CopyButton from '../components/CopyButton';
-import { ArrowRightIcon, CheckIcon, CircleXIcon, ResetIcon } from '../components/Icons';
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  CircleXIcon,
+  ResetIcon,
+} from '../components/Icons';
 import PageMeta from '../components/PageMeta';
 import { FIRST_PAGE } from '../lib/docs';
 import {
@@ -224,6 +230,67 @@ const MODES: OutputMode[] = [
     roundTrips() {
       return true;
     },
+  },
+];
+
+/* Questions that stop a visitor from starting */
+
+interface Question {
+  question: string;
+  answer: JSX.Element;
+}
+
+const QUESTIONS: Question[] = [
+  {
+    question: 'Is it safe to decode data from a client?',
+    answer: (
+      <>
+        Yes, with the JSON functions. <code>fromJSON</code> validates the tree and runs no code from
+        it. Never pass untrusted input to <code>deserialize</code>, which runs it.{' '}
+        <a href="/docs/security">Security</a>
+      </>
+    ),
+  },
+  {
+    question: 'Can the sender and receiver run different seroval versions?',
+    answer: (
+      <>
+        Use the same version on both sides. The payload format can change in a minor release.{' '}
+        <a href="/docs/errors/SRV002">SRV002</a>
+      </>
+    ),
+  },
+  {
+    question: 'Where does it run?',
+    answer: (
+      <>
+        Node.js 20 or later, Deno, Bun, browsers and edge runtimes. It has no dependencies.{' '}
+        <a href="/docs/compatibility#runtimes">Compatibility</a>
+      </>
+    ),
+  },
+  {
+    question: 'Can it send my own classes, or URL and Request?',
+    answer: (
+      <>
+        Write a plugin for your classes. <code>seroval-plugins</code> covers URL, Headers, FormData,
+        Request, Response, Blob, ReadableStream and more.{' '}
+        <a href="/docs/using-plugins">Using plugins</a>
+      </>
+    ),
+  },
+  {
+    question: 'Can it send functions?',
+    answer: (
+      <>
+        Not their code. Register a function on both sides with <code>createReference</code>, and
+        seroval sends its key. <a href="/docs/isomorphic-references">Isomorphic references</a>
+      </>
+    ),
+  },
+  {
+    question: 'What does it cost?',
+    answer: <>Nothing. seroval is MIT licensed.</>,
   },
 ];
 
@@ -843,6 +910,25 @@ export default function Home(): JSX.Element {
             <li>SolidJS</li>
             <li>TanStack Start</li>
           </ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="faq" id="faq-section">
+        <SectionHead id="faq" title="Questions" />
+        <div class="tile">
+          <div class="faq">
+            <For each={QUESTIONS}>
+              {(item) => (
+                <details class="faq-item">
+                  <summary>
+                    <ChevronRightIcon />
+                    {item.question}
+                  </summary>
+                  <p>{item.answer}</p>
+                </details>
+              )}
+            </For>
+          </div>
         </div>
       </section>
 

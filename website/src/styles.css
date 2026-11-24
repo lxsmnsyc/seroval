@@ -2774,6 +2774,62 @@ select.field-input {
   letter-spacing: -0.03em;
 }
 
+/* Questions: a disclosure per question */
+
+.faq {
+  display: grid;
+  gap: 4px;
+}
+
+.faq-item {
+  border-radius: var(--radius-row);
+  transition: background-color var(--duration-fast);
+}
+
+.faq-item[open] {
+  background: var(--surface);
+}
+
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 16px;
+  border-radius: var(--radius-row);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast);
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary:hover {
+  background: var(--surface-strong);
+}
+
+.faq-item summary .icon {
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.faq-item[open] summary .icon {
+  transform: rotate(90deg);
+}
+
+.faq-item p {
+  max-width: 46rem;
+  margin: 0;
+  padding: 0 16px 16px 46px;
+  color: var(--muted);
+}
+
+.faq-item p a {
+  color: var(--text);
+}
+
 .used-by {
   display: flex;
   flex-wrap: wrap;

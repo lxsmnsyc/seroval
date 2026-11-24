@@ -81,6 +81,14 @@ export function ArrowRightIcon(props: IconProps): JSX.Element {
   );
 }
 
+export function ChevronRightIcon(props: IconProps): JSX.Element {
+  return (
+    <Icon class={props.class}>
+      <path d="m9 18 6-6-6-6" />
+    </Icon>
+  );
+}
+
 export function ArrowLeftIcon(props: IconProps): JSX.Element {
   return (
     <Icon class={props.class}>
