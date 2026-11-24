@@ -200,7 +200,7 @@ export interface DeserializePluginContext {
 function guardIndexedValue(ctx: BaseDeserializerContext, id: number): void {
   const node = { t: SerovalNodeType.IndexedValue, i: id } as SerovalNode;
   if (id < 0 || !Number.isInteger(id)) {
-    throw new SerovalMalformedNodeError(node);
+    throw new SerovalMalformedNodeError(node, 'id must be a non-negative integer');
   }
   if (ctx.refs.has(id)) {
     throw new SerovalConflictedNodeIdError(node);
@@ -243,7 +243,7 @@ function deserializeKnownValue<T extends Record<string, unknown>, K extends keyo
   if (Object.hasOwn(record, key)) {
     return record[key];
   }
-  throw new SerovalMalformedNodeError(node);
+  throw new SerovalMalformedNodeError(node, 'value is not a known one');
 }
 
 function deserializeReference(ctx: DeserializerContext, node: SerovalReferenceNode): unknown {
@@ -257,7 +257,7 @@ function deserializeReference(ctx: DeserializerContext, node: SerovalReferenceNo
 // large as the elements actually present in the input.
 function validateNodeList(node: SerovalNode | SerovalObjectRecordNode, list: unknown): void {
   if (!Array.isArray(list)) {
-    throw new SerovalMalformedNodeError(node as SerovalNode);
+    throw new SerovalMalformedNodeError(node, 'expected a list');
   }
 }
 
@@ -318,7 +318,7 @@ function assignProperty(
         }
         break;
       default:
-        throw new SerovalMalformedNodeError(key);
+        throw new SerovalMalformedNodeError(key, 'property key must be a string or a symbol');
     }
   }
 }
@@ -334,7 +334,7 @@ function validateNodeType(
   type: SerovalNodeType,
 ): asserts id is SerovalNodeType {
   if (ctx.base.refs.types.get(id) !== type) {
-    throw new SerovalMalformedNodeError(node);
+    throw new SerovalMalformedNodeError(node, 'the node it refers to has a different type');
   }
 }
 
@@ -377,7 +377,7 @@ function deserializeDate(ctx: DeserializerContext, node: SerovalDateNode): Date 
 
 function deserializeTemporal(ctx: DeserializerContext, node: SerovalTemporalNode): unknown {
   if (!(ctx.base.features & FeatureFlag.Temporal)) {
-    throw new SerovalUnsupportedNodeError(node);
+    throw new SerovalUnsupportedNodeError(node, 'Temporal is not enabled');
   }
   // `node.c` only ever indexes our own name table (own-property checked),
   // so untrusted input cannot reach arbitrary `Temporal` members.
@@ -391,7 +391,7 @@ function deserializeRegExp(ctx: DeserializerContext, node: SerovalRegExpNode): R
   if (ctx.base.features & FeatureFlag.RegExp) {
     const source = deserializeString(node.c);
     if (source.length > MAX_REGEXP_SOURCE_LENGTH) {
-      throw new SerovalMalformedNodeError(node);
+      throw new SerovalMalformedNodeError(node, 'regexp source is too long');
     }
     // Property escapes only exist in unicode mode. An escaped backslash
     // before `p{` is counted too, which only makes the limit stricter.
@@ -400,13 +400,13 @@ function deserializeRegExp(ctx: DeserializerContext, node: SerovalRegExpNode): R
       if (escapes) {
         ctx.base.regexpPropertyEscapes -= escapes.length;
         if (ctx.base.regexpPropertyEscapes < 0) {
-          throw new SerovalMalformedNodeError(node);
+          throw new SerovalMalformedNodeError(node, 'too many regexp property escapes');
         }
       }
     }
     return assignIndexedValue(ctx, node.i, new RegExp(source, node.m));
   }
-  throw new SerovalUnsupportedNodeError(node);
+  throw new SerovalUnsupportedNodeError(node, 'RegExp is not enabled');
 }
 
 function deserializeSet(
@@ -441,7 +441,7 @@ function deserializeArrayBuffer(
   node: SerovalArrayBufferNode,
 ): ArrayBuffer {
   if (typeof node.s !== 'string') {
-    throw new SerovalMalformedNodeError(node);
+    throw new SerovalMalformedNodeError(node, 'source must be a string');
   }
   if (node.s.length > ctx.base.maxBase64Length) {
     throw new SerovalBase64LimitError(ctx.base.maxBase64Length);
@@ -462,7 +462,7 @@ function deserializeView(
   // Without this check a non-buffer source has an `undefined` `byteLength`, so
   // the offset bound below is silently bypassed.
   if (!(source instanceof ArrayBuffer)) {
-    throw new SerovalMalformedNodeError(node);
+    throw new SerovalMalformedNodeError(node, 'buffer must be an ArrayBuffer');
   }
   // oxlint-disable-next-line no-unnecessary-condition -- Untrusted nodes can omit the offset.
   const offset = node.b ?? 0;
@@ -470,7 +470,7 @@ function deserializeView(
   // view constructor throws when offset + length exceeds it, so `node.l` needs
   // no separate bound here.
   if (offset < 0 || offset > source.byteLength) {
-    throw new SerovalMalformedNodeError(node);
+    throw new SerovalMalformedNodeError(node, 'byte offset is out of range');
   }
   return assignIndexedValue(
     ctx,
@@ -520,7 +520,7 @@ function deserializePromise(
   const result = assignIndexedValue(ctx, node.i, deferred.p);
   const deserialized = deserialize(ctx, depth, node.f);
   if (isThennable(deserialized)) {
-    throw new SerovalMalformedNodeError(node.f);
+    throw new SerovalMalformedNodeError(node.f, 'a promise cannot resolve to a thenable');
   }
   if (node.s) {
     deferred.s(deserialized);
@@ -548,7 +548,7 @@ function getPluginFieldChecks(
 ): PluginFieldCheck[] {
   const info: unknown = node.s;
   if (info == null || typeof info !== 'object') {
-    throw new SerovalMalformedNodeError(node);
+    throw new SerovalMalformedNodeError(node, 'plugin payload must be an object');
   }
   const checks: PluginFieldCheck[] = [];
   for (const field of Object.keys(validate)) {
@@ -625,7 +625,7 @@ function deserializePromiseFulfill(
     validateNodeType(ctx, node, node.i, SerovalNodeType.PromiseConstructor);
     const deserialized = deserialize(ctx, depth, node.a[1]);
     if (isThennable(deserialized)) {
-      throw new SerovalMalformedNodeError(node.a[1]);
+      throw new SerovalMalformedNodeError(node.a[1], 'a promise cannot resolve to a thenable');
     }
     if (node.t === SerovalNodeType.PromiseSuccess) {
       deferred.s(deserialized);
@@ -649,7 +649,7 @@ function deserializeIteratorFactoryInstance(
   // than the type recorded for its id: in vanilla mode an unmarked id can be
   // reused, so a plain object could sit behind an id marked as a Sequence.
   if (!isSequence(source)) {
-    throw new SerovalMalformedNodeError(node.a[1]);
+    throw new SerovalMalformedNodeError(node.a[1], 'source must be a sequence');
   }
   return sequenceToIterator(source);
 }
@@ -666,7 +666,7 @@ function deserializeAsyncIteratorFactoryInstance(
   // reused, so another value could sit behind an id marked as a stream. This
   // stops a fake stream from having its `on` invoked below.
   if (!isStream(source)) {
-    throw new SerovalMalformedNodeError(node.a[1]);
+    throw new SerovalMalformedNodeError(node.a[1], 'source must be a stream');
   }
   return streamToAsyncIterable(source);
 }
@@ -741,7 +741,7 @@ function deserializeSequence(
   // indices must be integers within the list.
   const size = node.a.length;
   if (!(isSequenceIndex(node.s, size) && isSequenceIndex(node.l, size))) {
-    throw new SerovalMalformedNodeError(node);
+    throw new SerovalMalformedNodeError(node, 'start and end must be integers within the list');
   }
   const result = assignIndexedValue(ctx, node.i, createSequence([], node.s, node.l));
   // Mark the id so an IteratorFactoryInstance can validate its source node type.
@@ -769,7 +769,7 @@ function deserialize(ctx: DeserializerContext, depth: number, node: SerovalNode)
     case SerovalNodeType.BigInt:
       // oxlint-disable-next-line no-unnecessary-type-conversion -- Untrusted nodes can hold any value.
       if (String(node.s).length > MAX_BIGINT_LENGTH) {
-        throw new SerovalMalformedNodeError(node);
+        throw new SerovalMalformedNodeError(node, 'value is too long');
       }
       return BigInt(node.s);
     case SerovalNodeType.IndexedValue:
@@ -842,7 +842,7 @@ function deserialize(ctx: DeserializerContext, depth: number, node: SerovalNode)
     case SerovalNodeType.Temporal:
       return deserializeTemporal(ctx, node);
     default:
-      throw new SerovalUnsupportedNodeError(node);
+      throw new SerovalUnsupportedNodeError(node, 'unknown node type');
   }
 }
 

@@ -158,10 +158,7 @@ const MAX_ASSIGNMENT_CHAIN_LENGTH = 100;
 // `chainValues` joins index assignments with the same value text into
 // `a=b=value`. That is only right when the value is a reference: an
 // expression such as `new Set` would then build one object for both keys.
-function resolveAssignments(
-  assignments: Assignment[],
-  chainValues = true,
-): string | undefined {
+function resolveAssignments(assignments: Assignment[], chainValues = true): string | undefined {
   if (!assignments.length) {
     return NIL;
   }
@@ -820,7 +817,7 @@ function serializeTemporal(ctx: SerializerContext, node: SerovalTemporalNode): s
   if (ctx.base.features & FeatureFlag.Temporal) {
     return 'Temporal.' + TEMPORAL_TYPE_NAME[node.c] + '.from("' + serializeString(node.s) + '")';
   }
-  throw new SerovalUnsupportedNodeError(node);
+  throw new SerovalUnsupportedNodeError(node, 'Temporal is not enabled');
 }
 
 function serializeRegExp(ctx: SerializerContext, node: SerovalRegExpNode): string {
@@ -834,7 +831,7 @@ function serializeRegExp(ctx: SerializerContext, node: SerovalRegExpNode): strin
     }
     return '/' + deserializeString(node.c) + '/' + node.m;
   }
-  throw new SerovalUnsupportedNodeError(node);
+  throw new SerovalUnsupportedNodeError(node, 'RegExp is not enabled');
 }
 
 function serializeSetItem(ctx: SerializerContext, id: number, item: SerovalNode): string {
@@ -1064,7 +1061,7 @@ function serializePromiseConstructor(
   node: SerovalPromiseConstructorNode,
 ): string {
   if (ctx.mode === SerovalMode.Vanilla) {
-    throw new SerovalUnsupportedNodeError(node);
+    throw new SerovalUnsupportedNodeError(node, 'promise constructors need a cross mode');
   }
   const resolver = assignIndexedValue(ctx, node.s, getConstructor(ctx, node.f) + '()');
   return '(' + resolver + ').p';
@@ -1075,7 +1072,7 @@ function serializePromiseResult(
   node: SerovalPromiseResolveNode | SerovalPromiseRejectNode,
 ): string {
   if (ctx.mode === SerovalMode.Vanilla) {
-    throw new SerovalUnsupportedNodeError(node);
+    throw new SerovalUnsupportedNodeError(node, 'promise results need a cross mode');
   }
   return (
     getConstructor(ctx, node.a[0]) +
@@ -1285,7 +1282,7 @@ function serializeAssignable(ctx: SerializerContext, node: SerovalNode): string 
     case SerovalNodeType.Temporal:
       return serializeTemporal(ctx, node);
     default:
-      throw new SerovalUnsupportedNodeError(node);
+      throw new SerovalUnsupportedNodeError(node, 'unknown node type');
   }
 }
 

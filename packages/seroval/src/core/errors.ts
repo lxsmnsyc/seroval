@@ -177,11 +177,19 @@ export class SerovalUnsupportedTypeError extends SerovalError {
 }
 
 export class SerovalUnsupportedNodeError extends SerovalError {
-  constructor(node: SerovalNode) {
+  constructor(node: SerovalNode, detail?: string) {
+    const fields: ErrorFields = { nodeType: node.t, detail };
+    if (typeof node.i === 'number') {
+      fields.nodeId = node.i;
+    }
     super(
       '',
       undefined,
-      createInit(ERROR_CODES.UnsupportedNode, { nodeType: node.t }, { nodeType: node.t }),
+      createInit(
+        ERROR_CODES.UnsupportedNode,
+        { nodeType: node.t, nodeId: fields.nodeId, detail },
+        fields,
+      ),
     );
     this.name = 'SerovalUnsupportedNodeError';
   }
