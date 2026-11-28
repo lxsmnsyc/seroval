@@ -9,6 +9,7 @@ const entry = {
   read: 'src/read.ts',
   write: 'src/write.ts',
   shared: 'src/shared.ts',
+  binary: 'src/binary/index.ts',
   validator: 'src/core/validator.ts',
 };
 
@@ -20,9 +21,20 @@ const validatorOptions = {
   inputOptions(options: { external?: unknown }): void {
     options.external = ['./core/validator'];
   },
-  outputOptions(options: { paths?: (id: string) => string }, format: string): void {
+  outputOptions(
+    options: { paths?: (id: string) => string; codeSplitting?: unknown },
+    format: string,
+  ): void {
     const file = format === 'es' ? './validator.js' : './validator.cjs';
     options.paths = (id) => (/[/\\]core[/\\]validator$/.test(id) ? file : id);
+    // Keep `src/shared.ts` in a chunk of its own. When the module lands in
+    // the `shared` entry file, rolldown wraps the CJS `require('./validator.cjs')`
+    // there with `__toESM`, and `require('seroval/shared').v` is then a
+    // different object than `require('seroval').v`. The group is written to
+    // `shared-<hash>`, apart from the `shared` entry file.
+    options.codeSplitting = {
+      groups: [{ name: 'shared', test: /[/\\]src[/\\]shared\.ts$/ }],
+    };
   },
 };
 

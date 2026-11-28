@@ -1,0 +1,768 @@
+import { describe, expect, it, vi } from 'vitest';
+import * as binary from '../../src/binary';
+import {
+  SerovalMalformedBinarySourceError,
+  SerovalMalformedBinaryTypeError,
+  type Stream,
+  createPlugin,
+  createStream,
+} from '../../src';
+import { roundtrip } from './utils';
+
+/**
+ * Hostile payloads for the checks the decoder makes on ids, containers,
+ * sequences, promises, streams and views. Little endian, like the preamble.
+ */
+function u32(value: number): Uint8Array {
+  const buffer = new ArrayBuffer(4);
+  new DataView(buffer).setUint32(0, value, true);
+  return new Uint8Array(buffer);
+}
+
+function i32(value: number): Uint8Array {
+  const buffer = new ArrayBuffer(4);
+  new DataView(buffer).setInt32(0, value, true);
+  return new Uint8Array(buffer);
+}
+
+function f64(value: number): Uint8Array {
+  const buffer = new ArrayBuffer(8);
+  new DataView(buffer).setFloat64(0, value, true);
+  return new Uint8Array(buffer);
+}
+
+function node(...parts: (number | Uint8Array)[]): Uint8Array {
+  let length = 0;
+  for (const part of parts) {
+    length += typeof part === 'number' ? 1 : part.length;
+  }
+  const result = new Uint8Array(length);
+  let offset = 0;
+  for (const part of parts) {
+    if (typeof part === 'number') {
+      result[offset++] = part;
+    } else {
+      result.set(part, offset);
+      offset += part.length;
+    }
+  }
+  return result;
+}
+
+const preamble = () => node(0, 1);
+const root = (id: number) => node(1, u32(id));
+const numberNode = (id: number, value: number) => node(3, u32(id), f64(value));
+const stringNode = (id: number, value: string) => {
+  const encoded = new TextEncoder().encode(value);
+  return node(4, u32(id), u32(encoded.length), encoded);
+};
+const objectAssign = (id: number, key: number, value: number) =>
+  node(7, u32(id), u32(key), u32(value));
+const arrayNode = (id: number, length: number) => node(10, u32(id), u32(length));
+const arrayAssign = (id: number, index: number, value: number) =>
+  node(8, u32(id), u32(index), u32(value));
+const streamNode = (id: number) => node(11, u32(id), 0);
+const streamNext = (id: number, value: number) => node(12, u32(id), u32(value));
+const streamReturn = (id: number, value: number) => node(14, u32(id), u32(value));
+const sequenceNode = (id: number, throwAt: number, doneAt: number) =>
+  node(15, u32(id), i32(throwAt), i32(doneAt));
+const sequencePush = (id: number, value: number) => node(16, u32(id), u32(value));
+const objectNode = (id: number) => node(18, u32(id));
+const arrayBufferNode = (id: number, bytes: Uint8Array) =>
+  node(23, u32(id), u32(bytes.length), bytes);
+const typedArrayNode = (id: number, buffer: number, offset: number, length: number) =>
+  node(24, u32(id), 4, u32(buffer), u32(offset), u32(length));
+const promiseNode = (id: number) => node(31, u32(id));
+const promiseSuccess = (id: number, value: number) => node(32, u32(id), u32(value));
+const iteratorNode = (id: number, sequence: number) => node(36, u32(id), u32(sequence));
+const pending = (id: number, amount: number) => node(38, u32(id), u32(amount));
+
+function feed(chunks: Uint8Array[]) {
+  const errors: unknown[] = [];
+  let index = 0;
+  const value = binary.deserialize<unknown>({
+    read: () => Promise.resolve(chunks[index++]),
+    onError(error) {
+      errors.push(error);
+    },
+  });
+  const settled = value.then(
+    (result) => ({ status: 'resolved' as const, value: result.value }),
+    (error) => ({ status: 'rejected' as const, error }),
+  );
+  return { settled, errors };
+}
+
+describe('binary decoder checks', () => {
+  it('rejects a redeclared id', async () => {
+    const { settled } = feed([preamble(), promiseNode(1), numberNode(1, 1), root(1)]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('rejects a sequence whose done index is past its values', async () => {
+    const { settled } = feed([
+      preamble(),
+      sequenceNode(1, -1, 0x7fffffff),
+      pending(1, 0),
+      iteratorNode(2, 1),
+      root(2),
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('rejects a sequence whose Pending amount does not match its values', async () => {
+    const { settled } = feed([
+      preamble(),
+      numberNode(2, 1),
+      sequenceNode(1, -1, 1),
+      sequencePush(1, 2),
+      pending(1, 2),
+      iteratorNode(3, 1),
+      root(3),
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('rejects an iterator over a sequence that is still open', async () => {
+    const { settled } = feed([
+      preamble(),
+      numberNode(2, 1),
+      sequenceNode(1, -1, 0),
+      sequencePush(1, 2),
+      iteratorNode(3, 1),
+      pending(1, 1),
+      root(3),
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('accepts a valid sequence', async () => {
+    const { settled } = feed([
+      preamble(),
+      numberNode(2, 1),
+      node(2, u32(4), 1),
+      sequenceNode(1, -1, 1),
+      sequencePush(1, 2),
+      sequencePush(1, 4),
+      pending(1, 2),
+      iteratorNode(3, 1),
+      root(3),
+      undefined as unknown as Uint8Array,
+    ]);
+    const result = await settled;
+    expect(result.status).toBe('resolved');
+    const factory = (result as { value: () => Iterator<number> }).value;
+    expect([...{ [Symbol.iterator]: factory }]).toEqual([1]);
+  });
+
+  it('rejects an assignment after the container was closed', async () => {
+    const { settled } = feed([
+      preamble(),
+      stringNode(2, 'a'),
+      numberNode(3, 1),
+      objectNode(1),
+      pending(1, 0),
+      objectAssign(1, 2, 3),
+      root(1),
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('rejects a second Pending for the same container', async () => {
+    const { settled } = feed([preamble(), objectNode(1), pending(1, 0), pending(1, 0), root(1)]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('rejects a promise that settles with itself', async () => {
+    const { settled } = feed([preamble(), promiseNode(1), root(1), promiseSuccess(1, 1)]);
+    const result = await settled;
+    if (result.status === 'resolved') {
+      await expect(result.value as Promise<unknown>).rejects.toBeInstanceOf(Error);
+    } else {
+      expect(result.status).toBe('rejected');
+    }
+  });
+
+  it('rejects a promise that settles with another promise', async () => {
+    const { settled } = feed([
+      preamble(),
+      promiseNode(2),
+      promiseNode(1),
+      root(1),
+      promiseSuccess(1, 2),
+    ]);
+    const result = await settled;
+    if (result.status === 'resolved') {
+      await expect(result.value as Promise<unknown>).rejects.toBeInstanceOf(Error);
+    } else {
+      expect(result.status).toBe('rejected');
+    }
+  });
+
+  it('rejects a second settle node for the same promise', async () => {
+    const { settled, errors } = feed([
+      preamble(),
+      numberNode(2, 1),
+      promiseNode(1),
+      root(1),
+      promiseSuccess(1, 2),
+      promiseSuccess(1, 2),
+    ]);
+    const result = await settled;
+    expect(result.status).toBe('resolved');
+    await vi.waitFor(() => {
+      expect(errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('rejects a stream event after the stream ended', async () => {
+    const { settled, errors } = feed([
+      preamble(),
+      numberNode(2, 1),
+      streamNode(1),
+      root(1),
+      streamReturn(1, 2),
+      streamNext(1, 2),
+    ]);
+    const result = await settled;
+    expect(result.status).toBe('resolved');
+    await vi.waitFor(() => {
+      expect(errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('rejects a typed array outside its buffer as malformed', async () => {
+    const { settled, errors } = feed([
+      preamble(),
+      arrayBufferNode(1, new Uint8Array(4)),
+      typedArrayNode(2, 1, 8, 4),
+      root(2),
+    ]);
+    expect((await settled).status).toBe('rejected');
+    expect((errors[0] as Error).message).toMatch(/TypedArray/);
+  });
+
+  it('rejects the root on a truncated payload', async () => {
+    const full = stringNode(1, 'hello');
+    const { settled } = feed([
+      preamble(),
+      full.subarray(0, full.length - 2),
+      undefined as unknown as Uint8Array,
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('rejects the root when a container never gets its Pending', async () => {
+    const { settled } = feed([
+      preamble(),
+      arrayNode(1, 1),
+      numberNode(2, 1),
+      arrayAssign(1, 0, 2),
+      root(1),
+      undefined as unknown as Uint8Array,
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+});
+
+describe('binary decoder value handling', () => {
+  it('passes promise values on a stream through without adopting them', async () => {
+    const source = createStream<Promise<number>>();
+    source.next(Promise.resolve(1));
+    source.return(Promise.resolve(2));
+    const { value } = await roundtrip<Stream<Promise<number>>>(source);
+    const seen: unknown[] = [];
+    await new Promise<void>((resolve) => {
+      value.on({
+        next: (v) => seen.push(v),
+        throw: () => resolve(),
+        return: (v) => {
+          seen.push(v);
+          resolve();
+        },
+      });
+    });
+    expect(seen[0]).toBeInstanceOf(Promise);
+    expect(seen[1]).toBeInstanceOf(Promise);
+    await expect(seen[0]).resolves.toBe(1);
+  });
+
+  it('decodes a payload split into one-byte chunks', async () => {
+    const chunks: Uint8Array[] = [];
+    await new Promise<void>((resolve, reject) => {
+      binary.serialize(
+        { text: 'x'.repeat(2000), list: [1, 2, 3] },
+        {
+          refs: new Map(),
+          onSerialize: (bytes) => {
+            chunks.push(bytes);
+          },
+          onDone: resolve,
+          onError: reject,
+        },
+      );
+    });
+    const bytes: Uint8Array[] = [];
+    for (const chunk of chunks) {
+      for (let i = 0; i < chunk.length; i++) {
+        bytes.push(chunk.subarray(i, i + 1));
+      }
+    }
+    let index = 0;
+    const result = await binary.deserialize<{ text: string; list: number[] }>({
+      read: () => Promise.resolve(bytes[index++]),
+      onError(error) {
+        throw error;
+      },
+    });
+    expect(result.value.text).toHaveLength(2000);
+    expect(result.value.list).toEqual([1, 2, 3]);
+  });
+});
+
+describe('binary maxArrayBufferLength', () => {
+  type Settled = { status: 'resolved'; value: unknown } | { status: 'rejected'; error: unknown };
+
+  function decodeWith(
+    chunks: Uint8Array[],
+    options?: Partial<binary.DeserializeOptions>,
+  ): { settled: Promise<Settled>; errors: unknown[] } {
+    const errors: unknown[] = [];
+    let index = 0;
+    const settled = binary
+      .deserialize<unknown>({
+        ...options,
+        // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+        read: () => Promise.resolve(chunks[index++]),
+        onError(error) {
+          errors.push(error);
+        },
+      })
+      .then(
+        (result): Settled => ({ status: 'resolved', value: result.value }),
+        (error: unknown): Settled => ({ status: 'rejected', error }),
+      );
+    return { settled, errors };
+  }
+
+  it('rejects an ArrayBuffer longer than the limit from its header alone', async () => {
+    // Only the header is sent. The length must be rejected before the decoder
+    // waits for 2,000,000 bytes that never come.
+    const header = node(23, u32(0), u32(2_000_000));
+    const { settled, errors } = decodeWith([preamble(), header]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('accepts an ArrayBuffer at the limit', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const { settled } = decodeWith([preamble(), arrayBufferNode(0, bytes), root(0)], {
+      maxArrayBufferLength: 4,
+    });
+    const result = await settled;
+    expect(result.status).toBe('resolved');
+    const value = result.status === 'resolved' ? result.value : undefined;
+    expect(value).toBeInstanceOf(ArrayBuffer);
+    expect(new Uint8Array(value instanceof ArrayBuffer ? value : new ArrayBuffer(0))).toEqual(
+      bytes,
+    );
+  });
+
+  it('applies a lower limit', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const { settled, errors } = decodeWith([preamble(), arrayBufferNode(0, bytes), root(0)], {
+      maxArrayBufferLength: 3,
+    });
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('throws for an invalid limit', async () => {
+    await expect(
+      binary.deserialize({
+        // oxlint-disable-next-line typescript/promise-function-async -- There is no input to wait for.
+        read: () => Promise.resolve(undefined),
+        onError() {},
+        maxArrayBufferLength: -1,
+      }),
+    ).rejects.toThrow(RangeError);
+  });
+});
+
+describe('binary maxArrayLength', () => {
+  function decodeChunks(
+    chunks: Uint8Array[],
+    options?: Partial<binary.DeserializeOptions>,
+  ): { result: Promise<unknown>; errors: unknown[] } {
+    const errors: unknown[] = [];
+    let index = 0;
+    const result = binary
+      .deserialize<unknown>({
+        ...options,
+        // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+        read: () => Promise.resolve(chunks[index++]),
+        onError(error) {
+          errors.push(error);
+        },
+      })
+      .then((value) => value.value);
+    return { result, errors };
+  }
+
+  it('rejects an Array longer than the limit', async () => {
+    // Holes cost no bytes, so 14 bytes could claim 4,294,967,295 items.
+    const { result, errors } = decodeChunks([preamble(), arrayNode(0, 0xffffffff), root(0)]);
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('accepts an Array at the limit', async () => {
+    const source = [1, , 3];
+    const { value } = await roundtrip<unknown[]>(source, { deserialize: { maxArrayLength: 3 } });
+    expect(value).toEqual(source);
+  });
+
+  it('applies a lower limit', async () => {
+    const { result, errors } = decodeChunks([preamble(), arrayNode(0, 4), root(0)], {
+      maxArrayLength: 3,
+    });
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('throws for an invalid limit', async () => {
+    await expect(
+      binary.deserialize({
+        // oxlint-disable-next-line typescript/promise-function-async -- There is no input to wait for.
+        read: () => Promise.resolve(undefined),
+        onError() {},
+        maxArrayLength: Number.NaN,
+      }),
+    ).rejects.toThrow(RangeError);
+  });
+});
+
+describe('binary amplification limits', () => {
+  const bigintNode = (id: number, sign: number, string: number): Uint8Array =>
+    node(5, u32(id), sign, u32(string));
+
+  it('rejects an ArrayAssign index past the declared length', async () => {
+    // One 13-byte node would otherwise make the array 4,294,967,295 long.
+    const { settled } = feed([
+      preamble(),
+      arrayNode(0, 1),
+      numberNode(1, 5),
+      arrayAssign(0, 0xfffffffe, 1),
+      pending(0, 1),
+      root(0),
+    ]);
+    expect((await settled).status).toBe('rejected');
+  });
+
+  it('charges array holes against maxArrayLength across the payload', async () => {
+    // Each Array node may declare up to the limit, but the holes of all of
+    // them together may not exceed it.
+    const errors: unknown[] = [];
+    const chunks = [
+      preamble(),
+      arrayNode(0, 2),
+      arrayNode(1, 6),
+      arrayNode(2, 6),
+      arrayAssign(0, 0, 1),
+      arrayAssign(0, 1, 2),
+      pending(1, 0),
+      pending(2, 0),
+      pending(0, 2),
+      root(0),
+    ];
+    let index = 0;
+    const result = binary.deserialize({
+      // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+      read: () => Promise.resolve(chunks[index++]),
+      maxArrayLength: 10,
+      onError(error) {
+        errors.push(error);
+      },
+    });
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(RangeError);
+  });
+
+  it('keeps sparse arrays and their length', async () => {
+    const source: unknown[] = [];
+    source[0] = 1;
+    source[3] = 4;
+    source.length = 6;
+    const { value } = await roundtrip<unknown[]>(source);
+    expect(value).toHaveLength(6);
+    expect(1 in value).toBe(false);
+    expect(value).toEqual(source);
+  });
+
+  it('rejects a Pending amount that does not match the assignments of an object', async () => {
+    // A smaller amount would hand the object over before its assignments ran.
+    const { settled, errors } = feed([
+      preamble(),
+      objectNode(0),
+      stringNode(1, 'a'),
+      numberNode(2, 1),
+      objectAssign(0, 1, 2),
+      pending(0, 0),
+      root(0),
+    ]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('rejects a second Root node', async () => {
+    const { settled, errors } = feed([preamble(), numberNode(0, 1), root(0), root(0)]);
+    // The first Root already handed the value over.
+    await settled;
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('rejects a Root node before its value', async () => {
+    const { settled, errors } = feed([preamble(), root(0), numberNode(0, 1)]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('limits Unicode property escapes across the RegExp nodes of a payload', async () => {
+    async function encode(value: unknown): Promise<Uint8Array[]> {
+      const chunks: Uint8Array[] = [];
+      return await new Promise((resolve, reject) => {
+        binary.serialize(value, {
+          refs: new Map(),
+          onSerialize(bytes) {
+            chunks.push(bytes);
+          },
+          onDone() {
+            resolve(chunks);
+          },
+          onError: reject,
+        });
+      });
+    }
+    // Distinct sources, so each RegExp is its own node.
+    const create = (count: number): RegExp[] =>
+      Array.from({ length: count }, (_, i) => new RegExp('\\p{L}' + i, 'u'));
+
+    const accepted = await feed(await encode(create(32))).settled;
+    expect(accepted.status).toBe('resolved');
+
+    const rejected = feed(await encode(create(33)));
+    expect((await rejected.settled).status).toBe('rejected');
+    expect(rejected.errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('decodes a string shared by many BigInt nodes once', async () => {
+    // Every BigInt node points at the same 100,000-character string. Decoding
+    // it per node would take seconds.
+    const nodes = 2000;
+    const chunks: Uint8Array[] = [preamble(), stringNode(0, 'a'.repeat(100_000))];
+    chunks.push(arrayNode(1, nodes));
+    for (let i = 0; i < nodes; i++) {
+      chunks.push(bigintNode(2 + i, i % 2, 0));
+      chunks.push(arrayAssign(1, i, 2 + i));
+    }
+    chunks.push(pending(1, nodes), root(1));
+    const start = performance.now();
+    const { settled } = feed(chunks);
+    const result = await settled;
+    expect(performance.now() - start).toBeLessThan(1000);
+    if (result.status !== 'resolved' || !Array.isArray(result.value)) {
+      throw new Error('Expected the root array.');
+    }
+    const values: unknown[] = result.value;
+    const expected = BigInt('0x' + '61'.repeat(100_000));
+    expect(values[0]).toBe(expected);
+    expect(values[1]).toBe(-expected);
+  });
+
+  it('walks a subtree shared by many settled promises once', async () => {
+    // An object that never gets its Pending node keeps the decoder from
+    // skipping subtree waits, and every promise settles with the same large
+    // array.
+    const children = 50_000;
+    const promises = 5000;
+    const chunks: Uint8Array[] = [preamble(), objectNode(0), numberNode(1, 1)];
+    chunks.push(arrayNode(2, children));
+    for (let i = 0; i < children; i++) {
+      chunks.push(arrayAssign(2, i, 1));
+    }
+    chunks.push(pending(2, children));
+    for (let i = 0; i < promises; i++) {
+      chunks.push(promiseNode(3 + i), promiseSuccess(3 + i, 2));
+    }
+    chunks.push(root(2));
+    const start = performance.now();
+    const { settled } = feed(chunks);
+    await settled;
+    // About 40 ms when each walk is shared, about 750 ms when every promise
+    // walks the array again.
+    expect(performance.now() - start).toBeLessThan(400);
+  });
+});
+
+describe('binary onSerialize failures', () => {
+  function serializeWith(
+    value: unknown,
+    onSerialize: (calls: number) => Promise<void> | undefined,
+  ): { done: Promise<void>; errors: unknown[] } {
+    const errors: unknown[] = [];
+    let calls = 0;
+    const done = new Promise<void>((resolve) => {
+      binary.serialize(value, {
+        refs: new Map(),
+        onSerialize(): Promise<void> | undefined {
+          calls++;
+          return onSerialize(calls);
+        },
+        onDone() {
+          resolve();
+        },
+        onError(error) {
+          errors.push(error);
+          resolve();
+        },
+      });
+    });
+    return { done, errors };
+  }
+
+  it('reports a rejected write of a settled Promise through onError', async () => {
+    const { done, errors } = serializeWith(
+      Promise.resolve(1),
+      (calls): Promise<void> | undefined =>
+        calls === 2 ? Promise.reject(new Error('peer disconnected')) : undefined,
+    );
+    await done;
+    // The rejection arrives after the value settled.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({ message: 'peer disconnected' });
+  });
+
+  it('reports a rejected write of the root through onError', async () => {
+    const { done, errors } = serializeWith({ a: 1 }, (): Promise<void> | undefined =>
+      Promise.reject(new Error('peer disconnected')),
+    );
+    await done;
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    expect(errors[0]).toMatchObject({ message: 'peer disconnected' });
+  });
+
+  it('reports a throwing write through onError and stops', async () => {
+    const stream = createStream<number>();
+    const { done, errors } = serializeWith(stream, (calls) => {
+      if (calls === 2) {
+        throw new Error('write failed');
+      }
+      return undefined;
+    });
+    stream.next(1);
+    stream.return(2);
+    await done;
+    expect(errors[0]).toMatchObject({ message: 'write failed' });
+  });
+});
+
+describe('binary decoder integrity', () => {
+  it('keeps a leading U+FEFF in strings and keys', async () => {
+    const source = { '﻿a': 1, a: 2, v: '﻿admin' };
+    const { value } = await roundtrip<typeof source>(source);
+    expect(value).toEqual(source);
+    expect(Object.keys(value)).toHaveLength(3);
+  });
+
+  it('rejects an Iterator value under a key other than Symbol.iterator', async () => {
+    // Under `then`, the iterator function would make the object a thenable
+    // that never settles.
+    const { settled, errors } = feed([
+      preamble(),
+      sequenceNode(0, -1, -1),
+      pending(0, 0),
+      iteratorNode(1, 0),
+      objectNode(2),
+      stringNode(3, 'then'),
+      objectAssign(2, 3, 1),
+      pending(2, 1),
+      root(2),
+    ]);
+    expect((await settled).status).toBe('rejected');
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+
+  it('rejects a settled promise whose value never completes when the input ends', async () => {
+    // The object never gets its Pending node, so the promise's value can
+    // never be handed over. The promise is rejected with the payload error.
+    const { settled } = feed([
+      preamble(),
+      objectNode(0),
+      promiseNode(1),
+      promiseSuccess(1, 0),
+      arrayNode(2, 1),
+      arrayAssign(2, 0, 1),
+      pending(2, 1),
+      root(2),
+    ]);
+    const result = await settled;
+    // The root array was handed over before the input ended.
+    if (result.status !== 'resolved' || !Array.isArray(result.value)) {
+      throw new Error('Expected the root array.');
+    }
+    const promise: unknown = result.value[0];
+    await expect(promise).rejects.toBeInstanceOf(SerovalMalformedBinarySourceError);
+  });
+
+  it('rejects a Plugin node whose payload is still open', async () => {
+    // A payload that can still take assignments could take a later plugin
+    // that waits on this one, and both would wait forever.
+    const plugin = createPlugin<object, Record<string, never>, object>({
+      tag: 'Open',
+      test: () => false,
+      parse: {},
+      serialize: () => '',
+      deserialize: () => ({}),
+      binary: { serialize: () => ({}), deserialize: () => ({}) },
+    });
+    const errors: unknown[] = [];
+    const chunks = [
+      preamble(),
+      objectNode(0),
+      stringNode(1, 'Open'),
+      node(17, u32(2), u32(1), u32(0)),
+      pending(0, 0),
+      root(2),
+    ];
+    let index = 0;
+    const result = binary.deserialize({
+      // oxlint-disable-next-line typescript/promise-function-async -- The chunks are already in memory, so there is nothing to await.
+      read: () => Promise.resolve(chunks[index++]),
+      plugins: [plugin],
+      onError(error) {
+        errors.push(error);
+      },
+    });
+    await expect(result).rejects.toThrow();
+    expect(errors[0]).toBeInstanceOf(SerovalMalformedBinaryTypeError);
+  });
+});
+
+describe('binary typed array subclasses', () => {
+  it('sends a Buffer as a Uint8Array of its own bytes', async () => {
+    // Small Buffers share one pool, so sending the whole backing buffer
+    // would send other Buffers' contents.
+    const other = Buffer.from('secret');
+    const value = Buffer.from('abc');
+    expect(value.buffer).toBe(other.buffer);
+    const { value: decoded } = await roundtrip<Uint8Array>(value);
+    expect(decoded).toBeInstanceOf(Uint8Array);
+    expect([...decoded]).toEqual([97, 98, 99]);
+    expect(decoded.buffer.byteLength).toBe(3);
+  });
+});

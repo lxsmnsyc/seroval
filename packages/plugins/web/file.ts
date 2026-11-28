@@ -1,5 +1,5 @@
 import type { SerovalNode } from 'seroval/shared';
-import { createPlugin } from 'seroval/shared';
+import { SerovalPluginValidationError, createPlugin } from 'seroval/shared';
 import * as v from 'seroval/validator';
 import { claim } from './validate';
 
@@ -25,7 +25,16 @@ type FileNode = {
   buffer: SerovalNode;
 };
 
-const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
+type FileBinaryData = {
+  name: string;
+  options: {
+    type: string;
+    lastModified: number;
+  };
+  buffer: Promise<ArrayBuffer>;
+};
+
+const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode, FileBinaryData>({
   tag: 'seroval-plugins/web/File',
   skipPlainObjects: true,
   test(value) {
@@ -68,6 +77,40 @@ const FilePlugin = /* @__PURE__ */ createPlugin<File, FileNode>({
       ctx.deserialize<string>(node.name),
       copyFileOptions(ctx.deserialize<FilePropertyBag>(node.options)),
     );
+  },
+  binary: {
+    serialize(value) {
+      // The serializer handles this promise only once it reaches the field.
+      // If serialization stops before that, at the depth limit say, a failed
+      // read would be an unhandled rejection, which stops the process.
+      const buffer = value.arrayBuffer();
+      buffer.catch(() => undefined);
+      return {
+        name: value.name,
+        options: {
+          type: value.type,
+          lastModified: value.lastModified,
+        },
+        buffer,
+      };
+    },
+    validate: {
+      name: v.string,
+      options: isFileOptions,
+      buffer: /* @__PURE__ */ v.instanceOf(Promise),
+    },
+    async deserialize(data) {
+      // The serializer sends a fresh payload, promise and buffer for every
+      // File. Input that shares one between File values would make each of
+      // them copy the same bytes, so each is claimed once.
+      // `buffer` is checked to be a Promise, but what it resolves to is only
+      // known here.
+      const buffer: unknown = await claim(claim(data).buffer);
+      if (!(buffer instanceof ArrayBuffer)) {
+        throw new SerovalPluginValidationError('seroval-plugins/web/File', 'buffer');
+      }
+      return new File([claim(buffer)], data.name, copyFileOptions(data.options));
+    },
   },
 });
 

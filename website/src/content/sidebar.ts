@@ -18,6 +18,7 @@ export const SIDEBAR: SidebarSection[] = [
       'cross-reference',
       'streaming',
       'streams-and-iterables',
+      'binary-mode',
       'isomorphic-references',
       'binary-data',
     ],
@@ -32,6 +33,6 @@ export const SIDEBAR: SidebarSection[] = [
   },
   {
     title: 'Reference',
-    pages: ['api', 'compatibility', 'errors', 'security'],
+    pages: ['api', 'binary-format', 'compatibility', 'errors', 'security'],
   },
 ];
